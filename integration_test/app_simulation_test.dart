@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
-import 'package:jflutter/main.dart' as app;
-import 'package:jflutter/presentation/providers/automaton_simulation_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/main.dart' as app;
+import 'package:turing_lab/presentation/providers/automaton_simulation_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

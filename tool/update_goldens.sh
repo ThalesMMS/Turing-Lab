@@ -82,7 +82,7 @@ else
   done
 fi
 
-echo "=== JFlutter Golden Baseline Update ==="
+echo "=== Turing Lab Golden Baseline Update ==="
 echo "Repository: $ROOT_DIR"
 echo "Flutter: $("$FLUTTER_BIN" --version | head -n 1)"
 echo ""

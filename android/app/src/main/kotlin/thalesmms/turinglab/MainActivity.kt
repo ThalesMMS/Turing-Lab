@@ -1,4 +1,4 @@
-package dev.jflutter.app
+package thalesmms.turinglab
 
 import io.flutter.embedding.android.FlutterActivity
 

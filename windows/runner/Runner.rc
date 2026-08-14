@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "JFlutter Labs, Inc." "\0"
-            VALUE "FileDescription", "jflutter" "\0"
+            VALUE "CompanyName", "Turing Lab contributors" "\0"
+            VALUE "FileDescription", "Turing Lab" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "jflutter" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 JFlutter Labs, Inc. All rights reserved." "\0"
-            VALUE "OriginalFilename", "jflutter.exe" "\0"
-            VALUE "ProductName", "jflutter" "\0"
+            VALUE "InternalName", "turing_lab" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 Turing Lab contributors. All rights reserved." "\0"
+            VALUE "OriginalFilename", "turing_lab.exe" "\0"
+            VALUE "ProductName", "Turing Lab" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

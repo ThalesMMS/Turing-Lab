@@ -14,11 +14,11 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 } else {
-    val envStorePassword = envOrNull("JFLUTTER_KEYSTORE_PASSWORD")
-    val envKeyAlias = envOrNull("JFLUTTER_KEY_ALIAS")
-    val envKeyPassword = envOrNull("JFLUTTER_KEY_PASSWORD")
+    val envStorePassword = envOrNull("TURING_LAB_KEYSTORE_PASSWORD")
+    val envKeyAlias = envOrNull("TURING_LAB_KEY_ALIAS")
+    val envKeyPassword = envOrNull("TURING_LAB_KEY_PASSWORD")
     if (envStorePassword != null && envKeyAlias != null && envKeyPassword != null) {
-        val envStoreFile = envOrNull("JFLUTTER_KEYSTORE_PATH") ?: "keystores/jflutter-release.jks"
+        val envStoreFile = envOrNull("TURING_LAB_KEYSTORE_PATH") ?: "keystores/turing-lab-release.jks"
         keystoreProperties.setProperty("storeFile", envStoreFile)
         keystoreProperties.setProperty("storePassword", envStorePassword)
         keystoreProperties.setProperty("keyAlias", envKeyAlias)
@@ -26,9 +26,9 @@ if (keystorePropertiesFile.exists()) {
         println("Loaded release keystore credentials from environment variables.")
     } else {
         val providedEnv = listOfNotNull(
-            envStorePassword?.let { "JFLUTTER_KEYSTORE_PASSWORD" },
-            envKeyAlias?.let { "JFLUTTER_KEY_ALIAS" },
-            envKeyPassword?.let { "JFLUTTER_KEY_PASSWORD" }
+            envStorePassword?.let { "TURING_LAB_KEYSTORE_PASSWORD" },
+            envKeyAlias?.let { "TURING_LAB_KEY_ALIAS" },
+            envKeyPassword?.let { "TURING_LAB_KEY_PASSWORD" }
         )
         if (providedEnv.isNotEmpty()) {
             println("Warning: Incomplete keystore environment configuration. Provided: ${'$'}{providedEnv.joinToString()}.")
@@ -39,7 +39,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "dev.jflutter.app"
+    namespace = "thalesmms.turinglab"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -53,7 +53,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "dev.jflutter.app"
+        applicationId = "thalesmms.turinglab"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

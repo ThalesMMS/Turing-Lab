@@ -1,6 +1,6 @@
-# JFlutter App Store Screenshot Mapping
+# Turing Lab App Store Screenshot Mapping
 
-This directory contains the Apple App Store screenshot set for the current JFlutter release candidate asset pass.
+This directory contains the Apple App Store screenshot set for the current Turing Lab release candidate asset pass.
 
 Each device class includes 5 screenshots, one per supported module:
 
@@ -16,7 +16,7 @@ Each device class includes 5 screenshots, one per supported module:
 - `iphone-6.5/`: 1284 x 2778 portrait
 - `iphone-5.5/`: 1242 x 2208 portrait
 - `ipad-13/`: 2048 x 2732 portrait
-- `macos/`: Current JFlutter screenshots use 2880 x 1800 landscape. Apple accepts any 16:10 macOS screenshot size: 1280 x 800, 1440 x 900, 2560 x 1600, or 2880 x 1800.
+- `macos/`: Current Turing Lab screenshots use 2880 x 1800 landscape. Apple accepts any 16:10 macOS screenshot size: 1280 x 800, 1440 x 900, 2560 x 1600, or 2880 x 1800.
 
 ## App Store Connect media slot mapping
 

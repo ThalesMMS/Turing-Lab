@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Generates android/key.properties from environment variables for release signing.
 # Expected environment variables:
-#   JFLUTTER_KEYSTORE_PASSWORD - The keystore password.
-#   JFLUTTER_KEY_ALIAS         - The key alias inside the keystore.
-#   JFLUTTER_KEY_PASSWORD      - The key password.
+#   TURING_LAB_KEYSTORE_PASSWORD - The keystore password.
+#   TURING_LAB_KEY_ALIAS         - The key alias inside the keystore.
+#   TURING_LAB_KEY_PASSWORD      - The key password.
 # Optional environment variables:
-#   JFLUTTER_KEYSTORE_PATH     - Path to the keystore file, relative to android/ (default: keystores/jflutter-release.jks).
+#   TURING_LAB_KEYSTORE_PATH     - Path to the keystore file, relative to android/ (default: keystores/turing-lab-release.jks).
 
 set -euo pipefail
 
@@ -13,28 +13,28 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ANDROID_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 KEY_PROPERTIES_FILE="${ANDROID_DIR}/key.properties"
 
-if [[ -z "${JFLUTTER_KEYSTORE_PASSWORD:-}" ]]; then
-  echo "Error: JFLUTTER_KEYSTORE_PASSWORD is not set." >&2
+if [[ -z "${TURING_LAB_KEYSTORE_PASSWORD:-}" ]]; then
+  echo "Error: TURING_LAB_KEYSTORE_PASSWORD is not set." >&2
   exit 1
 fi
 
-if [[ -z "${JFLUTTER_KEY_ALIAS:-}" ]]; then
-  echo "Error: JFLUTTER_KEY_ALIAS is not set." >&2
+if [[ -z "${TURING_LAB_KEY_ALIAS:-}" ]]; then
+  echo "Error: TURING_LAB_KEY_ALIAS is not set." >&2
   exit 1
 fi
 
-if [[ -z "${JFLUTTER_KEY_PASSWORD:-}" ]]; then
-  echo "Error: JFLUTTER_KEY_PASSWORD is not set." >&2
+if [[ -z "${TURING_LAB_KEY_PASSWORD:-}" ]]; then
+  echo "Error: TURING_LAB_KEY_PASSWORD is not set." >&2
   exit 1
 fi
 
-STORE_FILE_PATH="${JFLUTTER_KEYSTORE_PATH:-keystores/jflutter-release.jks}"
+STORE_FILE_PATH="${TURING_LAB_KEYSTORE_PATH:-keystores/turing-lab-release.jks}"
 
 cat >"${KEY_PROPERTIES_FILE}" <<EOF2
 storeFile=${STORE_FILE_PATH}
-storePassword=${JFLUTTER_KEYSTORE_PASSWORD}
-keyAlias=${JFLUTTER_KEY_ALIAS}
-keyPassword=${JFLUTTER_KEY_PASSWORD}
+storePassword=${TURING_LAB_KEYSTORE_PASSWORD}
+keyAlias=${TURING_LAB_KEY_ALIAS}
+keyPassword=${TURING_LAB_KEY_PASSWORD}
 EOF2
 
 # Lock down permissions to preserve signing credentials.

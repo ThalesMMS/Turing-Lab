@@ -5,16 +5,16 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = JFlutter
+PRODUCT_NAME = Turing Lab
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = thalesmms.jflutter
+PRODUCT_BUNDLE_IDENTIFIER = thalesmms.turinglab
 
 // Keep these manually synced with pubspec.yaml's version/build value before every macOS archive.
 // Unlike iOS, the macOS runner does not derive MARKETING_VERSION/CURRENT_PROJECT_VERSION from
 // FLUTTER_BUILD_NAME/FLUTTER_BUILD_NUMBER at build time.
 MARKETING_VERSION = 1.0.0
-CURRENT_PROJECT_VERSION = 1
+CURRENT_PROJECT_VERSION = 3
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2024 JFlutter Labs, Inc. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2024 Turing Lab contributors. All rights reserved.

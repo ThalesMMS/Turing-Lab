@@ -107,8 +107,8 @@ echo "Archived .app bundle copied to ${APP_BUNDLE_PATH}"
 # App Store upload options after this archive step:
 # 1. Open the .xcarchive in Xcode Organizer and choose "Distribute App" to export
 #    a Mac App Store .pkg for upload.
-# 2. Or run ./macos/scripts/archive_app_store.sh to export build/macos/export/JFlutter.pkg
+# 2. Or run ./macos/scripts/archive_app_store.sh to export build/macos/export/Turing Lab.pkg
 #    for Apple Transporter or xcrun altool upload flows.
 # Example altool usage after exporting a .pkg:
-#   xcrun altool --upload-app --type macos --file build/macos/export/JFlutter.pkg \
+#   xcrun altool --upload-app --type macos --file build/macos/export/Turing Lab.pkg \
 #     --username "<apple-id>" --password "<app-specific-password>"
