@@ -1,6 +1,6 @@
 //
 //  grammar_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Administra a edição de gramáticas formais no workspace, mantendo produções,
 //  símbolo inicial, tipo selecionado e resultados recentes de conversões enquanto

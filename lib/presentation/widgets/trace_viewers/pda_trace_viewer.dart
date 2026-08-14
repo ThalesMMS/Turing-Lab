@@ -1,6 +1,6 @@
 //
 //  pda_trace_viewer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Apresenta os traços de simulação de autômatos de pilha traduzindo os dados
 //  retornados pelo PDASimulator em SimulationResult genérico para reutilizar o

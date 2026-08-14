@@ -1,6 +1,6 @@
 //
 //  algorithm_step_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia o estado de navegação passo a passo durante a execução de
 //  algoritmos educacionais, permitindo ao usuário avançar, retroceder e

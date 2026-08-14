@@ -1,6 +1,6 @@
 //
 //  graphview_pda_canvas_controller.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Controlador dedicado aos autômatos de pilha que sincroniza o GraphView com o
 //  estado do PDAEditorNotifier, lidando com criação, movimentação e rótulos dos

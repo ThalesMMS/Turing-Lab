@@ -1,6 +1,6 @@
 //
 //  simulation_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Registra cada passo de simulação com estado atual, entradas restantes e artefatos específicos de PDA ou TM. Oferece cópia, serialização e campos auxiliares que documentam consumo de símbolos e aceitação para rastreamento detalhado.
 //

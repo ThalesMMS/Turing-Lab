@@ -1,6 +1,6 @@
 //
 //  grammar_to_fsa_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Converte gramáticas lineares à direita em autômatos finitos equivalentes,
 //  validando restrições das produções e gerando estados com posicionamento

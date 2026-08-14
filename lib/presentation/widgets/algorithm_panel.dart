@@ -1,6 +1,6 @@
 //
 //  algorithm_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Consolida os comandos de algoritmos aplicáveis aos autômatos finitos,
 //  reunindo conversões NFA→DFA, minimização, complementação, operações de

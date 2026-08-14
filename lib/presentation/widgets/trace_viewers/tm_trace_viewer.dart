@@ -1,6 +1,6 @@
 //
 //  tm_trace_viewer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Renderiza os traços de simulação de Máquinas de Turing convertendo o
 //  resultado especializado do simulador em um SimulationResult genérico para o

@@ -1,6 +1,6 @@
 //
 //  pda_transition_editor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Disponibiliza editor focado em transições de PDA com campos para leitura, pop e push e toggles para λ. Limpa e valida entradas, disparando callbacks estruturados para que a tela hospedeira aplique alterações com segurança.
 //
@@ -9,8 +9,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jflutter/presentation/widgets/pda/stack_drawer.dart';
-import 'package:jflutter/presentation/widgets/pda/stack_operation_preview.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 
 class PdaTransitionEditor extends StatefulWidget {
   const PdaTransitionEditor({

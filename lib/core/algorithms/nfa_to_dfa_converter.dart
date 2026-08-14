@@ -1,6 +1,6 @@
 //
 //  nfa_to_dfa_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa a conversão de autômatos finitos não determinísticos em
 //  determinísticos utilizando construção por subconjuntos com fechos-ε.

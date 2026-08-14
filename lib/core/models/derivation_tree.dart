@@ -1,6 +1,6 @@
 //
 //  derivation_tree.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Lightweight derivation/parse tree wrapper.
 //

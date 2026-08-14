@@ -1,6 +1,6 @@
 //
 //  stack_operation_preview.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Stack operation preview widget to show on hover/touch
 //  in PDA transitions. Visually demonstrates the input,pop→push effect on the stack.
@@ -9,7 +9,7 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:jflutter/presentation/widgets/pda/stack_drawer.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 
 /// Stack operation preview widget
 ///
@@ -38,7 +38,8 @@ class StackOperationPreview extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+        border:
+            Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(

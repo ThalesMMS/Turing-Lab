@@ -1,7 +1,7 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
-extension _JFlutterAdaptiveEdgeRendererGroupedGeometry
-    on JFlutterAdaptiveEdgeRenderer {
+extension _TuringLabAdaptiveEdgeRendererGroupedGeometry
+    on TuringLabAdaptiveEdgeRenderer {
   List<Edge> _groupedEdges(Edge edge) {
     _ensureEdgeCaches();
     return _groupedEdgeCache[_pairForEdge(edge)] ?? <Edge>[edge];
@@ -18,7 +18,7 @@ extension _JFlutterAdaptiveEdgeRendererGroupedGeometry
       edge,
       hasOpposingTraffic: hasOpposingTraffic,
     );
-    final manualControlPoint = jFlutterEdgeControlPoint(edge);
+    final manualControlPoint = turingLabEdgeControlPoint(edge);
     if (manualControlPoint != null) {
       final sourcePoint = calculateSourceConnectionPoint(
         edge,

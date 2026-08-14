@@ -21,6 +21,137 @@ class AppLocalizationsPt extends AppLocalizations {
   String get algorithms => 'Algoritmos';
 
   @override
+  String get settingsPageTitle => 'Configurações';
+
+  @override
+  String get settingsSaveTooltip => 'Salvar configurações';
+
+  @override
+  String get settingsResetTooltip => 'Restaurar padrões';
+
+  @override
+  String get settingsLoadError =>
+      'Não foi possível carregar as configurações. Tente novamente.';
+
+  @override
+  String get settingsSaveSuccess => 'Configurações salvas.';
+
+  @override
+  String get settingsSaveError =>
+      'Não foi possível salvar as configurações. Tente novamente.';
+
+  @override
+  String get settingsApplyError =>
+      'As configurações foram salvas, mas não puderam ser aplicadas. Reinicie o Turing Lab para atualizá-las.';
+
+  @override
+  String get settingsResetSuccess =>
+      'Configurações restauradas para os padrões.';
+
+  @override
+  String get settingsSectionSymbols => 'Símbolos';
+
+  @override
+  String get settingsSectionTheme => 'Tema';
+
+  @override
+  String get settingsSectionLanguage => 'Idioma';
+
+  @override
+  String get settingsSectionCanvas => 'Canvas';
+
+  @override
+  String get settingsSectionGeneral => 'Geral';
+
+  @override
+  String get settingsSectionActions => 'Ações';
+
+  @override
+  String get settingsEmptyStringTitle => 'Símbolo da cadeia vazia';
+
+  @override
+  String get settingsEmptyStringDescription =>
+      'Símbolo usado para representar a cadeia vazia (λ ou ε)';
+
+  @override
+  String get settingsLambdaOption => 'λ (Lambda)';
+
+  @override
+  String get settingsEpsilonOption => 'ε (Epsilon)';
+
+  @override
+  String get settingsThemeModeTitle => 'Modo do tema';
+
+  @override
+  String get settingsThemeModeDescription =>
+      'Escolha o tema de sua preferência';
+
+  @override
+  String get settingsThemeSystem => 'Sistema';
+
+  @override
+  String get settingsThemeLight => 'Claro';
+
+  @override
+  String get settingsThemeDark => 'Escuro';
+
+  @override
+  String get settingsLanguageTitle => 'Idioma do aplicativo';
+
+  @override
+  String get settingsLanguageDescription =>
+      'Escolha o idioma usado pelo Turing Lab';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get settingsLanguagePortuguese => 'Português';
+
+  @override
+  String get settingsShowGridTitle => 'Mostrar grade';
+
+  @override
+  String get settingsShowGridDescription => 'Exibir linhas de grade no canvas';
+
+  @override
+  String get settingsShowCoordinatesTitle => 'Mostrar coordenadas';
+
+  @override
+  String get settingsShowCoordinatesDescription =>
+      'Exibir informações de coordenadas';
+
+  @override
+  String get settingsGridSizeTitle => 'Tamanho da grade';
+
+  @override
+  String get settingsGridSizeDescription => 'Tamanho das células da grade';
+
+  @override
+  String get settingsNodeSizeTitle => 'Tamanho dos estados';
+
+  @override
+  String get settingsNodeSizeDescription => 'Tamanho dos estados do autômato';
+
+  @override
+  String get settingsFontSizeTitle => 'Tamanho da fonte';
+
+  @override
+  String get settingsFontSizeDescription => 'Tamanho do texto na interface';
+
+  @override
+  String get settingsAutoSaveTitle => 'Salvamento automático';
+
+  @override
+  String get settingsAutoSaveDescription => 'Salvar alterações automaticamente';
+
+  @override
+  String get settingsShowTooltipsTitle => 'Mostrar dicas';
+
+  @override
+  String get settingsShowTooltipsDescription => 'Exibir dicas de ajuda';
+
+  @override
   String get homeHelpTooltip => 'Ajuda';
 
   @override
@@ -74,7 +205,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get helpQuickStartBody =>
-      'Bem-vindo ao JFlutter. Comece com este fluxo básico:\n\n1. Escolha um espaço de trabalho, como AF, Gramática, AP, MT ou Regex.\n2. Inicie em branco ou abra um exemplo ou arquivo compatível.\n3. Use o editor para criar sua máquina ou gramática. Toque duas vezes em um estado para ações rápidas.\n4. Execute simulações para testar seu trabalho.\n5. Use os algoritmos para transformar estruturas.\n\nDicas:\n• Use as abas de navegação ou chips de seção para trocar de espaço rapidamente.\n• Toque duas vezes em um estado para abrir o menu de ações rápidas.\n• Faça pinça para ampliar ou reduzir o canvas.\n• Toque no ícone de guia rápido quando precisar relembrar o fluxo.';
+      'Bem-vindo ao Turing Lab. Comece com este fluxo básico:\n\n1. Escolha um espaço de trabalho, como AF, Gramática, AP, MT ou Regex.\n2. Inicie em branco ou abra um exemplo ou arquivo compatível.\n3. Use o editor para criar sua máquina ou gramática. Toque duas vezes em um estado para ações rápidas.\n4. Execute simulações para testar seu trabalho.\n5. Use os algoritmos para transformar estruturas.\n\nDicas:\n• Use as abas de navegação ou chips de seção para trocar de espaço rapidamente.\n• Toque duas vezes em um estado para abrir o menu de ações rápidas.\n• Faça pinça para ampliar ou reduzir o canvas.\n• Toque no ícone de guia rápido quando precisar relembrar o fluxo.';
 
   @override
   String get helpGotIt => 'Entendi!';
@@ -130,7 +261,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get helpSectionTroubleshooting => 'Solução de problemas';
 
   @override
-  String get helpSectionLicenses => 'Licenças';
+  String get helpSectionAbout => 'Sobre';
 
   @override
   String get regularExpressionTitle => 'Expressão regular';

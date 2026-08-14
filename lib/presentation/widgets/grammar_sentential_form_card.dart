@@ -1,6 +1,6 @@
 //
 //  grammar_sentential_form_card.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Lightweight UI helper to render a before/after sentential form comparison
 //  for a selected grammar parsing step.

@@ -67,6 +67,36 @@ extension AppHelpLocalizations on AppLocalizations {
   String get closeShortcutsDialog => _copy('closeShortcutsDialog');
   String get shortcutAlternativeSeparator =>
       _copy('shortcutAlternativeSeparator');
+  String get aboutDeveloperLabel => _copy('aboutDeveloperLabel');
+  String get aboutProjectRepositoryLabel =>
+      _copy('aboutProjectRepositoryLabel');
+  String get aboutProjectOpenError => _copy('aboutProjectOpenError');
+  String get aboutOpenSourceLicenses => _copy('aboutOpenSourceLicenses');
+  String get aboutLicensesIntro => _copy('aboutLicensesIntro');
+  String get aboutTuringLabLicenseSummary =>
+      _copy('aboutTuringLabLicenseSummary');
+  String get aboutJflapLicenseSummary => _copy('aboutJflapLicenseSummary');
+  String get aboutGraphViewLicenseSummary =>
+      _copy('aboutGraphViewLicenseSummary');
+  String get aboutAppleNoticesSummary => _copy('aboutAppleNoticesSummary');
+  String get aboutAppleNoticesTitle => _copy('aboutAppleNoticesTitle');
+  String get aboutPackageLicenses => _copy('aboutPackageLicenses');
+  String get aboutPackageLicensesDescription =>
+      _copy('aboutPackageLicensesDescription');
+  String get aboutAcknowledgments => _copy('aboutAcknowledgments');
+  String get aboutJflapCreator => _copy('aboutJflapCreator');
+  String get aboutJflapTeam => _copy('aboutJflapTeam');
+  String get aboutOriginalProject => _copy('aboutOriginalProject');
+  String get aboutOriginalProjectTitle => _copy('aboutOriginalProjectTitle');
+  String get aboutGraphViewFork => _copy('aboutGraphViewFork');
+  String get aboutGraphViewForkTitle => _copy('aboutGraphViewForkTitle');
+  String get aboutDistribution => _copy('aboutDistribution');
+  String get aboutDistributionDescription =>
+      _copy('aboutDistributionDescription');
+  String get aboutLicenseExpandPrompt => _copy('aboutLicenseExpandPrompt');
+  String get aboutLicenseLoading => _copy('aboutLicenseLoading');
+  String aboutLicenseLoadFailed(Object error) =>
+      '${_copy('aboutLicenseLoadFailed')}: $error';
 
   String homeNavigationLabel(String id) {
     return switch (id) {
@@ -103,7 +133,7 @@ extension AppHelpLocalizations on AppLocalizations {
       'pumping' => helpSectionPumping,
       'fileOperations' => helpSectionFileOperations,
       'troubleshooting' => helpSectionTroubleshooting,
-      'licenses' => helpSectionLicenses,
+      'about' => helpSectionAbout,
       _ => id,
     };
   }
@@ -129,7 +159,9 @@ extension AppHelpLocalizations on AppLocalizations {
   }
 
   String showHelpFor(String title) {
-    return _isPortuguese ? 'Mostrar ajuda sobre $title' : 'Show help for $title';
+    return _isPortuguese
+        ? 'Mostrar ajuda sobre $title'
+        : 'Show help for $title';
   }
 
   String navigateTo(String label) {

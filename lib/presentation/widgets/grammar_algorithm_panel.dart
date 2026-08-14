@@ -1,6 +1,6 @@
 //
 //  grammar_algorithm_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Painel que centraliza algoritmos de gramáticas, oferecendo botões para
 //  conversões, remoção de recursão à esquerda, fatoração e cálculos de FIRST e

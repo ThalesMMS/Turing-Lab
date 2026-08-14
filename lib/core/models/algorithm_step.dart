@@ -1,6 +1,6 @@
 //
 //  algorithm_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo base para passos de algoritmos educacionais, armazenando
 //  índice, título, explicação e propriedades adicionais específicas a cada tipo

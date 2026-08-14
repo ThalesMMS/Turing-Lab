@@ -1,6 +1,6 @@
 //
 //  grammar_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Monta a página de gramáticas livres de contexto com layouts adaptáveis,
 //  exibindo editor, simulação e algoritmos em painéis configuráveis para

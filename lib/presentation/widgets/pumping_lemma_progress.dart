@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_progress.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Renderiza painel de acompanhamento do jogo do Lema do Bombeamento com métricas agregadas e histórico recente. Observa o provider dedicado, calcula percentuais localmente e apresenta cartões e listas que facilitam a leitura pedagógica.
 //
@@ -98,9 +98,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Text(
                 '${(ratio * 100).toInt()}%',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
               ),
             ],
           ),
@@ -113,9 +113,8 @@ class PumpingLemmaProgress extends ConsumerWidget {
     BuildContext context,
     PumpingLemmaProgressState progress,
   ) {
-    final accuracy = progress.attempts > 0
-        ? progress.score / progress.attempts
-        : 0.0;
+    final accuracy =
+        progress.attempts > 0 ? progress.score / progress.attempts : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -206,9 +205,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           Text(
             title,
@@ -280,15 +279,15 @@ class PumpingLemmaProgress extends ConsumerWidget {
           Text(
             'No challenges completed yet',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
-            ),
+                  color: Theme.of(context).colorScheme.outline,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Complete some challenges to see your progress here',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
-            ),
+                  color: Theme.of(context).colorScheme.outline,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -364,9 +363,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Text(
                 entry.isCorrect == true ? 'Correct' : 'Wrong',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ],
           ),
@@ -403,9 +402,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
                 Text(
                   'Retry selected',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
                 ),
                 Text(title, style: Theme.of(context).textTheme.bodySmall),
                 if (entry.language != null)

@@ -1,6 +1,6 @@
 //
 //  help_search_delegate.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa busca global sobre todo o conteúdo de ajuda do aplicativo,
 //  permitindo que usuários encontrem rapidamente tooltips, conceitos teóricos,
@@ -353,7 +353,8 @@ class _CategorySection extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(6),
@@ -465,7 +466,8 @@ class _ResultTile extends StatelessWidget {
                               color: colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(
-                                color: colorScheme.outline.withValues(alpha: 0.3),
+                                color:
+                                    colorScheme.outline.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Text(
@@ -499,5 +501,4 @@ class _ResultTile extends StatelessWidget {
     if (content.length <= 100) return content;
     return '${content.substring(0, 100)}...';
   }
-
 }

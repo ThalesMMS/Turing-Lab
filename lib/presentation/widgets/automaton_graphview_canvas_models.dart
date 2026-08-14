@@ -150,7 +150,7 @@ class AutomatonGraphViewCanvasCustomization {
     required this.transitionConfigBuilder,
     this.enableStateDrag = true,
     this.enableToolSelection = true,
-    this.edgeRenderMode = JFlutterEdgeRenderMode.standard,
+    this.edgeRenderMode = TuringLabEdgeRenderMode.standard,
   });
 
   final AutomatonGraphViewTransitionConfig Function(
@@ -159,11 +159,11 @@ class AutomatonGraphViewCanvasCustomization {
 
   final bool enableStateDrag;
   final bool enableToolSelection;
-  final JFlutterEdgeRenderMode edgeRenderMode;
+  final TuringLabEdgeRenderMode edgeRenderMode;
 
   factory AutomatonGraphViewCanvasCustomization.fsa() {
     return AutomatonGraphViewCanvasCustomization(
-      edgeRenderMode: JFlutterEdgeRenderMode.groupedFsa,
+      edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
       transitionConfigBuilder: (controller) {
         return AutomatonGraphViewTransitionConfig(
           initialPayloadBuilder: (edge) =>

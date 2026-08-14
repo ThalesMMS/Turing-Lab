@@ -6,7 +6,7 @@ import '../../../core/result.dart';
 import '../../../core/services/file_operations_gateway.dart';
 
 const _kUnreadableFileMessage =
-    'JFlutter could not access the selected file data. Pick the file again and keep it available until the import finishes.';
+    'Turing Lab could not access the selected file data. Pick the file again and keep it available until the import finishes.';
 
 String? _normalizedPath(String? path) {
   if (path == null) {

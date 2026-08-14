@@ -1,6 +1,6 @@
 //
 //  result.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Defines the sealed Result type with Success and Failure variants to standardize return
 //  flows and error messages in the application, exposing mapping utilities and

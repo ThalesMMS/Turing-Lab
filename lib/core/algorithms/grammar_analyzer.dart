@@ -1,6 +1,6 @@
 //
 //  grammar_analyzer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Oferece rotinas avançadas para analisar e transformar gramáticas, incluindo
 //  remoção de recursão à esquerda, fatoração à esquerda e construção de

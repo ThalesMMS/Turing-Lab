@@ -1,6 +1,6 @@
 //
 //  settings_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Expõe um StateNotifier responsável por carregar, atualizar e persistir o
 //  SettingsModel da aplicação, abstraindo o repositório subjacente baseado em

@@ -1,6 +1,6 @@
 //
 //  tm_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Garante o workspace de Máquinas de Turing com canvas GraphView, painéis de
 //  simulação e algoritmos, acompanhando métricas, ferramentas e destaques para

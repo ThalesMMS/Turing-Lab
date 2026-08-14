@@ -1,6 +1,6 @@
 //
 //  validation_diagnostic.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Structured validation diagnostic model.
 //

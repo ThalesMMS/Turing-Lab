@@ -1,6 +1,6 @@
 //
 //  algorithm_step_navigator.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget de navegação para controlar a visualização passo a passo de algoritmos
 //  educacionais. Oferece botões prev/next, play/pause, slider de navegação e
@@ -168,8 +168,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           backgroundColor: colorScheme.secondaryContainer,
           foregroundColor: colorScheme.onSecondaryContainer,
-          disabledBackgroundColor: colorScheme.surfaceContainerHighest
-              .withValues(alpha: 0.3),
+          disabledBackgroundColor:
+              colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.3),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -208,8 +208,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           backgroundColor: colorScheme.primaryContainer,
           foregroundColor: colorScheme.onPrimaryContainer,
-          disabledBackgroundColor: colorScheme.surfaceContainerHighest
-              .withValues(alpha: 0.3),
+          disabledBackgroundColor:
+              colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.3),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -261,9 +261,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               value: stepState.currentStepIndex.toDouble(),
               min: 0,
               max: (stepState.totalSteps - 1).toDouble(),
-              divisions: stepState.totalSteps > 1
-                  ? stepState.totalSteps - 1
-                  : 1,
+              divisions:
+                  stepState.totalSteps > 1 ? stepState.totalSteps - 1 : 1,
               label: 'Step ${stepState.currentStepNumber}',
               onChanged: (value) {
                 final newIndex = value.toInt();

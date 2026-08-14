@@ -1,6 +1,6 @@
 //
 //  tm.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Representação de máquinas de Turing que herda Automaton para manter estados,
 //  transições e configuração de canvas, acrescentando alfabeto de fita,
@@ -46,8 +46,8 @@ class TM extends Automaton {
     required Set<String> tapeAlphabet,
     this.blankSymbol = 'B',
     this.tapeCount = 1, // Always 1 for single-tape TM
-  }) : tapeAlphabet = Set<String>.unmodifiable(tapeAlphabet),
-       super(type: AutomatonType.tm);
+  })  : tapeAlphabet = Set<String>.unmodifiable(tapeAlphabet),
+        super(type: AutomatonType.tm);
 
   /// Creates a copy of this TM with updated properties
   @override

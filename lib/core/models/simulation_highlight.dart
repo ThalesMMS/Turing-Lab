@@ -1,6 +1,6 @@
 //
 //  simulation_highlight.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Descreve de forma imutável quais estados e transições devem ser destacados em uma simulação de autômato. Garante comparações simples e construção de cópias para que serviços de destaque atualizem a interface sem efeitos colaterais.
 //

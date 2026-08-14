@@ -16,6 +16,47 @@
   "@algorithms": {
     "description": "Label for the algorithms section."
   },
+  "settingsPageTitle": "Settings",
+  "settingsSaveTooltip": "Save Settings",
+  "settingsResetTooltip": "Reset to Defaults",
+  "settingsLoadError": "Failed to load settings. Please try again.",
+  "settingsSaveSuccess": "Settings saved.",
+  "settingsSaveError": "Failed to save settings. Please try again.",
+  "settingsApplyError": "Settings were saved, but could not be applied. Restart Turing Lab to refresh them.",
+  "settingsResetSuccess": "Settings reset to defaults.",
+  "settingsSectionSymbols": "Symbols",
+  "settingsSectionTheme": "Theme",
+  "settingsSectionLanguage": "Language",
+  "settingsSectionCanvas": "Canvas",
+  "settingsSectionGeneral": "General",
+  "settingsSectionActions": "Actions",
+  "settingsEmptyStringTitle": "Empty String Symbol",
+  "settingsEmptyStringDescription": "Symbol used to represent empty string (λ or ε)",
+  "settingsLambdaOption": "λ (Lambda)",
+  "settingsEpsilonOption": "ε (Epsilon)",
+  "settingsThemeModeTitle": "Theme Mode",
+  "settingsThemeModeDescription": "Choose your preferred theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguageTitle": "App Language",
+  "settingsLanguageDescription": "Choose the language used by Turing Lab",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguagePortuguese": "Português",
+  "settingsShowGridTitle": "Show Grid",
+  "settingsShowGridDescription": "Display grid lines on canvas",
+  "settingsShowCoordinatesTitle": "Show Coordinates",
+  "settingsShowCoordinatesDescription": "Display coordinate information",
+  "settingsGridSizeTitle": "Grid Size",
+  "settingsGridSizeDescription": "Size of grid cells",
+  "settingsNodeSizeTitle": "Node Size",
+  "settingsNodeSizeDescription": "Size of automaton nodes",
+  "settingsFontSizeTitle": "Font Size",
+  "settingsFontSizeDescription": "Text size in the interface",
+  "settingsAutoSaveTitle": "Auto Save",
+  "settingsAutoSaveDescription": "Automatically save changes",
+  "settingsShowTooltipsTitle": "Show Tooltips",
+  "settingsShowTooltipsDescription": "Display helpful tooltips",
   "homeHelpTooltip": "Help",
   "@homeHelpTooltip": {
     "description": "Tooltip for opening the app help page from the home page."
@@ -84,7 +125,7 @@
   "@helpQuickStartTitle": {
     "description": "Title for the quick start help dialog."
   },
-  "helpQuickStartBody": "Welcome to JFlutter. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.",
+  "helpQuickStartBody": "Welcome to Turing Lab. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.",
   "@helpQuickStartBody": {
     "description": "Body text for the quick start help dialog."
   },
@@ -156,9 +197,9 @@
   "@helpSectionTroubleshooting": {
     "description": "Help section label for troubleshooting documentation."
   },
-  "helpSectionLicenses": "Licenses",
-  "@helpSectionLicenses": {
-    "description": "Help section label for license documentation."
+  "helpSectionAbout": "About",
+  "@helpSectionAbout": {
+    "description": "Help section label for project and license information."
   },
   "regularExpressionTitle": "Regular Expression",
   "@regularExpressionTitle": {

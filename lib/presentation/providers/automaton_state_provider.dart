@@ -1,6 +1,6 @@
 //
 //  automaton_state_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Manages state CRUD operations for automata including states, transitions,
 //  and history tracking. Replaces the legacy combined automaton provider with

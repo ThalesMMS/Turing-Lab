@@ -1,6 +1,6 @@
 //
 //  automaton_graphview_canvas.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o canvas interativo baseado em GraphView responsável por editar e
 //  visualizar autômatos nos diferentes modos do aplicativo, coordenando
@@ -21,7 +21,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart' as vmath;
 
 import '../../core/constants/automaton_canvas_constants.dart';
@@ -35,7 +35,7 @@ import '../../features/canvas/graphview/base_graphview_canvas_controller.dart';
 import '../../features/canvas/graphview/graphview_canvas_controller.dart';
 import '../../features/canvas/graphview/graphview_canvas_models.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
-import '../../features/canvas/graphview/jflutter_adaptive_edge_renderer.dart';
+import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import '../../features/canvas/graphview/graphview_label_field_editor.dart';
 import '../../features/canvas/graphview/grouped_fsa_geometry.dart';
 import '../../features/canvas/graphview/graphview_link_overlay_utils.dart';
@@ -240,7 +240,7 @@ class _AutomatonGraphViewCanvasState
   late AutomatonGraphViewCanvasCustomization _customization;
   late AutomatonGraphViewTransitionConfig _transitionConfig;
   late final AnimationController _edgeAnimationController;
-  late final JFlutterAdaptiveEdgeRenderer _edgeRenderer;
+  late final TuringLabAdaptiveEdgeRenderer _edgeRenderer;
   late final FocusNode _canvasFocusNode;
   bool _hasEdgeRenderer = false;
   String? _lastEdgeStructureSignature;
@@ -316,7 +316,7 @@ class _AutomatonGraphViewCanvasState
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..addListener(_handleEdgeAnimationTick);
-    _edgeRenderer = JFlutterAdaptiveEdgeRenderer(
+    _edgeRenderer = TuringLabAdaptiveEdgeRenderer(
       config: EdgeRoutingConfig(
         anchorMode: AnchorMode.dynamic,
         routingMode: RoutingMode.bezier,

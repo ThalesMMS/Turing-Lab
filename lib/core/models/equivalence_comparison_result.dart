@@ -1,6 +1,6 @@
 //
 //  equivalence_comparison_result.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o resultado detalhado da comparação de equivalência entre dois
 //  autômatos ou gramáticas. Armazena os autômatos originais, resultado da

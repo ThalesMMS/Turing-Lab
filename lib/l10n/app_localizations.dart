@@ -122,6 +122,252 @@ abstract class AppLocalizations {
   /// **'Algorithms'**
   String get algorithms;
 
+  /// No description provided for @settingsPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsPageTitle;
+
+  /// No description provided for @settingsSaveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Settings'**
+  String get settingsSaveTooltip;
+
+  /// No description provided for @settingsResetTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Defaults'**
+  String get settingsResetTooltip;
+
+  /// No description provided for @settingsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load settings. Please try again.'**
+  String get settingsLoadError;
+
+  /// No description provided for @settingsSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved.'**
+  String get settingsSaveSuccess;
+
+  /// No description provided for @settingsSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save settings. Please try again.'**
+  String get settingsSaveError;
+
+  /// No description provided for @settingsApplyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings were saved, but could not be applied. Restart Turing Lab to refresh them.'**
+  String get settingsApplyError;
+
+  /// No description provided for @settingsResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings reset to defaults.'**
+  String get settingsResetSuccess;
+
+  /// No description provided for @settingsSectionSymbols.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbols'**
+  String get settingsSectionSymbols;
+
+  /// No description provided for @settingsSectionTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsSectionTheme;
+
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsSectionCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Canvas'**
+  String get settingsSectionCanvas;
+
+  /// No description provided for @settingsSectionGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsSectionGeneral;
+
+  /// No description provided for @settingsSectionActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get settingsSectionActions;
+
+  /// No description provided for @settingsEmptyStringTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty String Symbol'**
+  String get settingsEmptyStringTitle;
+
+  /// No description provided for @settingsEmptyStringDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol used to represent empty string (λ or ε)'**
+  String get settingsEmptyStringDescription;
+
+  /// No description provided for @settingsLambdaOption.
+  ///
+  /// In en, this message translates to:
+  /// **'λ (Lambda)'**
+  String get settingsLambdaOption;
+
+  /// No description provided for @settingsEpsilonOption.
+  ///
+  /// In en, this message translates to:
+  /// **'ε (Epsilon)'**
+  String get settingsEpsilonOption;
+
+  /// No description provided for @settingsThemeModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Mode'**
+  String get settingsThemeModeTitle;
+
+  /// No description provided for @settingsThemeModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred theme'**
+  String get settingsThemeModeDescription;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the language used by Turing Lab'**
+  String get settingsLanguageDescription;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @settingsLanguagePortuguese.
+  ///
+  /// In en, this message translates to:
+  /// **'Português'**
+  String get settingsLanguagePortuguese;
+
+  /// No description provided for @settingsShowGridTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Grid'**
+  String get settingsShowGridTitle;
+
+  /// No description provided for @settingsShowGridDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Display grid lines on canvas'**
+  String get settingsShowGridDescription;
+
+  /// No description provided for @settingsShowCoordinatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Coordinates'**
+  String get settingsShowCoordinatesTitle;
+
+  /// No description provided for @settingsShowCoordinatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Display coordinate information'**
+  String get settingsShowCoordinatesDescription;
+
+  /// No description provided for @settingsGridSizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Size'**
+  String get settingsGridSizeTitle;
+
+  /// No description provided for @settingsGridSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Size of grid cells'**
+  String get settingsGridSizeDescription;
+
+  /// No description provided for @settingsNodeSizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Node Size'**
+  String get settingsNodeSizeTitle;
+
+  /// No description provided for @settingsNodeSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Size of automaton nodes'**
+  String get settingsNodeSizeDescription;
+
+  /// No description provided for @settingsFontSizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Size'**
+  String get settingsFontSizeTitle;
+
+  /// No description provided for @settingsFontSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size in the interface'**
+  String get settingsFontSizeDescription;
+
+  /// No description provided for @settingsAutoSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Save'**
+  String get settingsAutoSaveTitle;
+
+  /// No description provided for @settingsAutoSaveDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically save changes'**
+  String get settingsAutoSaveDescription;
+
+  /// No description provided for @settingsShowTooltipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Tooltips'**
+  String get settingsShowTooltipsTitle;
+
+  /// No description provided for @settingsShowTooltipsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Display helpful tooltips'**
+  String get settingsShowTooltipsDescription;
+
   /// Tooltip for opening the app help page from the home page.
   ///
   /// In en, this message translates to:
@@ -227,7 +473,7 @@ abstract class AppLocalizations {
   /// Body text for the quick start help dialog.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to JFlutter. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.'**
+  /// **'Welcome to Turing Lab. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.'**
   String get helpQuickStartBody;
 
   /// Confirmation button label for dismissing help dialogs.
@@ -332,11 +578,11 @@ abstract class AppLocalizations {
   /// **'Troubleshooting'**
   String get helpSectionTroubleshooting;
 
-  /// Help section label for license documentation.
+  /// Help section label for project and license information.
   ///
   /// In en, this message translates to:
-  /// **'Licenses'**
-  String get helpSectionLicenses;
+  /// **'About'**
+  String get helpSectionAbout;
 
   /// Title for the regular expression page.
   ///

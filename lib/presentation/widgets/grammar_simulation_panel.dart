@@ -1,6 +1,6 @@
 //
 //  grammar_simulation_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Constrói painel interativo para testar cadeias em gramáticas aplicando algoritmos como CYK e LL. Gerencia seleção de estratégia, entradas do usuário, execução assíncrona e apresentação de resultados com métricas de tempo e passos.
 //

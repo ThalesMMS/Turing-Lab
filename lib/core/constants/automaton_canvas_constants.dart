@@ -1,6 +1,6 @@
 //
 //  automaton_canvas_constants.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Armazena constantes de layout utilizadas pelos widgets do canvas de
 //  autômatos, padronizando dimensões e espaçamentos entre plataformas e

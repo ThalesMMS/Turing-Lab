@@ -62,9 +62,10 @@ class _LicenseTextCardState extends State<_LicenseTextCard> {
   }
 
   Widget _buildLicenseBody() {
+    final l10n = jflapLocalizationsOf(context);
     final licenseTextFuture = _licenseTextFuture;
     if (licenseTextFuture == null) {
-      return const Text('Expand to load bundled license text.');
+      return Text(l10n.aboutLicenseExpandPrompt);
     }
 
     return FutureBuilder<String>(
@@ -78,14 +79,14 @@ class _LicenseTextCardState extends State<_LicenseTextCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: SelectableText(
-                  'Failed to load license: ${snapshot.error}',
+                  l10n.aboutLicenseLoadFailed(snapshot.error!),
                 ),
               ),
             ],
           );
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text('Loading bundled license text...');
+          return Text(l10n.aboutLicenseLoading);
         }
         return SelectableText(snapshot.data ?? '');
       },

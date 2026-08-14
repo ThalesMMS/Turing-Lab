@@ -1,6 +1,6 @@
 //
 //  file_operations_service_io.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Centraliza a leitura e escrita de autômatos e gramáticas nos formatos JFLAP, além de gerar exportações em PNG e SVG desenhando o canvas com ajustes visuais consistentes.
 //
@@ -30,9 +30,9 @@ class FileOperationsService
     with FileOperationsPayloadMixin
     implements FileOperationsGateway {
   static const _writeAccessRetryMessage =
-      'JFlutter could not write to the selected location. The file may be outside the app sandbox or no longer writable. Choose a destination again from the system save dialog and try again.';
+      'Turing Lab could not write to the selected location. The file may be outside the app sandbox or no longer writable. Choose a destination again from the system save dialog and try again.';
   static const _readAccessRetryMessage =
-      'JFlutter could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.';
+      'Turing Lab could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.';
   static const _missingSaveLocationMessage =
       'The selected save location is no longer available. Choose a different destination and try again.';
   static const _missingReadLocationMessage =

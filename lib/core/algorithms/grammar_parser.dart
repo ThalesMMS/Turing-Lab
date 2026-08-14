@@ -1,6 +1,6 @@
 //
 //  grammar_parser.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Coordena estratégias de parsing para gramáticas livres de contexto, incluindo
 //  heurísticas rápidas para gramáticas de Dyck, reconhecimento geral via Earley

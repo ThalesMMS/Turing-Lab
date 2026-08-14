@@ -1,6 +1,6 @@
 //
 //  grammar_editor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Disponibiliza o editor completo de gramáticas formais com formulários para
 //  símbolos iniciais, produções e metadados, oferecendo validações rápidas e
@@ -828,7 +828,6 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
 
     _validateProductionEditorInputs();
   }
-
 
   bool _validateProductionEditorInputs() {
     final leftSide = _leftSideController.text.trim();

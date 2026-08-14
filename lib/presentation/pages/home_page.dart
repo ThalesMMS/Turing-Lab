@@ -1,6 +1,6 @@
 //
 //  home_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Orquestra a página inicial com navegação por PageView e bottom navigation
 //  responsiva, integrando provedores de autômatos, gramáticas e destaques para

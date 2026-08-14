@@ -1,6 +1,6 @@
 //
 //  trace_persistence_service.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia o armazenamento de históricos de simulação via SharedPreferences, preservando metadados, seleção atual e consultas segmentadas por autômato ou tipo.
 //

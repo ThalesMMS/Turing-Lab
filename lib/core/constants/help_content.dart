@@ -1,6 +1,6 @@
 //
 //  help_content.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Centraliza todo o conteúdo textual de ajuda contextual da aplicação,
 //  incluindo tooltips de ferramentas, explicações de conceitos de autômatos,
@@ -163,7 +163,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         '• Initial State: Where computation begins (marked with incoming arrow)\n'
         '• Final/Accept State: Ends computation successfully (double circle)\n'
         '• Regular State: Intermediate states during computation\n\n'
-        'In JFlutter, double-click a state to edit its properties, including '
+        'In Turing Lab, double-click a state to edit its properties, including '
         'marking it as initial or final.',
     category: 'automata',
     keywords: ['state', 'node', 'initial', 'final', 'accept', 'start'],
@@ -201,7 +201,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         '• Only allowed in NFAs, not in DFAs\n'
         '• Can create multiple simultaneous computation paths\n'
         '• Epsilon closure: set of all states reachable via ε-transitions\n\n'
-        'In JFlutter, use "ε" or "epsilon" when entering transition labels '
+        'In Turing Lab, use "ε" or "epsilon" when entering transition labels '
         'for epsilon transitions.',
     category: 'automata',
     keywords: ['epsilon', 'lambda', 'empty', 'null', 'transition'],
@@ -523,7 +523,7 @@ const Map<String, HelpContentModel> kHelpContent = {
   'usage_getting_started': HelpContentModel(
     id: 'usage_getting_started',
     title: 'Getting Started',
-    content: 'Welcome to JFlutter! To create your first automaton:\n'
+    content: 'Welcome to Turing Lab! To create your first automaton:\n'
         '1. Choose an automaton type from the home page (FSA, PDA, TM, etc.)\n'
         '2. Click "Add State" to create states on the canvas\n'
         '3. Click "Add Transition" to connect states\n'

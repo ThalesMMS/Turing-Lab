@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_toolbar.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define a barra de ferramentas que controla o canvas de automatos em GraphView,
 //  disponibilizando comandos de viewport, botões de desfazer/refazer e atalhos

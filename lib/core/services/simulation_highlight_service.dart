@@ -1,6 +1,6 @@
 //
 //  simulation_highlight_service.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Orquestra a emissão de destaques de simulação com suporte a canais plugáveis e
 //  dispatchers legados, oferecendo provedores Riverpod para integração com o canvas.

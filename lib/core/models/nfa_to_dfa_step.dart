@@ -1,6 +1,6 @@
 //
 //  nfa_to_dfa_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos da conversão NFA→DFA via construção por
 //  subconjuntos. Captura fechos-ε, símbolos processados, conjuntos de estados

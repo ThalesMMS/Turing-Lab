@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_progress_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Organiza o estado imutável do jogo do Lema do Bombeamento, registrando
 //  desafios disponíveis, tentativas, pontuação e o histórico cronológico de
@@ -212,8 +212,6 @@ class PumpingLemmaProgressNotifier
 }
 
 /// Provider exposing the Pumping Lemma game progress state.
-final pumpingLemmaProgressProvider =
-    StateNotifierProvider<
-      PumpingLemmaProgressNotifier,
-      PumpingLemmaProgressState
-    >((ref) => PumpingLemmaProgressNotifier());
+final pumpingLemmaProgressProvider = StateNotifierProvider<
+    PumpingLemmaProgressNotifier,
+    PumpingLemmaProgressState>((ref) => PumpingLemmaProgressNotifier());

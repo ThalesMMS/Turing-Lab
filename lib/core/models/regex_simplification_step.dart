@@ -1,6 +1,6 @@
 //
 //  regex_simplification_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos da simplificação de expressões regulares
 //  usando identidades algébricas. Captura a regra aplicada, subexpressão modificada,
@@ -123,9 +123,8 @@ class RegexSimplificationStep {
       nestingDepth: nestingDepth,
       alphabetSize: alphabetSize,
       operatorCount: operatorCount,
-      sampleStrings: sampleStrings != null
-          ? List.unmodifiable(sampleStrings)
-          : null,
+      sampleStrings:
+          sampleStrings != null ? List.unmodifiable(sampleStrings) : null,
       reducesComplexity: reducesComplexity,
       charactersSaved: charactersSaved,
       isFinalForm: isFinalForm,
@@ -147,8 +146,7 @@ class RegexSimplificationStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Begin regex simplification',
-        explanation:
-            'Starting simplification of regular expression "$regex". '
+        explanation: 'Starting simplification of regular expression "$regex". '
             'Current complexity metrics: star height = $starHeight, '
             'nesting depth = $nestingDepth, operator count = $operatorCount. '
             'Will apply algebraic identities to find an equivalent simpler form.',
@@ -178,8 +176,7 @@ class RegexSimplificationStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Analyze regex complexity',
-        explanation:
-            'Analyzing complexity of "$regex". '
+        explanation: 'Analyzing complexity of "$regex". '
             'Star height: $starHeight (maximum nesting of Kleene stars). '
             'Nesting depth: $nestingDepth (maximum depth of parentheses). '
             'Alphabet size: $alphabetSize distinct symbol(s). '
@@ -214,8 +211,7 @@ class RegexSimplificationStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Apply ${rule.displayName}',
-        explanation:
-            'Applying rule: ${rule.displayName}. '
+        explanation: 'Applying rule: ${rule.displayName}. '
             'Matched subexpression "$matchedSubexpression" at position ${position ?? "N/A"}. '
             'Replacing with "$replacementSubexpression". '
             '${rule.description}. '
@@ -275,8 +271,7 @@ class RegexSimplificationStep {
         id: id,
         stepNumber: stepNumber,
         title: 'No further simplification',
-        explanation:
-            'Checked all simplification rules against "$regex". '
+        explanation: 'Checked all simplification rules against "$regex". '
             'No applicable rules found. '
             'The expression is in its simplest form achievable by algebraic identities. '
             'Total rules applied: $totalRulesApplied.',
@@ -309,8 +304,7 @@ class RegexSimplificationStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Simplification complete',
-        explanation:
-            'Regex simplification completed. '
+        explanation: 'Regex simplification completed. '
             'Original: "$originalRegex" (${originalRegex.length} chars). '
             'Simplified: "$finalRegex" (${finalRegex.length} chars). '
             'Reduction: $improvement%. Rules applied: $totalRulesApplied. '
@@ -424,9 +418,8 @@ class RegexSimplificationStep {
       nestingDepth: json['nestingDepth'] as int?,
       alphabetSize: json['alphabetSize'] as int?,
       operatorCount: json['operatorCount'] as int?,
-      sampleStrings: (json['sampleStrings'] as List?)
-          ?.map((s) => s as String)
-          .toList(),
+      sampleStrings:
+          (json['sampleStrings'] as List?)?.map((s) => s as String).toList(),
       reducesComplexity: json['reducesComplexity'] as bool? ?? false,
       charactersSaved: json['charactersSaved'] as int?,
       isFinalForm: json['isFinalForm'] as bool? ?? false,
@@ -497,8 +490,7 @@ class RegexSimplificationStep {
   int get sampleCount => sampleStrings?.length ?? 0;
 
   /// Checks if simplification made progress
-  bool get madeProgress =>
-      charactersSaved != null && charactersSaved! > 0;
+  bool get madeProgress => charactersSaved != null && charactersSaved! > 0;
 
   /// Gets a summary of the rule application
   String get ruleSummary {

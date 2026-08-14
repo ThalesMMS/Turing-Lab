@@ -1,6 +1,6 @@
 //
 //  simulation_result.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modela o resultado das simulações de autômatos, armazenando entrada,
 //  aceitação, passos detalhados, mensagens de erro e métricas de execução.
@@ -236,9 +236,8 @@ class SimulationResult {
 
     // Case 1: Got stuck with remaining input (no valid transition)
     if (hasRemainingInput) {
-      final nextSymbol = lastStep.remainingInput.isNotEmpty
-          ? lastStep.remainingInput[0]
-          : '';
+      final nextSymbol =
+          lastStep.remainingInput.isNotEmpty ? lastStep.remainingInput[0] : '';
 
       if (nextSymbol.isNotEmpty) {
         return 'No valid transition from state $currentState on symbol \'$nextSymbol\'. '

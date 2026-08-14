@@ -1,6 +1,6 @@
 //
 //  equivalence_checker.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa verificação de equivalência entre dois autômatos finitos,
 //  normalizando alfabetos, convertendo NFAs para DFAs e completando transições

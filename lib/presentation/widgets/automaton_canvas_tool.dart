@@ -1,6 +1,6 @@
 //
 //  automaton_canvas_tool.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Definição dos modos de edição disponíveis no canvas de autômatos e de um
 //  controlador baseado em ChangeNotifier que propaga alterações da ferramenta

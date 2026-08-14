@@ -1,6 +1,6 @@
 //
 //  tm_transition.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modela transições de Máquinas de Turing incluindo leitura, escrita, direção
 //  de movimento e metadados de fita única.

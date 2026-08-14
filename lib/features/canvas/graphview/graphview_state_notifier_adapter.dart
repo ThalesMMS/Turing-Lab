@@ -1,6 +1,6 @@
 //
 //  graphview_state_notifier_adapter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Adapta as superfícies de CRUD dos notifiers de FSA, PDA e TM para o
 //  controlador compartilhado do canvas GraphView.

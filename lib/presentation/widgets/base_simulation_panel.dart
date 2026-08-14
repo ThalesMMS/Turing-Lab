@@ -1,6 +1,6 @@
 //
 //  base_simulation_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Componentes compartilhados para painéis de simulação, incluindo shell,
 //  cabeçalho, seção de entrada, botão de execução e estados de resultado.

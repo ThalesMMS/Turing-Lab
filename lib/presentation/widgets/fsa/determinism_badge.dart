@@ -1,6 +1,6 @@
 //
 //  determinism_badge.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Badge visual indicando tipo de autômato finito (DFA/NFA/ε-NFA) com
 //  informações detalhadas sobre determinismo e transições epsilon.

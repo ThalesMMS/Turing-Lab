@@ -1,6 +1,6 @@
 //
 //  grammar_cnf_transformer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implements a best-effort Chomsky Normal Form (CNF) transformation pipeline
 //  for context-free grammars.

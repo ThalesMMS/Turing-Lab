@@ -1,6 +1,6 @@
 //
 //  cyk_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos do algoritmo CYK (Cocke-Younger-Kasami)
 //  para parsing de gramáticas livres de contexto em Forma Normal de Chomsky.

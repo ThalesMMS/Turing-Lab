@@ -1,6 +1,6 @@
 //
 //  fsa_determinizer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Shared helper for callers that need deterministic automata before running
 //  finite-automata algorithms.

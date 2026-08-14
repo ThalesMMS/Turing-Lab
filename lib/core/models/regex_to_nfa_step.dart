@@ -1,6 +1,6 @@
 //
 //  regex_to_nfa_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos da conversão Regex→NFA via construção de
 //  Thompson. Captura fragmentos de regex, operações (símbolo básico, concatenação,

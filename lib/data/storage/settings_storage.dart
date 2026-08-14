@@ -1,6 +1,6 @@
 //
 //  settings_storage.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Declara a interface de armazenamento de preferências da aplicação e
 //  implementações concretas com SharedPreferences e mapas em memória para

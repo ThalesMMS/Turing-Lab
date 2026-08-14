@@ -1,6 +1,6 @@
 //
 //  tm_canvas_graphview.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget que encapsula o canvas de Máquinas de Turing sobre a infraestrutura
 //  compartilhada de automatos, delegando gestos, destaques e edições de

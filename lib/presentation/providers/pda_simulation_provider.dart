@@ -1,6 +1,6 @@
 //
 //  pda_simulation_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Orquestra simulações de autômatos de pilha na interface, permitindo alternar
 //  entre modos de aceitação, executar passos incrementais e publicar resultados

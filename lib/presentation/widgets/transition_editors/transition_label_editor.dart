@@ -1,6 +1,6 @@
 //
 //  transition_label_editor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Creates accessible form to adjust transition labels with keyboard support, touch buttons and standard shortcuts. Encapsulates submission, cancellation and accessibility semantics logic to be reused in various editing flows.
 //

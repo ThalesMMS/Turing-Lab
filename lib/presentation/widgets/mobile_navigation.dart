@@ -1,6 +1,6 @@
 //
 //  mobile_navigation.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Fornece a barra inferior de navegação otimizada para dispositivos móveis,
 //  apresentando itens configuráveis com ícones, rótulos e descrições para

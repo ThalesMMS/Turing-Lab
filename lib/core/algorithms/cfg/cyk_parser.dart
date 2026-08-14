@@ -1,6 +1,6 @@
 //
 //  cyk_parser.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o algoritmo CYK para gramáticas em Forma Normal de Chomsky,
 //  incluindo a preparação da gramática em CNF, construção de tabela dinâmica e

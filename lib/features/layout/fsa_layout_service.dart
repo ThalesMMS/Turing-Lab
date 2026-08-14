@@ -1,6 +1,6 @@
 //
 //  fsa_layout_service.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Applies layout operations directly to current FSA models.
 //

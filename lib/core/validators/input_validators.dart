@@ -1,6 +1,6 @@
 //
 //  input_validators.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Centraliza verificações estáticas para autômatos finitos, de pilha, máquinas
 //  de Turing e gramáticas, garantindo que estruturas carregadas respeitem

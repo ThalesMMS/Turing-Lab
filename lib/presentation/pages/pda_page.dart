@@ -1,6 +1,6 @@
 //
 //  pda_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Administra a página de Autômatos de Pilha integrando canvas GraphView,
 //  painéis de simulação e algoritmos, monitorando métricas e mudanças para

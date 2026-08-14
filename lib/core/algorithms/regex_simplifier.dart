@@ -1,6 +1,6 @@
 //
 //  regex_simplifier.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa simplificação de expressões regulares através da aplicação de
 //  identidades algébricas e remoção de parênteses desnecessários. Recebe uma

@@ -1,6 +1,6 @@
 //
 //  mobile_automaton_controls.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget que consolida os principais controles de edição de autômatos em uma
 //  superfície otimizada para toque, combinando ações de simulação, algoritmos,

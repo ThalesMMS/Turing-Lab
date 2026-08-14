@@ -1,16 +1,16 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
-final Expando<Offset> _jflutterEdgeControlPoints = Expando<Offset>(
-  'jflutterEdgeControlPoint',
+final Expando<Offset> _turingLabEdgeControlPoints = Expando<Offset>(
+  'turingLabEdgeControlPoint',
 );
 
-void setJFlutterEdgeControlPoint(Edge edge, Offset? controlPoint) {
+void setTuringLabEdgeControlPoint(Edge edge, Offset? controlPoint) {
   edge.controlPoint = controlPoint;
-  _jflutterEdgeControlPoints[edge] = controlPoint;
+  _turingLabEdgeControlPoints[edge] = controlPoint;
 }
 
-Offset? jFlutterEdgeControlPoint(Edge edge) {
-  return edge.controlPoint ?? _jflutterEdgeControlPoints[edge];
+Offset? turingLabEdgeControlPoint(Edge edge) {
+  return edge.controlPoint ?? _turingLabEdgeControlPoints[edge];
 }
 
 class EdgePathGeometry {
@@ -126,7 +126,7 @@ class AnimatedAdaptiveEdgeRenderer extends AdaptiveEdgeRenderer
       );
     }
 
-    final controlPoint = jFlutterEdgeControlPoint(edge);
+    final controlPoint = turingLabEdgeControlPoint(edge);
     if (controlPoint != null) {
       final sourcePoint = calculateSourceConnectionPoint(edge, controlPoint, 0);
       final destinationPoint = calculateDestinationConnectionPoint(

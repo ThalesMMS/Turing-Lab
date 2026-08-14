@@ -1,6 +1,6 @@
 //
 //  graphview_highlight_channel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Canal que recebe realces do SimulationHighlightService e os encaminha para o
 //  controlador GraphView responsável pelo canvas, garantindo que o estado

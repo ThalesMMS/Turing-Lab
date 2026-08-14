@@ -1,6 +1,6 @@
 //
 //  language_comparator.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa a comparação de linguagens entre dois autômatos finitos via
 //  construção do autômato produto. Detecta equivalência ou não-equivalência,

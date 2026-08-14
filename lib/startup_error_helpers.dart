@@ -13,7 +13,7 @@ void _reportInitializationFailure(Object error, StackTrace stackTrace) {
     FlutterErrorDetails(
       exception: error,
       stack: stackTrace,
-      library: 'JFlutter startup',
+      library: 'Turing Lab startup',
       context: ErrorDescription('while initializing dependency injection'),
     ),
   );

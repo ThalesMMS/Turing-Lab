@@ -1,6 +1,6 @@
 //
 //  tape_drawer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bottom drawer para visualização da fita da Máquina de Turing, acessível
 //  durante edição e simulação. Mostra células, posição da cabeça e operações.

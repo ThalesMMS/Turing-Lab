@@ -190,7 +190,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     final toCenter = Offset(toNode.x + _kNodeRadius, toNode.y + _kNodeRadius);
 
     if (fromId == toId) {
-      if (_customization.edgeRenderMode == JFlutterEdgeRenderMode.groupedFsa) {
+      if (_customization.edgeRenderMode == TuringLabEdgeRenderMode.groupedFsa) {
         final groupedLoops = _findExistingEdges(fromId, toId).length;
         final extraOffset = resolveGroupedFsaLoopExtraOffset(groupedLoops);
         return fromCenter.translate(0, -(_kNodeDiameter + extraOffset));
@@ -198,7 +198,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
       return fromCenter.translate(0, -_kNodeDiameter);
     }
 
-    if (_customization.edgeRenderMode == JFlutterEdgeRenderMode.groupedFsa) {
+    if (_customization.edgeRenderMode == TuringLabEdgeRenderMode.groupedFsa) {
       final hasOpposingEdge = _findExistingEdges(toId, fromId).isNotEmpty;
       return resolveGroupedFsaControlPoint(
         fromId: fromId,

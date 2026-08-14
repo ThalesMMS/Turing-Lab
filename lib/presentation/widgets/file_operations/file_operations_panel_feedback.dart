@@ -117,7 +117,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
       case ImportErrorType.unsupportedVersion:
         return 'This file targets a newer JFLAP schema version. Export it again using a compatible version and retry.';
       case ImportErrorType.inaccessibleFile:
-        return 'JFlutter could not access the selected file. Pick it again from the system dialog and keep it available until the import finishes.';
+        return 'Turing Lab could not access the selected file. Pick it again from the system dialog and keep it available until the import finishes.';
       case ImportErrorType.corruptedData:
         return 'The file appears to be corrupted or unreadable. Restore a valid backup before importing again.';
       case ImportErrorType.invalidAutomaton:

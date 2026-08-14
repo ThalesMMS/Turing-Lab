@@ -1,6 +1,6 @@
 //
 //  fsa_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Configura o ambiente de Autômatos Finitos com canvas GraphView, painéis de
 //  simulação e algoritmos, coordenando controladores, destaques e ferramentas

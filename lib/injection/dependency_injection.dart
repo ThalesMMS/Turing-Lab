@@ -1,6 +1,6 @@
 //
 //  dependency_injection.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Inicializa SharedPreferences para providers Riverpod que dependem de estado
 //  assíncrono de plataforma durante o startup.

@@ -1,6 +1,6 @@
 //
 //  step_explanation_card.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Reusable panel for rendering a structured StepExplanation attached to a
 //  simulation/conversion step.

@@ -1,6 +1,6 @@
 //
 //  simulation_result_card.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget de exibição aprimorada de resultados de simulação com visualização
 //  do caminho percorrido. Apresenta status de aceitação, métricas de execução,

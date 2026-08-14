@@ -1,6 +1,6 @@
 //
 //  editor_state_helpers.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Funções puras compartilhadas por editores baseados em estados de autômatos.
 //  Mantêm as regras comuns de mutação de State fora dos notifiers PDA/TM sem

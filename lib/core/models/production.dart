@@ -1,6 +1,6 @@
 //
 //  production.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modela regras de produção de gramáticas armazenando lados esquerdo e direito, flags de lambda e ordem de exibição. Inclui utilitários de cópia, serialização e comparação que suportam editores e algoritmos que manipulam gramáticas no aplicativo.
 //
@@ -359,10 +359,8 @@ class Production {
       return Production.lambda(id: id, leftSide: leftSide.first, order: order);
     }
 
-    final rightSide = rightSideStr
-        .split(RegExp(r'\s+'))
-        .where((s) => s.isNotEmpty)
-        .toList();
+    final rightSide =
+        rightSideStr.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
 
     return Production(
       id: id,

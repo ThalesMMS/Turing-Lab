@@ -1,6 +1,6 @@
 //
 //  cfg_toolkit.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Agrupa utilitários para manipulação de gramáticas livres de contexto,
 //  oferecendo redução estrutural, conversão para Forma Normal de Chomsky (CNF)

@@ -1,6 +1,6 @@
 //
 //  transition.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Fornece a abstração base para transições de autômatos, centralizando campos
 //  comuns, operações de clonagem e utilidades de serialização dinâmica.

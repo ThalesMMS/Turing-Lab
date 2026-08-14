@@ -1,6 +1,6 @@
 //
 //  contextual_help_tooltip.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget que envolve componentes da interface com tooltips de ajuda contextual,
 //  exibindo conteúdo explicativo baseado no HelpContentModel quando o usuário
@@ -171,7 +171,8 @@ class ContextualHelpTooltip extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 4,
-                    children: localizedHelpContent.relatedConcepts.map((concept) {
+                    children:
+                        localizedHelpContent.relatedConcepts.map((concept) {
                       return Chip(
                         label: Text(
                           l10n.relatedConceptLabel(
@@ -198,5 +199,4 @@ class ContextualHelpTooltip extends ConsumerWidget {
       },
     );
   }
-
 }

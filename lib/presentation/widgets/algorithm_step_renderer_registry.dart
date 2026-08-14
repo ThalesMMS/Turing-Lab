@@ -1,6 +1,6 @@
 //
 //  algorithm_step_renderer_registry.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Type-keyed renderers for algorithm step payloads.
 //

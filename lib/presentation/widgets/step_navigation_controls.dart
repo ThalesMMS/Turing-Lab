@@ -1,6 +1,6 @@
 //
 //  step_navigation_controls.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget reutilizável para controles de navegação passo a passo de algoritmos.
 //  Fornece botões de play/pause, navegação anterior/próxima, contador de passos
@@ -96,9 +96,9 @@ class StepNavigationControls extends StatelessWidget {
                     ? '${currentStepIndex + 1} / $totalSteps'
                     : '0 / 0',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
               ),
             ),
 
@@ -132,10 +132,10 @@ class StepNavigationControls extends StatelessWidget {
               Text(
                 'Speed:',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
               ),
               Expanded(
                 child: Slider(
@@ -153,11 +153,11 @@ class StepNavigationControls extends StatelessWidget {
                   '${playbackSpeed.toStringAsFixed(2)}x',
                   textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        fontFamily: 'monospace',
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
                 ),
               ),
             ],

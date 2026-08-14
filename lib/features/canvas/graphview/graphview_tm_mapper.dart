@@ -1,6 +1,6 @@
 //
 //  graphview_tm_mapper.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utilitário que converte máquinas de Turing em snapshots compatíveis com o
 //  GraphView e reidrata modelos do domínio a partir de edições visuais. O

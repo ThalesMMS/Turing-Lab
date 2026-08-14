@@ -1,6 +1,6 @@
 //
 //  algorithm_step_highlight_extractor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Extracts canvas highlight IDs from generic algorithm step properties.
 //

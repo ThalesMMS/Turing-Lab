@@ -1,6 +1,6 @@
 //
 //  pda_transition.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Representa transições de PDAs, controlando símbolos de leitura, operações de
 //  pilha e marcadores lambda para suportar comportamentos não determinísticos.

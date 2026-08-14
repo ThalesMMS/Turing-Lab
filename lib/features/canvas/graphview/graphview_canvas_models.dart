@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_models.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Declara os modelos imutáveis utilizados pelo canvas GraphView para
 //  transportar metadados do autômato, nós e arestas renderizadas, além de

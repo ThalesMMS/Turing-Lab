@@ -1,6 +1,6 @@
 //
 //  automaton_simulation_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia operações de simulação de autômatos finitos, coordenando execução de
 //  passos, persistência de rastreamento e histórico de simulações. Integra o

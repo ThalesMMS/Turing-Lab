@@ -1,6 +1,6 @@
 //
 //  conversion_step_history.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Model to preserve conversion history with before/after snapshots.
 //

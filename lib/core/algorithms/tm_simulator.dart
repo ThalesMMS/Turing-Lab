@@ -1,6 +1,6 @@
 //
 //  tm_simulator.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Entrega a lógica de simulação para máquinas de Turing determinísticas e não
 //  determinísticas, abrangendo validações, execução passo a passo e métricas de

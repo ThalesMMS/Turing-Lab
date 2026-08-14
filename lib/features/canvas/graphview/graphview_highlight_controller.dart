@@ -1,6 +1,6 @@
 //
 //  graphview_highlight_controller.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Contrato compartilhado pelos controladores GraphView que lidam com
 //  destaques de simulação, padronizando a aplicação de realces vindos dos

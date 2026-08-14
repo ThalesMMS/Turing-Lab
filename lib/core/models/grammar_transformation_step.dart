@@ -1,6 +1,6 @@
 //
 //  grammar_transformation_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Shared model for recording grammar transformation step history (e.g., CNF/GNF).
 //  Each step contains before/after snapshots plus a human-readable rationale and

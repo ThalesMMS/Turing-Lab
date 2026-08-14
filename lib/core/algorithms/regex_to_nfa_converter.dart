@@ -1,6 +1,6 @@
 //
 //  regex_to_nfa_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Converte expressões regulares em autômatos finitos não determinísticos
 //  aplicando construções de Thompson, validações e geração de identificadores

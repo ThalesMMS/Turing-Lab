@@ -1,6 +1,6 @@
 //
 //  before_after_comparison.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget para comparação lado a lado de autômatos antes e depois da execução de
 //  algoritmos de conversão. Exibe o autômato original à esquerda e o resultado

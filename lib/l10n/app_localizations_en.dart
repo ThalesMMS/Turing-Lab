@@ -21,6 +21,133 @@ class AppLocalizationsEn extends AppLocalizations {
   String get algorithms => 'Algorithms';
 
   @override
+  String get settingsPageTitle => 'Settings';
+
+  @override
+  String get settingsSaveTooltip => 'Save Settings';
+
+  @override
+  String get settingsResetTooltip => 'Reset to Defaults';
+
+  @override
+  String get settingsLoadError => 'Failed to load settings. Please try again.';
+
+  @override
+  String get settingsSaveSuccess => 'Settings saved.';
+
+  @override
+  String get settingsSaveError => 'Failed to save settings. Please try again.';
+
+  @override
+  String get settingsApplyError =>
+      'Settings were saved, but could not be applied. Restart Turing Lab to refresh them.';
+
+  @override
+  String get settingsResetSuccess => 'Settings reset to defaults.';
+
+  @override
+  String get settingsSectionSymbols => 'Symbols';
+
+  @override
+  String get settingsSectionTheme => 'Theme';
+
+  @override
+  String get settingsSectionLanguage => 'Language';
+
+  @override
+  String get settingsSectionCanvas => 'Canvas';
+
+  @override
+  String get settingsSectionGeneral => 'General';
+
+  @override
+  String get settingsSectionActions => 'Actions';
+
+  @override
+  String get settingsEmptyStringTitle => 'Empty String Symbol';
+
+  @override
+  String get settingsEmptyStringDescription =>
+      'Symbol used to represent empty string (λ or ε)';
+
+  @override
+  String get settingsLambdaOption => 'λ (Lambda)';
+
+  @override
+  String get settingsEpsilonOption => 'ε (Epsilon)';
+
+  @override
+  String get settingsThemeModeTitle => 'Theme Mode';
+
+  @override
+  String get settingsThemeModeDescription => 'Choose your preferred theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsLanguageTitle => 'App Language';
+
+  @override
+  String get settingsLanguageDescription =>
+      'Choose the language used by Turing Lab';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get settingsLanguagePortuguese => 'Português';
+
+  @override
+  String get settingsShowGridTitle => 'Show Grid';
+
+  @override
+  String get settingsShowGridDescription => 'Display grid lines on canvas';
+
+  @override
+  String get settingsShowCoordinatesTitle => 'Show Coordinates';
+
+  @override
+  String get settingsShowCoordinatesDescription =>
+      'Display coordinate information';
+
+  @override
+  String get settingsGridSizeTitle => 'Grid Size';
+
+  @override
+  String get settingsGridSizeDescription => 'Size of grid cells';
+
+  @override
+  String get settingsNodeSizeTitle => 'Node Size';
+
+  @override
+  String get settingsNodeSizeDescription => 'Size of automaton nodes';
+
+  @override
+  String get settingsFontSizeTitle => 'Font Size';
+
+  @override
+  String get settingsFontSizeDescription => 'Text size in the interface';
+
+  @override
+  String get settingsAutoSaveTitle => 'Auto Save';
+
+  @override
+  String get settingsAutoSaveDescription => 'Automatically save changes';
+
+  @override
+  String get settingsShowTooltipsTitle => 'Show Tooltips';
+
+  @override
+  String get settingsShowTooltipsDescription => 'Display helpful tooltips';
+
+  @override
   String get homeHelpTooltip => 'Help';
 
   @override
@@ -73,7 +200,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpQuickStartBody =>
-      'Welcome to JFlutter. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.';
+      'Welcome to Turing Lab. Here is a quick way to get started:\n\n1. Choose a workspace such as FSA, Grammar, PDA, TM, or Regex.\n2. Start with a blank workspace or open a supported example or file.\n3. Use the editor to build your machine or grammar. Double-tap a state for quick actions.\n4. Run simulations to test your work.\n5. Use algorithms to transform structures.\n\nTips:\n• Use navigation tabs or section chips to switch workspaces quickly.\n• Double-tap a state to open its quick action menu.\n• Pinch to zoom on the canvas.\n• Tap the Quick Start icon whenever you need a refresher.';
 
   @override
   String get helpGotIt => 'Got it!';
@@ -129,7 +256,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpSectionTroubleshooting => 'Troubleshooting';
 
   @override
-  String get helpSectionLicenses => 'Licenses';
+  String get helpSectionAbout => 'About';
 
   @override
   String get regularExpressionTitle => 'Regular Expression';

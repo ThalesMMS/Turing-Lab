@@ -1,6 +1,6 @@
 //
 //  graphview_tm_canvas_controller.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Controlador que mantém o canvas GraphView alinhado ao estado de edição de
 //  máquinas de Turing, sincronizando nós e transições com o TMEditorNotifier e

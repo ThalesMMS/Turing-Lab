@@ -1,6 +1,6 @@
 //
 //  unified_trace_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Consolida a gestão de traços de simulação para diferentes autômatos,
 //  administrando histórico persistido, contexto ativo e estatísticas
@@ -109,13 +109,11 @@ class UnifiedTraceState with TraceStepNavigation<UnifiedTraceState> {
       automatonType: automatonType == _unset
           ? this.automatonType
           : automatonType as String?,
-      automatonId: automatonId == _unset
-          ? this.automatonId
-          : automatonId as String?,
+      automatonId:
+          automatonId == _unset ? this.automatonId : automatonId as String?,
       traceHistory: traceHistory ?? this.traceHistory,
-      errorMessage: errorMessage == _unset
-          ? this.errorMessage
-          : errorMessage as String?,
+      errorMessage:
+          errorMessage == _unset ? this.errorMessage : errorMessage as String?,
       traceStatistics: traceStatistics ?? this.traceStatistics,
     );
   }

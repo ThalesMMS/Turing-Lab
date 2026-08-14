@@ -1,6 +1,6 @@
 //
 //  tm_simulation_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Realiza a simulação de Máquinas de Turing para o autômato ativo, oferecendo
 //  campos de entrada, controles de execução e apresentação de resultados com

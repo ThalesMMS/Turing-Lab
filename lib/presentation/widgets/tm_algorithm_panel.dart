@@ -1,6 +1,6 @@
 //
 //  tm_algorithm_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Disponibiliza o painel de análises para Máquinas de Turing, reunindo botões
 //  para verificações de decidibilidade, alcançabilidade, linguagem, operações de

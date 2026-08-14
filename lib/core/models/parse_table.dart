@@ -1,6 +1,6 @@
 //
 //  parse_table.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Representa tabelas de análise sintática para algoritmos LL e LR, mantendo
 //  ações, movimentos goto e referência à gramática associada. Disponibiliza

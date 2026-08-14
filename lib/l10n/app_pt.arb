@@ -16,6 +16,47 @@
   "@algorithms": {
     "description": "Label for the algorithms section."
   },
+  "settingsPageTitle": "Configurações",
+  "settingsSaveTooltip": "Salvar configurações",
+  "settingsResetTooltip": "Restaurar padrões",
+  "settingsLoadError": "Não foi possível carregar as configurações. Tente novamente.",
+  "settingsSaveSuccess": "Configurações salvas.",
+  "settingsSaveError": "Não foi possível salvar as configurações. Tente novamente.",
+  "settingsApplyError": "As configurações foram salvas, mas não puderam ser aplicadas. Reinicie o Turing Lab para atualizá-las.",
+  "settingsResetSuccess": "Configurações restauradas para os padrões.",
+  "settingsSectionSymbols": "Símbolos",
+  "settingsSectionTheme": "Tema",
+  "settingsSectionLanguage": "Idioma",
+  "settingsSectionCanvas": "Canvas",
+  "settingsSectionGeneral": "Geral",
+  "settingsSectionActions": "Ações",
+  "settingsEmptyStringTitle": "Símbolo da cadeia vazia",
+  "settingsEmptyStringDescription": "Símbolo usado para representar a cadeia vazia (λ ou ε)",
+  "settingsLambdaOption": "λ (Lambda)",
+  "settingsEpsilonOption": "ε (Epsilon)",
+  "settingsThemeModeTitle": "Modo do tema",
+  "settingsThemeModeDescription": "Escolha o tema de sua preferência",
+  "settingsThemeSystem": "Sistema",
+  "settingsThemeLight": "Claro",
+  "settingsThemeDark": "Escuro",
+  "settingsLanguageTitle": "Idioma do aplicativo",
+  "settingsLanguageDescription": "Escolha o idioma usado pelo Turing Lab",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguagePortuguese": "Português",
+  "settingsShowGridTitle": "Mostrar grade",
+  "settingsShowGridDescription": "Exibir linhas de grade no canvas",
+  "settingsShowCoordinatesTitle": "Mostrar coordenadas",
+  "settingsShowCoordinatesDescription": "Exibir informações de coordenadas",
+  "settingsGridSizeTitle": "Tamanho da grade",
+  "settingsGridSizeDescription": "Tamanho das células da grade",
+  "settingsNodeSizeTitle": "Tamanho dos estados",
+  "settingsNodeSizeDescription": "Tamanho dos estados do autômato",
+  "settingsFontSizeTitle": "Tamanho da fonte",
+  "settingsFontSizeDescription": "Tamanho do texto na interface",
+  "settingsAutoSaveTitle": "Salvamento automático",
+  "settingsAutoSaveDescription": "Salvar alterações automaticamente",
+  "settingsShowTooltipsTitle": "Mostrar dicas",
+  "settingsShowTooltipsDescription": "Exibir dicas de ajuda",
   "homeHelpTooltip": "Ajuda",
   "@homeHelpTooltip": {
     "description": "Tooltip for opening the app help page from the home page."
@@ -84,7 +125,7 @@
   "@helpQuickStartTitle": {
     "description": "Title for the quick start help dialog."
   },
-  "helpQuickStartBody": "Bem-vindo ao JFlutter. Comece com este fluxo básico:\n\n1. Escolha um espaço de trabalho, como AF, Gramática, AP, MT ou Regex.\n2. Inicie em branco ou abra um exemplo ou arquivo compatível.\n3. Use o editor para criar sua máquina ou gramática. Toque duas vezes em um estado para ações rápidas.\n4. Execute simulações para testar seu trabalho.\n5. Use os algoritmos para transformar estruturas.\n\nDicas:\n• Use as abas de navegação ou chips de seção para trocar de espaço rapidamente.\n• Toque duas vezes em um estado para abrir o menu de ações rápidas.\n• Faça pinça para ampliar ou reduzir o canvas.\n• Toque no ícone de guia rápido quando precisar relembrar o fluxo.",
+  "helpQuickStartBody": "Bem-vindo ao Turing Lab. Comece com este fluxo básico:\n\n1. Escolha um espaço de trabalho, como AF, Gramática, AP, MT ou Regex.\n2. Inicie em branco ou abra um exemplo ou arquivo compatível.\n3. Use o editor para criar sua máquina ou gramática. Toque duas vezes em um estado para ações rápidas.\n4. Execute simulações para testar seu trabalho.\n5. Use os algoritmos para transformar estruturas.\n\nDicas:\n• Use as abas de navegação ou chips de seção para trocar de espaço rapidamente.\n• Toque duas vezes em um estado para abrir o menu de ações rápidas.\n• Faça pinça para ampliar ou reduzir o canvas.\n• Toque no ícone de guia rápido quando precisar relembrar o fluxo.",
   "@helpQuickStartBody": {
     "description": "Body text for the quick start help dialog."
   },
@@ -156,9 +197,9 @@
   "@helpSectionTroubleshooting": {
     "description": "Help section label for troubleshooting documentation."
   },
-  "helpSectionLicenses": "Licenças",
-  "@helpSectionLicenses": {
-    "description": "Help section label for license documentation."
+  "helpSectionAbout": "Sobre",
+  "@helpSectionAbout": {
+    "description": "Help section label for project and license information."
   },
   "regularExpressionTitle": "Expressão regular",
   "@regularExpressionTitle": {

@@ -1,6 +1,6 @@
 //
 //  epsilon_utils.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utility helpers for working with epsilon (empty string) symbols across the
 //  application layers. Centralises the canonical representation and the set of

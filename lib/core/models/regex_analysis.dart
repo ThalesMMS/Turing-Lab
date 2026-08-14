@@ -1,6 +1,6 @@
 //
 //  regex_analysis.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estruturas imutáveis que armazenam métricas de análise de complexidade
 //  para expressões regulares, incluindo star height, nesting depth, contagem

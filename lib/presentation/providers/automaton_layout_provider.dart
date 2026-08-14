@@ -1,6 +1,6 @@
 //
 //  automaton_layout_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia operações de layout automático para autômatos, aplicando
 //  posicionamento espacial diretamente sobre FSA e coordenando com

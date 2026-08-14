@@ -1,6 +1,6 @@
 //
 //  grammar.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estrutura de dados que modela gramáticas formais com conjuntos de símbolos,
 //  produções e metadados temporais, oferecendo cópias imutáveis e suporte a
@@ -180,7 +180,10 @@ class Grammar {
 
       for (final symbol in production.rightSide) {
         // Skip epsilon/lambda meta-symbols
-        if (symbol == 'ε' || symbol == 'λ' || symbol.isEmpty || symbol == 'epsilon') continue;
+        if (symbol == 'ε' ||
+            symbol == 'λ' ||
+            symbol.isEmpty ||
+            symbol == 'epsilon') continue;
         if (!terminals.contains(symbol) && !nonterminals.contains(symbol)) {
           errors.add(
             'Production ${production.id} references undefined symbol: $symbol',

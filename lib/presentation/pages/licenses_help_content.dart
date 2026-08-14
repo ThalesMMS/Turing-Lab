@@ -1,81 +1,103 @@
 part of 'help_page.dart';
 
 class _LicensesHelpContent extends StatelessWidget {
-  const _LicensesHelpContent();
+  const _LicensesHelpContent({required this.onOpenProject});
+
+  final Future<bool> Function() onOpenProject;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = jflapLocalizationsOf(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Licenses & Attribution'),
+          _buildSectionTitle(l10n.helpSectionAbout),
           const SizedBox(height: 16),
-          const Text(
-            'JFlutter is a Flutter reimplementation inspired by and compatible '
-            'with JFLAP. It is not an official JFLAP release.',
+          _buildCard(
+            title: l10n.aboutDeveloperLabel,
+            description: 'Thales Matheus Mendonça Santos',
+          ),
+          Card(
+            margin: const EdgeInsets.only(bottom: 8.0),
+            child: ListTile(
+              leading: const Icon(Icons.code),
+              title: Text(l10n.aboutProjectRepositoryLabel),
+              subtitle: const Text(
+                'https://github.com/ThalesMMS/jflutter',
+              ),
+              trailing: const Icon(Icons.open_in_new),
+              onTap: () async {
+                await onOpenProject();
+              },
+            ),
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('License Texts'),
+          _buildSectionTitle(l10n.aboutOpenSourceLicenses),
           const SizedBox(height: 16),
-          const _LicenseTextCard(
+          Text(l10n.aboutLicensesIntro),
+          const SizedBox(height: 16),
+          _LicenseTextCard(
             title: 'Apache License 2.0',
             assetPath: 'LICENSE.txt',
-            summary:
-                'JFlutter original Flutter code is licensed under Apache 2.0.',
+            summary: l10n.aboutTuringLabLicenseSummary,
           ),
-          const _LicenseTextCard(
+          _LicenseTextCard(
             title: 'JFLAP 7.1 License',
             assetPath: 'LICENSE_JFLAP.txt',
-            summary:
-                'JFLAP-derived portions remain under the JFLAP 7.1 License.',
+            summary: l10n.aboutJflapLicenseSummary,
           ),
-          const _LicenseTextCard(
+          _LicenseTextCard(
             title: 'GraphView (MIT License)',
             assetPath: 'assets/LICENSE_GRAPHVIEW.txt',
-            summary:
-                'Graph visualization library, forked and modified for JFlutter. Original work by Nabil Mosharraf.',
+            summary: l10n.aboutGraphViewLicenseSummary,
           ),
-          const _LicenseTextCard(
-            title: 'Apple Platform Third-Party Notices',
+          _LicenseTextCard(
+            title: l10n.aboutAppleNoticesTitle,
             assetPath: 'THIRD_PARTY_NOTICES_APPLE.txt',
-            summary:
-                'Bundled notices for the vendored graphview fork and Apple-platform plugin dependencies.',
+            summary: l10n.aboutAppleNoticesSummary,
+          ),
+          Card(
+            margin: const EdgeInsets.only(bottom: 8.0),
+            child: ListTile(
+              key: const ValueKey('about_package_licenses'),
+              leading: const Icon(Icons.policy_outlined),
+              title: Text(l10n.aboutPackageLicenses),
+              subtitle: Text(l10n.aboutPackageLicensesDescription),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                showLicensePage(
+                  context: context,
+                  applicationName: 'Turing Lab',
+                );
+              },
+            ),
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('JFLAP Acknowledgments'),
+          _buildSectionTitle(l10n.aboutAcknowledgments),
           const SizedBox(height: 16),
           _buildCard(
             title: 'Susan H. Rodger',
-            description:
-                'Original JFLAP creator and maintainer, Duke University.',
+            description: l10n.aboutJflapCreator,
           ),
           _buildCard(
             title: 'JFLAP Team',
-            description:
-                'Thomas Finley, Ryan Cavalcante, Stephen Reading, Bart '
-                'Bressler, Jinghui Lim, Chris Morgan, Kyung Min (Jason) Lee, '
-                'Jonathan Su, and Henry Qin.',
+            description: l10n.aboutJflapTeam,
           ),
           _buildCard(
-            title: 'Original Project',
-            description: 'JFLAP website: http://www.jflap.org',
+            title: l10n.aboutOriginalProjectTitle,
+            description: l10n.aboutOriginalProject,
           ),
           _buildCard(
-            title: 'GraphView Fork',
-            description:
-                'JFlutter vendors a maintained fork of graphview under the MIT '
-                'license; Apple-platform third-party notices are bundled in '
-                'the licenses section.',
+            title: l10n.aboutGraphViewForkTitle,
+            description: l10n.aboutGraphViewFork,
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('Distribution'),
+          _buildSectionTitle(l10n.aboutDistribution),
           const SizedBox(height: 16),
-          const Text(
-            'JFlutter is distributed as a free, non-monetized educational app '
-            'while it includes JFLAP-derived material.',
-          ),
+          Text(l10n.aboutDistributionDescription),
         ],
       ),
     );

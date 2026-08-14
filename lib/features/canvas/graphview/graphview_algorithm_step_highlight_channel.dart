@@ -1,6 +1,6 @@
 //
 //  graphview_algorithm_step_highlight_channel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Canal que recebe realces do AlgorithmStepHighlightService e os encaminha para o
 //  controlador GraphView responsável pelo canvas, garantindo que o estado

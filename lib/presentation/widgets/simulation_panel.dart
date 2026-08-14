@@ -1,6 +1,6 @@
 //
 //  simulation_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Constrói o painel de simulação de autômatos com entrada textual, botões de
 //  execução e modos passo a passo que descrevem cada transição realizada e o

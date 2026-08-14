@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_controller.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Controlador responsável por manter o canvas GraphView de autômatos finitos
 //  sincronizado com o AutomatonStateProvider, coordenando criação de estados,
@@ -13,7 +13,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import '../../../core/models/fsa.dart';

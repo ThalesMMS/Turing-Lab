@@ -1,6 +1,6 @@
 //
 //  fsa.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo de Autômato Finito, herdando da infraestrutura genérica e
 //  adicionando serialização, cópias e validações específicas de transições e

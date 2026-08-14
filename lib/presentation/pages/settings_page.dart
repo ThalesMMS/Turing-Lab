@@ -1,6 +1,6 @@
 //
 //  settings_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Generates the settings page loading persisted preferences,
 //  displaying appearance, symbols and general controls forms while
@@ -11,12 +11,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/core/repositories/settings_repository.dart';
-import 'package:jflutter/injection/data_providers.dart';
-import 'package:jflutter/presentation/providers/settings_provider.dart';
-import 'package:jflutter/presentation/widgets/app_snackbar.dart';
-import 'package:jflutter/presentation/widgets/switch_setting_tile.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/repositories/settings_repository.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/providers/settings_provider.dart';
+import 'package:turing_lab/presentation/widgets/app_snackbar.dart';
+import 'package:turing_lab/presentation/widgets/switch_setting_tile.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({
@@ -84,7 +85,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() {
         _isLoading = false;
       });
-      _showError('Failed to load settings. Please try again.');
+      _showError(AppLocalizations.of(context).settingsLoadError);
     }
   }
 
@@ -99,18 +100,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (!mounted) return;
       showAppSnackBar(
         context,
-        message: 'Settings saved.',
+        message: AppLocalizations.of(context).settingsSaveSuccess,
         tone: AppSnackBarTone.success,
       );
     } catch (error, stackTrace) {
       debugPrint('Failed to save settings: $error');
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
-      _showError('Failed to save settings. Please try again.');
+      _showError(AppLocalizations.of(context).settingsSaveError);
     }
   }
 
   Future<void> _resetToDefaults() async {
+    final previousSettings = _settings;
     const defaults = SettingsModel();
 
     setState(() {
@@ -119,18 +121,62 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     try {
       await _repository.saveSettings(defaults);
-      await ref.read(settingsProvider.notifier).refreshFromModel(defaults);
-      if (!mounted) return;
-      showAppSnackBar(
-        context,
-        message: 'Settings reset to defaults.',
-        tone: AppSnackBarTone.success,
-      );
     } catch (error, stackTrace) {
       debugPrint('Failed to reset settings: $error');
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
-      _showError('Failed to reset settings. Please try again.');
+      setState(() {
+        _settings = previousSettings;
+      });
+      await ref
+          .read(settingsProvider.notifier)
+          .refreshFromModel(previousSettings);
+      if (!mounted) return;
+      _showError(AppLocalizations.of(context).settingsSaveError);
+      return;
+    }
+
+    try {
+      await ref.read(settingsProvider.notifier).refreshFromModel(defaults);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to apply reset settings: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      _showError(AppLocalizations.of(context).settingsApplyError);
+      return;
+    }
+
+    if (!mounted) return;
+    showAppSnackBar(
+      context,
+      message: AppLocalizations.of(context).settingsResetSuccess,
+      tone: AppSnackBarTone.success,
+    );
+  }
+
+  Future<void> _changeLanguage(String localeCode) async {
+    final previousSettings = _settings;
+    final updatedSettings = _settings.copyWith(localeCode: localeCode);
+
+    setState(() {
+      _settings = updatedSettings;
+    });
+    await ref.read(settingsProvider.notifier).refreshFromModel(updatedSettings);
+
+    try {
+      await _repository.saveSettings(updatedSettings);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save settings: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        _settings = previousSettings;
+      });
+      await ref
+          .read(settingsProvider.notifier)
+          .refreshFromModel(previousSettings);
+      if (!mounted) return;
+      _showError(AppLocalizations.of(context).settingsSaveError);
     }
   }
 
@@ -144,23 +190,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settingsPageTitle),
         actions: [
           IconButton(
             onPressed: _saveSettings,
             icon: const Icon(Icons.save),
-            tooltip: 'Save Settings',
+            tooltip: l10n.settingsSaveTooltip,
           ),
           IconButton(
             onPressed: _resetToDefaults,
             icon: const Icon(Icons.restore),
-            tooltip: 'Reset to Defaults',
+            tooltip: l10n.settingsResetTooltip,
           ),
         ],
       ),
@@ -171,20 +218,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('Symbols'),
-              _buildSymbolSettings(),
+              _buildSectionHeader(l10n.settingsSectionSymbols),
+              _buildSymbolSettings(l10n),
               const SizedBox(height: 24),
-              _buildSectionHeader('Theme'),
-              _buildThemeSettings(),
+              _buildSectionHeader(l10n.settingsSectionTheme),
+              _buildThemeSettings(l10n),
               const SizedBox(height: 24),
-              _buildSectionHeader('Canvas'),
-              _buildCanvasSettings(),
+              _buildSectionHeader(l10n.settingsSectionLanguage),
+              _buildLanguageSettings(l10n),
               const SizedBox(height: 24),
-              _buildSectionHeader('General'),
-              _buildGeneralSettings(),
+              _buildSectionHeader(l10n.settingsSectionCanvas),
+              _buildCanvasSettings(l10n),
               const SizedBox(height: 24),
-              _buildSectionHeader('Actions'),
-              _buildActionButtons(),
+              _buildSectionHeader(l10n.settingsSectionGeneral),
+              _buildGeneralSettings(l10n),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.settingsSectionActions),
+              _buildActionButtons(l10n),
             ],
           ),
         ),
@@ -204,7 +254,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildSymbolSettings() {
+  Widget _buildSymbolSettings(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -212,20 +262,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSimpleSetting(
-              'Empty String Symbol',
-              'Symbol used to represent empty string (λ or ε)',
+              l10n.settingsEmptyStringTitle,
+              l10n.settingsEmptyStringDescription,
               _settings.emptyStringSymbol,
-              const ['λ (Lambda)', 'ε (Epsilon)'],
+              [
+                (
+                  value: 'λ',
+                  label: l10n.settingsLambdaOption,
+                  key: const ValueKey('settings_empty_string_lambda'),
+                ),
+                (
+                  value: 'ε',
+                  label: l10n.settingsEpsilonOption,
+                  key: const ValueKey('settings_empty_string_epsilon'),
+                ),
+              ],
               (value) {
                 setState(() {
-                  _settings = _settings.copyWith(
-                    emptyStringSymbol: value == 'λ (Lambda)' ? 'λ' : 'ε',
-                  );
+                  _settings = _settings.copyWith(emptyStringSymbol: value);
                 });
               },
-              chipKeyBuilder: (option) => ValueKey(
-                'settings_empty_string_${option.contains('Lambda') ? 'lambda' : 'epsilon'}',
-              ),
             ),
           ],
         ),
@@ -233,7 +289,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildThemeSettings() {
+  Widget _buildThemeSettings(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -241,19 +297,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSimpleSetting(
-              'Theme Mode',
-              'Choose your preferred theme',
+              l10n.settingsThemeModeTitle,
+              l10n.settingsThemeModeDescription,
               _settings.themeMode,
-              const ['System', 'Light', 'Dark'],
+              [
+                (
+                  value: 'system',
+                  label: l10n.settingsThemeSystem,
+                  key: const ValueKey('settings_theme_system'),
+                ),
+                (
+                  value: 'light',
+                  label: l10n.settingsThemeLight,
+                  key: const ValueKey('settings_theme_light'),
+                ),
+                (
+                  value: 'dark',
+                  label: l10n.settingsThemeDark,
+                  key: const ValueKey('settings_theme_dark'),
+                ),
+              ],
               (value) {
                 setState(() {
-                  _settings = _settings.copyWith(
-                    themeMode: value.toLowerCase(),
-                  );
+                  _settings = _settings.copyWith(themeMode: value);
                 });
               },
-              chipKeyBuilder: (option) =>
-                  ValueKey('settings_theme_${option.toLowerCase()}'),
             ),
           ],
         ),
@@ -261,7 +329,38 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildCanvasSettings() {
+  Widget _buildLanguageSettings(AppLocalizations l10n) {
+    final activeLocaleCode =
+        _settings.localeCode ?? Localizations.localeOf(context).languageCode;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _buildSimpleSetting(
+          l10n.settingsLanguageTitle,
+          l10n.settingsLanguageDescription,
+          activeLocaleCode,
+          [
+            (
+              value: 'en',
+              label: l10n.settingsLanguageEnglish,
+              key: const ValueKey('settings_language_en'),
+            ),
+            (
+              value: 'pt',
+              label: l10n.settingsLanguagePortuguese,
+              key: const ValueKey('settings_language_pt'),
+            ),
+          ],
+          (value) async {
+            await _changeLanguage(value);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCanvasSettings(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -269,8 +368,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SwitchSettingTile(
-              title: 'Show Grid',
-              subtitle: 'Display grid lines on canvas',
+              title: l10n.settingsShowGridTitle,
+              subtitle: l10n.settingsShowGridDescription,
               value: _settings.showGrid,
               onChanged: (value) {
                 setState(() {
@@ -281,8 +380,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             const SizedBox(height: 16),
             SwitchSettingTile(
-              title: 'Show Coordinates',
-              subtitle: 'Display coordinate information',
+              title: l10n.settingsShowCoordinatesTitle,
+              subtitle: l10n.settingsShowCoordinatesDescription,
               value: _settings.showCoordinates,
               onChanged: (value) {
                 setState(() {
@@ -293,8 +392,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             const SizedBox(height: 16),
             _buildSliderSetting(
-              'Grid Size',
-              'Size of grid cells',
+              l10n.settingsGridSizeTitle,
+              l10n.settingsGridSizeDescription,
               _settings.gridSize,
               10.0,
               50.0,
@@ -306,8 +405,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               sliderKey: const ValueKey('settings_grid_size_slider'),
             ),
             _buildSliderSetting(
-              'Node Size',
-              'Size of automaton nodes',
+              l10n.settingsNodeSizeTitle,
+              l10n.settingsNodeSizeDescription,
               _settings.nodeSize,
               20.0,
               60.0,
@@ -320,8 +419,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             const SizedBox(height: 16),
             _buildSliderSetting(
-              'Font Size',
-              'Text size in the interface',
+              l10n.settingsFontSizeTitle,
+              l10n.settingsFontSizeDescription,
               _settings.fontSize,
               12.0,
               20.0,
@@ -338,7 +437,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildGeneralSettings() {
+  Widget _buildGeneralSettings(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -346,8 +445,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SwitchSettingTile(
-              title: 'Auto Save',
-              subtitle: 'Automatically save changes',
+              title: l10n.settingsAutoSaveTitle,
+              subtitle: l10n.settingsAutoSaveDescription,
               value: _settings.autoSave,
               onChanged: (value) {
                 setState(() {
@@ -358,8 +457,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             const SizedBox(height: 16),
             SwitchSettingTile(
-              title: 'Show Tooltips',
-              subtitle: 'Display helpful tooltips',
+              title: l10n.settingsShowTooltipsTitle,
+              subtitle: l10n.settingsShowTooltipsDescription,
               value: _settings.showTooltips,
               onChanged: (value) {
                 setState(() {
@@ -374,7 +473,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -385,7 +484,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: ElevatedButton.icon(
                 onPressed: _saveSettings,
                 icon: const Icon(Icons.save),
-                label: const Text('Save Settings'),
+                label: Text(l10n.settingsSaveTooltip),
                 key: const ValueKey('settings_save_button'),
               ),
             ),
@@ -395,7 +494,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: OutlinedButton.icon(
                 onPressed: _resetToDefaults,
                 icon: const Icon(Icons.restore),
-                label: const Text('Reset to Defaults'),
+                label: Text(l10n.settingsResetTooltip),
                 key: const ValueKey('settings_reset_button'),
               ),
             ),
@@ -409,10 +508,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     String title,
     String subtitle,
     String currentValue,
-    List<String> options,
-    Function(String) onChanged, {
-    Key Function(String option)? chipKeyBuilder,
-  }) {
+    List<({String value, String label, Key key})> options,
+    ValueChanged<String> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -424,21 +522,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           spacing: 8,
           runSpacing: 8,
           children: options.map((option) {
-            final isSelected =
-                option.toLowerCase().contains(currentValue.toLowerCase()) ||
-                    (currentValue == 'λ' && option.contains('Lambda')) ||
-                    (currentValue == 'ε' && option.contains('Epsilon')) ||
-                    (currentValue == 'system' && option == 'System') ||
-                    (currentValue == 'light' && option == 'Light') ||
-                    (currentValue == 'dark' && option == 'Dark');
-
             return FilterChip(
-              key: chipKeyBuilder?.call(option),
-              label: Text(option),
-              selected: isSelected,
+              key: option.key,
+              label: Text(option.label),
+              selected: option.value == currentValue,
               onSelected: (selected) {
                 if (selected) {
-                  onChanged(option);
+                  onChanged(option.value);
                 }
               },
             );

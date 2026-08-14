@@ -1,6 +1,6 @@
 //
 //  regex_analyzer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Analisa expressões regulares para extrair métricas de complexidade, incluindo
 //  star height (altura de estrela), profundidade de aninhamento, contagem de

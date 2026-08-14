@@ -1,6 +1,6 @@
 //
 //  state.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo imutável de estados de autômatos com coordenadas, marcadores
 //  de inicialização, aceitação e propriedades adicionais para cada tipo de

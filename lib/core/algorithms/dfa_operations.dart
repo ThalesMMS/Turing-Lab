@@ -1,6 +1,6 @@
 //
 //  dfa_operations.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Consolida operações de alto nível sobre autômatos determinísticos, cobrindo
 //  complementação, construções de produto para união/interseção/diferença e

@@ -1,6 +1,6 @@
 //
 //  settings_repository.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define a interface de acesso às configurações salvas do usuário,
 //  padronizando como preferências são carregadas e persistidas entre sessões.

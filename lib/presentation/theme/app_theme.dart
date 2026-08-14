@@ -1,6 +1,6 @@
 //
 //  app_theme.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Declara os temas claro e escuro do aplicativo com paleta Material 3,
 //  centralizando cores, estilos de botões, barras e campos para manter
@@ -11,9 +11,9 @@
 //
 import 'package:flutter/material.dart';
 
-/// Modern app theme for JFlutter
+/// Modern app theme for Turing Lab
 ///
-/// JFlutter intentionally relies on Material 3 and the platform media query for
+/// Turing Lab intentionally relies on Material 3 and the platform media query for
 /// text scaling so iOS Dynamic Type can resize typography across the app.
 /// Avoid overriding text scale in the theme unless a widget has a specific
 /// accessibility exception.

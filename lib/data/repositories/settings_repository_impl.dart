@@ -1,6 +1,6 @@
 //
 //  settings_repository_impl.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Persiste preferências de interface e símbolos no SharedPreferences por meio de uma camada de repositório que aplica padrões e sincroniza o modelo de configurações.
 //
@@ -15,12 +15,13 @@ import '../storage/settings_storage.dart';
 
 /// Settings repository backed by [SharedPreferences].
 class SharedPreferencesSettingsRepository implements SettingsRepository {
-  const SharedPreferencesSettingsRepository({SettingsStorage? storage})
+  SharedPreferencesSettingsRepository({SettingsStorage? storage})
       : _storage = storage ?? const SharedPreferencesSettingsStorage();
 
   static const String _emptyStringSymbolKey = 'settings_empty_string_symbol';
   static const String _legacyEpsilonSymbolKey = 'settings_epsilon_symbol';
   static const String _themeModeKey = 'settings_theme_mode';
+  static const String _localeCodeKey = 'settings_locale_code';
   static const String _showGridKey = 'settings_show_grid';
   static const String _showCoordinatesKey = 'settings_show_coordinates';
   static const String _autoSaveKey = 'settings_auto_save';
@@ -30,7 +31,9 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   static const String _fontSizeKey = 'settings_font_size';
   static const String _animationSpeedKey = 'settings_animation_speed';
   static const Set<String> _supportedThemeModes = {'system', 'light', 'dark'};
+  static const Set<String> _supportedLocaleCodes = {'en', 'pt'};
   final SettingsStorage _storage;
+  Future<void> _saveQueue = Future<void>.value();
 
   @override
   Future<SettingsModel> loadSettings() async {
@@ -46,6 +49,10 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
         _themeModeKey,
         defaults.themeMode,
         isValid: _supportedThemeModes.contains,
+      ),
+      localeCode: await _readNullableStringSetting(
+        _localeCodeKey,
+        isValid: _supportedLocaleCodes.contains,
       ),
       showGrid: await _readBoolSetting(_showGridKey, defaults.showGrid),
       showCoordinates: await _readBoolSetting(
@@ -77,7 +84,18 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   }
 
   @override
-  Future<void> saveSettings(SettingsModel settings) async {
+  Future<void> saveSettings(SettingsModel settings) {
+    final pendingSave = _saveQueue.then(
+      (_) => _saveSettingsAtomically(settings),
+    );
+    _saveQueue = pendingSave.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
+    );
+    return pendingSave;
+  }
+
+  Future<void> _saveSettingsAtomically(SettingsModel settings) async {
     final previousValues = await _snapshotPersistedSettings();
     var saved = false;
 
@@ -104,6 +122,9 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
             settings.emptyStringSymbol,
           ),
       () => _storage.writeString(_themeModeKey, settings.themeMode),
+      () => settings.localeCode == null
+          ? _storage.remove(_localeCodeKey)
+          : _storage.writeString(_localeCodeKey, settings.localeCode!),
       () => _storage.writeBool(_showGridKey, settings.showGrid),
       () => _storage.writeBool(_showCoordinatesKey, settings.showCoordinates),
       () => _storage.writeBool(_autoSaveKey, settings.autoSave),
@@ -129,6 +150,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     return <String, Object?>{
       _emptyStringSymbolKey: await _snapshotString(_emptyStringSymbolKey),
       _themeModeKey: await _snapshotString(_themeModeKey),
+      _localeCodeKey: await _snapshotString(_localeCodeKey),
       _showGridKey: await _snapshotBool(_showGridKey),
       _showCoordinatesKey: await _snapshotBool(_showCoordinatesKey),
       _autoSaveKey: await _snapshotBool(_autoSaveKey),
@@ -170,6 +192,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     await Future.wait<bool>([
       _restoreString(_emptyStringSymbolKey, previousValues),
       _restoreString(_themeModeKey, previousValues),
+      _restoreString(_localeCodeKey, previousValues),
       _restoreBool(_showGridKey, previousValues),
       _restoreBool(_showCoordinatesKey, previousValues),
       _restoreBool(_autoSaveKey, previousValues),
@@ -227,6 +250,18 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
       return value;
     } catch (_) {
       return fallback;
+    }
+  }
+
+  Future<String?> _readNullableStringSetting(
+    String key, {
+    required bool Function(String value) isValid,
+  }) async {
+    try {
+      final value = await _storage.readString(key);
+      return value != null && isValid(value) ? value : null;
+    } catch (_) {
+      return null;
     }
   }
 

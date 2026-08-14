@@ -1,6 +1,6 @@
 //
 //  pda_simulation_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Responsável pela simulação de autômatos de pilha no aplicativo, permitindo
 //  configurar cadeia de entrada, símbolo inicial da pilha, gravação de traço e

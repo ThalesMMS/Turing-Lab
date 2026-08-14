@@ -1,6 +1,6 @@
 //
 //  typed_algorithm_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Lightweight typed payload wrapper for algorithm step UI adapters.
 //

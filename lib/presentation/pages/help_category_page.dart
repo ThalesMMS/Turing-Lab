@@ -1,6 +1,6 @@
 //
 //  help_category_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Lists help content items for a single category, allowing users to explore
 //  related concepts directly from context-aware help panels.
@@ -33,7 +33,8 @@ class HelpCategoryPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${jflapLocalizationsOf(context).helpPageTitle}: $category'),
+        title:
+            Text('${jflapLocalizationsOf(context).helpPageTitle}: $category'),
       ),
       body: sortedResults.isEmpty
           ? _EmptyState(category: category)

@@ -1,6 +1,6 @@
 //
 //  context_aware_help_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Painel expansível de ajuda contextual que exibe explicações detalhadas de
 //  conceitos teóricos, operações de autômatos e funcionalidades do aplicativo.

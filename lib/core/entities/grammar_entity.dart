@@ -1,6 +1,6 @@
 //
 //  grammar_entity.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estruturas imutáveis que representam gramáticas formais com identificador,
 //  conjuntos terminais e não terminais, símbolo inicial e produções associadas.

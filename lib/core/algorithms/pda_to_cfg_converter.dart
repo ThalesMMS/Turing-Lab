@@ -1,6 +1,6 @@
 //
 //  pda_to_cfg_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa a transformação clássica de PDA para gramática livre de contexto
 //  gerando variáveis estruturadas, produções e descrições textuais. Inclui

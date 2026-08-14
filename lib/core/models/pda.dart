@@ -1,6 +1,6 @@
 //
 //  pda.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementação de autômatos com pilha que amplia Automaton com alfabeto da
 //  pilha e símbolo inicial, expondo cópias, serialização e validações

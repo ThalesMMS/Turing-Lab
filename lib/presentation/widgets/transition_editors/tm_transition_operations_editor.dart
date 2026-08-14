@@ -1,6 +1,6 @@
 //
 //  tm_transition_operations_editor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Fornece formulário compacto para editar leituras, escritas e direção de transições de Máquina de Turing. Mantém estado mínimo dos campos, valida submissões e entrega o resultado por callback para integração com editores contextuais.
 //

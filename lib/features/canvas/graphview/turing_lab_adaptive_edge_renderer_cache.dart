@@ -1,6 +1,6 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
-extension _JFlutterAdaptiveEdgeRendererCache on JFlutterAdaptiveEdgeRenderer {
+extension _TuringLabAdaptiveEdgeRendererCache on TuringLabAdaptiveEdgeRenderer {
   String _nodeId(Node node) {
     final key = node.key;
     if (key is ValueKey) {

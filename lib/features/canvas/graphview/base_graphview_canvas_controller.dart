@@ -1,6 +1,6 @@
 //
 //  base_graphview_canvas_controller.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Classe base que centraliza infraestrutura comum aos controladores GraphView,
 //  incluindo caches de nós e arestas, histórico para undo/redo, animações de
@@ -14,7 +14,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart' as vmath;
 
 import '../../../core/constants/automaton_canvas_constants.dart';
@@ -22,7 +22,7 @@ import '../../../core/models/simulation_highlight.dart';
 import 'graphview_canvas_models.dart';
 import 'graphview_highlight_controller.dart';
 import 'graphview_state_notifier_adapter.dart';
-import 'jflutter_adaptive_edge_renderer.dart';
+import 'turing_lab_adaptive_edge_renderer.dart';
 import 'graphview_viewport_highlight_mixin.dart';
 import 'graphview_snapshot_codec.dart';
 
@@ -959,7 +959,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
         edge.controlPointX != null && edge.controlPointY != null
             ? Offset(edge.controlPointX!, edge.controlPointY!)
             : null;
-    setJFlutterEdgeControlPoint(target, controlPoint);
+    setTuringLabEdgeControlPoint(target, controlPoint);
   }
 
   void _evictGraphCaches({required bool notifyGraph}) {

@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_game.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o jogo interativo do lema do bombeamento para linguagens
 //  regulares, cuidando de validações, geração de desafios e acompanhamento de
@@ -120,9 +120,8 @@ class PumpingLemmaGame {
 
     // The pumping length is at most the number of states
     final numStates = automaton.states.length;
-    final pumpingLength = numStates < maxPumpingLength
-        ? numStates
-        : maxPumpingLength;
+    final pumpingLength =
+        numStates < maxPumpingLength ? numStates : maxPumpingLength;
 
     // Check timeout
     if (DateTime.now().difference(startTime) > timeout) {

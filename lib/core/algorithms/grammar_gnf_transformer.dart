@@ -1,8 +1,8 @@
-import 'package:jflutter/core/algorithms/cfg/cfg_toolkit.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/grammar_diagnostic.dart';
-import 'package:jflutter/core/models/grammar_diagnostic_severity.dart';
-import 'package:jflutter/core/models/grammar_transformation_step.dart';
+import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/grammar_diagnostic.dart';
+import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
+import 'package:turing_lab/core/models/grammar_transformation_step.dart';
 
 class GrammarGnfTransformationReport {
   final Grammar grammar;

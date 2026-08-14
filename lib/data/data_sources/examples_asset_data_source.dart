@@ -1,6 +1,6 @@
 //
 //  examples_asset_data_source.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Disponibiliza exemplos tipados a partir de assets, combinando metadados
 //  de categoria com conversores para os modelos atuais.
@@ -268,7 +268,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       );
     }
 
-    final assetPath = 'jflutter_js/examples/${metadata.fileName}';
+    final assetPath = 'assets/examples/${metadata.fileName}';
 
     try {
       final jsonString = await rootBundle.loadString(assetPath);

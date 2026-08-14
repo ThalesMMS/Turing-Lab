@@ -1,6 +1,6 @@
 //
 //  dfa_minimization_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos da minimização de DFA via algoritmo de
 //  Hopcroft. Captura partições, classes de equivalência, símbolos distinguidores,

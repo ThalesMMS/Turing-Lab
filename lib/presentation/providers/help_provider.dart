@@ -1,6 +1,6 @@
 //
 //  help_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Expõe um StateNotifier responsável por gerenciar o estado de ajuda contextual
 //  da aplicação, fornecendo métodos de busca e filtragem sobre o conteúdo de
@@ -145,10 +145,7 @@ class HelpNotifier extends StateNotifier<HelpState> {
   /// Get all available categories.
   List<String> getAllCategories() {
     if (_disposed) return [];
-    return state.allContent.values
-        .map((help) => help.category)
-        .toSet()
-        .toList()
+    return state.allContent.values.map((help) => help.category).toSet().toList()
       ..sort();
   }
 

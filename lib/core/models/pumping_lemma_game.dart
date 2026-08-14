@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_game.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estrutura de domínio que modela o minigame do lema do bombeamento,
 //  relacionando autômatos finitos, tentativas do usuário, pontuação e estados

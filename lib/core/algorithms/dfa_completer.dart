@@ -1,6 +1,6 @@
 //
 //  dfa_completer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Fornece rotina para completar autômatos finitos determinísticos, garantindo
 //  transições definidas para todo símbolo do alfabeto a partir de cada estado.

@@ -1,6 +1,6 @@
 //
 //  help_icon_mapper.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Centralized icon mapping for help content identifiers to Material icons.
 //

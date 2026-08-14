@@ -1,6 +1,6 @@
 //
 //  automaton.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Classe base abstrata que representa autômatos no domínio do aplicativo,
 //  mantendo coleções imutáveis de estados, transições, alfabetos e metadados de

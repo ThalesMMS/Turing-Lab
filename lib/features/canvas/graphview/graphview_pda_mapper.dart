@@ -1,6 +1,6 @@
 //
 //  graphview_pda_mapper.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utilitário que traduz autômatos de pilha para snapshots manipulados pelo
 //  GraphView e recompõe modelos do domínio durante salvamentos do canvas. O

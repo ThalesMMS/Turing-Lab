@@ -1,6 +1,6 @@
 //
 //  derivation_tree_view.dart
-//  JFlutter
+//  Turing Lab
 //
 //  UI widget for displaying derivation/parse trees.
 //
@@ -33,7 +33,8 @@ class _NodeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = node.lexeme == null ? node.symbol : '${node.symbol} → "${node.lexeme}"';
+    final label =
+        node.lexeme == null ? node.symbol : '${node.symbol} → "${node.lexeme}"';
 
     if (node.children.isEmpty) {
       return ListTile(

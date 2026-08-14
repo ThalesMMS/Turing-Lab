@@ -1,6 +1,6 @@
 //
 //  algorithm_button.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Reusable button component for algorithm operations across automata panels.
 //  Provides consistent visual feedback for execution states, progress tracking,

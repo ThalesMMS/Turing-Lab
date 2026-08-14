@@ -1,6 +1,6 @@
 //
 //  tm_analysis.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estruturas imutáveis que armazenam métricas de análises sobre máquinas de
 //  Turing, separando estatísticas de estados, transições, operações de fita e

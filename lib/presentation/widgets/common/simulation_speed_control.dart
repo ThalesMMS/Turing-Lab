@@ -1,6 +1,6 @@
 //
 //  simulation_speed_control.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget de controle de velocidade de animação para simulações passo a passo.
 //  Provê seleção rápida entre velocidades predefinidas (0.25x, 0.5x, 1x, 2x, 4x)

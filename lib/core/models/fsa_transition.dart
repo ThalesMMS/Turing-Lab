@@ -1,6 +1,6 @@
 //
 //  fsa_transition.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modelo de transição para autômatos finitos que deriva Transition e adiciona
 //  controle de símbolos de entrada, suporte a epsilon e serialização própria.

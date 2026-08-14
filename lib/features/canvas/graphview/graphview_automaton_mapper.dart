@@ -1,6 +1,6 @@
 //
 //  graphview_automaton_mapper.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utilitário que traduz autômatos finitos para snapshots consumidos pelo
 //  GraphView e reconstrói instâncias do domínio a partir do resultado da
@@ -9,7 +9,7 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart'
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart'
     show GraphViewCanvasController;
 
 import '../../../core/models/fsa.dart';

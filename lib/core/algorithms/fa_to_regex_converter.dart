@@ -1,6 +1,6 @@
 //
 //  fa_to_regex_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o método de eliminação de estados para converter autômatos
 //  finitos em expressões regulares equivalentes. Normaliza a estrutura para

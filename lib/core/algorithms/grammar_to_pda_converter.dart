@@ -1,6 +1,6 @@
 //
 //  grammar_to_pda_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Concentra a conversão de gramáticas livres de contexto em autômatos de
 //  pilha, oferecendo validações, análise de viabilidade e estimativas sobre o

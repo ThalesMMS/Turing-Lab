@@ -1,6 +1,6 @@
 //
 //  state_renamer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utilitário para renomear rótulos de estados em autômatos finitos após
 //  conversões algorítmicas, substituindo IDs internos por nomes legíveis
@@ -72,12 +72,10 @@ class StateRenamer {
     }).toSet();
 
     // Remap initial and accepting states
-    final newInitialState = fsa.initialState != null
-        ? stateMap[fsa.initialState!.id]
-        : null;
-    final newAcceptingStates = fsa.acceptingStates
-        .map((s) => stateMap[s.id] ?? s)
-        .toSet();
+    final newInitialState =
+        fsa.initialState != null ? stateMap[fsa.initialState!.id] : null;
+    final newAcceptingStates =
+        fsa.acceptingStates.map((s) => stateMap[s.id] ?? s).toSet();
 
     return fsa.copyWith(
       states: newStates,

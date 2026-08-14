@@ -1,6 +1,6 @@
 //
 //  tm_editor_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia o estado do editor de máquinas de Turing no canvas, convertendo
 //  interações do usuário em estruturas imutáveis que preservam estados,

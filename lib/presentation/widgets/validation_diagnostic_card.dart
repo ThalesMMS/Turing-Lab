@@ -1,5 +1,5 @@
 //  validation_diagnostic_card.dart
-//  JFlutter
+//  Turing Lab
 //
 //  UI card for rendering a structured ValidationDiagnostic (summary, details,
 //  and suggested fixes). This is used by validation flows to provide actionable
@@ -44,7 +44,8 @@ class ValidationDiagnosticCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (diagnostic.details != null && diagnostic.details!.trim().isNotEmpty)
+            if (diagnostic.details != null &&
+                diagnostic.details!.trim().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
@@ -82,7 +83,8 @@ class ValidationDiagnosticCard extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            if (fix.details != null && fix.details!.trim().isNotEmpty)
+                            if (fix.details != null &&
+                                fix.details!.trim().isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 2),
                                 child: Text(

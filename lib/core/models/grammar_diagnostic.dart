@@ -1,6 +1,6 @@
 //
 //  grammar_diagnostic.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Typed, UI-friendly diagnostics for grammar analyses.
 //

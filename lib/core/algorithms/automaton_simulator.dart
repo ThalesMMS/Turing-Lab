@@ -1,6 +1,6 @@
 //
 //  automaton_simulator.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o motor central de simulação para autômatos finitos, cobrindo
 //  execuções determinísticas e não determinísticas com suporte a rastreamento

@@ -1,7 +1,7 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
-extension _JFlutterAdaptiveEdgeRendererGroupedRendering
-    on JFlutterAdaptiveEdgeRenderer {
+extension _TuringLabAdaptiveEdgeRendererGroupedRendering
+    on TuringLabAdaptiveEdgeRenderer {
   void _renderGroupedFsaEdge(Canvas canvas, Edge edge) {
     final groupedEdges = _groupedEdges(edge);
     if (groupedEdges.isEmpty || !identical(groupedEdges.first, edge)) {

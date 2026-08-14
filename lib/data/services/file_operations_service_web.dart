@@ -1,6 +1,6 @@
 //
 //  file_operations_service_web.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Web-friendly implementation of the FileOperationsService that relies on
 //  in-memory representations instead of direct filesystem access. Only

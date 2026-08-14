@@ -1,6 +1,6 @@
 //
 //  error_banner.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Inline banner that communicates recoverable issues without hiding content.
 //  Provides consistent error, warning, and info messaging with Material 3

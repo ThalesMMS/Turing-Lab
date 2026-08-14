@@ -1,6 +1,6 @@
 //
 //  fsa_to_grammar_converter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Responsável por transformar autômatos finitos em gramáticas regulares,
 //  atribuindo não terminais a estados, gerando produções rotuladas pelas

@@ -1,6 +1,6 @@
 //
 //  algorithm_step_highlight_service.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Orquestra a emissão de destaques de passos de algoritmos com suporte a canais
 //  plugáveis e dispatchers legados, oferecendo provedores Riverpod para integração

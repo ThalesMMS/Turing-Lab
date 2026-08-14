@@ -1,6 +1,6 @@
 //
 //  grammar_diagnostic_severity.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Defines severity levels for grammar diagnostics.
 //

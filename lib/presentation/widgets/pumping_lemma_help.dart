@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_help.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Constrói o painel de apoio teórico exibido ao lado do jogo do Lema do
 //  Bombeamento, reunindo conteúdos de teoria, passos guiados e exemplos em uma
@@ -102,13 +102,13 @@ class _PumpingLemmaHelpState extends ConsumerState<PumpingLemmaHelp> {
             label,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-              fontWeight: isSelected ? FontWeight.w600 : null,
-            ),
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontWeight: isSelected ? FontWeight.w600 : null,
+                ),
           ),
         ),
       ),
@@ -338,9 +338,9 @@ class _PumpingLemmaHelpState extends ConsumerState<PumpingLemmaHelp> {
             child: Text(
               'Example: $example',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
-                fontStyle: FontStyle.italic,
-              ),
+                    fontFamily: 'monospace',
+                    fontStyle: FontStyle.italic,
+                  ),
             ),
           ),
         ],
@@ -395,9 +395,9 @@ class _PumpingLemmaHelpState extends ConsumerState<PumpingLemmaHelp> {
             child: Text(
               result,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ),
         ],

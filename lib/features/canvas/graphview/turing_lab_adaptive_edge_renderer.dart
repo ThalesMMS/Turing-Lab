@@ -3,18 +3,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 
 import 'grouped_fsa_geometry.dart';
 
-part 'jflutter_adaptive_edge_renderer_compat.dart';
-part 'jflutter_adaptive_edge_renderer_grouped_rendering.dart';
-part 'jflutter_adaptive_edge_renderer_grouped_geometry.dart';
-part 'jflutter_adaptive_edge_renderer_label_layout.dart';
-part 'jflutter_adaptive_edge_renderer_cache.dart';
-part 'jflutter_adaptive_edge_renderer_models.dart';
+part 'turing_lab_adaptive_edge_renderer_compat.dart';
+part 'turing_lab_adaptive_edge_renderer_grouped_rendering.dart';
+part 'turing_lab_adaptive_edge_renderer_grouped_geometry.dart';
+part 'turing_lab_adaptive_edge_renderer_label_layout.dart';
+part 'turing_lab_adaptive_edge_renderer_cache.dart';
+part 'turing_lab_adaptive_edge_renderer_models.dart';
 
-enum JFlutterEdgeRenderMode { standard, groupedFsa }
+enum TuringLabEdgeRenderMode { standard, groupedFsa }
 
 const double _selectedStrokeWidth = 4.0;
 const double _normalStrokeWidth = 2.0;
@@ -80,17 +80,17 @@ Path _createDashedPath(Path source) {
   return dashedPath;
 }
 
-/// Thin JFlutter-specific edge renderer layered on top of GraphView's adaptive
+/// Thin Turing Lab-specific edge renderer layered on top of GraphView's adaptive
 /// routing and animation primitives.
-class JFlutterAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
-  JFlutterAdaptiveEdgeRenderer({
+class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
+  TuringLabAdaptiveEdgeRenderer({
     required super.config,
     super.animationConfig,
     this.baseColor = Colors.black,
     this.highlightColor = Colors.blue,
     this.labelSurfaceColor = Colors.white,
     this.labelFontSize = 14.0,
-    this.renderMode = JFlutterEdgeRenderMode.standard,
+    this.renderMode = TuringLabEdgeRenderMode.standard,
   });
 
   Set<String> _highlightedEdgeIds = const <String>{};
@@ -115,7 +115,7 @@ class JFlutterAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   Color highlightColor;
   Color labelSurfaceColor;
   double labelFontSize;
-  JFlutterEdgeRenderMode renderMode;
+  TuringLabEdgeRenderMode renderMode;
 
   @override
   void setGraph(Graph graph) {
@@ -173,7 +173,7 @@ class JFlutterAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
 
   @visibleForTesting
   Path? debugGroupedPathForEdge(Edge edge) {
-    if (renderMode != JFlutterEdgeRenderMode.groupedFsa) {
+    if (renderMode != TuringLabEdgeRenderMode.groupedFsa) {
       return null;
     }
     final groupedGeometry = _representativeGroupedGeometry(edge);
@@ -182,7 +182,7 @@ class JFlutterAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
 
   @visibleForTesting
   Rect? debugGroupedLabelRectForEdge(Edge edge) {
-    if (renderMode != JFlutterEdgeRenderMode.groupedFsa) {
+    if (renderMode != TuringLabEdgeRenderMode.groupedFsa) {
       return null;
     }
     final representative = _groupRepresentative(edge);
@@ -233,7 +233,7 @@ class JFlutterAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       return;
     }
 
-    if (renderMode == JFlutterEdgeRenderMode.groupedFsa) {
+    if (renderMode == TuringLabEdgeRenderMode.groupedFsa) {
       _renderGroupedFsaEdge(canvas, edge);
       return;
     }

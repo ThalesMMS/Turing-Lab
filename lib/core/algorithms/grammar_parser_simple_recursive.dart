@@ -1,6 +1,6 @@
 //
 //  grammar_parser_simple_recursive.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Fornece um analisador sintático recursivo simples para gramáticas livres de
 //  contexto, validando entradas e produzindo derivações passo a passo quando a
@@ -12,7 +12,7 @@
 
 import '../models/grammar.dart';
 import '../models/grammar_parse_report.dart';
-import '../result.dart' as jflutter_result;
+import '../result.dart' as turing_lab_result;
 import 'grammar_parser.dart';
 
 /// Simple recursive descent parser for CFG
@@ -22,7 +22,7 @@ class SimpleRecursiveDescentParser {
 
   SimpleRecursiveDescentParser(this.grammar);
 
-  jflutter_result.Result<GrammarParseReport> parseWithReport(
+  turing_lab_result.Result<GrammarParseReport> parseWithReport(
     String inputString, {
     Duration timeout = const Duration(seconds: 5),
   }) {
@@ -32,14 +32,14 @@ class SimpleRecursiveDescentParser {
       // Validate input
       final validationResult = _validateInput(inputString);
       if (!validationResult.isSuccess) {
-        return jflutter_result.Failure(validationResult.error!);
+        return turing_lab_result.Failure(validationResult.error!);
       }
 
       final result = _parseString(inputString, timeout);
       final elapsed = DateTime.now().difference(start);
 
       if (result != null) {
-        return jflutter_result.Success(
+        return turing_lab_result.Success(
           GrammarParseReport.accepted(
             inputString: inputString,
             executionTime: elapsed,
@@ -47,7 +47,7 @@ class SimpleRecursiveDescentParser {
         );
       }
 
-      return jflutter_result.Success(
+      return turing_lab_result.Success(
         GrammarParseReport.rejected(
           inputString: inputString,
           farthestPosition: _farthestPosition,
@@ -56,12 +56,12 @@ class SimpleRecursiveDescentParser {
         ),
       );
     } catch (e) {
-      return jflutter_result.Failure('Error parsing string: $e');
+      return turing_lab_result.Failure('Error parsing string: $e');
     }
   }
 
   /// Parses a string using recursive descent
-  jflutter_result.Result<ParseResult> parse(
+  turing_lab_result.Result<ParseResult> parse(
     String inputString, {
     Duration timeout = const Duration(seconds: 5),
   }) {
@@ -71,7 +71,7 @@ class SimpleRecursiveDescentParser {
       // Validate input
       final validationResult = _validateInput(inputString);
       if (!validationResult.isSuccess) {
-        return jflutter_result.Failure(validationResult.error!);
+        return turing_lab_result.Failure(validationResult.error!);
       }
 
       // Parse the string
@@ -79,7 +79,7 @@ class SimpleRecursiveDescentParser {
       stopwatch.stop();
 
       if (result != null) {
-        return jflutter_result.Success(
+        return turing_lab_result.Success(
           ParseResult.success(
             inputString: inputString,
             derivations: [result],
@@ -87,28 +87,28 @@ class SimpleRecursiveDescentParser {
           ),
         );
       } else {
-        return jflutter_result.Failure(
+        return turing_lab_result.Failure(
           'String "$inputString" cannot be derived from grammar',
         );
       }
     } catch (e) {
-      return jflutter_result.Failure('Error parsing string: $e');
+      return turing_lab_result.Failure('Error parsing string: $e');
     }
   }
 
   /// Validates the input string
-  jflutter_result.Result<void> _validateInput(String inputString) {
+  turing_lab_result.Result<void> _validateInput(String inputString) {
     // Validate input string symbols
     for (int i = 0; i < inputString.length; i++) {
       final symbol = inputString[i];
       if (!grammar.terminals.contains(symbol)) {
-        return jflutter_result.Failure(
+        return turing_lab_result.Failure(
           'Input string contains invalid symbol: $symbol',
         );
       }
     }
 
-    return const jflutter_result.Success(null);
+    return const turing_lab_result.Success(null);
   }
 
   /// Parses the string using recursive descent

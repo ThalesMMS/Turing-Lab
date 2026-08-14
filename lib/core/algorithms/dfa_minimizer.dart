@@ -1,6 +1,6 @@
 //
 //  dfa_minimizer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Reúne a implementação completa da minimização de autômatos finitos
 //  determinísticos via algoritmo de Hopcroft, incluindo validações, remoção de

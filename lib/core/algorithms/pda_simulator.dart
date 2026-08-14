@@ -1,6 +1,6 @@
 //
 //  pda_simulator.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Reúne o motor de simulação de autômatos de pilha, suportando modos
 //  determinísticos e não determinísticos, aceitação por estado final, pilha

@@ -1,6 +1,6 @@
 //
 //  grammar_diagnostics_report.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Typed container for grammar diagnostics emitted by non-crashing analysis
 //  routines.

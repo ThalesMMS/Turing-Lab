@@ -1,6 +1,6 @@
 //
 //  turing_machine_entity.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modela a entidade de domínio para máquinas de Turing, abrangendo alfabetos,
 //  estados, transições e atributos de aceitação necessários para análises

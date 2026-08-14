@@ -1,6 +1,6 @@
 //
 //  base_trace_viewer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Provê widget base reutilizado pelos visualizadores de traços de FA, PDA e
 //  TM, tratando colapso de listas extensas, seleção de passos e integração

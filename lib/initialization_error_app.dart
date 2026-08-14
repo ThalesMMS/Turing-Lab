@@ -21,7 +21,7 @@ class _InitializationErrorApp extends StatelessWidget {
                       Icon(Icons.error_outline, size: 56),
                       SizedBox(height: 16),
                       Text(
-                        'JFlutter could not finish startup.',
+                        'Turing Lab could not finish startup.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,

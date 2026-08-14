@@ -1,6 +1,6 @@
 //
 //  graphview_link_overlay_utils.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de utilitários que calcula âncoras e posições para sobreposições de
 //  arestas no GraphView, normalizando pontos de controle e loops para manter o

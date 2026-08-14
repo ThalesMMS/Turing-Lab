@@ -1,6 +1,6 @@
 //
 //  automaton_algorithm_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Gerencia a execução de algoritmos formais (conversões, minimização,
 //  equivalência) sobre autômatos, expondo operações reativas que invocam

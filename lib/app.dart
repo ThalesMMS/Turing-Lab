@@ -1,6 +1,6 @@
 //
 //  app.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Configura o widget raiz do aplicativo com ProviderScope, definindo temas
 //  claro e escuro do Material 3 e estabelecendo a HomePage como tela inicial
@@ -17,8 +17,8 @@ import 'presentation/theme/app_theme.dart';
 import 'presentation/widgets/active_session_lifecycle.dart';
 
 /// Main application widget with clean architecture
-class JFlutterApp extends ConsumerWidget {
-  const JFlutterApp({super.key});
+class TuringLabApp extends ConsumerWidget {
+  const TuringLabApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,10 +26,11 @@ class JFlutterApp extends ConsumerWidget {
 
     return ActiveSessionLifecycle(
       child: MaterialApp(
-        title: 'JFlutter',
+        title: 'Turing Lab',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: _resolveThemeMode(settings.themeMode),
+        locale: _resolveLocale(settings.localeCode),
         home: const HomePage(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -46,6 +47,17 @@ class JFlutterApp extends ConsumerWidget {
         return ThemeMode.dark;
       default:
         return ThemeMode.system;
+    }
+  }
+
+  static Locale? _resolveLocale(String? localeCode) {
+    switch (localeCode) {
+      case 'en':
+        return const Locale('en');
+      case 'pt':
+        return const Locale('pt');
+      default:
+        return null;
     }
   }
 }

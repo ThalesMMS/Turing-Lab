@@ -1,6 +1,6 @@
 //
 //  pda_canvas_graphview.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Implementa o canvas especializado de PDA sobre a infraestrutura GraphView compartilhada, sincronizando provedores e destaques. Controla ciclo de vida do controlador, integra canal de highlight e emite callbacks sempre que o autômato é alterado.
 //

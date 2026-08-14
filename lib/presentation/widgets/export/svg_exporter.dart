@@ -1,6 +1,6 @@
 //
 //  svg_exporter.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Utilitário responsável por gerar representações SVG de autômatos, gramáticas
 //  e máquinas de Turing, convertendo entidades do domínio em diagramas vetoriais

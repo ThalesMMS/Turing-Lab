@@ -1,4 +1,4 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
 class _GroupedFsaRenderGeometry {
   const _GroupedFsaRenderGeometry({
@@ -42,20 +42,20 @@ class _DirectedEdgePair {
 
 class _LabelPainterCacheKey {
   _LabelPainterCacheKey({required this.text, required TextStyle style})
-    : colorArgb = style.color?.toARGB32(),
-      fontSize = style.fontSize,
-      fontWeightValue = style.fontWeight?.value,
-      fontStyle = style.fontStyle,
-      fontFamily = style.fontFamily,
-      fontFamilyFallback = style.fontFamilyFallback == null
-          ? null
-          : List<String>.unmodifiable(style.fontFamilyFallback!),
-      letterSpacing = style.letterSpacing,
-      height = style.height,
-      wordSpacing = style.wordSpacing,
-      decoration = style.decoration,
-      decorationColorArgb = style.decorationColor?.toARGB32(),
-      decorationStyle = style.decorationStyle;
+      : colorArgb = style.color?.toARGB32(),
+        fontSize = style.fontSize,
+        fontWeightValue = style.fontWeight?.value,
+        fontStyle = style.fontStyle,
+        fontFamily = style.fontFamily,
+        fontFamilyFallback = style.fontFamilyFallback == null
+            ? null
+            : List<String>.unmodifiable(style.fontFamilyFallback!),
+        letterSpacing = style.letterSpacing,
+        height = style.height,
+        wordSpacing = style.wordSpacing,
+        decoration = style.decoration,
+        decorationColorArgb = style.decorationColor?.toARGB32(),
+        decorationStyle = style.decorationStyle;
 
   final String text;
   final int? colorArgb;
@@ -92,18 +92,18 @@ class _LabelPainterCacheKey {
 
   @override
   int get hashCode => Object.hash(
-    text,
-    colorArgb,
-    fontSize,
-    fontWeightValue,
-    fontStyle,
-    fontFamily,
-    Object.hashAll(fontFamilyFallback ?? const <String>[]),
-    letterSpacing,
-    height,
-    wordSpacing,
-    decoration,
-    decorationColorArgb,
-    decorationStyle,
-  );
+        text,
+        colorArgb,
+        fontSize,
+        fontWeightValue,
+        fontStyle,
+        fontFamily,
+        Object.hashAll(fontFamilyFallback ?? const <String>[]),
+        letterSpacing,
+        height,
+        wordSpacing,
+        decoration,
+        decorationColorArgb,
+        decorationStyle,
+      );
 }

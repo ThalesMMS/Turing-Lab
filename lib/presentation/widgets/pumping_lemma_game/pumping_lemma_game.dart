@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_game.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Entrega o jogo interativo do Lema do Bombeamento com níveis, pontuação e feedback imediato aos estudantes. Orquestra desafios locais, controla estados de rodada e conversa com o provedor de progresso para persistir conquistas e estatísticas.
 //

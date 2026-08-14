@@ -1,6 +1,6 @@
 //
 //  conversion_history_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Preserves conversion workflow history (algorithm steps + before/after
 //  snapshots) so UI can provide before/after comparisons and step review.

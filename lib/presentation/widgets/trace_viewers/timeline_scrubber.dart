@@ -1,6 +1,6 @@
 //
 //  timeline_scrubber.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget de navegação temporal para simulações de autômatos. Provê controle
 //  deslizante (slider) para percorrer passos de execução, permitindo salto

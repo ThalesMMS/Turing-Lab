@@ -1,6 +1,6 @@
 //
 //  pumping_attempt.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Representa uma tentativa no jogo do Lema do Bombeamento, controlando decomposição x,y,z, feedback e datação. Expõe fábricas para tentativas corretas ou incorretas, validações e utilitários para reconstruir cadeias bombeadas durante a experiência interativa.
 //

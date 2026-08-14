@@ -1,6 +1,6 @@
 //
 //  language_comparison_viewer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget para visualização de resultados de comparação de equivalência de
 //  linguagens entre dois autômatos finitos. Exibe o resultado da comparação,

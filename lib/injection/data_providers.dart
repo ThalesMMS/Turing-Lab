@@ -18,7 +18,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 });
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
-  return const SharedPreferencesSettingsRepository();
+  return SharedPreferencesSettingsRepository();
 });
 
 final traceRepositoryProvider = Provider<TraceRepository>((ref) {

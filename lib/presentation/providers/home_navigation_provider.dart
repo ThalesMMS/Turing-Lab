@@ -1,6 +1,6 @@
 //
 //  home_navigation_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Controla a navegação principal da HomePage utilizando um StateNotifier que
 //  mapeia índices simbólicos para os espaços de trabalho de autômatos,

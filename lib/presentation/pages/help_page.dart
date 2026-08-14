@@ -1,6 +1,6 @@
 //
 //  help_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Reúne a documentação interativa com seções temáticas controladas por
 //  PageView e filtros, oferecendo tutoriais guiados para cada módulo de
@@ -11,9 +11,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
+import '../widgets/app_snackbar.dart';
 import '../widgets/help_search_delegate.dart';
 
 part 'help_page_content.dart';
@@ -23,7 +25,16 @@ part 'licenses_help_content.dart';
 /// Help page with interactive documentation and tutorials
 /// Based on JFLAP's HelpAction.java and documentation structure
 class HelpPage extends ConsumerStatefulWidget {
-  const HelpPage({super.key});
+  const HelpPage({
+    super.key,
+    this.externalUrlLauncher = _launchExternalUrl,
+  });
+
+  final Future<bool> Function(Uri uri) externalUrlLauncher;
+
+  static Future<bool> _launchExternalUrl(Uri uri) {
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   ConsumerState<HelpPage> createState() => _HelpPageState();
@@ -88,9 +99,23 @@ class _HelpPageState extends ConsumerState<HelpPage> {
           content: const _HelpArticleContent(articleId: 'troubleshooting'),
         ),
         HelpSection(
-          title: l10n.helpSectionTitle('licenses'),
-          icon: Icons.policy_outlined,
-          content: const _LicensesHelpContent(),
+          title: l10n.helpSectionTitle('about'),
+          icon: Icons.info_outline,
+          content: _LicensesHelpContent(
+            onOpenProject: () async {
+              final opened = await widget.externalUrlLauncher(
+                Uri.parse('https://github.com/ThalesMMS/jflutter'),
+              );
+              if (!opened && mounted) {
+                showAppSnackBar(
+                  context,
+                  message: l10n.aboutProjectOpenError,
+                  tone: AppSnackBarTone.error,
+                );
+              }
+              return opened;
+            },
+          ),
         ),
       ];
 

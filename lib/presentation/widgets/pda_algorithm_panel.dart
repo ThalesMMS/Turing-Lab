@@ -1,6 +1,6 @@
 //
 //  pda_algorithm_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Apresenta hub de algoritmos para autômatos de pilha disponibilizando conversões, verificações e diagnósticos. Coordena chamadas ao serviço de conversão, exibe estados de carregamento e resume resultados textuais para orientar ajustes no PDA.
 //

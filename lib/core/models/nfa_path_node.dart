@@ -1,6 +1,6 @@
 //
 //  nfa_path_node.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Representa um nó na árvore de computação de um NFA, capturando o estado
 //  atual, entrada restante, transição utilizada e ramificações filhas. Permite

@@ -1,6 +1,6 @@
 //
 //  validation_issue_to_diagnostic.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Adapter for converting existing ValidationIssue (string-based) into the
 //  richer ValidationDiagnostic model used by UI overlays.

@@ -1,6 +1,6 @@
 //
 //  graphview_label_field_editor.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget de overlay que permite editar rótulos de transições diretamente no
 //  GraphView, coordenando foco, confirmação e cancelamento com o canvas. A

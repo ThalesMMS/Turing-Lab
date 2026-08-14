@@ -1,6 +1,6 @@
 //
 //  direction_icon.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Ícones visuais para direções de movimento da Máquina de Turing (L/R/S)
 //  com cores diferenciadas e tooltips.

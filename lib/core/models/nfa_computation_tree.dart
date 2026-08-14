@@ -1,6 +1,6 @@
 //
 //  nfa_computation_tree.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Modela a árvore de computação completa de um NFA, armazenando o nó raiz,
 //  metadados sobre a simulação e oferecendo métodos de travessia, análise

@@ -1,6 +1,6 @@
 //
 //  step_explanation.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Minimal shared explanation/diagnostic schema for simulation and conversion
 //  steps.

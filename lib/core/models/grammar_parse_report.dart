@@ -1,6 +1,6 @@
 //
 //  grammar_parse_report.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Structured feedback for grammar parse attempts.
 //

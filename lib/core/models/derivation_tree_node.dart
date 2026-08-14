@@ -1,6 +1,6 @@
 //
 //  derivation_tree_node.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Lightweight derivation/parse tree node model used by grammar tooling.
 //  Kept serializable/UI-friendly; terminal nodes may optionally carry a lexeme

@@ -1,6 +1,6 @@
 //
 //  algorithm_step_viewer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget para exibir detalhes e explicações de um passo específico durante a
 //  execução educacional de algoritmos de conversão (NFA→DFA, minimização,

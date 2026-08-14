@@ -1,7 +1,7 @@
-part of 'jflutter_adaptive_edge_renderer.dart';
+part of 'turing_lab_adaptive_edge_renderer.dart';
 
-extension _JFlutterAdaptiveEdgeRendererLabelLayout
-    on JFlutterAdaptiveEdgeRenderer {
+extension _TuringLabAdaptiveEdgeRendererLabelLayout
+    on TuringLabAdaptiveEdgeRenderer {
   void _paintGroupedEdgeLabels(
     Canvas canvas,
     Edge edge,

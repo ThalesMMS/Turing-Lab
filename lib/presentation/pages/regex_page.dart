@@ -1,6 +1,6 @@
 //
 //  regex_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Centraliza as ferramentas de expressões regulares permitindo validar,
 //  simular e converter padrões em autômatos, reutilizando algoritmos do núcleo

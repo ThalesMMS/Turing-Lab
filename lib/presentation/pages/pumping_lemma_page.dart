@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_page.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Controla o módulo do jogo do Lema do Bombeamento com alternância de seções
 //  para jogo, ajuda e progresso, adaptando o layout a telas móveis e desktop
@@ -38,8 +38,8 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
       body: isMobile
           ? _buildMobileLayout()
           : screenSize.width < 1400
-          ? _buildTabletLayout()
-          : _buildDesktopLayout(),
+              ? _buildTabletLayout()
+              : _buildDesktopLayout(),
     );
   }
 

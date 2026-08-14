@@ -1,6 +1,6 @@
 //
 //  fa_to_regex_step.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Define o modelo detalhado de passos da conversão FA→Regex via eliminação de
 //  estados. Captura estado eliminado, transições de entrada/saída, loops
@@ -110,15 +110,13 @@ class FAToRegexStep {
       baseStep: baseStep,
       stepType: stepType,
       eliminatedState: eliminatedState,
-      incomingStates: incomingStates != null
-          ? Set.unmodifiable(incomingStates)
-          : null,
+      incomingStates:
+          incomingStates != null ? Set.unmodifiable(incomingStates) : null,
       incomingTransitions: incomingTransitions != null
           ? Set.unmodifiable(incomingTransitions)
           : null,
-      outgoingStates: outgoingStates != null
-          ? Set.unmodifiable(outgoingStates)
-          : null,
+      outgoingStates:
+          outgoingStates != null ? Set.unmodifiable(outgoingStates) : null,
       outgoingTransitions: outgoingTransitions != null
           ? Set.unmodifiable(outgoingTransitions)
           : null,
@@ -126,12 +124,10 @@ class FAToRegexStep {
           ? Set.unmodifiable(selfLoopTransitions)
           : null,
       selfLoopRegex: selfLoopRegex,
-      newTransitions: newTransitions != null
-          ? Set.unmodifiable(newTransitions)
-          : null,
-      combinedRegexes: combinedRegexes != null
-          ? List.unmodifiable(combinedRegexes)
-          : null,
+      newTransitions:
+          newTransitions != null ? Set.unmodifiable(newTransitions) : null,
+      combinedRegexes:
+          combinedRegexes != null ? List.unmodifiable(combinedRegexes) : null,
       resultingRegex: resultingRegex,
       addedInitialState: addedInitialState,
       addedFinalState: addedFinalState,
@@ -155,8 +151,7 @@ class FAToRegexStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Validate input automaton',
-        explanation:
-            'Validating the input finite automaton. '
+        explanation: 'Validating the input finite automaton. '
             'The automaton has $stateCount state(s) and $transitionCount transition(s). '
             '${hasInitialState ? "Initial state is present. " : "ERROR: No initial state found. "}'
             '${hasAcceptingStates ? "Accepting states are present." : "ERROR: No accepting states found."}',
@@ -203,8 +198,7 @@ class FAToRegexStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Add new final state',
-        explanation:
-            'Adding a new unique final state ${newFinalState.label}. '
+        explanation: 'Adding a new unique final state ${newFinalState.label}. '
             'All original accepting states {$oldLabels} will have ε-transitions to this new final state. '
             'This normalization ensures the automaton has exactly one accepting state with no outgoing transitions.',
         type: AlgorithmType.faToRegex,
@@ -226,8 +220,7 @@ class FAToRegexStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Select state ${state.label} for elimination',
-        explanation:
-            'Selecting state ${state.label} to eliminate. '
+        explanation: 'Selecting state ${state.label} to eliminate. '
             'We will create new transitions to bypass this state and remove it from the automaton. '
             'After elimination, $remainingStates state(s) will remain.',
         type: AlgorithmType.faToRegex,
@@ -315,10 +308,10 @@ class FAToRegexStep {
         title: hasLoop ? 'Process self-loop' : 'Check for self-loop',
         explanation: hasLoop
             ? 'Found self-loop transition(s) on ${eliminatedState.label}. '
-                  'Combining them into regex: $selfLoopRegex. '
-                  'This expression will be inserted between incoming and outgoing transitions.'
+                'Combining them into regex: $selfLoopRegex. '
+                'This expression will be inserted between incoming and outgoing transitions.'
             : 'No self-loop found on ${eliminatedState.label}. '
-                  'New transitions will directly connect incoming and outgoing states.',
+                'New transitions will directly connect incoming and outgoing states.',
         type: AlgorithmType.faToRegex,
       ),
       stepType: FAToRegexStepType.findSelfLoop,
@@ -427,8 +420,7 @@ class FAToRegexStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Extract final regular expression',
-        explanation:
-            'All intermediate states have been eliminated. '
+        explanation: 'All intermediate states have been eliminated. '
             'The automaton now has only the initial state ${initialState.label} and final state ${finalState.label}. '
             'Extracting the regex from the transition(s) between them: $regex',
         type: AlgorithmType.faToRegex,
@@ -452,8 +444,7 @@ class FAToRegexStep {
         id: id,
         stepNumber: stepNumber,
         title: 'Conversion complete',
-        explanation:
-            'FA to Regex conversion completed successfully. '
+        explanation: 'FA to Regex conversion completed successfully. '
             'Converted automaton with $originalStates state(s) to regular expression: $finalRegex. '
             'Total steps executed: $stepsExecuted. '
             'The resulting regular expression accepts the same language as the original automaton.',
@@ -513,16 +504,13 @@ class FAToRegexStep {
       'stepType': stepType.name,
       'eliminatedState': eliminatedState?.toJson(),
       'incomingStates': incomingStates?.map((s) => s.toJson()).toList(),
-      'incomingTransitions': incomingTransitions
-          ?.map((t) => t.toJson())
-          .toList(),
+      'incomingTransitions':
+          incomingTransitions?.map((t) => t.toJson()).toList(),
       'outgoingStates': outgoingStates?.map((s) => s.toJson()).toList(),
-      'outgoingTransitions': outgoingTransitions
-          ?.map((t) => t.toJson())
-          .toList(),
-      'selfLoopTransitions': selfLoopTransitions
-          ?.map((t) => t.toJson())
-          .toList(),
+      'outgoingTransitions':
+          outgoingTransitions?.map((t) => t.toJson()).toList(),
+      'selfLoopTransitions':
+          selfLoopTransitions?.map((t) => t.toJson()).toList(),
       'selfLoopRegex': selfLoopRegex,
       'newTransitions': newTransitions?.map((t) => t.toJson()).toList(),
       'combinedRegexes': combinedRegexes,
@@ -595,9 +583,8 @@ class FAToRegexStep {
       selfLoopTransitions: readTransitions('selfLoopTransitions'),
       selfLoopRegex: json['selfLoopRegex'] as String?,
       newTransitions: readTransitions('newTransitions'),
-      combinedRegexes: (json['combinedRegexes'] as List?)
-          ?.map((r) => r as String)
-          .toList(),
+      combinedRegexes:
+          (json['combinedRegexes'] as List?)?.map((r) => r as String).toList(),
       resultingRegex: json['resultingRegex'] as String?,
       addedInitialState: addedInitialState,
       addedFinalState: addedFinalState,

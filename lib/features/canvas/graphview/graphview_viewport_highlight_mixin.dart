@@ -1,6 +1,6 @@
 //
 //  graphview_viewport_highlight_mixin.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Mixin que reúne utilidades de viewport e de destaque para controladores do
 //  GraphView, oferecendo animações de zoom, centralização, ajuste automático ao
@@ -14,7 +14,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 
 import '../../../core/models/simulation_highlight.dart';
 import 'graphview_canvas_models.dart';

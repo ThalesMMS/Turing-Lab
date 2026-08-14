@@ -1,6 +1,6 @@
 //
 //  pda_editor_provider.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Declara o estado e o StateNotifier responsáveis por controlar o autômato de
 //  pilha editado no canvas, mantendo transições lambda, escolhas

@@ -1,6 +1,6 @@
 //
 //  help_content_model.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Estrutura leve que representa o conteúdo de ajuda contextual do aplicativo,
 //  incluindo tooltips, painéis explicativos, conceitos de teoria de autômatos

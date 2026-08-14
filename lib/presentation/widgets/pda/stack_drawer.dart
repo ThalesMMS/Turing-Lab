@@ -1,6 +1,6 @@
 //
 //  stack_drawer.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bottom drawer para visualização da pilha do PDA, acessível durante edição
 //  e simulação. Suporta modo compacto para mobile e expandido para desktop.

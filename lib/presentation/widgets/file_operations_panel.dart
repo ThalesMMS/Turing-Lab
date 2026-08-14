@@ -1,6 +1,6 @@
 //
 //  file_operations_panel.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Painel de interface que agrupa ações de salvar, carregar e exportar
 //  autômatos, gramáticas, PDAs e máquinas de Turing nos formatos suportados,
@@ -77,7 +77,7 @@ const _tmCapabilities = _FileOperationCapabilities(
 );
 
 const _kJsonUnreadableFileMessage =
-    'JFlutter could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.';
+    'Turing Lab could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.';
 
 const _kFsaJflapExportButtonKey = ValueKey<String>(
   'fsa_jflap_export_button',
