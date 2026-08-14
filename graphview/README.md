@@ -1,9 +1,9 @@
-# GraphView JFlutter Fork
+# GraphView Turing Lab Fork
 
-This is the vendored GraphView fork used by JFlutter. It is not maintained as a
+This is the vendored GraphView fork used by Turing Lab. It is not maintained as a
 general-purpose graph layout package in this repository. The app imports the
-restricted `package:graphview/graphview_jflutter.dart` barrel so the supported
-surface stays aligned with what JFlutter actually uses.
+restricted `package:graphview/graphview_turing_lab.dart` barrel so the supported
+surface stays aligned with what Turing Lab actually uses.
 
 ## Retained Surface
 
@@ -23,7 +23,7 @@ patches and test coverage are inventoried in `FORK_PATCHES.md`.
 ## Usage
 
 ```dart
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 
 final graph = Graph()
   ..addEdge(Node.Id('start'), Node.Id('end'));
@@ -50,5 +50,5 @@ flutter test --concurrency=1
 flutter analyze
 ```
 
-When changing app-facing API, also run the JFlutter canvas tests from the
+When changing app-facing API, also run the Turing Lab canvas tests from the
 repository root.

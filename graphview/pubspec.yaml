@@ -1,8 +1,8 @@
 name: graphview
 description:  GraphView is used to display data in graph structures. It can display Tree layout, Directed and Layered graph. Useful for Family Tree, Hierarchy View.
 version: 1.5.2
-homepage: https://github.com/ThalesMMS/JFlutter/tree/main/graphview
-repository: https://github.com/ThalesMMS/JFlutter.git
+homepage: https://github.com/ThalesMMS/JFlutter-dev/tree/main/graphview
+repository: https://github.com/ThalesMMS/JFlutter-dev.git
 
 environment:
   sdk: '>=3.6.0 <4.0.0'

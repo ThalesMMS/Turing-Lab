@@ -451,7 +451,7 @@ controller.setInitiallyCollapsedNodes(graph, [node1, node2, node3]);
 |---------|--------|-------|
 | **0.7.0** | Initial deprecation | Builder pattern introduced, old API deprecated |
 | **1.5.0** | Enhanced builder API | Added animations, navigation, expand/collapse features |
-| **1.5.3** | Current | Restricted the JFlutter fork surface to retained app APIs |
+| **1.5.3** | Current | Restricted the Turing Lab fork surface to retained app APIs |
 | **1.6.0** | Planned | Further improvements to builder pattern |
 | **2.0.0** | Planned removal | Deprecated APIs will be removed (estimated Q3 2026) |
 
@@ -568,15 +568,15 @@ test('graph should contain node', () {
 
 ### Q: Where can I find more examples?
 
-**A:** In this vendored JFlutter fork, the old example app has been removed.
-Use the package tests and the JFlutter app canvas integration as the current
+**A:** In this vendored Turing Lab fork, the old example app has been removed.
+Use the package tests and the Turing Lab app canvas integration as the current
 examples of the retained builder API.
 
 ### Q: What if I encounter issues during migration?
 
 **A:**
 1. Check this migration guide for common patterns
-2. Review the package tests and JFlutter app canvas integration
+2. Review the package tests and Turing Lab app canvas integration
 3. Run `flutter analyze` to catch deprecated API usage
 4. Open an issue on GitHub if you find a use case not covered here
 
@@ -591,7 +591,7 @@ examples of the retained builder API.
 If you have questions or encounter issues during migration:
 
 - **Documentation**: See [README.md](README.md) for full API reference
-- **Examples**: Check the package tests and JFlutter app canvas integration
+- **Examples**: Check the package tests and Turing Lab app canvas integration
 - **Issues**: Report problems at https://github.com/nabil6391/graphview/issues
 - **Discussions**: Ask questions in GitHub Discussions
 
@@ -599,7 +599,7 @@ We're committed to making this migration as smooth as possible. The new builder 
 
 ## Complete Fork API Reference
 
-This migration guide covers the core `Node.Id()` and `GraphView.builder()` migration path. For the full JFlutter fork API surface, use [FORK_PATCHES.md](FORK_PATCHES.md) as the authoritative technical inventory of fork-specific APIs, behavior changes, affected files, rationale, and test coverage.
+This migration guide covers the core `Node.Id()` and `GraphView.builder()` migration path. For the full Turing Lab fork API surface, use [FORK_PATCHES.md](FORK_PATCHES.md) as the authoritative technical inventory of fork-specific APIs, behavior changes, affected files, rationale, and test coverage.
 
 Relevant fork API sections:
 
@@ -608,4 +608,4 @@ Relevant fork API sections:
 - [Interaction Patches](FORK_PATCHES.md#interaction-patches) - `GraphViewController` navigation and visibility APIs, plus `NodeDraggingConfiguration`.
 
 Working demonstrations of fork features are covered by package tests and the
-JFlutter app canvas integration.
+Turing Lab app canvas integration.

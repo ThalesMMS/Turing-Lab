@@ -1,11 +1,11 @@
 # Fork Patches
 
-This document inventories JFlutter fork-specific changes to the `graphview`
+This document inventories Turing Lab fork-specific changes to the `graphview`
 package. It is organized by system area so maintainers can see which patches
 remain part of the fork surface, which files they touch, and why they diverge
 from the upstream package.
 
-The JFlutter app imports the restricted `graphview_jflutter.dart` barrel. The
+The Turing Lab app imports the restricted `graphview_turing_lab.dart` barrel. The
 retained layout surface is intentionally narrow: core graph/widget/controller
 APIs, edge renderers, routing helpers, and Sugiyama layered layout support.
 
