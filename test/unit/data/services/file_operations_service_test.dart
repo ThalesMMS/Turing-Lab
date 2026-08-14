@@ -1,6 +1,6 @@
 //
 //  file_operations_service_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes direcionados para o FileOperationsService cobrindo importação JFLAP
 //  em cenários de borda do parser legado, com foco em mensagens previsíveis e
@@ -14,8 +14,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/data/services/file_operations_service.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
 
 void main() {
   group('FileOperationsService JFLAP import edge cases', () {

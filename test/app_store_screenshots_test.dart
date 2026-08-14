@@ -6,20 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/app.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/presentation/providers/automaton_simulation_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/app.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/presentation/providers/automaton_simulation_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -238,7 +238,7 @@ Future<void> _captureForProfile(
         child: SizedBox(
           width: logicalSize.width,
           height: logicalSize.height,
-          child: const JFlutterApp(),
+          child: const TuringLabApp(),
         ),
       ),
     ),

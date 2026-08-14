@@ -6,21 +6,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/data/services/active_session_persistence_service.dart';
-import 'package:jflutter/presentation/providers/active_session_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/providers/regex_editor_provider.dart';
-import 'package:jflutter/presentation/providers/settings_provider.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/data/services/active_session_persistence_service.dart';
+import 'package:turing_lab/presentation/providers/active_session_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/settings_provider.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 void main() {
   group('activeSessionPersistenceProvider', () {

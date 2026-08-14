@@ -1,6 +1,6 @@
 //
 //  cfg_toolkit_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bateria de testes que valida o toolkit de gramáticas livres de contexto,
 //  cobrindo remoção de produções λ e unitárias, eliminação de símbolos inúteis,
@@ -11,9 +11,9 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/cfg/cfg_toolkit.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
 
 void main() {
   group('CFG toolkit (CNF and cleanups)', () {
@@ -50,9 +50,8 @@ void main() {
           final reduced = result.data!;
 
           // Check that lambda productions are removed (except possibly start)
-          final lambdaProds = reduced.productions
-              .where((p) => p.isLambda)
-              .toList();
+          final lambdaProds =
+              reduced.productions.where((p) => p.isLambda).toList();
           expect(
             lambdaProds.length <= 1,
             true,

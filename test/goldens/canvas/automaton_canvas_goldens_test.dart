@@ -1,6 +1,6 @@
 //
 //  automaton_canvas_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para AutomatonGraphViewCanvas, capturando
 //  snapshots de estados críticos do canvas: vazio, estados únicos, múltiplos
@@ -18,14 +18,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/automaton_graphview_canvas.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 
 class _TestAutomatonStateNotifier extends AutomatonStateNotifier {
   _TestAutomatonStateNotifier() : super();

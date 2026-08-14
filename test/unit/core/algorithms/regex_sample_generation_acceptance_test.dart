@@ -1,6 +1,6 @@
 //
 //  regex_sample_generation_acceptance_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Acceptance tests that verify generated sample strings actually match
 //  their source regular expressions. Uses regex-to-NFA conversion and
@@ -10,9 +10,9 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_analyzer.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 
 void main() {
   group('Sample String Generation Acceptance Tests', () {
@@ -31,7 +31,8 @@ void main() {
       expect(
         samplesResult.isSuccess,
         true,
-        reason: 'Failed to generate samples for "$regex": ${samplesResult.error}',
+        reason:
+            'Failed to generate samples for "$regex": ${samplesResult.error}',
       );
       expect(samplesResult.data!.samples, isNotEmpty,
           reason: 'No samples generated for "$regex"');
@@ -64,7 +65,8 @@ void main() {
       }
     }
 
-    test('a*b+ generates samples matching pattern (e.g., b, ab, aab, abbb)', () async {
+    test('a*b+ generates samples matching pattern (e.g., b, ab, aab, abbb)',
+        () async {
       // This is the key acceptance criterion from the spec
       await validateSamplesMatchRegex('a*b+');
 
@@ -224,7 +226,8 @@ void main() {
       }
     });
 
-    test('character class with star [abc]* generates matching samples', () async {
+    test('character class with star [abc]* generates matching samples',
+        () async {
       await validateSamplesMatchRegex('[abc]*');
     });
 
@@ -233,7 +236,8 @@ void main() {
     });
 
     test('samples are sorted by length', () {
-      final result = RegexAnalyzer.generateSampleStrings('(ab)*', maxSamples: 10);
+      final result =
+          RegexAnalyzer.generateSampleStrings('(ab)*', maxSamples: 10);
       expect(result.isSuccess, true);
 
       final samples = result.data!.samples;
@@ -241,7 +245,8 @@ void main() {
         expect(
           samples[i].length,
           lessThanOrEqualTo(samples[i + 1].length),
-          reason: 'Samples not sorted by length: "${samples[i]}" before "${samples[i + 1]}"',
+          reason:
+              'Samples not sorted by length: "${samples[i]}" before "${samples[i + 1]}"',
         );
       }
     });
@@ -327,7 +332,8 @@ void main() {
       expect(nfaResult.isSuccess, true);
 
       for (final sample in result.data!.samples) {
-        final simResult = await AutomatonSimulator.simulate(nfaResult.data!, sample);
+        final simResult =
+            await AutomatonSimulator.simulate(nfaResult.data!, sample);
         expect(simResult.isSuccess, true);
         expect(simResult.data!.accepted, true,
             reason: 'Sample "$sample" should be accepted');

@@ -1,6 +1,6 @@
 //
 //  tm_canvas_graphview_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bateria de testes de widget que verifica o TMCanvasGraphView, assegurando
 //  que o controlador GraphView de máquinas de Turing sincronize estados e
@@ -14,10 +14,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_tm_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

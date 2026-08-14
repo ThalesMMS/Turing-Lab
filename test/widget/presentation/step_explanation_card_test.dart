@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/step_explanation.dart';
-import 'package:jflutter/presentation/widgets/step_explanation_card.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
+import 'package:turing_lab/presentation/widgets/step_explanation_card.dart';
 
 void main() {
   testWidgets('StepExplanationCard renders title, bullets, and suggested fixes',

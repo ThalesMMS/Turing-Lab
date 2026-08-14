@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/pages/regex_page.dart';
-import 'package:jflutter/presentation/providers/regex_editor_provider.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/regex_page.dart';
+import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 
 void main() {
   testWidgets('editing the pattern immediately removes old result cards',

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/data/converters/asset_example_converters.dart';
+import 'package:turing_lab/data/converters/asset_example_converters.dart';
 
 void main() {
   group('PDA asset conversion', () {

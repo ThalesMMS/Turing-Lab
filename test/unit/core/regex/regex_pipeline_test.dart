@@ -1,6 +1,6 @@
 //
 //  regex_pipeline_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que validam o pipeline de expressões regulares até a construção de
 //  autômatos finitos não determinísticos, avaliando literais, concatenação,
@@ -11,10 +11,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/result.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/result.dart';
 
 Future<bool> _accepts(FSA nfa, String input) async {
   final sim = await AutomatonSimulator.simulateNFA(nfa, input);

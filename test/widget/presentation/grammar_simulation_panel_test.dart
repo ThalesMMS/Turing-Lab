@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/grammar_parser.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/widgets/grammar_simulation_panel.dart';
+import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
 
 void main() {
   testWidgets('exposes only available parser strategies', (tester) async {

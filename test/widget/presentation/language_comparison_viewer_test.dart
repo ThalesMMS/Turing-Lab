@@ -1,6 +1,6 @@
 //
 //  language_comparison_viewer_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite abrangente que testa o widget LanguageComparisonViewer, validando
 //  visualização de resultados de comparação de equivalência, exibição de
@@ -18,11 +18,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/equivalence_comparison_result.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
 
 /// Helper function to create a simple test FSA
 FSA _createTestFSA({

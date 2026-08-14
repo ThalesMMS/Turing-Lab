@@ -1,6 +1,6 @@
 //
 //  flutter_test_config.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Global test configuration for golden tests using golden_toolkit.
 //  This file is automatically loaded by Flutter when running tests and ensures

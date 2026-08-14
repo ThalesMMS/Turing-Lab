@@ -1,6 +1,6 @@
 //
 //  mobile_automaton_controls_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes de widget que confirma o comportamento do
 //  MobileAutomatonControls, cobrindo renderização dos botões principais e
@@ -14,8 +14,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/mobile_automaton_controls.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 
 void main() {
   testWidgets('MobileAutomatonControls surfaces canvas and workspace actions', (

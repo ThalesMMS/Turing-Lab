@@ -1,6 +1,6 @@
 //
 //  tm_simulator_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes abrangentes para o simulador de máquinas de Turing, incluindo cenários
 //  determinísticos, alternativas não determinísticas e configurações com múltiplas
@@ -10,11 +10,11 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/tm_simulator.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
+import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

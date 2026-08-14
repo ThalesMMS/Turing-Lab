@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/presentation/providers/trace_step_navigation.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/presentation/providers/trace_step_navigation.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 void main() {
   group('TraceStepNavigation', () {

@@ -1,6 +1,6 @@
 //
 //  pda_canvas_graphview_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite de testes de widget dedicada ao PDACanvasGraphView, certificando que o
 //  controlador GraphView de autômatos de pilha sincronize estados, transições e
@@ -14,9 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/pda_canvas_graphview.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_pda_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

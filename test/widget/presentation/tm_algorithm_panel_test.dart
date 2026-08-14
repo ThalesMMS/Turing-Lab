@@ -5,15 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/common/algorithm_button.dart';
-import 'package:jflutter/presentation/widgets/tm_algorithm_panel.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
 
 class _FakeTmExamplesDataSource extends ExamplesAssetDataSource {
   _FakeTmExamplesDataSource() : example = _buildTmExample();

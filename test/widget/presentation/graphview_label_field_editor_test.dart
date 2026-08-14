@@ -1,6 +1,6 @@
 //
 //  graphview_label_field_editor_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes de widget que avaliam o editor inline de rótulos do GraphView,
 //  garantindo que submissões por teclado e cancelamentos preservem os valores
@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/features/canvas/graphview/graphview_label_field_editor.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_label_field_editor.dart';
 
 void main() {
   testWidgets('GraphViewLabelFieldEditor submits value on Enter', (

@@ -1,6 +1,6 @@
 //
 //  glc_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Coleção de testes que examina o parser de gramáticas livres de contexto e utilitários associados para validar derivação, normalização e análise.
 //  Os cenários detectam recursões, ambiguidades, conversões para CNF e confrontam exemplos importados de bibliotecas de apoio.
@@ -8,9 +8,9 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/grammar_parser.dart';
 
 void main() {
   group('GLC Validation Tests', () {
@@ -21,10 +21,10 @@ void main() {
     late Grammar cnfGrammar;
 
     setUp(() {
-      // Test Case 1: Balanced Parentheses (from jflutter_js/examples)
+      // Test Case 1: Balanced Parentheses (from assets/examples)
       balancedParenthesesGrammar = _createBalancedParenthesesGrammar();
 
-      // Test Case 2: Palindrome Grammar (from jflutter_js/examples)
+      // Test Case 2: Palindrome Grammar (from assets/examples)
       palindromeGrammar = _createPalindromeGrammar();
 
       // Test Case 3: Left Recursive Grammar
@@ -286,7 +286,8 @@ void main() {
         }
       });
 
-      test('Left recursive grammar should handle complex derivations', () async {
+      test('Left recursive grammar should handle complex derivations',
+          () async {
         final testCases = [
           'a', // Simple case
           'aa', // Multiple a's

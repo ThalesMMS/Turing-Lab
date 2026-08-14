@@ -1,6 +1,6 @@
 //
 //  home_page_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para componentes da Home page (navegação e
 //  layout), capturando snapshots de estados críticos: layouts desktop/mobile,
@@ -15,8 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:jflutter/presentation/widgets/desktop_navigation.dart';
-import 'package:jflutter/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 
 // Widget that composes navigation + content area like Home page does
 class _HomePageTestWidget extends StatefulWidget {

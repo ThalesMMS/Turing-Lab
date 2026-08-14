@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/algorithms/tm_simulator.dart';
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
-import 'package:jflutter/presentation/widgets/trace_viewers/pda_trace_viewer.dart';
-import 'package:jflutter/presentation/widgets/trace_viewers/tm_trace_viewer.dart';
-import 'package:jflutter/presentation/widgets/trace_viewers/base_trace_viewer.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/presentation/widgets/trace_viewers/pda_trace_viewer.dart';
+import 'package:turing_lab/presentation/widgets/trace_viewers/tm_trace_viewer.dart';
+import 'package:turing_lab/presentation/widgets/trace_viewers/base_trace_viewer.dart';
 
 class _SpyHighlightService extends SimulationHighlightService {
   final emittedIndices = <int>[];

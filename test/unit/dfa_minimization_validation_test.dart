@@ -1,6 +1,6 @@
 //
 //  dfa_minimization_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que verificam o algoritmo de minimização de DFAs assegurando redução correta de estados sem alterar a linguagem reconhecida.
 //  Englobam autômatos básicos, estruturas redundantes, casos já minimizados e máquinas sem estados de aceitação para checar diagnósticos.
@@ -8,12 +8,12 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/algorithms/dfa_minimizer.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/algorithms/dfa_minimizer.dart';
 import 'dart:math' as math;
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 part 'dfa_minimization_validation_fixtures.dart';

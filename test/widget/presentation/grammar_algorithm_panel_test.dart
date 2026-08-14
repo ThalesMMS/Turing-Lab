@@ -4,18 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/common/algorithm_button.dart';
-import 'package:jflutter/presentation/widgets/grammar_algorithm_panel.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
 
 class _MockGrammarNotifier extends GrammarProvider {
   _MockGrammarNotifier({

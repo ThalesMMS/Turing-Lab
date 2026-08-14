@@ -2,19 +2,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:graphview/graphview_jflutter.dart';
-import 'package:jflutter/features/canvas/graphview/jflutter_adaptive_edge_renderer.dart';
+import 'package:graphview/graphview_turing_lab.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 
-class _InspectableJFlutterAdaptiveEdgeRenderer
-    extends JFlutterAdaptiveEdgeRenderer {
-  _InspectableJFlutterAdaptiveEdgeRenderer()
+class _InspectableTuringLabAdaptiveEdgeRenderer
+    extends TuringLabAdaptiveEdgeRenderer {
+  _InspectableTuringLabAdaptiveEdgeRenderer()
       : super(
           config: EdgeRoutingConfig(
             anchorMode: AnchorMode.dynamic,
             routingMode: RoutingMode.bezier,
             enableRepulsion: true,
           ),
-          renderMode: JFlutterEdgeRenderMode.groupedFsa,
+          renderMode: TuringLabEdgeRenderMode.groupedFsa,
         );
 
   Paint? lastStrokePaint;
@@ -98,12 +98,12 @@ class _ThrowingSourceEdge extends Edge {
 }
 
 void main() {
-  group('JFlutterAdaptiveEdgeRenderer', () {
+  group('TuringLabAdaptiveEdgeRenderer', () {
     late Graph graph;
     late Node source;
     late Node destination;
     late Edge edge;
-    late _InspectableJFlutterAdaptiveEdgeRenderer renderer;
+    late _InspectableTuringLabAdaptiveEdgeRenderer renderer;
 
     setUp(() {
       graph = Graph();
@@ -125,7 +125,7 @@ void main() {
         ..addNode(destination)
         ..addEdgeS(edge);
 
-      renderer = _InspectableJFlutterAdaptiveEdgeRenderer()..setGraph(graph);
+      renderer = _InspectableTuringLabAdaptiveEdgeRenderer()..setGraph(graph);
     });
 
     test('uses thicker strokes for selected edges', () {

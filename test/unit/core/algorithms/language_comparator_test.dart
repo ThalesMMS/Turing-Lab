@@ -1,6 +1,6 @@
 //
 //  language_comparator_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes que valida o LanguageComparator para comparação de
 //  linguagens entre DFAs e NFAs. Cobre cenários de equivalência, não-equivalência,
@@ -11,10 +11,10 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/algorithms/language_comparator.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/algorithms/language_comparator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

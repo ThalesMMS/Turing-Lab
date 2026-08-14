@@ -1,6 +1,6 @@
 //
 //  simulation_panel_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para o painel de simulação, capturando
 //  snapshots de estados críticos: painel vazio, resultados aceitos/rejeitados,
@@ -16,11 +16,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
-import 'package:jflutter/presentation/widgets/simulation_panel.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
 
 class _TestSimulationHighlightService extends SimulationHighlightService {
   @override

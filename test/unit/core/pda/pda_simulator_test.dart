@@ -1,6 +1,6 @@
 //
 //  pda_simulator_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que avaliam o simulador de autômatos de pilha, cobrindo aceitação por
 //  estado final e por pilha vazia, manipulação de símbolos iniciais e uso de
@@ -11,10 +11,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/state.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

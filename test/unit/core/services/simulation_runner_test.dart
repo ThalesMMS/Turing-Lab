@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/algorithms/tm_simulator.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/services/simulation_runner.dart';
-import 'package:jflutter/core/services/simulation_runner_backend_web.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/services/simulation_runner.dart';
+import 'package:turing_lab/core/services/simulation_runner_backend_web.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

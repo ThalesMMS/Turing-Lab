@@ -1,6 +1,6 @@
 //
 //  algorithm_panel_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para o painel de algoritmos, capturando
 //  snapshots de estados críticos: painel vazio, botões de algoritmos, entrada
@@ -16,8 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:jflutter/data/services/file_operations_service.dart';
-import 'package:jflutter/presentation/widgets/algorithm_panel.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 
 class _MockFileOperationsService extends FileOperationsService {
   Future<String?> loadAutomatonFromFile(String path) async {

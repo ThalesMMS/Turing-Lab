@@ -1,6 +1,6 @@
 //
 //  regex_to_nfa_converter_steps_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que cobrem o método convertWithSteps do RegexToNFAConverter,
 //  incluindo a estrutura do resultado (RegexToNFAConversionResult), os
@@ -11,10 +11,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/regex_to_nfa_step.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/regex_to_nfa_step.dart';
 
 void main() {
   // =========================================================================

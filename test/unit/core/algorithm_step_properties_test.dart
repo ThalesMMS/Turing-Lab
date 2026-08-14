@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/dfa_minimization_step.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/nfa_to_dfa_step.dart';
-import 'package:jflutter/core/models/regex_to_nfa_step.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/services/algorithm_step_highlight_extractor.dart';
+import 'package:turing_lab/core/models/dfa_minimization_step.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/nfa_to_dfa_step.dart';
+import 'package:turing_lab/core/models/regex_to_nfa_step.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/services/algorithm_step_highlight_extractor.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

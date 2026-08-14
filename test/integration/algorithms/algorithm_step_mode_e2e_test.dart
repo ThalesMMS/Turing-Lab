@@ -1,6 +1,6 @@
 //
 //  algorithm_step_mode_e2e_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  End-to-end integration tests for step-by-step algorithm execution mode.
 //  Verifies that NFA→DFA conversion, DFA minimization, and FA→Regex conversion
@@ -16,16 +16,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/data/services/trace_persistence_service.dart';
-import 'package:jflutter/presentation/providers/algorithm_step_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_algorithm_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_layout_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_simulation_provider.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/data/services/trace_persistence_service.dart';
+import 'package:turing_lab/presentation/providers/algorithm_step_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_layout_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_simulation_provider.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 
 void main() {
   group('Algorithm Step-by-Step Mode E2E Tests', () {

@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/presentation/pages/settings_page.dart';
-import 'package:jflutter/presentation/widgets/switch_setting_tile.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/settings_page.dart';
+import 'package:turing_lab/presentation/widgets/switch_setting_tile.dart';
 
 Future<void> _pumpSwitchSettingTile(
   WidgetTester tester, {
@@ -46,6 +47,8 @@ Future<void> _pumpSettingsPage(
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(
             size: Size(width, 900),

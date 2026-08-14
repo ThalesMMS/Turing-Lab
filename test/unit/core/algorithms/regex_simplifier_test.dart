@@ -1,6 +1,6 @@
 //
 //  regex_simplifier_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que validam a simplificação de expressões regulares através da
 //  aplicação de identidades algébricas e remoção de parênteses desnecessários,
@@ -10,10 +10,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_simplifier.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/core/algorithms/equivalence_checker.dart';
-import 'package:jflutter/core/models/regex_simplification_step.dart';
+import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/equivalence_checker.dart';
+import 'package:turing_lab/core/models/regex_simplification_step.dart';
 
 part 'regex_simplifier_step_cases.dart';
 

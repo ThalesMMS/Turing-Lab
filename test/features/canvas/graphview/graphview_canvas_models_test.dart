@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_models_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Verifica os modelos de dados utilizados pelo canvas GraphView, confirmando a imutabilidade e a
 //  correta propagação de metadados de transições. Exercita métodos utilitários como copyWith para
@@ -11,7 +11,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
 
 void main() {
   group('GraphViewAutomatonMetadata', () {

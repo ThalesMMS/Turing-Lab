@@ -4,14 +4,14 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/repositories/settings_repository.dart';
-import 'package:jflutter/data/services/trace_persistence_service.dart';
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/presentation/providers/settings_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/repositories/settings_repository.dart';
+import 'package:turing_lab/data/services/trace_persistence_service.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/presentation/providers/settings_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 class _DelayedSettingsRepository implements SettingsRepository {
   _DelayedSettingsRepository(this._completer);

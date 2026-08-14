@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/data/services/file_operations_service.dart';
-import 'package:jflutter/presentation/widgets/algorithm_panel.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 
 class _TestCallbacks {
   int autoLayoutCallCount = 0;

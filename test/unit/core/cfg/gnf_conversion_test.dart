@@ -1,6 +1,6 @@
 //
 //  gnf_conversion_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bateria de testes que valida a conversão de gramáticas livres de contexto
 //  para Forma Normal de Greibach (GNF), verificando que todas as produções
@@ -11,9 +11,9 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/cfg/cfg_toolkit.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
 
 void main() {
   group('GNF Conversion Tests', () {

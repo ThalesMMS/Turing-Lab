@@ -1,6 +1,6 @@
 //
 //  settings_repository_impl_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que confirmam que chaves legadas desconhecidas não interferem nas
 //  preferências atuais persistidas pelo SharedPreferencesSettingsRepository.
@@ -10,9 +10,9 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/data/repositories/settings_repository_impl.dart';
-import 'package:jflutter/data/storage/settings_storage.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/data/repositories/settings_repository_impl.dart';
+import 'package:turing_lab/data/storage/settings_storage.dart';
 
 void main() {
   group('SharedPreferencesSettingsRepository legacy keys', () {
@@ -41,6 +41,16 @@ void main() {
 
       final legacyValue = await storage.readBool('settings_use_draw2d_canvas');
       expect(legacyValue, isTrue);
+    });
+
+    test('round-trips an explicit Portuguese locale preference', () async {
+      await repository.saveSettings(
+        const SettingsModel(localeCode: 'pt'),
+      );
+
+      final settings = await repository.loadSettings();
+
+      expect(settings.localeCode, 'pt');
     });
   });
 }

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/parsers/grammar_xml_codec.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/parsers/grammar_xml_codec.dart';
 
 void main() {
   group('GrammarXmlCodec', () {

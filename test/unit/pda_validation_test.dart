@@ -1,6 +1,6 @@
 //
 //  pda_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes que confirma o comportamento do simulador de autômatos de pilha e da conversão de gramáticas livres de contexto para PDAs.
 //  Inclui cenários determinísticos e não determinísticos com manipulação de pilha, transições lambda e validação de linguagem contra a referência.
@@ -8,13 +8,13 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

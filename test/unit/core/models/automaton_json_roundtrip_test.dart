@@ -1,15 +1,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/automaton.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/serialized_state_resolver.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/automaton.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/serialized_state_resolver.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

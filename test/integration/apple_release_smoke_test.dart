@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/app.dart';
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
-import 'package:jflutter/presentation/widgets/desktop_navigation.dart';
-import 'package:jflutter/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/app.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 
 Future<void> _pumpReleaseApp(
   WidgetTester tester, {
@@ -27,7 +27,7 @@ Future<void> _pumpReleaseApp(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const JFlutterApp(),
+      child: const TuringLabApp(),
     ),
   );
   await tester.pump();

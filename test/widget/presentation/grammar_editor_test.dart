@@ -1,6 +1,6 @@
 //
 //  grammar_editor_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite abrangente que examina o GrammarEditor, garantindo integração com
 //  provedores simulados e validações de interação por formulários. Os testes
@@ -15,9 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/widgets/grammar_editor.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/widgets/grammar_editor.dart';
 
 class _RecordingGrammarProvider extends GrammarProvider {
   _RecordingGrammarProvider() : super();
@@ -289,7 +289,8 @@ void main() {
 
       expect(provider.addProductionCalls, hasLength(1));
       expect(provider.addProductionCalls.single['leftSide'], equals(['S']));
-      expect(provider.addProductionCalls.single['rightSide'], equals(<String>[]));
+      expect(
+          provider.addProductionCalls.single['rightSide'], equals(<String>[]));
       expect(provider.addProductionCalls.single['isLambda'], equals(true));
 
       // Lambda productions are formatted as epsilon in the productions list.

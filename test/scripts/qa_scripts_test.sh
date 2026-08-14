@@ -33,36 +33,36 @@ run_case() {
 
 run_case static_missing 127 \
     "QA_STATUS static_analysis=failed reason=missing_flutter" \
-    JFLUTTER_FLUTTER_BIN=/does/not/exist "$REPO_ROOT/run_static_analysis.sh"
+    TURING_LAB_FLUTTER_BIN=/does/not/exist "$REPO_ROOT/run_static_analysis.sh"
 run_case static_missing_allowed 0 \
     "QA_STATUS static_analysis=skipped reason=missing_flutter" \
-    ALLOW_MISSING_FLUTTER=1 JFLUTTER_FLUTTER_BIN=/does/not/exist \
+    ALLOW_MISSING_FLUTTER=1 TURING_LAB_FLUTTER_BIN=/does/not/exist \
     "$REPO_ROOT/run_static_analysis.sh"
 run_case static_failure 23 \
     "QA_STATUS static_analysis=failed exit_code=23" \
-    FAKE_ANALYZE_EXIT=23 JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" \
+    FAKE_ANALYZE_EXIT=23 TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" \
     "$REPO_ROOT/run_static_analysis.sh"
 run_case static_success 0 "QA_STATUS static_analysis=passed" \
-    JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" "$REPO_ROOT/run_static_analysis.sh"
+    TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" "$REPO_ROOT/run_static_analysis.sh"
 
 run_case suite_missing 127 "QA_RESULT failed reason=missing_flutter" \
-    JFLUTTER_FLUTTER_BIN=/does/not/exist "$REPO_ROOT/run_full_test_suite.sh"
+    TURING_LAB_FLUTTER_BIN=/does/not/exist "$REPO_ROOT/run_full_test_suite.sh"
 run_case suite_missing_allowed 0 "QA_RESULT skipped" \
-    ALLOW_MISSING_FLUTTER=1 JFLUTTER_FLUTTER_BIN=/does/not/exist \
+    ALLOW_MISSING_FLUTTER=1 TURING_LAB_FLUTTER_BIN=/does/not/exist \
     "$REPO_ROOT/run_full_test_suite.sh"
 run_case suite_pub_failure 22 \
     "QA_STATUS flutter_test=skipped reason=dependency_failure" \
-    FAKE_PUB_EXIT=22 JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" \
+    FAKE_PUB_EXIT=22 TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" \
     "$REPO_ROOT/run_full_test_suite.sh"
 run_case suite_analyzer_failure 23 \
     "QA_STATUS flutter_analyze=failed exit_code=23" \
-    FAKE_ANALYZE_EXIT=23 JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" \
+    FAKE_ANALYZE_EXIT=23 TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" \
     "$REPO_ROOT/run_full_test_suite.sh"
 run_case suite_test_failure 24 \
     "QA_STATUS flutter_test=failed exit_code=24" \
-    FAKE_TEST_EXIT=24 JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" \
+    FAKE_TEST_EXIT=24 TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" \
     "$REPO_ROOT/run_full_test_suite.sh"
 run_case suite_success 0 "QA_RESULT passed" \
-    JFLUTTER_FLUTTER_BIN="$FAKE_FLUTTER" "$REPO_ROOT/run_full_test_suite.sh"
+    TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" "$REPO_ROOT/run_full_test_suite.sh"
 
 echo "QA script smoke tests passed"

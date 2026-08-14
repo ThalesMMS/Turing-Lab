@@ -1,6 +1,6 @@
 //
 //  graphview_tm_mapper_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Avalia o GraphViewTmMapper na geração de grafos de máquinas de Turing, incluindo estados,
 //  transições e direções de fita. Simula múltiplas fitas e anotações para assegurar que os dados
@@ -14,12 +14,12 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_tm_mapper.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_tm_mapper.dart';
 
 void main() {
   group('GraphViewTmMapper', () {

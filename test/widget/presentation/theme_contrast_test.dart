@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/theme/app_theme.dart';
+import 'package:turing_lab/presentation/theme/app_theme.dart';
 
 double _contrastRatio(Color foreground, Color background) {
   final foregroundLuminance = foreground.computeLuminance();

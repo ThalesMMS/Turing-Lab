@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/algorithms/dfa_completer.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart';
+import 'package:turing_lab/core/algorithms/dfa_completer.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
 
 void main() {
   group('DFACompleter', () {

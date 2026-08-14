@@ -1,6 +1,6 @@
 //
 //  automaton_graphview_canvas_drag_preview_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Garante que arrastar um estado move o nó visualmente em tempo real, antes
 //  de o ponteiro ser solto (pré-visualização ao vivo via previewStatePosition
@@ -14,13 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/automaton_graphview_canvas.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

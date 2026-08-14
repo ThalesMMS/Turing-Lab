@@ -5,16 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/algorithms/tm_simulator.dart';
-import 'package:jflutter/core/services/simulation_runner.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/pda_simulation_panel.dart';
-import 'package:jflutter/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/services/simulation_runner.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
 
 Future<void> _pumpPanel(
   WidgetTester tester,

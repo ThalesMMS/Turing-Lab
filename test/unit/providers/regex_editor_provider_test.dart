@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/presentation/providers/regex_editor_provider.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 
 void main() {
   group('RegexEditorNotifier', () {

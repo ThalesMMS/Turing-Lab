@@ -1,6 +1,6 @@
 //
 //  examples_roundtrip_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Realiza testes de integração de round-trip para os exemplos embarcados, percorrendo leitura de
 //  assets, serviços de serialização e exportação gráfica. Valida autômatos, gramáticas e máquinas
@@ -12,13 +12,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:math' as math;
 
-import 'package:jflutter/core/entities/grammar_entity.dart';
-import 'package:jflutter/core/entities/turing_machine_entity.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automata;
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
-import 'package:jflutter/presentation/widgets/export/svg_exporter.dart';
+import 'package:turing_lab/core/entities/grammar_entity.dart';
+import 'package:turing_lab/core/entities/turing_machine_entity.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automata;
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/presentation/widgets/export/svg_exporter.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart';
 

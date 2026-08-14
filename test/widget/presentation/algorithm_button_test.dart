@@ -3,7 +3,7 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 
 void main() {
   testWidgets('AlgorithmButton exposes semantic label and hint', (

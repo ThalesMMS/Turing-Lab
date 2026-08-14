@@ -1,6 +1,6 @@
 //
 //  nfa_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Casos de teste que avaliam o simulador de AFNs e a conversão para DFAs garantindo alinhamento com os exemplos clássicos usados como referência.
 //  Os experimentos exploram caminhos não determinísticos, fechos epsilon, símbolos fora do alfabeto e verificações de aceitação versus rejeição.
@@ -8,11 +8,11 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
-import 'package:jflutter/core/algorithms/nfa_to_dfa_converter.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/nfa_to_dfa_converter.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -25,7 +25,7 @@ void main() {
     late FSA complexNFA;
 
     setUp(() {
-      // Test Case 1: Lambda A or AB (from jflutter_js/examples)
+      // Test Case 1: Lambda A or AB (from assets/examples)
       lambdaAOrABNFA = _createLambdaAOrABNFA();
 
       // Test Case 2: Nondeterministic NFA (from Python reference)

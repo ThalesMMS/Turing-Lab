@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/cyk_step.dart';
-import 'package:jflutter/core/models/dfa_minimization_step.dart';
-import 'package:jflutter/core/models/nfa_to_dfa_step.dart';
-import 'package:jflutter/core/models/regex_to_nfa_step.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/typed_algorithm_step.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/cyk_step.dart';
+import 'package:turing_lab/core/models/dfa_minimization_step.dart';
+import 'package:turing_lab/core/models/nfa_to_dfa_step.dart';
+import 'package:turing_lab/core/models/regex_to_nfa_step.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/typed_algorithm_step.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

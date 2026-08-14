@@ -1,6 +1,6 @@
 //
 //  automaton_graphview_canvas_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite abrangente que examina o AutomatonGraphViewCanvas, garantindo
 //  integração com provedores simulados, controlador personalizado e repositório
@@ -17,19 +17,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_label_field_editor.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_link_overlay_utils.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/automaton_graphview_canvas.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_label_field_editor.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_utils.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 
 class _RecordingAutomatonStateNotifier extends AutomatonStateNotifier {
   _RecordingAutomatonStateNotifier() : super();

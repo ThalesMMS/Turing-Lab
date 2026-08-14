@@ -1,6 +1,6 @@
 //
 //  grammar_page_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para componentes da Grammar page
 //  (editor, simulação e algoritmos), capturando snapshots de estados críticos:
@@ -17,12 +17,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/presentation/pages/grammar_page.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/presentation/pages/grammar_page.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 late SharedPreferences _prefs;
 

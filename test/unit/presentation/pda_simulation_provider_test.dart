@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/presentation/providers/pda_simulation_provider.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

@@ -1,6 +1,6 @@
 //
 //  regex_simplification_acceptance_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Acceptance criteria verification for Subtask 5-2:
 //  Verify that '(a|∅)ε' simplifies to 'a' with step display
@@ -10,8 +10,8 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_simplifier.dart';
-import 'package:jflutter/core/models/regex_simplification_step.dart';
+import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
+import 'package:turing_lab/core/models/regex_simplification_step.dart';
 
 void main() {
   group('Acceptance Criteria: Simplification rules with step display', () {
@@ -75,7 +75,8 @@ void main() {
           print('  Rule: ${step.ruleApplied!.displayName}');
           print('  Before: ${step.originalRegex}');
           print('  After: ${step.simplifiedRegex}');
-          print('  Match: "${step.matchedSubexpression}" → "${step.replacementSubexpression}"');
+          print(
+              '  Match: "${step.matchedSubexpression}" → "${step.replacementSubexpression}"');
           print('  Explanation: ${step.ruleExplanation}');
         } else {
           print('  ${step.explanation}');
@@ -152,7 +153,7 @@ void main() {
       // The explanation should be descriptive
       expect(
         step.ruleExplanation!.contains('union') ||
-        step.ruleExplanation!.contains('empty'),
+            step.ruleExplanation!.contains('empty'),
         true,
         reason: 'Explanation should describe the empty union rule',
       );
@@ -176,10 +177,13 @@ void main() {
       final rulesApplied = ruleSteps.map((s) => s.ruleApplied!).toSet();
 
       // Check that we see the expected rules (at least some of them)
-      final hasEmptySetRule = rulesApplied.contains(SimplificationRule.emptyUnion) ||
-          rulesApplied.contains(SimplificationRule.emptyUnionLeft);
-      final hasEpsilonRule = rulesApplied.contains(SimplificationRule.emptyStringConcatenation) ||
-          rulesApplied.contains(SimplificationRule.emptyStringConcatenationLeft);
+      final hasEmptySetRule =
+          rulesApplied.contains(SimplificationRule.emptyUnion) ||
+              rulesApplied.contains(SimplificationRule.emptyUnionLeft);
+      final hasEpsilonRule =
+          rulesApplied.contains(SimplificationRule.emptyStringConcatenation) ||
+              rulesApplied
+                  .contains(SimplificationRule.emptyStringConcatenationLeft);
 
       expect(hasEmptySetRule || hasEpsilonRule, true,
           reason: 'Should apply empty set and/or epsilon removal rules');

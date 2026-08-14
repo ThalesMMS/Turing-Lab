@@ -1,6 +1,6 @@
 //
 //  algorithm_step_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes unitários para modelos de passos de algoritmos educacionais,
 //  abrangendo AlgorithmStep base, NFAToDFAStep, DFAMinimizationStep e
@@ -10,13 +10,13 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/nfa_to_dfa_step.dart';
-import 'package:jflutter/core/models/dfa_minimization_step.dart';
-import 'package:jflutter/core/models/fa_to_regex_step.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/transition.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/nfa_to_dfa_step.dart';
+import 'package:turing_lab/core/models/dfa_minimization_step.dart';
+import 'package:turing_lab/core/models/fa_to_regex_step.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 part 'algorithm_step_fa_to_regex_cases.dart';

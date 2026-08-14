@@ -1,6 +1,6 @@
 //
 //  pda_stack_drawer_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget test suite verifying the PDAStackPanel widget, ensuring correct
 //  rendering of stack state, top element highlighting, push/pop operation
@@ -13,7 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/pda/stack_drawer.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 
 Future<void> _pumpStackPanel(
   WidgetTester tester, {

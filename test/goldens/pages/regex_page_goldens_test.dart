@@ -1,6 +1,6 @@
 //
 //  regex_page_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para componentes da Regex page,
 //  capturando snapshots de estados críticos: layouts desktop/tablet/mobile,
@@ -18,11 +18,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/pages/regex_page.dart';
-import 'package:jflutter/presentation/providers/automaton_algorithm_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/regex_page.dart';
+import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 late SharedPreferences _prefs;
 

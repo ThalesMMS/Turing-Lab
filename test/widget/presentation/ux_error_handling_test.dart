@@ -1,6 +1,6 @@
 //
 //  ux_error_handling_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Extensa suíte de testes de widget dedicada a validar componentes de UX para
 //  tratamento de erros de importação, incluindo banners inline, diálogos e
@@ -17,15 +17,15 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/data/services/file_operations_service.dart';
-import 'package:jflutter/presentation/widgets/error_banner.dart';
-import 'package:jflutter/presentation/widgets/file_operations_panel.dart';
-import 'package:jflutter/presentation/widgets/import_error_dialog.dart';
-import 'package:jflutter/presentation/widgets/retry_button.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/widgets/error_banner.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
+import 'package:turing_lab/presentation/widgets/import_error_dialog.dart';
+import 'package:turing_lab/presentation/widgets/retry_button.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

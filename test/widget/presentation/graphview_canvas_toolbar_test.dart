@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_toolbar_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes de widget que exercita o GraphViewCanvasToolbar,
 //  validando exibição de mensagens de status e disparo dos callbacks de zoom,
@@ -18,14 +18,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/automaton_graphview_canvas.dart';
-import 'package:jflutter/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
+import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 
 class _TestGraphViewCanvasController extends GraphViewCanvasController {
   _TestGraphViewCanvasController({required super.automatonStateNotifier});

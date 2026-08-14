@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/mobile_navigation.dart';
-import 'package:jflutter/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
 
 const _testItems = [
   NavigationItem(

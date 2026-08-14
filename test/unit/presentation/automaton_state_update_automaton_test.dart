@@ -1,6 +1,6 @@
 //
 //  automaton_state_update_automaton_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Unit tests for AutomatonStateNotifier.updateAutomaton.
 //
@@ -11,9 +11,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 
 void main() {
   group('AutomatonStateNotifier', () {

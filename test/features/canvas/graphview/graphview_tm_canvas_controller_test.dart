@@ -1,6 +1,6 @@
 //
 //  graphview_tm_canvas_controller_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Verifica o GraphViewTmCanvasController na orquestração do editor de máquinas de Turing,
 //  garantindo que o grafo responda a interações e eventos emitidos pelo provider. Analisa seleção
@@ -15,13 +15,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_tm_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/data/services/trace_persistence_service.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/data/services/trace_persistence_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

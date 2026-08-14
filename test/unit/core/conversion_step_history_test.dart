@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/conversion_step_history.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/conversion_step_history.dart';
 
 void main() {
   group('ConversionHistory copyWith', () {

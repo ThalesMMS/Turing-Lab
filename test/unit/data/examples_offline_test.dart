@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 
 class _NoNetworkHttpOverrides extends HttpOverrides {
   @override
@@ -121,7 +121,7 @@ void main() {
       );
       expect(
         harness!.requestedAssetKeys.every(
-          (key) => key.startsWith('jflutter_js/examples/'),
+          (key) => key.startsWith('assets/examples/'),
         ),
         isTrue,
       );
@@ -130,7 +130,7 @@ void main() {
     test('reports missing bundled asset failures', () async {
       final result = await _runOffline(() async {
         harness = _AssetBundleHarness(
-          missingAssets: const {'jflutter_js/examples/afd_ends_with_a.json'},
+          missingAssets: const {'assets/examples/afd_ends_with_a.json'},
         );
         harness!.install();
         return ExamplesAssetDataSource().loadTypedFsaExample(
@@ -146,7 +146,7 @@ void main() {
       final result = await _runOffline(() async {
         harness = _AssetBundleHarness(
           overrides: const {
-            'jflutter_js/examples/afd_ends_with_a.json': '{"states": "bad"}',
+            'assets/examples/afd_ends_with_a.json': '{"states": "bad"}',
           },
         );
         harness!.install();

@@ -1,6 +1,6 @@
 //
 //  regex_analyzer_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que validam a análise de expressões regulares, incluindo métricas
 //  de complexidade (star height, nesting depth), contagem de operadores,
@@ -11,8 +11,8 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_analyzer.dart';
-import 'package:jflutter/core/models/regex_analysis.dart';
+import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
+import 'package:turing_lab/core/models/regex_analysis.dart';
 
 void main() {
   group('RegexAnalyzer - star height computation', () {

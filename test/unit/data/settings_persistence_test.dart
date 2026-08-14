@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/core/repositories/settings_repository.dart';
-import 'package:jflutter/data/repositories/settings_repository_impl.dart';
-import 'package:jflutter/data/storage/settings_storage.dart';
-import 'package:jflutter/presentation/providers/settings_provider.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/repositories/settings_repository.dart';
+import 'package:turing_lab/data/repositories/settings_repository_impl.dart';
+import 'package:turing_lab/data/storage/settings_storage.dart';
+import 'package:turing_lab/presentation/providers/settings_provider.dart';
 
 class _RecordingSettingsStorage implements SettingsStorage {
   _RecordingSettingsStorage([Map<String, Object?>? initialValues])
@@ -74,6 +76,30 @@ class _FailingSettingsStorage extends _RecordingSettingsStorage {
   }
 }
 
+class _BlockingLocaleFailureStorage extends _RecordingSettingsStorage {
+  final Completer<void> ptWriteStarted = Completer<void>();
+  final Completer<void> enWriteStarted = Completer<void>();
+  final Completer<void> releasePtWrite = Completer<void>();
+  bool _failedPtWrite = false;
+
+  @override
+  Future<bool> writeString(String key, String value) async {
+    if (key == 'settings_locale_code' && value == 'pt' && !_failedPtWrite) {
+      _failedPtWrite = true;
+      values[key] = value;
+      ptWriteStarted.complete();
+      await releasePtWrite.future;
+      return false;
+    }
+    if (key == 'settings_locale_code' &&
+        value == 'en' &&
+        !enWriteStarted.isCompleted) {
+      enWriteStarted.complete();
+    }
+    return super.writeString(key, value);
+  }
+}
+
 class _ThrowingSettingsRepository implements SettingsRepository {
   @override
   Future<SettingsModel> loadSettings() async {
@@ -90,7 +116,7 @@ Future<void> _flushNotifierLoad() async {
 }
 
 Map<String, Object?> _settingsValues(SettingsModel settings) {
-  return <String, Object?>{
+  final values = <String, Object?>{
     'settings_empty_string_symbol': settings.emptyStringSymbol,
     'settings_theme_mode': settings.themeMode,
     'settings_show_grid': settings.showGrid,
@@ -102,12 +128,17 @@ Map<String, Object?> _settingsValues(SettingsModel settings) {
     'settings_font_size': settings.fontSize,
     'settings_animation_speed': settings.animationSpeed,
   };
+  if (settings.localeCode != null) {
+    values['settings_locale_code'] = settings.localeCode;
+  }
+  return values;
 }
 
 SettingsModel _customSettings() {
   return const SettingsModel(
     emptyStringSymbol: '∅',
     themeMode: 'dark',
+    localeCode: 'pt',
     showGrid: false,
     showCoordinates: true,
     autoSave: false,
@@ -132,7 +163,7 @@ void main() {
       expect(storage.values, isNot(contains('settings_epsilon_symbol')));
     });
 
-    test('saveSettings writes all 10 keys correctly', () async {
+    test('saveSettings writes all 11 keys correctly', () async {
       final storage = _RecordingSettingsStorage();
       final repository = SharedPreferencesSettingsRepository(storage: storage);
       final settings = _customSettings();
@@ -140,7 +171,7 @@ void main() {
       await repository.saveSettings(settings);
 
       expect(storage.values, equals(_settingsValues(settings)));
-      expect(storage.values.length, equals(10));
+      expect(storage.values.length, equals(11));
     });
 
     test('loadSettings restores all persisted settings accurately', () async {
@@ -202,6 +233,35 @@ void main() {
       expect(storage.values, equals(original));
     });
 
+    test('serializes a failed pt save before a later en save', () async {
+      final storage = _BlockingLocaleFailureStorage();
+      addTearDown(() {
+        if (!storage.releasePtWrite.isCompleted) {
+          storage.releasePtWrite.complete();
+        }
+      });
+      final repository = SharedPreferencesSettingsRepository(storage: storage);
+
+      final ptSave = repository.saveSettings(
+        const SettingsModel(localeCode: 'pt'),
+      );
+      final ptFailure = expectLater(ptSave, throwsException);
+      await storage.ptWriteStarted.future;
+
+      final enSave = repository.saveSettings(
+        const SettingsModel(localeCode: 'en'),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(storage.enWriteStarted.isCompleted, isFalse);
+      storage.releasePtWrite.complete();
+
+      await ptFailure;
+      await enSave;
+      expect(storage.enWriteStarted.isCompleted, isTrue);
+      expect(storage.values['settings_locale_code'], 'en');
+    });
+
     test('saveSettings overwrites corrupt persisted values', () async {
       final settings = _customSettings();
       final storage = _RecordingSettingsStorage(<String, Object?>{
@@ -229,6 +289,32 @@ void main() {
       expect(loaded.gridSize, equals(28.0));
     });
 
+    test('uses system locale when the stored locale is missing or invalid',
+        () async {
+      final missingLocale = await SharedPreferencesSettingsRepository(
+        storage: _RecordingSettingsStorage(),
+      ).loadSettings();
+      final invalidLocale = await SharedPreferencesSettingsRepository(
+        storage: _RecordingSettingsStorage({
+          'settings_locale_code': 'fr',
+        }),
+      ).loadSettings();
+
+      expect(missingLocale.localeCode, isNull);
+      expect(invalidLocale.localeCode, isNull);
+    });
+
+    test('saving defaults clears an explicit locale preference', () async {
+      final storage = _RecordingSettingsStorage({
+        'settings_locale_code': 'pt',
+      });
+      final repository = SharedPreferencesSettingsRepository(storage: storage);
+
+      await repository.saveSettings(const SettingsModel());
+
+      expect(storage.values, isNot(contains('settings_locale_code')));
+    });
+
     test('uses per-field defaults when individual keys are missing', () async {
       const defaults = SettingsModel();
       final persisted = _settingsValues(_customSettings());
@@ -240,6 +326,10 @@ void main() {
         'settings_theme_mode': (settings) => expect(
               settings.themeMode,
               equals(defaults.themeMode),
+            ),
+        'settings_locale_code': (settings) => expect(
+              settings.localeCode,
+              equals(defaults.localeCode),
             ),
         'settings_show_grid': (settings) => expect(
               settings.showGrid,

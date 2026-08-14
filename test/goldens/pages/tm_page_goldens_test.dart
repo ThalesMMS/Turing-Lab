@@ -1,6 +1,6 @@
 //
 //  tm_page_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para componentes da TM page (toolbar e
 //  canvas), capturando snapshots de estados críticos: layouts desktop/mobile,
@@ -20,16 +20,16 @@ import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/graphview_tm_canvas_controller.dart';
-import 'package:jflutter/injection/dependency_injection.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
-import 'package:jflutter/presentation/widgets/tm_canvas_graphview.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 
 late SharedPreferences _prefs;
 

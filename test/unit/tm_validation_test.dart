@@ -1,6 +1,6 @@
 //
 //  tm_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Bateria de testes que confronta o simulador de máquinas de Turing com casos reais de aceitação, rejeição e detecção de laços infinitos para validar respostas.
 //  As rotinas montam máquinas variadas, verificam transformações de fita e confirmam limites operacionais alinhados com a implementação de referência.
@@ -8,10 +8,10 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/algorithms/tm_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -26,7 +26,7 @@ void main() {
     late TM loopDetectionTM;
 
     setUp(() {
-      // Test Case 1: Binary to Unary (from jflutter_js/examples)
+      // Test Case 1: Binary to Unary (from assets/examples)
       binaryToUnaryTM = _createBinaryToUnaryTM();
 
       // Test Case 2: Palindrome TM (working DTM with markers)

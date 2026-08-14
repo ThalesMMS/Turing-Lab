@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/widgets/error_banner.dart';
-import 'package:jflutter/presentation/widgets/keyboard_shortcuts_dialog.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/widgets/error_banner.dart';
+import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jflutter/presentation/pages/fsa_page.dart';
-import 'package:jflutter/presentation/pages/regex_page.dart';
-import 'package:jflutter/presentation/pages/grammar_page.dart';
-import 'package:jflutter/presentation/pages/tm_page.dart';
-import 'package:jflutter/presentation/pages/pda_page.dart';
-import 'package:jflutter/presentation/widgets/tablet_layout_container.dart';
-import 'package:jflutter/presentation/providers/grammar_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
-import 'package:jflutter/presentation/pages/pumping_lemma_page.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/fsa_page.dart';
+import 'package:turing_lab/presentation/pages/regex_page.dart';
+import 'package:turing_lab/presentation/pages/grammar_page.dart';
+import 'package:turing_lab/presentation/pages/tm_page.dart';
+import 'package:turing_lab/presentation/pages/pda_page.dart';
+import 'package:turing_lab/presentation/widgets/tablet_layout_container.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/pages/pumping_lemma_page.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 
 Future<Override> _sharedPreferencesOverride() async {
   SharedPreferences.setMockInitialValues({});

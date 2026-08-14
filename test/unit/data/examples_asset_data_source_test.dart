@@ -1,8 +1,8 @@
 //
 //  examples_asset_data_source_test.dart
-//  JFlutter
+//  Turing Lab
 //
-//  Validates the typed examples catalog loaded from jflutter_js/examples.
+//  Validates the typed examples catalog loaded from assets/examples.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -10,13 +10,13 @@
 import 'dart:collection';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 
 class _PdaConfiguration {
   const _PdaConfiguration({

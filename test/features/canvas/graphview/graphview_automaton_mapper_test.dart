@@ -1,6 +1,6 @@
 //
 //  graphview_automaton_mapper_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Confere o GraphViewAutomatonMapper na tradução de autômatos finitos para nós e arestas, cobrindo
 //  casos com loops, transições múltiplas e estados especiais. Verifica se os cálculos de geometria
@@ -14,11 +14,11 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_automaton_mapper.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_automaton_mapper.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
 
 void main() {
   group('GraphViewAutomatonMapper', () {

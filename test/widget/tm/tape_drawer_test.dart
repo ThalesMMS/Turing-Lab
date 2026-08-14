@@ -1,6 +1,6 @@
 //
 //  tm_tape_drawer_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Widget test suite verifying the TMTapePanel widget, ensuring correct
 //  rendering of tape state, head position highlighting, read/write operation
@@ -13,7 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/tm/tape_drawer.dart';
+import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 
 class _CellEditCallback {
   final List<Map<String, dynamic>> editedCells = [];

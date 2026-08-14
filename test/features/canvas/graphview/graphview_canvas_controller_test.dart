@@ -1,6 +1,6 @@
 //
 //  graphview_canvas_controller_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testa o controlador base do canvas GraphView para autômatos, coordenando providers, repositórios
 //  de layout e atualizações de seleção. Inspeciona comandos de layout, zoom e sincronização de
@@ -13,15 +13,15 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:graphview/graphview_jflutter.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/base_graphview_canvas_controller.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/base_graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 
 class _RecordingAutomatonStateNotifier extends AutomatonStateNotifier {
   _RecordingAutomatonStateNotifier() : super();

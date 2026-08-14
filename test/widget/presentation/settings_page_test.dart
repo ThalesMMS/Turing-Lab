@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/models/settings_model.dart';
-import 'package:jflutter/core/repositories/settings_repository.dart';
-import 'package:jflutter/presentation/pages/settings_page.dart';
+import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/repositories/settings_repository.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/settings_page.dart';
+import 'package:turing_lab/presentation/providers/settings_provider.dart';
 
 class _FakeSettingsRepository implements SettingsRepository {
   _FakeSettingsRepository({
@@ -43,11 +46,22 @@ Future<void> _pumpSettingsPage(
 
   await tester.pumpWidget(
     ProviderScope(
-      child: MaterialApp(
-        home: MediaQuery(
-          data: MediaQueryData(size: size),
-          child: SettingsPage(repository: repository),
-        ),
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(repository),
+      ],
+      child: Consumer(
+        builder: (context, ref, child) {
+          final localeCode = ref.watch(settingsProvider).localeCode;
+          return MaterialApp(
+            locale: localeCode == null ? null : Locale(localeCode),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: MediaQuery(
+              data: MediaQueryData(size: size),
+              child: SettingsPage(repository: repository),
+            ),
+          );
+        },
       ),
     ),
   );
@@ -76,6 +90,70 @@ void main() {
   });
 
   group('SettingsPage interactions', () {
+    testWidgets('selecting Portuguese applies and persists the locale', (
+      tester,
+    ) async {
+      final repository = _FakeSettingsRepository();
+      await _pumpSettingsPage(tester, repository: repository);
+
+      final portugueseOption = find.byKey(
+        const ValueKey('settings_language_pt'),
+      );
+      await _ensureVisibleAndTap(tester, portugueseOption);
+
+      expect(repository.savedSettings.last.localeCode, 'pt');
+      expect(find.text('Configurações'), findsOneWidget);
+      expect(
+        tester.widget<FilterChip>(portugueseOption).selected,
+        isTrue,
+      );
+    });
+
+    testWidgets('selecting English applies and persists the locale', (
+      tester,
+    ) async {
+      final repository = _FakeSettingsRepository(
+        initialSettings: const SettingsModel(localeCode: 'pt'),
+      );
+      await _pumpSettingsPage(tester, repository: repository);
+
+      final englishOption = find.byKey(
+        const ValueKey('settings_language_en'),
+      );
+      await _ensureVisibleAndTap(tester, englishOption);
+
+      expect(repository.savedSettings.last.localeCode, 'en');
+      expect(find.text('Settings'), findsOneWidget);
+      expect(tester.widget<FilterChip>(englishOption).selected, isTrue);
+    });
+
+    testWidgets('Portuguese locale localizes the Settings surface', (
+      tester,
+    ) async {
+      await _pumpSettingsPage(
+        tester,
+        repository: _FakeSettingsRepository(
+          initialSettings: const SettingsModel(localeCode: 'pt'),
+        ),
+      );
+
+      for (final text in [
+        'Configurações',
+        'Símbolos',
+        'Tema',
+        'Idioma',
+        'Símbolo da cadeia vazia',
+        'Modo do tema',
+        'Idioma do aplicativo',
+        'Mostrar grade',
+        'Salvamento automático',
+        'Salvar configurações',
+        'Restaurar padrões',
+      ]) {
+        expect(find.text(text), findsAtLeastNWidgets(1));
+      }
+    });
+
     testWidgets('does not advertise an unused epsilon symbol preference', (
       tester,
     ) async {
@@ -146,6 +224,7 @@ void main() {
         initialSettings: const SettingsModel(
           emptyStringSymbol: 'ε',
           themeMode: 'dark',
+          localeCode: 'pt',
           showGrid: false,
           showCoordinates: true,
           autoSave: false,
@@ -171,6 +250,14 @@ void main() {
             .widget<Switch>(
                 find.byKey(const ValueKey('settings_show_grid_switch')))
             .value,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_language_en')),
+            )
+            .selected,
         isTrue,
       );
       expect(
@@ -202,6 +289,52 @@ void main() {
                 find.byKey(const ValueKey('settings_theme_system')))
             .selected,
         isTrue,
+      );
+    });
+
+    testWidgets('failed reset restores the previous settings', (tester) async {
+      final repository = _FakeSettingsRepository(
+        initialSettings: const SettingsModel(
+          themeMode: 'dark',
+          localeCode: 'pt',
+          showGrid: false,
+        ),
+        failOnSave: true,
+      );
+      await _pumpSettingsPage(tester, repository: repository);
+
+      await _ensureVisibleAndTap(
+        tester,
+        find.byKey(const ValueKey('settings_reset_button')),
+      );
+
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_language_pt')),
+            )
+            .selected,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_theme_dark')),
+            )
+            .selected,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<Switch>(
+              find.byKey(const ValueKey('settings_show_grid_switch')),
+            )
+            .value,
+        isFalse,
+      );
+      expect(
+        find.text('Não foi possível salvar as configurações. Tente novamente.'),
+        findsOneWidget,
       );
     });
 

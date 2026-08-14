@@ -1,6 +1,6 @@
 //
 //  simulation_highlight_service_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes que exercitam o SimulationHighlightService, certificando a emissão de
 //  destaques durante a simulação passo a passo e a limpeza adequada por meio do
@@ -10,11 +10,11 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_highlight_channel.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_highlight_controller.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_highlight_channel.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_highlight_controller.dart';
 
 class _FakeHighlightController implements GraphViewHighlightController {
   SimulationHighlight? lastHighlight;

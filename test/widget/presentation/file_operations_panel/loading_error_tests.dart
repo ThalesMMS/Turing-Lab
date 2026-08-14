@@ -322,7 +322,7 @@ void _runFileOperationsPanelLoadingErrorTests(
       final service = _StubFileOperationsService(
         loadAutomatonResponses: Queue.of([
           const Failure<FSA>(
-            'Failed to load automaton from JFLAP format: JFlutter could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.',
+            'Failed to load automaton from JFLAP format: Turing Lab could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.',
           ),
         ]),
       );
@@ -401,7 +401,7 @@ void _runFileOperationsPanelLoadingErrorTests(
       final service = _StubFileOperationsService(
         loadAutomatonResponses: Queue.of([
           const Failure<FSA>(
-            'JFlutter could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.',
+            'Turing Lab could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.',
           ),
         ]),
       );

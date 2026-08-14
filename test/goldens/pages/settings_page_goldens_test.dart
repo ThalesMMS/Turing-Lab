@@ -1,6 +1,6 @@
 //
 //  settings_page_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para a Settings page, capturando snapshots
 //  de estados críticos: layouts desktop/tablet/mobile, configurações padrão,

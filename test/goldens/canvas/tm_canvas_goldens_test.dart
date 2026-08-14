@@ -1,6 +1,6 @@
 //
 //  tm_canvas_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para TMCanvasGraphView, capturando
 //  snapshots de estados críticos do canvas de máquinas de Turing: vazio, estados
@@ -19,14 +19,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/models/tm.dart';
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/features/canvas/graphview/graphview_tm_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
-import 'package:jflutter/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:jflutter/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 
 class _TestTMEditorProvider extends TMEditorNotifier {
   _TestTMEditorProvider();

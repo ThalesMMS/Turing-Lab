@@ -1,18 +1,18 @@
 //
 //  dfa_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
-//  Bateria que compara o simulador de DFAs e o minimizador do JFlutter com autômatos de referência para assegurar aceitação, rejeição e estabilidade da linguagem.
+//  Bateria que compara o simulador de DFAs e o minimizador do Turing Lab com autômatos de referência para assegurar aceitação, rejeição e estabilidade da linguagem.
 //  Inclui verificações da cadeia vazia, de ciclos e da equivalência entre a máquina original e sua versão minimizada.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
-import 'package:jflutter/core/algorithms/dfa_minimizer.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/dfa_minimizer.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -24,10 +24,10 @@ void main() {
     late FSA atLeastFourOnesDFA;
 
     setUp(() {
-      // Test Case 1: Binary divisible by 3 (from jflutter_js/examples)
+      // Test Case 1: Binary divisible by 3 (from assets/examples)
       binaryDivisibleBy3DFA = _createBinaryDivisibleBy3DFA();
 
-      // Test Case 2: Ends with 'a' (from jflutter_js/examples)
+      // Test Case 2: Ends with 'a' (from assets/examples)
       endsWithADFA = _createEndsWithADFA();
 
       // Test Case 4: No consecutive 11s (from Python reference)

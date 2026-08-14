@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/data/services/file_operations_service.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
 
 void main() {
   Uint8List bytes(String xml) => Uint8List.fromList(utf8.encode(xml));

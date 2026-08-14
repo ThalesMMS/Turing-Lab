@@ -1,6 +1,6 @@
 //
 //  transition_editors_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite abrangente de testes para editores de transições, validando
 //  comportamento de formulários PDA, Turing Machine e editores genéricos de
@@ -15,10 +15,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/pda_transition_editor.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/transition_label_editor.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/transition_label_editor.dart';
 
 part 'transition_label_editor_form_cases.dart';
 

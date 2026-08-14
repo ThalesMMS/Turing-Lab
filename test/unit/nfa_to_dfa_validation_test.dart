@@ -1,6 +1,6 @@
 //
 //  nfa_to_dfa_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes focados na conversão de AFNs para DFAs garantindo que a linguagem e os diagnósticos permaneçam equivalentes após o processo.
 //  Abrange exemplos com transições lambda e epsilon, construções complexas e validação dos autômatos resultantes por simulação.
@@ -8,12 +8,12 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/core/algorithms/nfa_to_dfa_converter.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/algorithms/nfa_to_dfa_converter.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

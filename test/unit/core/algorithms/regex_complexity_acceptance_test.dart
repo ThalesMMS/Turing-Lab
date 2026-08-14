@@ -1,6 +1,6 @@
 //
 //  regex_complexity_acceptance_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Acceptance tests for regex complexity analysis verifying star height,
 //  nesting depth, and complexity level calculations.
@@ -9,8 +9,8 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/regex_analyzer.dart';
-import 'package:jflutter/core/models/regex_analysis.dart';
+import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
+import 'package:turing_lab/core/models/regex_analysis.dart';
 
 void main() {
   group('Regex Complexity Analysis - Acceptance Criteria', () {
@@ -153,7 +153,8 @@ void main() {
       });
 
       test('alphabet is extracted correctly', () {
-        expect(analysis.structureAnalysis.alphabet, containsAll(['a', 'b', 'c']));
+        expect(
+            analysis.structureAnalysis.alphabet, containsAll(['a', 'b', 'c']));
         expect(analysis.alphabetSize, equals(3));
       });
 

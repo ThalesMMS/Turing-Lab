@@ -1,6 +1,6 @@
 //
 //  home_page_page_view_stability_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Garante que o PageView da HomePage mantém o mesmo elemento ao alternar
 //  entre módulos com e sem canvas. Recriar a subárvore nessa troca anexava
@@ -14,10 +14,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/injection/data_providers.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/pages/home_page.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/home_page.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

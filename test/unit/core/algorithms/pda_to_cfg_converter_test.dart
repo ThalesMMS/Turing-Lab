@@ -1,6 +1,6 @@
 //
 //  pda_to_cfg_converter_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes que confirma a conversão de autômatos de pilha em
 //  gramáticas livres de contexto, cobrindo a derivação de produções a partir
@@ -15,12 +15,12 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/algorithms/pda_to_cfg_converter.dart';
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/result.dart';
+import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/result.dart';
 
 void main() {
   Vector2 position(double x) => Vector2(x, x);
@@ -98,9 +98,8 @@ void main() {
         final conversion = (result as Success<PdaToCfgConversion>).data;
         final grammar = conversion.grammar;
 
-        final productionStrings = grammar.productions
-            .map(productionToString)
-            .toSet();
+        final productionStrings =
+            grammar.productions.map(productionToString).toSet();
 
         expect(
           productionStrings,
@@ -265,9 +264,8 @@ void main() {
       final conversion = (result as Success<PdaToCfgConversion>).data;
       final grammar = conversion.grammar;
 
-      final productionStrings = grammar.productions
-          .map(productionToString)
-          .toSet();
+      final productionStrings =
+          grammar.productions.map(productionToString).toSet();
 
       expect(productionStrings, contains('[p, Z, q] → λ'));
     });

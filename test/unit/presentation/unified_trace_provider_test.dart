@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/repositories/trace_repository.dart';
-import 'package:jflutter/data/services/trace_persistence_service.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/repositories/trace_repository.dart';
+import 'package:turing_lab/data/services/trace_persistence_service.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 SimulationResult _trace({String input = 'abba'}) {
   return SimulationResult.success(

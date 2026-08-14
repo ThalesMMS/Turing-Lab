@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/presentation/providers/editor_state_helpers.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/providers/editor_state_helpers.dart';
 
 automaton_state.State _state(
   String id, {

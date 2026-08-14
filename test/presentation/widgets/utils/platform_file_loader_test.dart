@@ -5,14 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/data/services/file_operations_service.dart';
-import 'package:jflutter/presentation/widgets/utils/platform_file_loader.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/widgets/utils/platform_file_loader.dart';
 
 void main() {
   group('loadAutomatonFromPlatformFile', () {

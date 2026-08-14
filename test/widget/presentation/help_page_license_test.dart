@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/pages/help_page.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
 
 class _HelpPageTestHelpers {
   // ignore: constant_identifier_names
@@ -20,7 +20,7 @@ class _HelpPageTestHelpers {
       'Copyright (c) 2025 Nabil Mosharraf';
   // ignore: constant_identifier_names
   static const APPLE_THIRD_PARTY_NOTICES_TEXT =
-      'JFlutter Apple Platform Third-Party Notices\n'
+      'Turing Lab Apple Platform Third-Party Notices\n'
       'graphview 1.5.2\n'
       'file_picker 8.3.7';
 
@@ -89,7 +89,7 @@ class _HelpPageTestHelpers {
   }
 
   static Future<void> openLicensesAndSettle(WidgetTester tester) async {
-    await tester.tap(find.text('Licenses'));
+    await tester.tap(find.text('About'));
     await tester.pumpAndSettle();
   }
 
@@ -106,9 +106,14 @@ class _HelpPageTestHelpers {
         const Offset(-240, 0),
       );
     }
-    await tester.ensureVisible(textFinder);
+    final chipFinder = find.ancestor(
+      of: textFinder,
+      matching: find.byType(FilterChip),
+    );
+    final tapTarget = chipFinder.evaluate().isEmpty ? textFinder : chipFinder;
+    await tester.ensureVisible(tapTarget);
     await tester.pumpAndSettle();
-    await tester.tap(textFinder);
+    await tester.tap(tapTarget);
     await tester.pumpAndSettle();
   }
 
@@ -139,20 +144,20 @@ void main() {
   // Original PR smoke test (preserved and extended)
   // ---------------------------------------------------------------------------
 
-  // Uses desktop layout (default 1200x800) so the 'Licenses' ListTile in the
+  // Uses desktop layout (default 1200x800) so the 'About' ListTile in the
   // sidebar is directly tappable without scrolling.
   group('Help page exposes bundled license texts and attribution', () {
     setUp(_HelpPageTestHelpers.setUpAssetMocks);
     tearDown(_HelpPageTestHelpers.tearDownAssetMocks);
 
-    testWidgets('navigating to Licenses tab shows attribution content', (
+    testWidgets('navigating to About shows attribution content', (
       tester,
     ) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester);
 
       await _HelpPageTestHelpers.openLicensesAndSettle(tester);
 
-      expect(find.text('Licenses & Attribution'), findsOneWidget);
+      expect(find.text('About'), findsWidgets);
       expect(find.text('Apache License 2.0'), findsOneWidget);
       expect(find.text('JFLAP 7.1 License'), findsOneWidget);
       expect(find.text('GraphView (MIT License)'), findsOneWidget);
@@ -183,10 +188,10 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
-  // Licenses section navigation – mobile layout (width < 768)
+  // About section navigation – mobile layout (width < 768)
   // ---------------------------------------------------------------------------
 
-  group('Licenses section – mobile layout', () {
+  group('About section – mobile layout', () {
     setUp(_HelpPageTestHelpers.setUpAssetMocks);
     tearDown(_HelpPageTestHelpers.tearDownAssetMocks);
 
@@ -200,32 +205,32 @@ void main() {
       expect(find.byType(FilterChip), findsWidgets);
     });
 
-    testWidgets('tapping Licenses chip shows Licenses content page', (
+    testWidgets('tapping About chip shows About content', (
       tester,
     ) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester,
           size: const Size(430, 932));
 
-      // Scroll the horizontal chip bar to make 'Licenses' visible, then tap.
-      await _HelpPageTestHelpers.ensureVisibleAndTap(tester, 'Licenses');
+      // Scroll the horizontal chip bar to make 'About' visible, then tap.
+      await _HelpPageTestHelpers.ensureVisibleAndTap(tester, 'About');
 
-      expect(find.text('Licenses & Attribution'), findsOneWidget);
+      expect(find.text('Open Source Licenses'), findsOneWidget);
     });
 
     testWidgets(
-      'Licenses chip is a FilterChip in mobile horizontal scrollable nav',
+      'About chip is a FilterChip in mobile horizontal scrollable nav',
       (tester) async {
         await _HelpPageTestHelpers.pumpHelpPage(tester,
             size: const Size(430, 932));
 
         await tester.dragUntilVisible(
-          find.text('Licenses'),
+          find.text('About'),
           find.byType(ListView).first,
           const Offset(-240, 0),
         );
 
         final licensesChip = find.ancestor(
-          of: find.text('Licenses'),
+          of: find.text('About'),
           matching: find.byType(FilterChip),
         );
         expect(licensesChip, findsOneWidget);
@@ -234,14 +239,14 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
-  // Licenses section navigation – desktop layout (width >= 768)
+  // About section navigation – desktop layout (width >= 768)
   // ---------------------------------------------------------------------------
 
-  group('Licenses section – desktop layout', () {
+  group('About section – desktop layout', () {
     setUp(_HelpPageTestHelpers.setUpAssetMocks);
     tearDown(_HelpPageTestHelpers.tearDownAssetMocks);
 
-    testWidgets('Licenses ListTile is visible in sidebar on wide screen', (
+    testWidgets('About ListTile is visible in sidebar on wide screen', (
       tester,
     ) async {
       // Desktop breakpoint is width >= 768.
@@ -251,32 +256,31 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(ListView),
-          matching: find.text('Licenses'),
+          matching: find.text('About'),
         ),
         findsOneWidget,
       );
     });
 
     testWidgets(
-      'tapping Licenses ListTile navigates to license content on desktop',
+      'tapping About ListTile navigates to license content on desktop',
       (tester) async {
         await _HelpPageTestHelpers.pumpHelpPage(tester,
             size: const Size(1200, 800));
 
         await _HelpPageTestHelpers.openLicensesAndSettle(tester);
 
-        expect(find.text('Licenses & Attribution'), findsOneWidget);
+        expect(find.text('Open Source Licenses'), findsOneWidget);
       },
     );
 
-    testWidgets('Licenses entry has policy icon in desktop sidebar', (
+    testWidgets('About entry has info icon in desktop sidebar', (
       tester,
     ) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester,
           size: const Size(1200, 800));
 
-      // Icon.policy_outlined should appear in the sidebar.
-      expect(find.byIcon(Icons.policy_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.info_outline), findsOneWidget);
     });
   });
 
@@ -310,12 +314,12 @@ void main() {
       );
     });
 
-    testWidgets('shows License Texts subsection title', (tester) async {
+    testWidgets('shows Open Source Licenses subsection title', (tester) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester);
 
       await _HelpPageTestHelpers.openLicensesAndSettle(tester);
 
-      expect(find.text('License Texts'), findsOneWidget);
+      expect(find.text('Open Source Licenses'), findsOneWidget);
     });
 
     testWidgets('shows JFLAP Acknowledgments subsection title', (
@@ -553,7 +557,7 @@ void main() {
 
       expect(
         find.textContaining(
-          'Graph visualization library, forked and modified for JFlutter.',
+          'Graph visualization library, forked and modified for Turing Lab.',
         ),
         findsOneWidget,
       );
@@ -633,7 +637,7 @@ void main() {
 
         expect(
           find.textContaining(
-            'JFlutter Apple Platform Third-Party Notices',
+            'Turing Lab Apple Platform Third-Party Notices',
             skipOffstage: false,
           ),
           findsOneWidget,
@@ -748,7 +752,7 @@ void main() {
     setUp(_HelpPageTestHelpers.setUpAssetMocks);
     tearDown(_HelpPageTestHelpers.tearDownAssetMocks);
 
-    testWidgets('Licenses is present alongside other expected sections', (
+    testWidgets('About is present alongside other expected sections', (
       tester,
     ) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester);
@@ -764,7 +768,7 @@ void main() {
         'Pumping Lemma',
         'File Operations',
         'Troubleshooting',
-        'Licenses',
+        'About',
       ]) {
         expect(
           find.text(title),
@@ -774,21 +778,21 @@ void main() {
       }
     });
 
-    testWidgets('Licenses section does not break other sections', (
+    testWidgets('About section does not break other sections', (
       tester,
     ) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester);
 
-      // Navigate to a different section before Licenses to ensure no regressions.
+      // Navigate to a different section before About to ensure no regressions.
       await tester.tap(find.text('Troubleshooting'));
       await tester.pumpAndSettle();
 
       expect(find.text('Troubleshooting'), findsWidgets);
 
-      // Then navigate to Licenses.
+      // Then navigate to About.
       await _HelpPageTestHelpers.openLicensesAndSettle(tester);
 
-      expect(find.text('Licenses & Attribution'), findsOneWidget);
+      expect(find.text('Open Source Licenses'), findsOneWidget);
     });
 
     testWidgets('Help page AppBar title remains correct', (tester) async {
@@ -816,25 +820,25 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Guia rápido'), findsOneWidget);
-      expect(find.textContaining('Bem-vindo ao JFlutter'), findsOneWidget);
+      expect(find.textContaining('Bem-vindo ao Turing Lab'), findsOneWidget);
       expect(find.text('Entendi!'), findsOneWidget);
     });
   });
 
   // ---------------------------------------------------------------------------
-  // Regression: Licenses section does not interfere with scrolling
+  // Regression: About section does not interfere with scrolling
   // ---------------------------------------------------------------------------
 
-  group('Regression: Licenses content scrollability', () {
+  group('Regression: About content scrollability', () {
     setUp(_HelpPageTestHelpers.setUpAssetMocks);
     tearDown(_HelpPageTestHelpers.tearDownAssetMocks);
 
-    testWidgets('Licenses content is inside a scrollable view', (tester) async {
+    testWidgets('About content is inside a scrollable view', (tester) async {
       await _HelpPageTestHelpers.pumpHelpPage(tester);
 
       await _HelpPageTestHelpers.openLicensesAndSettle(tester);
 
-      final licensesHeaderFinder = find.text('Licenses & Attribution');
+      final licensesHeaderFinder = find.text('Open Source Licenses');
 
       expect(licensesHeaderFinder, findsOneWidget);
       expect(

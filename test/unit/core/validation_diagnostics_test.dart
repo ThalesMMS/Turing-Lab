@@ -4,12 +4,12 @@ import 'dart:math';
 
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/step_explanation.dart';
-import 'package:jflutter/core/models/validation_diagnostic.dart';
-import 'package:jflutter/core/validators/input_validators.dart';
-import 'package:jflutter/core/validators/validation_issue_to_diagnostic.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
+import 'package:turing_lab/core/models/validation_diagnostic.dart';
+import 'package:turing_lab/core/validators/input_validators.dart';
+import 'package:turing_lab/core/validators/validation_issue_to_diagnostic.dart';
 
 void main() {
   group('Validation diagnostics mapping (codes + highlight targets)', () {

@@ -1,6 +1,6 @@
 //
 //  result_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes unitários que asseguram o comportamento das extensões da classe Result ao propagar sucessos e falhas.
 //  Valida especialmente o método mapOrElse preservando mensagens de erro e tipos em cenários de falha.
@@ -8,7 +8,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/result.dart';
+import 'package:turing_lab/core/result.dart';
 
 void main() {
   group('Result.mapOrElse', () {

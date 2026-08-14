@@ -1,6 +1,6 @@
 //
 //  import_error_dialog_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para o diálogo de erro de importação,
 //  capturando snapshots de todos os tipos de erro (JFF malformado, JSON
@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:jflutter/presentation/widgets/import_error_dialog.dart';
+import 'package:turing_lab/presentation/widgets/import_error_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -76,7 +76,7 @@ void main() {
           fileName: 'icloud_drive_automaton.json',
           errorType: ImportErrorType.inaccessibleFile,
           detailedMessage:
-              'JFlutter could not access the selected file. Pick it again from the system dialog and keep it available until the import finishes.',
+              'Turing Lab could not access the selected file. Pick it again from the system dialog and keep it available until the import finishes.',
           onRetry: () {},
           onCancel: () {},
         ),

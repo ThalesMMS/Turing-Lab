@@ -1,6 +1,6 @@
 //
 //  grammar_to_pda_validation_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite que garante a fidelidade da conversão de gramáticas livres de contexto em autômatos de pilha mantendo equivalência de linguagem.
 //  Cobre gramáticas simples, produções lambda e estruturas complexas validando o PDA resultante por simulação.
@@ -8,10 +8,10 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
 
 void main() {
   group('Grammar to PDA Conversion Tests', () {

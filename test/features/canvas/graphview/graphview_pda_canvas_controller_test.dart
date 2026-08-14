@@ -1,6 +1,6 @@
 //
 //  graphview_pda_canvas_controller_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Avalia o GraphViewPdaCanvasController na mediação entre o editor de PDA e o canvas, garantindo
 //  sincronia das transições com a pilha. Exercita construção do grafo, seleção de elementos e
@@ -15,13 +15,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_pda_canvas_controller.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

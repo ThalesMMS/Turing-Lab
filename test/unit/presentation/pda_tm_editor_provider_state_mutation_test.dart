@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/presentation/providers/pda_editor_provider.dart';
-import 'package:jflutter/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 
 void main() {
   group('PDAEditorNotifier state mutations', () {

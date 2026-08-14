@@ -1,6 +1,6 @@
 //
 //  graphview_pda_mapper_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Valida o GraphViewPdaMapper ao converter autômatos de pilha em estruturas de grafo, assegurando
 //  que estados, transições e metadados de pilha sejam preservados. Exercita cenários com múltiplos
@@ -14,12 +14,12 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:jflutter/core/models/pda.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/transition.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_pda_mapper.dart';
+import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_pda_mapper.dart';
 
 void main() {
   group('GraphViewPdaMapper', () {

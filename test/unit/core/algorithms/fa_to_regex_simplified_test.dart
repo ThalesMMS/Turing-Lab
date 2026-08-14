@@ -1,6 +1,6 @@
 //
 //  fa_to_regex_simplified_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Suite que verifica a conversão de autômatos finitos para expressões regulares
 //  com simplificação algébrica ativada. Os casos testam se a simplificação produz
@@ -10,12 +10,12 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart';
-import 'package:jflutter/core/models/fsa_transition.dart';
-import 'package:jflutter/core/algorithms/fa_to_regex_converter.dart';
-import 'package:jflutter/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:jflutter/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/algorithms/fa_to_regex_converter.dart';
+import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -86,9 +86,13 @@ void main() {
           final regex = result.data!;
           // Should be epsilon, empty, or a form that accepts only empty string
           expect(
-            regex.contains('ε') || regex.isEmpty || regex == '∅' || regex.contains('λ'),
+            regex.contains('ε') ||
+                regex.isEmpty ||
+                regex == '∅' ||
+                regex.contains('λ'),
             true,
-            reason: 'FA accepting only epsilon should produce epsilon-like regex: got "$regex"',
+            reason:
+                'FA accepting only epsilon should produce epsilon-like regex: got "$regex"',
           );
         }
       });
@@ -110,14 +114,10 @@ void main() {
           final simplified = simplifiedResult.data!;
 
           // Count parentheses
-          final unsimplifiedParenCount = unsimplified
-              .split('')
-              .where((c) => c == '(')
-              .length;
-          final simplifiedParenCount = simplified
-              .split('')
-              .where((c) => c == '(')
-              .length;
+          final unsimplifiedParenCount =
+              unsimplified.split('').where((c) => c == '(').length;
+          final simplifiedParenCount =
+              simplified.split('').where((c) => c == '(').length;
 
           expect(
             simplifiedParenCount,
@@ -228,7 +228,8 @@ void main() {
         }
       });
 
-      test('Simplified and unsimplified regexes should be equivalent', () async {
+      test('Simplified and unsimplified regexes should be equivalent',
+          () async {
         final fa = _createComplexFA();
 
         final unsimplifiedResult = FAToRegexConverter.convert(fa);
@@ -312,7 +313,10 @@ void main() {
           // Cyclic FA accepting a* should produce regex with * or ε (for empty string)
           // The result might also be empty set if conversion failed
           expect(
-            regex.contains('*') || regex == 'ε' || regex == '∅' || regex.isNotEmpty,
+            regex.contains('*') ||
+                regex == 'ε' ||
+                regex == '∅' ||
+                regex.isNotEmpty,
             true,
             reason: 'Cyclic FA should produce valid regex: got "$regex"',
           );
@@ -433,9 +437,14 @@ void main() {
           final regex = result.data!;
           // Single accepting state with no transitions should produce epsilon-like result
           expect(
-            regex.contains('ε') || regex.isEmpty || regex == '∅' || regex.contains('λ') || regex.isNotEmpty,
+            regex.contains('ε') ||
+                regex.isEmpty ||
+                regex == '∅' ||
+                regex.contains('λ') ||
+                regex.isNotEmpty,
             true,
-            reason: 'Single accepting state should produce valid regex: got "$regex"',
+            reason:
+                'Single accepting state should produce valid regex: got "$regex"',
           );
         }
       });

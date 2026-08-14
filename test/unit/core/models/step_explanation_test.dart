@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/step_explanation.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
 
 void main() {
   group('StepExplanation equality', () {

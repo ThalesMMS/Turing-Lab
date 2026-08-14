@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/data/services/active_session_persistence_service.dart';
-import 'package:jflutter/presentation/providers/active_session_provider.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
-import 'package:jflutter/presentation/widgets/active_session_lifecycle.dart';
+import 'package:turing_lab/data/services/active_session_persistence_service.dart';
+import 'package:turing_lab/presentation/providers/active_session_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/widgets/active_session_lifecycle.dart';
 
 void main() {
   testWidgets('paused lifecycle flushes a pending active session',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/widgets/base_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/base_simulation_panel.dart';
 
 Future<void> _pumpSharedSimulationWidget(
   WidgetTester tester,

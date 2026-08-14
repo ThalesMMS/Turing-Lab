@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/services/algorithm_step_highlight_service.dart';
-import 'package:jflutter/core/services/highlight_channel.dart';
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/services/algorithm_step_highlight_service.dart';
+import 'package:turing_lab/core/services/highlight_channel.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 
 void main() {
   group('HighlightDispatchController', () {

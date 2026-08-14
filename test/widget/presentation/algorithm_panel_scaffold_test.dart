@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/result.dart';
-import 'package:jflutter/data/models/asset_example.dart';
-import 'package:jflutter/presentation/widgets/algorithm_panel_scaffold.dart';
-import 'package:jflutter/presentation/widgets/common/algorithm_button_config.dart';
+import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/data/models/asset_example.dart';
+import 'package:turing_lab/presentation/widgets/algorithm_panel_scaffold.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button_config.dart';
 
 void main() {
   testWidgets('AlgorithmPanelScaffold renders title and children in card', (
@@ -29,7 +29,8 @@ void main() {
     expect(find.text('Panel body'), findsOneWidget);
   });
 
-  testWidgets('AlgorithmButtonList renders configs with spacing and callbacks', (
+  testWidgets('AlgorithmButtonList renders configs with spacing and callbacks',
+      (
     tester,
   ) async {
     var tapped = false;

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/grammar_cnf_transformer.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/grammar_diagnostic_severity.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/grammar_cnf_transformer.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
+import 'package:turing_lab/core/models/production.dart';
 
 Grammar buildGrammar({
   String id = 'g',

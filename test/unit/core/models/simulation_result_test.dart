@@ -1,6 +1,6 @@
 //
 //  simulation_result_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Tests for SimulationResult model, verifying that it correctly stores
 //  simulation data, serializes to/from JSON, and includes optional
@@ -10,10 +10,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/nfa_computation_tree.dart';
-import 'package:jflutter/core/models/nfa_path_node.dart';
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/nfa_computation_tree.dart';
+import 'package:turing_lab/core/models/nfa_path_node.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
 
 void main() {
   group('SimulationResult', () {

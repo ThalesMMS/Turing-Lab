@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/presentation/widgets/automaton_workspace_scaffold.dart';
-import 'package:jflutter/presentation/widgets/tablet_layout_container.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
+import 'package:turing_lab/presentation/widgets/tablet_layout_container.dart';
 
 void main() {
   Future<void> pumpWorkspace(

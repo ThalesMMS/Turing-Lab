@@ -1,6 +1,6 @@
 //
 //  pumping_lemma_game_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes do modo jogo do lema do bombeamento, garantindo inicialização limpa,
 //  progressão linear pelos desafios, registro de respostas corretas e incorretas
@@ -13,8 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/presentation/providers/pumping_lemma_progress_provider.dart';
-import 'package:jflutter/presentation/widgets/pumping_lemma_game/pumping_lemma_game.dart';
+import 'package:turing_lab/presentation/providers/pumping_lemma_progress_provider.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma_game/pumping_lemma_game.dart';
 
 Future<void> _pumpGame(WidgetTester tester) async {
   await tester.pumpWidget(
@@ -224,7 +224,8 @@ void main() {
     });
 
     group('PumpingLemmaGame scoring UI', () {
-      testWidgets('does not offer retry after a correct answer', (tester) async {
+      testWidgets('does not offer retry after a correct answer',
+          (tester) async {
         await _pumpGame(tester);
         await _tapVisibleText(tester, 'Start Game');
         await _answerCorrectly(tester, pumpingLemmaChallenges.first);

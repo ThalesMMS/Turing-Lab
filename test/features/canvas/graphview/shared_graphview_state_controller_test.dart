@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/features/canvas/graphview/base_graphview_canvas_controller.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_canvas_models.dart';
-import 'package:jflutter/features/canvas/graphview/graphview_state_notifier_adapter.dart';
+import 'package:turing_lab/features/canvas/graphview/base_graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_state_notifier_adapter.dart';
 
 class _StateRecord {
   const _StateRecord({

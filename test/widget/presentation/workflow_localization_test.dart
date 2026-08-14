@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/widgets/common/algorithm_button.dart';
-import 'package:jflutter/presentation/widgets/grammar_simulation_panel.dart';
-import 'package:jflutter/presentation/widgets/pda_simulation_panel.dart';
-import 'package:jflutter/presentation/widgets/simulation_panel.dart';
-import 'package:jflutter/presentation/widgets/tm_simulation_panel.dart';
-import 'package:jflutter/presentation/widgets/trace_viewers/base_trace_viewer.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/trace_viewers/base_trace_viewer.dart';
 
 void main() {
   testWidgets('localizes the FSA simulation surface in Portuguese',

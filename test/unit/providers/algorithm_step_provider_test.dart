@@ -1,6 +1,6 @@
 //
 //  algorithm_step_provider_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Unit tests for AlgorithmStepProvider, verifying step navigation,
 //  history panel visibility, and state management.
@@ -11,8 +11,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/presentation/providers/algorithm_step_provider.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/presentation/providers/algorithm_step_provider.dart';
 
 void main() {
   group('AlgorithmStepProvider', () {

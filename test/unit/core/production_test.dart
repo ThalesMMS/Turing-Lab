@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/models/production.dart';
 
 void main() {
   group('Production equality', () {

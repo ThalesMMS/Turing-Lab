@@ -3,13 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/conversion_step_history.dart';
-import 'package:jflutter/core/models/fsa.dart';
-import 'package:jflutter/core/models/state.dart' as automaton_state;
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/widgets/before_after_comparison.dart';
-import 'package:jflutter/presentation/widgets/fsa_conversion_comparison_panel.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/conversion_step_history.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/widgets/before_after_comparison.dart';
+import 'package:turing_lab/presentation/widgets/fsa_conversion_comparison_panel.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

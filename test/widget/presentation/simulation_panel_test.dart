@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/simulation_result.dart';
-import 'package:jflutter/core/models/simulation_step.dart';
-import 'package:jflutter/core/models/simulation_highlight.dart';
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
-import 'package:jflutter/presentation/widgets/simulation_panel.dart';
+import 'package:turing_lab/core/models/simulation_result.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
 
 class _TestSimulationHighlightService extends SimulationHighlightService {
   int clearCallCount = 0;

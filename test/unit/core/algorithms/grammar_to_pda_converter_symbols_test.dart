@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:jflutter/core/algorithms/pda_simulator.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/pda_transition.dart';
-import 'package:jflutter/core/models/production.dart';
+import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/production.dart';
 
 void main() {
   test('preserves multi-character grammar symbols on the PDA stack', () {

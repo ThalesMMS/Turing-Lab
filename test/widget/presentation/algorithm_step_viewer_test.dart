@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jflutter/core/models/algorithm_step.dart';
-import 'package:jflutter/core/models/cyk_step.dart';
-import 'package:jflutter/core/models/nfa_to_dfa_step.dart';
-import 'package:jflutter/core/models/state.dart' as automata;
-import 'package:jflutter/core/models/typed_algorithm_step.dart';
-import 'package:jflutter/presentation/widgets/algorithm_step_renderer_registry.dart';
-import 'package:jflutter/presentation/widgets/algorithm_step_viewer.dart';
-import 'package:jflutter/presentation/widgets/step_navigation_controls.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
+import 'package:turing_lab/core/models/cyk_step.dart';
+import 'package:turing_lab/core/models/nfa_to_dfa_step.dart';
+import 'package:turing_lab/core/models/state.dart' as automata;
+import 'package:turing_lab/core/models/typed_algorithm_step.dart';
+import 'package:turing_lab/presentation/widgets/algorithm_step_renderer_registry.dart';
+import 'package:turing_lab/presentation/widgets/algorithm_step_viewer.dart';
+import 'package:turing_lab/presentation/widgets/step_navigation_controls.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 class _TestCallbacks {

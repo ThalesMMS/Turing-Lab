@@ -1,6 +1,6 @@
 //
 //  transition_editor_goldens_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Testes golden de regressão visual para editores de transições (PDA, TM, e
 //  genérico), capturando snapshots de estados críticos: valores iniciais,
@@ -15,10 +15,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:jflutter/core/models/tm_transition.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/pda_transition_editor.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
-import 'package:jflutter/presentation/widgets/transition_editors/transition_label_editor.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
+import 'package:turing_lab/presentation/widgets/transition_editors/transition_label_editor.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,15 +33,14 @@ void main() {
           isLambdaInput: false,
           isLambdaPop: false,
           isLambdaPush: false,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -59,15 +58,14 @@ void main() {
           isLambdaInput: false,
           isLambdaPop: false,
           isLambdaPush: false,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -85,15 +83,14 @@ void main() {
           isLambdaInput: true,
           isLambdaPop: false,
           isLambdaPush: false,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -111,15 +108,14 @@ void main() {
           isLambdaInput: false,
           isLambdaPop: true,
           isLambdaPush: false,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -137,15 +133,14 @@ void main() {
           isLambdaInput: false,
           isLambdaPop: false,
           isLambdaPush: true,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -163,15 +158,14 @@ void main() {
           isLambdaInput: true,
           isLambdaPop: true,
           isLambdaPush: true,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -189,15 +183,14 @@ void main() {
           isLambdaInput: false,
           isLambdaPop: false,
           isLambdaPush: false,
-          onSubmit:
-              ({
-                required readSymbol,
-                required popSymbol,
-                required pushSymbol,
-                required lambdaInput,
-                required lambdaPop,
-                required lambdaPush,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required popSymbol,
+            required pushSymbol,
+            required lambdaInput,
+            required lambdaPop,
+            required lambdaPush,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -216,12 +209,11 @@ void main() {
           initialRead: 'a',
           initialWrite: 'b',
           initialDirection: TapeDirection.right,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -236,12 +228,11 @@ void main() {
           initialRead: 'x',
           initialWrite: 'y',
           initialDirection: TapeDirection.left,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -256,12 +247,11 @@ void main() {
           initialRead: '0',
           initialWrite: '1',
           initialDirection: TapeDirection.stay,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -276,12 +266,11 @@ void main() {
           initialRead: '',
           initialWrite: '',
           initialDirection: TapeDirection.right,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -296,12 +285,11 @@ void main() {
           initialRead: '_',
           initialWrite: '_',
           initialDirection: TapeDirection.right,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),
@@ -316,12 +304,11 @@ void main() {
           initialRead: 'abc',
           initialWrite: 'xyz',
           initialDirection: TapeDirection.left,
-          onSubmit:
-              ({
-                required readSymbol,
-                required writeSymbol,
-                required direction,
-              }) {},
+          onSubmit: ({
+            required readSymbol,
+            required writeSymbol,
+            required direction,
+          }) {},
           onCancel: () {},
         ),
         surfaceSize: const Size(400, 600),

@@ -3,16 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jflutter/core/services/simulation_highlight_service.dart';
-import 'package:jflutter/l10n/app_localizations.dart';
-import 'package:jflutter/presentation/pages/help_page.dart';
-import 'package:jflutter/presentation/providers/automaton_state_provider.dart';
-import 'package:jflutter/presentation/providers/home_navigation_provider.dart';
-import 'package:jflutter/presentation/pages/home_page.dart';
-import 'package:jflutter/presentation/pages/settings_page.dart';
-import 'package:jflutter/presentation/widgets/mobile_navigation.dart';
-import 'package:jflutter/presentation/widgets/desktop_navigation.dart';
-import 'package:jflutter/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/pages/home_page.dart';
+import 'package:turing_lab/presentation/pages/settings_page.dart';
+import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 
 late SharedPreferences _prefs;
 

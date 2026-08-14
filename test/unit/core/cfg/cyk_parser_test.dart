@@ -1,6 +1,6 @@
 //
 //  cyk_parser_test.dart
-//  JFlutter
+//  Turing Lab
 //
 //  Conjunto de testes dedicado ao parser CYK da camada core verificando construção de tabela, árvores de derivação e integração com gramáticas normalizadas.
 //  Abrange cadeias válidas e inválidas, produções lambda e unitárias, além de assegurar o detalhamento do resultado retornado.
@@ -8,10 +8,10 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jflutter/core/algorithms/cfg/cyk_parser.dart';
-import 'package:jflutter/core/models/grammar.dart';
-import 'package:jflutter/core/models/production.dart';
-import 'package:jflutter/core/models/cyk_step.dart';
+import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/models/cyk_step.dart';
 
 void main() {
   group('CYK parser', () {
