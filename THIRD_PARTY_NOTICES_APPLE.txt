@@ -1,24 +1,24 @@
-JFlutter Apple Platform Third-Party Notices
+Turing Lab Apple Platform Third-Party Notices
 Generated: 2026-04-23
 
 This notice file covers the Apple-platform third-party and forked dependencies
-audited for JFlutter v1.0 release readiness.
+audited for Turing Lab v1.0 release readiness.
 
 The iOS-only `file_picker` media transitive pods `DKImagePickerController`,
 `DKPhotoGallery`, `SDWebImage`, and `SwiftyGif` are intentionally excluded
-from this shipped-notices file because JFlutter prunes them from the iOS build
+from this shipped-notices file because Turing Lab prunes them from the iOS build
 with `Pod::PICKER_MEDIA = false` and `Pod::PICKER_AUDIO = false`. See
 `release/APPLE_DEPENDENCY_REVIEW.md` for the audit record.
 
 Dependencies covered in this file:
-- graphview 1.5.2 (vendored JFlutter-maintained fork)
+- graphview 1.5.2 (vendored Turing Lab-maintained fork)
 - file_picker 8.3.7
 - path_provider_foundation 2.4.2
 - shared_preferences_foundation 2.5.4
 
 ========================================================================
 graphview 1.5.2
-JFlutter-maintained fork of nabil6391/graphview
+Turing Lab-maintained fork of nabil6391/graphview
 License: MIT
 ========================================================================
 

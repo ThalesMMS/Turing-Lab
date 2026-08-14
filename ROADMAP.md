@@ -1,4 +1,4 @@
-# JFlutter Roadmap
+# Turing Lab Roadmap
 
 This roadmap explains the intended direction after the Apple v1.0 baseline.
 It is not a commitment to specific dates. `V1_SCOPE.md` remains authoritative
@@ -7,7 +7,7 @@ deferred, or explicitly out of scope.
 
 ## Current Baseline: v1.0
 
-JFlutter v1.0 focuses on a stable educational core:
+Turing Lab v1.0 focuses on a stable educational core:
 
 - FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workspaces.
 - Validated FSA and grammar file workflows where release coverage exists.
@@ -36,7 +36,7 @@ also reduces data-loss risk before the project expands into new model types.
 ## v1.2 Direction: JFLAP Parity Gaps
 
 After the existing workspaces have stronger persistence and release coverage,
-JFlutter can broaden feature parity.
+Turing Lab can broaden feature parity.
 
 - Multi-tape Turing machines.
 - Mealy and Moore machines.
@@ -50,7 +50,7 @@ v1.1 stabilization work rather than ship as partial features.
 
 ## Capability Matrix
 
-| Capability | JFlutter v1.0 status | Roadmap |
+| Capability | Turing Lab v1.0 status | Roadmap |
 | --- | --- | --- |
 | DFA/NFA editing and simulation | Shipped | Continue hardening |
 | DFA minimization and FSA conversions | Shipped | Continue hardening |

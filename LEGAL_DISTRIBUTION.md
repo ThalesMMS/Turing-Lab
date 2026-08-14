@@ -1,13 +1,13 @@
-# JFlutter Legal Distribution Determination
+# Turing Lab Legal Distribution Determination
 
-This document is the authoritative project record for JFlutter distribution
-rights and constraints. It adopts the conservative position that JFlutter is a
+This document is the authoritative project record for Turing Lab distribution
+rights and constraints. It adopts the conservative position that Turing Lab is a
 derivative work of JFLAP where it includes JFLAP-derived behavior, structures,
 file compatibility, algorithms, or user-facing educational concepts.
 
 ## JFLAP-Derived Content Analysis
 
-JFlutter includes original Flutter implementation work and JFLAP-derived
+Turing Lab includes original Flutter implementation work and JFLAP-derived
 content. The following shipped components are treated as JFLAP-derived or
 JFLAP-compatible for license compliance purposes:
 
@@ -31,7 +31,7 @@ JFLAP-compatible for license compliance purposes:
 - Offline examples and interoperability tests that validate compatibility with
   JFLAP-style data and user workflows.
 
-Because these components are central to the shipped product, JFlutter must be
+Because these components are central to the shipped product, Turing Lab must be
 distributed as a product that includes modified JFLAP-derived material for
 purposes of the JFLAP 7.1 License.
 
@@ -42,15 +42,15 @@ JFLAP 7.1 License under the project's conservative legal posture.
 
 The JFLAP 7.1 License permits distribution of modified copies when the license
 text is included, no fee is charged for any product that includes JFLAP-derived
-material, and maintainer disclosure obligations are honored. For JFlutter, the
+material, and maintainer disclosure obligations are honored. For Turing Lab, the
 "no fee" clause is interpreted as targeting end-user product pricing and
 product monetization, not platform hosting costs, developer program costs, or
 store infrastructure costs that are not charged to users as a condition of
-accessing JFlutter.
+accessing Turing Lab.
 
 Therefore:
 
-- JFlutter may be distributed on the Apple App Store and Google Play Store only
+- Turing Lab may be distributed on the Apple App Store and Google Play Store only
   as a free app.
 - Store listing price must be zero.
 - App access must not require a purchase, subscription, paid entitlement, or
@@ -59,14 +59,14 @@ Therefore:
 
 ## Legal Disclaimer
 
-This document reflects the JFlutter project's non-legal interpretation of the
+This document reflects the Turing Lab project's non-legal interpretation of the
 JFLAP 7.1 License and is not legal advice. Contributors should consult
 qualified legal counsel for license compliance, distribution strategy, and
 monetization questions.
 
 ## Monetization Constraints
 
-JFlutter must not generate revenue from the product while it includes
+Turing Lab must not generate revenue from the product while it includes
 JFLAP-derived material.
 
 The following are prohibited:
@@ -79,7 +79,7 @@ The following are prohibited:
 - Paid feature unlocks, paid exports, paid example packs, paid cloud sync, paid
   support tiers attached to app functionality, or any other revenue generation
   tied to the product.
-- Bundling JFlutter with another paid product where access to JFlutter is part
+- Bundling Turing Lab with another paid product where access to Turing Lab is part
   of the paid value.
 
 Any future monetization plan requires either removal of all JFLAP-derived
@@ -90,7 +90,7 @@ appropriate rights holder before release.
 
 Every distributed binary or package must comply with both license tracks:
 
-- JFlutter's original Flutter code remains under the Apache License 2.0 in
+- Turing Lab's original Flutter code remains under the Apache License 2.0 in
   `LICENSE.txt`.
 - JFLAP-derived portions remain subject to the JFLAP 7.1 License in
   `LICENSE_JFLAP.txt`.
@@ -99,20 +99,20 @@ Every distributed binary or package must comply with both license tracks:
 - `LICENSE.txt` must also be bundled or otherwise accessible to users.
 - Source distributions and release archives must include both license files.
 - App Store metadata must not imply JFLAP, Susan H. Rodger, Duke University, or
-  the JFLAP team endorses JFlutter.
+  the JFLAP team endorses Turing Lab.
 - Any release notes or marketing copy must preserve the distinction between
-  JFlutter and the original JFLAP project.
+  Turing Lab and the original JFLAP project.
 
 ## Vendored Graphview Fork
 
-JFlutter also distributes a vendored fork of `graphview` from `graphview/`.
+Turing Lab also distributes a vendored fork of `graphview` from `graphview/`.
 
 - License: MIT, preserved in `graphview/LICENSE`.
 - Current vendored package version: `1.5.2` from the in-repo path dependency.
 - In-app attribution is provided through the Licenses section in
   `lib/presentation/pages/licenses_help_content.dart`, with the bundled asset
   `assets/LICENSE_GRAPHVIEW.txt`.
-- The MIT license terms are compatible with JFlutter's free, non-monetized App
+- The MIT license terms are compatible with Turing Lab's free, non-monetized App
   Store distribution posture.
 - The vendored graphview fork does not add a conflicting copyleft,
   attribution, or monetization restriction beyond preserving the MIT notice in
@@ -129,13 +129,13 @@ Current JFLAP maintainer contact from `LICENSE_JFLAP.txt`:
 - Susan H. Rodger
 - Email: jflap@cs.duke.edu
 
-Current JFlutter modifier contact from `README.md`:
+Current Turing Lab modifier contact from `README.md`:
 
 - Thales Matheus Mendonca Santos
 - Email: thalesmmsradio@gmail.com
 
 If Susan H. Rodger or the current JFLAP maintainer requests the modified JFLAP
-materials distributed in JFlutter, the project must provide the relevant source
+materials distributed in Turing Lab, the project must provide the relevant source
 code and modifications without fee.
 
 ## In-App License Attribution Requirements
@@ -150,7 +150,7 @@ visible to users:
   - Susan H. Rodger, Duke University.
   - JFLAP team contributors listed in `LICENSE_JFLAP.txt`.
   - The original JFLAP project website, `http://www.jflap.org`.
-- The app must state that JFlutter is a Flutter reimplementation inspired by
+- The app must state that Turing Lab is a Flutter reimplementation inspired by
   and compatible with JFLAP, not an official JFLAP release.
 - The current in-app attribution location is
   `lib/presentation/pages/help_page.dart`, with content implemented in

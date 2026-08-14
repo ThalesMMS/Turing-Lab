@@ -1,5 +1,5 @@
 #!/bin/bash
-# Integration test runner for JFlutter.
+# Integration test runner for Turing Lab.
 
 set -e
 
@@ -19,7 +19,7 @@ else
 fi
 
 echo "========================================="
-echo "JFlutter Integration Tests"
+echo "Turing Lab Integration Tests"
 echo "========================================="
 echo "Repository: $REPO_ROOT"
 echo ""

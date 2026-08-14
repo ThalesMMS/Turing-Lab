@@ -1,5 +1,5 @@
 #!/bin/bash
-# Golden test verification script for JFlutter.
+# Golden test verification script for Turing Lab.
 
 set -e
 
@@ -20,7 +20,7 @@ else
     FLUTTER_BIN=""
 fi
 
-echo "=== JFlutter Golden Test Suite ==="
+echo "=== Turing Lab Golden Test Suite ==="
 echo "Repository: $REPO_ROOT"
 echo ""
 

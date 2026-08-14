@@ -1,11 +1,14 @@
 # Changelog
 
-All notable release-facing changes for JFlutter are tracked here. The project
+All notable release-facing changes for Turing Lab are tracked here. The project
 is still work in progress; `V1_SCOPE.md` remains the source of truth for the
 Apple v1.0 release scope.
 
 ## Unreleased
 
+- Complete the product rename to Turing Lab across Dart identifiers, package
+  imports, platform runners, release tooling, documentation, examples, and
+  tracked paths; CI now rejects accidental reintroduction of the former name.
 - Continue stabilizing the Apple v1.0 release path for iPhone, iPad, and
   native macOS.
 - Track known test-suite baselines and release blockers in `AGENTS.md` and the
@@ -30,7 +33,7 @@ Apple platforms.
 - Regex workspace for validation, sample testing, comparison, simplification,
   sample generation, and automaton conversion.
 - Pumping Lemma practice workflow.
-- Offline examples bundled from `jflutter_js/examples/`.
+- Offline examples bundled from `assets/examples/`.
 - Material 3 UI with responsive layouts for phone, tablet, desktop, and web
   form factors.
 

@@ -1,6 +1,6 @@
-# JFlutter
+# Turing Lab
 
-JFlutter is a Flutter reimplementation of the JFLAP educational tool. It offers an interactive, touch-first workspace for creating, analysing, and simulating finite automata, grammars, pushdown automata, Turing machines, and regular expressions. The current release focus is Apple v1.0 for iPhone, iPad, and macOS, with Android build support and preview web/desktop targets tracked separately.
+Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offers an interactive, touch-first workspace for creating, analysing, and simulating finite automata, grammars, pushdown automata, Turing machines, and regular expressions. The current release focus is Apple v1.0 for iPhone, iPad, and macOS, with Android build support and preview web/desktop targets tracked separately.
 
 <p align="center">
   <img src="./screenshots/screenshot1.png" alt="Automaton canvas screenshot" width="600" />
@@ -45,7 +45,7 @@ JFlutter is a Flutter reimplementation of the JFLAP educational tool. It offers 
 - Workspace-scoped import/export flows aligned to the v1.0 release contract in `V1_SCOPE.md`
 
 ### Offline examples
-The repository bundles ready-to-use examples covering DFAs, NFAs, CFGs, PDAs, and Turing Machines in `jflutter_js/examples/`. They are declared in `pubspec.yaml` so the material is available without a network connection.
+The repository bundles ready-to-use examples covering DFAs, NFAs, CFGs, PDAs, and Turing Machines in `assets/examples/`. They are declared in `pubspec.yaml` so the material is available without a network connection.
 
 ## Architecture
 
@@ -111,8 +111,8 @@ lib/
 
 ```bash
 # Clone the repository
-git clone https://github.com/ThalesMMS/jflutter.git
-cd jflutter
+git clone https://github.com/ThalesMMS/jflutter.git turing-lab
+cd turing-lab
 
 # Install dependencies
 flutter pub get
@@ -123,17 +123,17 @@ flutter run
 
 ### Android release signing
 
-Android release builds are signed with the `dev.jflutter.app` application ID. The Gradle script loads release keystore
+Android release builds are signed with the `thalesmms.turinglab` application ID. The Gradle script loads release keystore
 credentials from `android/key.properties`, which can now be generated from environment variables using
 `android/scripts/create_key_properties.sh`.
 
-1. Generate or obtain a release keystore (for example `android/keystores/jflutter-release.jks`). Keep this file out of
+1. Generate or obtain a release keystore (for example `android/keystores/turing-lab-release.jks`). Keep this file out of
    version control.
 2. Export the following environment variables before building or running the helper script:
-   - `JFLUTTER_KEYSTORE_PASSWORD`
-   - `JFLUTTER_KEY_ALIAS`
-   - `JFLUTTER_KEY_PASSWORD`
-   - *(optional)* `JFLUTTER_KEYSTORE_PATH` (defaults to `keystores/jflutter-release.jks`, relative to `android/`)
+   - `TURING_LAB_KEYSTORE_PASSWORD`
+   - `TURING_LAB_KEY_ALIAS`
+   - `TURING_LAB_KEY_PASSWORD`
+   - *(optional)* `TURING_LAB_KEYSTORE_PATH` (defaults to `keystores/turing-lab-release.jks`, relative to `android/`)
 3. Run `./android/scripts/create_key_properties.sh` to generate `android/key.properties` from the exported values.
 
 For CI/CD, store the keystore and credential values as encrypted secrets. During the workflow, recreate the keystore file
@@ -141,16 +141,16 @@ and call the helper script before `flutter build`. Example (GitHub Actions):
 
 ```bash
 mkdir -p android/keystores
-echo "$JFLUTTER_KEYSTORE_BASE64" | base64 --decode > android/keystores/jflutter-release.jks
-export JFLUTTER_KEYSTORE_PASSWORD="$JFLUTTER_KEYSTORE_PASSWORD"
-export JFLUTTER_KEY_ALIAS="$JFLUTTER_KEY_ALIAS"
-export JFLUTTER_KEY_PASSWORD="$JFLUTTER_KEY_PASSWORD"
+echo "$TURING_LAB_KEYSTORE_BASE64" | base64 --decode > android/keystores/turing-lab-release.jks
+export TURING_LAB_KEYSTORE_PASSWORD="$TURING_LAB_KEYSTORE_PASSWORD"
+export TURING_LAB_KEY_ALIAS="$TURING_LAB_KEY_ALIAS"
+export TURING_LAB_KEY_PASSWORD="$TURING_LAB_KEY_PASSWORD"
 ./android/scripts/create_key_properties.sh
 ```
 
 ### Platform Support
 
-JFlutter is a Flutter project with multiple build targets, but release support
+Turing Lab is a Flutter project with multiple build targets, but release support
 depends on documented signing, QA, and distribution evidence.
 
 - **iOS / iPadOS** - Apple v1.0 release target. Release QA is tracked in
@@ -294,7 +294,7 @@ Try to maintain compatibility. Avoid changing core automata/grammar/pda/turing m
 
 ## Educational Value
 
-JFlutter is designed for:
+Turing Lab is designed for:
 - **Computer Science Students** - Learning automata theory
 - **Educators** - Teaching formal languages
 - **Researchers** - Prototyping automata
@@ -304,9 +304,9 @@ JFlutter is designed for:
 
 This project is distributed under a dual license structure:
 
-### JFlutter
+### Turing Lab
 - **License**: Apache License 2.0
-- **Copyright**: 2025–present JFlutter contributors (see [Contributors](#community--contributors))
+- **Copyright**: 2025–present Turing Lab contributors (see [Contributors](#community--contributors))
 - **Contact**: thalesmmsradio@gmail.com
 - **File**: [LICENSE.txt](LICENSE.txt)
 
@@ -317,12 +317,12 @@ This project is distributed under a dual license structure:
 
 ### License Summary
 - The **Flutter port** (all new code) is licensed under Apache 2.0, allowing free use, modification, and distribution with proper attribution
-- JFlutter is treated conservatively as a **JFLAP derivative work** where it includes JFLAP-derived algorithms, concepts, data structures, XML import/export behavior, and `.jff` compatibility
+- Turing Lab is treated conservatively as a **JFLAP derivative work** where it includes JFLAP-derived algorithms, concepts, data structures, XML import/export behavior, and `.jff` compatibility
 - The **original JFLAP algorithms and concepts** remain under the original JFLAP license, which prohibits commercial use
 - This dual structure ensures compliance with the original license while allowing the Flutter port to be freely used and modified
 
 ### Distribution
-- JFlutter may be distributed via the Apple App Store for iOS, iPadOS, and macOS, and via Google Play Store, as a free application only
+- Turing Lab may be distributed via the Apple App Store for iOS, iPadOS, and macOS, and via Google Play Store, as a free application only
 - Commercial distribution, paid downloads, in-app purchases, subscriptions, and advertising are prohibited by the JFLAP license
 - See [LEGAL_DISTRIBUTION.md](LEGAL_DISTRIBUTION.md) for the full legal analysis
 - Distributed binaries must include `LICENSE.txt` and `LICENSE_JFLAP.txt`, and the app must keep both license texts accessible to users
@@ -330,7 +330,7 @@ This project is distributed under a dual license structure:
 ## Acknowledgments & References
 
 ### Development
-- **Thales Matheus Mendonça Santos** - Complete JFlutter development until 2025-10-07, graphview fork optimization for loop transitions rendering
+- **Thales Matheus Mendonça Santos** - Complete Turing Lab development until 2025-10-07, graphview fork optimization for loop transitions rendering
 - **Email**: thalesmmsradio@gmail.com
 - **Year**: 2025
 

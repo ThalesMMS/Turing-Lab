@@ -1,4 +1,4 @@
-name: jflutter
+name: turing_lab
 description: "A modern, mobile-first Flutter application for finite automata, grammars, pushdown automata, Turing machines, and regular expressions."
 homepage: https://thalesmms.github.io/JFlutter/
 repository: https://github.com/ThalesMMS/jflutter
@@ -21,7 +21,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.6.0
@@ -46,6 +46,9 @@ dependencies:
 
   # Save PNG to filesystem
   path_provider: ^2.1.4
+
+  # Open the public project repository from the About section
+  url_launcher: ^6.3.2
 
   # Clipboard support (built into Flutter)
 
@@ -107,23 +110,23 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     # Finite automata examples
-    - jflutter_js/examples/afd_binary_divisible_by_3.json
-    - jflutter_js/examples/afd_ends_with_a.json
-    - jflutter_js/examples/afd_parity_AB.json
-    - jflutter_js/examples/afn_lambda_a_or_ab.json
+    - assets/examples/afd_binary_divisible_by_3.json
+    - assets/examples/afd_ends_with_a.json
+    - assets/examples/afd_parity_AB.json
+    - assets/examples/afn_lambda_a_or_ab.json
     # Context-free grammar examples
-    - jflutter_js/examples/glc_balanced_parentheses.json
-    - jflutter_js/examples/glc_palindrome.json
+    - assets/examples/glc_balanced_parentheses.json
+    - assets/examples/glc_palindrome.json
     # Pushdown automaton examples
-    - jflutter_js/examples/apda_balanced_parentheses.json
-    - jflutter_js/examples/apda_anbn.json
-    - jflutter_js/examples/apda_palindrome.json
+    - assets/examples/apda_balanced_parentheses.json
+    - assets/examples/apda_anbn.json
+    - assets/examples/apda_palindrome.json
     # Turing machine examples
-    - jflutter_js/examples/tm_anbn.json
-    - jflutter_js/examples/tm_binary_to_unary.json
-    - jflutter_js/examples/tm_copy_string.json
-    - jflutter_js/examples/tm_increment.json
-    - jflutter_js/examples/tm_palindrome.json
+    - assets/examples/tm_anbn.json
+    - assets/examples/tm_binary_to_unary.json
+    - assets/examples/tm_copy_string.json
+    - assets/examples/tm_increment.json
+    - assets/examples/tm_palindrome.json
     # License texts bundled for in-app access and binary distribution
     - LICENSE.txt
     - LICENSE_JFLAP.txt

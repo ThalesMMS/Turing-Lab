@@ -1,10 +1,10 @@
-# JFlutter Apple v1.0 Scope
+# Turing Lab Apple v1.0 Scope
 
-This document is the authoritative scope for the first Apple release of JFlutter on iPhone, iPad, and native macOS.
+This document is the authoritative scope for the first Apple release of Turing Lab on iPhone, iPad, and native macOS.
 
 ## Shipping modules
 
-JFlutter Apple v1.0 ships these six modules:
+Turing Lab Apple v1.0 ships these six modules:
 
 1. FSA
 2. Grammar
@@ -58,5 +58,5 @@ JFlutter Apple v1.0 ships these six modules:
 
 ## Release copy guidance
 
-- Public-facing copy must describe JFlutter as shipping FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workflows.
+- Public-facing copy must describe Turing Lab as shipping FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workflows.
 - In-app navigation and help content must only expose supported v1.0 capabilities.

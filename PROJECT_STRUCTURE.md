@@ -1,13 +1,13 @@
-# JFlutter Project Structure
+# Turing Lab Project Structure
 
 ## Overview
 
-JFlutter follows Clean Architecture principles with clear separation of concerns across three main layers: Core, Presentation, and Data. The project is organized to support mobile-first development with Flutter while maintaining educational value and code maintainability.
+Turing Lab follows Clean Architecture principles with clear separation of concerns across three main layers: Core, Presentation, and Data. The project is organized to support mobile-first development with Flutter while maintaining educational value and code maintainability.
 
 ## Directory Structure
 
 ```
-jflutter/
+turing_lab/
 ├── lib/                           # Main application code
 │   ├── core/                      # Core business logic
 │   │   ├── algorithms/            # Core algorithm implementations
@@ -43,7 +43,7 @@ jflutter/
 ├── macos/                         # macOS-specific files
 ├── docs/                          # Additional architecture notes and guides
 ├── release/                       # Release QA, signing, and platform validation docs
-├── jflutter_js/                   # Shared JS runtime assets and examples
+├── assets/                        # Bundled licenses and offline examples
 ├── screenshots/                   # UI captures and visual references
 ├── tool/                          # Repo tooling and helper scripts
 ├── build.yaml                     # Build orchestration for CI/scripts
@@ -505,4 +505,4 @@ The project is designed to support:
 
 ---
 
-This project structure supports the educational goals of JFlutter while maintaining code quality, performance, and extensibility for future development.
+This project structure supports the educational goals of Turing Lab while maintaining code quality, performance, and extensibility for future development.

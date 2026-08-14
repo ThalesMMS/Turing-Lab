@@ -1,5 +1,5 @@
 #!/bin/bash
-# Full test suite runner for JFlutter.
+# Full test suite runner for Turing Lab.
 
 set -e
 
@@ -12,8 +12,8 @@ fi
 
 cd "$REPO_ROOT"
 
-if [ -n "${JFLUTTER_FLUTTER_BIN:-}" ]; then
-    FLUTTER_BIN="$JFLUTTER_FLUTTER_BIN"
+if [ -n "${TURING_LAB_FLUTTER_BIN:-}" ]; then
+    FLUTTER_BIN="$TURING_LAB_FLUTTER_BIN"
 elif command -v flutter >/dev/null 2>&1; then
     FLUTTER_BIN="$(command -v flutter)"
 elif [ -x /opt/homebrew/bin/flutter ]; then
@@ -22,7 +22,7 @@ else
     FLUTTER_BIN=""
 fi
 
-echo "=== JFlutter Full Test Suite ==="
+echo "=== Turing Lab Full Test Suite ==="
 echo "Repository: $REPO_ROOT"
 echo ""
 

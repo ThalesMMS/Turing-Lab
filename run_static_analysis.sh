@@ -1,5 +1,5 @@
 #!/bin/bash
-# Static analysis runner for JFlutter.
+# Static analysis runner for Turing Lab.
 
 set -e
 
@@ -10,8 +10,8 @@ if [ -z "$REPO_ROOT" ]; then
     REPO_ROOT="$SCRIPT_DIR"
 fi
 
-if [ -n "${JFLUTTER_FLUTTER_BIN:-}" ]; then
-    FLUTTER_BIN="$JFLUTTER_FLUTTER_BIN"
+if [ -n "${TURING_LAB_FLUTTER_BIN:-}" ]; then
+    FLUTTER_BIN="$TURING_LAB_FLUTTER_BIN"
 elif command -v flutter >/dev/null 2>&1; then
     FLUTTER_BIN="$(command -v flutter)"
 elif [ -x /opt/homebrew/bin/flutter ]; then
@@ -21,7 +21,7 @@ else
 fi
 
 echo "========================================="
-echo "JFLUTTER STATIC ANALYSIS"
+echo "TURING LAB STATIC ANALYSIS"
 echo "========================================="
 echo "Repository: $REPO_ROOT"
 echo ""
