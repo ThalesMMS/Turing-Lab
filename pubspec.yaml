@@ -1,9 +1,9 @@
 name: turing_lab
 description: "A modern, mobile-first Flutter application for finite automata, grammars, pushdown automata, Turing machines, and regular expressions."
-homepage: https://thalesmms.github.io/JFlutter/
-repository: https://github.com/ThalesMMS/jflutter
-issue_tracker: https://github.com/ThalesMMS/jflutter/issues
-documentation: https://github.com/ThalesMMS/jflutter#readme
+homepage: https://thalesmms.github.io/Turing-Lab/
+repository: https://github.com/ThalesMMS/Turing-Lab
+issue_tracker: https://github.com/ThalesMMS/Turing-Lab/issues
+documentation: https://github.com/ThalesMMS/Turing-Lab#readme
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

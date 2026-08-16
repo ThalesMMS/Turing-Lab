@@ -66,6 +66,8 @@ test/**/failures/
 .gemini/
 .playwright-cli/
 gha-creds-*.json
+/.project_doc_record/
+/output/
 
 # Vendored GraphView Auto Claude data
 graphview/.auto-claude/
