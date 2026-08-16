@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turing Lab | Formal Language and Automata Toolkit</title>
+  <meta name="description" content="Technical overview of Turing Lab, a Flutter toolkit for formal languages, automata construction, transformations, and simulation.">
+  <link rel="canonical" href="https://thalesmms.github.io/Turing-Lab/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Turing Lab | Formal Language and Automata Toolkit">
+  <meta property="og:description" content="A Flutter-based toolkit for constructing, transforming, and simulating formal language models.">
+  <meta property="og:url" content="https://thalesmms.github.io/Turing-Lab/">
+  <meta property="og:image" content="https://thalesmms.github.io/Turing-Lab/assets/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Turing Lab | Formal Language and Automata Toolkit">
+  <meta name="twitter:description" content="A Flutter-based toolkit for constructing, transforming, and simulating formal language models.">
+  <meta name="twitter:image" content="https://thalesmms.github.io/Turing-Lab/assets/social-preview.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-shell header-layout">
+      <a class="brand" href="#overview" aria-label="Turing Lab overview">
+        <img src="assets/icon-192.png" alt="Turing Lab" width="40" height="40">
+        <span>Turing Lab</span>
+      </a>
+      <nav class="site-navigation" aria-label="Primary navigation">
+        <a href="#capabilities">Capabilities</a>
+        <a href="#formats">Formats</a>
+        <a href="#platforms">Platforms</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab#readme">Documentation</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="overview" id="overview" aria-labelledby="overview-title">
+      <div class="site-shell overview-layout">
+        <div class="overview-copy">
+          <p class="eyebrow">Formal languages and automata</p>
+          <h1 id="overview-title">Turing Lab</h1>
+          <p class="overview-lead">A Flutter-based toolkit for constructing, transforming, and simulating formal language models.</p>
+          <p class="overview-detail">It provides dedicated workspaces for finite-state automata, context-free grammars, pushdown automata, Turing machines, regular expressions, and pumping lemma exercises.</p>
+          <p class="development-status"><strong>Development status:</strong> Apple and Android builds are currently under testing.</p>
+          <div class="action-row" aria-label="Project actions">
+            <a class="action action-primary" href="https://github.com/ThalesMMS/Turing-Lab">View source</a>
+            <a class="action action-secondary" href="https://github.com/ThalesMMS/Turing-Lab#readme">Read documentation</a>
+            <a class="action action-secondary" href="https://github.com/ThalesMMS/Turing-Lab/issues">Report an issue</a>
+          </div>
+        </div>
+        <figure class="overview-figure">
+          <img src="assets/screenshots/fsa.webp" alt="Finite-state automata workspace with an editable canvas and algorithm panel" width="1600" height="1000">
+          <figcaption>Finite-state automata workspace on macOS.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="content-section" id="capabilities" aria-labelledby="capabilities-title">
+      <div class="site-shell">
+        <div class="section-heading">
+          <p class="section-index">01 / Capabilities</p>
+          <h2 id="capabilities-title">Supported models and workflows</h2>
+          <p>The current scope is organized around six independent workspaces. File support and transformations vary by model.</p>
+        </div>
+
+        <table class="capability-table">
+          <caption>Editing, simulation, transformation, and file capabilities by workspace</caption>
+          <thead>
+            <tr>
+              <th scope="col">Workspace</th>
+              <th scope="col">Editing</th>
+              <th scope="col">Simulation</th>
+              <th scope="col">Transformations</th>
+              <th scope="col">Import/export</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" data-label="Workspace">Finite-state automata</th>
+              <td data-label="Editing">State and transition canvas</td>
+              <td data-label="Simulation">Step-by-step acceptance traces</td>
+              <td data-label="Transformations">NFA/DFA/regex conversion and DFA minimisation</td>
+              <td data-label="Import/export">JFLAP XML, JSON, SVG, and native PNG</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Context-free grammars</th>
+              <td data-label="Editing">Grammar and production editor</td>
+              <td data-label="Simulation">Parsing and validation</td>
+              <td data-label="Transformations">FIRST/FOLLOW analysis, LL(1) diagnostics, and CNF conversion</td>
+              <td data-label="Import/export">JFLAP grammar and SVG</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Pushdown automata</th>
+              <td data-label="Editing">State and transition canvas</td>
+              <td data-label="Simulation">Input and stack traces</td>
+              <td data-label="Transformations">Not applicable</td>
+              <td data-label="Import/export">SVG export</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Turing machines</th>
+              <td data-label="Editing">State and transition canvas</td>
+              <td data-label="Simulation">Tape and transition traces</td>
+              <td data-label="Transformations">Not applicable</td>
+              <td data-label="Import/export">SVG export</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Regular expressions</th>
+              <td data-label="Editing">Expression editor</td>
+              <td data-label="Simulation">Match testing and comparison</td>
+              <td data-label="Transformations">Simplification and automaton conversion</td>
+              <td data-label="Import/export">Not applicable</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Pumping lemma</th>
+              <td data-label="Editing">Guided case workflow</td>
+              <td data-label="Simulation">Decomposition validation</td>
+              <td data-label="Transformations">Not applicable</td>
+              <td data-label="Import/export">Not applicable</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="technical-grid" aria-label="Algorithm and simulation details">
+          <article class="technical-panel">
+            <h3>Finite automata</h3>
+            <p>Finite-state workflows include conversion between nondeterministic and deterministic automata, regular-expression conversion, DFA minimisation, and acceptance traces.</p>
+          </article>
+          <article class="technical-panel">
+            <h3>Grammar analysis</h3>
+            <p>Grammar tooling provides parsing diagnostics, FIRST and FOLLOW sets, LL(1) conflict reporting, and a best-effort Chomsky normal form pipeline.</p>
+          </article>
+          <article class="technical-panel">
+            <h3>Execution traces</h3>
+            <p>FSA, PDA, and TM simulations expose intermediate configurations through state, transition, stack, or tape traces appropriate to each model.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section section-muted" id="formats" aria-labelledby="formats-title">
+      <div class="site-shell split-layout">
+        <div class="section-heading">
+          <p class="section-index">02 / Data and formats</p>
+          <h2 id="formats-title">Local execution and bounded file compatibility</h2>
+          <p>Turing Lab does not require an account or a developer-operated backend. Editing, simulation, diagnostics, and bundled examples run locally.</p>
+          <p><a href="privacy.html">Read the privacy policy</a> or inspect the repository's <a href="https://github.com/ThalesMMS/Turing-Lab/blob/main/docs/DATA_FLOW.md">data-flow documentation</a>.</p>
+        </div>
+        <dl class="format-list">
+          <div>
+            <dt>FSA</dt>
+            <dd>JFLAP XML and JSON import/export, SVG export, and PNG export on native platforms.</dd>
+          </div>
+          <div>
+            <dt>Grammar</dt>
+            <dd>JFLAP grammar import/export and SVG export.</dd>
+          </div>
+          <div>
+            <dt>PDA and TM</dt>
+            <dd>SVG export. JFLAP XML and JSON round trips are outside the current release scope.</dd>
+          </div>
+          <div>
+            <dt>Web limitation</dt>
+            <dd>PNG export is unavailable in web builds.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="content-section" id="platforms" aria-labelledby="platforms-title">
+      <div class="site-shell platform-layout">
+        <div class="section-heading">
+          <p class="section-index">03 / Platforms</p>
+          <h2 id="platforms-title">Current validation status</h2>
+          <p>Testing builds are undergoing platform validation and release preparation. Experimental targets may have incomplete platform integration and are not part of the current release scope.</p>
+        </div>
+        <table class="platform-table">
+          <caption>Platform validation status</caption>
+          <thead>
+            <tr>
+              <th scope="col">Platform</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">iOS and iPadOS</th><td><span class="status status-testing">Testing</span></td></tr>
+            <tr><th scope="row">macOS</th><td><span class="status status-testing">Testing</span></td></tr>
+            <tr><th scope="row">Android</th><td><span class="status status-testing">Testing</span></td></tr>
+            <tr><th scope="row">Web</th><td><span class="status status-experimental">Experimental</span></td></tr>
+            <tr><th scope="row">Windows</th><td><span class="status status-experimental">Experimental</span></td></tr>
+            <tr><th scope="row">Linux</th><td><span class="status status-experimental">Experimental</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="content-section section-muted" id="screenshots" aria-labelledby="screenshots-title">
+      <div class="site-shell">
+        <div class="section-heading">
+          <p class="section-index">04 / Interface</p>
+          <h2 id="screenshots-title">Application workspaces</h2>
+          <p>Captured from the controlled macOS testing configuration.</p>
+        </div>
+        <div class="screenshot-grid">
+          <figure>
+            <img src="assets/screenshots/fsa.webp" alt="Finite-state automata editor showing the canvas and available algorithms" width="1600" height="1000" loading="lazy">
+            <figcaption><strong>Finite-state automata.</strong> Canvas editing, algorithms, and simulation are available in the same workspace.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/screenshots/grammar.webp" alt="Context-free grammar editor with productions and analysis controls" width="1600" height="1000" loading="lazy">
+            <figcaption><strong>Context-free grammars.</strong> Production editing, parsing, diagnostics, and conversions.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/screenshots/tm.webp" alt="Turing machine workspace with state canvas and tape simulation controls" width="1600" height="1000" loading="lazy">
+            <figcaption><strong>Turing machines.</strong> Transition editing and tape-based execution traces.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-shell footer-layout">
+      <div>
+        <p class="footer-title">Turing Lab</p>
+        <p>A Flutter implementation of formal-language and automata tooling.</p>
+      </div>
+      <nav class="footer-links" aria-label="Project links">
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab#readme">README</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab/issues">Issues</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab/blob/main/LICENSE.txt">License</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab/blob/main/LICENSE_JFLAP.txt">JFLAP license</a>
+        <a href="https://github.com/ThalesMMS/Turing-Lab/blob/main/CITATION.cff">Citation</a>
+      </nav>
+    </div>
+    <div class="site-shell attribution">
+      <p>Turing Lab is inspired by the original JFLAP project. Turing Lab is not affiliated with, endorsed by, or an official release of JFLAP, Duke University, or Susan H. Rodger.</p>
+    </div>
+  </footer>
+</body>
+</html>
