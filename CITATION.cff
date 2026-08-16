@@ -1,0 +1,20 @@
+cff-version: "1.2.0"
+message: "If you use Turing Lab in your work, please cite it using the metadata from this file."
+title: "Turing Lab"
+type: software
+authors:
+  - family-names: "Mendonça Santos"
+    given-names: "Thales Matheus"
+    email: "thalesmmsradio@gmail.com"
+abstract: "A mobile-first Flutter application for creating, analyzing, and simulating finite automata, grammars, pushdown automata, Turing machines, and regular expressions."
+keywords:
+  - "automata theory"
+  - "formal languages"
+  - "finite automata"
+  - "pushdown automata"
+  - "Turing machines"
+  - "regular expressions"
+  - "Flutter"
+version: "1.0.0+4"
+repository-code: "https://github.com/ThalesMMS/Turing-Lab"
+url: "https://thalesmms.github.io/Turing-Lab/"
