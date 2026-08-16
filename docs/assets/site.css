@@ -10,7 +10,7 @@
   --accent-strong: #164c69;
   --cyan: #9dd7e5;
   --border: #ccd8df;
-  --focus: #efb83f;
+  --focus: #0070c0;
   --testing-bg: #d9eef5;
   --testing-text: #164c69;
   --experimental-bg: #e4e9ed;
@@ -29,6 +29,7 @@
     --accent: #8dcde0;
     --accent-strong: #b5e1ec;
     --border: #33434e;
+    --focus: #efb83f;
     --testing-bg: #173b4a;
     --testing-text: #b8e6f1;
     --experimental-bg: #283640;

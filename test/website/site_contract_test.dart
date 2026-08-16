@@ -9,11 +9,15 @@ void main() {
   late String index;
   late String support;
   late String privacy;
+  late String stylesheet;
 
   setUpAll(() {
     index = File('${docsDirectory.path}/index.html').readAsStringSync();
     support = File('${docsDirectory.path}/support.html').readAsStringSync();
     privacy = File('${docsDirectory.path}/privacy.html').readAsStringSync();
+    stylesheet = File(
+      '${docsDirectory.path}/assets/site.css',
+    ).readAsStringSync();
   });
 
   test('publishes the approved technical scope and platform maturity', () {
@@ -40,15 +44,24 @@ void main() {
       expect(index, contains(workspace), reason: 'Missing $workspace');
     }
 
-    for (final platform in <String>[
-      'iOS and iPadOS',
-      'macOS',
-      'Android',
-      'Web',
-      'Windows',
-      'Linux',
-    ]) {
-      expect(index, contains(platform), reason: 'Missing $platform');
+    for (final entry in <String, String>{
+      'iOS and iPadOS': 'Testing',
+      'macOS': 'Testing',
+      'Android': 'Testing',
+      'Web': 'Experimental',
+      'Windows': 'Experimental',
+      'Linux': 'Experimental',
+    }.entries) {
+      final statusClass = entry.value.toLowerCase();
+      expect(
+        index,
+        contains(
+          '<tr><th scope="row">${entry.key}</th><td>'
+          '<span class="status status-$statusClass">${entry.value}</span>'
+          '</td></tr>',
+        ),
+        reason: 'Incorrect status for ${entry.key}',
+      );
     }
 
     expect(
@@ -71,8 +84,44 @@ void main() {
     expect(
       index,
       contains(
+        '<title>Turing Lab | Formal Language and Automata Toolkit</title>',
+      ),
+    );
+    expect(
+      index,
+      contains(
+        '<meta name="description" content="Technical overview of Turing Lab, '
+        'a Flutter toolkit for formal languages, automata construction, '
+        'transformations, and simulation.">',
+      ),
+    );
+    expect(
+      index,
+      contains(
         '<link rel="canonical" '
         'href="https://thalesmms.github.io/Turing-Lab/">',
+      ),
+    );
+    expect(
+      index,
+      contains(
+        '<meta property="og:title" '
+        'content="Turing Lab | Formal Language and Automata Toolkit">',
+      ),
+    );
+    expect(
+      index,
+      contains(
+        '<meta property="og:description" content="A Flutter-based toolkit '
+        'for constructing, transforming, and simulating formal language '
+        'models.">',
+      ),
+    );
+    expect(
+      index,
+      contains(
+        '<meta property="og:url" '
+        'content="https://thalesmms.github.io/Turing-Lab/">',
       ),
     );
     expect(
@@ -83,6 +132,19 @@ void main() {
         'assets/social-preview.png">',
       ),
     );
+    expect(
+      index,
+      contains(
+        '<link rel="icon" type="image/png" href="assets/favicon.png">',
+      ),
+    );
+    expect(
+      index,
+      contains('<link rel="stylesheet" href="assets/site.css">'),
+    );
+    expect(index, contains('<a href="#overview">Overview</a>'));
+    expect(stylesheet, contains('--focus: #0070c0;'));
+    expect(stylesheet, contains('--focus: #efb83f;'));
     expect(
       index,
       contains(
