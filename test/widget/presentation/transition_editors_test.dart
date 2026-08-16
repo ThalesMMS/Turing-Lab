@@ -16,6 +16,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
+import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/transition_label_editor.dart';
@@ -56,6 +59,69 @@ void main() {
       expect(find.text('a'), findsOneWidget);
       expect(find.text('Z'), findsOneWidget);
       expect(find.text('AZ'), findsOneWidget);
+    });
+
+    testWidgets('localizes PDA fields, validation, and actions in Portuguese', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PdaTransitionEditor(
+              initialRead: '',
+              initialPop: '',
+              initialPush: '',
+              isLambdaInput: false,
+              isLambdaPop: false,
+              isLambdaPush: false,
+              onSubmit: ({
+                required readSymbol,
+                required popSymbol,
+                required pushSymbol,
+                required lambdaInput,
+                required lambdaPop,
+                required lambdaPush,
+              }) {},
+              onCancel: () {},
+              onDelete: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final label in <String>[
+        'Símbolo de entrada',
+        'λ-entrada',
+        'Símbolo para desempilhar',
+        'λ-desempilhar',
+        'Símbolo para empilhar',
+        'λ-empilhar',
+        'Cancelar',
+        'Excluir',
+        'Salvar',
+      ]) {
+        expect(find.text(label), findsOneWidget);
+      }
+
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Insira um símbolo ou ative λ-entrada'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Insira um símbolo ou ative λ-desempilhar'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Insira um símbolo ou ative λ-empilhar'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('disables smart text features for PDA symbols', (tester) async {
@@ -140,6 +206,80 @@ void main() {
       expect(submittedData!['lambdaInput'], isFalse);
       expect(submittedData!['lambdaPop'], isFalse);
       expect(submittedData!['lambdaPush'], isFalse);
+    });
+
+    testWidgets('rejects empty non-lambda symbols on save', (tester) async {
+      var submitted = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PdaTransitionEditor(
+              initialRead: '',
+              initialPop: '',
+              initialPush: '',
+              isLambdaInput: false,
+              isLambdaPop: false,
+              isLambdaPush: false,
+              onSubmit: ({
+                required readSymbol,
+                required popSymbol,
+                required pushSymbol,
+                required lambdaInput,
+                required lambdaPop,
+                required lambdaPush,
+              }) {
+                submitted = true;
+              },
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(submitted, isFalse);
+      expect(find.text('Enter a symbol or enable λ-input'), findsOneWidget);
+      expect(find.text('Enter a symbol or enable λ-pop'), findsOneWidget);
+      expect(find.text('Enter a symbol or enable λ-push'), findsOneWidget);
+    });
+
+    testWidgets('renders the supplied stack in the operation preview', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PdaTransitionEditor(
+              initialRead: 'a',
+              initialPop: 'Z',
+              initialPush: 'AZ',
+              isLambdaInput: false,
+              isLambdaPop: false,
+              isLambdaPush: false,
+              currentStack: const StackState(symbols: ['Z']),
+              onSubmit: ({
+                required readSymbol,
+                required popSymbol,
+                required pushSymbol,
+                required lambdaInput,
+                required lambdaPop,
+                required lambdaPush,
+              }) {},
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StackOperationPreview), findsOneWidget);
+      expect(find.text('Operation Preview'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('calls onCancel when cancel button is pressed', (tester) async {
@@ -551,6 +691,50 @@ void main() {
       expect(find.text('b'), findsOneWidget);
     });
 
+    testWidgets('localizes TM fields, validation, and actions in Portuguese', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: TmTransitionOperationsEditor(
+              initialRead: '',
+              initialWrite: '',
+              initialDirection: TapeDirection.right,
+              onSubmit: ({
+                required readSymbol,
+                required writeSymbol,
+                required direction,
+              }) {},
+              onCancel: () {},
+              onDelete: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final label in <String>[
+        'Símbolo lido',
+        'Símbolo escrito',
+        'Direção',
+        'Cancelar',
+        'Excluir',
+        'Salvar',
+      ]) {
+        expect(find.text(label), findsOneWidget);
+      }
+
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Insira um símbolo de leitura'), findsOneWidget);
+      expect(find.text('Insira um símbolo de escrita'), findsOneWidget);
+    });
+
     testWidgets('disables smart text features for TM symbols', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -615,6 +799,38 @@ void main() {
       expect(submittedData!['readSymbol'], equals('a'));
       expect(submittedData!['writeSymbol'], equals('b'));
       expect(submittedData!['direction'], equals(TapeDirection.right));
+    });
+
+    testWidgets('rejects empty read and write symbols on save', (tester) async {
+      var submitted = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TmTransitionOperationsEditor(
+              initialRead: '',
+              initialWrite: '',
+              initialDirection: TapeDirection.right,
+              onSubmit: ({
+                required readSymbol,
+                required writeSymbol,
+                required direction,
+              }) {
+                submitted = true;
+              },
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(submitted, isFalse);
+      expect(find.text('Enter a read symbol'), findsOneWidget);
+      expect(find.text('Enter a write symbol'), findsOneWidget);
     });
 
     testWidgets('calls onCancel when cancel button is pressed', (tester) async {
@@ -844,6 +1060,61 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(cancelCalled, isTrue);
+    });
+
+    testWidgets('reacts to a narrow viewport while already open', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 700);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: TmTransitionOperationsEditor(
+                initialRead: 'a',
+                initialWrite: 'b',
+                initialDirection: TapeDirection.right,
+                onSubmit: ({
+                  required readSymbol,
+                  required writeSymbol,
+                  required direction,
+                }) {},
+                onCancel: () {},
+                onDelete: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final editor = find.byType(TmTransitionOperationsEditor);
+      expect(tester.getSize(editor).width, 360);
+
+      tester.view.physicalSize = const Size(320, 700);
+      await tester.pumpAndSettle();
+
+      final editorBounds = tester.getRect(editor);
+      expect(editorBounds.width, 296);
+      expect(editorBounds.left, greaterThanOrEqualTo(12));
+      expect(editorBounds.right, lessThanOrEqualTo(308));
+
+      final actionButtons = [
+        find.widgetWithText(OutlinedButton, 'Cancel'),
+        find.widgetWithText(OutlinedButton, 'Delete'),
+        find.widgetWithText(FilledButton, 'Save'),
+      ];
+      for (final button in actionButtons) {
+        expect(button, findsOneWidget);
+        final bounds = tester.getRect(button);
+        expect(bounds.left, greaterThanOrEqualTo(12));
+        expect(bounds.right, lessThanOrEqualTo(308));
+        expect(bounds.height, greaterThanOrEqualTo(48));
+      }
     });
   });
 

@@ -16,6 +16,7 @@ build/
 
 # Coverage
 coverage/
+test/**/failures/
 
 # Android
 **/android/**/local.properties
@@ -61,9 +62,25 @@ coverage/
 *.log
 *.swp
 *.tmp
+
+.gemini/
+.playwright-cli/
+gha-creds-*.json
+
+# Vendored GraphView Auto Claude data
+graphview/.auto-claude/
+graphview/.auto-claude-security.json
+graphview/.auto-claude-status
+graphview/.claude_settings.json
+graphview/.worktrees/
+graphview/.security-key
+graphview/logs/security/
+
+# Aperant data directory
+.auto-claude/
+/.auto-claude
+/.taskforge/
 AGENTS.md
 CLAUDE.md
-bugs.md
 /docs
 /release
-/.taskforge/

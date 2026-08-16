@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/tm_simulator.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -39,7 +40,7 @@ TM _dtmAppendOne() {
   final transitions = <TMTransition>{
     // Move right to end of input
     TMTransition(
-      id: 't0',
+      id: 'tm-dtm-opaque-move-edge',
       fromState: q0,
       toState: q0,
       label: 'R over 1',
@@ -50,7 +51,7 @@ TM _dtmAppendOne() {
     ),
     // On blank at end, write 1 and accept
     TMTransition(
-      id: 't1',
+      id: 'tm-dtm-opaque-accept-edge',
       fromState: q0,
       toState: qA,
       label: 'B->1,S',
@@ -233,7 +234,7 @@ TM _ntmSimple() {
 
   final transitions = <TMTransition>{
     TMTransition(
-      id: 't0',
+      id: 'tm-ntm-opaque-accept-a-edge',
       fromState: q0,
       toState: qA,
       label: '1/A,S',
@@ -243,7 +244,7 @@ TM _ntmSimple() {
       tapeNumber: 0,
     ),
     TMTransition(
-      id: 't1',
+      id: 'tm-ntm-opaque-accept-b-edge',
       fromState: q0,
       toState: qB,
       label: '1/B,S',
@@ -310,6 +311,100 @@ TM _ntmDuplicateLoop() {
 
 void main() {
   group('TM simulator (single-tape, deterministic and nondeterministic)', () {
+    test('synchronous DTM trace preserves display text and stable edge IDs',
+        () {
+      final result = TMSimulator.simulateDTM(
+        _dtmAppendOne(),
+        '1',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+      final step = steps.firstWhere(
+        (step) => step.usedTransition == 'q0,1 → q0,1,R',
+      );
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['tm-dtm-opaque-move-edge'],
+      );
+    });
+
+    test('cooperative DTM trace preserves display text and stable edge IDs',
+        () async {
+      final result = await TMSimulator.simulateCooperative(
+        _dtmAppendOne(),
+        '1',
+        stepByStep: true,
+        operationsPerBatch: 1,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+      final step = steps.firstWhere(
+        (step) => step.usedTransition == 'q0,1 → q0,1,R',
+      );
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['tm-dtm-opaque-move-edge'],
+      );
+    });
+
+    test('synchronous NTM trace preserves display text and stable edge IDs',
+        () {
+      final result = TMSimulator.simulateNTM(
+        _ntmSimple(),
+        '1',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+      final step = steps.firstWhere(
+        (step) => step.usedTransition == 'q0,1 → qA,A,S',
+      );
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['tm-ntm-opaque-accept-a-edge'],
+      );
+    });
+
+    test('cooperative NTM trace preserves display text and stable edge IDs',
+        () async {
+      final result = await TMSimulator.simulateCooperative(
+        _ntmSimple(),
+        '1',
+        stepByStep: true,
+        operationsPerBatch: 1,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+      final step = steps.firstWhere(
+        (step) => step.usedTransition == 'q0,1 → qA,A,S',
+      );
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['tm-ntm-opaque-accept-a-edge'],
+      );
+    });
+
     test('DTM appends one and accepts', () {
       final tm = _dtmAppendOne();
       final res = TMSimulator.simulateDTM(tm, '111');

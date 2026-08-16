@@ -30,8 +30,6 @@ void _logTmCanvas(String message) {
   }
 }
 
-const double _kTmFitToContentMaxScale = 1.35;
-
 /// Controller responsible for synchronising GraphView with the
 /// [TMEditorNotifier].
 class GraphViewTmCanvasController
@@ -47,9 +45,6 @@ class GraphViewTmCanvasController
   }) : super(notifier: editorNotifier);
 
   TMEditorNotifier get _notifier => notifier;
-
-  @override
-  double get fitToContentMaxScale => _kTmFitToContentMaxScale;
 
   @override
   late final GraphViewStateNotifierAdapter<TM> stateNotifierAdapter =
@@ -101,6 +96,7 @@ class GraphViewTmCanvasController
     String? readSymbol,
     String? writeSymbol,
     TapeDirection? direction,
+    int? tapeNumber,
     String? transitionId,
     double? controlPointX,
     double? controlPointY,
@@ -110,7 +106,7 @@ class GraphViewTmCanvasController
         ? Vector2(controlPointX, controlPointY)
         : null;
     _logTmCanvas(
-      'addOrUpdateTransition -> id=$edgeId from=$fromStateId to=$toStateId read=$readSymbol write=$writeSymbol dir=$direction cp=${controlPoint?.toString()}',
+      'addOrUpdateTransition -> id=$edgeId from=$fromStateId to=$toStateId read=$readSymbol write=$writeSymbol dir=$direction tape=$tapeNumber cp=${controlPoint?.toString()}',
     );
     performMutation(() {
       _notifier.addOrUpdateTransition(
@@ -120,38 +116,10 @@ class GraphViewTmCanvasController
         readSymbol: readSymbol,
         writeSymbol: writeSymbol,
         direction: direction,
+        tapeNumber: tapeNumber,
         controlPoint: controlPoint,
       );
     });
-  }
-
-  /// Updates the control point for the transition identified by [id].
-  void updateTransitionControlPoint(
-    String id,
-    double controlPointX,
-    double controlPointY,
-  ) {
-    final edge = edgeById(id);
-    if (edge == null) {
-      _logTmCanvas(
-        'updateTransitionControlPoint skipped -> id=$id (edge not found)',
-      );
-      return;
-    }
-
-    _logTmCanvas(
-      'updateTransitionControlPoint -> id=$id cp=(${controlPointX.toStringAsFixed(2)}, ${controlPointY.toStringAsFixed(2)})',
-    );
-    addOrUpdateTransition(
-      fromStateId: edge.fromStateId,
-      toStateId: edge.toStateId,
-      readSymbol: edge.readSymbol,
-      writeSymbol: edge.writeSymbol,
-      direction: edge.direction,
-      transitionId: id,
-      controlPointX: controlPointX,
-      controlPointY: controlPointY,
-    );
   }
 
   /// Removes the transition identified by [id] from the machine.

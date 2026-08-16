@@ -108,7 +108,9 @@ void main() {
       expect(intersection, isNull);
     });
 
-    test('non-intersecting segments (lines would intersect but segments don\'t)', () {
+    test(
+        'non-intersecting segments (lines would intersect but segments don\'t)',
+        () {
       final p1 = Offset(0, 0);
       final p2 = Offset(1, 1);
       final p3 = Offset(2, 0);

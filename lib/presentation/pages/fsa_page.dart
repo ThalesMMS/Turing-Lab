@@ -14,33 +14,34 @@ import '../../core/models/conversion_step_history.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/models/validation_diagnostic.dart';
+import '../../l10n/app_localizations_resolver.dart';
 import '../providers/algorithm_step_provider.dart';
 import '../providers/automaton_algorithm_provider.dart';
 import '../providers/conversion_history_provider.dart';
 import '../providers/automaton_layout_provider.dart';
 import '../providers/automaton_simulation_provider.dart';
 import '../providers/automaton_state_provider.dart';
-import '../providers/help_provider.dart';
 import '../widgets/algorithm_panel.dart';
 import '../widgets/algorithm_step_navigator.dart';
 import '../widgets/algorithm_step_viewer.dart';
 import '../widgets/automaton_graphview_canvas.dart';
 import '../widgets/automaton_canvas_tool.dart';
+import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/canvas_quick_actions.dart';
-import '../widgets/context_aware_help_panel.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/simulation_panel.dart';
 import '../widgets/step_navigation_controls.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/fsa/determinism_badge.dart';
+import '../widgets/common/workspace_helpers.dart';
+import '../widgets/common/workspace_help.dart';
 import 'grammar_page.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../core/services/algorithm_step_highlight_service.dart';
 import '../../features/canvas/graphview/graphview_canvas_controller.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_algorithm_step_highlight_channel.dart';
-import '../widgets/tablet_layout_container.dart';
 import '../../core/validators/input_validators.dart';
 import '../../core/validators/validation_issue_to_diagnostic.dart';
 import '../widgets/validation_diagnostic_card.dart';
@@ -72,10 +73,7 @@ class _FSAPageState extends ConsumerState<FSAPage>
 
   final GlobalKey _canvasKey = GlobalKey();
   late final GraphViewCanvasController _canvasController;
-  late final GraphViewSimulationHighlightChannel _highlightChannel;
   late final SimulationHighlightService _highlightService;
-  late final GraphViewAlgorithmStepHighlightChannel
-      _algorithmStepHighlightChannel;
   late final AlgorithmStepHighlightService _algorithmStepHighlightService;
   late final AutomatonCanvasToolController _toolController;
   bool _stepByStepMode = false;
@@ -93,17 +91,17 @@ class _FSAPageState extends ConsumerState<FSAPage>
     _canvasController.synchronize(
       ref.read(automatonStateProvider).currentAutomaton,
     );
-    _highlightChannel = GraphViewSimulationHighlightChannel(_canvasController);
-    _highlightService = SimulationHighlightService(channel: _highlightChannel);
-    _algorithmStepHighlightChannel = GraphViewAlgorithmStepHighlightChannel(
-      _canvasController,
+    _highlightService = SimulationHighlightService(
+      channel: GraphViewSimulationHighlightChannel(_canvasController),
     );
     _algorithmStepHighlightService = AlgorithmStepHighlightService(
-      channel: _algorithmStepHighlightChannel,
+      channel: GraphViewAlgorithmStepHighlightChannel(_canvasController),
     );
     _canvasController.algorithmStepHighlightService =
         _algorithmStepHighlightService;
-    _toolController = AutomatonCanvasToolController();
+    _toolController = AutomatonCanvasToolController(
+      AutomatonCanvasTool.selection,
+    );
   }
 
   @override
@@ -121,8 +119,9 @@ class _FSAPageState extends ConsumerState<FSAPage>
   Widget build(BuildContext context) {
     super.build(context);
     final state = ref.watch(automatonStateProvider);
-    final screenSize = MediaQuery.of(context).size;
-    final isMobile = screenSize.width < 1024;
+    _syncValidationHighlight(
+      _validationDiagnosticsFor(state.currentAutomaton),
+    );
 
     // Listen for algorithm step changes and apply highlights to canvas
     ref.listen<AlgorithmStepState>(algorithmStepProvider, (previous, next) {
@@ -141,22 +140,25 @@ class _FSAPageState extends ConsumerState<FSAPage>
       overrides: [
         canvasHighlightServiceProvider.overrideWithValue(_highlightService),
       ],
-      child: FocusTraversalGroup(
-        policy: ReadingOrderTraversalPolicy(),
-        child: Scaffold(
-          body: isMobile
-              ? _buildMobileLayout(state)
-              : screenSize.width < 1400
-                  ? _buildTabletLayout(state)
-                  : _buildDesktopLayout(state),
-          floatingActionButton: !isMobile
-              ? FloatingActionButton(
-                  heroTag: 'fsa_context_help_fab',
-                  onPressed: _showContextualHelp,
-                  tooltip: 'Context-Aware Help',
-                  child: const Icon(Icons.help_outline),
-                )
-              : null,
+      child: AutomatonWorkspaceScaffold(
+        canvasWithToolbar: ({required isMobile}) => _buildCanvasArea(
+          state: state,
+          isMobile: isMobile,
+        ),
+        algorithmPanel: _buildAlgorithmWorkspacePanel(
+          state: state,
+          useExpanded: true,
+        ),
+        tabletAlgorithmPanel: _buildAlgorithmWorkspacePanel(
+          state: state,
+          useExpanded: false,
+        ),
+        simulationPanel: _buildSimulationWorkspacePanel(),
+        floatingActionButton: FloatingActionButton(
+          heroTag: 'fsa_context_help_fab',
+          onPressed: _showContextualHelp,
+          tooltip: 'Context-Aware Help',
+          child: const Icon(Icons.help_outline),
         ),
       ),
     );

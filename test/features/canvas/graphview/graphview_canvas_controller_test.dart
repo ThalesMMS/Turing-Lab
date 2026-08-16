@@ -116,11 +116,18 @@ class _RecordingGraphViewController extends GraphViewController {
       : super(transformationController: transformation);
 
   Matrix4? lastTarget;
+  int zoomToFitCount = 0;
 
   @override
   void animateToMatrix(Matrix4 target) {
     lastTarget = Matrix4.copy(target);
     transformationController!.value = target;
+  }
+
+  @override
+  void zoomToFit() {
+    zoomToFitCount++;
+    super.zoomToFit();
   }
 }
 
@@ -220,6 +227,26 @@ void main() {
       transformation.dispose();
     });
 
+    test('rejects a separate transformation with an external view controller',
+        () {
+      final viewTransformation = TransformationController();
+      final conflictingTransformation = TransformationController();
+      final viewController = GraphViewController(
+        transformationController: viewTransformation,
+      );
+      addTearDown(viewTransformation.dispose);
+      addTearDown(conflictingTransformation.dispose);
+
+      expect(
+        () => GraphViewCanvasController(
+          automatonStateNotifier: provider,
+          viewController: viewController,
+          transformationController: conflictingTransformation,
+        ),
+        throwsAssertionError,
+      );
+    });
+
     test('addStateAt generates id and forwards to provider', () {
       controller.addStateAt(const Offset(120, 80));
 
@@ -229,7 +256,9 @@ void main() {
       expect(call['label'], equals('q0'));
       expect(call['x'], closeTo(72, 0.0001));
       expect(call['y'], closeTo(32, 0.0001));
-      expect(call['isInitial'], isTrue);
+      expect(call['isInitial'], isNull);
+      expect(call['isAccepting'], isNull);
+      expect(provider.state.currentAutomaton!.initialState!.id, call['id']);
     });
 
     test(
@@ -288,6 +317,23 @@ void main() {
       expect(afterCenter.x, closeTo(400, 0.0001));
       expect(afterCenter.y, closeTo(300, 0.0001));
       expect(transformation.value.getMaxScaleOnAxis(), closeTo(0.96, 0.0001));
+    });
+
+    test('fitToContent uses a bounded reset before viewport is known', () {
+      final transformation = TransformationController();
+      addTearDown(transformation.dispose);
+      final viewController = _RecordingGraphViewController(transformation);
+      recreateController(viewController: viewController);
+      controller.addStateAt(const Offset(0, 0));
+
+      controller.fitToContent();
+
+      expect(viewController.zoomToFitCount, 0);
+      expect(viewController.lastTarget, isNotNull);
+      expect(
+        viewController.lastTarget!.getMaxScaleOnAxis(),
+        closeTo(1, 0.0001),
+      );
     });
 
     test('moveState forwards coordinates to provider', () {
@@ -497,6 +543,60 @@ void main() {
       expect(cachedEdge.controlPointY, closeTo(40, 0.0001));
     });
 
+    test('clearCanvas preserves FSA metadata and participates in history', () {
+      final initialState = automaton_state.State(
+        id: 'q0',
+        label: 'start',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final acceptingState = automaton_state.State(
+        id: 'q1',
+        label: 'accept',
+        position: Vector2(120, 0),
+        isAccepting: true,
+      );
+      final transition = FSATransition(
+        id: 't0',
+        fromState: initialState,
+        toState: acceptingState,
+        inputSymbols: const {'a'},
+        label: 'a',
+      );
+      final automaton = FSA(
+        id: 'clear-fsa',
+        name: 'Configured FSA',
+        states: {initialState, acceptingState},
+        transitions: {transition},
+        alphabet: const {'a', 'unused'},
+        initialState: initialState,
+        acceptingStates: {acceptingState},
+        created: DateTime.utc(2024, 1, 1),
+        modified: DateTime.utc(2024, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 400, 300),
+      );
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+
+      expect(controller.clearCanvas(), isTrue);
+      final cleared = provider.state.currentAutomaton;
+      expect(cleared, isNotNull);
+      expect(cleared!.id, 'clear-fsa');
+      expect(cleared.name, 'Configured FSA');
+      expect(cleared.alphabet, {'a', 'unused'});
+      expect(cleared.states, isEmpty);
+      expect(cleared.transitions, isEmpty);
+      expect(controller.clearCanvas(), isFalse);
+
+      expect(controller.undo(), isTrue);
+      expect(provider.state.currentAutomaton!.states, hasLength(2));
+      expect(provider.state.currentAutomaton!.transitions, hasLength(1));
+
+      expect(controller.redo(), isTrue);
+      expect(provider.state.currentAutomaton!.states, isEmpty);
+      expect(provider.state.currentAutomaton!.transitions, isEmpty);
+    });
+
     test('external synchronize clears undo history and notifies listeners', () {
       final stateA = automaton_state.State(
         id: 'qa',
@@ -571,6 +671,101 @@ void main() {
 
       expect(controller.canRedo, isTrue);
       expect(controller.redo(), isTrue);
+    });
+
+    test('undo preserves an atomic FSA symbol containing a comma', () {
+      final initialState = automaton_state.State(
+        id: 'q0',
+        label: 'q0',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final acceptingState = automaton_state.State(
+        id: 'q1',
+        label: 'q1',
+        position: Vector2(120, 0),
+        isAccepting: true,
+      );
+      final transition = FSATransition(
+        id: 'comma-transition',
+        fromState: initialState,
+        toState: acceptingState,
+        inputSymbols: const {'a,b'},
+        label: 'a,b',
+      );
+      final automaton = FSA(
+        id: 'comma-automaton',
+        name: 'Comma symbol',
+        states: {initialState, acceptingState},
+        transitions: {transition},
+        alphabet: const {'a,b'},
+        initialState: initialState,
+        acceptingStates: {acceptingState},
+        created: DateTime.utc(2024, 1, 1),
+        modified: DateTime.utc(2024, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 400, 300),
+      );
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+
+      controller.moveState('q0', const Offset(40, 20));
+      expect(controller.undo(), isTrue);
+
+      expect(
+        provider.state.currentAutomaton!.fsaTransitions.single.inputSymbols,
+        {'a,b'},
+      );
+    });
+
+    test('undo safely discards a snapshot with a dangling edge', () {
+      final presentState = automaton_state.State(
+        id: 'present',
+        label: 'present',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final missingState = automaton_state.State(
+        id: 'missing',
+        label: 'missing',
+        position: Vector2(100, 0),
+      );
+      final danglingTransition = FSATransition(
+        id: 'dangling',
+        fromState: presentState,
+        toState: missingState,
+        inputSymbols: const {'a'},
+        label: 'a',
+      );
+      final corruptAutomaton = FSA(
+        id: 'corrupt',
+        name: 'Corrupt history source',
+        states: {presentState},
+        transitions: {danglingTransition},
+        alphabet: const {'a'},
+        initialState: presentState,
+        acceptingStates: const {},
+        created: DateTime.utc(2024, 1, 1),
+        modified: DateTime.utc(2024, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 400, 300),
+      );
+      provider.updateAutomaton(corruptAutomaton);
+      controller.synchronize(corruptAutomaton);
+
+      controller.addStateAt(const Offset(200, 100));
+      final stateIdsBeforeUndo = provider.state.currentAutomaton!.states
+          .map((state) => state.id)
+          .toSet();
+
+      bool? restored;
+      expect(() => restored = controller.undo(), returnsNormally);
+      expect(restored, isFalse);
+      expect(
+        provider.state.currentAutomaton!.states
+            .map((state) => state.id)
+            .toSet(),
+        stateIdsBeforeUndo,
+      );
+      expect(controller.canRedo, isFalse);
     });
 
     test('enforces undo history limit by discarding oldest entries', () {

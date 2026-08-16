@@ -58,14 +58,16 @@ class AnimatedEdgeRenderer extends ArrowEdgeRenderer {
     var destination = edge.destination;
 
     final particlePaint = Paint()
-      ..color = animationConfig.particleColor ?? edge.paint?.color ?? paint.color
+      ..color =
+          animationConfig.particleColor ?? edge.paint?.color ?? paint.color
       ..style = PaintingStyle.fill;
 
     Path edgePath;
 
     if (source == destination) {
       // Handle self-loop
-      final loopResult = buildSelfLoopPath(edge, arrowLength: noArrow ? 0.0 : ARROW_LENGTH);
+      final loopResult =
+          buildSelfLoopPath(edge, arrowLength: noArrow ? 0.0 : ARROW_LENGTH);
       if (loopResult == null) return;
       edgePath = loopResult.path;
     } else {
@@ -97,7 +99,9 @@ class AnimatedEdgeRenderer extends ArrowEdgeRenderer {
       final basePosition = i / animationConfig.particleCount;
 
       // Add animation offset (with speed multiplier)
-      final animatedPosition = (basePosition + animationValue * animationConfig.animationSpeed) % 1.0;
+      final animatedPosition =
+          (basePosition + animationValue * animationConfig.animationSpeed) %
+              1.0;
 
       // Convert to actual path offset
       final offset = animatedPosition * pathLength;

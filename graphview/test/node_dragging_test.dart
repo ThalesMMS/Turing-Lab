@@ -12,6 +12,7 @@ void main() {
       expect(config.onNodeDragStart, isNull);
       expect(config.onNodeDragUpdate, isNull);
       expect(config.onNodeDragEnd, isNull);
+      expect(config.onNodePointerDown, isNull);
       expect(config.canDragPredicate, isNull);
     });
 
@@ -53,6 +54,26 @@ void main() {
 
       config.onNodeDragEnd?.call(testNode, testPosition);
       expect(dragEndCalled, true);
+    });
+
+    test('node pointer callback remains available when dragging is disabled',
+        () {
+      Node? capturedNode;
+      PointerDownEvent? capturedEvent;
+      final event = const PointerDownEvent(position: Offset(12, 24));
+      final config = NodeDraggingConfiguration(
+        enabled: false,
+        onNodePointerDown: (node, pointerEvent) {
+          capturedNode = node;
+          capturedEvent = pointerEvent;
+        },
+      );
+      final node = Node.Id('pointer-target');
+
+      config.onNodePointerDown?.call(node, event);
+
+      expect(capturedNode, same(node));
+      expect(capturedEvent, same(event));
     });
 
     test('onNodeDragStart callback receives correct node', () {

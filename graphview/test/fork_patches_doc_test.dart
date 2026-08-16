@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 const patchSections = <String, int>{
   '## Edge Rendering Patches': 5,
   '## Performance Patches': 2,
-  '## Interaction Patches': 3,
+  '## Interaction Patches': 4,
   '## Animation Patches': 3,
   '## API Patches': 5,
 };
@@ -18,7 +18,7 @@ const appendixCategories = <String>[
   'API',
 ];
 
-const expectedPatchTotal = 18;
+const expectedPatchTotal = 19;
 
 List<String> extractSectionLines(String content, String sectionHeader) {
   final lines = content.split('\n');

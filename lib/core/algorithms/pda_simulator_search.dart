@@ -56,6 +56,10 @@ StepExplanation _buildPdaStepExplanation({
         type: HighlightTargetType.state,
         id: transition.toState.id,
       ),
+      HighlightTarget(
+        type: HighlightTargetType.transition,
+        id: transition.id,
+      ),
       if (nextStack.isNotEmpty)
         HighlightTarget(
           type: HighlightTargetType.pdaStack,

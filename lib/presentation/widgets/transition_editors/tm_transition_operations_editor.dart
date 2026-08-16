@@ -11,7 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/models/tm_transition.dart';
+import '../../../l10n/app_localizations_resolver.dart';
 import '../tm/direction_icon.dart';
+import 'transition_editor_actions.dart';
+import 'transition_editor_shell.dart';
 
 class TmTransitionOperationsEditor extends StatefulWidget {
   const TmTransitionOperationsEditor({
@@ -21,6 +24,7 @@ class TmTransitionOperationsEditor extends StatefulWidget {
     required this.initialDirection,
     required this.onSubmit,
     required this.onCancel,
+    this.onDelete,
   });
 
   final String initialRead;
@@ -32,6 +36,7 @@ class TmTransitionOperationsEditor extends StatefulWidget {
     required TapeDirection direction,
   }) onSubmit;
   final VoidCallback onCancel;
+  final VoidCallback? onDelete;
 
   @override
   State<TmTransitionOperationsEditor> createState() =>
@@ -47,6 +52,7 @@ class _TmTransitionOperationsEditorState
     text: widget.initialWrite,
   );
   late TapeDirection _direction = widget.initialDirection;
+  bool _showValidationErrors = false;
 
   @override
   void dispose() {
@@ -56,15 +62,24 @@ class _TmTransitionOperationsEditorState
   }
 
   void _handleSubmit() {
+    final readSymbol = _readController.text.trim();
+    final writeSymbol = _writeController.text.trim();
+    if (readSymbol.isEmpty || writeSymbol.isEmpty) {
+      setState(() {
+        _showValidationErrors = true;
+      });
+      return;
+    }
     widget.onSubmit(
-      readSymbol: _readController.text.trim(),
-      writeSymbol: _writeController.text.trim(),
+      readSymbol: readSymbol,
+      writeSymbol: writeSymbol,
       direction: _direction,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     return Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         SingleActivator(LogicalKeyboardKey.enter): _SubmitIntent(),
@@ -86,130 +101,117 @@ class _TmTransitionOperationsEditorState
             },
           ),
         },
-        child: Material(
-          elevation: 4,
-          borderRadius: BorderRadius.circular(8),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 260),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: FocusTraversalGroup(
-                policy: OrderedTraversalPolicy(),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    FocusTraversalOrder(
-                      order: const NumericFocusOrder(0.0),
-                      child: TextField(
-                        controller: _readController,
-                        decoration: const InputDecoration(
-                          labelText: 'Read symbol',
-                          border: OutlineInputBorder(),
-                        ),
-                        autocorrect: false,
-                        enableSuggestions: false,
-                        keyboardType: TextInputType.visiblePassword,
-                        autofocus: true,
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => _handleSubmit(),
-                      ),
+        child: TransitionEditorShell(
+          child: FocusTraversalGroup(
+            policy: OrderedTraversalPolicy(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(0.0),
+                  child: TextField(
+                    controller: _readController,
+                    decoration: InputDecoration(
+                      labelText: l10n.tmReadSymbol,
+                      border: const OutlineInputBorder(),
+                      errorText: _showValidationErrors &&
+                              _readController.text.trim().isEmpty
+                          ? l10n.tmReadSymbolRequired
+                          : null,
                     ),
-                    const SizedBox(height: 12),
-                    FocusTraversalOrder(
-                      order: const NumericFocusOrder(1.0),
-                      child: TextField(
-                        controller: _writeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Write symbol',
-                          border: OutlineInputBorder(),
-                        ),
-                        autocorrect: false,
-                        enableSuggestions: false,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => _handleSubmit(),
-                      ),
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.visiblePassword,
+                    autofocus: true,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => _handleSubmit(),
+                    onChanged: (_) {
+                      if (_showValidationErrors) {
+                        setState(() {});
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(1.0),
+                  child: TextField(
+                    controller: _writeController,
+                    decoration: InputDecoration(
+                      labelText: l10n.tmWriteSymbol,
+                      border: const OutlineInputBorder(),
+                      errorText: _showValidationErrors &&
+                              _writeController.text.trim().isEmpty
+                          ? l10n.tmWriteSymbolRequired
+                          : null,
                     ),
-                    const SizedBox(height: 12),
-                    FocusTraversalOrder(
-                      order: const NumericFocusOrder(2.0),
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Direction',
-                          border: OutlineInputBorder(),
-                        ),
-                        child: Column(
-                          children: [
-                            DropdownButtonHideUnderline(
-                              child: DropdownButton<TapeDirection>(
-                                value: _direction,
-                                items: TapeDirection.values
-                                    .map(
-                                      (direction) => DropdownMenuItem(
-                                        value: direction,
-                                        child: TMDirectionIndicator(
-                                          direction: direction,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    setState(() {
-                                      _direction = value;
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TMDirectionSelector(
-                              selected: _direction,
-                              onChanged: (value) {
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => _handleSubmit(),
+                    onChanged: (_) {
+                      if (_showValidationErrors) {
+                        setState(() {});
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(2.0),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: l10n.tmDirection,
+                      border: const OutlineInputBorder(),
+                    ),
+                    child: Column(
+                      children: [
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<TapeDirection>(
+                            value: _direction,
+                            items: TapeDirection.values
+                                .map(
+                                  (direction) => DropdownMenuItem(
+                                    value: direction,
+                                    child: TMDirectionIndicator(
+                                      direction: direction,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
                                 setState(() {
                                   _direction = value;
                                 });
-                              },
-                              compact: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FocusTraversalOrder(
-                            order: const NumericFocusOrder(3.0),
-                            child: OutlinedButton(
-                              onPressed: widget.onCancel,
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              child: const Text('Cancel'),
-                            ),
+                              }
+                            },
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FocusTraversalOrder(
-                            order: const NumericFocusOrder(4.0),
-                            child: FilledButton(
-                              onPressed: _handleSubmit,
-                              style: FilledButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              child: const Text('Save'),
-                            ),
-                          ),
+                        const SizedBox(height: 8),
+                        TMDirectionSelector(
+                          selected: _direction,
+                          onChanged: (value) {
+                            setState(() {
+                              _direction = value;
+                            });
+                          },
+                          compact: true,
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                TransitionEditorActions(
+                  onCancel: widget.onCancel,
+                  onDelete: widget.onDelete,
+                  onSave: _handleSubmit,
+                  baseFocusOrder: 3,
+                ),
+              ],
             ),
           ),
         ),

@@ -86,6 +86,25 @@ class _HomePageState extends ConsumerState<HomePage> {
         PumpingLemmaPage(),
       ];
 
+  Widget _buildAppBarAction({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Semantics(
+      label: label,
+      button: true,
+      enabled: true,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        tooltip: label,
+      ),
+    );
+  }
+
   int _sanitizeNavigationIndex(int index, int itemCount) {
     if (itemCount <= 0) {
       return 0;
@@ -266,15 +285,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ],
                 ),
           actions: [
-            IconButton(
+            _buildAppBarAction(
+              label: l10n.homeHelpTooltip,
+              icon: Icons.help_outline,
               onPressed: () => _showHelpDialog(context),
-              icon: const Icon(Icons.help_outline),
-              tooltip: l10n.homeHelpTooltip,
             ),
-            IconButton(
+            _buildAppBarAction(
+              label: l10n.homeSettingsTooltip,
+              icon: Icons.settings,
               onPressed: () => _showSettingsDialog(context),
-              icon: const Icon(Icons.settings),
-              tooltip: l10n.homeSettingsTooltip,
             ),
           ],
         ),

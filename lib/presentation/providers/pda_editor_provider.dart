@@ -208,6 +208,7 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
     String? readSymbol,
     String? popSymbol,
     String? pushSymbol,
+    List<String>? pushSymbols,
     bool? isLambdaInput,
     bool? isLambdaPop,
     bool? isLambdaPush,
@@ -258,23 +259,40 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
       final lambdaInput = isLambdaInput ?? base.isLambdaInput;
       final lambdaPop = isLambdaPop ?? base.isLambdaPop;
       final lambdaPush = isLambdaPush ?? base.isLambdaPush;
+      final effectivePushSymbol =
+          lambdaPush ? '' : (pushSymbol ?? base.pushSymbol);
+      final List<String>? effectivePushSymbols = lambdaPush
+          ? const <String>[]
+          : pushSymbols ?? (pushSymbol == null ? base.pushSymbols : null);
 
       final updatedTransition = base.copyWith(
         fromState: effectiveFrom,
         toState: effectiveTo,
         inputSymbol: lambdaInput ? '' : (readSymbol ?? base.inputSymbol),
         popSymbol: lambdaPop ? '' : (popSymbol ?? base.popSymbol),
-        pushSymbol: lambdaPush ? '' : (pushSymbol ?? base.pushSymbol),
+        pushSymbol: effectivePushSymbol,
+        pushSymbols: effectivePushSymbols,
         isLambdaInput: lambdaInput,
         isLambdaPop: lambdaPop,
         isLambdaPush: lambdaPush,
         controlPoint: (controlPoint ?? base.controlPoint).clone(),
       );
 
-      final resolvedLabel = label ?? _formatTransitionLabel(updatedTransition);
+      final resolvedLabel = label ??
+          PDATransition.formatLabel(
+            inputSymbol: updatedTransition.inputSymbol,
+            popSymbol: updatedTransition.popSymbol,
+            pushSymbol: updatedTransition.pushSymbol,
+            isLambdaInput: updatedTransition.isLambdaInput,
+            isLambdaPop: updatedTransition.isLambdaPop,
+            isLambdaPush: updatedTransition.isLambdaPush,
+          );
       final finalTransition = updatedTransition.copyWith(
         label: resolvedLabel.trim(),
       );
+      if (finalTransition.validate().isNotEmpty) {
+        return current;
+      }
 
       if (index >= 0) {
         transitions[index] = finalTransition;
@@ -476,13 +494,6 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
       stackAlphabet: stackAlphabet,
       modified: DateTime.now(),
     );
-  }
-
-  String _formatTransitionLabel(PDATransition transition) {
-    final input = transition.isLambdaInput ? 'λ' : transition.inputSymbol;
-    final pop = transition.isLambdaPop ? 'λ' : transition.popSymbol;
-    final push = transition.isLambdaPush ? 'λ' : transition.pushSymbol;
-    return '$input, $pop/$push';
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -215,7 +217,13 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      addTearDown(semantics.dispose);
+      var semanticsDisposed = false;
+      addTearDown(() {
+        if (!semanticsDisposed) {
+          semantics.dispose();
+          semanticsDisposed = true;
+        }
+      });
 
       final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
       final highlightService = _TestSimulationHighlightService();
@@ -235,6 +243,23 @@ void main() {
       expect(find.bySemanticsLabel('Navigate to Regex'), findsOneWidget);
       expect(find.bySemanticsLabel('Help'), findsOneWidget);
       expect(find.bySemanticsLabel('Settings'), findsOneWidget);
+      expect(
+        tester
+            .getSemantics(find.bySemanticsLabel('Help'))
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      expect(
+        tester
+            .getSemantics(find.bySemanticsLabel('Settings'))
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+
+      semantics.dispose();
+      semanticsDisposed = true;
     });
 
     testWidgets('renders navigation and app actions in Portuguese', (

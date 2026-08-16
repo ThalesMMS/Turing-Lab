@@ -12,6 +12,10 @@ import 'package:flutter/services.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 
+import '../../../l10n/app_localizations_resolver.dart';
+import 'transition_editor_actions.dart';
+import 'transition_editor_shell.dart';
+
 class PdaTransitionEditor extends StatefulWidget {
   const PdaTransitionEditor({
     super.key,
@@ -23,6 +27,7 @@ class PdaTransitionEditor extends StatefulWidget {
     required this.isLambdaPush,
     required this.onSubmit,
     required this.onCancel,
+    this.onDelete,
     this.currentStack,
   });
 
@@ -42,6 +47,7 @@ class PdaTransitionEditor extends StatefulWidget {
     required bool lambdaPush,
   }) onSubmit;
   final VoidCallback onCancel;
+  final VoidCallback? onDelete;
 
   @override
   State<PdaTransitionEditor> createState() => _PdaTransitionEditorState();
@@ -60,6 +66,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
   late bool _lambdaInput = widget.isLambdaInput;
   late bool _lambdaPop = widget.isLambdaPop;
   late bool _lambdaPush = widget.isLambdaPush;
+  bool _showValidationErrors = false;
 
   @override
   void initState() {
@@ -79,10 +86,21 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
   }
 
   void _handleSubmit() {
+    final readSymbol = _readController.text.trim();
+    final popSymbol = _popController.text.trim();
+    final pushSymbol = _pushController.text.trim();
+    if ((!_lambdaInput && readSymbol.isEmpty) ||
+        (!_lambdaPop && popSymbol.isEmpty) ||
+        (!_lambdaPush && pushSymbol.isEmpty)) {
+      setState(() {
+        _showValidationErrors = true;
+      });
+      return;
+    }
     widget.onSubmit(
-      readSymbol: _readController.text.trim(),
-      popSymbol: _popController.text.trim(),
-      pushSymbol: _pushController.text.trim(),
+      readSymbol: readSymbol,
+      popSymbol: popSymbol,
+      pushSymbol: pushSymbol,
       lambdaInput: _lambdaInput,
       lambdaPop: _lambdaPop,
       lambdaPush: _lambdaPush,
@@ -108,6 +126,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     const shortcuts = <ShortcutActivator, Intent>{
       SingleActivator(LogicalKeyboardKey.enter): _SubmitIntent(),
       SingleActivator(LogicalKeyboardKey.numpadEnter): _SubmitIntent(),
@@ -131,178 +150,132 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
             },
           ),
         },
-        child: Material(
-          elevation: 4,
-          borderRadius: BorderRadius.circular(8),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 280, maxWidth: 360),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: FocusTraversalGroup(
-                policy: OrderedTraversalPolicy(),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final useStackedButtons = constraints.maxWidth < 320;
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(0.0),
-                          child: TextField(
-                            controller: _readController,
-                            enabled: !_lambdaInput,
-                            decoration: const InputDecoration(
-                              labelText: 'Input symbol',
-                              border: OutlineInputBorder(),
-                            ),
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            keyboardType: TextInputType.visiblePassword,
-                            autofocus: true,
-                            onSubmitted: (_) => _handleSubmit(),
-                          ),
-                        ),
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(1.0),
-                          child: _buildLambdaSwitch(
-                            label: 'λ-input',
-                            value: _lambdaInput,
-                            onChanged: (value) {
-                              _lambdaInput = value;
-                              if (value) {
-                                _readController.text = '';
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(2.0),
-                          child: TextField(
-                            controller: _popController,
-                            enabled: !_lambdaPop,
-                            decoration: const InputDecoration(
-                              labelText: 'Pop symbol',
-                              border: OutlineInputBorder(),
-                            ),
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            keyboardType: TextInputType.visiblePassword,
-                            onSubmitted: (_) => _handleSubmit(),
-                          ),
-                        ),
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(3.0),
-                          child: _buildLambdaSwitch(
-                            label: 'λ-pop',
-                            value: _lambdaPop,
-                            onChanged: (value) {
-                              _lambdaPop = value;
-                              if (value) {
-                                _popController.text = '';
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(4.0),
-                          child: TextField(
-                            controller: _pushController,
-                            enabled: !_lambdaPush,
-                            decoration: const InputDecoration(
-                              labelText: 'Push symbol',
-                              border: OutlineInputBorder(),
-                            ),
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            keyboardType: TextInputType.visiblePassword,
-                            onSubmitted: (_) => _handleSubmit(),
-                          ),
-                        ),
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(5.0),
-                          child: _buildLambdaSwitch(
-                            label: 'λ-push',
-                            value: _lambdaPush,
-                            onChanged: (value) {
-                              _lambdaPush = value;
-                              if (value) {
-                                _pushController.text = '';
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (widget.currentStack != null) ...[
-                          StackOperationPreview(
-                            inputSymbol:
-                                _lambdaInput ? 'λ' : _readController.text,
-                            popSymbol: _lambdaPop ? 'λ' : _popController.text,
-                            pushSymbol:
-                                _lambdaPush ? 'λ' : _pushController.text,
-                            currentStack: widget.currentStack!,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        if (useStackedButtons) ...[
-                          FocusTraversalOrder(
-                            order: const NumericFocusOrder(6.0),
-                            child: OutlinedButton(
-                              onPressed: widget.onCancel,
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              child: const Text('Cancel'),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          FocusTraversalOrder(
-                            order: const NumericFocusOrder(7.0),
-                            child: FilledButton(
-                              onPressed: _handleSubmit,
-                              style: FilledButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              child: const Text('Save'),
-                            ),
-                          ),
-                        ] else
-                          Row(
-                            children: [
-                              Expanded(
-                                child: FocusTraversalOrder(
-                                  order: const NumericFocusOrder(6.0),
-                                  child: OutlinedButton(
-                                    onPressed: widget.onCancel,
-                                    style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size.fromHeight(48),
-                                    ),
-                                    child: const Text('Cancel'),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: FocusTraversalOrder(
-                                  order: const NumericFocusOrder(7.0),
-                                  child: FilledButton(
-                                    onPressed: _handleSubmit,
-                                    style: FilledButton.styleFrom(
-                                      minimumSize: const Size.fromHeight(48),
-                                    ),
-                                    child: const Text('Save'),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    );
-                  },
+        child: TransitionEditorShell(
+          child: FocusTraversalGroup(
+            policy: OrderedTraversalPolicy(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(0.0),
+                  child: TextField(
+                    controller: _readController,
+                    enabled: !_lambdaInput,
+                    decoration: InputDecoration(
+                      labelText: l10n.pdaInputSymbol,
+                      border: const OutlineInputBorder(),
+                      errorText: _showValidationErrors &&
+                              !_lambdaInput &&
+                              _readController.text.trim().isEmpty
+                          ? l10n.pdaInputSymbolRequired
+                          : null,
+                    ),
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.visiblePassword,
+                    autofocus: true,
+                    onSubmitted: (_) => _handleSubmit(),
+                  ),
                 ),
-              ),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(1.0),
+                  child: _buildLambdaSwitch(
+                    label: l10n.pdaLambdaInput,
+                    value: _lambdaInput,
+                    onChanged: (value) {
+                      _lambdaInput = value;
+                      if (value) {
+                        _readController.text = '';
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(2.0),
+                  child: TextField(
+                    controller: _popController,
+                    enabled: !_lambdaPop,
+                    decoration: InputDecoration(
+                      labelText: l10n.pdaPopSymbol,
+                      border: const OutlineInputBorder(),
+                      errorText: _showValidationErrors &&
+                              !_lambdaPop &&
+                              _popController.text.trim().isEmpty
+                          ? l10n.pdaPopSymbolRequired
+                          : null,
+                    ),
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.visiblePassword,
+                    onSubmitted: (_) => _handleSubmit(),
+                  ),
+                ),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(3.0),
+                  child: _buildLambdaSwitch(
+                    label: l10n.pdaLambdaPop,
+                    value: _lambdaPop,
+                    onChanged: (value) {
+                      _lambdaPop = value;
+                      if (value) {
+                        _popController.text = '';
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(4.0),
+                  child: TextField(
+                    controller: _pushController,
+                    enabled: !_lambdaPush,
+                    decoration: InputDecoration(
+                      labelText: l10n.pdaPushSymbol,
+                      border: const OutlineInputBorder(),
+                      errorText: _showValidationErrors &&
+                              !_lambdaPush &&
+                              _pushController.text.trim().isEmpty
+                          ? l10n.pdaPushSymbolRequired
+                          : null,
+                    ),
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.visiblePassword,
+                    onSubmitted: (_) => _handleSubmit(),
+                  ),
+                ),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(5.0),
+                  child: _buildLambdaSwitch(
+                    label: l10n.pdaLambdaPush,
+                    value: _lambdaPush,
+                    onChanged: (value) {
+                      _lambdaPush = value;
+                      if (value) {
+                        _pushController.text = '';
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (widget.currentStack != null) ...[
+                  StackOperationPreview(
+                    inputSymbol: _lambdaInput ? 'λ' : _readController.text,
+                    popSymbol: _lambdaPop ? 'λ' : _popController.text,
+                    pushSymbol: _lambdaPush ? 'λ' : _pushController.text,
+                    currentStack: widget.currentStack!,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                TransitionEditorActions(
+                  onCancel: widget.onCancel,
+                  onDelete: widget.onDelete,
+                  onSave: _handleSubmit,
+                  baseFocusOrder: 6,
+                ),
+              ],
             ),
           ),
         ),

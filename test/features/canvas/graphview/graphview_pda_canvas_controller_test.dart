@@ -13,6 +13,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/pda.dart';
@@ -22,6 +23,19 @@ import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+
+class _RecordingGraphViewController extends GraphViewController {
+  _RecordingGraphViewController(TransformationController transformation)
+      : super(transformationController: transformation);
+
+  Matrix4? lastTarget;
+
+  @override
+  void animateToMatrix(Matrix4 target) {
+    lastTarget = Matrix4.copy(target);
+    transformationController!.value = target;
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -86,6 +100,47 @@ void main() {
       );
     }
 
+    test('fitToContent uses the shared 1.75 scale cap', () {
+      controller.dispose();
+      final transformation = TransformationController();
+      addTearDown(transformation.dispose);
+      final viewController = _RecordingGraphViewController(transformation);
+      controller = GraphViewPdaCanvasController(
+        editorNotifier: notifier,
+        viewController: viewController,
+      );
+      final pda = buildSamplePda();
+      notifier.setPda(pda);
+      controller
+        ..synchronize(pda)
+        ..updateViewportSize(const Size(1000, 800))
+        ..fitToContent();
+
+      expect(viewController.lastTarget, isNotNull);
+      expect(
+        viewController.lastTarget!.getMaxScaleOnAxis(),
+        closeTo(1.75, 0.0001),
+      );
+    });
+
+    test('dispose leaves a caller-owned transformation usable', () {
+      controller.dispose();
+      final transformation = TransformationController();
+      controller = GraphViewPdaCanvasController(
+        editorNotifier: notifier,
+        transformationController: transformation,
+      );
+
+      controller.dispose();
+
+      expect(
+        () => transformation.value = Matrix4.identity()
+          ..translateByDouble(1.0, 0.0, 0.0, 1.0),
+        returnsNormally,
+      );
+      transformation.dispose();
+    });
+
     test('synchronize populates nodes and edges from PDA', () {
       final pda = buildSamplePda();
 
@@ -97,6 +152,37 @@ void main() {
       final edge = controller.edgeById('t0');
       expect(edge, isNotNull);
       expect(edge!.readSymbol, equals('a'));
+    });
+
+    test('clearCanvas preserves PDA configuration and participates in history',
+        () {
+      final pda = buildSamplePda().copyWith(
+        alphabet: {'a', 'unused-input'},
+        stackAlphabet: {'Z', 'S_0', 'unused-stack'},
+        initialStackSymbol: 'S_0',
+      );
+      notifier.setPda(pda);
+      controller.synchronize(pda);
+
+      expect(controller.clearCanvas(), isTrue);
+      final cleared = notifier.state.pda;
+      expect(cleared, isNotNull);
+      expect(cleared!.id, 'pda-1');
+      expect(cleared.name, 'Sample PDA');
+      expect(cleared.alphabet, {'a', 'unused-input'});
+      expect(cleared.stackAlphabet, {'Z', 'S_0', 'unused-stack'});
+      expect(cleared.initialStackSymbol, 'S_0');
+      expect(cleared.states, isEmpty);
+      expect(cleared.transitions, isEmpty);
+      expect(controller.clearCanvas(), isFalse);
+
+      expect(controller.undo(), isTrue);
+      expect(notifier.state.pda!.states, hasLength(2));
+      expect(notifier.state.pda!.pdaTransitions, hasLength(1));
+
+      expect(controller.redo(), isTrue);
+      expect(notifier.state.pda!.states, isEmpty);
+      expect(notifier.state.pda!.transitions, isEmpty);
     });
 
     test('addStateAt inserts state into notifier', () {
@@ -196,10 +282,20 @@ void main() {
         toStateId: statesById.keys.last,
         readSymbol: 'a',
         popSymbol: 'Z',
-        pushSymbol: 'AZ',
+        pushSymbol: 'S_0Z',
+        pushSymbols: const ['S_0', 'Z'],
         isLambdaInput: false,
         isLambdaPop: false,
         isLambdaPush: false,
+      );
+
+      final transitionId = notifier.state.pda!.pdaTransitions.single.id;
+      controller.addOrUpdateTransition(
+        fromStateId: statesById.keys.first,
+        toStateId: statesById.keys.last,
+        transitionId: transitionId,
+        controlPointX: 35,
+        controlPointY: 45,
       );
 
       final updated = notifier.state.pda!;
@@ -207,7 +303,10 @@ void main() {
       final transition = updated.pdaTransitions.single;
       expect(transition.inputSymbol, equals('a'));
       expect(transition.popSymbol, equals('Z'));
-      expect(transition.pushSymbol, equals('AZ'));
+      expect(transition.pushSymbol, equals('S_0Z'));
+      expect(transition.pushSymbols, ['S_0', 'Z']);
+      expect(transition.controlPoint, Vector2(35, 45));
+      expect(updated.validate(), isEmpty);
     });
 
     test('removeTransition clears transition from notifier', () {
@@ -261,6 +360,8 @@ void main() {
           id: 'pda-1',
           name: 'Snapshot PDA',
           alphabet: ['a', 'b'],
+          stackAlphabet: ['S_0', 'unused-stack-symbol'],
+          initialStackSymbol: 'S_0',
         ),
       );
 
@@ -270,6 +371,10 @@ void main() {
       expect(rebuilt, isNotNull);
       expect(rebuilt!.states.length, equals(2));
       expect(rebuilt.pdaTransitions.single.inputSymbol, equals('b'));
+      expect(
+          rebuilt.stackAlphabet, containsAll({'S_0', 'unused-stack-symbol'}));
+      expect(rebuilt.initialStackSymbol, 'S_0');
+      expect(rebuilt.validate(), isEmpty);
       expect(controller.nodeById('q0'), isNotNull);
       expect(controller.edgeById('t0'), isNotNull);
     });

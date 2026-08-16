@@ -110,6 +110,463 @@ abstract class AppLocalizations {
   /// **'Create new transition'**
   String get createNewTransition;
 
+  /// No description provided for @canvasViewportStateCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 states} =1{1 state} other{{count} states}}'**
+  String canvasViewportStateCount(int count);
+
+  /// No description provided for @canvasViewportTransitionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 transitions} =1{1 transition} other{{count} transitions}}'**
+  String canvasViewportTransitionCount(int count);
+
+  /// No description provided for @workspaceStatusNoAutomaton.
+  ///
+  /// In en, this message translates to:
+  /// **'No automaton defined'**
+  String get workspaceStatusNoAutomaton;
+
+  /// No description provided for @workspaceStatusMissingInitialState.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing start state'**
+  String get workspaceStatusMissingInitialState;
+
+  /// No description provided for @workspaceStatusNoAcceptingStates.
+  ///
+  /// In en, this message translates to:
+  /// **'No accepting states'**
+  String get workspaceStatusNoAcceptingStates;
+
+  /// No description provided for @workspaceStatusNondeterministic.
+  ///
+  /// In en, this message translates to:
+  /// **'Nondeterministic transitions'**
+  String get workspaceStatusNondeterministic;
+
+  /// No description provided for @workspaceStatusLambdaTransitions.
+  ///
+  /// In en, this message translates to:
+  /// **'λ-transitions present'**
+  String get workspaceStatusLambdaTransitions;
+
+  /// No description provided for @workspaceStatusCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{states} · {transitions}'**
+  String workspaceStatusCounts(String states, String transitions);
+
+  /// No description provided for @workspaceStatusWithWarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠ {warnings} · {counts}'**
+  String workspaceStatusWithWarnings(String warnings, String counts);
+
+  /// No description provided for @workspaceHelpUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Help content is not available right now.'**
+  String get workspaceHelpUnavailable;
+
+  /// No description provided for @collapseCanvasPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse {label} panel'**
+  String collapseCanvasPanel(String label);
+
+  /// No description provided for @expandCanvasPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand {label} panel'**
+  String expandCanvasPanel(String label);
+
+  /// No description provided for @canvasViewportSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Automaton canvas viewport. {states}, {transitions}.'**
+  String canvasViewportSemantics(String states, String transitions);
+
+  /// No description provided for @canvasStateSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'State {name}.'**
+  String canvasStateSemantics(String name);
+
+  /// No description provided for @canvasInitialStateSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial state.'**
+  String get canvasInitialStateSemantics;
+
+  /// No description provided for @canvasAcceptingStateSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting state.'**
+  String get canvasAcceptingStateSemantics;
+
+  /// No description provided for @canvasOutgoingTransitionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 outgoing transitions.} =1{1 outgoing transition.} other{{count} outgoing transitions.}}'**
+  String canvasOutgoingTransitionCount(int count);
+
+  /// No description provided for @canvasIncomingTransitionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 incoming transitions.} =1{1 incoming transition.} other{{count} incoming transitions.}}'**
+  String canvasIncomingTransitionCount(int count);
+
+  /// No description provided for @canvasUnlabeledTransition.
+  ///
+  /// In en, this message translates to:
+  /// **'unlabeled'**
+  String get canvasUnlabeledTransition;
+
+  /// No description provided for @canvasSelectedTransitionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected transition.'**
+  String get canvasSelectedTransitionSemantics;
+
+  /// No description provided for @canvasTransitionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Transition {id} from {from} to {to} labeled {label}.'**
+  String canvasTransitionSemantics(
+      String id, String from, String to, String label);
+
+  /// No description provided for @canvasViewportEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use keyboard shortcuts or toolbar controls to edit the canvas.'**
+  String get canvasViewportEditHint;
+
+  /// No description provided for @canvasStateEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate to edit state details. Drag to move in selection mode.'**
+  String get canvasStateEditHint;
+
+  /// No description provided for @canvasStateReadOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only state.'**
+  String get canvasStateReadOnlyHint;
+
+  /// No description provided for @canvasAddTransitionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add transition...'**
+  String get canvasAddTransitionPrompt;
+
+  /// No description provided for @canvasChooseTargetState.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose target state'**
+  String get canvasChooseTargetState;
+
+  /// No description provided for @dismissTransitionEditor.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss transition editor'**
+  String get dismissTransitionEditor;
+
+  /// No description provided for @stateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'State label'**
+  String get stateLabel;
+
+  /// No description provided for @initialState.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial state'**
+  String get initialState;
+
+  /// No description provided for @acceptingState.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting state'**
+  String get acceptingState;
+
+  /// No description provided for @deleteState.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete state'**
+  String get deleteState;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @canvasActionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Canvas action: {action}'**
+  String canvasActionSemantics(String action);
+
+  /// No description provided for @canvasSelectAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get canvasSelectAction;
+
+  /// No description provided for @canvasAddStateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add state'**
+  String get canvasAddStateAction;
+
+  /// No description provided for @canvasAddTransitionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add transition'**
+  String get canvasAddTransitionAction;
+
+  /// No description provided for @canvasUndoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get canvasUndoAction;
+
+  /// No description provided for @canvasRedoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get canvasRedoAction;
+
+  /// No description provided for @canvasZoomOutAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get canvasZoomOutAction;
+
+  /// No description provided for @canvasZoomInAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get canvasZoomInAction;
+
+  /// No description provided for @canvasFitToContentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to content'**
+  String get canvasFitToContentAction;
+
+  /// No description provided for @canvasResetViewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset view'**
+  String get canvasResetViewAction;
+
+  /// No description provided for @canvasClearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear canvas'**
+  String get canvasClearAction;
+
+  /// No description provided for @canvasHelpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get canvasHelpAction;
+
+  /// No description provided for @canvasHelpShortcutsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Shortcuts'**
+  String get canvasHelpShortcutsAction;
+
+  /// No description provided for @canvasSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Activates selection mode for moving and editing states.'**
+  String get canvasSelectHint;
+
+  /// No description provided for @canvasAddStateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds a new state to the automaton canvas.'**
+  String get canvasAddStateHint;
+
+  /// No description provided for @canvasAddTransitionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Activates transition mode to connect two states.'**
+  String get canvasAddTransitionHint;
+
+  /// No description provided for @canvasUndoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverts the most recent canvas change.'**
+  String get canvasUndoHint;
+
+  /// No description provided for @canvasRedoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restores the most recently undone canvas change.'**
+  String get canvasRedoHint;
+
+  /// No description provided for @canvasZoomOutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Decreases the canvas zoom level.'**
+  String get canvasZoomOutHint;
+
+  /// No description provided for @canvasZoomInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Increases the canvas zoom level.'**
+  String get canvasZoomInHint;
+
+  /// No description provided for @canvasFitToContentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Zooms and pans to show the full automaton.'**
+  String get canvasFitToContentHint;
+
+  /// No description provided for @canvasResetViewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Resets the canvas zoom and pan position.'**
+  String get canvasResetViewHint;
+
+  /// No description provided for @canvasClearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes all states and transitions from the canvas.'**
+  String get canvasClearHint;
+
+  /// No description provided for @canvasHelpShortcutsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens canvas help and keyboard shortcut information.'**
+  String get canvasHelpShortcutsHint;
+
+  /// No description provided for @pdaInputSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Input symbol'**
+  String get pdaInputSymbol;
+
+  /// No description provided for @pdaLambdaInput.
+  ///
+  /// In en, this message translates to:
+  /// **'λ-input'**
+  String get pdaLambdaInput;
+
+  /// No description provided for @pdaInputSymbolRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a symbol or enable λ-input'**
+  String get pdaInputSymbolRequired;
+
+  /// No description provided for @pdaPopSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop symbol'**
+  String get pdaPopSymbol;
+
+  /// No description provided for @pdaLambdaPop.
+  ///
+  /// In en, this message translates to:
+  /// **'λ-pop'**
+  String get pdaLambdaPop;
+
+  /// No description provided for @pdaPopSymbolRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a symbol or enable λ-pop'**
+  String get pdaPopSymbolRequired;
+
+  /// No description provided for @pdaPushSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Push symbol'**
+  String get pdaPushSymbol;
+
+  /// No description provided for @pdaLambdaPush.
+  ///
+  /// In en, this message translates to:
+  /// **'λ-push'**
+  String get pdaLambdaPush;
+
+  /// No description provided for @pdaPushSymbolRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a symbol or enable λ-push'**
+  String get pdaPushSymbolRequired;
+
+  /// No description provided for @tmReadSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Read symbol'**
+  String get tmReadSymbol;
+
+  /// No description provided for @tmReadSymbolRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a read symbol'**
+  String get tmReadSymbolRequired;
+
+  /// No description provided for @tmWriteSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Write symbol'**
+  String get tmWriteSymbol;
+
+  /// No description provided for @tmWriteSymbolRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a write symbol'**
+  String get tmWriteSymbolRequired;
+
+  /// No description provided for @tmDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Direction'**
+  String get tmDirection;
+
+  /// No description provided for @transitionEditorCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get transitionEditorCancel;
+
+  /// No description provided for @transitionEditorDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get transitionEditorDelete;
+
+  /// No description provided for @transitionEditorSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get transitionEditorSave;
+
+  /// No description provided for @transitionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get transitionLabel;
+
+  /// No description provided for @transitionEditLabelSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit transition label'**
+  String get transitionEditLabelSemantics;
+
   /// Tooltip for opening contextual help for the current regex workflow.
   ///
   /// In en, this message translates to:

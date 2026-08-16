@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.44.3
+
+jobs:
+  root-quality:
+    name: Root Flutter quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Log toolchain versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Resolve root dependencies
+        run: flutter pub get
+
+      - name: Generate and verify localization sources
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- \
+            lib/l10n/app_localizations.dart \
+            lib/l10n/app_localizations_en.dart \
+            lib/l10n/app_localizations_pt.dart
+
+      - name: Check canonical Turing Lab branding
+        run: ./tool/check_branding.sh
+
+      - name: Check changed Dart formatting
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: ./tool/check_changed_dart_format.sh "$CI_BASE_SHA"
+
+      - name: Analyze root application
+        run: flutter analyze --no-fatal-infos
+
+      - name: Prepare test reports
+        run: mkdir -p build/test-results
+
+      - name: Run unit tests
+        run: >-
+          flutter test test/unit/
+          --exclude-tags known-failure
+          --file-reporter json:build/test-results/unit.json
+
+      - name: Run widget tests
+        run: |
+          flutter test \
+            test/widget/presentation/simulation_panel_test.dart \
+            test/widget/presentation/trace_viewers_test.dart \
+            test/widget/presentation/workflow_localization_test.dart \
+            test/widget/presentation/grammar_algorithm_panel_test.dart \
+            test/widget/presentation/grammar_simulation_panel_test.dart \
+            test/widget/presentation/pda_algorithm_panel_test.dart \
+            test/widget/presentation/pda_tm_simulation_panel_scaffold_test.dart \
+            test/widget/presentation/tm_algorithm_panel_test.dart \
+            --file-reporter json:build/test-results/widget.json
+
+      - name: Upload root test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: root-test-reports-${{ github.run_attempt }}
+          path: build/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  graphview-quality:
+    name: Vendored graphview quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: graphview
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Log toolchain versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Resolve graphview dependencies
+        run: flutter pub get
+
+      - name: Analyze graphview
+        run: flutter analyze --no-fatal-infos
+
+      - name: Prepare test reports
+        run: mkdir -p build/test-results
+
+      - name: Run graphview tests
+        run: >-
+          flutter test
+          --file-reporter json:build/test-results/graphview.json
+
+      - name: Run graphview interaction benchmarks
+        run: |
+          flutter test benchmark/interaction_benchmark_test.dart \
+            --concurrency=1 \
+            --name "single-node drag" \
+            --file-reporter json:build/test-results/graphview-drag-benchmark.json
+          flutter test benchmark/interaction_benchmark_test.dart \
+            --concurrency=1 \
+            --name "zoom and pan" \
+            --file-reporter json:build/test-results/graphview-viewport-benchmark.json
+
+      - name: Upload graphview test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: graphview-test-report-${{ github.run_attempt }}
+          path: graphview/build/test-results/
+          if-no-files-found: warn
+          retention-days: 14

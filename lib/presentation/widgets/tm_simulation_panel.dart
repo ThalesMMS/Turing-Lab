@@ -30,11 +30,13 @@ import 'trace_viewers/tm_trace_viewer.dart';
 class TMSimulationPanel extends ConsumerStatefulWidget {
   final SimulationHighlightService? highlightService;
   final SimulationRunner? simulationRunner;
+  final ValueChanged<TapeState>? onTapeChanged;
 
   const TMSimulationPanel({
     super.key,
     this.highlightService,
     this.simulationRunner,
+    this.onTapeChanged,
   });
 
   @override
@@ -54,6 +56,7 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
   TMSimulationResult? _result;
   late final SimulationRunner _simulationRunner;
   SimulationTask<TMSimulationResult>? _activeTask;
+  ProviderSubscription<TMEditorState>? _tmEditorSubscription;
   int _requestGeneration = 0;
   TapeState _currentTapeState = TapeState.initial();
 
@@ -61,6 +64,7 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
   late AnimationController _stepTransitionController;
   late Animation<double> _stepFadeAnimation;
   bool _isTransitioning = false;
+  int? _pendingStepIndex;
 
   SimulationHighlightService get _highlightService =>
       widget.highlightService ?? _fallbackHighlightService;
@@ -70,6 +74,14 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     super.initState();
     _fallbackHighlightService = SimulationHighlightService();
     _simulationRunner = widget.simulationRunner ?? SimulationRunner();
+    final tm = ref.read(tmEditorProvider).tm;
+    _currentTapeState = TapeState.initial(
+      blankSymbol: tm?.blankSymbol ?? '□',
+    );
+    _tmEditorSubscription = ref.listenManual<TMEditorState>(
+      tmEditorProvider,
+      _handleEditorStateChanged,
+    );
     _stepTransitionController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -87,16 +99,17 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
   void didUpdateWidget(covariant TMSimulationPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.highlightService != widget.highlightService) {
-      (oldWidget.highlightService ?? _fallbackHighlightService).clear();
+      _fallbackHighlightService.clear();
     }
   }
 
   @override
   void dispose() {
+    _tmEditorSubscription?.close();
     _activeTask?.cancel();
     _stepTransitionController.dispose();
     _inputController.dispose();
-    _highlightService.clear();
+    _fallbackHighlightService.clear();
     super.dispose();
   }
 
@@ -234,8 +247,8 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
       _statusMessage = null;
       _simulationSteps = const [];
       _result = null;
-      _currentTapeState = TapeState.initial();
     });
+    _replaceTapeState(TapeState.initial(blankSymbol: tm.blankSymbol));
 
     _highlightService.clear();
     _activeTask?.cancel();
@@ -276,6 +289,9 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
       return;
     }
 
+    final nextTapeState = simulation.steps.isNotEmpty
+        ? _convertStepToTapeState(simulation.steps[0])
+        : TapeState.initial(blankSymbol: tm.blankSymbol);
     setState(() {
       _isSimulating = false;
       _hasSimulationResult = true;
@@ -287,10 +303,8 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
               : 'Rejected');
       _simulationSteps = simulation.steps;
       _result = simulation;
-      _currentTapeState = simulation.steps.isNotEmpty
-          ? _convertStepToTapeState(simulation.steps[0])
-          : TapeState.initial();
     });
+    _replaceTapeState(nextTapeState);
 
     if (simulation.steps.isNotEmpty) {
       _highlightService.emitFromSteps(simulation.steps, 0);
@@ -331,8 +345,14 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
   }
 
   Future<void> _handleStepChanged(int stepIndex) async {
-    if (_result == null || stepIndex >= _result!.steps.length) return;
-    if (_isTransitioning) return;
+    final result = _result;
+    if (result == null || stepIndex >= result.steps.length) return;
+    if (_isTransitioning) {
+      _pendingStepIndex = stepIndex;
+      return;
+    }
+    _pendingStepIndex = null;
+    final generation = _requestGeneration;
 
     setState(() {
       _isTransitioning = true;
@@ -341,20 +361,35 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     // Fade out current step
     await _stepTransitionController.reverse();
 
-    // Update state with new step
-    if (mounted) {
-      setState(() {
-        _currentTapeState = _convertStepToTapeState(_result!.steps[stepIndex]);
-      });
+    if (!mounted ||
+        generation != _requestGeneration ||
+        !identical(_result, result)) {
+      if (mounted) {
+        await _stepTransitionController.forward();
+        if (mounted) {
+          setState(() {
+            _isTransitioning = false;
+          });
+        }
+      }
+      return;
     }
+
+    // Update state with new step
+    _replaceTapeState(_convertStepToTapeState(result.steps[stepIndex]));
 
     // Fade in new step
     await _stepTransitionController.forward();
 
     if (mounted) {
+      final pendingStepIndex = _pendingStepIndex;
+      _pendingStepIndex = null;
       setState(() {
         _isTransitioning = false;
       });
+      if (pendingStepIndex != null && pendingStepIndex != stepIndex) {
+        await _handleStepChanged(pendingStepIndex);
+      }
     }
   }
 
@@ -407,6 +442,39 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
       lastReadSymbol: lastRead,
       lastWriteSymbol: lastWrite,
       highlightedCellIndices: highlightedCells,
+    );
+  }
+
+  void _replaceTapeState(TapeState tapeState) {
+    if (!mounted) return;
+    setState(() {
+      _currentTapeState = tapeState;
+    });
+    widget.onTapeChanged?.call(tapeState);
+  }
+
+  void _handleEditorStateChanged(
+    TMEditorState? previous,
+    TMEditorState next,
+  ) {
+    if (!mounted || identical(previous?.tm, next.tm)) return;
+
+    _requestGeneration++;
+    _activeTask?.cancel();
+    _activeTask = null;
+    setState(() {
+      _isSimulating = false;
+      _hasSimulationResult = false;
+      _isAccepted = null;
+      _statusMessage = null;
+      _simulationSteps = const [];
+      _result = null;
+      _isTransitioning = false;
+      _pendingStepIndex = null;
+    });
+    _highlightService.clear();
+    _replaceTapeState(
+      TapeState.initial(blankSymbol: next.tm?.blankSymbol ?? '□'),
     );
   }
 

@@ -19,6 +19,21 @@ import 'transition.dart';
 class PDATransition extends Transition {
   static const _pushSymbolsEquality = ListEquality<String>();
 
+  /// Formats the canonical label shown for a PDA transition.
+  static String formatLabel({
+    required String inputSymbol,
+    required String popSymbol,
+    required String pushSymbol,
+    required bool isLambdaInput,
+    required bool isLambdaPop,
+    required bool isLambdaPush,
+  }) {
+    final input = isLambdaInput ? 'λ' : inputSymbol;
+    final pop = isLambdaPop ? 'λ' : popSymbol;
+    final push = isLambdaPush ? 'λ' : pushSymbol;
+    return '$input, $pop/$push';
+  }
+
   /// Input symbol that triggers this transition
   final String inputSymbol;
 

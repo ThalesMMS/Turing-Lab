@@ -21,10 +21,12 @@ import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 
 class _TestGraphViewCanvasController extends GraphViewCanvasController {
@@ -100,7 +102,6 @@ void main() {
               controller: controller,
               onAddState: () {},
               statusMessage: '2 states · 1 transition',
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -120,7 +121,6 @@ void main() {
             body: GraphViewCanvasToolbar(
               controller: controller,
               onAddState: () {},
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -141,14 +141,13 @@ void main() {
             body: GraphViewCanvasToolbar(
               controller: controller,
               onAddState: () => addStateInvoked = true,
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
       ),
     );
 
-    expect(find.byType(IconButton), findsNWidgets(6));
+    expect(find.byType(IconButton), findsNWidgets(8));
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
     await tester.pump();
@@ -171,7 +170,6 @@ void main() {
               controller: controller,
               onAddState: () {},
               onClear: () {},
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -188,87 +186,14 @@ void main() {
         Icons.add,
         Icons.undo,
         Icons.redo,
+        Icons.zoom_out,
+        Icons.zoom_in,
         Icons.fit_screen,
         Icons.center_focus_strong,
         Icons.delete_outline,
         Icons.help_outline,
       ]),
     );
-  });
-
-  testWidgets('Mobile layout renders filled buttons with labels', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: GraphViewCanvasToolbar(
-              controller: controller,
-              onAddState: () {},
-              layout: GraphViewCanvasToolbarLayout.mobile,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    expect(find.text('Add state'), findsOneWidget);
-    expect(find.text('Redo'), findsOneWidget);
-    expect(find.text('Fit to content'), findsOneWidget);
-    expect(find.text('Reset view'), findsOneWidget);
-    expect(find.text('Undo'), findsOneWidget);
-    final addStateButton = find.ancestor(
-      of: find.text('Add state'),
-      matching: find.bySubtype<ButtonStyleButton>(),
-    );
-    expect(
-      tester.getSize(addStateButton).height,
-      greaterThanOrEqualTo(44),
-    );
-  });
-
-  testWidgets('Mobile layout renders actions in grouped order', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: GraphViewCanvasToolbar(
-              controller: controller,
-              onAddState: () {},
-              onClear: () {},
-              layout: GraphViewCanvasToolbarLayout.mobile,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final labels = <String>[
-      'Add state',
-      'Undo',
-      'Redo',
-      'Fit to content',
-      'Reset view',
-      'Clear canvas',
-      'Help & Shortcuts',
-    ];
-
-    final renderedLabels = tester
-        .elementList(
-          find.descendant(
-            of: find.byType(GraphViewCanvasToolbar),
-            matching: find.byType(Text),
-          ),
-        )
-        .map((element) => (element.widget as Text).data)
-        .nonNulls
-        .where(labels.contains)
-        .toList();
-
-    expect(renderedLabels, labels);
   });
 
   testWidgets('exposes semantic labels for toolbar actions', (tester) async {
@@ -288,7 +213,6 @@ void main() {
             body: GraphViewCanvasToolbar(
               controller: controller,
               onAddState: () {},
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -296,6 +220,14 @@ void main() {
     );
 
     expect(find.bySemanticsLabel('Canvas action: Add state'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Canvas action: Zoom out'),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel('Canvas action: Zoom in'),
+      findsOneWidget,
+    );
     expect(
       find.bySemanticsLabel('Canvas action: Fit to content'),
       findsOneWidget,
@@ -309,6 +241,55 @@ void main() {
     handleDisposed = true;
   });
 
+  testWidgets('localizes desktop canvas actions in Portuguese', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('pt'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                enableToolSelection: true,
+                showSelectionTool: true,
+                onSelectTool: () {},
+                onAddState: () {},
+                onAddTransition: () {},
+                onClear: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      for (final label in <String>[
+        'Selecionar',
+        'Adicionar estado',
+        'Adicionar transição',
+        'Desfazer',
+        'Refazer',
+        'Diminuir zoom',
+        'Aumentar zoom',
+        'Ajustar ao conteúdo',
+        'Redefinir visualização',
+        'Limpar canvas',
+        'Ajuda e atalhos',
+      ]) {
+        expect(
+          find.bySemanticsLabel('Ação do canvas: $label'),
+          findsOneWidget,
+        );
+      }
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('invokes controller commands when action buttons pressed', (
     tester,
   ) async {
@@ -319,7 +300,6 @@ void main() {
             body: GraphViewCanvasToolbar(
               controller: controller,
               onAddState: () {},
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -328,6 +308,14 @@ void main() {
 
     final initialFitCount = controller.fitCount;
     final initialResetCount = controller.resetCount;
+
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.zoom_out));
+    await tester.pump();
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.zoom_in));
+    await tester.pump();
+
+    expect(controller.zoomOutCount, 1);
+    expect(controller.zoomInCount, 1);
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.fit_screen));
     await tester.pump();
@@ -379,7 +367,6 @@ void main() {
                 GraphViewCanvasToolbar(
                   controller: controller,
                   onAddState: () {},
-                  layout: GraphViewCanvasToolbarLayout.desktop,
                 ),
                 Expanded(
                   child: AutomatonGraphViewCanvas(
@@ -431,7 +418,6 @@ void main() {
             body: GraphViewCanvasToolbar(
               controller: controller,
               onAddState: controller.addStateAtCenter,
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -464,7 +450,6 @@ void main() {
               activeTool: AutomatonCanvasTool.transition,
               onAddState: () => addStateInvoked = true,
               onAddTransition: () => transitionInvoked = true,
-              layout: GraphViewCanvasToolbarLayout.desktop,
             ),
           ),
         ),
@@ -478,5 +463,54 @@ void main() {
 
     expect(addStateInvoked, isTrue);
     expect(transitionInvoked, isTrue);
+  });
+
+  testWidgets('routes help through a custom callback', (tester) async {
+    var helpCount = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              onAddState: () {},
+              onHelp: () => helpCount++,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(
+      find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
+    );
+    await tester.pump();
+
+    expect(helpCount, equals(1));
+  });
+
+  testWidgets('opens keyboard shortcuts when no help callback is provided', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              onAddState: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(
+      find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(KeyboardShortcutsDialog), findsOneWidget);
   });
 }

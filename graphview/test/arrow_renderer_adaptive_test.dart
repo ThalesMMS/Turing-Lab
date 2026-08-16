@@ -28,7 +28,8 @@ void main() {
       graph.addEdgeS(edge);
     });
 
-    test('ArrowEdgeRenderer without config uses default center-based behavior', () {
+    test('ArrowEdgeRenderer without config uses default center-based behavior',
+        () {
       final renderer = ArrowEdgeRenderer();
       expect(renderer.config, isNull);
       expect(renderer.noArrow, isFalse);
@@ -43,14 +44,17 @@ void main() {
       final destCenter = Offset(250, 25); // Center of node2
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return center of node1 (50, 25)
       expect(sourcePoint.dx, closeTo(50, 0.1));
       expect(sourcePoint.dy, closeTo(25, 0.1));
     });
 
-    test('ArrowEdgeRenderer with cardinal anchor mode calculates correct anchors', () {
+    test(
+        'ArrowEdgeRenderer with cardinal anchor mode calculates correct anchors',
+        () {
       final config = EdgeRoutingConfig(anchorMode: AnchorMode.cardinal);
       final renderer = ArrowEdgeRenderer(config: config);
 
@@ -61,14 +65,17 @@ void main() {
       final destCenter = Offset(250, 25);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return right edge of node1 (100, 25)
       expect(sourcePoint.dx, closeTo(100, 0.1));
       expect(sourcePoint.dy, closeTo(25, 0.1));
     });
 
-    test('ArrowEdgeRenderer with octagonal anchor mode calculates correct anchors', () {
+    test(
+        'ArrowEdgeRenderer with octagonal anchor mode calculates correct anchors',
+        () {
       final config = EdgeRoutingConfig(anchorMode: AnchorMode.octagonal);
       final renderer = ArrowEdgeRenderer(config: config);
 
@@ -77,14 +84,17 @@ void main() {
       final destCenter = Offset(250, 25);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return right edge of node1 (100, 25)
       expect(sourcePoint.dx, closeTo(100, 0.1));
       expect(sourcePoint.dy, closeTo(25, 0.1));
     });
 
-    test('ArrowEdgeRenderer with dynamic anchor mode calculates exact boundary intersection', () {
+    test(
+        'ArrowEdgeRenderer with dynamic anchor mode calculates exact boundary intersection',
+        () {
       final config = EdgeRoutingConfig(anchorMode: AnchorMode.dynamic);
       final renderer = ArrowEdgeRenderer(config: config);
 
@@ -93,7 +103,8 @@ void main() {
       final destCenter = Offset(250, 25);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return right edge of node1 (100, 25) - exact intersection
       expect(sourcePoint.dx, closeTo(100, 0.1));
@@ -112,7 +123,8 @@ void main() {
       final destCenter = Offset(50, 125); // Center of node2
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return bottom edge of node1 (50, 50)
       expect(sourcePoint.dx, closeTo(50, 0.1));
@@ -131,7 +143,8 @@ void main() {
       final destCenter = Offset(250, 125);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return southeast corner of node1 (100, 50)
       expect(sourcePoint.dx, closeTo(100, 0.1));
@@ -154,8 +167,10 @@ void main() {
       final destCenter = Offset(250, 25);
 
       // Calculate connection points for both edges
-      final edgeIndex1 = renderer.calculateSourceConnectionPoint(edge, destCenter, 0);
-      final edgeIndex2 = renderer.calculateSourceConnectionPoint(edge2, destCenter, 1);
+      final edgeIndex1 =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, 0);
+      final edgeIndex2 =
+          renderer.calculateSourceConnectionPoint(edge2, destCenter, 1);
 
       // The two edges should have different connection points due to offset
       expect((edgeIndex1 - edgeIndex2).distance, greaterThan(5.0));
@@ -170,7 +185,8 @@ void main() {
       final sourceCenter = Offset(50, 25);
       final edgeIndex = 0;
 
-      final destPoint = renderer.calculateDestinationConnectionPoint(edge, sourceCenter, edgeIndex);
+      final destPoint = renderer.calculateDestinationConnectionPoint(
+          edge, sourceCenter, edgeIndex);
 
       // Should return left edge of node2 (200, 25)
       expect(destPoint.dx, closeTo(200, 0.1));
@@ -186,7 +202,8 @@ void main() {
       final destCenter = Offset(250, 25);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should return center of node1 (50, 25) - default behavior
       expect(sourcePoint.dx, closeTo(50, 0.1));
@@ -226,13 +243,16 @@ void main() {
       final destCenter = Offset(50, 25);
       final edgeIndex = 0;
 
-      final sourcePoint = renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
+      final sourcePoint =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, edgeIndex);
 
       // Should still return a valid point (node center)
       expect(sourcePoint, isNotNull);
     });
 
-    test('ArrowEdgeRenderer applies parallel edge offset perpendicular to edge direction', () {
+    test(
+        'ArrowEdgeRenderer applies parallel edge offset perpendicular to edge direction',
+        () {
       final config = EdgeRoutingConfig(
         anchorMode: AnchorMode.cardinal,
         minEdgeDistance: 20.0,
@@ -250,9 +270,12 @@ void main() {
       final destCenter = Offset(250, 25);
 
       // Calculate connection points for all three edges with different indices
-      final point1 = renderer.calculateSourceConnectionPoint(edge, destCenter, -1);
-      final point2 = renderer.calculateSourceConnectionPoint(edge2, destCenter, 0);
-      final point3 = renderer.calculateSourceConnectionPoint(edge3, destCenter, 1);
+      final point1 =
+          renderer.calculateSourceConnectionPoint(edge, destCenter, -1);
+      final point2 =
+          renderer.calculateSourceConnectionPoint(edge2, destCenter, 0);
+      final point3 =
+          renderer.calculateSourceConnectionPoint(edge3, destCenter, 1);
 
       // Points should be distributed perpendicular to edge direction
       // Middle point (index 0) should be the base anchor

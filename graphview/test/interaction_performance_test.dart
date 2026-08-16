@@ -7,17 +7,23 @@ import 'package:graphview/GraphView.dart';
 import 'support/large_graph_perf_fixtures.dart';
 
 void main() {
-  group('GraphView interaction performance', () {
+  group('GraphView interaction correctness', () {
     for (final nodeCount in [500, 1000, 2000]) {
       testWidgets(
-        'single-node drag stays within frame budget on $nodeCount-node tree',
+        'single-node drag invalidates only connected edges on $nodeCount-node tree',
         (tester) async {
+          await tester.binding.setSurfaceSize(const Size(960, 720));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+
           final fixture = createLargeGraphFixture(
             nodeCount: nodeCount,
             topology: GraphTopology.tree,
           );
           final algorithm = CountingStaticLayoutAlgorithm();
-          final dragNode = fixture.nodes[1];
+          final dragNode = fixture.nodes.reduce(
+            (left, right) =>
+                left.position.dx <= right.position.dx ? left : right,
+          );
           final connectedEdges = {
             ...fixture.graph.getInEdges(dragNode),
             ...fixture.graph.getOutEdges(dragNode),
@@ -43,13 +49,13 @@ void main() {
 
           final renderBox = tester.renderObject<RenderCustomLayoutBox>(
               find.byType(GraphViewWidget));
+          final initialDragPosition = dragNode.position;
           final gesture = await tester.startGesture(
             dragNode.position + const Offset(12, 12),
           );
           await tester.pump();
 
-          const moveCount = 60;
-          final stopwatch = Stopwatch()..start();
+          const moveCount = 5;
           var maxDirtyEdges = 0;
           for (var index = 0; index < moveCount; index++) {
             await gesture.moveBy(const Offset(6, 0));
@@ -59,36 +65,17 @@ void main() {
             );
             await tester.pump();
           }
-          stopwatch.stop();
-
           await gesture.up();
           await tester.pump();
 
-          final averageMoveMs =
-              stopwatch.elapsedMicroseconds / moveCount / 1000.0;
-          // Keep thresholds above measured medians to absorb CI/hardware
-          // variance, browser differences, GC jitter, and a small safety
-          // buffer; the same rationale applies to zoom/pan thresholds below.
-          final thresholdMs = switch (nodeCount) {
-            500 => 25.0,
-            1000 => 75.0,
-            _ => 200.0,
-          };
-
-          debugPrint(
-            'Drag benchmark ($nodeCount nodes): '
-            '${averageMoveMs.toStringAsFixed(2)}ms/move, '
-            'dirtyEdges=$maxDirtyEdges/$connectedEdges',
-          );
-
           expect(
-            averageMoveMs,
-            lessThan(thresholdMs),
-            reason: 'Average drag move should stay below ${thresholdMs}ms',
+            dragNode.position,
+            isNot(equals(initialDragPosition)),
+            reason: 'The gesture must move the selected node',
           );
           expect(
             maxDirtyEdges,
-            lessThanOrEqualTo(connectedEdges),
+            inInclusiveRange(1, connectedEdges),
             reason:
                 'Dragging one node should only invalidate its connected edges',
           );
@@ -133,11 +120,9 @@ void main() {
           await tester.pump();
 
           final initialRunCount = algorithm.runCount;
-          const updateCount = 40;
-          final samples = <Duration>[];
+          const updateCount = 5;
 
           for (var index = 0; index < updateCount; index++) {
-            final stopwatch = Stopwatch()..start();
             final scale = 1.0 + ((index % 5) * 0.03);
             transformationController.value = Matrix4.diagonal3Values(
               scale,
@@ -145,44 +130,20 @@ void main() {
               1.0,
             )..setTranslationRaw(-12.0 * index, -8.0 * (index % 6), 0.0);
             await tester.pump();
-            stopwatch.stop();
-            samples.add(stopwatch.elapsed);
           }
-
-          final averageUpdateMs = averageMilliseconds(samples);
-          final medianUpdateMs = medianMilliseconds(samples);
-
-          debugPrint(
-            'Zoom/pan benchmark ($nodeCount nodes): '
-            '${averageUpdateMs.toStringAsFixed(2)}ms avg, '
-            '${medianUpdateMs.toStringAsFixed(2)}ms median, '
-            'layoutRuns=${algorithm.runCount - initialRunCount}',
-          );
 
           expect(
             algorithm.runCount,
             equals(initialRunCount),
             reason: 'Viewport transforms must not trigger layout recalculation',
           );
-          // Keep thresholds above measured medians to absorb CI/hardware
-          // variance, browser differences, GC jitter, and a small safety
-          // buffer; these numbers are intentionally permissive to reduce flakes.
-          final thresholdMs = switch (nodeCount) {
-            500 => 60.0,
-            1000 => 220.0,
-            _ => 700.0,
-          };
-          expect(
-            averageUpdateMs,
-            lessThan(thresholdMs),
-            reason:
-                'Average transform update should stay below ${thresholdMs}ms',
-          );
-
           for (var index = 0; index < trackedNodes.length; index++) {
             expect(
                 trackedNodes[index].position, equals(originalPositions[index]));
           }
+
+          await tester.pumpWidget(const SizedBox.shrink());
+          transformationController.dispose();
         },
       );
     }

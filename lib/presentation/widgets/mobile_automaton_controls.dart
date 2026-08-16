@@ -2,25 +2,20 @@
 //  mobile_automaton_controls.dart
 //  Turing Lab
 //
-//  Widget que consolida os principais controles de edição de autômatos em uma
-//  superfície otimizada para toque, combinando ações de simulação, algoritmos,
-//  métricas e ferramentas de canvas em um painel único e configurável. A
-//  implementação sincroniza o AutomatonCanvasToolController, reflete estados de
-//  habilitação e permite personalizar callbacks para se adaptar às capacidades
-//  da página hospedeira.
+//  Widget que consolida os controles de edição de autômatos em uma superfície
+//  otimizada para toque, reunindo ferramentas, histórico e ações de viewport.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
 import 'automaton_canvas_tool.dart';
 
 /// Unified control surface for mobile automaton editors.
 ///
-/// The widget groups primary workspace actions (simulation, algorithms, metrics)
-/// together with the core canvas controls so touch users no longer depend on
-/// floating buttons sprinkled across each page. All handlers are optional so the
-/// host page can tailor the surface to the available capabilities.
+/// Workspace actions remain in the page quick actions; this widget owns only
+/// the canvas controls shared by touch editors.
 class MobileAutomatonControls extends StatelessWidget {
   const MobileAutomatonControls({
     super.key,
@@ -28,8 +23,11 @@ class MobileAutomatonControls extends StatelessWidget {
     this.showSelectionTool = false,
     this.activeTool = AutomatonCanvasTool.selection,
     this.onSelectTool,
+    required this.onHelp,
     required this.onAddState,
     this.onAddTransition,
+    this.onZoomIn,
+    this.onZoomOut,
     required this.onFitToContent,
     required this.onResetView,
     this.onClear,
@@ -38,12 +36,6 @@ class MobileAutomatonControls extends StatelessWidget {
     this.statusMessage,
     this.canUndo = false,
     this.canRedo = false,
-    this.onSimulate,
-    this.isSimulationEnabled = true,
-    this.onAlgorithms,
-    this.isAlgorithmsEnabled = true,
-    this.onMetrics,
-    this.isMetricsEnabled = true,
   })  : assert(
           !(enableToolSelection && showSelectionTool) || onSelectTool != null,
           'onSelectTool must be provided when the selection tool is visible.',
@@ -57,8 +49,11 @@ class MobileAutomatonControls extends StatelessWidget {
   final bool showSelectionTool;
   final AutomatonCanvasTool activeTool;
   final VoidCallback? onSelectTool;
+  final VoidCallback onHelp;
   final VoidCallback onAddState;
   final VoidCallback? onAddTransition;
+  final VoidCallback? onZoomIn;
+  final VoidCallback? onZoomOut;
   final VoidCallback onFitToContent;
   final VoidCallback onResetView;
   final VoidCallback? onClear;
@@ -67,64 +62,43 @@ class MobileAutomatonControls extends StatelessWidget {
   final String? statusMessage;
   final bool canUndo;
   final bool canRedo;
-  final VoidCallback? onSimulate;
-  final bool isSimulationEnabled;
-  final VoidCallback? onAlgorithms;
-  final bool isAlgorithmsEnabled;
-  final VoidCallback? onMetrics;
-  final bool isMetricsEnabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-
-    final primaryActions = <_ControlAction>[
-      if (onSimulate != null)
-        _ControlAction(
-          icon: Icons.play_arrow,
-          tooltip: 'Simulate',
-          onPressed: isSimulationEnabled ? onSimulate : null,
-        ),
-      if (onAlgorithms != null)
-        _ControlAction(
-          icon: Icons.auto_awesome,
-          tooltip: 'Algorithms',
-          onPressed: isAlgorithmsEnabled ? onAlgorithms : null,
-        ),
-      if (onMetrics != null)
-        _ControlAction(
-          icon: Icons.bar_chart,
-          tooltip: 'Metrics',
-          onPressed: isMetricsEnabled ? onMetrics : null,
-        ),
-    ];
+    final l10n = appLocalizationsOf(context);
 
     final canvasActions = <_ControlAction>[
+      _ControlAction(
+        icon: Icons.help_outline,
+        tooltip: l10n.canvasHelpAction,
+        onPressed: onHelp,
+      ),
       if (onUndo != null)
         _ControlAction(
           icon: Icons.undo,
-          tooltip: 'Undo',
+          tooltip: l10n.canvasUndoAction,
           onPressed: canUndo ? onUndo : null,
         ),
       if (onRedo != null)
         _ControlAction(
           icon: Icons.redo,
-          tooltip: 'Redo',
+          tooltip: l10n.canvasRedoAction,
           onPressed: canRedo ? onRedo : null,
         ),
       if (enableToolSelection && showSelectionTool)
         _ControlAction(
           icon: Icons.pan_tool,
-          label: 'Select',
+          label: l10n.canvasSelectAction,
           onPressed: onSelectTool,
           isToggle: true,
           isSelected: activeTool == AutomatonCanvasTool.selection,
         ),
       _ControlAction(
         icon: Icons.add,
-        tooltip: 'Add state',
+        tooltip: l10n.canvasAddStateAction,
         onPressed: onAddState,
         isToggle: enableToolSelection,
         isSelected:
@@ -133,26 +107,38 @@ class MobileAutomatonControls extends StatelessWidget {
       if (onAddTransition != null)
         _ControlAction(
           icon: Icons.arrow_right_alt,
-          label: 'Add transition',
+          label: l10n.canvasAddTransitionAction,
           onPressed: onAddTransition,
           isToggle: enableToolSelection,
           isSelected: enableToolSelection &&
               activeTool == AutomatonCanvasTool.transition,
         ),
+      if (onZoomOut != null)
+        _ControlAction(
+          icon: Icons.zoom_out,
+          tooltip: l10n.canvasZoomOutAction,
+          onPressed: onZoomOut,
+        ),
+      if (onZoomIn != null)
+        _ControlAction(
+          icon: Icons.zoom_in,
+          tooltip: l10n.canvasZoomInAction,
+          onPressed: onZoomIn,
+        ),
       _ControlAction(
         icon: Icons.fit_screen,
-        tooltip: 'Fit to content',
+        tooltip: l10n.canvasFitToContentAction,
         onPressed: onFitToContent,
       ),
       _ControlAction(
         icon: Icons.center_focus_strong,
-        tooltip: 'Reset view',
+        tooltip: l10n.canvasResetViewAction,
         onPressed: onResetView,
       ),
       if (onClear != null)
         _ControlAction(
           icon: Icons.delete_outline,
-          tooltip: 'Clear canvas',
+          tooltip: l10n.canvasClearAction,
           onPressed: onClear,
         ),
     ];
@@ -173,22 +159,6 @@ class MobileAutomatonControls extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (primaryActions.isNotEmpty)
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: primaryActions
-                          .map(
-                            (action) => _MobileControlButton(
-                              action: action,
-                              style: _ButtonStyleVariant.filled,
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  if (primaryActions.isNotEmpty && canvasActions.isNotEmpty)
-                    const SizedBox(height: 8),
                   if (canvasActions.isNotEmpty)
                     Wrap(
                       alignment: WrapAlignment.center,
@@ -196,10 +166,7 @@ class MobileAutomatonControls extends StatelessWidget {
                       runSpacing: 8,
                       children: canvasActions
                           .map(
-                            (action) => _MobileControlButton(
-                              action: action,
-                              style: _ButtonStyleVariant.tonal,
-                            ),
+                            (action) => _MobileControlButton(action: action),
                           )
                           .toList(),
                     ),
@@ -225,8 +192,6 @@ class MobileAutomatonControls extends StatelessWidget {
     );
   }
 }
-
-enum _ButtonStyleVariant { filled, tonal }
 
 class _ControlAction {
   const _ControlAction({
@@ -254,13 +219,9 @@ class _ControlAction {
 }
 
 class _MobileControlButton extends StatelessWidget {
-  const _MobileControlButton({
-    required this.action,
-    this.style = _ButtonStyleVariant.filled,
-  });
+  const _MobileControlButton({required this.action});
 
   final _ControlAction action;
-  final _ButtonStyleVariant style;
 
   @override
   Widget build(BuildContext context) {
@@ -288,18 +249,11 @@ class _MobileControlButton extends StatelessWidget {
       ),
     );
 
-    final Widget button = switch (style) {
-      _ButtonStyleVariant.filled => IconButton.filled(
-          onPressed: action.onPressed,
-          style: effectiveStyle,
-          icon: Icon(action.icon),
-        ),
-      _ButtonStyleVariant.tonal => IconButton.filledTonal(
-          onPressed: action.onPressed,
-          style: effectiveStyle,
-          icon: Icon(action.icon),
-        ),
-    };
+    final button = IconButton.filledTonal(
+      onPressed: action.onPressed,
+      style: effectiveStyle,
+      icon: Icon(action.icon),
+    );
 
     // Mantém acessibilidade e tooltip (fallback para label se tooltip não vier).
     final String tip = action.effectiveTooltip;

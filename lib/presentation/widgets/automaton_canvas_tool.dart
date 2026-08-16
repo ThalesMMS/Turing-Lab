@@ -33,4 +33,11 @@ class AutomatonCanvasToolController extends ChangeNotifier {
     _activeTool = tool;
     notifyListeners();
   }
+
+  /// Selects [tool], or returns to selection when it is already active.
+  void toggleTool(AutomatonCanvasTool tool) {
+    setActiveTool(
+      _activeTool == tool ? AutomatonCanvasTool.selection : tool,
+    );
+  }
 }

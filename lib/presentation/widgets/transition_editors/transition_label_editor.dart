@@ -10,6 +10,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../l10n/app_localizations_resolver.dart';
+import 'transition_editor_actions.dart';
+
 class TransitionLabelEditorForm extends StatefulWidget {
   const TransitionLabelEditorForm({
     super.key,
@@ -19,11 +22,11 @@ class TransitionLabelEditorForm extends StatefulWidget {
     this.onDelete,
     this.autofocus = false,
     this.touchOptimized = false,
-    this.fieldLabel = 'Label',
-    this.cancelLabel = 'Cancel',
-    this.deleteLabel = 'Delete',
-    this.saveLabel = 'Save',
-    this.semanticLabel = 'Edit transition label',
+    this.fieldLabel,
+    this.cancelLabel,
+    this.deleteLabel,
+    this.saveLabel,
+    this.semanticLabel,
   });
 
   final String initialValue;
@@ -32,11 +35,11 @@ class TransitionLabelEditorForm extends StatefulWidget {
   final VoidCallback? onDelete;
   final bool autofocus;
   final bool touchOptimized;
-  final String fieldLabel;
-  final String cancelLabel;
-  final String deleteLabel;
-  final String saveLabel;
-  final String semanticLabel;
+  final String? fieldLabel;
+  final String? cancelLabel;
+  final String? deleteLabel;
+  final String? saveLabel;
+  final String? semanticLabel;
 
   @override
   State<TransitionLabelEditorForm> createState() =>
@@ -68,6 +71,7 @@ class _TransitionLabelEditorFormState extends State<TransitionLabelEditorForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     final shortcuts = <LogicalKeySet, Intent>{
       LogicalKeySet(LogicalKeyboardKey.enter): const _SubmitIntent(),
       LogicalKeySet(LogicalKeyboardKey.numpadEnter): const _SubmitIntent(),
@@ -101,7 +105,7 @@ class _TransitionLabelEditorFormState extends State<TransitionLabelEditorForm> {
           policy: OrderedTraversalPolicy(),
           child: Semantics(
             container: true,
-            label: widget.semanticLabel,
+            label: widget.semanticLabel ?? l10n.transitionEditLabelSemantics,
             explicitChildNodes: true,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -113,7 +117,7 @@ class _TransitionLabelEditorFormState extends State<TransitionLabelEditorForm> {
                     controller: _controller,
                     autofocus: widget.autofocus,
                     decoration: InputDecoration(
-                      labelText: widget.fieldLabel,
+                      labelText: widget.fieldLabel ?? l10n.transitionLabel,
                       border: const OutlineInputBorder(),
                     ),
                     autocorrect: false,
@@ -124,105 +128,15 @@ class _TransitionLabelEditorFormState extends State<TransitionLabelEditorForm> {
                   ),
                 ),
                 SizedBox(height: widget.touchOptimized ? 16 : 8),
-                if (widget.touchOptimized)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FocusTraversalOrder(
-                          order: NumericFocusOrder(
-                            widget.onDelete != null ? 2.0 : 1.0,
-                          ),
-                          child: OutlinedButton(
-                            onPressed: _handleCancel,
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(48),
-                            ),
-                            child: Text(widget.cancelLabel),
-                          ),
-                        ),
-                      ),
-                      if (widget.onDelete != null) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FocusTraversalOrder(
-                            order: const NumericFocusOrder(1.0),
-                            child: OutlinedButton(
-                              onPressed: _handleDelete,
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.error,
-                              ),
-                              child: Text(widget.deleteLabel),
-                            ),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FocusTraversalOrder(
-                          order: NumericFocusOrder(
-                            widget.onDelete != null ? 3.0 : 2.0,
-                          ),
-                          child: FilledButton(
-                            onPressed: _handleSubmit,
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(48),
-                            ),
-                            child: Text(widget.saveLabel),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  Row(
-                    children: [
-                      if (widget.onDelete != null)
-                        FocusTraversalOrder(
-                          order: const NumericFocusOrder(1.0),
-                          child: TextButton(
-                            onPressed: _handleDelete,
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(44, 44),
-                            ),
-                            child: Text(
-                              widget.deleteLabel,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ),
-                      const Spacer(),
-                      FocusTraversalOrder(
-                        order: NumericFocusOrder(
-                          widget.onDelete != null ? 2.0 : 1.0,
-                        ),
-                        child: TextButton(
-                          onPressed: _handleCancel,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(44, 44),
-                          ),
-                          child: Text(widget.cancelLabel),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FocusTraversalOrder(
-                        order: NumericFocusOrder(
-                          widget.onDelete != null ? 3.0 : 2.0,
-                        ),
-                        child: FilledButton(
-                          onPressed: _handleSubmit,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(44, 44),
-                          ),
-                          child: Text(widget.saveLabel),
-                        ),
-                      ),
-                    ],
-                  ),
+                TransitionEditorActions(
+                  onCancel: _handleCancel,
+                  onDelete: widget.onDelete == null ? null : _handleDelete,
+                  onSave: _handleSubmit,
+                  cancelLabel: widget.cancelLabel,
+                  deleteLabel: widget.deleteLabel,
+                  saveLabel: widget.saveLabel,
+                  baseFocusOrder: 1,
+                ),
               ],
             ),
           ),

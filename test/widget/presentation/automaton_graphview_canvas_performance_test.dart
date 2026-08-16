@@ -13,6 +13,7 @@ import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/features/canvas/graphview/base_graphview_canvas_controller.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
@@ -124,6 +125,40 @@ void main() {
       );
 
       expect(notifications, equals(1));
+    });
+
+    test('highlights preserve stable ids without structural invalidation', () {
+      final controllers = <BaseGraphViewCanvasController<dynamic, dynamic>>[
+        GraphViewCanvasController(
+          automatonStateNotifier: AutomatonStateNotifier(),
+        ),
+        GraphViewPdaCanvasController(editorNotifier: PDAEditorNotifier()),
+        GraphViewTmCanvasController(editorNotifier: TMEditorNotifier()),
+      ];
+      addTearDown(() {
+        for (final controller in controllers) {
+          controller.dispose();
+        }
+      });
+
+      for (final controller in controllers) {
+        final revision = controller.graphRevision.value;
+        final highlight = SimulationHighlight(
+          stateIds: {' stable/state '},
+          transitionIds: {' stable/edge '},
+        );
+
+        controller.applyHighlight(highlight);
+
+        expect(controller.highlightNotifier.value, highlight);
+        expect(controller.highlightedTransitionIds, {' stable/edge '});
+        expect(controller.graphRevision.value, revision);
+
+        controller.clearHighlight();
+
+        expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+        expect(controller.graphRevision.value, revision);
+      }
     });
 
     testWidgets('rapid highlight cycling stays within frame budget', (

@@ -25,6 +25,7 @@ void main() {
 
       // Create widget tree with GraphView
       final controller = GraphViewController();
+      addTearDown(controller.dispose);
       final algorithm = SugiyamaAlgorithm(SugiyamaConfiguration());
 
       await tester.pumpWidget(

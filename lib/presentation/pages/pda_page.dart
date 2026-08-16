@@ -13,22 +13,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/pda.dart';
-import '../../core/models/pda_transition.dart';
-import '../../core/models/state.dart' as automaton_state;
-import '../providers/help_provider.dart';
+import '../../core/models/simulation_highlight.dart';
+import '../../core/services/canvas_highlight_coordinator.dart';
+import '../../l10n/app_localizations_resolver.dart';
 import '../providers/pda_editor_provider.dart';
-import '../widgets/app_snackbar.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
-import '../widgets/context_aware_help_panel.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/automaton_canvas_tool.dart';
 import '../widgets/canvas_quick_actions.dart';
+import '../widgets/collapsible_canvas_panel.dart';
 import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/pda_canvas_graphview.dart';
 import '../widgets/pda_algorithm_panel.dart';
 import '../widgets/pda_simulation_panel.dart';
 import '../widgets/pda/stack_drawer.dart';
 import '../widgets/common/workspace_helpers.dart';
+import '../widgets/common/workspace_help.dart';
 
 import '../../core/models/step_explanation.dart';
 import '../providers/pda_simulation_provider.dart';
@@ -50,15 +50,17 @@ class _PDAPageState extends ConsumerState<PDAPage>
   bool get wantKeepAlive => true;
 
   PDA? _latestPda;
-  bool _hasUnsavedChanges = false;
   ProviderSubscription<PDAEditorState>? _pdaEditorSub;
   StackState _currentStack = const StackState.empty();
   bool _isSimulating = false;
   late final GraphViewPdaCanvasController _canvasController;
-  late final GraphViewSimulationHighlightChannel _highlightChannel;
+  late final CanvasHighlightCoordinator _highlightCoordinator;
+  late final CanvasHighlightSourceHandle _validationHighlights;
+  late final CanvasHighlightSourceHandle _simulationHighlights;
   late final SimulationHighlightService _highlightService;
   late final AutomatonCanvasToolController _toolController;
-  AutomatonCanvasTool _activeTool = AutomatonCanvasTool.selection;
+  int _highlightRevision = 0;
+  int _highlightSyncGeneration = 0;
 
   @override
   void initState() {
@@ -66,31 +68,38 @@ class _PDAPageState extends ConsumerState<PDAPage>
     _canvasController = GraphViewPdaCanvasController(
       editorNotifier: ref.read(pdaEditorProvider.notifier),
     );
-    _canvasController.synchronize(ref.read(pdaEditorProvider).pda);
-    _highlightChannel = GraphViewSimulationHighlightChannel(_canvasController);
-    _highlightService = SimulationHighlightService(channel: _highlightChannel);
-    _toolController = AutomatonCanvasToolController();
-    _toolController.addListener(_handleToolChanged);
+    final initialEditorState = ref.read(pdaEditorProvider);
+    _canvasController.synchronize(initialEditorState.pda);
+    _highlightCoordinator = CanvasHighlightCoordinator(
+      target: _highlightTarget(initialEditorState.pda),
+      output: GraphViewSimulationHighlightChannel(_canvasController),
+    );
+    _validationHighlights =
+        _highlightCoordinator.source(CanvasHighlightSource.validation);
+    _simulationHighlights =
+        _highlightCoordinator.source(CanvasHighlightSource.simulation);
+    _highlightService = SimulationHighlightService(
+      channel: _simulationHighlights,
+    );
+    _scheduleEditorHighlights(initialEditorState);
+    _toolController = AutomatonCanvasToolController(
+      AutomatonCanvasTool.selection,
+    );
     _pdaEditorSub = ref.listenManual<PDAEditorState>(pdaEditorProvider, (
       previous,
       next,
     ) {
       if (!mounted) return;
+      if (!identical(previous?.pda, next.pda)) {
+        _highlightRevision++;
+        _highlightCoordinator.retarget(_highlightTarget(next.pda));
+      }
+      _scheduleEditorHighlights(next);
       if (next.pda == null && _latestPda != null) {
         setState(() {
           _latestPda = null;
-          _hasUnsavedChanges = false;
         });
       }
-    });
-  }
-
-  void _handleToolChanged() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _activeTool = _toolController.activeTool;
     });
   }
 
@@ -104,17 +113,18 @@ class _PDAPageState extends ConsumerState<PDAPage>
   @override
   void dispose() {
     _pdaEditorSub?.close();
-    _toolController.removeListener(_handleToolChanged);
-    _toolController.dispose();
     _highlightService.clear();
+    _validationHighlights.dispose();
+    _simulationHighlights.dispose();
+    _highlightCoordinator.dispose();
     _canvasController.dispose();
+    _toolController.dispose();
     super.dispose();
   }
 
   void _handlePdaModified(PDA pda) {
     setState(() {
       _latestPda = pda;
-      _hasUnsavedChanges = true;
     });
   }
 
@@ -122,6 +132,14 @@ class _PDAPageState extends ConsumerState<PDAPage>
     if (!mounted) return;
     setState(() {
       _currentStack = stackState;
+    });
+  }
+
+  void _clearCanvasPda() {
+    _canvasController.clearCanvas();
+    setState(() {
+      _currentStack = const StackState.empty();
+      _isSimulating = false;
     });
   }
 
@@ -140,7 +158,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
   }
 
   void _showContextualHelp() {
-    final helpNotifier = ref.read(helpProvider.notifier);
     final editorState = ref.read(pdaEditorProvider);
     final pda = editorState.pda;
 
@@ -154,17 +171,23 @@ class _PDAPageState extends ConsumerState<PDAPage>
       helpContextId = 'concept_pda';
     }
 
-    final helpContent = helpNotifier.getHelpByContext(helpContextId);
-    if (helpContent != null) {
-      ContextAwareHelpPanel.show(context, helpContent: helpContent);
-    } else {
-      showAppSnackBar(
-        context,
-        message: 'Help content is not available right now.',
-        tone: AppSnackBarTone.error,
-      );
-    }
+    showWorkspaceHelp(
+      context: context,
+      ref: ref,
+      contextId: helpContextId,
+    );
   }
+
+  /// Overrides that bind this page's canvas to the highlight pipeline.
+  ///
+  /// Applied both to the page subtree and to every modal sheet, since sheets
+  /// are hosted by the Navigator and would otherwise miss them.
+  List<Override> get _canvasHighlightOverrides => [
+        canvasHighlightServiceProvider.overrideWithValue(_highlightService),
+        canvasHighlightCoordinatorProvider.overrideWithValue(
+          _highlightCoordinator,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -173,9 +196,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
     final pda = editorState.pda;
 
     return ProviderScope(
-      overrides: [
-        canvasHighlightServiceProvider.overrideWithValue(_highlightService),
-      ],
+      overrides: _canvasHighlightOverrides,
       child: AutomatonWorkspaceScaffold(
         canvasWithToolbar: _buildCanvasWithToolbar,
         algorithmPanel: const PDAAlgorithmPanel(),
@@ -188,17 +209,21 @@ class _PDAPageState extends ConsumerState<PDAPage>
         ),
         mobileFloatingPanel: pda == null
             ? null
-            : PDAStackPanel(
-                stackState: _currentStack,
-                initialStackSymbol: pda.initialStackSymbol,
-                stackAlphabet: pda.stackAlphabet,
-                isSimulating: _isSimulating,
-                highlightedIndex: _inferHighlightedStackIndex(),
-                onClear: () {
-                  setState(() {
-                    _currentStack = const StackState.empty();
-                  });
-                },
+            : CollapsibleCanvasPanel(
+                label: 'Stack',
+                icon: Icons.layers,
+                child: PDAStackPanel(
+                  stackState: _currentStack,
+                  initialStackSymbol: pda.initialStackSymbol,
+                  stackAlphabet: pda.stackAlphabet,
+                  isSimulating: _isSimulating,
+                  highlightedIndex: _inferHighlightedStackIndex(),
+                  onClear: () {
+                    setState(() {
+                      _currentStack = const StackState.empty();
+                    });
+                  },
+                ),
               ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'pda_context_help_fab',
@@ -208,6 +233,31 @@ class _PDAPageState extends ConsumerState<PDAPage>
         ),
       ),
     );
+  }
+
+  CanvasHighlightTarget _highlightTarget(PDA? pda) {
+    return CanvasHighlightTarget(
+      kind: AutomatonSurfaceKind.pda,
+      surface: _canvasController,
+      documentId: pda?.id,
+      revision: _highlightRevision,
+    );
+  }
+
+  void _scheduleEditorHighlights(PDAEditorState editorState) {
+    final generation = ++_highlightSyncGeneration;
+    final target = _highlightCoordinator.target;
+    final highlight = SimulationHighlight(
+      transitionIds: editorState.nondeterministicTransitionIds,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          generation != _highlightSyncGeneration ||
+          target != _highlightCoordinator.target) {
+        return;
+      }
+      _validationHighlights.sendFor(target, highlight);
+    });
   }
 
   Future<void> _showPanelSheet({
@@ -223,75 +273,82 @@ class _PDAPageState extends ConsumerState<PDAPage>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.7,
-          minChildSize: 0.4,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) {
-            return SafeArea(
-              top: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 12,
-                      offset: const Offset(0, -4),
+        // Modal routes are built by the Navigator, above this page's
+        // ProviderScope, so the canvas highlight overrides have to be repeated
+        // here or panels inside the sheet resolve the null root coordinator.
+        return ProviderScope(
+          overrides: _canvasHighlightOverrides,
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.7,
+            minChildSize: 0.4,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) {
+              return SafeArea(
+                top: false,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, -4),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
-                      child: Row(
-                        children: [
-                          if (icon != null) ...[
-                            Icon(icon, color: theme.colorScheme.primary),
-                            const SizedBox(width: 12),
-                          ],
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color:
+                              theme.colorScheme.outline.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                        child: Row(
+                          children: [
+                            if (icon != null) ...[
+                              Icon(icon, color: theme.colorScheme.primary),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => Navigator.of(sheetContext).pop(),
-                          ),
-                        ],
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.of(sheetContext).pop(),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: ListView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                        children: [child],
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                          children: [child],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -305,10 +362,14 @@ class _PDAPageState extends ConsumerState<PDAPage>
     final canvas = PDACanvasGraphView(
       controller: _canvasController,
       toolController: _toolController,
+      currentStack: _currentStack,
       onPdaModified: _handlePdaModified,
     );
 
-    final combinedListenable = _canvasController.graphRevision;
+    final combinedListenable = Listenable.merge([
+      _toolController,
+      _canvasController.graphRevision,
+    ]);
 
     final onHelp = _showContextualHelp;
     final onSimulate = hasPda
@@ -337,45 +398,39 @@ class _PDAPageState extends ConsumerState<PDAPage>
       return Stack(
         children: [
           Positioned.fill(child: canvas),
-          if (onSimulate != null || onAlgorithms != null)
-            Positioned(
-              top: 16,
-              left: 16,
-              child: CanvasQuickActions(
-                onHelp: onHelp,
-                onSimulate: onSimulate,
-                onAlgorithms: onAlgorithms,
-              ),
+          Positioned(
+            top: 16,
+            left: 16,
+            child: CanvasQuickActions(
+              onHelp: onHelp,
+              onSimulate: onSimulate,
+              onAlgorithms: onAlgorithms,
             ),
+          ),
           AnimatedBuilder(
             animation: combinedListenable,
             builder: (context, _) {
               return MobileAutomatonControls(
+                onHelp: _showContextualHelp,
                 enableToolSelection: true,
                 showSelectionTool: true,
-                activeTool: _activeTool,
+                activeTool: _toolController.activeTool,
                 onSelectTool: () => _toolController.setActiveTool(
                   AutomatonCanvasTool.selection,
                 ),
                 onAddState: _handleAddStatePressed,
-                onAddTransition: () => _toolController.setActiveTool(
+                onAddTransition: () => _toolController.toggleTool(
                   AutomatonCanvasTool.transition,
                 ),
+                onZoomIn: _canvasController.zoomIn,
+                onZoomOut: _canvasController.zoomOut,
                 onFitToContent: _canvasController.fitToContent,
                 onResetView: _canvasController.resetView,
-                onClear: () =>
-                    ref.read(pdaEditorProvider.notifier).updateFromCanvas(
-                  states: const <automaton_state.State>[],
-                  transitions: const <PDATransition>[],
-                ),
+                onClear: _clearCanvasPda,
                 onUndo: _canvasController.undo,
                 onRedo: _canvasController.redo,
                 canUndo: _canvasController.canUndo,
                 canRedo: _canvasController.canRedo,
-                onSimulate: null,
-                isSimulationEnabled: false,
-                onAlgorithms: null,
-                isAlgorithmsEnabled: false,
                 statusMessage: statusMessage,
               );
             },
@@ -384,49 +439,49 @@ class _PDAPageState extends ConsumerState<PDAPage>
       );
     }
 
-    return Stack(
+    final canvasWithChrome = Stack(
       children: [
         Positioned.fill(child: canvas),
         AnimatedBuilder(
           animation: combinedListenable,
           builder: (context, _) {
             return GraphViewCanvasToolbar(
-              layout: GraphViewCanvasToolbarLayout.desktop,
               controller: _canvasController,
               enableToolSelection: true,
               showSelectionTool: true,
-              activeTool: _activeTool,
+              activeTool: _toolController.activeTool,
               onSelectTool: () =>
                   _toolController.setActiveTool(AutomatonCanvasTool.selection),
               onAddState: _handleAddStatePressed,
+              onHelp: _showContextualHelp,
               onAddTransition: () =>
-                  _toolController.setActiveTool(AutomatonCanvasTool.transition),
-              onClear: () =>
-                  ref.read(pdaEditorProvider.notifier).updateFromCanvas(
-                states: const <automaton_state.State>[],
-                transitions: const <PDATransition>[],
-              ),
+                  _toolController.toggleTool(AutomatonCanvasTool.transition),
+              onClear: _clearCanvasPda,
               statusMessage: statusMessage,
             );
           },
         ),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: PDAStackPanel(
-            stackState: _currentStack,
-            initialStackSymbol:
-                ref.read(pdaEditorProvider).pda?.initialStackSymbol ?? 'Z',
-            stackAlphabet:
-                ref.read(pdaEditorProvider).pda?.stackAlphabet ?? const {},
-            isSimulating: _isSimulating,
-            highlightedIndex: _inferHighlightedStackIndex(),
-            onClear: () {
-              setState(() {
-                _currentStack = const StackState.empty();
-              });
-            },
-          ),
+      ],
+    );
+    final inspector = PDAStackPanel(
+      stackState: _currentStack,
+      initialStackSymbol: editorState.pda?.initialStackSymbol ?? 'Z',
+      stackAlphabet: editorState.pda?.stackAlphabet ?? const {},
+      isSimulating: _isSimulating,
+      highlightedIndex: _inferHighlightedStackIndex(),
+      onClear: () {
+        setState(() {
+          _currentStack = const StackState.empty();
+        });
+      },
+    );
+
+    return Column(
+      children: [
+        Expanded(child: canvasWithChrome),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+          child: inspector,
         ),
       ],
     );
@@ -434,38 +489,16 @@ class _PDAPageState extends ConsumerState<PDAPage>
 
   String _buildToolbarStatusMessage(PDAEditorState editorState) {
     final pda = editorState.pda;
-    final hasPda = pda != null && pda.states.isNotEmpty;
-    final stateCount = pda?.states.length ?? 0;
-    final transitionCount = pda?.pdaTransitions.length ?? 0;
-
-    final messageParts = <String>[];
-
-    if (_hasUnsavedChanges) {
-      messageParts.add('Unsaved changes');
-    }
-
-    final warnings = <String>[];
-    if (editorState.nondeterministicTransitionIds.isNotEmpty) {
-      warnings.add('Nondeterministic transitions');
-    }
-    if (editorState.lambdaTransitionIds.isNotEmpty) {
-      warnings.add('λ-transitions present');
-    }
-
-    if (warnings.isNotEmpty) {
-      messageParts.add('⚠ ${warnings.join(' · ')}');
-    }
-
-    if (hasPda) {
-      messageParts.add(
-        '${formatCount('state', 'states', stateCount)} · '
-        '${formatCount('transition', 'transitions', transitionCount)}',
-      );
-    } else {
-      messageParts.add('No PDA loaded');
-    }
-
-    return messageParts.join(' · ');
+    return buildAutomatonWorkspaceStatus(
+      l10n: appLocalizationsOf(context),
+      stateCount: pda?.states.length ?? 0,
+      transitionCount: pda?.pdaTransitions.length ?? 0,
+      hasInitialState: pda?.initialState != null,
+      hasAcceptingState: pda?.acceptingStates.isNotEmpty ?? false,
+      hasNondeterministicTransitions:
+          editorState.nondeterministicTransitionIds.isNotEmpty,
+      hasLambdaTransitions: editorState.lambdaTransitionIds.isNotEmpty,
+    );
   }
 
   int? _inferHighlightedStackIndex() {

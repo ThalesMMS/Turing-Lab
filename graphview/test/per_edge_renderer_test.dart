@@ -84,11 +84,19 @@ void main() {
       final edge = graph.addEdge(node1, node2, renderer: animatedRenderer);
 
       expect(edge.renderer, equals(animatedRenderer));
-      expect((edge.renderer as AnimatedEdgeRenderer).animationConfig.animationSpeed, 2.0);
-      expect((edge.renderer as AnimatedEdgeRenderer).animationConfig.particleCount, 5);
+      expect(
+          (edge.renderer as AnimatedEdgeRenderer)
+              .animationConfig
+              .animationSpeed,
+          2.0);
+      expect(
+          (edge.renderer as AnimatedEdgeRenderer).animationConfig.particleCount,
+          5);
     });
 
-    test('CurvedEdgeRenderer with custom curvature can be used as custom renderer', () {
+    test(
+        'CurvedEdgeRenderer with custom curvature can be used as custom renderer',
+        () {
       final graph = Graph();
       final node1 = Node.Id('Node1');
       final node2 = Node.Id('Node2');
@@ -164,8 +172,10 @@ void main() {
       graph.addEdge(node3, node4, renderer: customRenderer);
       graph.addEdge(node4, node1);
 
-      final edgesWithRenderer = graph.edges.where((e) => e.renderer != null).toList();
-      final edgesWithoutRenderer = graph.edges.where((e) => e.renderer == null).toList();
+      final edgesWithRenderer =
+          graph.edges.where((e) => e.renderer != null).toList();
+      final edgesWithoutRenderer =
+          graph.edges.where((e) => e.renderer == null).toList();
 
       expect(edgesWithRenderer.length, 2);
       expect(edgesWithoutRenderer.length, 2);

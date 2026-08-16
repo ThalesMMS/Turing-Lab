@@ -4,7 +4,7 @@
 //
 //  Define a barra de ferramentas que controla o canvas de automatos em GraphView,
 //  disponibilizando comandos de viewport, botões de desfazer/refazer e atalhos
-//  para criação de estados e transições em modos desktop ou mobile.
+//  para criação de estados e transições em workspaces amplos.
 //  Observa o controlador do canvas para refletir o estado atual das ações,
 //  permitindo seleção de ferramentas mutuamente exclusivas e ganchos de limpeza,
 //  mensagens de status e fluxos personalizados.
@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/help_content.dart';
 import '../../features/canvas/graphview/base_graphview_canvas_controller.dart';
+import '../../l10n/app_localizations.dart';
+import '../../l10n/app_localizations_resolver.dart';
 import 'automaton_canvas_tool.dart';
 import 'contextual_help_tooltip.dart';
 import 'keyboard_shortcuts_dialog.dart';
@@ -33,9 +35,9 @@ class GraphViewCanvasToolbar extends StatefulWidget {
     this.onSelectTool,
     required this.onAddState,
     this.onAddTransition,
+    this.onHelp,
     this.onClear,
     this.statusMessage,
-    this.layout = GraphViewCanvasToolbarLayout.desktop,
   })  : assert(
           !(enableToolSelection && showSelectionTool) || onSelectTool != null,
           'onSelectTool must be provided when the selection tool is visible.',
@@ -52,9 +54,9 @@ class GraphViewCanvasToolbar extends StatefulWidget {
   final VoidCallback? onSelectTool;
   final VoidCallback onAddState;
   final VoidCallback? onAddTransition;
+  final VoidCallback? onHelp;
   final VoidCallback? onClear;
   final String? statusMessage;
-  final GraphViewCanvasToolbarLayout layout;
 
   @override
   State<GraphViewCanvasToolbar> createState() => _GraphViewCanvasToolbarState();
@@ -140,6 +142,14 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
         id: _ToolbarGroup.viewport,
         actions: [
           _ToolbarButtonConfig(
+            action: _ToolbarAction.zoomOut,
+            handler: controller.zoomOut,
+          ),
+          _ToolbarButtonConfig(
+            action: _ToolbarAction.zoomIn,
+            handler: controller.zoomIn,
+          ),
+          _ToolbarButtonConfig(
             action: _ToolbarAction.fitContent,
             handler: controller.fitToContent,
           ),
@@ -164,30 +174,22 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
         actions: [
           _ToolbarButtonConfig(
             action: _ToolbarAction.help,
-            handler: () => KeyboardShortcutsDialog.show(context),
+            handler: widget.onHelp ??
+                () {
+                  KeyboardShortcutsDialog.show(context);
+                },
           ),
         ],
       ),
     ];
 
-    switch (widget.layout) {
-      case GraphViewCanvasToolbarLayout.mobile:
-        return _MobileToolbar(
-          actionGroups: actionGroups,
-          statusMessage: widget.statusMessage,
-          theme: theme,
-        );
-      case GraphViewCanvasToolbarLayout.desktop:
-        return _DesktopToolbar(
-          actionGroups: actionGroups,
-          statusMessage: widget.statusMessage,
-          theme: theme,
-        );
-    }
+    return _DesktopToolbar(
+      actionGroups: actionGroups,
+      statusMessage: widget.statusMessage,
+      theme: theme,
+    );
   }
 }
-
-enum GraphViewCanvasToolbarLayout { desktop, mobile }
 
 class _DesktopToolbar extends StatelessWidget {
   const _DesktopToolbar({
@@ -204,6 +206,7 @@ class _DesktopToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final l10n = appLocalizationsOf(context);
 
     return Align(
       alignment: Alignment.topRight,
@@ -245,7 +248,7 @@ class _DesktopToolbar extends StatelessWidget {
                             groupIndex: indexedGroupEntry.key,
                             actionIndex: indexedEntry.key,
                             colorScheme: colorScheme,
-                            isMobile: false,
+                            l10n: l10n,
                           ),
                           if (indexedEntry.key <
                               indexedGroupEntry.value.actions.length - 1)
@@ -285,130 +288,37 @@ class _DesktopToolbar extends StatelessWidget {
   }
 }
 
-class _MobileToolbar extends StatelessWidget {
-  const _MobileToolbar({
-    required this.actionGroups,
-    required this.statusMessage,
-    required this.theme,
-  });
-
-  final List<_ToolbarGroupConfig> actionGroups;
-  final String? statusMessage;
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: 400,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: FocusTraversalGroup(
-            policy: OrderedTraversalPolicy(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (statusMessage != null && statusMessage!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(statusMessage!, style: textTheme.bodyMedium),
-                  ),
-                Flexible(
-                  child: Material(
-                    elevation: 6,
-                    borderRadius: BorderRadius.circular(16),
-                    color: colorScheme.surface,
-                    child: Scrollbar(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.all(12),
-                        child: IntrinsicWidth(
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              for (final indexedGroupEntry
-                                  in actionGroups.asMap().entries) ...[
-                                for (final indexedEntry in indexedGroupEntry
-                                    .value.actions
-                                    .asMap()
-                                    .entries)
-                                  _buildActionButton(
-                                    entry: indexedEntry.value,
-                                    groupId: indexedGroupEntry.value.id,
-                                    groupIndex: indexedGroupEntry.key,
-                                    actionIndex: indexedEntry.key,
-                                    colorScheme: colorScheme,
-                                    isMobile: true,
-                                  ),
-                                if (indexedGroupEntry.key <
-                                    actionGroups.length - 1)
-                                  const SizedBox(width: 24),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 Widget _buildActionButton({
   required _ToolbarButtonConfig entry,
   required _ToolbarGroup groupId,
   required int groupIndex,
   required int actionIndex,
   required ColorScheme colorScheme,
-  required bool isMobile,
+  required AppLocalizations l10n,
 }) {
   final helpContent = kHelpContent[entry.action.helpContentId];
   final traversalIndex = (groupIndex * 100 + actionIndex).toDouble();
   final isDestructive = groupId == _ToolbarGroup.destructive;
+  final actionLabel = entry.action.label(l10n);
   final button = FocusTraversalOrder(
     order: NumericFocusOrder(traversalIndex),
     child: Semantics(
-      label: 'Canvas action: ${entry.action.label}',
-      hint: entry.action.semanticsHint,
+      label: l10n.canvasActionSemantics(actionLabel),
+      hint: entry.action.semanticsHint(l10n),
       button: true,
       enabled: entry.handler != null,
       selected: entry.isToggle && entry.isSelected,
       excludeSemantics: true,
-      child: isMobile
-          ? FilledButton.icon(
-              onPressed: entry.handler,
-              style: _mobileActionButtonStyle(
-                entry: entry,
-                isDestructive: isDestructive,
-                colorScheme: colorScheme,
-              ),
-              icon: Icon(entry.action.icon),
-              label: Text(entry.action.label),
-            )
-          : IconButton(
-              tooltip: helpContent == null ? entry.action.label : null,
-              icon: Icon(entry.action.icon),
-              onPressed: entry.handler,
-              style: _desktopActionButtonStyle(
-                entry: entry,
-                isDestructive: isDestructive,
-                colorScheme: colorScheme,
-              ),
-            ),
+      child: IconButton(
+        tooltip: helpContent == null ? actionLabel : null,
+        icon: Icon(entry.action.icon),
+        onPressed: entry.handler,
+        style: _desktopActionButtonStyle(
+          entry: entry,
+          isDestructive: isDestructive,
+          colorScheme: colorScheme,
+        ),
+      ),
     ),
   );
 
@@ -459,46 +369,6 @@ ButtonStyle _desktopActionButtonStyle({
   );
 }
 
-ButtonStyle _mobileActionButtonStyle({
-  required _ToolbarButtonConfig entry,
-  required bool isDestructive,
-  required ColorScheme colorScheme,
-}) {
-  return FilledButton.styleFrom(
-    minimumSize: const Size(44, 44),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 12,
-    ),
-    backgroundColor: isDestructive
-        ? colorScheme.errorContainer
-        : entry.isToggle && entry.isSelected
-            ? colorScheme.primary
-            : entry.isToggle
-                ? colorScheme.surfaceContainerHighest
-                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.18),
-    foregroundColor: isDestructive
-        ? colorScheme.onErrorContainer
-        : entry.isToggle && entry.isSelected
-            ? colorScheme.onPrimary
-            : colorScheme.onSurfaceVariant,
-    elevation: isDestructive
-        ? 0
-        : entry.isToggle
-            ? 1
-            : 0,
-    side: isDestructive
-        ? BorderSide(
-            color: colorScheme.error.withValues(alpha: 0.55),
-          )
-        : entry.isToggle && !entry.isSelected
-            ? BorderSide(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-              )
-            : null,
-  );
-}
-
 class _ToolbarButtonConfig {
   _ToolbarButtonConfig({
     required this.action,
@@ -515,59 +385,80 @@ class _ToolbarButtonConfig {
 
 enum _ToolbarAction {
   selection(
-      icon: Icons.pan_tool,
-      label: 'Select',
-      helpContentId: 'tool_select',
-      semanticsHint: 'Activates selection mode for moving and editing states.'),
+    icon: Icons.pan_tool,
+    helpContentId: 'tool_select',
+  ),
   addState(
-      icon: Icons.add,
-      label: 'Add state',
-      helpContentId: 'tool_add_state',
-      semanticsHint: 'Adds a new state to the automaton canvas.'),
+    icon: Icons.add,
+    helpContentId: 'tool_add_state',
+  ),
   transition(
-      icon: Icons.arrow_right_alt,
-      label: 'Add transition',
-      helpContentId: 'tool_add_transition',
-      semanticsHint: 'Activates transition mode to connect two states.'),
+    icon: Icons.arrow_right_alt,
+    helpContentId: 'tool_add_transition',
+  ),
   undo(
-      icon: Icons.undo,
-      label: 'Undo',
-      helpContentId: 'tool_undo',
-      semanticsHint: 'Reverts the most recent canvas change.'),
+    icon: Icons.undo,
+    helpContentId: 'tool_undo',
+  ),
   redo(
-      icon: Icons.redo,
-      label: 'Redo',
-      helpContentId: 'tool_redo',
-      semanticsHint: 'Restores the most recently undone canvas change.'),
+    icon: Icons.redo,
+    helpContentId: 'tool_redo',
+  ),
+  zoomOut(
+    icon: Icons.zoom_out,
+    helpContentId: 'tool_zoom_out',
+  ),
+  zoomIn(
+    icon: Icons.zoom_in,
+    helpContentId: 'tool_zoom_in',
+  ),
   fitContent(
-      icon: Icons.fit_screen,
-      label: 'Fit to content',
-      helpContentId: 'tool_fit_content',
-      semanticsHint: 'Zooms and pans to show the full automaton.'),
+    icon: Icons.fit_screen,
+    helpContentId: 'tool_fit_content',
+  ),
   resetView(
-      icon: Icons.center_focus_strong,
-      label: 'Reset view',
-      helpContentId: 'tool_reset_view',
-      semanticsHint: 'Resets the canvas zoom and pan position.'),
+    icon: Icons.center_focus_strong,
+    helpContentId: 'tool_reset_view',
+  ),
   clear(
-      icon: Icons.delete_outline,
-      label: 'Clear canvas',
-      helpContentId: 'tool_clear',
-      semanticsHint: 'Removes all states and transitions from the canvas.'),
+    icon: Icons.delete_outline,
+    helpContentId: 'tool_clear',
+  ),
   help(
-      icon: Icons.help_outline,
-      label: 'Help & Shortcuts',
-      helpContentId: 'shortcut_canvas_general',
-      semanticsHint: 'Opens canvas help and keyboard shortcut information.');
+    icon: Icons.help_outline,
+    helpContentId: 'shortcut_canvas_general',
+  );
 
-  const _ToolbarAction(
-      {required this.icon,
-      required this.label,
-      required this.helpContentId,
-      required this.semanticsHint});
+  const _ToolbarAction({required this.icon, required this.helpContentId});
 
   final IconData icon;
-  final String label;
   final String helpContentId;
-  final String semanticsHint;
+
+  String label(AppLocalizations l10n) => switch (this) {
+        selection => l10n.canvasSelectAction,
+        addState => l10n.canvasAddStateAction,
+        transition => l10n.canvasAddTransitionAction,
+        undo => l10n.canvasUndoAction,
+        redo => l10n.canvasRedoAction,
+        zoomOut => l10n.canvasZoomOutAction,
+        zoomIn => l10n.canvasZoomInAction,
+        fitContent => l10n.canvasFitToContentAction,
+        resetView => l10n.canvasResetViewAction,
+        clear => l10n.canvasClearAction,
+        help => l10n.canvasHelpShortcutsAction,
+      };
+
+  String semanticsHint(AppLocalizations l10n) => switch (this) {
+        selection => l10n.canvasSelectHint,
+        addState => l10n.canvasAddStateHint,
+        transition => l10n.canvasAddTransitionHint,
+        undo => l10n.canvasUndoHint,
+        redo => l10n.canvasRedoHint,
+        zoomOut => l10n.canvasZoomOutHint,
+        zoomIn => l10n.canvasZoomInHint,
+        fitContent => l10n.canvasFitToContentHint,
+        resetView => l10n.canvasResetViewHint,
+        clear => l10n.canvasClearHint,
+        help => l10n.canvasHelpShortcutsHint,
+      };
 }

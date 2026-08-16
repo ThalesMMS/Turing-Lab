@@ -19,7 +19,8 @@ class SugiyamaConfiguration {
   CoordinateAssignment coordinateAssignment = CoordinateAssignment.Average;
 
   LayeringStrategy layeringStrategy = LayeringStrategy.topDown;
-  CrossMinimizationStrategy crossMinimizationStrategy = CrossMinimizationStrategy.simple;
+  CrossMinimizationStrategy crossMinimizationStrategy =
+      CrossMinimizationStrategy.simple;
   CycleRemovalStrategy cycleRemovalStrategy = CycleRemovalStrategy.greedy;
 
   bool postStraighten = true;
@@ -47,17 +48,9 @@ enum CoordinateAssignment {
   Average, // 4
 }
 
-enum LayeringStrategy {
-  topDown,
-  longestPath,
-  coffmanGraham,
-  networkSimplex
-}
+enum LayeringStrategy { topDown, longestPath, coffmanGraham, networkSimplex }
 
-enum CrossMinimizationStrategy {
-  simple,
-  accumulatorTree
-}
+enum CrossMinimizationStrategy { simple, accumulatorTree }
 
 enum CycleRemovalStrategy {
   dfs,

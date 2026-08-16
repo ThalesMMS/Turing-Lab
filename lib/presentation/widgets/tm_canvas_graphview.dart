@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/tm.dart';
-import '../../core/models/tm_transition.dart';
 import '../../core/services/highlight_channel.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
@@ -22,7 +21,6 @@ import '../../features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import '../providers/tm_editor_provider.dart';
 import 'automaton_canvas_tool.dart';
 import 'automaton_graphview_canvas.dart';
-import 'transition_editors/tm_transition_operations_editor.dart';
 
 class TMCanvasGraphView extends ConsumerStatefulWidget {
   const TMCanvasGraphView({
@@ -50,56 +48,7 @@ class _TMCanvasGraphViewState extends ConsumerState<TMCanvasGraphView> {
   TM? _lastDeliveredTm;
 
   AutomatonGraphViewCanvasCustomization get _customization =>
-      AutomatonGraphViewCanvasCustomization(
-        enableStateDrag: true,
-        enableToolSelection: true,
-        transitionConfigBuilder: (controller) {
-          return AutomatonGraphViewTransitionConfig(
-            initialPayloadBuilder: (edge) => AutomatonTmTransitionPayload(
-              readSymbol: edge?.readSymbol ?? '',
-              writeSymbol: edge?.writeSymbol ?? '',
-              direction: edge?.direction ?? TapeDirection.right,
-            ),
-            overlayBuilder: (context, data, overlayController) {
-              final payload = data.payload as AutomatonTmTransitionPayload;
-              return TmTransitionOperationsEditor(
-                initialRead: payload.readSymbol,
-                initialWrite: payload.writeSymbol,
-                initialDirection: payload.direction,
-                onSubmit: ({
-                  required String readSymbol,
-                  required String writeSymbol,
-                  required TapeDirection direction,
-                }) {
-                  overlayController.submit(
-                    AutomatonTmTransitionPayload(
-                      readSymbol: readSymbol,
-                      writeSymbol: writeSymbol,
-                      direction: direction,
-                    ),
-                  );
-                },
-                onCancel: overlayController.cancel,
-              );
-            },
-            persistTransition: (request) {
-              final tmController =
-                  request.controller as GraphViewTmCanvasController;
-              final payload = request.payload as AutomatonTmTransitionPayload;
-              tmController.addOrUpdateTransition(
-                fromStateId: request.fromStateId,
-                toStateId: request.toStateId,
-                readSymbol: payload.readSymbol,
-                writeSymbol: payload.writeSymbol,
-                direction: payload.direction,
-                transitionId: request.transitionId,
-                controlPointX: request.worldAnchor.dx,
-                controlPointY: request.worldAnchor.dy,
-              );
-            },
-          );
-        },
-      );
+      AutomatonGraphViewCanvasCustomization.tm();
 
   @override
   void initState() {

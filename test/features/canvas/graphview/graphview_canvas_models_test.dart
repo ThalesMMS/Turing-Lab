@@ -11,6 +11,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
 
 void main() {
@@ -33,6 +34,24 @@ void main() {
       expect(restored.tapeCount, 1);
     });
 
+    test('round-trips PDA stack metadata', () {
+      const metadata = GraphViewAutomatonMetadata(
+        id: 'pda-1',
+        name: 'PDA',
+        alphabet: ['a'],
+        stackAlphabet: ['Z', 'S_0', 'unused-stack-symbol'],
+        initialStackSymbol: 'S_0',
+      );
+
+      final restored = GraphViewAutomatonMetadata.fromJson(metadata.toJson());
+
+      expect(
+        restored.stackAlphabet,
+        ['Z', 'S_0', 'unused-stack-symbol'],
+      );
+      expect(restored.initialStackSymbol, 'S_0');
+    });
+
     test('copyWith can clear nullable TM metadata', () {
       const metadata = GraphViewAutomatonMetadata(
         id: 'tm-1',
@@ -40,15 +59,18 @@ void main() {
         alphabet: ['a'],
         blankSymbol: 'B',
         tapeCount: 2,
+        initialStackSymbol: 'Z',
       );
 
       final cleared = metadata.copyWith(
         blankSymbol: null,
         tapeCount: null,
+        initialStackSymbol: null,
       );
 
       expect(cleared.blankSymbol, isNull);
       expect(cleared.tapeCount, isNull);
+      expect(cleared.initialStackSymbol, isNull);
     });
   });
 
@@ -94,6 +116,84 @@ void main() {
 
       expect(restored.symbols, isEmpty);
       expect(restored.lambdaSymbol, 'ε');
+    });
+
+    test('round-trips an FSA symbol containing a comma atomically', () {
+      const edge = GraphViewCanvasEdge(
+        id: 'comma-symbol',
+        fromStateId: 'q0',
+        toStateId: 'q1',
+        symbols: ['a,b', 'c'],
+      );
+
+      final json = edge.toJson();
+      final restored = GraphViewCanvasEdge.fromJson(json);
+
+      expect(json['symbols'], ['a,b', 'c']);
+      expect(restored.symbols, ['a,b', 'c']);
+    });
+
+    test('reads legacy comma-joined FSA symbols', () {
+      final restored = GraphViewCanvasEdge.fromJson({
+        'id': 'legacy',
+        'from': 'q0',
+        'to': 'q1',
+        'symbols': 'a,b',
+      });
+
+      expect(restored.symbols, ['a', 'b']);
+    });
+
+    test('copyWith can clear every nullable transition field', () {
+      const edge = GraphViewCanvasEdge(
+        id: 'nullable-fields',
+        fromStateId: 'q0',
+        toStateId: 'q1',
+        symbols: ['a'],
+        lambdaSymbol: 'ε',
+        controlPointX: 12,
+        controlPointY: 24,
+        readSymbol: 'a',
+        writeSymbol: 'b',
+        direction: TapeDirection.left,
+        tapeNumber: 2,
+        popSymbol: 'Z',
+        pushSymbol: 'S_0Z',
+        pushSymbols: ['S_0', 'Z'],
+        isLambdaInput: false,
+        isLambdaPop: false,
+        isLambdaPush: false,
+      );
+
+      final cleared = edge.copyWith(
+        lambdaSymbol: null,
+        controlPointX: null,
+        controlPointY: null,
+        readSymbol: null,
+        writeSymbol: null,
+        direction: null,
+        tapeNumber: null,
+        popSymbol: null,
+        pushSymbol: null,
+        pushSymbols: null,
+        isLambdaInput: null,
+        isLambdaPop: null,
+        isLambdaPush: null,
+      );
+
+      expect(cleared.lambdaSymbol, isNull);
+      expect(cleared.controlPointX, isNull);
+      expect(cleared.controlPointY, isNull);
+      expect(cleared.readSymbol, isNull);
+      expect(cleared.writeSymbol, isNull);
+      expect(cleared.direction, isNull);
+      expect(cleared.tapeNumber, isNull);
+      expect(cleared.popSymbol, isNull);
+      expect(cleared.pushSymbol, isNull);
+      expect(cleared.pushSymbols, isNull);
+      expect(cleared.isLambdaInput, isNull);
+      expect(cleared.isLambdaPop, isNull);
+      expect(cleared.isLambdaPush, isNull);
     });
   });
 }

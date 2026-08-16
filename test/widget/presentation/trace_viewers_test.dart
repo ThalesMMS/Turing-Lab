@@ -34,10 +34,18 @@ class _SpyHighlightService extends SimulationHighlightService {
 Future<void> _pumpPDATraceViewer(
   WidgetTester tester, {
   required PDASimulationResult result,
+  SimulationHighlightService? highlightService,
+  ValueChanged<int>? onStepChanged,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(body: PDATraceViewer(result: result)),
+      home: Scaffold(
+        body: PDATraceViewer(
+          result: result,
+          highlightService: highlightService,
+          onStepChanged: onStepChanged,
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -46,10 +54,18 @@ Future<void> _pumpPDATraceViewer(
 Future<void> _pumpTMTraceViewer(
   WidgetTester tester, {
   required TMSimulationResult result,
+  SimulationHighlightService? highlightService,
+  ValueChanged<int>? onStepChanged,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(body: TMTraceViewer(result: result)),
+      home: Scaffold(
+        body: TMTraceViewer(
+          result: result,
+          highlightService: highlightService,
+          onStepChanged: onStepChanged,
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -198,6 +214,12 @@ void main() {
           executionTime: Duration.zero,
         );
 
+    SimulationResult emptyResult() => SimulationResult.success(
+          inputString: '',
+          steps: const [],
+          executionTime: Duration.zero,
+        );
+
     testWidgets('synchronizes init, navigation, playback, and reset',
         (tester) async {
       final service = _SpyHighlightService();
@@ -226,7 +248,8 @@ void main() {
       expect(service.emittedIndices.last, 1);
     });
 
-    testWidgets('clears old ownership on result, service, and dispose',
+    testWidgets(
+        'resets to zero without clearing borrowed services on replacement or dispose',
         (tester) async {
       final oldService = _SpyHighlightService();
       await _pumpBaseTraceViewer(
@@ -235,13 +258,22 @@ void main() {
         highlightService: oldService,
       );
 
+      await tester.tap(find.byTooltip('Next Step'));
+      await tester.pump();
+      expect(oldService.emittedIndices.last, 1);
+
       await _pumpBaseTraceViewer(
         tester,
         result: result('new'),
         highlightService: oldService,
       );
-      expect(oldService.clearCount, 1);
+      expect(oldService.clearCount, 0);
       expect(oldService.emittedIndices.last, 0);
+      expect(find.text('1 / 2'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Next Step'));
+      await tester.pump();
+      expect(oldService.emittedIndices.last, 1);
 
       final newService = _SpyHighlightService();
       await _pumpBaseTraceViewer(
@@ -249,11 +281,52 @@ void main() {
         result: result('new'),
         highlightService: newService,
       );
-      expect(oldService.clearCount, 2);
+      expect(oldService.clearCount, 0);
       expect(newService.emittedIndices, [0]);
+      expect(find.text('1 / 2'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
+      expect(newService.clearCount, 0);
+    });
+
+    testWidgets('empty result clears the current service exactly once',
+        (tester) async {
+      final service = _SpyHighlightService();
+      await _pumpBaseTraceViewer(
+        tester,
+        result: result('nonempty'),
+        highlightService: service,
+      );
+
+      await _pumpBaseTraceViewer(
+        tester,
+        result: emptyResult(),
+        highlightService: service,
+      );
+
+      expect(service.clearCount, 1);
+      expect(service.emittedIndices, [0]);
+    });
+
+    testWidgets('empty result with a new service clears only the new service',
+        (tester) async {
+      final oldService = _SpyHighlightService();
+      final newService = _SpyHighlightService();
+      await _pumpBaseTraceViewer(
+        tester,
+        result: result('nonempty'),
+        highlightService: oldService,
+      );
+
+      await _pumpBaseTraceViewer(
+        tester,
+        result: emptyResult(),
+        highlightService: newService,
+      );
+
+      expect(oldService.clearCount, 0);
       expect(newService.clearCount, 1);
+      expect(newService.emittedIndices, isEmpty);
     });
 
     testWidgets('keeps the active row visible across the fold boundary',
@@ -307,6 +380,84 @@ void main() {
   });
 
   group('PDATraceViewer', () {
+    testWidgets(
+      'keeps its generic adapter stable and forwards step changes',
+      (tester) async {
+        PDASimulationResult result() => PDASimulationResult.success(
+              inputString: 'ab',
+              steps: const [
+                SimulationStep(
+                  currentState: 'q0',
+                  remainingInput: 'ab',
+                  stackContents: 'Z',
+                  stepNumber: 0,
+                ),
+                SimulationStep(
+                  currentState: 'q1',
+                  remainingInput: 'b',
+                  stackContents: 'AZ',
+                  stepNumber: 1,
+                ),
+                SimulationStep(
+                  currentState: 'q2',
+                  remainingInput: '',
+                  stackContents: 'Z',
+                  stepNumber: 2,
+                ),
+              ],
+              executionTime: Duration.zero,
+            );
+
+        final specializedResult = result();
+        final service = _SpyHighlightService();
+        final selected = <int>[];
+        await _pumpPDATraceViewer(
+          tester,
+          result: specializedResult,
+          highlightService: service,
+          onStepChanged: selected.add,
+        );
+        final initialAdapter =
+            tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+        await tester.tap(find.byTooltip('Next Step'));
+        await tester.pumpAndSettle();
+        expect(selected.last, 1);
+        expect(service.emittedIndices.last, 1);
+        expect(find.text('2 / 3'), findsOneWidget);
+
+        final emissionCount = service.emittedIndices.length;
+        final callbackCount = selected.length;
+        await _pumpPDATraceViewer(
+          tester,
+          result: specializedResult,
+          highlightService: service,
+          onStepChanged: selected.add,
+        );
+        final stableAdapter =
+            tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+        expect(stableAdapter, same(initialAdapter));
+        expect(service.emittedIndices.length, emissionCount);
+        expect(selected.length, callbackCount);
+        expect(find.text('2 / 3'), findsOneWidget);
+
+        await _pumpPDATraceViewer(
+          tester,
+          result: result(),
+          highlightService: service,
+          onStepChanged: selected.add,
+        );
+        final replacementAdapter =
+            tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+        expect(replacementAdapter, isNot(same(initialAdapter)));
+        expect(service.emittedIndices.last, 0);
+        expect(selected.last, 0);
+        expect(find.text('1 / 3'), findsOneWidget);
+      },
+    );
+
     testWidgets('renders with accepted result and displays correct title', (
       tester,
     ) async {
@@ -654,6 +805,82 @@ void main() {
   });
 
   group('TMTraceViewer', () {
+    testWidgets('keeps its generic adapter stable for the same TM result', (
+      tester,
+    ) async {
+      TMSimulationResult result() => TMSimulationResult.success(
+            inputString: 'ab',
+            steps: const [
+              SimulationStep(
+                currentState: 'q0',
+                remainingInput: '',
+                tapeContents: 'ab',
+                stepNumber: 0,
+              ),
+              SimulationStep(
+                currentState: 'q1',
+                remainingInput: '',
+                tapeContents: 'Xb',
+                stepNumber: 1,
+              ),
+              SimulationStep(
+                currentState: 'q2',
+                remainingInput: '',
+                tapeContents: 'XY',
+                stepNumber: 2,
+              ),
+            ],
+            executionTime: Duration.zero,
+          );
+
+      final specializedResult = result();
+      final service = _SpyHighlightService();
+      final selected = <int>[];
+      await _pumpTMTraceViewer(
+        tester,
+        result: specializedResult,
+        highlightService: service,
+        onStepChanged: selected.add,
+      );
+      final initialAdapter =
+          tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+      await tester.tap(find.byTooltip('Next Step'));
+      await tester.pumpAndSettle();
+      final emissionCount = service.emittedIndices.length;
+      final callbackCount = selected.length;
+
+      await _pumpTMTraceViewer(
+        tester,
+        result: specializedResult,
+        highlightService: service,
+        onStepChanged: selected.add,
+      );
+      final stableAdapter =
+          tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+      expect(stableAdapter, same(initialAdapter));
+      expect(service.emittedIndices.length, emissionCount);
+      expect(selected.length, callbackCount);
+      expect(service.emittedIndices.last, 1);
+      expect(selected.last, 1);
+      expect(find.text('2 / 3'), findsOneWidget);
+
+      await _pumpTMTraceViewer(
+        tester,
+        result: result(),
+        highlightService: service,
+        onStepChanged: selected.add,
+      );
+      final replacementAdapter =
+          tester.widget<BaseTraceViewer>(find.byType(BaseTraceViewer)).result;
+
+      expect(replacementAdapter, isNot(same(initialAdapter)));
+      expect(service.emittedIndices.last, 0);
+      expect(selected.last, 0);
+      expect(find.text('1 / 3'), findsOneWidget);
+    });
+
     testWidgets('renders with accepted result and displays correct title', (
       tester,
     ) async {

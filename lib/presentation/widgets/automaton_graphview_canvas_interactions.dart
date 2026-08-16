@@ -101,6 +101,89 @@ extension _AutomatonGraphViewCanvasInteractions
     return closest;
   }
 
+  List<_CanvasEdgeHit> _hitTestEdgesExtracted(Offset localPosition) {
+    final world = _screenToWorld(localPosition);
+    final transformation =
+        _controller.graphController.transformationController?.value;
+    final scale = transformation?.getMaxScaleOnAxis() ?? 1.0;
+    final tolerance = 14.0 / math.max(scale.abs(), 0.001);
+    final hits = <_CanvasEdgeHit>[];
+
+    for (final edge in _controller.edges) {
+      final from = _controller.nodeById(edge.fromStateId);
+      final to = _controller.nodeById(edge.toStateId);
+      final control = resolveLinkAnchorWorld(_controller, edge);
+      if (from == null || to == null || control == null) {
+        continue;
+      }
+
+      final start = resolveNodeCenter(from);
+      final end = resolveNodeCenter(to);
+      var minimumDistance = (world - control).distance;
+      var previous = start;
+      const sampleCount = 24;
+      for (var index = 1; index <= sampleCount; index++) {
+        final t = index / sampleCount;
+        final inverse = 1 - t;
+        final current = start * (inverse * inverse) +
+            control * (2 * inverse * t) +
+            end * (t * t);
+        minimumDistance = math.min(
+          minimumDistance,
+          _distanceToSegmentExtracted(world, previous, current),
+        );
+        previous = current;
+      }
+
+      if (minimumDistance <= tolerance) {
+        hits.add(_CanvasEdgeHit(edge: edge, distance: minimumDistance));
+      }
+    }
+
+    hits.sort((left, right) => left.distance.compareTo(right.distance));
+    return hits;
+  }
+
+  double _distanceToSegmentExtracted(
+    Offset point,
+    Offset start,
+    Offset end,
+  ) {
+    final segment = end - start;
+    final lengthSquared = segment.distanceSquared;
+    if (lengthSquared == 0) {
+      return (point - start).distance;
+    }
+    final relative = point - start;
+    final projection =
+        ((relative.dx * segment.dx + relative.dy * segment.dy) / lengthSquared)
+            .clamp(0.0, 1.0);
+    final closest = start + segment * projection;
+    return (point - closest).distance;
+  }
+
+  Future<void> _editHitEdgeExtracted(List<_CanvasEdgeHit> hits) async {
+    if (hits.isEmpty) {
+      return;
+    }
+    final closest = hits.first.edge;
+    final matchingEndpointHits = hits
+        .where(
+          (hit) =>
+              hit.edge.fromStateId == closest.fromStateId &&
+              hit.edge.toStateId == closest.toStateId,
+        )
+        .toList(growable: false);
+    _updateCanvasState(() {
+      _selectedNodeId = null;
+      _selectedTransitions.clear();
+      if (matchingEndpointHits.length == 1) {
+        _selectedTransitions.add(closest.id);
+      }
+    });
+    await _showTransitionEditor(closest.fromStateId, closest.toStateId);
+  }
+
   Offset _globalToCanvasLocalExtracted(Offset globalPosition) {
     final renderBox =
         widget.canvasKey.currentContext?.findRenderObject() as RenderBox?;
@@ -137,6 +220,55 @@ extension _AutomatonGraphViewCanvasInteractions
     _logCanvasTapFromLocal(source: 'tap-down', localPosition: local);
   }
 
+  void _handleCanvasLongPressStartExtracted(LongPressStartDetails details) {
+    _handleCanvasContextGestureExtracted(details.globalPosition);
+  }
+
+  void _handleCanvasSecondaryTapUpExtracted(TapUpDetails details) {
+    _handleCanvasContextGestureExtracted(details.globalPosition);
+  }
+
+  Future<void> _handleCanvasContextGestureExtracted(
+    Offset globalPosition,
+  ) async {
+    if (!_customization.enableToolSelection ||
+        _activeTool != AutomatonCanvasTool.selection) {
+      return;
+    }
+    _canvasFocusNode.requestFocus();
+    final local = _globalToCanvasLocal(globalPosition);
+    final node = _hitTestNode(local, logDetails: false);
+    if (node != null) {
+      _setSelectedNodeId(node.id);
+      _handleNodeContextTap(node.id);
+      return;
+    }
+    await _editHitEdgeExtracted(_hitTestEdgesExtracted(local));
+  }
+
+  void _handleNodePointerDownExtracted(Offset globalPosition) {
+    _logCanvasTapFromGlobal(
+      source: 'pan-pointer',
+      globalPosition: globalPosition,
+    );
+    _doubleTapCandidateNodeId = null;
+    if (_activeTool != AutomatonCanvasTool.selection) {
+      return;
+    }
+
+    final local = _globalToCanvasLocal(globalPosition);
+    final node = _hitTestNode(local, logDetails: false);
+    final previousTap = _lastTapTimestamp;
+    if (node == null || node.id != _lastTapNodeId || previousTap == null) {
+      return;
+    }
+
+    final elapsed = _monotonicStopwatch.elapsed - previousTap;
+    if (elapsed >= kDoubleTapMinTime && elapsed <= kDoubleTapTimeout) {
+      _doubleTapCandidateNodeId = node.id;
+    }
+  }
+
   void _beginNodeDragExtracted(GraphViewCanvasNode node, Offset localPosition) {
     _logAutomatonGraphViewCanvasInteraction('Begin drag for ${node.id}');
     _hideTransitionOverlay();
@@ -171,6 +303,9 @@ extension _AutomatonGraphViewCanvasInteractions
     _dragStartWorldPosition = null;
     _dragStartNodePosition = null;
     _dragCurrentNodePosition = null;
+    _dragPointerStartLocalPosition = null;
+    _dragPointerCurrentLocalPosition = null;
+    _dragHitSlop = null;
     _setCanvasPanSuppressed(false, reason: 'drag ended');
     _isDraggingNode = false;
     _didMoveDraggedNode = false;
@@ -201,18 +336,30 @@ extension _AutomatonGraphViewCanvasInteractions
     }
 
     if (_activeTool != AutomatonCanvasTool.selection) {
+      _doubleTapCandidateNodeId = null;
       return;
     }
 
     if (_isDraggingNode || _didMoveDraggedNode) {
       _lastTapNodeId = null;
       _lastTapTimestamp = null;
+      _doubleTapCandidateNodeId = null;
       return;
     }
 
     if (node == null) {
+      final edgeHits = _hitTestEdgesExtracted(local);
+      if (edgeHits.isNotEmpty) {
+        _lastTapNodeId = null;
+        _lastTapTimestamp = null;
+        _doubleTapCandidateNodeId = null;
+        await _editHitEdgeExtracted(edgeHits);
+        return;
+      }
+      _setSelectedNodeId(null);
       _lastTapNodeId = null;
       _lastTapTimestamp = null;
+      _doubleTapCandidateNodeId = null;
       return;
     }
 
@@ -223,41 +370,62 @@ extension _AutomatonGraphViewCanvasInteractions
     if (!_customization.enableStateDrag) {
       return;
     }
-    final node = _hitTestNode(details.localPosition);
+    final localPosition = _globalToCanvasLocal(details.globalPosition);
+    final node = _hitTestNode(localPosition);
     if (node == null) {
       return;
     }
     _logAutomatonGraphViewCanvasInteraction(
       'pan start gesture -> ${node.id} '
-      'local=${details.localPosition}',
+      'local=$localPosition',
     );
     _setCanvasPanSuppressed(true, reason: 'node drag start ${node.id}');
-    _beginNodeDrag(node, details.localPosition);
+    _beginNodeDrag(node, localPosition);
+    _dragPointerStartLocalPosition = localPosition;
+    _dragPointerCurrentLocalPosition = localPosition;
+    _dragHitSlop = computeHitSlop(
+      details.kind ?? PointerDeviceKind.touch,
+      MediaQuery.maybeGestureSettingsOf(context),
+    );
   }
 
   void _handleNodePanUpdateExtracted(DragUpdateDetails details) {
     _logAutomatonGraphViewCanvasInteraction(
       'pan update delta=${details.delta}',
     );
-    _updateNodeDrag(details.localPosition);
+    final localPosition = _globalToCanvasLocal(details.globalPosition);
+    _dragPointerCurrentLocalPosition = localPosition;
+    _updateNodeDrag(localPosition);
   }
 
   void _handleNodePanEndExtracted(DragEndDetails details) {
     final nodeId = _draggingNodeId;
     final didMove = _didMoveDraggedNode;
     final finalPosition = _dragCurrentNodePosition;
+    final startPosition = _dragStartNodePosition;
+    final pointerStart = _dragPointerStartLocalPosition;
+    final pointerCurrent = _dragPointerCurrentLocalPosition;
+    final hitSlop = _dragHitSlop;
+    final shouldCommit = didMove &&
+        pointerStart != null &&
+        pointerCurrent != null &&
+        hitSlop != null &&
+        (pointerCurrent - pointerStart).distance > hitSlop;
     _logAutomatonGraphViewCanvasInteraction(
       'pan end velocity=${details.velocity}',
     );
     _endNodeDrag();
-    if (didMove && nodeId != null && finalPosition != null) {
+    if (nodeId != null) {
+      _lastTapNodeId = null;
+      _lastTapTimestamp = null;
+      _doubleTapCandidateNodeId = null;
+    }
+    if (shouldCommit && nodeId != null && finalPosition != null) {
       _controller.moveState(nodeId, finalPosition);
       return;
     }
-    if (!didMove &&
-        nodeId != null &&
-        _activeTool != AutomatonCanvasTool.transition) {
-      _handleNodeTapFromPan(nodeId);
+    if (didMove && nodeId != null && startPosition != null) {
+      _controller.previewStatePosition(nodeId, startPosition);
     }
   }
 
@@ -267,6 +435,9 @@ extension _AutomatonGraphViewCanvasInteractions
     final startPosition = _dragStartNodePosition;
     if (nodeId != null && startPosition != null) {
       _controller.previewStatePosition(nodeId, startPosition);
+      _lastTapNodeId = null;
+      _lastTapTimestamp = null;
+      _doubleTapCandidateNodeId = null;
     }
     _endNodeDrag();
   }
@@ -275,6 +446,10 @@ extension _AutomatonGraphViewCanvasInteractions
     _logAutomatonGraphViewCanvasInteraction(
       'Node tapped $nodeId with active tool ${_activeTool.name}',
     );
+    if (_activeTool == AutomatonCanvasTool.selection) {
+      _setSelectedNodeId(nodeId);
+      return;
+    }
     if (_activeTool != AutomatonCanvasTool.transition) {
       return;
     }
@@ -296,6 +471,9 @@ extension _AutomatonGraphViewCanvasInteractions
   }
 
   void _handleNodeContextTapExtracted(String nodeId) {
+    if (!_customization.enableToolSelection) {
+      return;
+    }
     final node = _controller.nodeById(nodeId);
     if (node == null) {
       return;
@@ -306,29 +484,25 @@ extension _AutomatonGraphViewCanvasInteractions
     _showStateOptions(node);
   }
 
-  void _handleNodeTapFromPanExtracted(String nodeId) {
-    _registerNodeTap(nodeId);
-  }
-
   void _registerNodeTapExtracted(String nodeId) {
-    const doubleTapTimeout = Duration(milliseconds: 300);
-    final now = _monotonicStopwatch.elapsed;
-    if (_lastTapNodeId == nodeId &&
-        _lastTapTimestamp != null &&
-        now - _lastTapTimestamp! <= doubleTapTimeout) {
+    _setSelectedNodeId(nodeId);
+    if (_doubleTapCandidateNodeId == nodeId) {
       _logAutomatonGraphViewCanvasInteraction(
         'Detected double tap on $nodeId',
       );
       _handleNodeContextTap(nodeId);
       _lastTapNodeId = null;
       _lastTapTimestamp = null;
+      _doubleTapCandidateNodeId = null;
     } else {
       _lastTapNodeId = nodeId;
-      _lastTapTimestamp = now;
+      _lastTapTimestamp = _monotonicStopwatch.elapsed;
+      _doubleTapCandidateNodeId = null;
     }
   }
 
   Future<void> _showStateOptionsExtracted(GraphViewCanvasNode node) async {
+    final l10n = appLocalizationsOf(context);
     final labelController = TextEditingController(text: node.label);
     var isInitial = node.isInitial;
     var isAccepting = node.isAccepting;
@@ -359,7 +533,7 @@ extension _AutomatonGraphViewCanvasInteractions
                   const SizedBox(height: 16),
                   TextField(
                     controller: labelController,
-                    decoration: const InputDecoration(labelText: 'State label'),
+                    decoration: InputDecoration(labelText: l10n.stateLabel),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (value) {
                       final resolved = value.trim();
@@ -372,19 +546,32 @@ extension _AutomatonGraphViewCanvasInteractions
                   const SizedBox(height: 12),
                   SwitchListTile.adaptive(
                     value: isInitial,
-                    title: const Text('Initial state'),
+                    title: Text(l10n.initialState),
                     onChanged: (value) {
                       setModalState(() => isInitial = value);
                     },
                   ),
                   SwitchListTile.adaptive(
                     value: isAccepting,
-                    title: const Text('Final state'),
+                    title: Text(l10n.acceptingState),
                     onChanged: (value) {
                       setModalState(() => isAccepting = value);
                     },
                   ),
                   const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    key: ValueKey('automaton-state-delete-${node.id}'),
+                    onPressed: () {
+                      _controller.removeState(node.id);
+                      _setSelectedNodeId(null);
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.deleteState),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.error,
+                    ),
+                  ),
                   FilledButton(
                     onPressed: () {
                       final resolved = labelController.text.trim();
@@ -398,11 +585,11 @@ extension _AutomatonGraphViewCanvasInteractions
                       );
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Save changes'),
+                    child: Text(l10n.saveChanges),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
+                    child: Text(l10n.close),
                   ),
                 ],
               );

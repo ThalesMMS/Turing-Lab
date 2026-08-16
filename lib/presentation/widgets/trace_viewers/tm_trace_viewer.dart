@@ -20,7 +20,7 @@ import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
 
-class TMTraceViewer extends StatelessWidget {
+class TMTraceViewer extends StatefulWidget {
   final TMSimulationResult result;
   final SimulationHighlightService? highlightService;
   final void Function(int stepIndex)? onStepChanged;
@@ -33,13 +33,39 @@ class TMTraceViewer extends StatelessWidget {
   });
 
   @override
+  State<TMTraceViewer> createState() => _TMTraceViewerState();
+}
+
+class _TMTraceViewerState extends State<TMTraceViewer> {
+  SimulationResult? _adaptedResult;
+  String? _adaptedRejectedLabel;
+
+  @override
+  void didUpdateWidget(covariant TMTraceViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.result, oldWidget.result)) {
+      _adaptedResult = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    // The adapted result bakes in the localized fallback, so a locale change
+    // has to invalidate the cache even when the result itself is unchanged.
+    if (_adaptedRejectedLabel != l10n.rejected) {
+      _adaptedResult = null;
+      _adaptedRejectedLabel = l10n.rejected;
+    }
+    _adaptedResult ??= _asSimulationResult(
+      widget.result,
+      l10n.rejected,
+    );
     return BaseTraceViewer(
-      result: _asSimulationResult(l10n.rejected),
-      title: l10n.tmTrace(result.steps.length),
-      highlightService: highlightService,
-      onStepChanged: onStepChanged,
+      result: _adaptedResult!,
+      title: l10n.tmTrace(widget.result.steps.length),
+      highlightService: widget.highlightService,
+      onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
         final tape = step.tapeContents.isEmpty ? '□' : step.tapeContents;
         final transition =
@@ -74,7 +100,10 @@ class TMTraceViewer extends StatelessWidget {
     );
   }
 
-  SimulationResult _asSimulationResult(String rejectedMessage) {
+  SimulationResult _asSimulationResult(
+    TMSimulationResult result,
+    String rejectedMessage,
+  ) {
     final errorMessage = result.errorMessage ?? '';
 
     if (result.accepted) {

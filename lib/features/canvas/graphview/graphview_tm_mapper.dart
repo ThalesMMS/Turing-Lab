@@ -9,6 +9,8 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:math' as math;
+
 import '../../../core/models/tm.dart';
 import '../../../core/models/tm_transition.dart';
 import '../../../core/models/transition.dart';
@@ -99,12 +101,36 @@ class GraphViewTmMapper {
     );
 
     final blankSymbol = snapshot.metadata.blankSymbol ?? template.blankSymbol;
-    final tapeAlphabet = GraphViewMapperHelpers.effectiveTapeAlphabet(
+    final baseTapeAlphabet = GraphViewMapperHelpers.effectiveTapeAlphabet(
       metadataTapeAlphabet: snapshot.metadata.tapeAlphabet,
       fallbackTapeAlphabet: template.tapeAlphabet,
       blankSymbol: blankSymbol,
     );
-    final alphabet = snapshot.metadata.alphabet.toSet();
+    final baseAlphabet = snapshot.metadata.alphabet.isNotEmpty
+        ? snapshot.metadata.alphabet.toSet()
+        : template.alphabet;
+    // Transitions read from the tape alphabet, so their read symbols may be
+    // markers the machine wrote itself. Only fall back to them when no input
+    // alphabet is known; otherwise the authoritative one is preserved.
+    final alphabet = baseAlphabet.isNotEmpty
+        ? baseAlphabet.toSet()
+        : <String>{
+            for (final edge in snapshot.edges)
+              if (edge.readSymbol case final symbol?
+                  when symbol.isNotEmpty && symbol != blankSymbol)
+                symbol,
+          };
+    final tapeAlphabet = <String>{
+      ...baseTapeAlphabet,
+      for (final edge in snapshot.edges)
+        if (edge.readSymbol case final symbol? when symbol.isNotEmpty) symbol,
+      for (final edge in snapshot.edges)
+        if (edge.writeSymbol case final symbol? when symbol.isNotEmpty) symbol,
+    };
+    final tapeCount = snapshot.edges.fold<int>(
+      snapshot.metadata.tapeCount ?? template.tapeCount,
+      (count, edge) => math.max(count, (edge.tapeNumber ?? 0) + 1),
+    );
 
     final initialState = GraphViewMapperHelpers.resolveInitialState(
       nodes: snapshot.nodes,
@@ -120,7 +146,7 @@ class GraphViewTmMapper {
       alphabet: alphabet,
       tapeAlphabet: tapeAlphabet,
       blankSymbol: blankSymbol,
-      tapeCount: snapshot.metadata.tapeCount ?? template.tapeCount,
+      tapeCount: tapeCount,
     );
   }
 }

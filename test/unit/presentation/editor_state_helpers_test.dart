@@ -71,6 +71,25 @@ void main() {
           ]));
     });
 
+    test('upsertEditorState prefers the requested initial regardless of order',
+        () {
+      final update = upsertEditorState(
+        states: [
+          _state('state_0'),
+          _state('state_1', isInitial: true),
+        ],
+        id: 'state_0',
+        label: 'q0',
+        position: Vector2.zero(),
+        isInitial: true,
+        normalizeInitial: true,
+      );
+
+      final statesById = update.statesById;
+      expect(statesById['state_0']!.isInitial, isTrue);
+      expect(statesById['state_1']!.isInitial, isFalse);
+    });
+
     test('updateEditorStateFlags clears previous initial and keeps acceptance',
         () {
       final update = updateEditorStateFlags(

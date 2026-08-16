@@ -309,7 +309,8 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                 tooltip: l10n.previousStep,
               ),
               IconButton(
-                onPressed: regexState.selectedStepIndex < result.steps.length - 1
+                onPressed: regexState.selectedStepIndex <
+                        result.steps.length - 1
                     ? () => ref
                         .read(regexEditorProvider.notifier)
                         .setSelectedStepIndex(regexState.selectedStepIndex + 1)
@@ -669,9 +670,8 @@ extension _RegexPageSimplificationSections on _RegexPageState {
     final textTheme = Theme.of(context).textTheme;
 
     return InkWell(
-      onTap: () => ref
-          .read(regexEditorProvider.notifier)
-          .setSelectedStepIndex(index),
+      onTap: () =>
+          ref.read(regexEditorProvider.notifier).setSelectedStepIndex(index),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

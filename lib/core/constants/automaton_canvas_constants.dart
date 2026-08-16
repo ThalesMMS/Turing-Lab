@@ -11,3 +11,5 @@
 //
 /// Shared layout constants for the automaton canvas widgets.
 const double kAutomatonStateDiameter = 96;
+const double kAutomatonCanvasMinScale = 0.05;
+const double kAutomatonCanvasMaxScale = 2;

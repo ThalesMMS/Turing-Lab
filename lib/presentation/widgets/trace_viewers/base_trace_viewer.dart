@@ -80,7 +80,6 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
   void dispose() {
     _cancelPlaybackTimer();
     _isPlaying = false;
-    widget.highlightService?.clear();
     _scrollController.dispose();
     super.dispose();
   }
@@ -91,7 +90,6 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
     if (widget.result != oldWidget.result ||
         widget.highlightService != oldWidget.highlightService) {
       _cancelPlaybackTimer();
-      oldWidget.highlightService?.clear();
       setState(() {
         _selectedIndex = _highlightEnabled ? 0 : null;
         _isPlaying = false;

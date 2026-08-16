@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphview/graphview_turing_lab.dart';
 
+import '../../../core/constants/automaton_canvas_constants.dart';
 import '../../../core/models/simulation_highlight.dart';
 import 'graphview_canvas_models.dart';
 import 'graphview_highlight_controller.dart';
@@ -57,7 +58,7 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     SimulationHighlight.empty,
   );
 
-  /// Notifier that indicates when the rendered graph should be repainted.
+  /// Notifier that indicates when the rendered graph structure has changed.
   final ValueNotifier<int> graphRevision = ValueNotifier<int>(0);
 
   /// Tracks the ids of the transitions currently highlighted.
@@ -107,7 +108,10 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     final matrix = Matrix4.copy(transformation.value);
     final currentScale = _extractScale(matrix);
     final safeCurrent = currentScale == 0 ? 1.0 : currentScale;
-    final targetScale = (safeCurrent * factor).clamp(0.05, 10.0);
+    final targetScale = (safeCurrent * factor).clamp(
+      kAutomatonCanvasMinScale,
+      kAutomatonCanvasMaxScale,
+    );
     final relativeScale = targetScale / safeCurrent;
     final viewport = currentViewportSize;
     late final Matrix4 target;
@@ -167,8 +171,8 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     final transformation = graphController.transformationController;
     final viewport = currentViewportSize;
     if (viewport == null || transformation == null) {
-      graphController.zoomToFit();
-      _logViewportEvent('fitToContent fell back to GraphView implementation');
+      resetView();
+      _logViewportEvent('fitToContent reset before viewport was available');
       return;
     }
 
@@ -179,7 +183,10 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     final scaleX = viewport.width / contentWidth;
     final scaleY = viewport.height / contentHeight;
     final rawScale = math.min(scaleX, scaleY) * 0.9;
-    final targetScale = rawScale.clamp(0.05, fitToContentMaxScale);
+    final targetScale = rawScale.clamp(
+      kAutomatonCanvasMinScale,
+      fitToContentMaxScale,
+    );
 
     final contentCenterX = bounds.left + bounds.width / 2;
     final contentCenterY = bounds.top + bounds.height / 2;
@@ -230,9 +237,8 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
       ..addAll(desiredIds);
 
     onHighlightedTransitionsChanged(highlightedTransitionIds);
-    graphRevision.value++;
     _logViewportEvent(
-      'Highlight set updated (transitions=${highlightedTransitionIds.length}, revision=${graphRevision.value})',
+      'Highlight set updated (transitions=${highlightedTransitionIds.length})',
     );
   }
 }

@@ -48,10 +48,14 @@ class GraphViewPdaMapper {
     required bool isLambdaPop,
     required bool isLambdaPush,
   }) {
-    final input = isLambdaInput ? 'λ' : inputSymbol;
-    final pop = isLambdaPop ? 'λ' : popSymbol;
-    final push = isLambdaPush ? 'λ' : pushSymbol;
-    return '$input, $pop/$push';
+    return PDATransition.formatLabel(
+      inputSymbol: inputSymbol,
+      popSymbol: popSymbol,
+      pushSymbol: pushSymbol,
+      isLambdaInput: isLambdaInput,
+      isLambdaPop: isLambdaPop,
+      isLambdaPush: isLambdaPush,
+    );
   }
 
   /// Converts the provided [automaton] into a GraphView snapshot.
@@ -88,6 +92,8 @@ class GraphViewPdaMapper {
       id: automaton.id,
       name: automaton.name,
       alphabet: automaton.alphabet,
+      stackAlphabet: automaton.stackAlphabet,
+      initialStackSymbol: automaton.initialStackSymbol,
     );
 
     return GraphViewAutomatonSnapshot(
@@ -162,8 +168,14 @@ class GraphViewPdaMapper {
           edge.readSymbol!,
     };
 
+    final initialStackSymbol =
+        snapshot.metadata.initialStackSymbol ?? template.initialStackSymbol;
+    final metadataStackAlphabet = snapshot.metadata.stackAlphabet.toSet();
     final stackAlphabet = <String>{
-      ...template.stackAlphabet,
+      ...(metadataStackAlphabet.isNotEmpty
+          ? metadataStackAlphabet
+          : template.stackAlphabet),
+      initialStackSymbol,
       for (final edge in snapshot.edges)
         if (!(edge.isLambdaPop ?? false) &&
             (edge.popSymbol != null && edge.popSymbol!.isNotEmpty))
@@ -185,6 +197,7 @@ class GraphViewPdaMapper {
       initialState: initialState,
       alphabet: alphabet,
       stackAlphabet: stackAlphabet,
+      initialStackSymbol: initialStackSymbol,
     );
   }
 }

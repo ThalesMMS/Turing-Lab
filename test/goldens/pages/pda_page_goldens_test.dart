@@ -25,10 +25,13 @@ import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/pda_page.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
 
@@ -39,29 +42,25 @@ class _TestPdaEditorNotifier extends PDAEditorNotifier {
 late SharedPreferences _prefs;
 
 // Widget that composes toolbar + canvas like PDA page does
-class _PDAPageTestWidget extends StatefulWidget {
+class _PDAPageTestWidget extends ConsumerStatefulWidget {
   final PDA? automaton;
-  final bool isMobile;
 
-  const _PDAPageTestWidget({this.automaton, this.isMobile = false});
+  const _PDAPageTestWidget({this.automaton});
 
   @override
-  State<_PDAPageTestWidget> createState() => _PDAPageTestWidgetState();
+  ConsumerState<_PDAPageTestWidget> createState() => _PDAPageTestWidgetState();
 }
 
-class _PDAPageTestWidgetState extends State<_PDAPageTestWidget> {
+class _PDAPageTestWidgetState extends ConsumerState<_PDAPageTestWidget> {
   late final GraphViewPdaCanvasController _canvasController;
   late final AutomatonCanvasToolController _toolController;
 
   @override
   void initState() {
     super.initState();
-    final provider = _TestPdaEditorNotifier();
-    _canvasController = GraphViewPdaCanvasController(editorNotifier: provider);
-    if (widget.automaton != null) {
-      provider.setPda(widget.automaton!);
-      _canvasController.synchronize(widget.automaton!);
-    }
+    _canvasController = GraphViewPdaCanvasController(
+      editorNotifier: ref.read(pdaEditorProvider.notifier),
+    );
     _toolController = AutomatonCanvasToolController();
   }
 
@@ -108,9 +107,6 @@ class _PDAPageTestWidgetState extends State<_PDAPageTestWidget> {
             animation: combinedListenable,
             builder: (context, _) {
               return GraphViewCanvasToolbar(
-                layout: widget.isMobile
-                    ? GraphViewCanvasToolbarLayout.mobile
-                    : GraphViewCanvasToolbarLayout.desktop,
                 controller: _canvasController,
                 enableToolSelection: true,
                 activeTool: _toolController.activeTool,
@@ -147,16 +143,62 @@ Future<void> _pumpPDAPageComponents(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
 
+  final notifier = _TestPdaEditorNotifier();
+  if (automaton != null) {
+    notifier.setPda(automaton);
+  }
+
+  if (isMobile) {
+    await tester.pumpWidgetBuilder(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(_prefs),
+          pdaEditorProvider.overrideWith((ref) => notifier),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PDAPage(),
+        ),
+      ),
+      surfaceSize: size,
+    );
+    expect(tester.view.physicalSize, size);
+    await tester.pumpAndSettle();
+    return;
+  }
+
   await tester.pumpWidgetBuilder(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(_prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(_prefs),
+        pdaEditorProvider.overrideWith((ref) => notifier),
+      ],
       child: MaterialApp(
-        home: _PDAPageTestWidget(automaton: automaton, isMobile: isMobile),
+        home: _PDAPageTestWidget(automaton: automaton),
       ),
     ),
+    surfaceSize: size,
   );
 
+  expect(tester.view.physicalSize, size);
   await tester.pumpAndSettle();
+
+  if (automaton != null) {
+    final pageState = tester.state<_PDAPageTestWidgetState>(
+      find.byType(_PDAPageTestWidget),
+    );
+    expect(
+      pageState._canvasController.nodes.map((node) => node.id),
+      unorderedEquals(automaton.states.map((state) => state.id)),
+    );
+    expect(
+      pageState._canvasController.edges.map((edge) => edge.id),
+      unorderedEquals(
+        automaton.pdaTransitions.map((transition) => transition.id),
+      ),
+    );
+  }
 }
 
 void main() {
@@ -206,7 +248,7 @@ void main() {
       await screenMatchesGolden(tester, 'pda_page_empty_tablet');
     });
 
-    testGoldens('renders empty canvas with toolbar in mobile layout', (
+    testGoldens('renders empty canvas with real controls in mobile layout', (
       tester,
     ) async {
       addTearDown(() {
@@ -220,6 +262,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(PDAPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'pda_page_empty_mobile');
     });
 
@@ -569,6 +614,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(PDAPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'pda_page_mobile_pda');
     });
   });

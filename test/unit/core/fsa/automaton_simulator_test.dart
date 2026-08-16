@@ -3,24 +3,27 @@ import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
 /// DFA: q0 --a--> q1 --b--> q2(accept)
-FSA _simpleDFA() {
+FSA _simpleDFA({bool initialAccepting = false}) {
   final q0 = State(
-    id: 'q0',
+    id: 'dfa-state-0',
     label: 'q0',
     position: Vector2(0, 0),
     isInitial: true,
+    isAccepting: initialAccepting,
   );
   final q1 = State(
-    id: 'q1',
+    id: 'dfa-state-1',
     label: 'q1',
     position: Vector2(100, 0),
   );
   final q2 = State(
-    id: 'q2',
+    id: 'dfa-state-2',
     label: 'q2',
     position: Vector2(200, 0),
     isAccepting: true,
@@ -47,7 +50,7 @@ FSA _simpleDFA() {
     },
     alphabet: {'a', 'b'},
     initialState: q0,
-    acceptingStates: {q2},
+    acceptingStates: {if (initialAccepting) q0, q2},
     created: DateTime.now(),
     modified: DateTime.now(),
     bounds: const math.Rectangle(0, 0, 400, 300),
@@ -57,18 +60,18 @@ FSA _simpleDFA() {
 /// NFA: q0 --a--> q1, q0 --a--> q2(accept)
 FSA _simpleNFA() {
   final q0 = State(
-    id: 'q0',
+    id: 'nfa-state-0',
     label: 'q0',
     position: Vector2(0, 0),
     isInitial: true,
   );
   final q1 = State(
-    id: 'q1',
+    id: 'nfa-state-1',
     label: 'q1',
     position: Vector2(100, 0),
   );
   final q2 = State(
-    id: 'q2',
+    id: 'nfa-state-2',
     label: 'q2',
     position: Vector2(100, 100),
     isAccepting: true,
@@ -104,23 +107,23 @@ FSA _simpleNFA() {
 
 FSA _epsilonNFAWithInitialAndMidClosure() {
   final q0 = State(
-    id: 'q0',
+    id: 'epsilon-state-0',
     label: 'q0',
     position: Vector2(0, 0),
     isInitial: true,
   );
   final q1 = State(
-    id: 'q1',
+    id: 'epsilon-state-1',
     label: 'q1',
     position: Vector2(100, 0),
   );
   final q2 = State(
-    id: 'q2',
+    id: 'epsilon-state-2',
     label: 'q2',
     position: Vector2(200, 0),
   );
   final q3 = State(
-    id: 'q3',
+    id: 'epsilon-state-3',
     label: 'q3',
     position: Vector2(300, 0),
     isAccepting: true,
@@ -149,6 +152,87 @@ FSA _epsilonNFAWithInitialAndMidClosure() {
         fromState: q2,
         toState: q3,
         lambdaSymbol: 'ε',
+      ),
+    },
+    alphabet: {'a'},
+    initialState: q0,
+    acceptingStates: {q3},
+    created: DateTime.now(),
+    modified: DateTime.now(),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
+}
+
+FSA _epsilonAliasNFAWithParallelCycles() {
+  final q0 = State(
+    id: 'q0',
+    label: 'q0',
+    position: Vector2(0, 0),
+    isInitial: true,
+  );
+  final q1 = State(
+    id: 'q1',
+    label: 'q1',
+    position: Vector2(100, 0),
+  );
+  final q2 = State(
+    id: 'q2',
+    label: 'q2',
+    position: Vector2(200, 0),
+  );
+  final q3 = State(
+    id: 'q3',
+    label: 'q3',
+    position: Vector2(300, 0),
+    isAccepting: true,
+  );
+
+  return FSA(
+    id: 'epsilon-alias-nfa',
+    name: 'Epsilon Alias NFA',
+    states: {q0, q1, q2, q3},
+    transitions: {
+      FSATransition(
+        id: 'initial-parallel-1',
+        fromState: q0,
+        toState: q1,
+        inputSymbols: {'lambda'},
+      ),
+      FSATransition(
+        id: 'initial-parallel-2',
+        fromState: q0,
+        toState: q1,
+        inputSymbols: {'lambda'},
+      ),
+      FSATransition(
+        id: 'initial-cycle',
+        fromState: q1,
+        toState: q0,
+        inputSymbols: {'lambda'},
+      ),
+      FSATransition(
+        id: 'symbol',
+        fromState: q1,
+        toState: q2,
+        inputSymbols: {'a'},
+      ),
+      FSATransition(
+        id: 'post-parallel-1',
+        fromState: q2,
+        toState: q3,
+        inputSymbols: {'lambda'},
+      ),
+      FSATransition(
+        id: 'post-parallel-2',
+        fromState: q2,
+        toState: q3,
+        inputSymbols: {'lambda'},
+      ),
+      FSATransition(
+        id: 'post-cycle',
+        fromState: q3,
+        toState: q2,
+        inputSymbols: {'lambda'},
       ),
     },
     alphabet: {'a'},
@@ -269,6 +353,45 @@ void main() {
         ['ab', 'b', ''],
       );
     });
+
+    test('exposes stable DFA state ids without changing display or edge data',
+        () async {
+      final result = await AutomatonSimulator.simulateDFA(
+        _simpleDFA(),
+        'a',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps, hasLength(2));
+      expect(steps.map((step) => step.currentState), ['q0', 'q1']);
+      expect(steps[0].activeStateIds, {'dfa-state-0'});
+      final step = steps[1];
+      expect(step.activeStateIds, {'dfa-state-1'});
+      expect(step.usedTransition, 'δ(q0, a) = q1');
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['t0'],
+      );
+    });
+
+    test('empty-input DFA keeps the initial stable id without a final copy',
+        () async {
+      final result = await AutomatonSimulator.simulateDFA(
+        _simpleDFA(initialAccepting: true),
+        '',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isTrue);
+      expect(result.data!.steps, hasLength(1));
+      expect(result.data!.steps.single.currentState, 'q0');
+      expect(result.data!.steps.single.activeStateIds, {'dfa-state-0'});
+    });
   });
 
   group('NFA simulator step recording', () {
@@ -289,6 +412,178 @@ void main() {
       for (final step in intermediateSteps) {
         expect(step.currentState, isNot('q0'));
       }
+    });
+
+    test('symbol step exposes every matching NFA edge id', () async {
+      final result = await AutomatonSimulator.simulateNFA(
+        _simpleNFA(),
+        'a',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps, hasLength(2));
+      expect(steps.map((step) => step.currentState), ['q0', '{q1,q2}']);
+      expect(steps.map((step) => step.stepNumber), [0, 1]);
+      expect(steps[0].activeStateIds, {'nfa-state-0'});
+      final step = steps[1];
+      expect(step.activeStateIds, {'nfa-state-1', 'nfa-state-2'});
+      expect(step.usedTransition, 'a');
+      expect(
+        step.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id)
+            .toSet(),
+        {'t0', 't1'},
+      );
+    });
+
+    test('epsilon closure steps expose their edges without changing the trace',
+        () async {
+      final result = await AutomatonSimulator.simulateNFA(
+        _epsilonNFAWithInitialAndMidClosure(),
+        'a',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isTrue);
+      final steps = result.data!.steps;
+      expect(result.data!.computationTree?.totalSteps, 4);
+      expect(steps.map((step) => step.stepNumber), [0, 1, 2, 3, 4]);
+      expect(steps.map((step) => step.usedTransition), [
+        isNull,
+        'ε-closure',
+        'a',
+        'ε-closure',
+        isNull,
+      ]);
+      expect(steps.map((step) => step.currentState), [
+        '{q0,q1}',
+        '{q0,q1}',
+        'q2',
+        '{q2,q3}',
+        '{q2,q3}',
+      ]);
+      expect(steps.map((step) => step.activeStateIds), [
+        {'epsilon-state-0', 'epsilon-state-1'},
+        {'epsilon-state-0', 'epsilon-state-1'},
+        {'epsilon-state-2'},
+        {'epsilon-state-2', 'epsilon-state-3'},
+        {'epsilon-state-2', 'epsilon-state-3'},
+      ]);
+      final closureSteps =
+          steps.where((step) => step.usedTransition == 'ε-closure').toList();
+      expect(
+        closureSteps[0]
+            .explanation!
+            .highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['t0'],
+      );
+      expect(
+        closureSteps[1]
+            .explanation!
+            .highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['t2'],
+      );
+      expect(
+        steps[2]
+            .explanation!
+            .highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['t1'],
+      );
+    });
+
+    test('no-transition NFA emits an authoritative empty active set', () async {
+      final result = await AutomatonSimulator.simulateNFA(
+        _simpleNFA(),
+        'b',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isFalse);
+      final steps = result.data!.steps;
+      expect(steps, hasLength(2));
+      expect(steps.last.currentState, '{}');
+      expect(steps.last.usedTransition, 'b');
+      expect(steps.last.activeStateIds, isEmpty);
+      expect(
+        SimulationHighlightService().computeFromSteps(steps, 1).stateIds,
+        isEmpty,
+      );
+    });
+
+    test('empty-input NFA keeps the initial stable id without a final copy',
+        () async {
+      final result = await AutomatonSimulator.simulateNFA(
+        _simpleNFA(),
+        '',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.steps, hasLength(1));
+      expect(result.data!.steps.single.currentState, 'q0');
+      expect(result.data!.steps.single.activeStateIds, {'nfa-state-0'});
+    });
+
+    test('epsilon alias closures keep parallel and cycle edge ids distinct',
+        () async {
+      final result = await AutomatonSimulator.simulateNFA(
+        _epsilonAliasNFAWithParallelCycles(),
+        'a',
+        stepByStep: true,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.map((step) => step.stepNumber), [0, 1, 2, 3, 4]);
+      expect(steps.map((step) => step.usedTransition), [
+        isNull,
+        'ε-closure',
+        'a',
+        'ε-closure',
+        isNull,
+      ]);
+      expect(
+          steps[2]
+              .explanation!
+              .highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['symbol']);
+
+      final closureSteps =
+          steps.where((step) => step.usedTransition == 'ε-closure').toList();
+      final closureTransitionIds = closureSteps
+          .map(
+            (step) => step.explanation!.highlights
+                .where(
+                  (target) => target.type == HighlightTargetType.transition,
+                )
+                .map((target) => target.id)
+                .toList(),
+          )
+          .toList();
+      expect(closureTransitionIds[0], hasLength(3));
+      expect(
+        closureTransitionIds[0].toSet(),
+        {'initial-parallel-1', 'initial-parallel-2', 'initial-cycle'},
+      );
+      expect(closureTransitionIds[1], hasLength(3));
+      expect(
+        closureTransitionIds[1].toSet(),
+        {'post-parallel-1', 'post-parallel-2', 'post-cycle'},
+      );
     });
 
     test('epsilon annotation steps have unique step numbers', () async {

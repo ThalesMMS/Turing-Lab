@@ -20,6 +20,41 @@ void _registerTransitionLabelEditorFormTests() {
       expect(find.text('a,b'), findsOneWidget);
     });
 
+    testWidgets('localizes default labels and semantics in Portuguese', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('pt'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TransitionLabelEditorForm(
+                initialValue: 'a',
+                onSubmit: (_) {},
+                onCancel: () {},
+                onDelete: () {},
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Rótulo'), findsOneWidget);
+        expect(find.text('Cancelar'), findsOneWidget);
+        expect(find.text('Excluir'), findsOneWidget);
+        expect(find.text('Salvar'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('Editar rótulo da transição'),
+          findsOneWidget,
+        );
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('disables smart text features for formal labels', (
       tester,
     ) async {
@@ -250,7 +285,42 @@ void _registerTransitionLabelEditorFormTests() {
       expect(tester.getSize(filledButton).height, greaterThanOrEqualTo(44));
     });
 
-    testWidgets('renders standard buttons when touch-optimized disabled', (
+    testWidgets('stacks transition actions in a narrow layout', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 280,
+              child: TransitionLabelEditorForm(
+                initialValue: 'test',
+                onSubmit: (_) {},
+                onCancel: () {},
+                onDelete: () {},
+                touchOptimized: true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final cancelBounds = tester.getRect(
+        find.widgetWithText(OutlinedButton, 'Cancel'),
+      );
+      final deleteBounds = tester.getRect(
+        find.widgetWithText(OutlinedButton, 'Delete'),
+      );
+      final saveBounds = tester.getRect(
+        find.widgetWithText(FilledButton, 'Save'),
+      );
+
+      expect(cancelBounds.bottom, lessThan(deleteBounds.top));
+      expect(deleteBounds.bottom, lessThan(saveBounds.top));
+    });
+
+    testWidgets('keeps accessible actions when touch spacing is disabled', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -268,11 +338,13 @@ void _registerTransitionLabelEditorFormTests() {
 
       await tester.pumpAndSettle();
 
-      final textButton = find.byType(TextButton);
-      expect(textButton, findsOneWidget);
+      final outlinedButton = find.byType(OutlinedButton);
+      expect(outlinedButton, findsOneWidget);
 
       final filledButton = find.byType(FilledButton);
       expect(filledButton, findsOneWidget);
+      expect(tester.getSize(outlinedButton).height, greaterThanOrEqualTo(44));
+      expect(tester.getSize(filledButton).height, greaterThanOrEqualTo(44));
     });
 
     testWidgets('renders delete action when delete callback is provided', (

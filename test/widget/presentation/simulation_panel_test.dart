@@ -49,6 +49,24 @@ class _SimulationCallback {
   void completeNext() => _pending.removeAt(0).complete();
 }
 
+SimulationResult _traceResult(String state) => SimulationResult.success(
+      inputString: 'a',
+      steps: [
+        SimulationStep(
+          currentState: state,
+          remainingInput: 'a',
+          stepNumber: 0,
+        ),
+      ],
+      executionTime: Duration.zero,
+    );
+
+SimulationResult _emptyTraceResult() => SimulationResult.success(
+      inputString: '',
+      steps: const [],
+      executionTime: Duration.zero,
+    );
+
 Future<void> _pumpSimulationPanel(
   WidgetTester tester, {
   required _SimulationCallback onSimulate,
@@ -342,6 +360,107 @@ void main() {
       expect(find.byIcon(Icons.text_fields), findsOneWidget);
     });
 
+    testWidgets('publishes step zero on mount while detailed mode is off',
+        (tester) async {
+      final callback = _SimulationCallback();
+      final highlightService = _TestSimulationHighlightService();
+      final result = _traceResult('q0');
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: result,
+        highlightService: highlightService,
+      );
+
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+      expect(highlightService.emittedIndices, [0]);
+      expect(highlightService.clearCallCount, 0);
+    });
+
+    testWidgets('publishes step zero when the result changes in detailed off',
+        (tester) async {
+      final callback = _SimulationCallback();
+      final highlightService = _TestSimulationHighlightService();
+      final firstResult = _traceResult('q0');
+      final secondResult = _traceResult('q1');
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: firstResult,
+        highlightService: highlightService,
+      );
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: secondResult,
+        highlightService: highlightService,
+      );
+
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+      expect(highlightService.emittedIndices, [0, 0]);
+      expect(highlightService.clearCallCount, 0);
+    });
+
+    testWidgets(
+        'publishes step zero to a replacement service without clearing the old service',
+        (tester) async {
+      final callback = _SimulationCallback();
+      final oldService = _TestSimulationHighlightService();
+      final newService = _TestSimulationHighlightService();
+      final result = _traceResult('q0');
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: result,
+        highlightService: oldService,
+      );
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: result,
+        highlightService: newService,
+      );
+
+      expect(oldService.emittedIndices, [0]);
+      expect(oldService.clearCallCount, 0);
+      expect(newService.emittedIndices, [0]);
+      expect(newService.clearCallCount, 0);
+    });
+
+    testWidgets(
+        'clears the current service when the result becomes null or empty',
+        (tester) async {
+      final callback = _SimulationCallback();
+      final highlightService = _TestSimulationHighlightService();
+      final result = _traceResult('q0');
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: result,
+        highlightService: highlightService,
+      );
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        highlightService: highlightService,
+      );
+      expect(highlightService.clearCallCount, 1);
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: _emptyTraceResult(),
+        highlightService: highlightService,
+      );
+
+      expect(highlightService.clearCallCount, 2);
+      expect(highlightService.emittedIndices, [0]);
+    });
+
     testWidgets('toggles step-by-step mode on', (tester) async {
       final callback = _SimulationCallback();
       final highlightService = _TestSimulationHighlightService();
@@ -388,7 +507,7 @@ void main() {
       expect(highlightService.emitFromStepsCallCount, greaterThan(0));
     });
 
-    testWidgets('toggles step-by-step mode off and clears highlight', (
+    testWidgets('toggles step-by-step mode off and resets highlight', (
       tester,
     ) async {
       final callback = _SimulationCallback();
@@ -423,14 +542,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.widget<Switch>(switchFinder).value, isTrue);
+      await _ensureVisibleAndTap(tester, find.byTooltip('Next Step'));
+      expect(highlightService.emittedIndices.last, 1);
       final clearCountBefore = highlightService.clearCallCount;
 
-      await tester.tap(switchFinder);
-      await tester.pumpAndSettle();
+      await _ensureVisibleAndTap(tester, switchFinder);
 
       expect(tester.widget<Switch>(switchFinder).value, isFalse);
       expect(find.text('Step-by-Step Execution'), findsNothing);
-      expect(highlightService.clearCallCount, greaterThan(clearCountBefore));
+      expect(highlightService.clearCallCount, clearCountBefore);
+      expect(highlightService.emittedIndices.last, 0);
     });
 
     testWidgets('navigates to next step in step-by-step mode', (tester) async {

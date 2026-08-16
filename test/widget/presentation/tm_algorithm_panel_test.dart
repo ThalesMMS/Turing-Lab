@@ -6,9 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/services/canvas_highlight_coordinator.dart';
+import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
@@ -31,14 +34,54 @@ class _FakeTmExamplesDataSource extends ExamplesAssetDataSource {
   }
 }
 
-Future<TMEditorNotifier> _pumpTmAlgorithmPanel(WidgetTester tester) async {
+class _RecordingHighlightChannel implements HighlightChannel {
+  final List<SimulationHighlight?> events = <SimulationHighlight?>[];
+
+  @override
+  void clear() => events.add(null);
+
+  @override
+  void send(SimulationHighlight highlight) => events.add(highlight);
+}
+
+class _TmPanelHarness {
+  const _TmPanelHarness({
+    required this.notifier,
+    required this.output,
+    required this.coordinator,
+  });
+
+  final TMEditorNotifier notifier;
+  final _RecordingHighlightChannel output;
+  final CanvasHighlightCoordinator coordinator;
+}
+
+Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
+  WidgetTester tester, {
+  TM? initialTm,
+}) async {
   final tmNotifier = TMEditorNotifier();
+  if (initialTm != null) {
+    tmNotifier.setTm(initialTm);
+  }
   final examplesDataSource = _FakeTmExamplesDataSource();
+  final output = _RecordingHighlightChannel();
+  final coordinator = CanvasHighlightCoordinator(
+    target: CanvasHighlightTarget(
+      kind: AutomatonSurfaceKind.tm,
+      surface: Object(),
+      documentId: initialTm?.id,
+      revision: 0,
+    ),
+    output: output,
+  );
+  addTearDown(coordinator.dispose);
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         tmEditorProvider.overrideWith((ref) => tmNotifier),
+        canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -54,18 +97,22 @@ Future<TMEditorNotifier> _pumpTmAlgorithmPanel(WidgetTester tester) async {
   await tester.pump();
   await _pumpUntilFound(tester, find.text('MT - a^n b^n'));
 
-  return tmNotifier;
+  return _TmPanelHarness(
+    notifier: tmNotifier,
+    output: output,
+    coordinator: coordinator,
+  );
 }
 
 AssetExample<TM> _buildTmExample() {
   final start = automaton_state.State(
-    id: 'q0',
+    id: 'tm/state:start',
     label: 'q0',
     position: Vector2.zero(),
     isInitial: true,
   );
   final accept = automaton_state.State(
-    id: 'q1',
+    id: 'tm/state:accept',
     label: 'q1',
     position: Vector2(120, 0),
     isAccepting: true,
@@ -169,17 +216,38 @@ void main() {
   testWidgets('loads TM examples from the configured catalog into the editor', (
     tester,
   ) async {
-    final tmNotifier = await _pumpTmAlgorithmPanel(tester);
+    final harness = await _pumpTmAlgorithmPanel(tester);
 
     expect(find.text('MT - a^n b^n'), findsOneWidget);
 
     await tester.tap(find.text('MT - a^n b^n'));
-    await _pumpUntilTmLoaded(tester, tmNotifier);
+    await _pumpUntilTmLoaded(tester, harness.notifier);
 
-    final tm = tmNotifier.state.tm;
+    final tm = harness.notifier.state.tm;
     expect(tm, isNotNull);
     expect(tm!.name, equals('MT - a^n b^n'));
     expect(tm.tmTransitions, hasLength(1));
     expect(tm.blankSymbol, equals('B'));
+  });
+
+  testWidgets('reachable-state analysis emits stable TM state ids', (
+    tester,
+  ) async {
+    final tm = _buildTmExample().payload;
+    final harness = await _pumpTmAlgorithmPanel(
+      tester,
+      initialTm: tm,
+    );
+
+    await tester.ensureVisible(find.text('Find Reachable States'));
+    await tester.tap(find.text('Find Reachable States'));
+    await tester.pump();
+
+    expect(harness.output.events, isNotEmpty);
+    expect(harness.output.events.last!.stateIds, {
+      'tm/state:start',
+      'tm/state:accept',
+    });
+    expect(harness.output.events.last!.stateIds, isNot(contains('q0')));
   });
 }

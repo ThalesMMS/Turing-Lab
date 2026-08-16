@@ -81,6 +81,8 @@ void main() {
       expect(snapshot.metadata.id, equals('pda-1'));
       expect(snapshot.metadata.name, equals('Sample PDA'));
       expect(snapshot.metadata.alphabet, contains('a'));
+      expect(snapshot.metadata.stackAlphabet, containsAll({'Z', 'A'}));
+      expect(snapshot.metadata.initialStackSymbol, 'Z');
 
       expect(snapshot.nodes, hasLength(2));
       final nodeIds = snapshot.nodes.map((node) => node.id).toSet();
@@ -197,6 +199,27 @@ void main() {
       expect(snapshot.edges.single.pushSymbols, ['S_0', 'Z']);
       expect(rebuilt.pdaTransitions.single.pushSymbols, ['S_0', 'Z']);
       expect(rebuilt.stackAlphabet, containsAll({'S_0', 'Z'}));
+    });
+
+    test('restores unreferenced stack configuration from snapshot metadata',
+        () {
+      final configured = basePda.copyWith(
+        transitions: const {},
+        stackAlphabet: {'S_0', 'unused-stack-symbol'},
+        initialStackSymbol: 'S_0',
+      );
+      final template = basePda.copyWith(
+        transitions: const {},
+        stackAlphabet: {'Z'},
+        initialStackSymbol: 'Z',
+      );
+
+      final snapshot = GraphViewPdaMapper.toSnapshot(configured);
+      final rebuilt = GraphViewPdaMapper.mergeIntoTemplate(snapshot, template);
+
+      expect(rebuilt.stackAlphabet, {'S_0', 'unused-stack-symbol'});
+      expect(rebuilt.initialStackSymbol, 'S_0');
+      expect(rebuilt.validate(), isEmpty);
     });
 
     test('clears stale push symbols for an explicit lambda push', () {

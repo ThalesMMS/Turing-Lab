@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/simulation_highlight.dart';
 import '../models/simulation_result.dart';
 import '../models/simulation_step.dart';
+import '../models/step_explanation.dart';
 import 'highlight_channel.dart';
 
 /// Provides access to the highlight service associated with the active canvas.
@@ -85,17 +86,26 @@ class SimulationHighlightService {
       }
     }
 
-    addState(current.currentState);
-    addState(current.nextState);
-    if ((current.nextState == null || current.nextState!.isEmpty) &&
-        stepIndex + 1 < steps.length) {
-      addState(steps[stepIndex + 1].currentState);
+    final activeStateIds = current.activeStateIds;
+    if (activeStateIds != null) {
+      activeStateIds.forEach(addState);
+    } else {
+      addState(current.currentState);
+      addState(current.nextState);
+      if ((current.nextState == null || current.nextState!.isEmpty) &&
+          stepIndex + 1 < steps.length) {
+        addState(steps[stepIndex + 1].currentState);
+      }
     }
 
     final transitionIds = <String>{};
-    final usedTransition = current.usedTransition?.trim();
-    if (usedTransition != null && usedTransition.isNotEmpty) {
-      transitionIds.add(usedTransition);
+    for (final target
+        in current.explanation?.highlights ?? const <HighlightTarget>[]) {
+      if (target.type == HighlightTargetType.transition &&
+          target.id != null &&
+          target.id!.isNotEmpty) {
+        transitionIds.add(target.id!);
+      }
     }
 
     return SimulationHighlight(

@@ -14,7 +14,7 @@ PRODUCT_BUNDLE_IDENTIFIER = thalesmms.turinglab
 // Unlike iOS, the macOS runner does not derive MARKETING_VERSION/CURRENT_PROJECT_VERSION from
 // FLUTTER_BUILD_NAME/FLUTTER_BUILD_NUMBER at build time.
 MARKETING_VERSION = 1.0.0
-CURRENT_PROJECT_VERSION = 3
+CURRENT_PROJECT_VERSION = 4
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 Turing Lab contributors. All rights reserved.

@@ -88,7 +88,8 @@ void main() {
       final cardinalConfig = EdgeRoutingConfig(anchorMode: AnchorMode.cardinal);
       expect(cardinalConfig.anchorMode, AnchorMode.cardinal);
 
-      final octagonalConfig = EdgeRoutingConfig(anchorMode: AnchorMode.octagonal);
+      final octagonalConfig =
+          EdgeRoutingConfig(anchorMode: AnchorMode.octagonal);
       expect(octagonalConfig.anchorMode, AnchorMode.octagonal);
 
       final dynamicConfig = EdgeRoutingConfig(anchorMode: AnchorMode.dynamic);
@@ -99,13 +100,15 @@ void main() {
       final directConfig = EdgeRoutingConfig(routingMode: RoutingMode.direct);
       expect(directConfig.routingMode, RoutingMode.direct);
 
-      final orthogonalConfig = EdgeRoutingConfig(routingMode: RoutingMode.orthogonal);
+      final orthogonalConfig =
+          EdgeRoutingConfig(routingMode: RoutingMode.orthogonal);
       expect(orthogonalConfig.routingMode, RoutingMode.orthogonal);
 
       final bezierConfig = EdgeRoutingConfig(routingMode: RoutingMode.bezier);
       expect(bezierConfig.routingMode, RoutingMode.bezier);
 
-      final bundlingConfig = EdgeRoutingConfig(routingMode: RoutingMode.bundling);
+      final bundlingConfig =
+          EdgeRoutingConfig(routingMode: RoutingMode.bundling);
       expect(bundlingConfig.routingMode, RoutingMode.bundling);
     });
 

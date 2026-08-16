@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:turing_lab/core/models/simulation_result.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
 import 'package:turing_lab/data/services/trace_persistence_service.dart';
 
 void main() {
@@ -20,8 +21,20 @@ void main() {
             steps: <SimulationStep>[
               SimulationStep(
                 currentState: 'q0',
+                activeStateIds: const {
+                  'persistent-state-id-1',
+                  ' persistent-state-id-2 ',
+                },
                 remainingInput: input,
                 stepNumber: 0,
+                explanation: const StepExplanation(
+                  highlights: [
+                    HighlightTarget(
+                      type: HighlightTargetType.transition,
+                      id: 'persistent-edge-id',
+                    ),
+                  ],
+                ),
               ),
               const SimulationStep(
                 currentState: 'q1',
@@ -73,6 +86,32 @@ void main() {
       expect(
         (history.single['trace'] as Map<String, dynamic>)['inputString'],
         equals('abba'),
+      );
+    });
+
+    test('round-trips active state and transition targets unchanged', () async {
+      await service.saveTraceToHistory(
+        traceFixture(input: 'abba'),
+        automatonType: 'dfa',
+      );
+
+      final history = await service.getTraceHistory();
+      final restored = SimulationResult.fromJson(
+        Map<String, dynamic>.from(history.single['trace'] as Map),
+      );
+
+      expect(
+        restored.steps.first.explanation!.highlights.single,
+        equals(
+          const HighlightTarget(
+            type: HighlightTargetType.transition,
+            id: 'persistent-edge-id',
+          ),
+        ),
+      );
+      expect(
+        restored.steps.first.activeStateIds,
+        {'persistent-state-id-1', ' persistent-state-id-2 '},
       );
     });
 

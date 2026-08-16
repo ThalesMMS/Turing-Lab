@@ -274,6 +274,12 @@ class _TreeViewPageState extends State<TreeViewPage> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GraphView.builder(
@@ -289,6 +295,17 @@ class _TreeViewPageState extends State<TreeViewPage> {
   }
 }
 ```
+
+### GraphViewController ownership
+
+`GraphViewController()` creates and owns its viewport
+`TransformationController`. The object that creates the
+`GraphViewController` must call `dispose()`; if a graph view is still attached,
+the viewport controller stays alive until that view detaches.
+
+When a `TransformationController` is supplied, it remains caller-owned by
+default. Pass `ownsTransformationController: true` only when ownership should
+transfer to the `GraphViewController`.
 
 ### Example: Dynamic Graph with Different Node Types
 

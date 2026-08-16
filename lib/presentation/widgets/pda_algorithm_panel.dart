@@ -14,10 +14,12 @@ import '../../core/algorithms/pda_to_cfg_converter.dart';
 import '../../core/algorithms/pda_simulator.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
+import '../../core/models/simulation_highlight.dart';
 import '../../core/models/state.dart' as automaton_models;
 import '../../core/models/asset_example.dart';
 import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
+import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
@@ -48,6 +50,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   String? _loadingExampleName;
   String? _analysisResult;
   Grammar? _latestConvertedGrammar;
+  CanvasHighlightSourceHandle? _analysisHighlights;
   late final ExamplesRepository _examplesDataSource;
   late final Future<ListResult<AssetExample<PDA>>> _pdaExamplesFuture;
 
@@ -57,6 +60,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     _examplesDataSource =
         widget.examplesDataSource ?? ref.read(examplesRepositoryProvider);
     _pdaExamplesFuture = _examplesDataSource.loadAllTypedPdaExamples();
+    _analysisHighlights = ref
+        .read(canvasHighlightCoordinatorProvider)
+        ?.source(CanvasHighlightSource.analysis);
+  }
+
+  @override
+  void dispose() {
+    _analysisHighlights?.dispose();
+    super.dispose();
   }
 
   @override
@@ -204,7 +216,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       _latestConvertedGrammar = null;
     });
 
-    _performAnalysis('PDA to CFG Conversion', () async {
+    _performAnalysis('PDA to CFG Conversion', (_) async {
       final conversionResult = PDAtoCFGConverter.convert(pda);
       if (conversionResult.isSuccess) {
         _latestConvertedGrammar = conversionResult.data!.grammar;
@@ -234,7 +246,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       return;
     }
 
-    _performAnalysis('PDA Minimization', () async {
+    _performAnalysis('PDA Minimization', (_) async {
       final simplificationResult = PDASimulator.simplify(pda);
       if (!simplificationResult.isSuccess) {
         final message = 'Minimization failed: ${simplificationResult.error}';
@@ -321,9 +333,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       return;
     }
 
-    _performAnalysis('Determinism Check', () async {
+    _performAnalysis('Determinism Check', (setHighlight) async {
       final nondeterministicTransitions =
           editorState.nondeterministicTransitionIds;
+      setHighlight(
+        SimulationHighlight(
+          transitionIds: nondeterministicTransitions,
+        ),
+      );
       final buffer = StringBuffer();
       buffer.writeln('Determinism Analysis');
       buffer.writeln('Total transitions: ${pda.transitions.length}');
@@ -379,7 +396,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       return;
     }
 
-    _performAnalysis('Reachable States Analysis', () async {
+    _performAnalysis('Reachable States Analysis', (setHighlight) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
         final message = 'Analysis failed: ${analysisResult.error}';
@@ -388,6 +405,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       }
 
       final analysis = analysisResult.data!;
+      setHighlight(
+        SimulationHighlight(
+          stateIds: analysis.reachabilityAnalysis.reachableStates
+              .map((state) => state.id)
+              .toSet(),
+        ),
+      );
       final reachable = analysis.reachabilityAnalysis.reachableStates
           .map((state) => state.label)
           .toList()
@@ -423,7 +447,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       return;
     }
 
-    _performAnalysis('Language Analysis', () async {
+    _performAnalysis('Language Analysis', (_) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
         final message = 'Analysis failed: ${analysisResult.error}';
@@ -521,7 +545,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       return;
     }
 
-    _performAnalysis('Stack Operations Analysis', () async {
+    _performAnalysis('Stack Operations Analysis', (_) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
         final message = 'Analysis failed: ${analysisResult.error}';
@@ -559,9 +583,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
   void _performAnalysis(
     String algorithmName,
-    Future<String> Function() analysisFunction, {
+    Future<String> Function(ValueChanged<SimulationHighlight> setHighlight)
+        analysisFunction, {
     bool resetConvertedGrammar = true,
   }) {
+    final highlights = _analysisHighlights;
+    final highlightTarget = highlights?.target;
+    if (highlightTarget != null) {
+      highlights!.clearFor(highlightTarget);
+    }
     setState(() {
       _isAnalyzing = true;
       _analysisResult = null;
@@ -571,10 +601,16 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     });
 
     Future.microtask(() async {
+      var nextHighlight = SimulationHighlight.empty;
       try {
-        final output = await analysisFunction();
+        final output = await analysisFunction((highlight) {
+          nextHighlight = highlight;
+        });
         if (!mounted) {
           return;
+        }
+        if (highlightTarget != null) {
+          highlights!.sendFor(highlightTarget, nextHighlight);
         }
         setState(() {
           _isAnalyzing = false;

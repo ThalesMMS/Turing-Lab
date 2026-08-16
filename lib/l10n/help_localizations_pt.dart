@@ -134,6 +134,8 @@ const ptHelpTitles = {
   'tool_add_transition': 'Adicionar transição',
   'tool_undo': 'Desfazer',
   'tool_redo': 'Refazer',
+  'tool_zoom_out': 'Reduzir zoom',
+  'tool_zoom_in': 'Aumentar zoom',
   'tool_fit_content': 'Ajustar ao conteúdo',
   'tool_reset_view': 'Redefinir visualização',
   'tool_clear': 'Limpar canvas',
@@ -175,6 +177,10 @@ const ptHelpBodies = {
       'Desfaz a última ação no canvas. Você pode desfazer várias ações em sequência, incluindo adicionar ou remover estados, adicionar ou remover transições e mover estados.',
   'tool_redo':
       'Refaz uma ação que foi desfeita. O botão fica disponível depois de usar Desfazer e pode restaurar várias ações em sequência.',
+  'tool_zoom_out':
+      'Reduz o zoom do canvas em um passo para ver mais do autômato de uma vez. Use junto com Aumentar zoom e Ajustar ao conteúdo para alternar entre visão geral e visão detalhada.',
+  'tool_zoom_in':
+      'Aumenta o zoom do canvas em um passo para inspecionar estados e rótulos de transição de perto. Use junto com Reduzir zoom e Ajustar ao conteúdo para alternar entre visão detalhada e visão geral.',
   'tool_fit_content':
       'Ajusta zoom e pan para mostrar todos os estados e transições. Use quando perder o foco do autômato ou quiser ver toda a estrutura.',
   'tool_reset_view':

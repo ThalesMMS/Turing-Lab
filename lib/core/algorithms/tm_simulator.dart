@@ -30,6 +30,7 @@ class TMSimulator {
   static StepExplanation _buildTmStepExplanation({
     required String fromStateId,
     required String toStateId,
+    required String transitionId,
     required String readSymbol,
     required String writeSymbol,
     required TapeDirection moveDirection,
@@ -53,6 +54,10 @@ class TMSimulator {
       HighlightTarget(
         type: HighlightTargetType.state,
         id: toStateId,
+      ),
+      HighlightTarget(
+        type: HighlightTargetType.transition,
+        id: transitionId,
       ),
       HighlightTarget(
         type: HighlightTargetType.tapeCell,
@@ -246,6 +251,7 @@ class TMSimulator {
                   explanation: _buildTmStepExplanation(
                     fromStateId: state.id,
                     toStateId: tr.toState.id,
+                    transitionId: tr.id,
                     readSymbol: read,
                     writeSymbol: tr.writeSymbol,
                     moveDirection: tr.moveDirection,
@@ -525,6 +531,7 @@ class TMSimulator {
             explanation: _buildTmStepExplanation(
               fromStateId: previousStateId,
               toStateId: currentState.id,
+              transitionId: transition.id,
               readSymbol: currentSymbol,
               writeSymbol: transition.writeSymbol,
               moveDirection: transition.moveDirection,
@@ -974,6 +981,7 @@ class _DtmSearch implements _CooperativeTmSearch {
           explanation: TMSimulator._buildTmStepExplanation(
             fromStateId: previousStateId,
             toStateId: currentState.id,
+            transitionId: transition.id,
             readSymbol: currentSymbol,
             writeSymbol: transition.writeSymbol,
             moveDirection: transition.moveDirection,
@@ -1139,6 +1147,7 @@ class _NtmSearch implements _CooperativeTmSearch {
               explanation: TMSimulator._buildTmStepExplanation(
                 fromStateId: state.id,
                 toStateId: transition.toState.id,
+                transitionId: transition.id,
                 readSymbol: read,
                 writeSymbol: transition.writeSymbol,
                 moveDirection: transition.moveDirection,

@@ -7,8 +7,11 @@ import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/services/canvas_highlight_coordinator.dart';
+import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
@@ -31,14 +34,54 @@ class _FakePdaExamplesDataSource extends ExamplesAssetDataSource {
   }
 }
 
-Future<PDAEditorNotifier> _pumpPdaAlgorithmPanel(WidgetTester tester) async {
+class _RecordingHighlightChannel implements HighlightChannel {
+  final List<SimulationHighlight?> events = <SimulationHighlight?>[];
+
+  @override
+  void clear() => events.add(null);
+
+  @override
+  void send(SimulationHighlight highlight) => events.add(highlight);
+}
+
+class _PdaPanelHarness {
+  const _PdaPanelHarness({
+    required this.notifier,
+    required this.output,
+    required this.coordinator,
+  });
+
+  final PDAEditorNotifier notifier;
+  final _RecordingHighlightChannel output;
+  final CanvasHighlightCoordinator coordinator;
+}
+
+Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
+  WidgetTester tester, {
+  PDA? initialPda,
+}) async {
   final pdaNotifier = PDAEditorNotifier();
+  if (initialPda != null) {
+    pdaNotifier.setPda(initialPda);
+  }
   final examplesDataSource = _FakePdaExamplesDataSource();
+  final output = _RecordingHighlightChannel();
+  final coordinator = CanvasHighlightCoordinator(
+    target: CanvasHighlightTarget(
+      kind: AutomatonSurfaceKind.pda,
+      surface: Object(),
+      documentId: initialPda?.id,
+      revision: 0,
+    ),
+    output: output,
+  );
+  addTearDown(coordinator.dispose);
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         pdaEditorProvider.overrideWith((ref) => pdaNotifier),
+        canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -54,18 +97,22 @@ Future<PDAEditorNotifier> _pumpPdaAlgorithmPanel(WidgetTester tester) async {
   await tester.pump();
   await _pumpUntilFound(tester, find.text('APD - Palíndromo'));
 
-  return pdaNotifier;
+  return _PdaPanelHarness(
+    notifier: pdaNotifier,
+    output: output,
+    coordinator: coordinator,
+  );
 }
 
 AssetExample<PDA> _buildPdaExample() {
   final start = automaton_state.State(
-    id: 'q0',
+    id: 'pda/state:start',
     label: 'q0',
     position: Vector2.zero(),
     isInitial: true,
   );
   final accept = automaton_state.State(
-    id: 'q1',
+    id: 'pda/state:accept',
     label: 'q1',
     position: Vector2(120, 0),
     isAccepting: true,
@@ -103,6 +150,58 @@ AssetExample<PDA> _buildPdaExample() {
     complexityLevel: ExampleComplexityLevel.low,
     tags: const ['test'],
     payload: pda,
+  );
+}
+
+PDA _buildNondeterministicPda() {
+  final start = automaton_state.State(
+    id: 'pda/state:start',
+    label: 'Displayed start',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  final first = automaton_state.State(
+    id: 'pda/state:first',
+    label: 'Displayed first',
+    position: Vector2(120, 0),
+    isAccepting: true,
+  );
+  final second = automaton_state.State(
+    id: 'pda/state:second',
+    label: 'Displayed second',
+    position: Vector2(120, 120),
+  );
+  final firstTransition = PDATransition(
+    id: 'opaque/pda-edge-a',
+    fromState: start,
+    toState: first,
+    label: 'a, Z/Z',
+    inputSymbol: 'a',
+    popSymbol: 'Z',
+    pushSymbol: 'Z',
+  );
+  final secondTransition = PDATransition(
+    id: ' opaque/pda-edge-b ',
+    fromState: start,
+    toState: second,
+    label: 'a, Z/A',
+    inputSymbol: 'a',
+    popSymbol: 'Z',
+    pushSymbol: 'A',
+  );
+  return PDA(
+    id: 'pda-nondeterministic',
+    name: 'Nondeterministic PDA',
+    states: {start, first, second},
+    transitions: {firstTransition, secondTransition},
+    alphabet: const {'a'},
+    initialState: start,
+    acceptingStates: {first},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: const {'Z', 'A'},
+    initialStackSymbol: 'Z',
   );
 }
 
@@ -178,17 +277,89 @@ void main() {
       (
     tester,
   ) async {
-    final pdaNotifier = await _pumpPdaAlgorithmPanel(tester);
+    final harness = await _pumpPdaAlgorithmPanel(tester);
 
     expect(find.text('APD - Palíndromo'), findsOneWidget);
 
     await tester.tap(find.text('APD - Palíndromo'));
-    await _pumpUntilPdaLoaded(tester, pdaNotifier);
+    await _pumpUntilPdaLoaded(tester, harness.notifier);
 
-    final pda = pdaNotifier.state.pda;
+    final pda = harness.notifier.state.pda;
     expect(pda, isNotNull);
     expect(pda!.name, equals('APD - Palíndromo'));
     expect(pda.pdaTransitions, isNotEmpty);
     expect(pda.initialStackSymbol, equals('Z'));
+  });
+
+  testWidgets('reachable-state analysis emits stable PDA state ids', (
+    tester,
+  ) async {
+    final pda = _buildPdaExample().payload;
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: pda,
+    );
+
+    await tester.ensureVisible(find.text('Find Reachable States'));
+    await tester.tap(find.text('Find Reachable States'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(harness.output.events, isNotEmpty);
+    expect(harness.output.events.last!.stateIds, {
+      'pda/state:start',
+      'pda/state:accept',
+    });
+    expect(harness.output.events.last!.stateIds, isNot(contains('q0')));
+  });
+
+  testWidgets('determinism analysis emits exact conflicting PDA edge ids', (
+    tester,
+  ) async {
+    final pda = _buildNondeterministicPda();
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: pda,
+    );
+
+    await tester.ensureVisible(find.text('Check Determinism'));
+    await tester.tap(find.text('Check Determinism'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(harness.output.events, isNotEmpty);
+    expect(harness.output.events.last!.transitionIds, {
+      'opaque/pda-edge-a',
+      ' opaque/pda-edge-b ',
+    });
+  });
+
+  testWidgets('disposing an analysis panel restores validation highlight', (
+    tester,
+  ) async {
+    final pda = _buildPdaExample().payload;
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: pda,
+    );
+    final validation = harness.coordinator.source(
+      CanvasHighlightSource.validation,
+    );
+    addTearDown(validation.dispose);
+    final warning = SimulationHighlight(
+      transitionIds: const {'persistent-warning'},
+    );
+    validation.send(warning);
+
+    await tester.ensureVisible(find.text('Find Reachable States'));
+    await tester.tap(find.text('Find Reachable States'));
+    await tester.pump();
+    await tester.pump();
+    expect(harness.output.events.last!.stateIds, isNotEmpty);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    expect(harness.output.events.last, warning);
   });
 }

@@ -15,7 +15,8 @@ import '../../core/models/equivalence_comparison_result.dart';
 import '../../core/models/fsa.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
-import 'automaton_graphview_canvas.dart';
+import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import 'read_only_fsa_graphview_canvas.dart';
 
 /// Widget for visualizing language equivalence comparison results
 ///
@@ -409,9 +410,10 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(8),
               ),
-              child: AutomatonGraphViewCanvas(
+              child: ReadOnlyFsaGraphViewCanvas(
                 automaton: automaton,
                 canvasKey: canvasKey,
+                edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
               ),
             ),
           ),
@@ -497,9 +499,10 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: AutomatonGraphViewCanvas(
+                child: ReadOnlyFsaGraphViewCanvas(
                   automaton: widget.comparisonResult.productAutomaton!,
                   canvasKey: _productCanvasKey,
+                  edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
                 ),
               ),
             ),

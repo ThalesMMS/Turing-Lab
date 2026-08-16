@@ -22,10 +22,10 @@ Status markers:
 | --- | ---: |
 | Edge rendering | 5 |
 | Performance | 2 |
-| Interaction | 3 |
+| Interaction | 4 |
 | Animation | 3 |
 | API | 5 |
-| **Total** | **18** |
+| **Total** | **19** |
 
 ## Edge Rendering Patches
 
@@ -50,6 +50,7 @@ Status markers:
 | --- | --- | --- | --- |
 | `GraphViewController` navigation and visibility API | `lib/controller/GraphViewController.dart`, `lib/widget/GraphView.dart` | **Required** | Provides `animateToNode`, `jumpToNode`, `zoomToFit`, `resetView`, `collapseNode`, `expandNode`, and `toggleNodeExpanded` for programmatic navigation and visibility control. |
 | `NodeDraggingConfiguration` | `lib/config/NodeDraggingConfiguration.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart` | **Optional** | Adds node dragging with `enabled`, `onNodeDragStart`, `onNodeDragUpdate`, `onNodeDragEnd`, and `nodeLockPredicate` hooks. It can be disabled when graph positions should remain fixed. |
+| `onNodePointerDown` raw pointer callback | `lib/config/NodeDraggingConfiguration.dart`, `lib/renderobject/RenderCustomLayoutBox.dart` | **Optional** | Reports the hit node and its `PointerDownEvent` from `_handlePointerDown` before the gesture arena resolves, so the host can arbitrate tap versus drag itself. It fires independently of `enabled`, because a drag-disabled canvas still needs the hit test. |
 | Visibility tracking maps | `lib/controller/GraphViewController.dart`, `lib/delegate/GraphChildDelegate.dart` | **Required** | Tracks `collapsedNodes`, `hiddenBy`, and `expandingNodes` so collapsed subgraphs stay hidden while nested collapse and expansion states remain consistent. |
 
 ## Animation Patches
@@ -76,9 +77,9 @@ Status markers:
 | --- | --- | --- |
 | Edge rendering | `lib/edgerenderer/AdaptiveEdgeRenderer.dart`, `lib/edgerenderer/AnimatedEdgeRenderer.dart`, `lib/edgerenderer/ArrowEdgeRenderer.dart`, `lib/edgerenderer/CurvedEdgeRenderer.dart`, `lib/edgerenderer/EdgeRenderer.dart`, `lib/edgerenderer/OrthogonalEdgeRenderer.dart`, `lib/edgerenderer/routing/EdgeRoutingConfig.dart`, `lib/edgerenderer/routing/EdgeRepulsionSolver.dart`, `lib/edgerenderer/routing/VectorUtils.dart`, `lib/Graph.dart` | `test/anchor_calculation_test.dart`, `test/arrow_renderer_adaptive_test.dart`, `test/backward_compatibility_test.dart`, `test/curved_edge_renderer_test.dart`, `test/edge_label_test.dart`, `test/edge_repulsion_integration_test.dart`, `test/edge_repulsion_test.dart`, `test/edge_routing_config_test.dart`, `test/per_edge_renderer_test.dart`, `test/performance_test.dart`, `test/routing_algorithms_test.dart`, `test/vector_utils_test.dart` |
 | Performance | `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/Graph.dart` | `test/dirty_tracking_test.dart`, `test/distance_threshold_test.dart`, `test/path_caching_test.dart`, `test/performance_test.dart` |
-| Interaction | `lib/controller/GraphViewController.dart`, `lib/config/NodeDraggingConfiguration.dart`, `lib/delegate/GraphChildDelegate.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart` | `test/controller_tests.dart`, `test/node_dragging_test.dart` |
-| Animation | `lib/edgerenderer/AnimatedEdgeRenderer.dart`, `lib/renderobject/GraphViewWidget.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart` | `test/backward_compatibility_test.dart`, `test/controller_tests.dart`, `test/per_edge_renderer_test.dart` |
-| API | `lib/Graph.dart`, `lib/GraphView.dart`, `lib/controller/GraphViewController.dart`, `lib/delegate/GraphChildDelegate.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart`, `MIGRATION.md` | `test/backward_compatibility_test.dart`, `test/controller_tests.dart`, `test/edge_label_test.dart`, `test/graph_test.dart`, `test/per_edge_renderer_test.dart` |
+| Interaction | `lib/controller/GraphViewController.dart`, `lib/config/NodeDraggingConfiguration.dart`, `lib/delegate/GraphChildDelegate.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart` | `test/controller_test.dart`, `test/node_dragging_test.dart` |
+| Animation | `lib/edgerenderer/AnimatedEdgeRenderer.dart`, `lib/renderobject/GraphViewWidget.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart` | `test/backward_compatibility_test.dart`, `test/controller_test.dart`, `test/per_edge_renderer_test.dart` |
+| API | `lib/Graph.dart`, `lib/GraphView.dart`, `lib/controller/GraphViewController.dart`, `lib/delegate/GraphChildDelegate.dart`, `lib/renderobject/RenderCustomLayoutBox.dart`, `lib/widget/GraphView.dart`, `MIGRATION.md` | `test/backward_compatibility_test.dart`, `test/controller_test.dart`, `test/edge_label_test.dart`, `test/graph_test.dart`, `test/per_edge_renderer_test.dart` |
 
 ## Migration Cross-References
 

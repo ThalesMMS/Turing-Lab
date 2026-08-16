@@ -233,7 +233,11 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     }
     _invalidateEdgeRendererCachesIfNeeded();
     _refreshTransitionOverlayFromGraph();
-    _updateTransitionOverlayPosition();
+    final selectedNodeId = _selectedNodeId;
+    if (selectedNodeId != null &&
+        _controller.nodeById(selectedNodeId) == null) {
+      _setSelectedNodeId(null);
+    }
   }
 
   void _refreshTransitionOverlayFromGraphExtracted() {
@@ -273,44 +277,34 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     }
   }
 
-  void _updateTransitionOverlayPositionExtracted() {
-    final state = _transitionOverlayState.value;
-    if (state == null) {
-      return;
-    }
-    final overlay = Overlay.maybeOf(context);
-    if (overlay == null) {
-      return;
-    }
-    final overlayBox = overlay.context.findRenderObject() as RenderBox?;
-    if (overlayBox == null || !overlayBox.hasSize) {
-      return;
-    }
-    final overlayPosition = overlayBox.size.center(Offset.zero);
-    if ((overlayPosition - state.overlayPosition).distance <= 0.5) {
-      return;
-    }
-    _transitionOverlayState.value = state.copyWith(
-      overlayPosition: overlayPosition,
-    );
-  }
-
   bool _showTransitionOverlayExtracted(AutomatonTransitionOverlayData data) {
     final overlayState = Overlay.maybeOf(context);
     if (overlayState == null) {
       return false;
     }
-    final overlayBox = overlayState.context.findRenderObject() as RenderBox?;
-    if (overlayBox == null || !overlayBox.hasSize) {
-      return false;
-    }
-    final overlayPosition = overlayBox.size.center(Offset.zero);
     _ensureTransitionOverlay(overlayState);
-    _transitionOverlayState.value = _GraphViewTransitionOverlayState(
-      data: data,
-      overlayPosition: overlayPosition,
-    );
+    _transitionOverlayState.value =
+        _GraphViewTransitionOverlayState(data: data);
     return true;
+  }
+
+  Offset _resolveTransitionOverlayAnchor(
+    OverlayState overlayState,
+    Offset worldAnchor,
+    Size overlaySize,
+  ) {
+    final canvasRenderObject =
+        widget.canvasKey.currentContext?.findRenderObject();
+    final overlayRenderObject = overlayState.context.findRenderObject();
+    if (canvasRenderObject is! RenderBox ||
+        overlayRenderObject is! RenderBox ||
+        !canvasRenderObject.hasSize ||
+        !overlayRenderObject.hasSize) {
+      return overlaySize.center(Offset.zero);
+    }
+    final canvasLocalAnchor = _worldToCanvasLocal(worldAnchor);
+    final globalAnchor = canvasRenderObject.localToGlobal(canvasLocalAnchor);
+    return overlayRenderObject.globalToLocal(globalAnchor);
   }
 
   void _ensureTransitionOverlayExtracted(OverlayState overlayState) {
@@ -336,17 +330,36 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
                 state.data,
                 overlayController,
               );
-              return Stack(
-                children: [
-                  Positioned(
-                    left: state.overlayPosition.dx,
-                    top: state.overlayPosition.dy,
-                    child: FractionalTranslation(
-                      translation: const Offset(-0.5, -0.5),
-                      child: overlayChild,
-                    ),
-                  ),
-                ],
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final overlaySize = constraints.biggest;
+                  final anchor = _resolveTransitionOverlayAnchor(
+                    overlayState,
+                    state.data.worldAnchor,
+                    overlaySize,
+                  );
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ModalBarrier(
+                          color: Colors.transparent,
+                          dismissible: true,
+                          semanticsLabel: appLocalizationsOf(context)
+                              .dismissTransitionEditor,
+                          onDismiss: _hideTransitionOverlay,
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: CustomSingleChildLayout(
+                          delegate: _TransitionEditorLayoutDelegate(
+                            anchor: anchor,
+                          ),
+                          child: overlayChild,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -394,12 +407,38 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
       });
     }
   }
+}
 
-  bool _isNodeHighlightedExtracted(
-    GraphViewCanvasNode node,
-    SimulationHighlight highlight,
-  ) {
-    return highlight.stateIds.contains(node.id) ||
-        node.id == _transitionSourceId;
+class _TransitionEditorLayoutDelegate extends SingleChildLayoutDelegate {
+  const _TransitionEditorLayoutDelegate({required this.anchor});
+
+  static const double _margin = 12;
+  static const double _anchorGap = 12;
+
+  final Offset anchor;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints.loose(constraints.biggest);
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final maxX = math.max(_margin, size.width - childSize.width - _margin);
+    final maxY = math.max(_margin, size.height - childSize.height - _margin);
+    final x = (anchor.dx - childSize.width / 2).clamp(_margin, maxX);
+    final above = anchor.dy - childSize.height - _anchorGap;
+    final below = anchor.dy + _anchorGap;
+    final y = switch ((above >= _margin, below <= maxY)) {
+      (true, _) => above,
+      (false, true) => below,
+      _ => (anchor.dy - childSize.height / 2).clamp(_margin, maxY),
+    };
+    return Offset(x.toDouble(), y.toDouble());
+  }
+
+  @override
+  bool shouldRelayout(covariant _TransitionEditorLayoutDelegate oldDelegate) {
+    return oldDelegate.anchor != anchor;
   }
 }

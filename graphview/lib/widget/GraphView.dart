@@ -16,6 +16,8 @@ class GraphView extends StatefulWidget {
   final GraphChildDelegate delegate;
   final bool centerGraph;
   final NodeDraggingConfiguration? nodeDraggingConfig;
+  final double minScale;
+  final double maxScale;
 
   GraphView({
     Key? key,
@@ -28,6 +30,8 @@ class GraphView extends StatefulWidget {
     this.toggleAnimationDuration,
     this.centerGraph = false,
     this.nodeDraggingConfig,
+    this.minScale = 0.01,
+    this.maxScale = 10,
   })  : _isBuilder = false,
         autoZoomToFit = false,
         initialNode = null,
@@ -38,6 +42,8 @@ class GraphView extends StatefulWidget {
             builder: builder,
             controller: null,
             nodeDraggingConfig: nodeDraggingConfig),
+        assert(minScale > 0),
+        assert(maxScale >= minScale),
         super(key: key);
 
   GraphView.builder({
@@ -54,6 +60,8 @@ class GraphView extends StatefulWidget {
     this.toggleAnimationDuration,
     this.centerGraph = false,
     this.nodeDraggingConfig,
+    this.minScale = 0.01,
+    this.maxScale = 10,
   })  : _isBuilder = true,
         delegate = GraphChildDelegate(
             graph: graph,
@@ -64,6 +72,8 @@ class GraphView extends StatefulWidget {
             nodeDraggingConfig: nodeDraggingConfig),
         assert(!(autoZoomToFit && initialNode != null),
             'Cannot use both autoZoomToFit and initialNode together. Choose one.'),
+        assert(minScale > 0),
+        assert(maxScale >= minScale),
         super(key: key);
 
   @override
@@ -121,7 +131,7 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
     final nextTransformationController =
         nextController?.transformationController;
 
-    previousController?._detach();
+    previousController?._detach(this);
 
     _transformationController = nextTransformationController ??
         TransformationController(previousMatrix);
@@ -144,7 +154,7 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    widget.controller?._detach();
+    widget.controller?._detach(this);
     _panController.dispose();
     _nodeController.dispose();
     // Only dispose a TransformationController this State created itself. An
@@ -169,8 +179,8 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
       return InteractiveViewer.builder(
           transformationController: _transformationController,
           boundaryMargin: EdgeInsets.all(double.infinity),
-          minScale: 0.01,
-          maxScale: 10,
+          minScale: widget.minScale,
+          maxScale: widget.maxScale,
           builder: (context, viewport) {
             return view;
           });
@@ -231,7 +241,8 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
     const paddingFactor = 0.95;
     final scaleX = (vp.width / bounds.width) * paddingFactor;
     final scaleY = (vp.height / bounds.height) * paddingFactor;
-    final scale = min(scaleX, scaleY);
+    final scale =
+        min(scaleX, scaleY).clamp(widget.minScale, widget.maxScale).toDouble();
 
     final scaledWidth = bounds.width * scale;
     final scaledHeight = bounds.height * scale;
