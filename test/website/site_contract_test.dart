@@ -164,13 +164,14 @@ void main() {
       expect(image, matches(RegExp(r'''\bheight=["']\d+["']''')));
     }
 
-    for (final screenshot in <String>['grammar.webp', 'tm.webp']) {
+    for (final screenshot in <String>['grammar.webp', 'regex.webp']) {
       expect(
         index,
         matches(RegExp('<img[^>]+$screenshot[^>]+loading="lazy"')),
         reason: '$screenshot must be loaded lazily',
       );
     }
+    expect(index, isNot(contains('tm.webp')));
   });
 
   test('keeps runtime resources local and every relative target present', () {
