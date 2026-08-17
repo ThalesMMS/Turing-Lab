@@ -23,6 +23,8 @@ import 'package:turing_lab/features/canvas/graphview/base_graphview_canvas_contr
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 
+import 'support/recording_graph_view_controller.dart';
+
 class _RecordingAutomatonStateNotifier extends AutomatonStateNotifier {
   _RecordingAutomatonStateNotifier() : super();
 
@@ -109,26 +111,6 @@ class _InspectableGraphViewCanvasController extends GraphViewCanvasController {
 
   Map<String, Node> get debugGraphNodes => graphNodes;
   Map<String, Edge> get debugGraphEdges => graphEdges;
-}
-
-class _RecordingGraphViewController extends GraphViewController {
-  _RecordingGraphViewController(TransformationController transformation)
-      : super(transformationController: transformation);
-
-  Matrix4? lastTarget;
-  int zoomToFitCount = 0;
-
-  @override
-  void animateToMatrix(Matrix4 target) {
-    lastTarget = Matrix4.copy(target);
-    transformationController!.value = target;
-  }
-
-  @override
-  void zoomToFit() {
-    zoomToFitCount++;
-    super.zoomToFit();
-  }
 }
 
 void main() {
@@ -292,7 +274,7 @@ void main() {
     test('zoomIn keeps the viewport centre anchored', () {
       final transformation = TransformationController();
       addTearDown(transformation.dispose);
-      final viewController = _RecordingGraphViewController(transformation);
+      final viewController = RecordingGraphViewController(transformation);
       recreateController(viewController: viewController);
       controller.updateViewportSize(const Size(800, 600));
 
@@ -322,7 +304,7 @@ void main() {
     test('fitToContent uses a bounded reset before viewport is known', () {
       final transformation = TransformationController();
       addTearDown(transformation.dispose);
-      final viewController = _RecordingGraphViewController(transformation);
+      final viewController = RecordingGraphViewController(transformation);
       recreateController(viewController: viewController);
       controller.addStateAt(const Offset(0, 0));
 

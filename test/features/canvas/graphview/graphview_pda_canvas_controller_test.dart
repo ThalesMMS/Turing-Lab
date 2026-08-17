@@ -13,9 +13,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -24,18 +24,7 @@ import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dar
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 
-class _RecordingGraphViewController extends GraphViewController {
-  _RecordingGraphViewController(TransformationController transformation)
-      : super(transformationController: transformation);
-
-  Matrix4? lastTarget;
-
-  @override
-  void animateToMatrix(Matrix4 target) {
-    lastTarget = Matrix4.copy(target);
-    transformationController!.value = target;
-  }
-}
+import 'support/recording_graph_view_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -104,7 +93,7 @@ void main() {
       controller.dispose();
       final transformation = TransformationController();
       addTearDown(transformation.dispose);
-      final viewController = _RecordingGraphViewController(transformation);
+      final viewController = RecordingGraphViewController(transformation);
       controller = GraphViewPdaCanvasController(
         editorNotifier: notifier,
         viewController: viewController,
@@ -119,7 +108,7 @@ void main() {
       expect(viewController.lastTarget, isNotNull);
       expect(
         viewController.lastTarget!.getMaxScaleOnAxis(),
-        closeTo(1.75, 0.0001),
+        closeTo(kAutomatonCanvasFitMaxScale, 0.0001),
       );
     });
 

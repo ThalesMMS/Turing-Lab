@@ -52,7 +52,7 @@ void main() {
       expect(restored.initialStackSymbol, 'S_0');
     });
 
-    test('copyWith can clear nullable TM metadata', () {
+    test('copyWith can clear nullable automaton metadata', () {
       const metadata = GraphViewAutomatonMetadata(
         id: 'tm-1',
         name: 'TM',

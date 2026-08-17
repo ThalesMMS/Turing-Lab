@@ -62,6 +62,74 @@ Future<void> pumpOldThenOverlappingView(
 
 void main() {
   group('GraphView Controller Tests', () {
+    testWidgets('initial viewport scale respects a minimum above one', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GraphView.builder(
+            graph: graph,
+            algorithm: buildTestAlgorithm(),
+            minScale: 1.5,
+            maxScale: 2,
+            builder: (_) => const SizedBox(width: 20, height: 20),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final viewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      expect(
+        viewer.transformationController!.value.getMaxScaleOnAxis(),
+        closeTo(1.5, 0.001),
+      );
+    });
+
+    testWidgets('reset viewport scale respects configured bounds', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+      final transformationController = TransformationController(
+        Matrix4.diagonal3Values(2, 2, 1)..setTranslationRaw(40, 60, 0),
+      );
+      final controller = GraphViewController(
+        transformationController: transformationController,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GraphView.builder(
+            graph: graph,
+            algorithm: buildTestAlgorithm(),
+            controller: controller,
+            minScale: 1.5,
+            maxScale: 2,
+            builder: (_) => const SizedBox(width: 20, height: 20),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      controller.resetView();
+      await tester.pumpAndSettle();
+
+      expect(
+        transformationController.value.getMaxScaleOnAxis(),
+        closeTo(1.5, 0.001),
+      );
+      expect(
+          transformationController.value.getTranslation().x, closeTo(0, 0.001));
+      expect(
+          transformationController.value.getTranslation().y, closeTo(0, 0.001));
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      transformationController.dispose();
+    });
+
     testWidgets('animateToNode centers the target node',
         (WidgetTester tester) async {
       // Setup graph

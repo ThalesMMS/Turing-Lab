@@ -431,9 +431,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       _isApplyingInternalSnapshot = false;
     }
 
-    _undoHistory.add(historyEntry);
-    _trimHistory(_undoHistory);
-    _redoHistory.clear();
+    _updateHistory(_undoHistory, historyEntry, clearRedo: true);
     _logGraphViewBase(
       'Canvas cleared (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
@@ -583,9 +581,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
     final entry = _captureHistoryEntry();
     if (entry != null) {
-      _undoHistory.add(entry);
-      _trimHistory(_undoHistory);
-      _redoHistory.clear();
+      _updateHistory(_undoHistory, entry, clearRedo: true);
       _logGraphViewBase(
         'History snapshot captured (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
       );
@@ -622,8 +618,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       );
       return false;
     }
-    _redoHistory.add(currentEntry);
-    _trimHistory(_redoHistory);
+    _updateHistory(_redoHistory, currentEntry);
     _logGraphViewBase(
       'Undo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
@@ -652,12 +647,23 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       );
       return false;
     }
-    _undoHistory.add(currentEntry);
-    _trimHistory(_undoHistory);
+    _updateHistory(_undoHistory, currentEntry);
     _logGraphViewBase(
       'Redo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
     return true;
+  }
+
+  void _updateHistory(
+    List<_GraphHistoryEntry> history,
+    _GraphHistoryEntry entry, {
+    bool clearRedo = false,
+  }) {
+    history.add(entry);
+    _trimHistory(history);
+    if (clearRedo) {
+      _redoHistory.clear();
+    }
   }
 
   /// Synchronises the canvas with the provided domain [data].

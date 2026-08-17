@@ -871,6 +871,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get traceTape => 'tape';
 
   @override
+  String get pdaStackPanelLabel => 'Stack';
+
+  @override
   String get timeout => 'Timeout';
 
   @override

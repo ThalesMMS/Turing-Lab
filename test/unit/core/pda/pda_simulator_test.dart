@@ -251,7 +251,13 @@ void main() {
       expect(steps.last.explanation, isNull);
 
       final epsilonStep = steps.firstWhere(
-        (step) => step.consumedInput == '' && step.usedTransition != null,
+        (step) =>
+            step.explanation?.highlights.any(
+              (target) =>
+                  target.type == HighlightTargetType.transition &&
+                  target.id == 'pda-opaque-epsilon-edge',
+            ) ??
+            false,
       );
       final consumingStep = steps.firstWhere(
         (step) => step.consumedInput == 'a',
@@ -288,7 +294,13 @@ void main() {
       expect(steps.last.explanation, isNull);
 
       final epsilonStep = steps.firstWhere(
-        (step) => step.consumedInput == '' && step.usedTransition != null,
+        (step) =>
+            step.explanation?.highlights.any(
+              (target) =>
+                  target.type == HighlightTargetType.transition &&
+                  target.id == 'pda-opaque-epsilon-edge',
+            ) ??
+            false,
       );
       final consumingStep = steps.firstWhere(
         (step) => step.consumedInput == 'a',

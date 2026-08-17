@@ -165,6 +165,22 @@ Future<void> _pumpPDAPageComponents(
     );
     expect(tester.view.physicalSize, size);
     await tester.pumpAndSettle();
+    if (automaton != null) {
+      final canvas = tester.widget<PDACanvasGraphView>(
+        find.byType(PDACanvasGraphView),
+      );
+      final canvasController = canvas.controller!;
+      expect(
+        canvasController.nodes.map((node) => node.id),
+        unorderedEquals(automaton.states.map((state) => state.id)),
+      );
+      expect(
+        canvasController.edges.map((edge) => edge.id),
+        unorderedEquals(
+          automaton.transitions.map((transition) => transition.id),
+        ),
+      );
+    }
     return;
   }
 

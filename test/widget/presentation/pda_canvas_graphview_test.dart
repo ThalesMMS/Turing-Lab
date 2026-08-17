@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
@@ -22,6 +23,39 @@ import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
+
+Future<void> _pumpPdaCanvas(
+  WidgetTester tester, {
+  required PDAEditorNotifier notifier,
+  required GraphViewPdaCanvasController controller,
+  AutomatonCanvasToolController? toolController,
+  StackState? currentStack,
+  ValueChanged<int>? onModified,
+  Size? viewSize,
+}) async {
+  if (viewSize != null) {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = viewSize;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+  }
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
+      child: MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        home: Scaffold(
+          body: PDACanvasGraphView(
+            controller: controller,
+            toolController: toolController,
+            currentStack: currentStack,
+            onPdaModified: (pda) => onModified?.call(pda.states.length),
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -44,18 +78,11 @@ void main() {
     ) async {
       final delivered = <int>[];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                onPdaModified: (pda) => delivered.add(pda.states.length),
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        onModified: delivered.add,
       );
 
       await tester.pump();
@@ -63,13 +90,13 @@ void main() {
         tester
             .widget<InteractiveViewer>(find.byType(InteractiveViewer))
             .maxScale,
-        2.0,
+        kAutomatonCanvasMaxScale,
       );
       expect(
         tester
             .widget<InteractiveViewer>(find.byType(InteractiveViewer))
             .minScale,
-        0.05,
+        kAutomatonCanvasMinScale,
       );
       expect(delivered, isEmpty);
 
@@ -105,18 +132,10 @@ void main() {
     testWidgets('commits a beyond-slop touch drag to PDA editor state', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
       );
 
       controller.addStateAt(const Offset(40, 40));
@@ -144,19 +163,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(0, 0));
@@ -205,19 +216,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(100, 100));
@@ -270,20 +273,12 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                currentStack: const StackState(symbols: ['Z']),
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+        currentStack: const StackState(symbols: ['Z']),
       );
 
       controller.addStateAt(const Offset(100, 100));
@@ -327,19 +322,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(100, 100));
@@ -376,19 +363,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(200, 200));
@@ -441,28 +420,17 @@ void main() {
     testWidgets('keeps PDA transition actions inside a narrow canvas', (
       tester,
     ) async {
-      tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(320, 700);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.view.resetPhysicalSize);
       final toolController = AutomatonCanvasToolController(
         AutomatonCanvasTool.transition,
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: PDACanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onPdaModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+        viewSize: const Size(320, 700),
       );
 
       controller.addStateAt(const Offset(100, 350));

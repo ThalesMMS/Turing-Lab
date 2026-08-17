@@ -41,6 +41,7 @@ turing_lab/
 ├── windows/                       # Windows-specific files
 ├── linux/                         # Linux-specific files
 ├── macos/                         # macOS-specific files
+├── docs/                          # Static project website and deployment assets
 ├── assets/                        # Bundled licenses and offline examples
 ├── screenshots/                   # UI captures and visual references
 ├── tool/                          # Repo tooling and helper scripts
@@ -379,6 +380,7 @@ web/
 
 ### Documentation
 
+- `docs/` - Static project website, policy pages, and deployment assets
 - `USER_GUIDE.md` - GraphView canvas working guide
 - `PROJECT_STRUCTURE.md` - This file
 - `CONTRIBUTING.md` - Contribution workflow and local validation requirements

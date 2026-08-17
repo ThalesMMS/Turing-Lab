@@ -125,7 +125,6 @@ class ContextAwareHelpPanel extends ConsumerWidget {
                 );
                 final rootContext = navigator.context;
                 navigator.pop();
-                await Future<void>.delayed(Duration.zero);
                 if (rootContext.mounted) {
                   await KeyboardShortcutsDialog.show(rootContext);
                 }

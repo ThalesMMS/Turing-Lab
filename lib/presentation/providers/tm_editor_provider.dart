@@ -435,8 +435,6 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
       tapeCount = math.max(tapeCount, transition.tapeNumber + 1);
     }
 
-    // blankSymbol already declared above and added to tapeAlphabet
-
     final now = DateTime.now();
 
     final transitions = transitionSet.map<Transition>((t) => t).toSet();

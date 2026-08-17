@@ -67,6 +67,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('pt'),
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
@@ -999,7 +1000,8 @@ void main() {
       expect(submittedData!['writeSymbol'], equals('y'));
     });
 
-    testWidgets('submits on enter key in text fields', (tester) async {
+    testWidgets('next advances focus and hardware enter submits',
+        (tester) async {
       var submitCalled = false;
 
       await tester.pumpWidget(
@@ -1024,7 +1026,13 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.tap(find.widgetWithText(TextField, 'Read symbol'));
+      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await tester.pump();
+
+      expect(submitCalled, isFalse);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
 
       expect(submitCalled, isTrue);

@@ -125,7 +125,6 @@ class _TmTransitionOperationsEditorState
                     keyboardType: TextInputType.visiblePassword,
                     autofocus: true,
                     textInputAction: TextInputAction.next,
-                    onSubmitted: (_) => _handleSubmit(),
                     onChanged: (_) {
                       if (_showValidationErrors) {
                         setState(() {});
@@ -150,7 +149,6 @@ class _TmTransitionOperationsEditorState
                     enableSuggestions: false,
                     keyboardType: TextInputType.visiblePassword,
                     textInputAction: TextInputAction.next,
-                    onSubmitted: (_) => _handleSubmit(),
                     onChanged: (_) {
                       if (_showValidationErrors) {
                         setState(() {});

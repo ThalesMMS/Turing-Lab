@@ -110,7 +110,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         'your automaton or want to see the entire structure at once.',
     category: 'canvas',
     keywords: ['fit', 'zoom', 'view', 'center', 'focus'],
-    relatedConcepts: ['tool_reset_view'],
+    relatedConcepts: ['tool_zoom_in', 'tool_zoom_out', 'tool_reset_view'],
     icon: 'fit_screen',
   ),
   'tool_reset_view': HelpContentModel(
@@ -121,7 +121,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         'Use this to return to a standard viewing perspective.',
     category: 'canvas',
     keywords: ['reset', 'zoom', 'center', 'default', 'view'],
-    relatedConcepts: ['tool_fit_content'],
+    relatedConcepts: ['tool_zoom_in', 'tool_zoom_out', 'tool_fit_content'],
     icon: 'center_focus_strong',
   ),
   'tool_clear': HelpContentModel(

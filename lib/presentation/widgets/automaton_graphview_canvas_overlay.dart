@@ -430,8 +430,8 @@ class _TransitionEditorLayoutDelegate extends SingleChildLayoutDelegate {
     final above = anchor.dy - childSize.height - _anchorGap;
     final below = anchor.dy + _anchorGap;
     final y = switch ((above >= _margin, below <= maxY)) {
-      (true, _) => above,
-      (false, true) => below,
+      (true, _) => above.clamp(_margin, maxY),
+      (false, true) => below.clamp(_margin, maxY),
       _ => (anchor.dy - childSize.height / 2).clamp(_margin, maxY),
     };
     return Offset(x.toDouble(), y.toDouble());

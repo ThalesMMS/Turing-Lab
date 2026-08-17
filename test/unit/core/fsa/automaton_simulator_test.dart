@@ -2,11 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/step_explanation.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
+
+List<String> transitionHighlightIds(SimulationStep step) => step
+    .explanation!.highlights
+    .where(
+      (target) =>
+          target.type == HighlightTargetType.transition && target.id != null,
+    )
+    .map((target) => target.id!)
+    .toList(growable: false);
 
 /// DFA: q0 --a--> q1 --b--> q2(accept)
 FSA _simpleDFA({bool initialAccepting = false}) {
@@ -370,12 +380,7 @@ void main() {
       final step = steps[1];
       expect(step.activeStateIds, {'dfa-state-1'});
       expect(step.usedTransition, 'δ(q0, a) = q1');
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['t0'],
-      );
+      expect(transitionHighlightIds(step), ['t0']);
     });
 
     test('empty-input DFA keeps the initial stable id without a final copy',
@@ -430,13 +435,7 @@ void main() {
       final step = steps[1];
       expect(step.activeStateIds, {'nfa-state-1', 'nfa-state-2'});
       expect(step.usedTransition, 'a');
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id)
-            .toSet(),
-        {'t0', 't1'},
-      );
+      expect(transitionHighlightIds(step).toSet(), {'t0', 't1'});
     });
 
     test('epsilon closure steps expose their edges without changing the trace',
@@ -475,30 +474,9 @@ void main() {
       ]);
       final closureSteps =
           steps.where((step) => step.usedTransition == 'ε-closure').toList();
-      expect(
-        closureSteps[0]
-            .explanation!
-            .highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['t0'],
-      );
-      expect(
-        closureSteps[1]
-            .explanation!
-            .highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['t2'],
-      );
-      expect(
-        steps[2]
-            .explanation!
-            .highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['t1'],
-      );
+      expect(transitionHighlightIds(closureSteps[0]), ['t0']);
+      expect(transitionHighlightIds(closureSteps[1]), ['t2']);
+      expect(transitionHighlightIds(steps[2]), ['t1']);
     });
 
     test('no-transition NFA emits an authoritative empty active set', () async {
@@ -554,26 +532,12 @@ void main() {
         'ε-closure',
         isNull,
       ]);
-      expect(
-          steps[2]
-              .explanation!
-              .highlights
-              .where((target) => target.type == HighlightTargetType.transition)
-              .map((target) => target.id),
-          ['symbol']);
+      expect(transitionHighlightIds(steps[2]), ['symbol']);
 
       final closureSteps =
           steps.where((step) => step.usedTransition == 'ε-closure').toList();
-      final closureTransitionIds = closureSteps
-          .map(
-            (step) => step.explanation!.highlights
-                .where(
-                  (target) => target.type == HighlightTargetType.transition,
-                )
-                .map((target) => target.id)
-                .toList(),
-          )
-          .toList();
+      final closureTransitionIds =
+          closureSteps.map(transitionHighlightIds).toList();
       expect(closureTransitionIds[0], hasLength(3));
       expect(
         closureTransitionIds[0].toSet(),

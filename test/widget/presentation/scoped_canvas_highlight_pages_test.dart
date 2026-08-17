@@ -146,6 +146,19 @@ Future<void> _pumpTmPage(
   await tester.pump(const Duration(milliseconds: 500));
 }
 
+Future<void> _pumpUntilStateHighlights(
+  WidgetTester tester,
+  ValueNotifier<SimulationHighlight> highlightNotifier,
+) async {
+  for (var attempt = 0; attempt < 80; attempt++) {
+    if (highlightNotifier.value.stateIds.isNotEmpty) {
+      return;
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail('Timed out waiting for canvas state highlights.');
+}
+
 PDA _pda({required String id, required bool nondeterministic}) {
   final start = automaton_models.State(
     id: 'shared-state-id',
@@ -307,8 +320,10 @@ void main() {
 
       await tester.ensureVisible(find.text('Find Reachable States'));
       await tester.tap(find.text('Find Reachable States'));
-      await tester.pump();
-      await tester.pump();
+      await _pumpUntilStateHighlights(
+        tester,
+        controller.highlightNotifier,
+      );
       expect(controller.highlightNotifier.value.stateIds, {
         'shared-state-id',
         'pda-target-a',
@@ -354,7 +369,10 @@ void main() {
 
       await tester.ensureVisible(find.text('Find Reachable States'));
       await tester.tap(find.text('Find Reachable States'));
-      await tester.pump();
+      await _pumpUntilStateHighlights(
+        tester,
+        controller.highlightNotifier,
+      );
       expect(controller.highlightNotifier.value.stateIds, {
         'shared-state-id',
         'tm-target-a',

@@ -1641,6 +1641,12 @@ abstract class AppLocalizations {
   /// **'tape'**
   String get traceTape;
 
+  /// No description provided for @pdaStackPanelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack'**
+  String get pdaStackPanelLabel;
+
   /// No description provided for @timeout.
   ///
   /// In en, this message translates to:

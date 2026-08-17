@@ -13,6 +13,7 @@ import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_utils.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
@@ -55,11 +56,11 @@ Future<void> _doubleTapNode(WidgetTester tester, Finder finder) async {
   final firstTap = await tester.startGesture(stateCenter);
   await firstTap.up();
   await tester.runAsync(
-    () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    () => Future<void>.delayed(const Duration(milliseconds: 80)),
   );
   final secondTap = await tester.startGesture(stateCenter);
   await tester.runAsync(
-    () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    () => Future<void>.delayed(const Duration(milliseconds: 50)),
   );
   await secondTap.up();
   await tester.pumpAndSettle();
@@ -176,20 +177,86 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final logs = <String>[];
-    final originalDebugPrint = debugPrint;
-    try {
-      debugPrint = (message, {wrapWidth}) {
-        if (message != null) {
-          logs.add(message);
-        }
-      };
-      await _doubleTapNode(tester, find.text('A'));
-    } finally {
-      debugPrint = originalDebugPrint;
-    }
+    await _doubleTapNode(tester, find.text('A'));
+    expect(find.byType(TextField), findsNothing);
+  });
 
-    expect(logs, contains(contains('Detected double tap on A')));
+  testWidgets('tool-selection gate blocks edge editing', (tester) async {
+    final first = automaton_state.State(
+      id: 'A',
+      label: 'A',
+      position: Vector2(80, 80),
+      isInitial: true,
+    );
+    final second = automaton_state.State(
+      id: 'B',
+      label: 'B',
+      position: Vector2(280, 80),
+    );
+    final transition = FSATransition(
+      id: 'read-only-edge',
+      fromState: first,
+      toState: second,
+      label: 'a',
+      inputSymbols: const {'a'},
+    );
+    final preview = FSA(
+      id: 'read-only-edge-preview',
+      name: 'Read-only edge preview',
+      states: {first, second},
+      transitions: {transition},
+      alphabet: const {'a'},
+      initialState: first,
+      acceptingStates: const <automaton_state.State>{},
+      created: DateTime.utc(2024, 1, 1),
+      modified: DateTime.utc(2024, 1, 1),
+      bounds: const math.Rectangle<double>(0, 0, 400, 300),
+      zoomLevel: 1,
+      panOffset: Vector2.zero(),
+    );
+    final notifier = AutomatonStateNotifier()..updateAutomaton(preview);
+    final controller = GraphViewCanvasController(
+      automatonStateNotifier: notifier,
+    )..synchronize(preview);
+    final canvasKey = GlobalKey();
+    addTearDown(() {
+      controller.dispose();
+      notifier.dispose();
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AutomatonGraphViewCanvas(
+            automaton: preview,
+            canvasKey: canvasKey,
+            controller: controller,
+            customization: AutomatonGraphViewCanvasCustomization.readOnly(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final edge = controller.edgeById(transition.id)!;
+    final from = controller.nodeById(edge.fromStateId)!;
+    final to = controller.nodeById(edge.toStateId)!;
+    final start = Offset(from.x + 48, from.y + 48);
+    final end = Offset(to.x + 48, to.y + 48);
+    final control = resolveLinkAnchorWorld(controller, edge)!;
+    final worldPosition = start * 0.25 + control * 0.5 + end * 0.25;
+    final transformation =
+        controller.graphController.transformationController!.value;
+    final localPosition = MatrixUtils.transformPoint(
+      transformation,
+      worldPosition,
+    );
+    final canvasBox =
+        canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+    await tester.tapAt(canvasBox.localToGlobal(localPosition));
+    await tester.pumpAndSettle();
+
     expect(find.byType(TextField), findsNothing);
   });
 
@@ -227,20 +294,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final logs = <String>[];
-    final originalDebugPrint = debugPrint;
-    try {
-      debugPrint = (message, {wrapWidth}) {
-        if (message != null) {
-          logs.add(message);
-        }
-      };
-      await _doubleTapNode(tester, find.text('A'));
-    } finally {
-      debugPrint = originalDebugPrint;
-    }
-
-    expect(logs, contains(contains('Detected double tap on A')));
+    await _doubleTapNode(tester, find.text('A'));
     expect(find.byType(TextField), findsOneWidget);
   });
 

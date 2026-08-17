@@ -590,6 +590,7 @@
   "traceRemaining": "restante",
   "traceStack": "pilha",
   "traceTape": "fita",
+  "pdaStackPanelLabel": "Pilha",
   "timeout": "Tempo limite excedido",
   "infiniteLoop": "Laço infinito",
   "steps": "Passos",

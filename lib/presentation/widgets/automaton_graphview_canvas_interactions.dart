@@ -119,7 +119,7 @@ extension _AutomatonGraphViewCanvasInteractions
 
       final start = resolveNodeCenter(from);
       final end = resolveNodeCenter(to);
-      var minimumDistance = (world - control).distance;
+      var minimumDistance = double.infinity;
       var previous = start;
       const sampleCount = 24;
       for (var index = 1; index <= sampleCount; index++) {
@@ -163,6 +163,9 @@ extension _AutomatonGraphViewCanvasInteractions
   }
 
   Future<void> _editHitEdgeExtracted(List<_CanvasEdgeHit> hits) async {
+    if (!_customization.enableToolSelection) {
+      return;
+    }
     if (hits.isEmpty) {
       return;
     }
@@ -487,9 +490,6 @@ extension _AutomatonGraphViewCanvasInteractions
   void _registerNodeTapExtracted(String nodeId) {
     _setSelectedNodeId(nodeId);
     if (_doubleTapCandidateNodeId == nodeId) {
-      _logAutomatonGraphViewCanvasInteraction(
-        'Detected double tap on $nodeId',
-      );
       _handleNodeContextTap(nodeId);
       _lastTapNodeId = null;
       _lastTapTimestamp = null;

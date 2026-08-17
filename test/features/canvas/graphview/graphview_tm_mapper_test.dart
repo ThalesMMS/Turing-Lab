@@ -305,7 +305,7 @@ void main() {
 
         expect(rebuilt.id, 'stable-machine-id');
         expect(rebuilt.name, 'Imported multi-tape machine');
-        expect(rebuilt.alphabet, {'a', 'unused-input', 'c'});
+        expect(rebuilt.alphabet, {'a', 'unused-input'});
         expect(
           rebuilt.tapeAlphabet,
           {'a', 'unused-input', 'Y', '_', 'c', 'X'},

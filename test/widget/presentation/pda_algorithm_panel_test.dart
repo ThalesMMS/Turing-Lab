@@ -180,6 +180,7 @@ PDA _buildNondeterministicPda() {
     popSymbol: 'Z',
     pushSymbol: 'Z',
   );
+  // Whitespace is intentional: transition identifiers must not be trimmed.
   final secondTransition = PDATransition(
     id: ' opaque/pda-edge-b ',
     fromState: start,
@@ -218,6 +219,20 @@ Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
       .whereType<String>()
       .join(' | ');
   fail('Timed out waiting for $finder. Visible text: $visibleText');
+}
+
+Future<void> _pumpUntilHighlightEvent(
+  WidgetTester tester,
+  _RecordingHighlightChannel output,
+  int previousEventCount,
+) async {
+  for (var attempt = 0; attempt < 80; attempt++) {
+    if (output.events.length > previousEventCount) {
+      return;
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail('Timed out waiting for an analysis highlight event.');
 }
 
 Future<void> _pumpUntilPdaLoaded(
@@ -300,10 +315,14 @@ void main() {
       initialPda: pda,
     );
 
+    final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Find Reachable States'));
     await tester.tap(find.text('Find Reachable States'));
-    await tester.pump();
-    await tester.pump();
+    await _pumpUntilHighlightEvent(
+      tester,
+      harness.output,
+      previousEventCount,
+    );
 
     expect(harness.output.events, isNotEmpty);
     expect(harness.output.events.last!.stateIds, {
@@ -322,10 +341,14 @@ void main() {
       initialPda: pda,
     );
 
+    final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Check Determinism'));
     await tester.tap(find.text('Check Determinism'));
-    await tester.pump();
-    await tester.pump();
+    await _pumpUntilHighlightEvent(
+      tester,
+      harness.output,
+      previousEventCount,
+    );
 
     expect(harness.output.events, isNotEmpty);
     expect(harness.output.events.last!.transitionIds, {
@@ -351,10 +374,14 @@ void main() {
     );
     validation.send(warning);
 
+    final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Find Reachable States'));
     await tester.tap(find.text('Find Reachable States'));
-    await tester.pump();
-    await tester.pump();
+    await _pumpUntilHighlightEvent(
+      tester,
+      harness.output,
+      previousEventCount,
+    );
     expect(harness.output.events.last!.stateIds, isNotEmpty);
 
     await tester.pumpWidget(const SizedBox.shrink());

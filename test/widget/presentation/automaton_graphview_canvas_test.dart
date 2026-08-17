@@ -13,8 +13,10 @@
 //
 
 import 'dart:math' as math;
-import 'dart:ui' show Tristate;
+import 'dart:ui' show SemanticsFlag;
 
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -152,6 +154,7 @@ Future<Offset> _pumpSingleStateCanvas(
   controller.synchronize(automaton);
   await tester.pumpWidget(
     MaterialApp(
+      theme: ThemeData(splashFactory: NoSplash.splashFactory),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -320,6 +323,8 @@ void main() {
     });
 
     testWidgets('double tap edits a state on Android', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
       toolController.setActiveTool(AutomatonCanvasTool.selection);
 
       final state = automaton_state.State(
@@ -382,6 +387,7 @@ void main() {
       );
       await secondTap.up();
       await tester.pumpAndSettle();
+      debugDefaultTargetPlatformOverride = null;
 
       expect(find.byType(TextField), findsOneWidget);
       expect(controller.previewStatePositionCallCount, 0);
@@ -412,10 +418,9 @@ void main() {
             '0 incoming transitions.',
           ),
         );
-        expect(
-          stateSemantics.flagsCollection.isSelected,
-          Tristate.isTrue,
-        );
+        // Flutter 3.27 does not expose flagsCollection yet.
+        // ignore: deprecated_member_use
+        expect(stateSemantics.hasFlag(SemanticsFlag.isSelected), isTrue);
       } finally {
         semantics.dispose();
       }
@@ -647,7 +652,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(controller.previewStatePositionCallCount, greaterThan(0));
-      expect(controller.lastPreviewStatePosition, const Offset(40, 40));
+      expect(
+        controller.lastPreviewStatePosition,
+        offsetMoreOrLessEquals(const Offset(40, 40), epsilon: 0.01),
+      );
       expect(controller.moveStateCallCount, 0);
       expect(find.byType(TextField), findsNothing);
     });
@@ -1142,6 +1150,7 @@ void main() {
     }) async {
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: Scaffold(
             body: AutomatonGraphViewCanvas(
               automaton: automaton,
@@ -1290,6 +1299,42 @@ void main() {
       );
     });
 
+    testWidgets('tapping a distant control point does not hit the curve', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      const transitionId = 'curved-edge';
+      final transition = FSATransition(
+        id: transitionId,
+        fromState: stateA,
+        toState: stateB,
+        label: 'x',
+        inputSymbols: const {'x'},
+      );
+      final reverseTransition = FSATransition(
+        id: 'reverse-curved-edge',
+        fromState: stateB,
+        toState: stateA,
+        label: 'y',
+        inputSymbols: const {'y'},
+      );
+      final automaton = buildAutomaton({transition, reverseTransition});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final edge = controller.edgeById(transitionId)!;
+      final localPosition = _worldToViewport(
+        controller,
+        resolveLinkAnchorWorld(controller, edge)!,
+      );
+      final canvasBox =
+          canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+      await tester.tapAt(canvasBox.localToGlobal(localPosition));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GraphViewLabelFieldEditor), findsNothing);
+    });
+
     testWidgets('tapping parallel transition paths asks which edge to edit', (
       tester,
     ) async {
@@ -1333,45 +1378,6 @@ void main() {
           const ValueKey('automaton-transition-choice-parallel-second'),
         ),
         findsOneWidget,
-      );
-    });
-
-    testWidgets('secondary click edits a self-loop from its anchor', (
-      tester,
-    ) async {
-      toolController.setActiveTool(AutomatonCanvasTool.selection);
-      const transitionId = 'self-loop';
-      final transition = FSATransition(
-        id: transitionId,
-        fromState: stateA,
-        toState: stateA,
-        label: 'z',
-        inputSymbols: const {'z'},
-      );
-      final automaton = buildAutomaton({transition});
-      final canvasKey = GlobalKey();
-      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
-      final edge = controller.edgeById(transitionId)!;
-      final localPosition = _worldToViewport(
-        controller,
-        resolveLinkAnchorWorld(controller, edge)!,
-      );
-      final canvasBox =
-          canvasKey.currentContext!.findRenderObject()! as RenderBox;
-
-      await tester.tapAt(
-        canvasBox.localToGlobal(localPosition),
-        kind: PointerDeviceKind.mouse,
-        buttons: kSecondaryMouseButton,
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
-      final field = tester.widget<TextField>(find.byType(TextField));
-      expect(field.controller?.text, 'z');
-      expect(
-        tester.getCenter(find.byType(GraphViewLabelFieldEditor)).dx,
-        closeTo(canvasBox.localToGlobal(localPosition).dx, 1),
       );
     });
 

@@ -212,6 +212,8 @@ class _HighlightSlot {
   final SimulationHighlight highlight;
 }
 
-/// Scoped coordinator made available by a concrete canvas page.
+/// Scoped coordinator made available by a concrete canvas page. The null
+/// default disables coordinated highlights; consumers must handle null unless
+/// a page overrides the provider.
 final canvasHighlightCoordinatorProvider =
     Provider<CanvasHighlightCoordinator?>((ref) => null);

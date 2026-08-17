@@ -899,12 +899,14 @@ class _AutomatonGraphViewCanvasState
     );
   }
 
-  String _nodeSemanticsLabel(GraphViewCanvasNode node) {
+  String _nodeSemanticsLabel(
+    GraphViewCanvasNode node,
+    Map<String, int> outgoingCounts,
+    Map<String, int> incomingCounts,
+  ) {
     final l10n = appLocalizationsOf(context);
-    final outgoingCount =
-        _controller.edges.where((edge) => edge.fromStateId == node.id).length;
-    final incomingCount =
-        _controller.edges.where((edge) => edge.toStateId == node.id).length;
+    final outgoingCount = outgoingCounts[node.id] ?? 0;
+    final incomingCount = incomingCounts[node.id] ?? 0;
     final parts = <String>[
       l10n.canvasStateSemantics(node.label.isEmpty ? node.id : node.label),
       if (node.isInitial) l10n.canvasInitialStateSemantics,
@@ -1043,6 +1045,20 @@ class _AutomatonGraphViewCanvasState
               child: ValueListenableBuilder<int>(
                 valueListenable: _controller.graphRevision,
                 builder: (context, _, __) {
+                  final outgoingCounts = <String, int>{};
+                  final incomingCounts = <String, int>{};
+                  for (final edge in _controller.edges) {
+                    outgoingCounts.update(
+                      edge.fromStateId,
+                      (count) => count + 1,
+                      ifAbsent: () => 1,
+                    );
+                    incomingCounts.update(
+                      edge.toStateId,
+                      (count) => count + 1,
+                      ifAbsent: () => 1,
+                    );
+                  }
                   return Builder(
                     builder: (context) {
                       return Stack(
@@ -1119,8 +1135,11 @@ class _AutomatonGraphViewCanvasState
                                                 : null,
                                             selected: canvasNode.id ==
                                                 _selectedNodeId,
-                                            label:
-                                                _nodeSemanticsLabel(canvasNode),
+                                            label: _nodeSemanticsLabel(
+                                              canvasNode,
+                                              outgoingCounts,
+                                              incomingCounts,
+                                            ),
                                             hint: _customization
                                                     .enableToolSelection
                                                 ? l10n.canvasStateEditHint

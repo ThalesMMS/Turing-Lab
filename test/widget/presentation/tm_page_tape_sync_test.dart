@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -112,14 +113,6 @@ TMTapePanel _workspaceTapePanel(WidgetTester tester) {
       .singleWhere((panel) => !panel.isSimulating);
 }
 
-bool _sameCells(List<String> actual, List<String> expected) {
-  if (actual.length != expected.length) return false;
-  for (var index = 0; index < actual.length; index++) {
-    if (actual[index] != expected[index]) return false;
-  }
-  return true;
-}
-
 Future<void> _pumpUntilWorkspaceTape(
   WidgetTester tester,
   List<String> expectedCells,
@@ -129,7 +122,7 @@ Future<void> _pumpUntilWorkspaceTape(
       () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
     await tester.pump(const Duration(milliseconds: 20));
-    if (_sameCells(
+    if (listEquals(
       _workspaceTapePanel(tester).tapeState.cells,
       expectedCells,
     )) {
@@ -153,7 +146,7 @@ void main() {
     expect(find.byType(CollapsibleCanvasPanel), findsOneWidget);
     expect(find.byType(TMTapePanel), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Collapse Tape panel'));
+    await tester.tap(find.byTooltip('Collapse tape panel'));
     await tester.pump();
 
     expect(find.byType(TMTapePanel), findsNothing);
@@ -161,8 +154,6 @@ void main() {
       tester.getSize(find.byType(CollapsibleCanvasPanel)),
       const Size.square(48),
     );
-    await tester.tap(find.byTooltip('Fit to content'));
-    await tester.pump();
   });
 
   for (final width in const [1200.0, 1500.0]) {

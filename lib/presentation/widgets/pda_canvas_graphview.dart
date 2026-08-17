@@ -46,11 +46,19 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
   HighlightChannel? _previousHighlightChannel;
   ProviderSubscription<PDAEditorState>? _subscription;
   PDA? _lastDeliveredPda;
+  StackState? _customizationStack;
+  AutomatonGraphViewCanvasCustomization? _cachedCustomization;
 
-  AutomatonGraphViewCanvasCustomization get _customization =>
-      AutomatonGraphViewCanvasCustomization.pda(
+  AutomatonGraphViewCanvasCustomization get _customization {
+    if (_cachedCustomization == null ||
+        _customizationStack != widget.currentStack) {
+      _customizationStack = widget.currentStack;
+      _cachedCustomization = AutomatonGraphViewCanvasCustomization.pda(
         currentStack: widget.currentStack,
       );
+    }
+    return _cachedCustomization!;
+  }
 
   @override
   void initState() {

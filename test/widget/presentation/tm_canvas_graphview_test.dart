@@ -15,12 +15,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
+
+Future<void> _pumpTmCanvas(
+  WidgetTester tester, {
+  required TMEditorNotifier notifier,
+  required GraphViewTmCanvasController controller,
+  AutomatonCanvasToolController? toolController,
+  ValueChanged<int>? onModified,
+  Size? viewSize,
+  ThemeData? theme,
+}) async {
+  if (viewSize != null) {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = viewSize;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+  }
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
+      child: MaterialApp(
+        theme: theme ?? ThemeData(splashFactory: NoSplash.splashFactory),
+        home: Scaffold(
+          body: TMCanvasGraphView(
+            controller: controller,
+            toolController: toolController,
+            onTmModified: (tm) => onModified?.call(tm.states.length),
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,18 +74,11 @@ void main() {
     testWidgets('displays TM states and transitions', (tester) async {
       final delivered = <int>[];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                onTmModified: (tm) => delivered.add(tm.states.length),
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        onModified: delivered.add,
       );
 
       await tester.pump();
@@ -60,13 +86,13 @@ void main() {
         tester
             .widget<InteractiveViewer>(find.byType(InteractiveViewer))
             .maxScale,
-        2.0,
+        kAutomatonCanvasMaxScale,
       );
       expect(
         tester
             .widget<InteractiveViewer>(find.byType(InteractiveViewer))
             .minScale,
-        0.05,
+        kAutomatonCanvasMinScale,
       );
 
       controller.addStateAt(const Offset(0, 0));
@@ -97,18 +123,10 @@ void main() {
     testWidgets('commits a beyond-slop touch drag to TM editor state', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                onTmModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
       );
 
       controller.addStateAt(const Offset(40, 40));
@@ -136,19 +154,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onTmModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(0, 0));
@@ -194,19 +204,11 @@ void main() {
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onTmModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
       );
 
       controller.addStateAt(const Offset(200, 200));
@@ -254,28 +256,17 @@ void main() {
     testWidgets('keeps TM transition actions inside a narrow canvas', (
       tester,
     ) async {
-      tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(320, 700);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.view.resetPhysicalSize);
       final toolController = AutomatonCanvasToolController(
         AutomatonCanvasTool.transition,
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onTmModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+        viewSize: const Size(320, 700),
       );
 
       controller.addStateAt(const Offset(100, 350));
@@ -306,7 +297,7 @@ void main() {
 
       expect(
         tester.getSize(find.byType(TmTransitionOperationsEditor)).width,
-        lessThanOrEqualTo(296),
+        296,
       );
       final actionButtons = [
         find.widgetWithText(OutlinedButton, 'Cancel'),
@@ -316,8 +307,8 @@ void main() {
       for (final button in actionButtons) {
         expect(button, findsOneWidget);
         final bounds = tester.getRect(button);
-        expect(bounds.left, greaterThanOrEqualTo(0));
-        expect(bounds.right, lessThanOrEqualTo(320));
+        expect(bounds.left, greaterThanOrEqualTo(12));
+        expect(bounds.right, lessThanOrEqualTo(308));
         expect(bounds.height, greaterThanOrEqualTo(48));
       }
       final cancelBounds = tester.getRect(actionButtons[0]);
@@ -330,32 +321,22 @@ void main() {
     testWidgets('recenters an open TM transition editor after resize', (
       tester,
     ) async {
-      tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(800, 700);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.view.resetPhysicalSize);
       final toolController = AutomatonCanvasToolController(
         AutomatonCanvasTool.transition,
       );
       addTearDown(toolController.dispose);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: TMCanvasGraphView(
-                controller: controller,
-                toolController: toolController,
-                onTmModified: (_) {},
-              ),
-            ),
-          ),
-        ),
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+        viewSize: const Size(800, 1000),
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
       );
 
-      controller.addStateAt(const Offset(340, 350));
-      controller.addStateAt(const Offset(460, 350));
+      controller.addStateAt(const Offset(340, 700));
+      controller.addStateAt(const Offset(460, 700));
       await tester.pumpAndSettle();
 
       final states = notifier.state.tm!.states.toList();
@@ -383,7 +364,7 @@ void main() {
       final editor = find.byType(TmTransitionOperationsEditor);
       expect(tester.getSize(editor).width, 360);
 
-      tester.view.physicalSize = const Size(320, 700);
+      tester.view.physicalSize = const Size(320, 1000);
       await tester.pumpAndSettle();
 
       final editorBounds = tester.getRect(editor);
@@ -402,6 +383,17 @@ void main() {
       }
       expect(editorBounds.left, greaterThanOrEqualTo(12));
       expect(editorBounds.right, lessThanOrEqualTo(308));
+
+      final compactHeight = editorBounds.height + 48;
+      tester.view.physicalSize = Size(320, compactHeight);
+      await tester.pumpAndSettle();
+
+      final verticallyClampedBounds = tester.getRect(editor);
+      expect(verticallyClampedBounds.top, greaterThanOrEqualTo(12));
+      expect(
+        verticallyClampedBounds.bottom,
+        lessThanOrEqualTo(compactHeight - 12),
+      );
     });
   });
 }

@@ -59,6 +59,8 @@ class _PDAPageState extends ConsumerState<PDAPage>
   late final CanvasHighlightSourceHandle _simulationHighlights;
   late final SimulationHighlightService _highlightService;
   late final AutomatonCanvasToolController _toolController;
+  late final List<Override> _canvasHighlightOverrides;
+  late final Listenable _canvasListenable;
   int _highlightRevision = 0;
   int _highlightSyncGeneration = 0;
 
@@ -85,6 +87,16 @@ class _PDAPageState extends ConsumerState<PDAPage>
     _toolController = AutomatonCanvasToolController(
       AutomatonCanvasTool.selection,
     );
+    _canvasHighlightOverrides = [
+      canvasHighlightServiceProvider.overrideWithValue(_highlightService),
+      canvasHighlightCoordinatorProvider.overrideWithValue(
+        _highlightCoordinator,
+      ),
+    ];
+    _canvasListenable = Listenable.merge([
+      _toolController,
+      _canvasController.graphRevision,
+    ]);
     _pdaEditorSub = ref.listenManual<PDAEditorState>(pdaEditorProvider, (
       previous,
       next,
@@ -178,17 +190,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
     );
   }
 
-  /// Overrides that bind this page's canvas to the highlight pipeline.
-  ///
-  /// Applied both to the page subtree and to every modal sheet, since sheets
-  /// are hosted by the Navigator and would otherwise miss them.
-  List<Override> get _canvasHighlightOverrides => [
-        canvasHighlightServiceProvider.overrideWithValue(_highlightService),
-        canvasHighlightCoordinatorProvider.overrideWithValue(
-          _highlightCoordinator,
-        ),
-      ];
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -210,7 +211,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
         mobileFloatingPanel: pda == null
             ? null
             : CollapsibleCanvasPanel(
-                label: 'Stack',
+                label: appLocalizationsOf(context).pdaStackPanelLabel,
                 icon: Icons.layers,
                 child: PDAStackPanel(
                   stackState: _currentStack,
@@ -366,11 +367,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
       onPdaModified: _handlePdaModified,
     );
 
-    final combinedListenable = Listenable.merge([
-      _toolController,
-      _canvasController.graphRevision,
-    ]);
-
     final onHelp = _showContextualHelp;
     final onSimulate = hasPda
         ? () => _showPanelSheet(
@@ -408,7 +404,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
             ),
           ),
           AnimatedBuilder(
-            animation: combinedListenable,
+            animation: _canvasListenable,
             builder: (context, _) {
               return MobileAutomatonControls(
                 onHelp: _showContextualHelp,
@@ -443,7 +439,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
       children: [
         Positioned.fill(child: canvas),
         AnimatedBuilder(
-          animation: combinedListenable,
+          animation: _canvasListenable,
           builder: (context, _) {
             return GraphViewCanvasToolbar(
               controller: _canvasController,

@@ -47,7 +47,7 @@ class _TMCanvasGraphViewState extends ConsumerState<TMCanvasGraphView> {
   ProviderSubscription<TMEditorState>? _subscription;
   TM? _lastDeliveredTm;
 
-  AutomatonGraphViewCanvasCustomization get _customization =>
+  late final AutomatonGraphViewCanvasCustomization _customization =
       AutomatonGraphViewCanvasCustomization.tm();
 
   @override

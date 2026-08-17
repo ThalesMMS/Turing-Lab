@@ -99,7 +99,7 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
   void didUpdateWidget(covariant TMSimulationPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.highlightService != widget.highlightService) {
-      _fallbackHighlightService.clear();
+      (oldWidget.highlightService ?? _fallbackHighlightService).clear();
     }
   }
 
@@ -346,7 +346,9 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
 
   Future<void> _handleStepChanged(int stepIndex) async {
     final result = _result;
-    if (result == null || stepIndex >= result.steps.length) return;
+    if (result == null || stepIndex < 0 || stepIndex >= result.steps.length) {
+      return;
+    }
     if (_isTransitioning) {
       _pendingStepIndex = stepIndex;
       return;
@@ -364,6 +366,7 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     if (!mounted ||
         generation != _requestGeneration ||
         !identical(_result, result)) {
+      _pendingStepIndex = null;
       if (mounted) {
         await _stepTransitionController.forward();
         if (mounted) {

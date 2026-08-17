@@ -880,6 +880,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get traceTape => 'fita';
 
   @override
+  String get pdaStackPanelLabel => 'Pilha';
+
+  @override
   String get timeout => 'Tempo limite excedido';
 
   @override

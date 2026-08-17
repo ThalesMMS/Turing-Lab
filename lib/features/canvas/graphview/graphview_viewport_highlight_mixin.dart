@@ -27,7 +27,6 @@ void _logViewportEvent(String message) {
   }
 }
 
-const double _kFitToContentMaxScale = 1.75;
 const double _kFitToContentFallbackExtent = 160.0;
 
 /// Shared viewport and highlight helpers for GraphView canvas controllers.
@@ -47,7 +46,7 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
 
   /// Maximum zoom applied when fitting the viewport to the current content.
   @protected
-  double get fitToContentMaxScale => _kFitToContentMaxScale;
+  double get fitToContentMaxScale => kAutomatonCanvasFitMaxScale;
 
   /// Returns the most recent viewport size reported by the hosting widget.
   @protected

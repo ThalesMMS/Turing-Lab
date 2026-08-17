@@ -22,12 +22,7 @@ class TMTransition extends Transition {
     required String writeSymbol,
     required TapeDirection? direction,
   }) {
-    final directionSymbol = switch (direction) {
-      TapeDirection.left => 'L',
-      TapeDirection.right => 'R',
-      TapeDirection.stay => 'S',
-      null => '',
-    };
+    final directionSymbol = direction?.symbol ?? '';
     final read = readSymbol.isEmpty ? '∅' : readSymbol;
     final write = writeSymbol.isEmpty ? '∅' : writeSymbol;
     final suffix = directionSymbol.isEmpty ? '' : ',$directionSymbol';

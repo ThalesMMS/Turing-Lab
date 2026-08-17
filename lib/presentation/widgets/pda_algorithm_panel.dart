@@ -588,9 +588,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     bool resetConvertedGrammar = true,
   }) {
     final highlights = _analysisHighlights;
-    final highlightTarget = highlights?.target;
-    if (highlightTarget != null) {
-      highlights!.clearFor(highlightTarget);
+    if (highlights != null) {
+      highlights.clearFor(highlights.target);
     }
     setState(() {
       _isAnalyzing = true;
@@ -609,8 +608,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         if (!mounted) {
           return;
         }
-        if (highlightTarget != null) {
-          highlights!.sendFor(highlightTarget, nextHighlight);
+        if (highlights != null) {
+          highlights.sendFor(highlights.target, nextHighlight);
         }
         setState(() {
           _isAnalyzing = false;

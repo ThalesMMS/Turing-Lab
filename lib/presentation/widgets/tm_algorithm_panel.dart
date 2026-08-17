@@ -20,7 +20,6 @@ import '../../core/models/simulation_highlight.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_analysis.dart';
 import '../../core/models/tm_transition.dart';
-import '../../core/models/tm_transition.dart' as tm_models show TapeDirection;
 import '../../core/models/asset_example.dart';
 import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
@@ -510,9 +509,8 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
 
   Future<void> _performAnalysis(_TMAnalysisFocus focus) async {
     final highlights = _analysisHighlights;
-    final highlightTarget = highlights?.target;
-    if (highlightTarget != null) {
-      highlights!.clearFor(highlightTarget);
+    if (highlights != null) {
+      highlights.clearFor(highlights.target);
     }
     setState(() {
       _isAnalyzing = true;
@@ -544,9 +542,9 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
 
     if (!mounted) return;
 
-    if (result.isSuccess && highlightTarget != null) {
-      highlights!.sendFor(
-        highlightTarget,
+    if (result.isSuccess && highlights != null) {
+      highlights.sendFor(
+        highlights.target,
         _highlightForAnalysis(focus, result.data!),
       );
     }
@@ -845,7 +843,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           (transition) =>
               transition.fromState == transition.toState &&
               transition.readSymbol == transition.writeSymbol &&
-              transition.direction == tm_models.TapeDirection.stay,
+              transition.direction == TapeDirection.stay,
         )
         .toList();
   }

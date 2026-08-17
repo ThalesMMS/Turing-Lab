@@ -135,6 +135,17 @@ class AutomatonTransitionPersistRequest {
   final BaseGraphViewCanvasController<dynamic, dynamic> controller;
 }
 
+bool _handleDeleteRequest(AutomatonTransitionPersistRequest request) {
+  if (request.payload is! AutomatonDeleteTransitionPayload) {
+    return false;
+  }
+  final transitionId = request.transitionId;
+  if (transitionId != null) {
+    request.controller.removeTransition(transitionId);
+  }
+  return true;
+}
+
 /// Transition configuration describing how to build overlays and persist
 /// updates for the current automaton type.
 class AutomatonGraphViewTransitionConfig {
@@ -199,13 +210,10 @@ class AutomatonGraphViewCanvasCustomization {
             );
           },
           persistTransition: (request) {
-            final controller = request.controller as GraphViewCanvasController;
-            if (request.payload is AutomatonDeleteTransitionPayload) {
-              if (request.transitionId != null) {
-                controller.removeTransition(request.transitionId!);
-              }
+            if (_handleDeleteRequest(request)) {
               return;
             }
+            final controller = request.controller as GraphViewCanvasController;
             final payload = request.payload as AutomatonLabelTransitionPayload;
             controller.addOrUpdateTransition(
               fromStateId: request.fromStateId,
@@ -265,6 +273,7 @@ class AutomatonGraphViewCanvasCustomization {
                     readSymbol: readSymbol,
                     popSymbol: popSymbol,
                     pushSymbol: pushSymbol,
+                    // Retain atom boundaries only when the push is unchanged.
                     pushSymbols: !lambdaPush &&
                             lambdaPush == payload.isLambdaPush &&
                             pushSymbol == payload.pushSymbol
@@ -285,14 +294,11 @@ class AutomatonGraphViewCanvasCustomization {
             );
           },
           persistTransition: (request) {
-            final pdaController =
-                request.controller as GraphViewPdaCanvasController;
-            if (request.payload is AutomatonDeleteTransitionPayload) {
-              if (request.transitionId != null) {
-                pdaController.removeTransition(request.transitionId!);
-              }
+            if (_handleDeleteRequest(request)) {
               return;
             }
+            final pdaController =
+                request.controller as GraphViewPdaCanvasController;
             final payload = request.payload as AutomatonPdaTransitionPayload;
             pdaController.addOrUpdateTransition(
               fromStateId: request.fromStateId,
@@ -351,14 +357,11 @@ class AutomatonGraphViewCanvasCustomization {
             );
           },
           persistTransition: (request) {
-            final tmController =
-                request.controller as GraphViewTmCanvasController;
-            if (request.payload is AutomatonDeleteTransitionPayload) {
-              if (request.transitionId != null) {
-                tmController.removeTransition(request.transitionId!);
-              }
+            if (_handleDeleteRequest(request)) {
               return;
             }
+            final tmController =
+                request.controller as GraphViewTmCanvasController;
             final payload = request.payload as AutomatonTmTransitionPayload;
             tmController.addOrUpdateTransition(
               fromStateId: request.fromStateId,

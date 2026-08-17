@@ -63,6 +63,7 @@ class _TMPageState extends ConsumerState<TMPage>
   late final CanvasHighlightSourceHandle _simulationHighlights;
   late final SimulationHighlightService _highlightService;
   late final AutomatonCanvasToolController _toolController;
+  late final Listenable _canvasListenable;
   int _highlightRevision = 0;
   int _highlightSyncGeneration = 0;
 
@@ -110,6 +111,10 @@ class _TMPageState extends ConsumerState<TMPage>
     );
     _scheduleEditorHighlights(initialEditorState);
     _toolController = AutomatonCanvasToolController();
+    _canvasListenable = Listenable.merge([
+      _toolController,
+      _canvasController.graphRevision,
+    ]);
 
     _tmEditorSub = ref.listenManual<TMEditorState>(tmEditorProvider, (
       previous,
@@ -209,7 +214,7 @@ class _TMPageState extends ConsumerState<TMPage>
         mobileFloatingPanel: tm == null
             ? null
             : CollapsibleCanvasPanel(
-                label: 'Tape',
+                label: appLocalizationsOf(context).traceTape,
                 icon: Icons.horizontal_rule,
                 child: TMTapePanel(
                   tapeState: _currentTape,
@@ -267,10 +272,6 @@ class _TMPageState extends ConsumerState<TMPage>
       toolController: _toolController,
       onTmModified: _handleTMUpdate,
     );
-    final combinedListenable = Listenable.merge([
-      _toolController,
-      _canvasController.graphRevision,
-    ]);
     final onSimulate = _isMachineReady ? _openSimulationSheet : null;
     final onAlgorithms = hasMachine ? _openAlgorithmSheet : null;
     final onMetrics = hasMachine ? _openMetricsSheet : null;
@@ -290,7 +291,7 @@ class _TMPageState extends ConsumerState<TMPage>
             ),
           ),
           AnimatedBuilder(
-            animation: combinedListenable,
+            animation: _canvasListenable,
             builder: (context, _) {
               return MobileAutomatonControls(
                 onHelp: _showContextualHelp,
@@ -323,7 +324,7 @@ class _TMPageState extends ConsumerState<TMPage>
       children: [
         Positioned.fill(child: canvas),
         AnimatedBuilder(
-          animation: combinedListenable,
+          animation: _canvasListenable,
           builder: (context, _) {
             return GraphViewCanvasToolbar(
               controller: _canvasController,

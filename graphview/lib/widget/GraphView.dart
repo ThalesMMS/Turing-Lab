@@ -91,7 +91,7 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
     super.initState();
 
     _transformationController = widget.controller?.transformationController ??
-        TransformationController();
+        TransformationController(_resetMatrix());
 
     _panController = AnimationController(
       vsync: this,
@@ -228,7 +228,12 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
     }
   }
 
-  void resetView() => animateToMatrix(Matrix4.identity());
+  Matrix4 _resetMatrix() {
+    final scale = 1.0.clamp(widget.minScale, widget.maxScale).toDouble();
+    return Matrix4.diagonal3Values(scale, scale, 1);
+  }
+
+  void resetView() => animateToMatrix(_resetMatrix());
 
   void zoomToFit() {
     var graph = widget.delegate.getVisibleGraphOnly();

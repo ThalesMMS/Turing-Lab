@@ -13,3 +13,4 @@
 const double kAutomatonStateDiameter = 96;
 const double kAutomatonCanvasMinScale = 0.05;
 const double kAutomatonCanvasMaxScale = 2;
+const double kAutomatonCanvasFitMaxScale = 1.75;

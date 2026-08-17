@@ -590,6 +590,7 @@
   "traceRemaining": "rem",
   "traceStack": "stack",
   "traceTape": "tape",
+  "pdaStackPanelLabel": "Stack",
   "timeout": "Timeout",
   "infiniteLoop": "Infinite Loop",
   "steps": "Steps",

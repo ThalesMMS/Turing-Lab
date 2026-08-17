@@ -22,6 +22,7 @@ import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/trace_viewers/tm_trace_viewer.dart';
 
 Future<void> _pumpPanel(
   WidgetTester tester,
@@ -32,6 +33,7 @@ Future<void> _pumpPanel(
     ProviderScope(
       overrides: overrides,
       child: MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: Scaffold(
           body: SizedBox(
             width: 480,
@@ -440,6 +442,7 @@ void main() {
           (_, __) => providerNotifications++,
         );
 
+        final initialSimulationBaseline = providerNotifications;
         await tester.tap(find.text('Simulate PDA'));
         await tester.pump();
         await _completeLatestPdaSimulation(tester, backend);
@@ -450,20 +453,25 @@ void main() {
         expect(container.read(pdaSimulationProvider).currentStepIndex, 0);
         expect(stackStates.last.symbols, ['Z']);
         expect(service.emittedIndices.last, 0);
-        expect(providerNotifications, 3);
+        expect(providerNotifications - initialSimulationBaseline, 3);
 
-        await tester.tap(find.byIcon(Icons.skip_next));
+        final navigationBaseline = providerNotifications;
+        final nextButton = find.byIcon(Icons.skip_next);
+        await tester.ensureVisible(nextButton);
+        await tester.pumpAndSettle();
+        await tester.tap(nextButton);
         await tester.pumpAndSettle();
 
         expect(find.text('2 / 3'), findsOneWidget);
         expect(container.read(pdaSimulationProvider).currentStepIndex, 1);
         expect(stackStates.last.symbols, ['A', 'Z']);
         expect(service.emittedIndices.last, 1);
-        expect(providerNotifications, 4);
+        expect(providerNotifications - navigationBaseline, 1);
 
         final emissionCount = service.emittedIndices.length;
         final clearCount = service.clearCount;
         final stackCallbackCount = stackStates.length;
+        final displayToggleBaseline = providerNotifications;
         await tester.ensureVisible(find.byType(Switch));
         await tester.pumpAndSettle();
         await tester.tap(find.byType(Switch));
@@ -479,8 +487,9 @@ void main() {
         expect(stackStates.length, stackCallbackCount);
         expect(container.read(pdaSimulationProvider).currentStepIndex, 1);
         expect(stackStates.last.symbols, ['A', 'Z']);
-        expect(providerNotifications, 4);
+        expect(providerNotifications - displayToggleBaseline, 0);
 
+        final secondSimulationBaseline = providerNotifications;
         await tester.ensureVisible(find.text('Simulate PDA'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Simulate PDA'));
@@ -491,7 +500,7 @@ void main() {
         expect(container.read(pdaSimulationProvider).currentStepIndex, 0);
         expect(stackStates.last.symbols, ['Z']);
         expect(service.emittedIndices.last, 0);
-        expect(providerNotifications, 7);
+        expect(providerNotifications - secondSimulationBaseline, 3);
 
         subscription.close();
         final clearCountBeforeDispose = service.clearCount;
@@ -641,6 +650,16 @@ void main() {
         await tester.tap(find.text('Simulate TM'));
         await tester.pump();
         await _completeLatestTmSimulation(tester, backend);
+
+        final traceViewer = tester.widget<TMTraceViewer>(
+          find.byType(TMTraceViewer),
+        );
+        traceViewer.onStepChanged?.call(-1);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('1 / 3'), findsOneWidget);
+
         await tester.tap(find.byTooltip('Next Step'));
         await tester.pumpAndSettle();
 
@@ -655,8 +674,7 @@ void main() {
       },
     );
 
-    testWidgets('PDA and TM service replacement never clears borrowed services',
-        (
+    testWidgets('TM service replacement clears the previous injected service', (
       tester,
     ) async {
       final oldPdaService = _SpyHighlightService();
@@ -697,7 +715,7 @@ void main() {
           highlightService: newTmService,
         ),
       );
-      expect(oldTmService.clearCount, 0);
+      expect(oldTmService.clearCount, 1);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
