@@ -1,15 +1,6 @@
 part of '../fsa_page.dart';
 
 extension _FSAPageStateBehavior on _FSAPageState {
-  void _toggleCanvasTool(AutomatonCanvasTool tool) {
-    final current = _toolController.activeTool;
-    if (current == tool) {
-      _toolController.setActiveTool(AutomatonCanvasTool.selection);
-    } else {
-      _toolController.setActiveTool(tool);
-    }
-  }
-
   void _handleAddStatePressed() {
     if (_toolController.activeTool != AutomatonCanvasTool.addState) {
       _toolController.setActiveTool(AutomatonCanvasTool.addState);
@@ -376,7 +367,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   void _showContextualHelp() {
-    final helpNotifier = ref.read(helpProvider.notifier);
     final automaton = ref.read(automatonStateProvider).currentAutomaton;
 
     // Determine the most relevant help content based on current automaton state
@@ -391,25 +381,23 @@ extension _FSAPageStateBehavior on _FSAPageState {
       helpContextId = 'concept_nfa';
     }
 
-    final helpContent = helpNotifier.getHelpByContext(helpContextId);
-    if (helpContent != null) {
-      ContextAwareHelpPanel.show(context, helpContent: helpContent);
-    }
+    showWorkspaceHelp(
+      context: context,
+      ref: ref,
+      contextId: helpContextId,
+    );
   }
 
   Widget _buildCanvasArea({
     required AutomatonStateProviderState state,
     required bool isMobile,
   }) {
-    final simulationState = ref.watch(automatonSimulationProvider);
     Widget buildGraphViewCanvas() {
       return AutomatonGraphViewCanvas(
         automaton: state.currentAutomaton,
         canvasKey: _canvasKey,
         controller: _canvasController,
         toolController: _toolController,
-        simulationResult: simulationState.simulationResult,
-        showTrace: simulationState.simulationResult != null,
       );
     }
 
@@ -445,6 +433,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
               animation: combinedListenable,
               builder: (context, _) {
                 return MobileAutomatonControls(
+                  onHelp: _showContextualHelp,
                   enableToolSelection: true,
                   showSelectionTool: true,
                   activeTool: _toolController.activeTool,
@@ -452,21 +441,18 @@ extension _FSAPageStateBehavior on _FSAPageState {
                     AutomatonCanvasTool.selection,
                   ),
                   onAddState: _handleAddStatePressed,
-                  onAddTransition: () =>
-                      _toggleCanvasTool(AutomatonCanvasTool.transition),
+                  onAddTransition: () => _toolController.toggleTool(
+                    AutomatonCanvasTool.transition,
+                  ),
+                  onZoomIn: _canvasController.zoomIn,
+                  onZoomOut: _canvasController.zoomOut,
                   onFitToContent: _canvasController.fitToContent,
                   onResetView: _canvasController.resetView,
-                  onClear: () => ref
-                      .read(automatonStateProvider.notifier)
-                      .clearAutomaton(),
+                  onClear: _canvasController.clearCanvas,
                   onUndo: _canvasController.undo,
                   onRedo: _canvasController.redo,
                   canUndo: _canvasController.canUndo,
                   canRedo: _canvasController.canRedo,
-                  onSimulate: null,
-                  isSimulationEnabled: false,
-                  onAlgorithms: null,
-                  isAlgorithmsEnabled: false,
                   statusMessage: statusMessage,
                 );
               },
@@ -484,7 +470,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
             animation: combinedListenable,
             builder: (context, _) {
               return GraphViewCanvasToolbar(
-                layout: GraphViewCanvasToolbarLayout.desktop,
                 controller: _canvasController,
                 enableToolSelection: true,
                 showSelectionTool: true,
@@ -493,10 +478,10 @@ extension _FSAPageStateBehavior on _FSAPageState {
                   AutomatonCanvasTool.selection,
                 ),
                 onAddState: _handleAddStatePressed,
+                onHelp: _showContextualHelp,
                 onAddTransition: () =>
-                    _toggleCanvasTool(AutomatonCanvasTool.transition),
-                onClear: () =>
-                    ref.read(automatonStateProvider.notifier).clearAutomaton(),
+                    _toolController.toggleTool(AutomatonCanvasTool.transition),
+                onClear: _canvasController.clearCanvas,
                 statusMessage: statusMessage,
               );
             },
@@ -516,54 +501,15 @@ extension _FSAPageStateBehavior on _FSAPageState {
 
   String _buildToolbarStatusMessage(AutomatonStateProviderState state) {
     final automaton = state.currentAutomaton;
-    if (automaton == null) {
-      return 'No automaton loaded';
-    }
-
-    final warnings = <String>[];
-    if (automaton.initialState == null) {
-      warnings.add('Missing start state');
-    }
-    if (automaton.acceptingStates.isEmpty) {
-      warnings.add('No accepting states');
-    }
-    if (!automaton.isDeterministic) {
-      warnings.add('Nondeterministic');
-    }
-    if (automaton.hasEpsilonTransitions) {
-      warnings.add('λ-transitions present');
-    }
-
-    final counts =
-        '${_formatCount('state', 'states', automaton.states.length)} · '
-        '${_formatCount('transition', 'transitions', automaton.transitions.length)}';
-
-    if (warnings.isEmpty) {
-      return counts;
-    }
-
-    return '⚠ ${warnings.join(' · ')} · $counts';
-  }
-
-  String _formatCount(String singular, String plural, int count) {
-    final label = count == 1 ? singular : plural;
-    return '$count $label';
-  }
-
-  Widget _buildMobileLayout(AutomatonStateProviderState state) {
-    _syncValidationHighlight(_validationDiagnosticsFor(state.currentAutomaton));
-
-    return SafeArea(
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              child: _buildCanvasArea(state: state, isMobile: true),
-            ),
-          ),
-        ],
-      ),
+    return buildAutomatonWorkspaceStatus(
+      l10n: appLocalizationsOf(context),
+      stateCount: automaton?.states.length ?? 0,
+      transitionCount: automaton?.transitions.length ?? 0,
+      hasInitialState: automaton?.initialState != null,
+      hasAcceptingState: automaton?.acceptingStates.isNotEmpty ?? false,
+      hasNondeterministicTransitions:
+          automaton != null && !automaton.isDeterministic,
+      hasLambdaTransitions: automaton?.hasEpsilonTransitions ?? false,
     );
   }
 
@@ -671,58 +617,83 @@ extension _FSAPageStateBehavior on _FSAPageState {
     );
   }
 
-  Widget _buildDesktopLayout(AutomatonStateProviderState state) {
-    final algorithmState = ref.watch(automatonAlgorithmProvider);
-    final simulationState = ref.watch(automatonSimulationProvider);
-    final stepState = ref.watch(algorithmStepProvider);
-    final conversionHistory = ref.watch(conversionHistoryProvider).history;
-    final validationDiagnostics = _validationDiagnosticsFor(
-      state.currentAutomaton,
-    );
-    _syncValidationHighlight(validationDiagnostics);
+  Widget _buildAlgorithmWorkspacePanel({
+    required AutomatonStateProviderState state,
+    required bool useExpanded,
+  }) {
+    return Consumer(
+      builder: (context, panelRef, _) {
+        final algorithmState = panelRef.watch(automatonAlgorithmProvider);
+        final stepState = panelRef.watch(algorithmStepProvider);
+        final conversionHistory =
+            panelRef.watch(conversionHistoryProvider).history;
+        final validationDiagnostics = _validationDiagnosticsFor(
+          state.currentAutomaton,
+        );
+        final algorithmPanel = _buildAlgorithmPanelForState(
+          state,
+          algorithmState,
+        );
+        final validationPanel = _buildValidationDiagnosticsPanel(
+          validationDiagnostics,
+        );
+        final comparisonPanel = _buildConversionComparisonPanel(
+          conversionHistory,
+          state.currentAutomaton,
+        );
 
-    return Row(
-      children: [
-        // Left panel - Controls, validation, and Step Viewer
-        Expanded(
-          flex: 2,
-          child: Column(
+        if (useExpanded) {
+          return Column(
             children: [
-              Expanded(
-                child: _buildAlgorithmPanelForState(state, algorithmState),
-              ),
-              _buildValidationDiagnosticsPanel(validationDiagnostics),
-              _buildConversionComparisonPanel(
-                conversionHistory,
-                state.currentAutomaton,
-              ),
+              Expanded(child: algorithmPanel),
+              validationPanel,
+              comparisonPanel,
               if (stepState.hasSteps) ...[
                 const SizedBox(height: 8),
                 Expanded(child: _buildStepViewerPanel()),
               ],
             ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Center panel - Canvas
-        Expanded(
-          flex: 3,
-          child: _buildCanvasArea(state: state, isMobile: false),
-        ),
-        const SizedBox(width: 16),
-        // Right panel - Simulation
-        Expanded(
-          flex: 2,
-          child: SimulationPanel(
-            onSimulate: (inputString) => ref
-                .read(automatonSimulationProvider.notifier)
-                .simulateAutomaton(inputString),
-            simulationResult: simulationState.simulationResult,
-            regexResult: algorithmState.regexResult,
-            highlightService: _highlightService,
-          ),
-        ),
-      ],
+          );
+        }
+
+        final stepViewerMaxHeight = (MediaQuery.sizeOf(context).height * 0.45)
+            .clamp(_kTabletStepViewerMinHeight, _kTabletStepViewerMaxHeight);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            algorithmPanel,
+            validationPanel,
+            comparisonPanel,
+            if (stepState.hasSteps) ...[
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: _kTabletStepViewerMinHeight,
+                  maxHeight: stepViewerMaxHeight,
+                ),
+                child: _buildStepViewerPanel(),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSimulationWorkspacePanel() {
+    return Consumer(
+      builder: (context, panelRef, _) {
+        final simulationState = panelRef.watch(automatonSimulationProvider);
+        final algorithmState = panelRef.watch(automatonAlgorithmProvider);
+        return SimulationPanel(
+          onSimulate: (inputString) => panelRef
+              .read(automatonSimulationProvider.notifier)
+              .simulateAutomaton(inputString),
+          simulationResult: simulationState.simulationResult,
+          regexResult: algorithmState.regexResult,
+          highlightService: _highlightService,
+        );
+      },
     );
   }
 
@@ -867,53 +838,5 @@ extension _FSAPageStateBehavior on _FSAPageState {
         _highlightService.dispatch(highlight);
       }
     });
-  }
-
-  Widget _buildTabletLayout(AutomatonStateProviderState state) {
-    final algorithmState = ref.watch(automatonAlgorithmProvider);
-    final simulationState = ref.watch(automatonSimulationProvider);
-    final stepState = ref.watch(algorithmStepProvider);
-    final conversionHistory = ref.watch(conversionHistoryProvider).history;
-    final validationDiagnostics = _validationDiagnosticsFor(
-      state.currentAutomaton,
-    );
-    _syncValidationHighlight(validationDiagnostics);
-    final tabletStepViewerMaxHeight = (MediaQuery.sizeOf(context).height * 0.45)
-        .clamp(_kTabletStepViewerMinHeight, _kTabletStepViewerMaxHeight);
-
-    final algorithmColumn = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildAlgorithmPanelForState(state, algorithmState),
-        _buildValidationDiagnosticsPanel(validationDiagnostics),
-        _buildConversionComparisonPanel(
-          conversionHistory,
-          state.currentAutomaton,
-        ),
-        if (stepState.hasSteps) ...[
-          const SizedBox(height: 8),
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: _kTabletStepViewerMinHeight,
-              maxHeight: tabletStepViewerMaxHeight,
-            ),
-            child: _buildStepViewerPanel(),
-          ),
-        ],
-      ],
-    );
-
-    return TabletLayoutContainer(
-      canvas: _buildCanvasArea(state: state, isMobile: false),
-      algorithmPanel: algorithmColumn,
-      simulationPanel: SimulationPanel(
-        onSimulate: (inputString) => ref
-            .read(automatonSimulationProvider.notifier)
-            .simulateAutomaton(inputString),
-        simulationResult: simulationState.simulationResult,
-        regexResult: algorithmState.regexResult,
-        highlightService: _highlightService,
-      ),
-    );
   }
 }

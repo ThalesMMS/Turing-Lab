@@ -11,10 +11,11 @@
 //
 import 'package:flutter/material.dart';
 
+import '../../../presentation/widgets/transition_editors/transition_editor_shell.dart';
 import '../../../presentation/widgets/transition_editors/transition_label_editor.dart';
 
 /// Overlay editor used by the GraphView canvas to update transition labels.
-class GraphViewLabelFieldEditor extends StatefulWidget {
+class GraphViewLabelFieldEditor extends StatelessWidget {
   const GraphViewLabelFieldEditor({
     super.key,
     required this.initialValue,
@@ -29,83 +30,15 @@ class GraphViewLabelFieldEditor extends StatefulWidget {
   final VoidCallback? onDelete;
 
   @override
-  State<GraphViewLabelFieldEditor> createState() =>
-      _GraphViewLabelFieldEditorState();
-}
-
-class _GraphViewLabelFieldEditorState extends State<GraphViewLabelFieldEditor> {
-  late final FocusScopeNode _focusScopeNode;
-  late final FocusNode _focusNode;
-  bool _ignoreFocusLoss = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusScopeNode = FocusScopeNode();
-    _focusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _focusScopeNode.requestFocus(_focusNode);
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    _focusScopeNode.dispose();
-    super.dispose();
-  }
-
-  void _handleFocusChange(bool focused) {
-    if (!focused && !_ignoreFocusLoss) {
-      widget.onCancel();
-    }
-  }
-
-  void _unfocusWithoutCancel() {
-    _ignoreFocusLoss = true;
-    _focusScopeNode.unfocus();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final touchOptimized = MediaQuery.sizeOf(context).shortestSide < 900;
-    return FocusScope(
-      node: _focusScopeNode,
-      child: Focus(
-        focusNode: _focusNode,
-        onFocusChange: _handleFocusChange,
-        child: Material(
-          elevation: 4,
-          borderRadius: BorderRadius.circular(8),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 200, maxWidth: 320),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: TransitionLabelEditorForm(
-                initialValue: widget.initialValue,
-                onSubmit: (value) {
-                  widget.onSubmit(value);
-                  _unfocusWithoutCancel();
-                },
-                onCancel: () {
-                  widget.onCancel();
-                  _unfocusWithoutCancel();
-                },
-                onDelete: widget.onDelete == null
-                    ? null
-                    : () {
-                        widget.onDelete!();
-                        _unfocusWithoutCancel();
-                      },
-                autofocus: true,
-                touchOptimized: touchOptimized,
-              ),
-            ),
-          ),
-        ),
+    return TransitionEditorShell(
+      child: TransitionLabelEditorForm(
+        initialValue: initialValue,
+        onSubmit: onSubmit,
+        onCancel: onCancel,
+        onDelete: onDelete,
+        autofocus: true,
+        touchOptimized: true,
       ),
     );
   }

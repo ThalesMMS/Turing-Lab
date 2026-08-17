@@ -214,6 +214,7 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
     String? readSymbol,
     String? writeSymbol,
     TapeDirection? direction,
+    int? tapeNumber,
     Vector2? controlPoint,
   }) {
     final fromIndex = _states.indexWhere((state) => state.id == fromStateId);
@@ -231,6 +232,7 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
     final resolvedWrite = writeSymbol ?? existing?.writeSymbol ?? '';
     final resolvedDirection =
         direction ?? existing?.direction ?? TapeDirection.right;
+    final resolvedTapeNumber = tapeNumber ?? existing?.tapeNumber ?? 0;
     final resolvedControlPoint =
         controlPoint ?? existing?.controlPoint ?? Vector2.zero();
 
@@ -244,6 +246,7 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
           readSymbol: resolvedRead,
           writeSymbol: resolvedWrite,
           direction: resolvedDirection,
+          tapeNumber: resolvedTapeNumber,
         );
 
     final updated = base.copyWith(
@@ -253,12 +256,16 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
       readSymbol: resolvedRead,
       writeSymbol: resolvedWrite,
       direction: resolvedDirection,
-      label: _formatTransitionLabel(
-        resolvedRead,
-        resolvedWrite,
-        resolvedDirection,
+      tapeNumber: resolvedTapeNumber,
+      label: TMTransition.formatLabel(
+        readSymbol: resolvedRead,
+        writeSymbol: resolvedWrite,
+        direction: resolvedDirection,
       ),
     );
+    if (updated.validate().isNotEmpty) {
+      return state.tm;
+    }
 
     if (existingIndex == -1) {
       _transitions.add(updated);
@@ -275,6 +282,7 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
     String? readSymbol,
     String? writeSymbol,
     TapeDirection? direction,
+    int? tapeNumber,
   }) {
     final index = _transitions.indexWhere((transition) => transition.id == id);
     if (index == -1) {
@@ -289,6 +297,7 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
       readSymbol: readSymbol ?? transition.readSymbol,
       writeSymbol: writeSymbol ?? transition.writeSymbol,
       direction: direction ?? transition.direction,
+      tapeNumber: tapeNumber ?? transition.tapeNumber,
       controlPoint: transition.controlPoint,
     );
   }
@@ -371,9 +380,24 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
   }
 
   TM? _rebuildState() {
+    final current = state.tm;
     if (_states.isEmpty) {
-      state = const TMEditorState(tm: null);
-      return null;
+      if (current == null) {
+        state = const TMEditorState();
+        return null;
+      }
+      final emptyTm = current.copyWith(
+        states: <State>{},
+        transitions: <Transition>{},
+        initialState: null,
+        acceptingStates: <State>{},
+        modified: DateTime.now(),
+      );
+      state = TMEditorState(
+        tm: emptyTm,
+        tapeSymbols: emptyTm.tapeAlphabet,
+      );
+      return emptyTm;
     }
 
     final stateSet = _states.toSet();
@@ -386,10 +410,14 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
 
     final acceptingStates = _states.where((state) => state.isAccepting).toSet();
 
-    const blankSymbol = 'B';
-    final alphabet = <String>{};
-    final tapeAlphabet = <String>{blankSymbol};
+    final blankSymbol = current?.blankSymbol ?? 'B';
+    final alphabet = <String>{...?current?.alphabet};
+    final tapeAlphabet = <String>{
+      ...?current?.tapeAlphabet,
+      blankSymbol,
+    };
     final moveDirections = <String>{};
+    var tapeCount = current?.tapeCount ?? 1;
 
     for (final transition in transitionSet) {
       if (transition.readSymbol.isNotEmpty) {
@@ -404,29 +432,40 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
       }
 
       moveDirections.add(transition.direction.name);
+      tapeCount = math.max(tapeCount, transition.tapeNumber + 1);
     }
-
-    // blankSymbol already declared above and added to tapeAlphabet
 
     final now = DateTime.now();
 
-    final tm = TM(
-      id: 'editor-tm',
-      name: 'Canvas TM',
-      states: stateSet,
-      transitions: transitionSet.map<Transition>((t) => t).toSet(),
-      alphabet: alphabet,
-      initialState: initialState,
-      acceptingStates: acceptingStates,
-      created: now,
-      modified: now,
-      bounds: const math.Rectangle(0, 0, 800, 600),
-      tapeAlphabet: tapeAlphabet,
-      blankSymbol: blankSymbol,
-      tapeCount: 1,
-      zoomLevel: 1,
-      panOffset: Vector2.zero(),
-    );
+    final transitions = transitionSet.map<Transition>((t) => t).toSet();
+    final tm = current == null
+        ? TM(
+            id: 'editor-tm',
+            name: 'Canvas TM',
+            states: stateSet,
+            transitions: transitions,
+            alphabet: alphabet,
+            initialState: initialState,
+            acceptingStates: acceptingStates,
+            created: now,
+            modified: now,
+            bounds: const math.Rectangle(0, 0, 800, 600),
+            tapeAlphabet: tapeAlphabet,
+            blankSymbol: blankSymbol,
+            tapeCount: tapeCount,
+            zoomLevel: 1,
+            panOffset: Vector2.zero(),
+          )
+        : current.copyWith(
+            states: stateSet,
+            transitions: transitions,
+            alphabet: alphabet,
+            initialState: initialState,
+            acceptingStates: acceptingStates,
+            modified: now,
+            tapeAlphabet: tapeAlphabet,
+            tapeCount: tapeCount,
+          );
 
     final nondeterministicTransitionIds = _findNondeterministicTransitions(
       transitionSet,
@@ -469,22 +508,6 @@ class TMEditorNotifier extends StateNotifier<TMEditorState> {
     for (final changedState in update.changedStates) {
       _rebindTransitionsForState(changedState);
     }
-  }
-
-  String _formatTransitionLabel(
-    String read,
-    String write,
-    TapeDirection direction,
-  ) {
-    final directionSymbol = switch (direction) {
-      TapeDirection.left => 'L',
-      TapeDirection.right => 'R',
-      TapeDirection.stay => 'S',
-    };
-
-    final safeRead = read.isEmpty ? '∅' : read;
-    final safeWrite = write.isEmpty ? '∅' : write;
-    return '$safeRead/$safeWrite,$directionSymbol';
   }
 }
 

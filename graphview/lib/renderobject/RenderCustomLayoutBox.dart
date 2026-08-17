@@ -582,6 +582,18 @@ class RenderCustomLayoutBox extends RenderBox
   }
 
   @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (size.contains(position)) {
+      return super.hitTest(result, position: position);
+    }
+    if (hitTestChildren(result, position: position)) {
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
+  }
+
+  @override
   bool hitTestSelf(Offset position) => true;
 
   @override
@@ -603,28 +615,29 @@ class RenderCustomLayoutBox extends RenderBox
     if (_activePointerId != null) return;
     if (enableAnimation && !_nodeAnimationController.isCompleted) return;
 
-    // Check if dragging is enabled
-    if (_nodeDraggingConfiguration?.enabled == false) return;
-
     final localPosition = event.localPosition;
     final node = _findNodeAt(localPosition);
 
-    if (node != null) {
-      // Check if node is locked
-      if (node.locked) return;
+    if (node == null) return;
+    if (node.locked) return;
 
-      // Check canDragPredicate if configuration is available
-      final predicate = _nodeDraggingConfiguration?.canDragPredicate;
-      if (predicate != null && !predicate(node)) return;
+    // Check canDragPredicate if configuration is available
+    final predicate = _nodeDraggingConfiguration?.canDragPredicate;
+    if (predicate != null && !predicate(node)) return;
 
-      _activePointerId = event.pointer;
-      _draggedNode = node;
-      _dragStartLocalPosition = localPosition;
-      _dragStartNodePosition = node.position;
-      _previousNodePositions[node] =
-          node.position; // Initialize previous position
-      _isDragging = false;
-    }
+    _nodeDraggingConfiguration?.onNodePointerDown?.call(node, event);
+
+    // External recognizers can observe the pointer without enabling
+    // GraphView's built-in node movement.
+    if (_nodeDraggingConfiguration?.enabled == false) return;
+
+    _activePointerId = event.pointer;
+    _draggedNode = node;
+    _dragStartLocalPosition = localPosition;
+    _dragStartNodePosition = node.position;
+    _previousNodePositions[node] =
+        node.position; // Initialize previous position
+    _isDragging = false;
   }
 
   void _handlePointerMove(PointerMoveEvent event) {

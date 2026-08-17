@@ -19,6 +19,7 @@ import '../pages/help_category_page.dart';
 import '../providers/help_provider.dart';
 import 'app_snackbar.dart';
 import 'help_icon_mapper.dart';
+import 'keyboard_shortcuts_dialog.dart';
 
 /// Displays context-aware help content in an expandable panel dialog.
 ///
@@ -31,6 +32,7 @@ class ContextAwareHelpPanel extends ConsumerWidget {
     required this.helpContent,
     this.examples,
     this.showExamplesInitially = false,
+    this.showKeyboardShortcutsAction = false,
     this.onClose,
     this.onNavigateToRelated,
   });
@@ -43,6 +45,9 @@ class ContextAwareHelpPanel extends ConsumerWidget {
 
   /// Whether the examples section starts expanded.
   final bool showExamplesInitially;
+
+  /// Whether to expose the keyboard-shortcuts dialog from this panel.
+  final bool showKeyboardShortcutsAction;
 
   /// Invoked when the panel is closed.
   final VoidCallback? onClose;
@@ -111,6 +116,22 @@ class ContextAwareHelpPanel extends ConsumerWidget {
           ),
         ),
         actions: [
+          if (showKeyboardShortcutsAction)
+            TextButton.icon(
+              onPressed: () async {
+                final navigator = Navigator.of(
+                  context,
+                  rootNavigator: true,
+                );
+                final rootContext = navigator.context;
+                navigator.pop();
+                if (rootContext.mounted) {
+                  await KeyboardShortcutsDialog.show(rootContext);
+                }
+              },
+              icon: const Icon(Icons.keyboard),
+              label: Text(l10n.keyboardShortcutsTitle),
+            ),
           Semantics(
             label: l10n.closeHelpPanel,
             button: true,
@@ -201,6 +222,7 @@ class ContextAwareHelpPanel extends ConsumerWidget {
     required HelpContentModel helpContent,
     String? examples,
     bool showExamplesInitially = false,
+    bool showKeyboardShortcutsAction = false,
     VoidCallback? onClose,
     void Function(String conceptId)? onNavigateToRelated,
   }) {
@@ -210,6 +232,7 @@ class ContextAwareHelpPanel extends ConsumerWidget {
         helpContent: helpContent,
         examples: examples,
         showExamplesInitially: showExamplesInitially,
+        showKeyboardShortcutsAction: showKeyboardShortcutsAction,
         onClose: onClose,
         onNavigateToRelated: onNavigateToRelated,
       ),

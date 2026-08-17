@@ -51,6 +51,7 @@ class _SimulationPanelState extends State<SimulationPanel> {
   bool _isSimulating = false;
   bool _isStepByStep = false;
   int _simulationGeneration = 0;
+  int _highlightSyncGeneration = 0;
 
   SimulationHighlightService get _highlightService =>
       widget.highlightService ?? _fallbackHighlightService;
@@ -59,22 +60,38 @@ class _SimulationPanelState extends State<SimulationPanel> {
   void initState() {
     super.initState();
     _fallbackHighlightService = SimulationHighlightService();
+    _scheduleHighlightSynchronization();
   }
 
   @override
   void didUpdateWidget(covariant SimulationPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.highlightService != widget.highlightService) {
-      (oldWidget.highlightService ?? _fallbackHighlightService).clear();
+    if (oldWidget.simulationResult != widget.simulationResult ||
+        oldWidget.highlightService != widget.highlightService) {
+      _scheduleHighlightSynchronization();
     }
   }
 
   @override
   void dispose() {
     _simulationGeneration++;
+    _highlightSyncGeneration++;
     _inputController.dispose();
     _fallbackHighlightService.clear();
     super.dispose();
+  }
+
+  void _scheduleHighlightSynchronization() {
+    final generation = ++_highlightSyncGeneration;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _highlightSyncGeneration) return;
+      final result = widget.simulationResult;
+      if (result == null || result.steps.isEmpty) {
+        _highlightService.clear();
+        return;
+      }
+      _highlightService.emitFromSteps(result.steps, 0);
+    });
   }
 
   Future<void> _simulate() async {
@@ -251,7 +268,7 @@ class _SimulationPanelState extends State<SimulationPanel> {
                     setState(() {
                       _isStepByStep = value;
                     });
-                    if (!value) _highlightService.clear();
+                    if (!value) _scheduleHighlightSynchronization();
                   },
                 ),
               ),

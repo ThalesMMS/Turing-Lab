@@ -94,6 +94,7 @@ class GraphViewPdaCanvasController
     String? readSymbol,
     String? popSymbol,
     String? pushSymbol,
+    List<String>? pushSymbols,
     bool? isLambdaInput,
     bool? isLambdaPop,
     bool? isLambdaPush,
@@ -116,27 +117,11 @@ class GraphViewPdaCanvasController
         readSymbol: readSymbol,
         popSymbol: popSymbol,
         pushSymbol: pushSymbol,
+        pushSymbols: pushSymbols,
         isLambdaInput: isLambdaInput,
         isLambdaPop: isLambdaPop,
         isLambdaPush: isLambdaPush,
         controlPoint: controlPoint,
-      );
-    });
-  }
-
-  /// Updates only the geometry of the transition identified by [id].
-  void updateTransitionControlPoint(
-    String id,
-    double controlPointX,
-    double controlPointY,
-  ) {
-    _logPdaCanvas(
-      'updateTransitionControlPoint -> id=$id cp=(${controlPointX.toStringAsFixed(2)}, ${controlPointY.toStringAsFixed(2)})',
-    );
-    performMutation(() {
-      _notifier.upsertTransition(
-        id: id,
-        controlPoint: Vector2(controlPointX, controlPointY),
       );
     });
   }
@@ -152,6 +137,10 @@ class GraphViewPdaCanvasController
 
   @override
   void applySnapshotToDomain(GraphViewAutomatonSnapshot snapshot) {
+    final initialStackSymbol = snapshot.metadata.initialStackSymbol ?? 'Z';
+    final stackAlphabet = snapshot.metadata.stackAlphabet.isNotEmpty
+        ? snapshot.metadata.stackAlphabet.toSet()
+        : <String>{initialStackSymbol};
     final template = _notifier.currentPda ??
         PDA(
           id: snapshot.metadata.id ??
@@ -165,8 +154,8 @@ class GraphViewPdaCanvasController
           created: DateTime.now(),
           modified: DateTime.now(),
           bounds: const math.Rectangle<double>(0, 0, 800, 600),
-          stackAlphabet: const {'Z'},
-          initialStackSymbol: 'Z',
+          stackAlphabet: {...stackAlphabet, initialStackSymbol},
+          initialStackSymbol: initialStackSymbol,
           panOffset: Vector2.zero(),
           zoomLevel: 1.0,
         );

@@ -161,10 +161,11 @@ class VectorUtils {
     final tClamped = t.clamp(0.0, 1.0);
 
     // Calculate the closest point on the line segment
-    final closestPoint = lineStart + Offset(
-      lineVec.dx * tClamped,
-      lineVec.dy * tClamped,
-    );
+    final closestPoint = lineStart +
+        Offset(
+          lineVec.dx * tClamped,
+          lineVec.dy * tClamped,
+        );
 
     // Return distance from p to the closest point
     return (p - closestPoint).distance;

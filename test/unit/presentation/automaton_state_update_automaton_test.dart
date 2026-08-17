@@ -109,5 +109,33 @@ void main() {
       expect(state.currentAutomaton!.id, 'dfa-test');
       expect(state.currentAutomaton, same(automaton));
     });
+
+    test('addState applies first-state defaults without clearing acceptance',
+        () {
+      final notifier = container.read(automatonStateProvider.notifier);
+
+      notifier.addState(
+        id: 'state_0',
+        label: 'q0',
+        x: 0,
+        y: 0,
+        isAccepting: true,
+      );
+      notifier.addState(
+        id: 'state_0',
+        label: 'renamed',
+        x: 20,
+        y: 40,
+      );
+
+      final automaton =
+          container.read(automatonStateProvider).currentAutomaton!;
+      final state = automaton.states.single;
+      expect(state.label, 'renamed');
+      expect(state.isInitial, isTrue);
+      expect(state.isAccepting, isTrue);
+      expect(automaton.initialState, same(state));
+      expect(automaton.acceptingStates, {state});
+    });
   });
 }

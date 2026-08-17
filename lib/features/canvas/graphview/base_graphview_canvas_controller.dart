@@ -285,6 +285,10 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     int cacheEvictionThreshold = kDefaultCacheEvictionThreshold,
   })  : assert(historyLimit > 0),
         assert(cacheEvictionThreshold > 0),
+        assert(
+          viewController == null || transformationController == null,
+          'viewController and transformationController cannot both be provided.',
+        ),
         historyLimit = historyLimit,
         cacheEvictionThreshold = cacheEvictionThreshold,
         graph = graph ?? Graph(),
@@ -318,7 +322,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   final int cacheEvictionThreshold;
 
   bool _isSynchronizing = false;
-  bool _isRestoringHistory = false;
+  bool _isApplyingInternalSnapshot = false;
   bool _isDisposed = false;
   String? _pendingDomainEchoSignature;
 
@@ -389,6 +393,50 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
   /// Removes the transition identified by [id] from the canvas/domain.
   void removeTransition(String id);
+
+  /// Clears all states and transitions while preserving automaton metadata.
+  ///
+  /// The previous snapshot is recorded as one undoable mutation. Clearing an
+  /// already-empty canvas is a no-op and does not alter either history stack.
+  bool clearCanvas() {
+    late final GraphViewAutomatonSnapshot currentSnapshot;
+    try {
+      currentSnapshot = toSnapshot(currentDomainData);
+    } catch (error) {
+      _logGraphViewBase('Clear skipped (snapshot failed): $error');
+      return false;
+    }
+    if (currentSnapshot.nodes.isEmpty && currentSnapshot.edges.isEmpty) {
+      _logGraphViewBase('Clear skipped (canvas already empty)');
+      return false;
+    }
+
+    final historyEntry = _captureHistoryEntry();
+    if (historyEntry == null) {
+      _logGraphViewBase('Clear skipped (history snapshot failed)');
+      return false;
+    }
+
+    final emptySnapshot = currentSnapshot.copyWith(
+      nodes: const <GraphViewCanvasNode>[],
+      edges: const <GraphViewCanvasEdge>[],
+    );
+    _isApplyingInternalSnapshot = true;
+    try {
+      applySnapshotToDomain(emptySnapshot);
+    } catch (error) {
+      _logGraphViewBase('Clear failed while applying empty snapshot: $error');
+      return false;
+    } finally {
+      _isApplyingInternalSnapshot = false;
+    }
+
+    _updateHistory(_undoHistory, historyEntry, clearRedo: true);
+    _logGraphViewBase(
+      'Canvas cleared (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
+    );
+    return true;
+  }
 
   /// Returns the world position of the graph node with the provided [id].
   @visibleForTesting
@@ -533,9 +581,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
     final entry = _captureHistoryEntry();
     if (entry != null) {
-      _undoHistory.add(entry);
-      _trimHistory(_undoHistory);
-      _redoHistory.clear();
+      _updateHistory(_undoHistory, entry, clearRedo: true);
       _logGraphViewBase(
         'History snapshot captured (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
       );
@@ -558,15 +604,21 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     }
 
     final currentEntry = _captureHistoryEntry();
-    if (currentEntry != null) {
-      _redoHistory.add(currentEntry);
-      _trimHistory(_redoHistory);
+    if (currentEntry == null) {
+      _logGraphViewBase('Undo skipped (current history snapshot failed)');
+      return false;
     }
 
     final entry = _undoHistory.removeLast();
-    _isRestoringHistory = true;
-    _applyHistoryEntry(entry);
-    _isRestoringHistory = false;
+    final restored = _restoreHistoryEntry(entry);
+    if (!restored) {
+      graphRevision.value++;
+      _logGraphViewBase(
+        'Undo discarded invalid history entry (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
+      );
+      return false;
+    }
+    _updateHistory(_redoHistory, currentEntry);
     _logGraphViewBase(
       'Undo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
@@ -581,19 +633,37 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     }
 
     final currentEntry = _captureHistoryEntry();
-    if (currentEntry != null) {
-      _undoHistory.add(currentEntry);
-      _trimHistory(_undoHistory);
+    if (currentEntry == null) {
+      _logGraphViewBase('Redo skipped (current history snapshot failed)');
+      return false;
     }
 
     final entry = _redoHistory.removeLast();
-    _isRestoringHistory = true;
-    _applyHistoryEntry(entry);
-    _isRestoringHistory = false;
+    final restored = _restoreHistoryEntry(entry);
+    if (!restored) {
+      graphRevision.value++;
+      _logGraphViewBase(
+        'Redo discarded invalid history entry (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
+      );
+      return false;
+    }
+    _updateHistory(_undoHistory, currentEntry);
     _logGraphViewBase(
       'Redo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
     return true;
+  }
+
+  void _updateHistory(
+    List<_GraphHistoryEntry> history,
+    _GraphHistoryEntry entry, {
+    bool clearRedo = false,
+  }) {
+    history.add(entry);
+    _trimHistory(history);
+    if (clearRedo) {
+      _redoHistory.clear();
+    }
   }
 
   /// Synchronises the canvas with the provided domain [data].
@@ -602,10 +672,10 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     final snapshot = toSnapshot(data);
     final incomingSignature = _snapshotContentSignature(snapshot);
     final isDomainEcho = !fromMutation &&
-        !_isRestoringHistory &&
+        !_isApplyingInternalSnapshot &&
         incomingSignature == _pendingDomainEchoSignature;
 
-    if (fromMutation || _isRestoringHistory) {
+    if (fromMutation || _isApplyingInternalSnapshot) {
       _pendingDomainEchoSignature = incomingSignature;
     } else if (isDomainEcho) {
       _pendingDomainEchoSignature = null;
@@ -614,7 +684,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       _pendingDomainEchoSignature = null;
     }
 
-    final isExternalSync = !fromMutation && !_isRestoringHistory;
+    final isExternalSync = !fromMutation && !_isApplyingInternalSnapshot;
     if (isExternalSync &&
         !isDomainEcho &&
         (_undoHistory.isNotEmpty || _redoHistory.isNotEmpty)) {
@@ -860,7 +930,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     final nodes = [...snapshot.nodes]..sort((a, b) => a.id.compareTo(b.id));
     final edges = [...snapshot.edges]..sort((a, b) => a.id.compareTo(b.id));
     final metadata = Map<String, dynamic>.from(snapshot.metadata.toJson());
-    for (final key in const ['alphabet', 'tapeAlphabet']) {
+    for (final key in const ['alphabet', 'stackAlphabet', 'tapeAlphabet']) {
       final values = (metadata[key] as List?)?.cast<String>();
       if (values != null) {
         metadata[key] = [...values]..sort();
@@ -880,13 +950,42 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     });
   }
 
-  void _applyHistoryEntry(_GraphHistoryEntry entry) {
+  bool _restoreHistoryEntry(_GraphHistoryEntry entry) {
+    _isApplyingInternalSnapshot = true;
+    try {
+      return _applyHistoryEntry(entry);
+    } finally {
+      _isApplyingInternalSnapshot = false;
+    }
+  }
+
+  bool _applyHistoryEntry(_GraphHistoryEntry entry) {
     final snapshot = entry.decodeSnapshot(_historyCodec);
     if (snapshot == null) {
       _logGraphViewBase('Failed to decode history entry');
-      return;
+      return false;
     }
-    applySnapshotToDomain(snapshot);
+    final stateIds = snapshot.nodes.map((node) => node.id).toSet();
+    GraphViewCanvasEdge? danglingEdge;
+    for (final edge in snapshot.edges) {
+      if (!stateIds.contains(edge.fromStateId) ||
+          !stateIds.contains(edge.toStateId)) {
+        danglingEdge = edge;
+        break;
+      }
+    }
+    if (danglingEdge != null) {
+      _logGraphViewBase(
+        'History entry references missing state (edge=${danglingEdge.id})',
+      );
+      return false;
+    }
+    try {
+      applySnapshotToDomain(snapshot);
+    } catch (error) {
+      _logGraphViewBase('Failed to apply history entry: $error');
+      return false;
+    }
 
     final highlight = SimulationHighlight(
       stateIds: Set<String>.from(entry.highlight.stateIds),
@@ -898,6 +997,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     _logGraphViewBase(
       'History entry applied (states=${highlight.stateIds.length}, transitions=${highlight.transitionIds.length})',
     );
+    return true;
   }
 
   void _trimHistory(List<_GraphHistoryEntry> history) {

@@ -11,6 +11,7 @@
 //
 import 'package:collection/collection.dart';
 
+import '../../../core/models/pda_transition.dart';
 import '../../../core/models/tm_transition.dart';
 
 /// Metadata describing the current automaton rendered in the GraphView canvas.
@@ -21,6 +22,8 @@ class GraphViewAutomatonMetadata {
     required this.id,
     required this.name,
     required this.alphabet,
+    this.stackAlphabet = const <String>[],
+    this.initialStackSymbol,
     this.tapeAlphabet = const <String>[],
     this.blankSymbol,
     this.tapeCount,
@@ -30,6 +33,8 @@ class GraphViewAutomatonMetadata {
       : id = null,
         name = null,
         alphabet = const <String>[],
+        stackAlphabet = const <String>[],
+        initialStackSymbol = null,
         tapeAlphabet = const <String>[],
         blankSymbol = null,
         tapeCount = null;
@@ -37,6 +42,8 @@ class GraphViewAutomatonMetadata {
   final String? id;
   final String? name;
   final List<String> alphabet;
+  final List<String> stackAlphabet;
+  final String? initialStackSymbol;
   final List<String> tapeAlphabet;
   final String? blankSymbol;
   final int? tapeCount;
@@ -45,6 +52,8 @@ class GraphViewAutomatonMetadata {
     String? id,
     String? name,
     List<String>? alphabet,
+    List<String>? stackAlphabet,
+    Object? initialStackSymbol = _unset,
     List<String>? tapeAlphabet,
     Object? blankSymbol = _unset,
     Object? tapeCount = _unset,
@@ -53,6 +62,10 @@ class GraphViewAutomatonMetadata {
       id: id ?? this.id,
       name: name ?? this.name,
       alphabet: alphabet ?? this.alphabet,
+      stackAlphabet: stackAlphabet ?? this.stackAlphabet,
+      initialStackSymbol: initialStackSymbol == _unset
+          ? this.initialStackSymbol
+          : initialStackSymbol as String?,
       tapeAlphabet: tapeAlphabet ?? this.tapeAlphabet,
       blankSymbol:
           blankSymbol == _unset ? this.blankSymbol : blankSymbol as String?,
@@ -65,6 +78,8 @@ class GraphViewAutomatonMetadata {
       'id': id,
       'name': name,
       'alphabet': alphabet,
+      'stackAlphabet': stackAlphabet,
+      'initialStackSymbol': initialStackSymbol,
       'tapeAlphabet': tapeAlphabet,
       'blankSymbol': blankSymbol,
       'tapeCount': tapeCount,
@@ -78,6 +93,10 @@ class GraphViewAutomatonMetadata {
     final rawAlphabet = json['alphabet'];
     final alphabet =
         rawAlphabet is List ? rawAlphabet.cast<String>() : const <String>[];
+    final rawStackAlphabet = json['stackAlphabet'];
+    final stackAlphabet = rawStackAlphabet is List
+        ? rawStackAlphabet.cast<String>()
+        : const <String>[];
     final rawTapeAlphabet = json['tapeAlphabet'];
     final tapeAlphabet = rawTapeAlphabet is List
         ? rawTapeAlphabet.cast<String>()
@@ -86,6 +105,8 @@ class GraphViewAutomatonMetadata {
       id: json['id'] as String?,
       name: json['name'] as String?,
       alphabet: alphabet,
+      stackAlphabet: stackAlphabet,
+      initialStackSymbol: json['initialStackSymbol'] as String?,
       tapeAlphabet: tapeAlphabet,
       blankSymbol: json['blankSymbol'] as String?,
       tapeCount: json['tapeCount'] as int?,
@@ -226,26 +247,24 @@ class GraphViewCanvasEdge {
           isLambdaPop ?? (popSymbol == null || popSymbol!.isEmpty);
       final lambdaPush =
           isLambdaPush ?? (pushSymbol == null || pushSymbol!.isEmpty);
-      final read = lambdaInput ? 'λ' : (readSymbol ?? '');
-      final pop = lambdaPop ? 'λ' : (popSymbol ?? '');
-      final push = lambdaPush ? 'λ' : (pushSymbol ?? '');
-      return '$read, $pop/$push';
+      return PDATransition.formatLabel(
+        inputSymbol: readSymbol ?? '',
+        popSymbol: popSymbol ?? '',
+        pushSymbol: pushSymbol ?? '',
+        isLambdaInput: lambdaInput,
+        isLambdaPop: lambdaPop,
+        isLambdaPush: lambdaPush,
+      );
     }
     if (lambdaSymbol != null && lambdaSymbol!.isNotEmpty) {
       return lambdaSymbol!;
     }
     if (readSymbol != null || writeSymbol != null || direction != null) {
-      final read = (readSymbol ?? '').isEmpty ? '∅' : readSymbol!;
-      final write = (writeSymbol ?? '').isEmpty ? '∅' : writeSymbol!;
-      final resolvedDirection = direction;
-      final directionSymbol = switch (resolvedDirection) {
-        TapeDirection.left => 'L',
-        TapeDirection.right => 'R',
-        TapeDirection.stay => 'S',
-        null => '',
-      };
-      final suffix = directionSymbol.isEmpty ? '' : ',$directionSymbol';
-      return '$read/$write$suffix';
+      return TMTransition.formatLabel(
+        readSymbol: readSymbol ?? '',
+        writeSymbol: writeSymbol ?? '',
+        direction: direction,
+      );
     }
     final filtered = symbols.where((symbol) => symbol.isNotEmpty).toList();
     return filtered.join(',');
@@ -256,43 +275,55 @@ class GraphViewCanvasEdge {
     String? fromStateId,
     String? toStateId,
     List<String>? symbols,
-    String? lambdaSymbol,
+    Object? lambdaSymbol = _unset,
     Object? controlPointX = _unset,
     Object? controlPointY = _unset,
-    String? readSymbol,
-    String? writeSymbol,
-    TapeDirection? direction,
-    int? tapeNumber,
-    String? popSymbol,
-    String? pushSymbol,
-    List<String>? pushSymbols,
-    bool? isLambdaInput,
-    bool? isLambdaPop,
-    bool? isLambdaPush,
+    Object? readSymbol = _unset,
+    Object? writeSymbol = _unset,
+    Object? direction = _unset,
+    Object? tapeNumber = _unset,
+    Object? popSymbol = _unset,
+    Object? pushSymbol = _unset,
+    Object? pushSymbols = _unset,
+    Object? isLambdaInput = _unset,
+    Object? isLambdaPop = _unset,
+    Object? isLambdaPush = _unset,
   }) {
+    final resolvedPushSymbols = pushSymbols != _unset
+        ? pushSymbols as List<String>?
+        : pushSymbol == _unset
+            ? this.pushSymbols
+            : null;
     return GraphViewCanvasEdge(
       id: id ?? this.id,
       fromStateId: fromStateId ?? this.fromStateId,
       toStateId: toStateId ?? this.toStateId,
       symbols: symbols ?? this.symbols,
-      lambdaSymbol: lambdaSymbol ?? this.lambdaSymbol,
+      lambdaSymbol:
+          lambdaSymbol == _unset ? this.lambdaSymbol : lambdaSymbol as String?,
       controlPointX: controlPointX == _unset
           ? this.controlPointX
           : controlPointX as double?,
       controlPointY: controlPointY == _unset
           ? this.controlPointY
           : controlPointY as double?,
-      readSymbol: readSymbol ?? this.readSymbol,
-      writeSymbol: writeSymbol ?? this.writeSymbol,
-      direction: direction ?? this.direction,
-      tapeNumber: tapeNumber ?? this.tapeNumber,
-      popSymbol: popSymbol ?? this.popSymbol,
-      pushSymbol: pushSymbol ?? this.pushSymbol,
-      pushSymbols:
-          pushSymbols ?? (pushSymbol == null ? this.pushSymbols : null),
-      isLambdaInput: isLambdaInput ?? this.isLambdaInput,
-      isLambdaPop: isLambdaPop ?? this.isLambdaPop,
-      isLambdaPush: isLambdaPush ?? this.isLambdaPush,
+      readSymbol:
+          readSymbol == _unset ? this.readSymbol : readSymbol as String?,
+      writeSymbol:
+          writeSymbol == _unset ? this.writeSymbol : writeSymbol as String?,
+      direction:
+          direction == _unset ? this.direction : direction as TapeDirection?,
+      tapeNumber: tapeNumber == _unset ? this.tapeNumber : tapeNumber as int?,
+      popSymbol: popSymbol == _unset ? this.popSymbol : popSymbol as String?,
+      pushSymbol:
+          pushSymbol == _unset ? this.pushSymbol : pushSymbol as String?,
+      pushSymbols: resolvedPushSymbols,
+      isLambdaInput:
+          isLambdaInput == _unset ? this.isLambdaInput : isLambdaInput as bool?,
+      isLambdaPop:
+          isLambdaPop == _unset ? this.isLambdaPop : isLambdaPop as bool?,
+      isLambdaPush:
+          isLambdaPush == _unset ? this.isLambdaPush : isLambdaPush as bool?,
     );
   }
 
@@ -301,7 +332,7 @@ class GraphViewCanvasEdge {
       'id': id,
       'from': fromStateId,
       'to': toStateId,
-      'symbols': symbols.join(','),
+      'symbols': symbols,
       'lambdaSymbol': lambdaSymbol,
       'controlPointX': controlPointX,
       'controlPointY': controlPointY,
@@ -320,9 +351,11 @@ class GraphViewCanvasEdge {
 
   factory GraphViewCanvasEdge.fromJson(Map<String, dynamic> json) {
     final rawSymbols = json['symbols'];
-    final symbols = rawSymbols is String && rawSymbols.isNotEmpty
-        ? rawSymbols.split(',')
-        : const <String>[];
+    final symbols = rawSymbols is List
+        ? rawSymbols.cast<String>()
+        : rawSymbols is String && rawSymbols.isNotEmpty
+            ? rawSymbols.split(',')
+            : const <String>[];
     return GraphViewCanvasEdge(
       id: json['id'] as String,
       fromStateId: json['from'] as String,
@@ -464,6 +497,11 @@ class GraphViewAutomatonSnapshot {
           other.metadata.alphabet,
         ) &&
         const ListEquality<String>().equals(
+          metadata.stackAlphabet,
+          other.metadata.stackAlphabet,
+        ) &&
+        metadata.initialStackSymbol == other.metadata.initialStackSymbol &&
+        const ListEquality<String>().equals(
           metadata.tapeAlphabet,
           other.metadata.tapeAlphabet,
         ) &&
@@ -478,6 +516,8 @@ class GraphViewAutomatonSnapshot {
         metadata.id,
         metadata.name,
         const ListEquality<String>().hash(metadata.alphabet),
+        const ListEquality<String>().hash(metadata.stackAlphabet),
+        metadata.initialStackSymbol,
         const ListEquality<String>().hash(metadata.tapeAlphabet),
         metadata.blankSymbol,
         metadata.tapeCount,

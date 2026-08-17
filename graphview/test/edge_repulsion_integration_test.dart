@@ -143,7 +143,9 @@ void main() {
       expect(true, isTrue);
     });
 
-    test('applyEdgeRepulsion override returns modified path when repulsion enabled', () {
+    test(
+        'applyEdgeRepulsion override returns modified path when repulsion enabled',
+        () {
       final graph = Graph();
       final node1 = Node.Id(1);
       final node2 = Node.Id(2);
@@ -178,7 +180,8 @@ void main() {
       renderer.renderEdge(canvas, edge, paint);
 
       // Call applyEdgeRepulsion (should use cached repulsion if any)
-      final modifiedPath = renderer.applyEdgeRepulsion([edge], edge, originalPath);
+      final modifiedPath =
+          renderer.applyEdgeRepulsion([edge], edge, originalPath);
 
       // Path should not be null
       expect(modifiedPath, isNotNull);

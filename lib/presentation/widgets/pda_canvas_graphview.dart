@@ -18,6 +18,7 @@ import '../../features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import '../providers/pda_editor_provider.dart';
 import 'automaton_canvas_tool.dart';
 import 'automaton_graphview_canvas.dart';
+import 'pda/stack_drawer.dart';
 
 class PDACanvasGraphView extends ConsumerStatefulWidget {
   const PDACanvasGraphView({
@@ -25,11 +26,13 @@ class PDACanvasGraphView extends ConsumerStatefulWidget {
     required this.onPdaModified,
     this.controller,
     this.toolController,
+    this.currentStack,
   });
 
   final ValueChanged<PDA> onPdaModified;
   final GraphViewPdaCanvasController? controller;
   final AutomatonCanvasToolController? toolController;
+  final StackState? currentStack;
 
   @override
   ConsumerState<PDACanvasGraphView> createState() => _PDACanvasGraphViewState();
@@ -43,9 +46,19 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
   HighlightChannel? _previousHighlightChannel;
   ProviderSubscription<PDAEditorState>? _subscription;
   PDA? _lastDeliveredPda;
+  StackState? _customizationStack;
+  AutomatonGraphViewCanvasCustomization? _cachedCustomization;
 
-  AutomatonGraphViewCanvasCustomization get _customization =>
-      AutomatonGraphViewCanvasCustomization.pda();
+  AutomatonGraphViewCanvasCustomization get _customization {
+    if (_cachedCustomization == null ||
+        _customizationStack != widget.currentStack) {
+      _customizationStack = widget.currentStack;
+      _cachedCustomization = AutomatonGraphViewCanvasCustomization.pda(
+        currentStack: widget.currentStack,
+      );
+    }
+    return _cachedCustomization!;
+  }
 
   @override
   void initState() {

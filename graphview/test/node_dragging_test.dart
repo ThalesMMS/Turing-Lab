@@ -12,6 +12,7 @@ void main() {
       expect(config.onNodeDragStart, isNull);
       expect(config.onNodeDragUpdate, isNull);
       expect(config.onNodeDragEnd, isNull);
+      expect(config.onNodePointerDown, isNull);
       expect(config.canDragPredicate, isNull);
     });
 
@@ -53,6 +54,55 @@ void main() {
 
       config.onNodeDragEnd?.call(testNode, testPosition);
       expect(dragEndCalled, true);
+    });
+
+    testWidgets(
+        'node pointer callback remains available when dragging is disabled',
+        (tester) async {
+      Node? capturedNode;
+      PointerDownEvent? capturedEvent;
+      final config = NodeDraggingConfiguration(
+        enabled: false,
+        onNodePointerDown: (node, pointerEvent) {
+          capturedNode = node;
+          capturedEvent = pointerEvent;
+        },
+      );
+      final node = Node.Id('pointer-target');
+      final graph = Graph()..addNode(node);
+
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: GraphView.builder(
+              graph: graph,
+              algorithm: SugiyamaAlgorithm(SugiyamaConfiguration()),
+              animated: false,
+              nodeDraggingConfig: config,
+              builder: (_) => const SizedBox(
+                key: ValueKey('pointer-target'),
+                width: 40,
+                height: 40,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final position = tester.getCenter(
+        find.byKey(const ValueKey('pointer-target')),
+      );
+
+      final gesture = await tester.startGesture(position);
+      await tester.pump();
+      await gesture.up();
+
+      expect(capturedNode, same(node));
+      expect(capturedEvent, isA<PointerDownEvent>());
+      expect(capturedEvent!.position, position);
     });
 
     test('onNodeDragStart callback receives correct node', () {

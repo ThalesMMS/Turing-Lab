@@ -5,8 +5,131 @@ import 'package:graphview/GraphView.dart';
 SugiyamaAlgorithm buildTestAlgorithm() =>
     SugiyamaAlgorithm(SugiyamaConfiguration());
 
+Widget buildOverlappingControllerViews({
+  required Graph graph,
+  required GraphViewController controller,
+  required bool includeOldView,
+  required bool includeCurrentView,
+}) {
+  Widget buildView(String id) {
+    return Positioned.fill(
+      key: ValueKey(id),
+      child: GraphView.builder(
+        graph: graph,
+        algorithm: buildTestAlgorithm(),
+        controller: controller,
+        builder: (node) => const SizedBox(width: 20, height: 20),
+      ),
+    );
+  }
+
+  return MaterialApp(
+    home: Scaffold(
+      body: Stack(
+        children: [
+          if (includeOldView) buildView('old-view'),
+          if (includeCurrentView) buildView('current-view'),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> pumpOldThenOverlappingView(
+  WidgetTester tester, {
+  required Graph graph,
+  required GraphViewController controller,
+}) async {
+  await tester.pumpWidget(
+    buildOverlappingControllerViews(
+      graph: graph,
+      controller: controller,
+      includeOldView: true,
+      includeCurrentView: false,
+    ),
+  );
+  await tester.pumpAndSettle();
+  await tester.pumpWidget(
+    buildOverlappingControllerViews(
+      graph: graph,
+      controller: controller,
+      includeOldView: true,
+      includeCurrentView: true,
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('GraphView Controller Tests', () {
+    testWidgets('initial viewport scale respects a minimum above one', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GraphView.builder(
+            graph: graph,
+            algorithm: buildTestAlgorithm(),
+            minScale: 1.5,
+            maxScale: 2,
+            builder: (_) => const SizedBox(width: 20, height: 20),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final viewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      expect(
+        viewer.transformationController!.value.getMaxScaleOnAxis(),
+        closeTo(1.5, 0.001),
+      );
+    });
+
+    testWidgets('reset viewport scale respects configured bounds', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+      final transformationController = TransformationController(
+        Matrix4.diagonal3Values(2, 2, 1)..setTranslationRaw(40, 60, 0),
+      );
+      final controller = GraphViewController(
+        transformationController: transformationController,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GraphView.builder(
+            graph: graph,
+            algorithm: buildTestAlgorithm(),
+            controller: controller,
+            minScale: 1.5,
+            maxScale: 2,
+            builder: (_) => const SizedBox(width: 20, height: 20),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      controller.resetView();
+      await tester.pumpAndSettle();
+
+      expect(
+        transformationController.value.getMaxScaleOnAxis(),
+        closeTo(1.5, 0.001),
+      );
+      expect(
+          transformationController.value.getTranslation().x, closeTo(0, 0.001));
+      expect(
+          transformationController.value.getTranslation().y, closeTo(0, 0.001));
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      transformationController.dispose();
+    });
+
     testWidgets('animateToNode centers the target node',
         (WidgetTester tester) async {
       // Setup graph
@@ -190,6 +313,7 @@ void main() {
       );
 
       await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
 
       expect(
         () => transformationController.value = Matrix4.identity(),
@@ -337,6 +461,94 @@ void main() {
       firstTransformationController.dispose();
       secondTransformationController.dispose();
     });
+
+    testWidgets('stale detach keeps the newest attached view operable', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+      final transformationController = TransformationController();
+      final controller = GraphViewController(
+        transformationController: transformationController,
+      );
+
+      await pumpOldThenOverlappingView(
+        tester,
+        graph: graph,
+        controller: controller,
+      );
+
+      await tester.pumpWidget(
+        buildOverlappingControllerViews(
+          graph: graph,
+          controller: controller,
+          includeOldView: false,
+          includeCurrentView: true,
+        ),
+      );
+
+      expect(controller.hasAttachedView, isTrue);
+
+      transformationController.value = Matrix4.identity()
+        ..translateByDouble(40.0, 60.0, 0.0, 1.0);
+      controller.resetView();
+      await tester.pumpAndSettle();
+
+      expect(
+        transformationController.value.getTranslation().x,
+        closeTo(0, 0.001),
+      );
+      expect(
+        transformationController.value.getTranslation().y,
+        closeTo(0, 0.001),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      transformationController.dispose();
+    });
+
+    testWidgets('stale detach does not complete pending owned disposal', (
+      WidgetTester tester,
+    ) async {
+      final graph = Graph()..addNode(Node.Id('target'));
+      final transformationController = TransformationController();
+      final controller = GraphViewController(
+        transformationController: transformationController,
+        ownsTransformationController: true,
+      );
+
+      await pumpOldThenOverlappingView(
+        tester,
+        graph: graph,
+        controller: controller,
+      );
+
+      controller.dispose();
+      await tester.pumpWidget(
+        buildOverlappingControllerViews(
+          graph: graph,
+          controller: controller,
+          includeOldView: false,
+          includeCurrentView: true,
+        ),
+      );
+
+      expect(controller.hasAttachedView, isTrue);
+
+      void listener() {}
+
+      expect(
+        () => transformationController.addListener(listener),
+        returnsNormally,
+      );
+      transformationController.removeListener(listener);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      expect(
+        () => transformationController.addListener(listener),
+        throwsFlutterError,
+      );
+    });
   });
 
   group('Collapse Tests', () {
@@ -344,6 +556,10 @@ void main() {
 
     setUp(() {
       controller = GraphViewController();
+    });
+
+    tearDown(() {
+      controller.dispose();
     });
 
     // Helper function to create a graph with multiple branches
@@ -390,6 +606,7 @@ void main() {
       graph.addEdge(child, grandchild);
 
       final controller = GraphViewController();
+      addTearDown(controller.dispose);
 
       // Step 1: Collapse child
       controller.collapseNode(graph, child);

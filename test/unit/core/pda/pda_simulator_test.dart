@@ -15,6 +15,7 @@ import 'package:turing_lab/core/algorithms/pda_simulator.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/step_explanation.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -148,7 +149,7 @@ PDA _pdaAcceptsABoth() {
     ),
     // consume 'a' without changing stack
     PDATransition(
-      id: 't1',
+      id: 'pda-opaque-consuming-edge',
       fromState: q0,
       toState: q0,
       inputSymbol: 'a',
@@ -158,7 +159,7 @@ PDA _pdaAcceptsABoth() {
     ),
     // epsilon to final state (final-state acceptance)
     PDATransition(
-      id: 't2',
+      id: 'pda-opaque-epsilon-edge',
       fromState: q0,
       toState: qf,
       inputSymbol: '',
@@ -235,6 +236,91 @@ void main() {
   });
 
   group('NPDA step recording', () {
+    test('synchronous trace preserves PDA display text and stable edge IDs',
+        () {
+      final result = PDASimulator.simulateNPDA(
+        _pdaAcceptsABoth(),
+        'a',
+        stepByStep: true,
+        mode: PDAAcceptanceMode.finalState,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+
+      final epsilonStep = steps.firstWhere(
+        (step) =>
+            step.explanation?.highlights.any(
+              (target) =>
+                  target.type == HighlightTargetType.transition &&
+                  target.id == 'pda-opaque-epsilon-edge',
+            ) ??
+            false,
+      );
+      final consumingStep = steps.firstWhere(
+        (step) => step.consumedInput == 'a',
+      );
+      expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
+      expect(consumingStep.usedTransition, 'a,Z\u2192Z');
+      expect(
+        epsilonStep.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['pda-opaque-epsilon-edge'],
+      );
+      expect(
+        consumingStep.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['pda-opaque-consuming-edge'],
+      );
+    });
+
+    test('cooperative trace preserves PDA display text and stable edge IDs',
+        () async {
+      final result = await PDASimulator.simulateCooperative(
+        _pdaAcceptsABoth(),
+        'a',
+        stepByStep: true,
+        mode: PDAAcceptanceMode.finalState,
+        configurationsPerBatch: 1,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final steps = result.data!.steps;
+      expect(steps.first.explanation, isNull);
+      expect(steps.last.explanation, isNull);
+
+      final epsilonStep = steps.firstWhere(
+        (step) =>
+            step.explanation?.highlights.any(
+              (target) =>
+                  target.type == HighlightTargetType.transition &&
+                  target.id == 'pda-opaque-epsilon-edge',
+            ) ??
+            false,
+      );
+      final consumingStep = steps.firstWhere(
+        (step) => step.consumedInput == 'a',
+      );
+      expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
+      expect(consumingStep.usedTransition, 'a,Z\u2192Z');
+      expect(
+        epsilonStep.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['pda-opaque-epsilon-edge'],
+      );
+      expect(
+        consumingStep.explanation!.highlights
+            .where((target) => target.type == HighlightTargetType.transition)
+            .map((target) => target.id),
+        ['pda-opaque-consuming-edge'],
+      );
+    });
+
     test('Step records destination state, not source', () {
       final pda = _pdaAcceptsAByFinal();
       final result = PDASimulator.simulateNPDA(

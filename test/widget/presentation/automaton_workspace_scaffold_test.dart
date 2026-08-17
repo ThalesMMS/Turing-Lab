@@ -18,14 +18,31 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: AutomatonWorkspaceScaffold(
-          canvasWithToolbar: ({required isMobile}) => Text(
-            isMobile ? 'mobile canvas' : 'wide canvas',
+          canvasWithToolbar: ({required isMobile}) => Stack(
+            children: [
+              Center(
+                child: Text(isMobile ? 'mobile canvas' : 'wide canvas'),
+              ),
+              if (isMobile)
+                const Positioned(
+                  top: 16,
+                  right: 16,
+                  child: SizedBox.square(
+                    key: ValueKey('transition-status'),
+                    dimension: 48,
+                  ),
+                ),
+            ],
           ),
           algorithmPanel: const Text('desktop algorithms'),
           tabletAlgorithmPanel: const Text('tablet algorithms'),
           simulationPanel: const Text('simulation panel'),
           infoPanel: const Text('info panel'),
-          mobileFloatingPanel: const Text('mobile floating panel'),
+          mobileFloatingPanel: const SizedBox.square(
+            key: ValueKey('floating-panel'),
+            dimension: 48,
+            child: Text('mobile floating panel'),
+          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {},
             child: const Icon(Icons.help_outline),
@@ -44,6 +61,12 @@ void main() {
     expect(find.text('mobile floating panel'), findsOneWidget);
     expect(find.text('desktop algorithms'), findsNothing);
     expect(find.byType(FloatingActionButton), findsNothing);
+    expect(
+      tester.getRect(find.byKey(const ValueKey('transition-status'))).overlaps(
+            tester.getRect(find.byKey(const ValueKey('floating-panel'))),
+          ),
+      isFalse,
+    );
   });
 
   testWidgets('uses tablet layout between 1024px and 1400px', (tester) async {

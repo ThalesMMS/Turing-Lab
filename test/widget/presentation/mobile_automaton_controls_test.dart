@@ -14,94 +14,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 
 void main() {
-  testWidgets('MobileAutomatonControls surfaces canvas and workspace actions', (
+  test('canvas tool controller defaults to move', () {
+    final controller = AutomatonCanvasToolController();
+    addTearDown(controller.dispose);
+
+    expect(controller.activeTool, AutomatonCanvasTool.selection);
+  });
+
+  testWidgets('MobileAutomatonControls surfaces canvas actions and status', (
     tester,
   ) async {
-    var simulateInvoked = false;
-    var algorithmInvoked = false;
-    var metricsInvoked = false;
+    var helpCount = 0;
     var addStateInvoked = false;
+    var zoomInInvoked = false;
+    var zoomOutInvoked = false;
     var clearInvoked = false;
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: MobileAutomatonControls(
+            onHelp: () => helpCount++,
             onAddState: () => addStateInvoked = true,
+            onZoomIn: () => zoomInInvoked = true,
+            onZoomOut: () => zoomOutInvoked = true,
             onFitToContent: () {},
             onResetView: () {},
             onClear: () => clearInvoked = true,
-            onSimulate: () => simulateInvoked = true,
-            onAlgorithms: () => algorithmInvoked = true,
-            onMetrics: () => metricsInvoked = true,
             statusMessage: '3 states · 2 transitions',
           ),
         ),
       ),
     );
 
-    expect(find.byTooltip('Simulate'), findsOneWidget);
-    expect(find.byTooltip('Algorithms'), findsOneWidget);
-    expect(find.byTooltip('Metrics'), findsOneWidget);
     expect(find.byTooltip('Add state'), findsOneWidget);
+    expect(find.byTooltip('Help'), findsOneWidget);
+    expect(find.bySemanticsLabel('Help'), findsOneWidget);
+    expect(find.byTooltip('Zoom out'), findsOneWidget);
+    expect(find.byTooltip('Zoom in'), findsOneWidget);
     expect(find.byTooltip('Clear canvas'), findsOneWidget);
     expect(find.text('3 states · 2 transitions'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Simulate'));
-    await tester.pump();
-    await tester.tap(find.byTooltip('Algorithms'));
-    await tester.pump();
-    await tester.tap(find.byTooltip('Metrics'));
+    await tester.tap(find.byTooltip('Help'));
     await tester.pump();
     await tester.tap(find.byTooltip('Add state'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Zoom out'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Zoom in'));
     await tester.pump();
     await tester.tap(find.byTooltip('Clear canvas'));
     await tester.pump();
 
-    expect(simulateInvoked, isTrue);
-    expect(algorithmInvoked, isTrue);
-    expect(metricsInvoked, isTrue);
+    expect(helpCount, equals(1));
     expect(addStateInvoked, isTrue);
+    expect(zoomOutInvoked, isTrue);
+    expect(zoomInInvoked, isTrue);
     expect(clearInvoked, isTrue);
-  });
-
-  testWidgets('disables optional actions when flags are false', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: MobileAutomatonControls(
-            onAddState: () {},
-            onFitToContent: () {},
-            onResetView: () {},
-            onSimulate: () {},
-            isSimulationEnabled: false,
-            onAlgorithms: () {},
-            isAlgorithmsEnabled: false,
-          ),
-        ),
-      ),
-    );
-
-    final simulateButton = tester.widget<IconButton>(
-      find.descendant(
-        of: find.byTooltip('Simulate'),
-        matching: find.byType(IconButton),
-      ),
-    );
-    final algorithmButton = tester.widget<IconButton>(
-      find.descendant(
-        of: find.byTooltip('Algorithms'),
-        matching: find.byType(IconButton),
-      ),
-    );
-
-    expect(simulateButton.onPressed, isNull);
-    expect(algorithmButton.onPressed, isNull);
-    expect(find.byTooltip('Metrics'), findsNothing);
   });
 
   testWidgets('shows undo and redo buttons with disabled history state', (
@@ -114,6 +88,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MobileAutomatonControls(
+            onHelp: () {},
             onAddState: () {},
             onFitToContent: () {},
             onResetView: () {},
@@ -144,6 +119,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MobileAutomatonControls(
+            onHelp: () {},
             onAddState: () {},
             onFitToContent: () {},
             onResetView: () {},
@@ -173,6 +149,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MobileAutomatonControls(
+            onHelp: () {},
             enableToolSelection: true,
             activeTool: AutomatonCanvasTool.addState,
             onAddState: () => addStateInvoked = true,
@@ -194,5 +171,48 @@ void main() {
 
     expect(addStateInvoked, isTrue);
     expect(transitionInvoked, isTrue);
+  });
+
+  testWidgets('localizes mobile canvas actions in Portuguese', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('pt'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: MobileAutomatonControls(
+            enableToolSelection: true,
+            showSelectionTool: true,
+            onSelectTool: () {},
+            onHelp: () {},
+            onAddState: () {},
+            onAddTransition: () {},
+            onZoomIn: () {},
+            onZoomOut: () {},
+            onFitToContent: () {},
+            onResetView: () {},
+            onClear: () {},
+            onUndo: () {},
+            onRedo: () {},
+          ),
+        ),
+      ),
+    );
+
+    for (final tooltip in <String>[
+      'Ajuda',
+      'Desfazer',
+      'Refazer',
+      'Selecionar',
+      'Adicionar estado',
+      'Adicionar transição',
+      'Diminuir zoom',
+      'Aumentar zoom',
+      'Ajustar ao conteúdo',
+      'Redefinir visualização',
+      'Limpar canvas',
+    ]) {
+      expect(find.byTooltip(tooltip), findsOneWidget);
+    }
   });
 }

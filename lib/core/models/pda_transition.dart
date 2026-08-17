@@ -19,6 +19,21 @@ import 'transition.dart';
 class PDATransition extends Transition {
   static const _pushSymbolsEquality = ListEquality<String>();
 
+  /// Formats the canonical label shown for a PDA transition.
+  static String formatLabel({
+    required String inputSymbol,
+    required String popSymbol,
+    required String pushSymbol,
+    required bool isLambdaInput,
+    required bool isLambdaPop,
+    required bool isLambdaPush,
+  }) {
+    final input = isLambdaInput ? 'λ' : inputSymbol;
+    final pop = isLambdaPop ? 'λ' : popSymbol;
+    final push = isLambdaPush ? 'λ' : pushSymbol;
+    return '$input, $pop/$push';
+  }
+
   /// Input symbol that triggers this transition
   final String inputSymbol;
 
@@ -286,7 +301,15 @@ class PDATransition extends Transition {
       id: id,
       fromState: fromState,
       toState: toState,
-      label: label ?? 'ε,ε→ε',
+      label: label ??
+          formatLabel(
+            inputSymbol: '',
+            popSymbol: '',
+            pushSymbol: '',
+            isLambdaInput: true,
+            isLambdaPop: true,
+            isLambdaPush: true,
+          ),
       controlPoint: controlPoint ?? Vector2.zero(),
       type: TransitionType.epsilon,
       inputSymbol: '',
@@ -313,7 +336,15 @@ class PDATransition extends Transition {
       id: id,
       fromState: fromState,
       toState: toState,
-      label: label ?? '$inputSymbol,$popSymbol→$pushSymbol',
+      label: label ??
+          formatLabel(
+            inputSymbol: inputSymbol,
+            popSymbol: popSymbol,
+            pushSymbol: pushSymbol,
+            isLambdaInput: inputSymbol.isEmpty,
+            isLambdaPop: popSymbol.isEmpty,
+            isLambdaPush: pushSymbol.isEmpty,
+          ),
       controlPoint: controlPoint ?? Vector2.zero(),
       type: TransitionType.deterministic,
       inputSymbol: inputSymbol,
@@ -338,7 +369,15 @@ class PDATransition extends Transition {
       id: id,
       fromState: fromState,
       toState: toState,
-      label: label ?? '$inputSymbol,ε→ε',
+      label: label ??
+          formatLabel(
+            inputSymbol: inputSymbol,
+            popSymbol: '',
+            pushSymbol: '',
+            isLambdaInput: inputSymbol.isEmpty,
+            isLambdaPop: true,
+            isLambdaPush: true,
+          ),
       controlPoint: controlPoint ?? Vector2.zero(),
       type: TransitionType.deterministic,
       inputSymbol: inputSymbol,
@@ -363,7 +402,15 @@ class PDATransition extends Transition {
       id: id,
       fromState: fromState,
       toState: toState,
-      label: label ?? 'ε,$popSymbol→$pushSymbol',
+      label: label ??
+          formatLabel(
+            inputSymbol: '',
+            popSymbol: popSymbol,
+            pushSymbol: pushSymbol,
+            isLambdaInput: true,
+            isLambdaPop: popSymbol.isEmpty,
+            isLambdaPush: pushSymbol.isEmpty,
+          ),
       controlPoint: controlPoint ?? Vector2.zero(),
       type: TransitionType.deterministic,
       inputSymbol: '',

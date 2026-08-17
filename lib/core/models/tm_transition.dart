@@ -16,6 +16,19 @@ import 'transition.dart';
 
 /// Transition for Turing Machines (TM)
 class TMTransition extends Transition {
+  /// Formats the canonical label shown for a TM transition.
+  static String formatLabel({
+    required String readSymbol,
+    required String writeSymbol,
+    required TapeDirection? direction,
+  }) {
+    final directionSymbol = direction?.symbol ?? '';
+    final read = readSymbol.isEmpty ? '∅' : readSymbol;
+    final write = writeSymbol.isEmpty ? '∅' : writeSymbol;
+    final suffix = directionSymbol.isEmpty ? '' : ',$directionSymbol';
+    return '$read/$write$suffix';
+  }
+
   /// Symbol to read from the tape
   final String readSymbol;
 

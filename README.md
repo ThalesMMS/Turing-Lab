@@ -18,10 +18,10 @@ Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offer
 
 ## Public Links
 
-- Website: https://thalesmms.github.io/JFlutter/
-- Support: https://thalesmms.github.io/JFlutter/support.html
-- Privacy Policy: https://thalesmms.github.io/JFlutter/privacy.html
-- Issues: https://github.com/ThalesMMS/jflutter/issues
+- Website: https://thalesmms.github.io/Turing-Lab/
+- Support: https://thalesmms.github.io/Turing-Lab/support.html
+- Privacy Policy: https://thalesmms.github.io/Turing-Lab/privacy.html
+- Issues: https://github.com/ThalesMMS/Turing-Lab/issues
 
 ## Highlights
 
@@ -111,7 +111,7 @@ lib/
 
 ```bash
 # Clone the repository
-git clone https://github.com/ThalesMMS/jflutter.git turing-lab
+git clone https://github.com/ThalesMMS/Turing-Lab.git turing-lab
 cd turing-lab
 
 # Install dependencies
@@ -136,36 +136,22 @@ credentials from `android/key.properties`, which can now be generated from envir
    - *(optional)* `TURING_LAB_KEYSTORE_PATH` (defaults to `keystores/turing-lab-release.jks`, relative to `android/`)
 3. Run `./android/scripts/create_key_properties.sh` to generate `android/key.properties` from the exported values.
 
-For CI/CD, store the keystore and credential values as encrypted secrets. During the workflow, recreate the keystore file
-and call the helper script before `flutter build`. Example (GitHub Actions):
-
-```bash
-mkdir -p android/keystores
-echo "$TURING_LAB_KEYSTORE_BASE64" | base64 --decode > android/keystores/turing-lab-release.jks
-export TURING_LAB_KEYSTORE_PASSWORD="$TURING_LAB_KEYSTORE_PASSWORD"
-export TURING_LAB_KEY_ALIAS="$TURING_LAB_KEY_ALIAS"
-export TURING_LAB_KEY_PASSWORD="$TURING_LAB_KEY_PASSWORD"
-./android/scripts/create_key_properties.sh
-```
-
 ### Platform Support
 
 Turing Lab is a Flutter project with multiple build targets, but release support
 depends on documented signing, QA, and distribution evidence.
 
-- **iOS / iPadOS** - Apple v1.0 release target. Release QA is tracked in
-  `release/APPLE_QA_MATRIX.md`.
-- **macOS** - Apple v1.0 release target. Release validation is tracked in
-  `release/MACOS_QA_CHECKLIST.md`,
-  `release/MACOS_PLATFORM_VALIDATION.md`, and the Apple release docs.
+- **iOS / iPadOS** - Apple v1.0 release target. Signing and store validation
+  must be completed manually before distribution.
+- **macOS** - Apple v1.0 release target. Signing, archive validation, and
+  desktop QA must be completed manually before distribution.
 - **Android** - Supported build target with release signing documented above.
   A full Android QA checklist is still a follow-up item.
 - **Web** - Preview/classroom-demo target. The responsive UI is maintained, but
   web has platform-specific limitations such as no PNG export.
 - **Windows / Linux** - Development and community-supported preview targets.
-  The platform folders are present, but the repository does not yet include
-  Windows or Linux release checklists. Do not treat these as release-supported
-  until matching `release/WINDOWS_*` and `release/LINUX_*` evidence exists.
+  The platform folders are present, but release validation is not yet
+  maintained for these platforms.
 
 ## How to Use
 
@@ -191,7 +177,10 @@ depends on documented signing, QA, and distribution evidence.
 
 ### Test Suite Overview
 
-Run `flutter test` (Flutter 3.27.0+ / Dart 3.6.0+) to execute the full suite. For the current repository baseline and known-failure counts, refer to `AGENTS.md`. Tests are organised to mirror the architecture:
+Use Flutter 3.27.0+ and Dart 3.6.0+. Run the suites relevant to your change and
+report the exact commands and outcomes in pull requests. GitHub-hosted CI is not
+configured for this repository, so validation is performed locally. Tests are
+organised to mirror the architecture:
 
 - **Algorithm validation** – `test/unit/` keeps DFA/NFA conversions, grammar analysis, and regex tooling aligned with the references.
 - **Core services** – `test/core/services/` verifies utilities such as the simulation highlight broadcaster.
@@ -206,7 +195,7 @@ Run `flutter test` (Flutter 3.27.0+ / Dart 3.6.0+) to execute the full suite. 
 #### Running Tests
 
 ```bash
-# Run all tests
+# Run the broad diagnostic suite
 flutter test
 
 # Run specific test suites
@@ -223,13 +212,16 @@ flutter test test/widget/                  # Widget harnesses
 flutter test --coverage
 lcov --list coverage/lcov.info
 
-# Static analysis
-flutter analyze
+# Static analysis and branding
+flutter analyze --no-fatal-infos
+./tool/check_branding.sh
 ```
 
 ## Reference Implementation Methodology
 
-During the ongoing migration, algorithm parity is tracked through `docs/reference-deviations.md` and stable upstream source links. The historical local reference snapshots are not committed in this checkout, so the Dart repositories and Python `automata-main` module are used through their upstream anchors as validation checkpoints while the Flutter core is rebuilt.
+During the ongoing migration, algorithm parity is validated against the stable
+upstream source links listed below. These upstream projects are used as
+validation checkpoints while the Flutter core is rebuilt.
 
 ### Validation Approach
 Each algorithm modification is cross-validated against the recorded upstream reference anchors and the local automated suites to ensure correctness and maintainability.
@@ -239,7 +231,7 @@ Each algorithm modification is cross-validated against the recorded upstream ref
 2. **Cross-Validation** - Compare outputs with reference implementations
 3. **Test Suite Validation** - Validate against reference test cases
 4. **Performance Benchmarking** - Ensure performance meets or exceeds references
-5. **Documentation** - Record any deviations with rationale in `docs/reference-deviations.md`
+5. **Documentation** - Record intentional deviations in tests, code comments, or pull request descriptions
 
 ### Quality Assurance
 - **Algorithm Coverage** - Deterministic automata, grammar, and regex suites in `test/unit/` back the domain layer.
@@ -251,7 +243,7 @@ Each algorithm modification is cross-validated against the recorded upstream ref
 
 ### Reference Maintenance
 - **Version Control** - Reference targets are tracked as upstream source anchors instead of local snapshots
-- **Update Process** - Update `docs/reference-deviations.md` whenever parity targets or intentional deviations change
+- **Update Process** - Review the upstream anchors whenever parity targets or intentional deviations change
 - **Compatibility** - Ensure compatibility with reference API changes
 - **Documentation** - Keep reference usage documentation current
 
@@ -280,12 +272,10 @@ Each algorithm modification is cross-validated against the recorded upstream ref
 - **Responsive Design** - Mobile-first approach
 
 ### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Follow the coding standards
-4. Add tests for new features
-5. Submit a pull request
-Try to maintain compatibility. Avoid changing core automata/grammar/pda/turing machine algorithms without discussing it first.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding, local validation, and
+pull request guidance. Avoid changing core automata, grammar, PDA, or Turing
+machine behavior without discussing the intended compatibility impact first.
 
 ### Development Guidelines
 - Optimise for phone, tablet, and desktop layouts with accessibility in mind

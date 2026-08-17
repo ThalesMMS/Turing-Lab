@@ -25,20 +25,22 @@ import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 
 late SharedPreferences _prefs;
 
 // Widget that composes toolbar + canvas like TM page does
 class _TMPageTestWidget extends StatefulWidget {
   final TM? automaton;
-  final bool isMobile;
 
-  const _TMPageTestWidget({this.automaton, this.isMobile = false});
+  const _TMPageTestWidget({this.automaton});
 
   @override
   State<_TMPageTestWidget> createState() => _TMPageTestWidgetState();
@@ -98,9 +100,6 @@ class _TMPageTestWidgetState extends State<_TMPageTestWidget> {
               animation: combinedListenable,
               builder: (context, _) {
                 return GraphViewCanvasToolbar(
-                  layout: widget.isMobile
-                      ? GraphViewCanvasToolbarLayout.mobile
-                      : GraphViewCanvasToolbarLayout.desktop,
                   controller: _canvasController,
                   enableToolSelection: true,
                   activeTool: _toolController.activeTool,
@@ -137,12 +136,38 @@ Future<void> _pumpTMPageComponents(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
 
+  if (isMobile) {
+    final notifier = TMEditorNotifier();
+    if (automaton != null) {
+      notifier.setTm(automaton);
+    }
+    await tester.pumpWidgetBuilder(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(_prefs),
+          tmEditorProvider.overrideWith((ref) => notifier),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: TMPage(),
+        ),
+      ),
+      surfaceSize: size,
+    );
+    expect(tester.view.physicalSize, size);
+    await tester.pumpAndSettle();
+    return;
+  }
+
   await tester.pumpWidgetBuilder(
     MaterialApp(
-      home: _TMPageTestWidget(automaton: automaton, isMobile: isMobile),
+      home: _TMPageTestWidget(automaton: automaton),
     ),
+    surfaceSize: size,
   );
 
+  expect(tester.view.physicalSize, size);
   await tester.pumpAndSettle();
 }
 
@@ -193,7 +218,7 @@ void main() {
       await screenMatchesGolden(tester, 'tm_page_empty_tablet');
     });
 
-    testGoldens('renders empty canvas with toolbar in mobile layout', (
+    testGoldens('renders empty canvas with real controls in mobile layout', (
       tester,
     ) async {
       addTearDown(() {
@@ -207,6 +232,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(TMPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'tm_page_empty_mobile');
     });
 
@@ -558,6 +586,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(TMPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'tm_page_mobile_tm');
     });
   });

@@ -161,6 +161,7 @@ class AutomatonSimulator {
     steps.add(
       SimulationStep.initial(
         initialState: automaton.initialState!.label,
+        activeStateIds: {automaton.initialState!.id},
         inputString: inputString,
       ),
     );
@@ -208,6 +209,7 @@ class AutomatonSimulator {
         steps.add(
           SimulationStep.fsa(
             currentState: nextState.label,
+            activeStateIds: {nextState.id},
             remainingInput: inputString.substring(inputOffset + 1),
             usedTransition: 'δ($fromStateLabel, $symbol) = ${nextState.label}',
             stepNumber: stepNumber,
@@ -227,6 +229,10 @@ class AutomatonSimulator {
                 HighlightTarget(
                   type: HighlightTargetType.state,
                   id: nextState.id,
+                ),
+                HighlightTarget(
+                  type: HighlightTargetType.transition,
+                  id: transition.id,
                 ),
               ],
             ),
@@ -253,6 +259,7 @@ class AutomatonSimulator {
       steps.add(
         SimulationStep.finalStep(
           finalState: currentState.label,
+          activeStateIds: {currentState.id},
           remainingInput: '',
           stackContents: '',
           tapeContents: '',
@@ -348,8 +355,9 @@ class AutomatonSimulator {
     final startTime = DateTime.now();
 
     // Initialize simulation with epsilon closure of initial state
-    final initialClosure = transitionIndex.epsilonClosure({nfa.initialState!});
-    var currentStates = initialClosure;
+    final initialClosure =
+        transitionIndex.epsilonClosureWithTransitionIds({nfa.initialState!});
+    var currentStates = initialClosure.states;
     var remainingInput = inputString;
     int stepNumber = 0;
     int nextStepNumber() => ++stepNumber;
@@ -366,15 +374,17 @@ class AutomatonSimulator {
     steps.add(
       SimulationStep.initial(
         initialState: initialStateLabel,
+        activeStateIds: {for (final state in currentStates) state.id},
         inputString: inputString,
       ),
     );
 
     // Optional: make the initial ε-closure explicit in step-by-step mode.
-    if (stepByStep && initialClosure.length > 1) {
+    if (stepByStep && initialClosure.states.length > 1) {
       steps.add(
         SimulationStep.fsa(
           currentState: initialStateLabel,
+          activeStateIds: {for (final state in currentStates) state.id},
           remainingInput: inputString,
           usedTransition: _epsilonClosureTransition,
           stepNumber: nextStepNumber(),
@@ -387,8 +397,13 @@ class AutomatonSimulator {
             ],
             categories: const [ExplanationCategory.epsilonMove],
             highlights: [
-              for (final s in initialClosure)
+              for (final s in initialClosure.states)
                 HighlightTarget(type: HighlightTargetType.state, id: s.id),
+              for (final transitionId in initialClosure.transitionIds)
+                HighlightTarget(
+                  type: HighlightTargetType.transition,
+                  id: transitionId,
+                ),
             ],
           ),
         ),
@@ -442,14 +457,18 @@ class AutomatonSimulator {
 
       // Find next states by symbol, exploring all transitions
       var nextStates = <State>{};
+      final transitionIds = <String>{};
       for (final state in currentStates) {
         final transitions = transitionIndex.transitionsFor(state, symbol);
         nextStates.addAll(transitions.map((t) => t.toState));
+        transitionIds.addAll(transitions.map((t) => t.id));
       }
 
       // Apply epsilon closure to next states (flexible)
       final closureBefore = nextStates;
-      nextStates = transitionIndex.epsilonClosure(nextStates);
+      final epsilonClosure =
+          transitionIndex.epsilonClosureWithTransitionIds(nextStates);
+      nextStates = epsilonClosure.states;
       final beforeLabel = stateSetLabel(closureBefore);
       final afterLabel = stateSetLabel(nextStates);
 
@@ -457,6 +476,7 @@ class AutomatonSimulator {
         steps.add(
           SimulationStep.fsa(
             currentState: beforeLabel,
+            activeStateIds: {for (final state in closureBefore) state.id},
             remainingInput: remainingInput,
             usedTransition: symbol,
             stepNumber: symbolStepNumber,
@@ -480,6 +500,11 @@ class AutomatonSimulator {
                     type: HighlightTargetType.state,
                     id: s.id,
                   ),
+                for (final transitionId in transitionIds)
+                  HighlightTarget(
+                    type: HighlightTargetType.transition,
+                    id: transitionId,
+                  ),
               ],
             ),
           ),
@@ -491,6 +516,7 @@ class AutomatonSimulator {
         steps.add(
           SimulationStep.fsa(
             currentState: afterLabel,
+            activeStateIds: {for (final state in nextStates) state.id},
             remainingInput: remainingInput,
             usedTransition: _epsilonClosureTransition,
             stepNumber: nextStepNumber(),
@@ -505,6 +531,11 @@ class AutomatonSimulator {
               highlights: [
                 for (final s in nextStates)
                   HighlightTarget(type: HighlightTargetType.state, id: s.id),
+                for (final transitionId in epsilonClosure.transitionIds)
+                  HighlightTarget(
+                    type: HighlightTargetType.transition,
+                    id: transitionId,
+                  ),
               ],
             ),
           ),
@@ -665,6 +696,7 @@ class AutomatonSimulator {
       steps.add(
         SimulationStep.finalStep(
           finalState: finalStateLabel,
+          activeStateIds: {for (final state in currentStates) state.id},
           remainingInput: remainingInput,
           stackContents: '',
           tapeContents: '',
@@ -980,6 +1012,8 @@ class _FsaTransitionIndex {
       if (transition.isEpsilonTransition) {
         (_epsilonDestinations[transition.fromState] ??= <State>{})
             .add(transition.toState);
+        (_epsilonTransitions[transition.fromState] ??= <FSATransition>[])
+            .add(transition);
       }
     }
   }
@@ -987,6 +1021,7 @@ class _FsaTransitionIndex {
   final Map<State, Map<String, List<FSATransition>>>
       _transitionsByStateAndSymbol = {};
   final Map<State, Set<State>> _epsilonDestinations = {};
+  final Map<State, List<FSATransition>> _epsilonTransitions = {};
 
   List<FSATransition> transitionsFor(State state, String symbol) {
     return _transitionsByStateAndSymbol[state]?[symbol] ??
@@ -999,4 +1034,27 @@ class _FsaTransitionIndex {
       (state) => _epsilonDestinations[state] ?? const <State>{},
     );
   }
+
+  _FsaEpsilonClosure epsilonClosureWithTransitionIds(Set<State> seeds) {
+    final states = epsilonClosure(seeds);
+    return _FsaEpsilonClosure(
+      states: states,
+      transitionIds: {
+        for (final state in states)
+          for (final transition
+              in _epsilonTransitions[state] ?? const <FSATransition>[])
+            if (states.contains(transition.toState)) transition.id,
+      },
+    );
+  }
+}
+
+class _FsaEpsilonClosure {
+  const _FsaEpsilonClosure({
+    required this.states,
+    required this.transitionIds,
+  });
+
+  final Set<State> states;
+  final Set<String> transitionIds;
 }

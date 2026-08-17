@@ -72,6 +72,53 @@ void main() {
       expect(transition.fromState.position.x, closeTo(40, 0.0001));
       expect(transition.fromState.position.y, closeTo(80, 0.0001));
     });
+
+    test('rejects invalid transition insertions', () {
+      final notifier = PDAEditorNotifier()
+        ..addOrUpdateState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..addOrUpdateState(id: 'state_1', label: 'q1', x: 100, y: 0);
+
+      notifier.upsertTransition(
+        id: 'invalid',
+        fromStateId: 'state_0',
+        toStateId: 'state_1',
+        readSymbol: '',
+        popSymbol: '',
+        pushSymbol: '',
+        isLambdaInput: false,
+        isLambdaPop: false,
+        isLambdaPush: false,
+      );
+
+      expect(notifier.state.pda!.pdaTransitions, isEmpty);
+    });
+
+    test('preserves an existing transition when an update is invalid', () {
+      final notifier = PDAEditorNotifier()
+        ..addOrUpdateState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..addOrUpdateState(id: 'state_1', label: 'q1', x: 100, y: 0)
+        ..upsertTransition(
+          id: 'transition_0',
+          fromStateId: 'state_0',
+          toStateId: 'state_1',
+          readSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'AZ',
+          isLambdaInput: false,
+          isLambdaPop: false,
+          isLambdaPush: false,
+        );
+
+      notifier.upsertTransition(
+        id: 'transition_0',
+        readSymbol: '',
+        isLambdaInput: false,
+      );
+
+      final transition = notifier.state.pda!.pdaTransitions.single;
+      expect(transition.inputSymbol, 'a');
+      expect(transition.label, 'a, Z/AZ');
+    });
   });
 
   group('TMEditorNotifier state mutations', () {
@@ -116,6 +163,38 @@ void main() {
       expect(tm.initialState!.id, equals('state_1'));
     });
 
+    test('removeState retains configured TM after the final state is removed',
+        () {
+      final notifier = TMEditorNotifier()
+        ..upsertState(id: 'state_0', label: 'q0', x: 0, y: 0);
+      final configured = notifier.state.tm!.copyWith(
+        id: 'configured-tm',
+        name: 'Configured TM',
+        alphabet: {'a'},
+        tapeAlphabet: {'a', '_', 'unused'},
+        blankSymbol: '_',
+        tapeCount: 3,
+      );
+      notifier.setTm(configured);
+
+      notifier.removeState(id: 'state_0');
+
+      final tm = notifier.state.tm;
+      expect(tm, isNotNull);
+      expect(tm!.id, 'configured-tm');
+      expect(tm.name, 'Configured TM');
+      expect(tm.alphabet, {'a'});
+      expect(tm.tapeAlphabet, {'a', '_', 'unused'});
+      expect(tm.blankSymbol, '_');
+      expect(tm.tapeCount, 3);
+      expect(tm.states, isEmpty);
+      expect(tm.transitions, isEmpty);
+      expect(tm.initialState, isNull);
+      expect(tm.acceptingStates, isEmpty);
+      expect(notifier.state.states, isEmpty);
+      expect(notifier.state.transitions, isEmpty);
+    });
+
     test('moveState rebinds transition endpoints to updated states', () {
       final notifier = TMEditorNotifier()
         ..upsertState(id: 'state_0', label: 'q0', x: 0, y: 0)
@@ -134,6 +213,50 @@ void main() {
       final transition = notifier.state.tm!.tmTransitions.single;
       expect(transition.fromState.position.x, closeTo(40, 0.0001));
       expect(transition.fromState.position.y, closeTo(80, 0.0001));
+    });
+
+    test('rejects invalid transition insertions', () {
+      final notifier = TMEditorNotifier()
+        ..upsertState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..upsertState(id: 'state_1', label: 'q1', x: 100, y: 0);
+
+      notifier.addOrUpdateTransition(
+        id: 'invalid',
+        fromStateId: 'state_0',
+        toStateId: 'state_1',
+        readSymbol: '',
+        writeSymbol: '',
+        direction: TapeDirection.right,
+      );
+
+      expect(notifier.state.tm!.tmTransitions, isEmpty);
+    });
+
+    test('preserves an existing transition when an update is invalid', () {
+      final notifier = TMEditorNotifier()
+        ..upsertState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..upsertState(id: 'state_1', label: 'q1', x: 100, y: 0)
+        ..addOrUpdateTransition(
+          id: 'transition_0',
+          fromStateId: 'state_0',
+          toStateId: 'state_1',
+          readSymbol: 'a',
+          writeSymbol: 'b',
+          direction: TapeDirection.right,
+        );
+
+      notifier.addOrUpdateTransition(
+        id: 'transition_0',
+        fromStateId: 'state_0',
+        toStateId: 'state_1',
+        readSymbol: '',
+        writeSymbol: 'b',
+        direction: TapeDirection.right,
+      );
+
+      final transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.readSymbol, 'a');
+      expect(transition.label, 'a/b,R');
     });
   });
 }

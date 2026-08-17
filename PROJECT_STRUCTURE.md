@@ -41,16 +41,17 @@ turing_lab/
 ├── windows/                       # Windows-specific files
 ├── linux/                         # Linux-specific files
 ├── macos/                         # macOS-specific files
-├── docs/                          # Additional architecture notes and guides
-├── release/                       # Release QA, signing, and platform validation docs
+├── docs/                          # Static project website and deployment assets
 ├── assets/                        # Bundled licenses and offline examples
 ├── screenshots/                   # UI captures and visual references
 ├── tool/                          # Repo tooling and helper scripts
-├── build.yaml                     # Build orchestration for CI/scripts
+├── build.yaml                     # Dart build configuration
 ├── pubspec.yaml                   # Project dependencies
 ├── analysis_options.yaml          # Static analysis configuration
 ├── pubspec.lock                   # Locked dependency versions
 ├── README.md                      # Project documentation
+├── CONTRIBUTING.md                # Contribution and local validation guide
+├── SECURITY.md                    # Private vulnerability reporting policy
 ├── PROJECT_STRUCTURE.md           # This file
 ├── LEGAL_DISTRIBUTION.md          # Apple App Store and distribution rights determination
 ├── USER_GUIDE.md                  # GraphView canvas working guide
@@ -379,15 +380,15 @@ web/
 
 ### Documentation
 
+- `docs/` - Static project website, policy pages, and deployment assets
 - `USER_GUIDE.md` - GraphView canvas working guide
 - `PROJECT_STRUCTURE.md` - This file
-- `docs/` - 53 technical documents covering architecture, canvas system, algorithms
+- `CONTRIBUTING.md` - Contribution workflow and local validation requirements
+- `SECURITY.md` - Supported versions and private vulnerability reporting
 
 ### Reference Material & Requirements
 
-- `docs/reference-deviations.md` - Current parity anchors, reference targets, and intentional deviations
-- `README.md` - Product overview, supported workflows, setup, and testing commands
-- `release/` - Release requirements, QA matrices, signing notes, and platform validation records
+- `README.md` - Product overview, upstream reference anchors, supported workflows, setup, and testing commands
 - GitHub Issues - Active bug tracker and feature backlog
 - `LICENSE.txt` / `LICENSE_JFLAP.txt` - Licensing information
 - `LEGAL_DISTRIBUTION.md` - JFLAP-derived content analysis, App Store distribution determination, and release compliance requirements
@@ -426,7 +427,7 @@ Presentation → Core ← Data
 
 ## Referências para a Migração
 
-Este checkout não inclui snapshots locais das implementações de referência. Use `docs/reference-deviations.md` e os links upstream no README como âncoras de paridade para algoritmos e estruturas de dados. Sempre que um módulo for reescrito, compare o comportamento com essas fontes, valide por testes automatizados e registre desvios intencionais no documento de desvios.
+Este checkout não inclui snapshots locais das implementações de referência. Use os links upstream no README como âncoras de paridade para algoritmos e estruturas de dados. Sempre que um módulo for reescrito, compare o comportamento com essas fontes, valide por testes automatizados e registre desvios intencionais em testes, comentários de código ou descrições de pull requests.
 
 ## Development Guidelines
 

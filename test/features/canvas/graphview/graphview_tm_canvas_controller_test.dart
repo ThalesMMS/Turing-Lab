@@ -23,6 +23,8 @@ import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dar
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 
+import 'support/recording_graph_view_controller.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -84,6 +86,47 @@ void main() {
       );
     }
 
+    test('dispose leaves a caller-owned transformation usable', () {
+      controller.dispose();
+      final transformation = TransformationController();
+      controller = GraphViewTmCanvasController(
+        editorNotifier: notifier,
+        transformationController: transformation,
+      );
+
+      controller.dispose();
+
+      expect(
+        () => transformation.value = Matrix4.identity()
+          ..translateByDouble(1.0, 0.0, 0.0, 1.0),
+        returnsNormally,
+      );
+      transformation.dispose();
+    });
+
+    test('fitToContent uses the shared 1.75 scale cap', () {
+      controller.dispose();
+      final transformation = TransformationController();
+      addTearDown(transformation.dispose);
+      final viewController = RecordingGraphViewController(transformation);
+      controller = GraphViewTmCanvasController(
+        editorNotifier: notifier,
+        viewController: viewController,
+      );
+      final tm = buildSampleTm();
+      notifier.setTm(tm);
+      controller
+        ..synchronize(tm)
+        ..updateViewportSize(const Size(1000, 800))
+        ..fitToContent();
+
+      expect(viewController.lastTarget, isNotNull);
+      expect(
+        viewController.lastTarget!.getMaxScaleOnAxis(),
+        closeTo(1.75, 0.0001),
+      );
+    });
+
     test('synchronize populates TM nodes and edges', () {
       final tm = buildSampleTm();
 
@@ -96,6 +139,39 @@ void main() {
       expect(edge, isNotNull);
       expect(edge!.readSymbol, equals('a'));
       expect(edge.writeSymbol, equals('b'));
+    });
+
+    test('clearCanvas preserves TM configuration and participates in history',
+        () {
+      final tm = buildSampleTm().copyWith(
+        alphabet: {'a', 'b', 'unused-input'},
+        tapeAlphabet: {'a', 'b', 'B', 'unused-tape'},
+        blankSymbol: 'B',
+        tapeCount: 3,
+      );
+      notifier.setTm(tm);
+      controller.synchronize(tm);
+
+      expect(controller.clearCanvas(), isTrue);
+      final cleared = notifier.state.tm;
+      expect(cleared, isNotNull);
+      expect(cleared!.id, 'tm-1');
+      expect(cleared.name, 'Sample TM');
+      expect(cleared.alphabet, {'a', 'b', 'unused-input'});
+      expect(cleared.tapeAlphabet, {'a', 'b', 'B', 'unused-tape'});
+      expect(cleared.blankSymbol, 'B');
+      expect(cleared.tapeCount, 3);
+      expect(cleared.states, isEmpty);
+      expect(cleared.transitions, isEmpty);
+      expect(controller.clearCanvas(), isFalse);
+
+      expect(controller.undo(), isTrue);
+      expect(notifier.state.tm!.states, hasLength(2));
+      expect(notifier.state.tm!.tmTransitions, hasLength(1));
+
+      expect(controller.redo(), isTrue);
+      expect(notifier.state.tm!.states, isEmpty);
+      expect(notifier.state.tm!.transitions, isEmpty);
     });
 
     test('addStateAt inserts state into notifier', () {
@@ -206,6 +282,94 @@ void main() {
       expect(transition.direction, equals(TapeDirection.left));
     });
 
+    test('partial transition update preserves operation and moves its label',
+        () {
+      final tm = buildSampleTm();
+      notifier.setTm(tm);
+      controller.synchronize(tm);
+
+      controller.addOrUpdateTransition(
+        fromStateId: 'q0',
+        toStateId: 'q1',
+        transitionId: 't0',
+        controlPointX: 73,
+        controlPointY: 91,
+      );
+
+      final transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.readSymbol, 'a');
+      expect(transition.writeSymbol, 'b');
+      expect(transition.direction, TapeDirection.right);
+      expect(transition.controlPoint, Vector2(73, 91));
+      expect(controller.edgeById('t0')!.controlPointX, 73);
+      expect(controller.edgeById('t0')!.controlPointY, 91);
+    });
+
+    test('addOrUpdateTransition preserves a multi-tape target', () {
+      controller.addStateAt(const Offset(0, 0));
+      controller.addStateAt(const Offset(160, 100));
+      final stateIds =
+          notifier.state.tm!.states.map((state) => state.id).toList();
+
+      controller.addOrUpdateTransition(
+        fromStateId: stateIds.first,
+        toStateId: stateIds.last,
+        readSymbol: '1',
+        writeSymbol: '0',
+        direction: TapeDirection.left,
+        tapeNumber: 2,
+      );
+
+      final transitionId = notifier.state.tm!.tmTransitions.single.id;
+      controller.addOrUpdateTransition(
+        fromStateId: stateIds.first,
+        toStateId: stateIds.last,
+        writeSymbol: '1',
+        transitionId: transitionId,
+      );
+
+      final updated = notifier.state.tm!;
+      expect(updated.tapeCount, 3);
+      expect(updated.tmTransitions.single.tapeNumber, 2);
+      expect(updated.tmTransitions.single.writeSymbol, '1');
+      expect(updated.validate(), isEmpty);
+    });
+
+    test('canvas mutations preserve loaded TM identity and configuration', () {
+      final source = buildSampleTm();
+      final transition = source.tmTransitions.single.copyWith(tapeNumber: 2);
+      final loaded = source.copyWith(
+        id: 'opaque-machine-id',
+        name: 'Imported three-tape machine',
+        transitions: {transition},
+        alphabet: {'a', 'unused-input'},
+        tapeAlphabet: {'a', 'b', 'unused-marker', '_'},
+        blankSymbol: '_',
+        tapeCount: 3,
+        bounds: const math.Rectangle<double>(5, 7, 640, 480),
+        zoomLevel: 0.75,
+        panOffset: Vector2(19, -11),
+      );
+      notifier.setTm(loaded);
+      controller.synchronize(loaded);
+
+      controller.moveState('q0', const Offset(60, 80));
+
+      final updated = notifier.state.tm!;
+      expect(updated.id, 'opaque-machine-id');
+      expect(updated.name, 'Imported three-tape machine');
+      expect(updated.created, loaded.created);
+      expect(updated.bounds, const math.Rectangle<double>(5, 7, 640, 480));
+      expect(updated.zoomLevel, 0.75);
+      expect(updated.panOffset, Vector2(19, -11));
+      expect(updated.alphabet, {'a', 'unused-input'});
+      expect(updated.tapeAlphabet, {'a', 'b', 'unused-marker', '_'});
+      expect(updated.blankSymbol, '_');
+      expect(updated.tapeCount, 3);
+      expect(updated.tmTransitions.single.tapeNumber, 2);
+      expect(updated.validate(), isEmpty);
+    });
+
     test('removeTransition removes TM transition', () {
       final tm = buildSampleTm();
       notifier.setTm(tm);
@@ -276,6 +440,66 @@ void main() {
       expect(rebuilt.validate(), isEmpty);
       expect(controller.nodeById('q0'), isNotNull);
       expect(controller.edgeById('t0'), isNotNull);
+    });
+
+    test('empty snapshot metadata preserves the loaded TM configuration', () {
+      final source = buildSampleTm();
+      final loaded = source.copyWith(
+        id: 'loaded-id',
+        name: 'Loaded TM',
+        alphabet: {'a', 'unused-input'},
+        tapeAlphabet: {'a', 'b', 'Y', '_'},
+        blankSymbol: '_',
+        tapeCount: 3,
+      );
+      notifier.setTm(loaded);
+      controller.synchronize(loaded);
+
+      const snapshot = GraphViewAutomatonSnapshot(
+        nodes: [
+          GraphViewCanvasNode(
+            id: 'q0',
+            label: 'start',
+            x: 30,
+            y: 40,
+            isInitial: true,
+            isAccepting: false,
+          ),
+          GraphViewCanvasNode(
+            id: 'q1',
+            label: 'accept',
+            x: 220,
+            y: 160,
+            isInitial: false,
+            isAccepting: true,
+          ),
+        ],
+        edges: [
+          GraphViewCanvasEdge(
+            id: 't0',
+            fromStateId: 'q0',
+            toStateId: 'q1',
+            symbols: <String>[],
+            readSymbol: 'c',
+            writeSymbol: 'X',
+            direction: TapeDirection.stay,
+            tapeNumber: 2,
+          ),
+        ],
+        metadata: GraphViewAutomatonMetadata.empty(),
+      );
+
+      controller.applySnapshotToDomain(snapshot);
+
+      final rebuilt = notifier.state.tm!;
+      expect(rebuilt.id, 'loaded-id');
+      expect(rebuilt.name, 'Loaded TM');
+      expect(rebuilt.alphabet, {'a', 'unused-input'});
+      expect(rebuilt.tapeAlphabet, {'a', 'b', 'Y', '_', 'c', 'X'});
+      expect(rebuilt.blankSymbol, '_');
+      expect(rebuilt.tapeCount, 3);
+      expect(rebuilt.tmTransitions.single.tapeNumber, 2);
+      expect(rebuilt.validate(), isEmpty);
     });
   });
 }

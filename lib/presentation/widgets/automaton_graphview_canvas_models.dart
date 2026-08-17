@@ -19,6 +19,11 @@ class AutomatonLabelTransitionPayload extends AutomatonTransitionPayload {
   final String label;
 }
 
+/// Payload used by read-only canvases, which never open or persist edits.
+class _AutomatonReadOnlyTransitionPayload extends AutomatonTransitionPayload {
+  const _AutomatonReadOnlyTransitionPayload();
+}
+
 /// Payload describing a request to delete the currently edited transition.
 class AutomatonDeleteTransitionPayload extends AutomatonTransitionPayload {
   const AutomatonDeleteTransitionPayload();
@@ -43,6 +48,7 @@ class AutomatonPdaTransitionPayload extends AutomatonTransitionPayload {
     required this.readSymbol,
     required this.popSymbol,
     required this.pushSymbol,
+    this.pushSymbols,
     required this.isLambdaInput,
     required this.isLambdaPop,
     required this.isLambdaPush,
@@ -51,6 +57,7 @@ class AutomatonPdaTransitionPayload extends AutomatonTransitionPayload {
   final String readSymbol;
   final String popSymbol;
   final String pushSymbol;
+  final List<String>? pushSymbols;
   final bool isLambdaInput;
   final bool isLambdaPop;
   final bool isLambdaPush;
@@ -128,6 +135,17 @@ class AutomatonTransitionPersistRequest {
   final BaseGraphViewCanvasController<dynamic, dynamic> controller;
 }
 
+bool _handleDeleteRequest(AutomatonTransitionPersistRequest request) {
+  if (request.payload is! AutomatonDeleteTransitionPayload) {
+    return false;
+  }
+  final transitionId = request.transitionId;
+  if (transitionId != null) {
+    request.controller.removeTransition(transitionId);
+  }
+  return true;
+}
+
 /// Transition configuration describing how to build overlays and persist
 /// updates for the current automaton type.
 class AutomatonGraphViewTransitionConfig {
@@ -161,6 +179,14 @@ class AutomatonGraphViewCanvasCustomization {
   final bool enableToolSelection;
   final TuringLabEdgeRenderMode edgeRenderMode;
 
+  factory AutomatonGraphViewCanvasCustomization.readOnly({
+    TuringLabEdgeRenderMode edgeRenderMode = TuringLabEdgeRenderMode.standard,
+  }) {
+    return _ReadOnlyAutomatonGraphViewCanvasCustomization(
+      edgeRenderMode: edgeRenderMode,
+    );
+  }
+
   factory AutomatonGraphViewCanvasCustomization.fsa() {
     return AutomatonGraphViewCanvasCustomization(
       edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
@@ -184,13 +210,10 @@ class AutomatonGraphViewCanvasCustomization {
             );
           },
           persistTransition: (request) {
-            final controller = request.controller as GraphViewCanvasController;
-            if (request.payload is AutomatonDeleteTransitionPayload) {
-              if (request.transitionId != null) {
-                controller.removeTransition(request.transitionId!);
-              }
+            if (_handleDeleteRequest(request)) {
               return;
             }
+            final controller = request.controller as GraphViewCanvasController;
             final payload = request.payload as AutomatonLabelTransitionPayload;
             controller.addOrUpdateTransition(
               fromStateId: request.fromStateId,
@@ -206,7 +229,9 @@ class AutomatonGraphViewCanvasCustomization {
     );
   }
 
-  factory AutomatonGraphViewCanvasCustomization.pda() {
+  factory AutomatonGraphViewCanvasCustomization.pda({
+    StackState? currentStack,
+  }) {
     return AutomatonGraphViewCanvasCustomization(
       enableToolSelection: true,
       transitionConfigBuilder: (controller) {
@@ -219,9 +244,10 @@ class AutomatonGraphViewCanvasCustomization {
               readSymbol: read,
               popSymbol: pop,
               pushSymbol: push,
-              isLambdaInput: edge?.isLambdaInput ?? false,
-              isLambdaPop: edge?.isLambdaPop ?? false,
-              isLambdaPush: edge?.isLambdaPush ?? false,
+              pushSymbols: edge?.pushSymbols,
+              isLambdaInput: edge?.isLambdaInput ?? edge == null,
+              isLambdaPop: edge?.isLambdaPop ?? edge == null,
+              isLambdaPush: edge?.isLambdaPush ?? edge == null,
             );
           },
           overlayBuilder: (context, data, overlayController) {
@@ -233,6 +259,7 @@ class AutomatonGraphViewCanvasCustomization {
               isLambdaInput: payload.isLambdaInput,
               isLambdaPop: payload.isLambdaPop,
               isLambdaPush: payload.isLambdaPush,
+              currentStack: currentStack,
               onSubmit: ({
                 required String readSymbol,
                 required String popSymbol,
@@ -246,6 +273,12 @@ class AutomatonGraphViewCanvasCustomization {
                     readSymbol: readSymbol,
                     popSymbol: popSymbol,
                     pushSymbol: pushSymbol,
+                    // Retain atom boundaries only when the push is unchanged.
+                    pushSymbols: !lambdaPush &&
+                            lambdaPush == payload.isLambdaPush &&
+                            pushSymbol == payload.pushSymbol
+                        ? payload.pushSymbols
+                        : null,
                     isLambdaInput: lambdaInput,
                     isLambdaPop: lambdaPop,
                     isLambdaPush: lambdaPush,
@@ -253,18 +286,27 @@ class AutomatonGraphViewCanvasCustomization {
                 );
               },
               onCancel: overlayController.cancel,
+              onDelete: data.transitionId == null
+                  ? null
+                  : () => overlayController.submit(
+                        const AutomatonDeleteTransitionPayload(),
+                      ),
             );
           },
           persistTransition: (request) {
-            final payload = request.payload as AutomatonPdaTransitionPayload;
+            if (_handleDeleteRequest(request)) {
+              return;
+            }
             final pdaController =
                 request.controller as GraphViewPdaCanvasController;
+            final payload = request.payload as AutomatonPdaTransitionPayload;
             pdaController.addOrUpdateTransition(
               fromStateId: request.fromStateId,
               toStateId: request.toStateId,
               readSymbol: payload.readSymbol,
               popSymbol: payload.popSymbol,
               pushSymbol: payload.pushSymbol,
+              pushSymbols: payload.pushSymbols,
               isLambdaInput: payload.isLambdaInput,
               isLambdaPop: payload.isLambdaPop,
               isLambdaPush: payload.isLambdaPush,
@@ -277,6 +319,88 @@ class AutomatonGraphViewCanvasCustomization {
       },
     );
   }
+
+  factory AutomatonGraphViewCanvasCustomization.tm() {
+    return AutomatonGraphViewCanvasCustomization(
+      transitionConfigBuilder: (controller) {
+        return AutomatonGraphViewTransitionConfig(
+          initialPayloadBuilder: (edge) => AutomatonTmTransitionPayload(
+            readSymbol: edge?.readSymbol ?? '',
+            writeSymbol: edge?.writeSymbol ?? '',
+            direction: edge?.direction ?? TapeDirection.right,
+          ),
+          overlayBuilder: (context, data, overlayController) {
+            final payload = data.payload as AutomatonTmTransitionPayload;
+            return TmTransitionOperationsEditor(
+              initialRead: payload.readSymbol,
+              initialWrite: payload.writeSymbol,
+              initialDirection: payload.direction,
+              onSubmit: ({
+                required String readSymbol,
+                required String writeSymbol,
+                required TapeDirection direction,
+              }) {
+                overlayController.submit(
+                  AutomatonTmTransitionPayload(
+                    readSymbol: readSymbol,
+                    writeSymbol: writeSymbol,
+                    direction: direction,
+                  ),
+                );
+              },
+              onCancel: overlayController.cancel,
+              onDelete: data.transitionId == null
+                  ? null
+                  : () => overlayController.submit(
+                        const AutomatonDeleteTransitionPayload(),
+                      ),
+            );
+          },
+          persistTransition: (request) {
+            if (_handleDeleteRequest(request)) {
+              return;
+            }
+            final tmController =
+                request.controller as GraphViewTmCanvasController;
+            final payload = request.payload as AutomatonTmTransitionPayload;
+            tmController.addOrUpdateTransition(
+              fromStateId: request.fromStateId,
+              toStateId: request.toStateId,
+              readSymbol: payload.readSymbol,
+              writeSymbol: payload.writeSymbol,
+              direction: payload.direction,
+              transitionId: request.transitionId,
+              controlPointX: request.worldAnchor.dx,
+              controlPointY: request.worldAnchor.dy,
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ReadOnlyAutomatonGraphViewCanvasCustomization
+    extends AutomatonGraphViewCanvasCustomization {
+  const _ReadOnlyAutomatonGraphViewCanvasCustomization({
+    required super.edgeRenderMode,
+  }) : super(
+          enableStateDrag: false,
+          enableToolSelection: false,
+          transitionConfigBuilder: _buildReadOnlyTransitionConfig,
+        );
+}
+
+AutomatonGraphViewTransitionConfig _buildReadOnlyTransitionConfig(
+  BaseGraphViewCanvasController<dynamic, dynamic> controller,
+) {
+  return AutomatonGraphViewTransitionConfig(
+    initialPayloadBuilder: (edge) =>
+        const _AutomatonReadOnlyTransitionPayload(),
+    overlayBuilder: (context, data, overlayController) =>
+        const SizedBox.shrink(),
+    persistTransition: (request) {},
+  );
 }
 
 const double _kNodeDiameter = kAutomatonStateDiameter;

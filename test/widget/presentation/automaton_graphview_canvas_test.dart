@@ -13,7 +13,11 @@
 //
 
 import 'dart:math' as math;
+import 'dart:ui' show SemanticsFlag;
 
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,10 +27,15 @@ import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
+import 'package:turing_lab/features/canvas/graphview/graphview_highlight_channel.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_label_field_editor.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_utils.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
@@ -81,6 +90,7 @@ class _RecordingGraphViewCanvasController extends GraphViewCanvasController {
   int previewStatePositionCallCount = 0;
   String? lastMoveStateId;
   Offset? lastMoveStatePosition;
+  Offset? lastPreviewStatePosition;
 
   @override
   void synchronize(FSA? automaton) {
@@ -104,8 +114,98 @@ class _RecordingGraphViewCanvasController extends GraphViewCanvasController {
   @override
   void previewStatePosition(String id, Offset position) {
     previewStatePositionCallCount++;
+    lastPreviewStatePosition = position;
     super.previewStatePosition(id, position);
   }
+}
+
+FSA _singleStateAutomaton(String id) {
+  final state = automaton_state.State(
+    id: 'A',
+    label: 'A',
+    position: Vector2(40, 40),
+    isInitial: true,
+  );
+  return FSA(
+    id: id,
+    name: 'Single state',
+    states: {state},
+    transitions: const <FSATransition>{},
+    alphabet: const <String>{'a'},
+    initialState: state,
+    acceptingStates: <automaton_state.State>{},
+    created: DateTime.utc(2024, 1, 1),
+    modified: DateTime.utc(2024, 1, 1),
+    bounds: const math.Rectangle<double>(0, 0, 400, 300),
+    zoomLevel: 1,
+    panOffset: Vector2.zero(),
+  );
+}
+
+Future<Offset> _pumpSingleStateCanvas(
+  WidgetTester tester, {
+  required FSA automaton,
+  required _RecordingAutomatonStateNotifier provider,
+  required _RecordingGraphViewCanvasController controller,
+  required AutomatonCanvasToolController toolController,
+  Locale locale = const Locale('en'),
+}) async {
+  provider.updateAutomaton(automaton);
+  controller.synchronize(automaton);
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: ThemeData(splashFactory: NoSplash.splashFactory),
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: AutomatonGraphViewCanvas(
+          automaton: automaton,
+          canvasKey: GlobalKey(),
+          controller: controller,
+          toolController: toolController,
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return tester.getCenter(find.text('A'));
+}
+
+Offset _edgePathMidpoint(
+  GraphViewCanvasController controller,
+  GraphViewCanvasEdge edge,
+) {
+  final from = controller.nodeById(edge.fromStateId)!;
+  final to = controller.nodeById(edge.toStateId)!;
+  final start = resolveNodeCenter(from);
+  final end = resolveNodeCenter(to);
+  final control = resolveLinkAnchorWorld(controller, edge)!;
+  return start * 0.25 + control * 0.5 + end * 0.25;
+}
+
+Offset _worldToViewport(
+  GraphViewCanvasController controller,
+  Offset worldPosition,
+) {
+  final transformation =
+      controller.graphController.transformationController!.value;
+  final vector = transformation.transform3(
+    Vector3(worldPosition.dx, worldPosition.dy, 0),
+  );
+  return Offset(vector.x, vector.y);
+}
+
+Color _nodeBackgroundColor(WidgetTester tester, String label) {
+  final container = tester.widget<AnimatedContainer>(
+    find
+        .ancestor(
+          of: find.text(label),
+          matching: find.byType(AnimatedContainer),
+        )
+        .first,
+  );
+  return (container.decoration! as BoxDecoration).color!;
 }
 
 void main() {
@@ -174,6 +274,416 @@ void main() {
         expect(controller.lastAddStateWorldOffset, isNotNull);
       },
     );
+
+    testWidgets('caps FSA canvas zoom at 2x', (tester) async {
+      final automaton = FSA(
+        id: 'zoom-cap',
+        name: 'Zoom cap',
+        states: <automaton_state.State>{},
+        transitions: const <FSATransition>{},
+        alphabet: const <String>{},
+        initialState: null,
+        acceptingStates: <automaton_state.State>{},
+        created: DateTime.utc(2024, 1, 1),
+        modified: DateTime.utc(2024, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 400, 300),
+        zoomLevel: 1,
+        panOffset: Vector2.zero(),
+      );
+
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AutomatonGraphViewCanvas(
+              automaton: automaton,
+              canvasKey: GlobalKey(),
+              controller: controller,
+              toolController: toolController,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+            .maxScale,
+        2.0,
+      );
+      expect(
+        tester
+            .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+            .minScale,
+        0.05,
+      );
+    });
+
+    testWidgets('double tap edits a state on Android', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+
+      final state = automaton_state.State(
+        id: 'q0',
+        label: 'q0',
+        position: Vector2(120, 100),
+        isInitial: true,
+      );
+      final automaton = FSA(
+        id: 'android-double-tap',
+        name: 'Android double tap',
+        states: {state},
+        transitions: const <FSATransition>{},
+        alphabet: const <String>{},
+        initialState: state,
+        acceptingStates: <automaton_state.State>{},
+        created: DateTime.utc(2024, 1, 1),
+        modified: DateTime.utc(2024, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 400, 300),
+        zoomLevel: 1,
+        panOffset: Vector2.zero(),
+      );
+
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AutomatonGraphViewCanvas(
+              automaton: automaton,
+              canvasKey: GlobalKey(),
+              controller: controller,
+              toolController: toolController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.graphController.transformationController!.value
+            .getMaxScaleOnAxis(),
+        closeTo(1.75, 0.0001),
+      );
+
+      final stateCenter = tester.getCenter(find.text('q0'));
+      final firstTap = await tester.startGesture(stateCenter);
+      await firstTap.moveBy(const Offset(1, 0));
+      await firstTap.up();
+      // runAsync burns real time, so keep well inside kDoubleTapTimeout
+      // (300ms) or scheduling jitter on CI degrades this into two single taps.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 80)),
+      );
+      final secondTap = await tester.startGesture(stateCenter);
+      await secondTap.moveBy(const Offset(1, 0));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await secondTap.up();
+      await tester.pumpAndSettle();
+      debugDefaultTargetPlatformOverride = null;
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(controller.previewStatePositionCallCount, 0);
+      expect(controller.moveStateCallCount, 0);
+    });
+
+    testWidgets('single tap marks the selected state for semantics', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        toolController.setActiveTool(AutomatonCanvasTool.selection);
+        final automaton = _singleStateAutomaton('selected-state-semantics');
+        final center = await _pumpSingleStateCanvas(
+          tester,
+          automaton: automaton,
+          provider: provider,
+          controller: controller,
+          toolController: toolController,
+        );
+
+        await tester.tapAt(center);
+        await tester.pump();
+
+        final stateSemantics = tester.getSemantics(
+          find.bySemanticsLabel(
+            'State A. Initial state. 0 outgoing transitions. '
+            '0 incoming transitions.',
+          ),
+        );
+        // Flutter 3.27 does not expose flagsCollection yet.
+        // ignore: deprecated_member_use
+        expect(stateSemantics.hasFlag(SemanticsFlag.isSelected), isTrue);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets(
+      'assistive activation opens the localized state editor',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        try {
+          toolController.setActiveTool(AutomatonCanvasTool.selection);
+          final automaton = _singleStateAutomaton(
+            'assistive-state-editor',
+          );
+          await _pumpSingleStateCanvas(
+            tester,
+            automaton: automaton,
+            provider: provider,
+            controller: controller,
+            toolController: toolController,
+            locale: const Locale('pt'),
+          );
+
+          const stateLabel = 'Estado A. Estado inicial. 0 transições de saída. '
+              '0 transições de entrada.';
+          expect(find.bySemanticsLabel(stateLabel), findsOneWidget);
+
+          tester.semantics.tap(find.semantics.byLabel(stateLabel));
+          await tester.pumpAndSettle();
+
+          expect(find.text('Rótulo do estado'), findsOneWidget);
+          expect(find.text('Estado inicial'), findsOneWidget);
+          expect(find.text('Estado de aceitação'), findsOneWidget);
+          expect(find.text('Estado final'), findsNothing);
+          expect(find.text('Salvar alterações'), findsOneWidget);
+          expect(find.text('Fechar'), findsOneWidget);
+        } finally {
+          semantics.dispose();
+        }
+      },
+    );
+
+    testWidgets('Delete removes the state selected by a single tap', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('keyboard-delete-state');
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: automaton,
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      await tester.tapAt(center);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+      await tester.pumpAndSettle();
+
+      expect(provider.currentAutomaton?.states, isEmpty);
+    });
+
+    testWidgets('long press opens state options with a delete action', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('long-press-delete-state');
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: automaton,
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      await tester.longPressAt(center);
+      await tester.pumpAndSettle();
+
+      final delete = find.byKey(
+        const ValueKey('automaton-state-delete-A'),
+      );
+      expect(delete, findsOneWidget);
+      await tester.tap(delete);
+      await tester.pumpAndSettle();
+
+      expect(provider.currentAutomaton?.states, isEmpty);
+    });
+
+    testWidgets('secondary click opens state options', (tester) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('secondary-click-state');
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: automaton,
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      await tester.tapAt(
+        center,
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('automaton-state-delete-A')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('bare canvas shortcuts do not run while editing state text', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('focused-text-shortcuts');
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: automaton,
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      await tester.longPressAt(center);
+      await tester.pumpAndSettle();
+      final textField = find.byType(TextField);
+      expect(textField, findsOneWidget);
+      await tester.tap(textField);
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
+      await tester.pump();
+
+      expect(toolController.activeTool, AutomatonCanvasTool.selection);
+    });
+
+    testWidgets('one-pixel touch jitter neither previews nor commits a node', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: _singleStateAutomaton('touch-jitter'),
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      final gesture = await tester.startGesture(
+        center,
+        kind: PointerDeviceKind.touch,
+      );
+      await gesture.moveBy(const Offset(1, 0));
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(controller.previewStatePositionCallCount, 0);
+      expect(controller.moveStateCallCount, 0);
+    });
+
+    testWidgets('pinch can begin on a node without moving that node', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: _singleStateAutomaton('node-pinch'),
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+      final transformation =
+          controller.graphController.transformationController!;
+      final initialScale = transformation.value.getMaxScaleOnAxis();
+
+      final first = await tester.startGesture(
+        center,
+        pointer: 1,
+        kind: PointerDeviceKind.touch,
+      );
+      await tester.pump();
+      final second = await tester.startGesture(
+        center + const Offset(60, 0),
+        pointer: 2,
+        kind: PointerDeviceKind.touch,
+      );
+      await tester.pump();
+      await second.moveTo(center + const Offset(90, 0));
+      await tester.pump();
+      await first.moveTo(center - const Offset(30, 0));
+      await tester.pump();
+      await second.moveTo(center + const Offset(100, 0));
+      await tester.pump();
+      final scaleDuringPinch = transformation.value.getMaxScaleOnAxis();
+      await first.up();
+      await second.up();
+      await tester.pumpAndSettle();
+
+      expect(scaleDuringPinch, greaterThan(initialScale));
+      expect(controller.previewStatePositionCallCount, 0);
+      expect(controller.moveStateCallCount, 0);
+    });
+
+    testWidgets('out-and-back touch drag restores preview without a commit', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: _singleStateAutomaton('out-and-back'),
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      final gesture = await tester.startGesture(
+        center,
+        kind: PointerDeviceKind.touch,
+      );
+      await gesture.moveBy(const Offset(24, 0));
+      await tester.pump();
+      await gesture.moveTo(center + const Offset(1, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(controller.previewStatePositionCallCount, greaterThan(0));
+      expect(
+        controller.lastPreviewStatePosition,
+        offsetMoreOrLessEquals(const Offset(40, 40), epsilon: 0.01),
+      );
+      expect(controller.moveStateCallCount, 0);
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets('mouse drag above precise hit slop commits once', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: _singleStateAutomaton('precise-mouse-drag'),
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      final gesture = await tester.startGesture(
+        center,
+        kind: PointerDeviceKind.mouse,
+      );
+      await gesture.moveBy(const Offset(2, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(controller.previewStatePositionCallCount, greaterThan(0));
+      expect(controller.moveStateCallCount, 1);
+    });
 
     testWidgets(
       'resynchronizes when automaton structure changes with same identity fields',
@@ -253,84 +763,86 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      addTearDown(semantics.dispose);
+      try {
+        final state = automaton_state.State(
+          id: 'A',
+          label: 'A',
+          position: Vector2(40, 40),
+          isInitial: true,
+        );
+        final acceptingState = automaton_state.State(
+          id: 'B',
+          label: 'B',
+          position: Vector2(160, 40),
+          isAccepting: true,
+        );
+        final automaton = FSA(
+          id: 'semantic-canvas',
+          name: 'Semantic Canvas',
+          states: {state, acceptingState},
+          transitions: {
+            FSATransition(
+              id: 't0',
+              fromState: state,
+              toState: acceptingState,
+              inputSymbols: const {'a'},
+            ),
+          },
+          alphabet: const <String>{'a'},
+          initialState: state,
+          acceptingStates: <automaton_state.State>{acceptingState},
+          created: DateTime.utc(2024, 1, 1),
+          modified: DateTime.utc(2024, 1, 1),
+          bounds: const math.Rectangle<double>(0, 0, 400, 300),
+          zoomLevel: 1,
+          panOffset: Vector2.zero(),
+        );
 
-      final state = automaton_state.State(
-        id: 'A',
-        label: 'A',
-        position: Vector2(40, 40),
-        isInitial: true,
-      );
-      final acceptingState = automaton_state.State(
-        id: 'B',
-        label: 'B',
-        position: Vector2(160, 40),
-        isAccepting: true,
-      );
-      final automaton = FSA(
-        id: 'semantic-canvas',
-        name: 'Semantic Canvas',
-        states: {state, acceptingState},
-        transitions: {
-          FSATransition(
-            id: 't0',
-            fromState: state,
-            toState: acceptingState,
-            inputSymbols: const {'a'},
-          ),
-        },
-        alphabet: const <String>{'a'},
-        initialState: state,
-        acceptingStates: <automaton_state.State>{acceptingState},
-        created: DateTime.utc(2024, 1, 1),
-        modified: DateTime.utc(2024, 1, 1),
-        bounds: const math.Rectangle<double>(0, 0, 400, 300),
-        zoomLevel: 1,
-        panOffset: Vector2.zero(),
-      );
+        provider.updateAutomaton(automaton);
+        controller.synchronize(automaton);
 
-      provider.updateAutomaton(automaton);
-      controller.synchronize(automaton);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: AutomatonGraphViewCanvas(
-              automaton: automaton,
-              canvasKey: GlobalKey(),
-              controller: controller,
-              toolController: toolController,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: automaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      expect(
-        find.bySemanticsLabel(
-          'Automaton canvas viewport. 2 states, 1 transition.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel(
-          'State A. Initial state. 1 outgoing transition. '
-          '0 incoming transitions.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel(
-          'State B. Accepting state. 0 outgoing transitions. '
-          '1 incoming transition.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel('Transition t0 from A to B labeled a.'),
-        findsOneWidget,
-      );
+        expect(
+          find.bySemanticsLabel(
+            'Automaton canvas viewport. 2 states, 1 transition.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel(
+            'State A. Initial state. 1 outgoing transition. '
+            '0 incoming transitions.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel(
+            'State B. Accepting state. 0 outgoing transitions. '
+            '1 incoming transition.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel('Transition t0 from A to B labeled a.'),
+          findsOneWidget,
+        );
+      } finally {
+        semantics.dispose();
+      }
     });
 
     testWidgets('supports keyboard shortcuts for core canvas tools', (
@@ -556,8 +1068,10 @@ void main() {
 
       expect(tester.widget<GraphView>(find.byType(GraphView)).animated, isTrue);
 
-      final gesture =
-          await tester.startGesture(tester.getCenter(find.text('A')));
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('A')),
+        kind: PointerDeviceKind.touch,
+      );
       await gesture.moveBy(const Offset(24, 0));
       await tester.pump();
 
@@ -629,13 +1143,18 @@ void main() {
       return automaton;
     }
 
-    Future<void> pumpCanvas(WidgetTester tester, FSA automaton) async {
+    Future<void> pumpCanvas(
+      WidgetTester tester,
+      FSA automaton, {
+      GlobalKey? canvasKey,
+    }) async {
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: Scaffold(
             body: AutomatonGraphViewCanvas(
               automaton: automaton,
-              canvasKey: GlobalKey(),
+              canvasKey: canvasKey ?? GlobalKey(),
               controller: controller,
               toolController: toolController,
             ),
@@ -654,6 +1173,212 @@ void main() {
 
       expect(find.text('A'), findsOneWidget);
       expect(find.text('B'), findsOneWidget);
+    });
+
+    testWidgets('transition indicator is centered and advances after source', (
+      tester,
+    ) async {
+      final automaton = buildAutomaton({});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final indicator = find.byKey(
+        const ValueKey('automaton-transition-mode-indicator'),
+      );
+      final canvasCenter = tester.getCenter(find.byKey(canvasKey));
+
+      expect(indicator, findsOneWidget);
+      expect(tester.getCenter(indicator).dx, closeTo(canvasCenter.dx, 0.1));
+      expect(find.text('Add transition...'), findsOneWidget);
+
+      await tester.tap(find.text('A'), warnIfMissed: false);
+      await tester.pump();
+
+      expect(find.text('Choose target state'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('automaton-transition-preview')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('transition preview follows hover with a precision cursor', (
+      tester,
+    ) async {
+      final automaton = buildAutomaton({});
+      await pumpCanvas(tester, automaton);
+      await tester.tap(find.text('A'), warnIfMissed: false);
+      await tester.pump();
+
+      final pointerRegion = find.byKey(
+        const ValueKey('automaton-canvas-pointer-region'),
+      );
+      expect(pointerRegion, findsOneWidget);
+      expect(
+        tester.widget<MouseRegion>(pointerRegion).cursor,
+        SystemMouseCursors.precise,
+      );
+
+      await tester.sendEventToBinding(
+        const PointerHoverEvent(
+          position: Offset(320, 220),
+          kind: PointerDeviceKind.mouse,
+        ),
+      );
+      await tester.pump();
+      final preview = find.byKey(
+        const ValueKey('automaton-transition-preview'),
+      );
+      final firstPainter = tester.widget<CustomPaint>(preview).painter!;
+
+      await tester.sendEventToBinding(
+        const PointerHoverEvent(
+          position: Offset(480, 360),
+          kind: PointerDeviceKind.mouse,
+        ),
+      );
+      await tester.pump();
+      final secondPainter = tester.widget<CustomPaint>(preview).painter!;
+
+      expect(secondPainter, isNot(same(firstPainter)));
+      expect(secondPainter.shouldRepaint(firstPainter), isTrue);
+    });
+
+    testWidgets('transition source stays distinct from simulation highlight', (
+      tester,
+    ) async {
+      final automaton = buildAutomaton({});
+      await pumpCanvas(tester, automaton);
+      final colors = Theme.of(tester.element(find.text('A'))).colorScheme;
+
+      await tester.tap(find.text('A'), warnIfMissed: false);
+      await tester.pump();
+
+      expect(_nodeBackgroundColor(tester, 'A'), colors.tertiaryContainer);
+
+      controller.applyHighlight(
+        SimulationHighlight(stateIds: {'A'}),
+      );
+      await tester.pump();
+
+      expect(_nodeBackgroundColor(tester, 'A'), colors.primaryContainer);
+    });
+
+    testWidgets('tapping a transition path opens its editor directly', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      const transitionId = 'direct-edge';
+      final transition = FSATransition(
+        id: transitionId,
+        fromState: stateA,
+        toState: stateB,
+        label: 'x',
+        inputSymbols: const {'x'},
+      );
+      final automaton = buildAutomaton({transition});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final edge = controller.edgeById(transitionId)!;
+      final localPosition = _worldToViewport(
+        controller,
+        _edgePathMidpoint(controller, edge),
+      );
+      final canvasBox =
+          canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+      await tester.tapAt(canvasBox.localToGlobal(localPosition));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller?.text, 'x');
+      expect(
+        find.byKey(
+          const ValueKey('automaton-transition-choice-direct-edge'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('tapping a distant control point does not hit the curve', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      const transitionId = 'curved-edge';
+      final transition = FSATransition(
+        id: transitionId,
+        fromState: stateA,
+        toState: stateB,
+        label: 'x',
+        inputSymbols: const {'x'},
+      );
+      final reverseTransition = FSATransition(
+        id: 'reverse-curved-edge',
+        fromState: stateB,
+        toState: stateA,
+        label: 'y',
+        inputSymbols: const {'y'},
+      );
+      final automaton = buildAutomaton({transition, reverseTransition});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final edge = controller.edgeById(transitionId)!;
+      final localPosition = _worldToViewport(
+        controller,
+        resolveLinkAnchorWorld(controller, edge)!,
+      );
+      final canvasBox =
+          canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+      await tester.tapAt(canvasBox.localToGlobal(localPosition));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GraphViewLabelFieldEditor), findsNothing);
+    });
+
+    testWidgets('tapping parallel transition paths asks which edge to edit', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final first = FSATransition(
+        id: 'parallel-first',
+        fromState: stateA,
+        toState: stateB,
+        label: 'a',
+        inputSymbols: const {'a'},
+      );
+      final second = FSATransition(
+        id: 'parallel-second',
+        fromState: stateA,
+        toState: stateB,
+        label: 'b',
+        inputSymbols: const {'b'},
+      );
+      final automaton = buildAutomaton({first, second});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final edge = controller.edgeById('parallel-first')!;
+      final localPosition = _worldToViewport(
+        controller,
+        _edgePathMidpoint(controller, edge),
+      );
+      final canvasBox =
+          canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+      await tester.tapAt(canvasBox.localToGlobal(localPosition));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(
+          const ValueKey('automaton-transition-choice-parallel-first'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey('automaton-transition-choice-parallel-second'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets(
@@ -803,34 +1528,72 @@ void main() {
       expect(provider.transitionCalls, isEmpty);
     });
 
-    testWidgets('animates node highlight emphasis to the highlighted state', (
+    testWidgets('animates the stable node id emitted by a simulation step', (
       tester,
     ) async {
+      stateA = automaton_state.State(
+        id: 'node-a-id',
+        label: 'A',
+        position: Vector2(40, 40),
+        isInitial: true,
+      );
+      stateB = automaton_state.State(
+        id: 'node-b-id',
+        label: 'B',
+        position: Vector2(200, 160),
+        isAccepting: true,
+      );
       final automaton = buildAutomaton({});
 
       await pumpCanvas(tester, automaton);
 
-      final scaleFinder = find.ancestor(
+      final stateAScaleFinder = find.ancestor(
         of: find.text('A'),
         matching: find.byType(AnimatedScale),
       );
-
-      expect(tester.widget<AnimatedScale>(scaleFinder).scale, equals(1.0));
-
-      controller.applyHighlight(
-        SimulationHighlight(
-          stateIds: {'A'},
-          transitionIds: <String>{},
-        ),
+      final stateBScaleFinder = find.ancestor(
+        of: find.text('B'),
+        matching: find.byType(AnimatedScale),
       );
+
+      expect(
+        tester.widget<AnimatedScale>(stateAScaleFinder).scale,
+        equals(1.0),
+      );
+      expect(
+        tester.widget<AnimatedScale>(stateBScaleFinder).scale,
+        equals(1.0),
+      );
+
+      final service = SimulationHighlightService(
+        channel: GraphViewSimulationHighlightChannel(controller),
+      );
+      service.emitFromSteps([
+        const SimulationStep(
+          currentState: 'B',
+          activeStateIds: {'node-b-id'},
+          remainingInput: '',
+          stepNumber: 1,
+        ),
+      ], 0);
       await tester.pumpAndSettle();
 
-      expect(tester.widget<AnimatedScale>(scaleFinder).scale, equals(1.04));
+      expect(
+        tester.widget<AnimatedScale>(stateAScaleFinder).scale,
+        equals(1.0),
+      );
+      expect(
+        tester.widget<AnimatedScale>(stateBScaleFinder).scale,
+        equals(1.04),
+      );
 
-      controller.clearHighlight();
+      service.clear();
       await tester.pumpAndSettle();
 
-      expect(tester.widget<AnimatedScale>(scaleFinder).scale, equals(1.0));
+      expect(
+        tester.widget<AnimatedScale>(stateBScaleFinder).scale,
+        equals(1.0),
+      );
     });
 
     testWidgets(
@@ -857,7 +1620,9 @@ void main() {
         final gesture = await tester.startGesture(
           tester.getCenter(find.text('B'), warnIfMissed: false),
         );
-        await gesture.moveBy(const Offset(0, -96));
+        await gesture.moveBy(const Offset(0, -24));
+        await tester.pump();
+        await gesture.moveBy(const Offset(0, -72));
         await tester.pump();
 
         final edgeDuringDrag = controller.edgeById('transition_drag');

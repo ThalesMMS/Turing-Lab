@@ -21,6 +21,7 @@ import '../../core/models/fsa_transition.dart';
 import '../../core/models/state.dart';
 import '../../core/models/transition.dart';
 import '../../core/utils/epsilon_utils.dart';
+import 'editor_state_helpers.dart';
 
 /// State for automaton CRUD operations
 class AutomatonStateProviderState {
@@ -166,69 +167,23 @@ class AutomatonStateNotifier
       'accepting': isAccepting,
     });
     _mutateAutomaton((current) {
-      final List<State> updatedStates = [];
-      bool found = false;
-
-      for (final state in current.states) {
-        if (state.id == id) {
-          updatedStates.add(
-            state.copyWith(
-              label: label,
-              position: Vector2(x, y),
-              isInitial: isInitial ?? state.isInitial,
-              isAccepting: isAccepting ?? state.isAccepting,
-            ),
-          );
-          found = true;
-        } else {
-          updatedStates.add(state);
-        }
-      }
-
-      if (!found) {
-        updatedStates.add(
-          State(
-            id: id,
-            label: label,
-            position: Vector2(x, y),
-            isInitial: isInitial ?? current.states.isEmpty,
-            isAccepting: isAccepting ?? false,
-          ),
-        );
-      }
-
-      List<State> normalizedStates = updatedStates;
-      if (isInitial == true) {
-        normalizedStates = updatedStates
-            .map(
-              (state) => state.id == id
-                  ? state.copyWith(isInitial: true)
-                  : state.copyWith(isInitial: false),
-            )
-            .toList();
-      } else if (isInitial == false) {
-        normalizedStates = updatedStates
-            .map(
-              (state) =>
-                  state.id == id ? state.copyWith(isInitial: false) : state,
-            )
-            .toList();
-      }
-
-      final statesById = {
-        for (final state in normalizedStates) state.id: state,
-      };
+      final update = upsertEditorState(
+        states: current.states,
+        id: id,
+        label: label,
+        position: Vector2(x, y),
+        isInitial: isInitial,
+        isAccepting: isAccepting,
+        normalizeInitial: isInitial == true,
+      );
+      final statesById = update.statesById;
       final updatedTransitions = _rebindTransitions(
         current.transitions.whereType<FSATransition>(),
         statesById,
       );
 
-      final initialStateId = isInitial == true
-          ? id
-          : current.initialState?.id ??
-              normalizedStates.firstWhereOrNull((state) => state.isInitial)?.id;
       final initialState =
-          initialStateId != null ? statesById[initialStateId] : null;
+          update.states.firstWhereOrNull((state) => state.isInitial);
 
       final acceptingStates =
           statesById.values.where((state) => state.isAccepting).toSet();

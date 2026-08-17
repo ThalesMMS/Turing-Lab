@@ -80,6 +80,28 @@ const Map<String, HelpContentModel> kHelpContent = {
     relatedConcepts: ['tool_undo'],
     icon: 'redo',
   ),
+  'tool_zoom_out': HelpContentModel(
+    id: 'tool_zoom_out',
+    title: 'Zoom Out',
+    content: 'Zoom the canvas out one step to see more of the automaton at '
+        'once. Use it together with Zoom In and Fit to Content to move '
+        'between an overview and a detailed view.',
+    category: 'canvas',
+    keywords: ['zoom', 'out', 'shrink', 'view'],
+    relatedConcepts: ['tool_zoom_in', 'tool_fit_content', 'tool_reset_view'],
+    icon: 'zoom_out',
+  ),
+  'tool_zoom_in': HelpContentModel(
+    id: 'tool_zoom_in',
+    title: 'Zoom In',
+    content: 'Zoom the canvas in one step to inspect states and transition '
+        'labels more closely. Use it together with Zoom Out and Fit to '
+        'Content to move between a detailed view and an overview.',
+    category: 'canvas',
+    keywords: ['zoom', 'in', 'magnify', 'view'],
+    relatedConcepts: ['tool_zoom_out', 'tool_fit_content', 'tool_reset_view'],
+    icon: 'zoom_in',
+  ),
   'tool_fit_content': HelpContentModel(
     id: 'tool_fit_content',
     title: 'Fit to Content',
@@ -88,7 +110,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         'your automaton or want to see the entire structure at once.',
     category: 'canvas',
     keywords: ['fit', 'zoom', 'view', 'center', 'focus'],
-    relatedConcepts: ['tool_reset_view'],
+    relatedConcepts: ['tool_zoom_in', 'tool_zoom_out', 'tool_reset_view'],
     icon: 'fit_screen',
   ),
   'tool_reset_view': HelpContentModel(
@@ -99,7 +121,7 @@ const Map<String, HelpContentModel> kHelpContent = {
         'Use this to return to a standard viewing perspective.',
     category: 'canvas',
     keywords: ['reset', 'zoom', 'center', 'default', 'view'],
-    relatedConcepts: ['tool_fit_content'],
+    relatedConcepts: ['tool_zoom_in', 'tool_zoom_out', 'tool_fit_content'],
     icon: 'center_focus_strong',
   ),
   'tool_clear': HelpContentModel(

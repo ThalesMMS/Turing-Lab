@@ -15,6 +15,298 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createNewTransition => 'Criar nova transição';
 
   @override
+  String canvasViewportStateCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count estados',
+      one: '1 estado',
+      zero: '0 estados',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String canvasViewportTransitionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transições',
+      one: '1 transição',
+      zero: '0 transições',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workspaceStatusNoAutomaton => 'Nenhum autômato definido';
+
+  @override
+  String get workspaceStatusMissingInitialState => 'Estado inicial ausente';
+
+  @override
+  String get workspaceStatusNoAcceptingStates => 'Sem estados de aceitação';
+
+  @override
+  String get workspaceStatusNondeterministic =>
+      'Transições não determinísticas';
+
+  @override
+  String get workspaceStatusLambdaTransitions => 'Transições λ presentes';
+
+  @override
+  String workspaceStatusCounts(String states, String transitions) {
+    return '$states · $transitions';
+  }
+
+  @override
+  String workspaceStatusWithWarnings(String warnings, String counts) {
+    return '⚠ $warnings · $counts';
+  }
+
+  @override
+  String get workspaceHelpUnavailable =>
+      'O conteúdo de ajuda não está disponível no momento.';
+
+  @override
+  String collapseCanvasPanel(String label) {
+    return 'Recolher painel $label';
+  }
+
+  @override
+  String expandCanvasPanel(String label) {
+    return 'Expandir painel $label';
+  }
+
+  @override
+  String canvasViewportSemantics(String states, String transitions) {
+    return 'Área de visualização do canvas de autômato. $states, $transitions.';
+  }
+
+  @override
+  String canvasStateSemantics(String name) {
+    return 'Estado $name.';
+  }
+
+  @override
+  String get canvasInitialStateSemantics => 'Estado inicial.';
+
+  @override
+  String get canvasAcceptingStateSemantics => 'Estado de aceitação.';
+
+  @override
+  String canvasOutgoingTransitionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transições de saída.',
+      one: '1 transição de saída.',
+      zero: '0 transições de saída.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String canvasIncomingTransitionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transições de entrada.',
+      one: '1 transição de entrada.',
+      zero: '0 transições de entrada.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get canvasUnlabeledTransition => 'sem rótulo';
+
+  @override
+  String get canvasSelectedTransitionSemantics => 'Transição selecionada.';
+
+  @override
+  String canvasTransitionSemantics(
+      String id, String from, String to, String label) {
+    return 'Transição $id de $from para $to com rótulo $label.';
+  }
+
+  @override
+  String get canvasViewportEditHint =>
+      'Use atalhos de teclado ou os controles da barra de ferramentas para editar o canvas.';
+
+  @override
+  String get canvasStateEditHint =>
+      'Ative para editar os detalhes do estado. Arraste para mover no modo de seleção.';
+
+  @override
+  String get canvasStateReadOnlyHint => 'Estado somente leitura.';
+
+  @override
+  String get canvasAddTransitionPrompt => 'Adicionar transição...';
+
+  @override
+  String get canvasChooseTargetState => 'Escolha o estado de destino';
+
+  @override
+  String get dismissTransitionEditor => 'Fechar editor de transição';
+
+  @override
+  String get stateLabel => 'Rótulo do estado';
+
+  @override
+  String get initialState => 'Estado inicial';
+
+  @override
+  String get acceptingState => 'Estado de aceitação';
+
+  @override
+  String get deleteState => 'Excluir estado';
+
+  @override
+  String get saveChanges => 'Salvar alterações';
+
+  @override
+  String get close => 'Fechar';
+
+  @override
+  String canvasActionSemantics(String action) {
+    return 'Ação do canvas: $action';
+  }
+
+  @override
+  String get canvasSelectAction => 'Selecionar';
+
+  @override
+  String get canvasAddStateAction => 'Adicionar estado';
+
+  @override
+  String get canvasAddTransitionAction => 'Adicionar transição';
+
+  @override
+  String get canvasUndoAction => 'Desfazer';
+
+  @override
+  String get canvasRedoAction => 'Refazer';
+
+  @override
+  String get canvasZoomOutAction => 'Diminuir zoom';
+
+  @override
+  String get canvasZoomInAction => 'Aumentar zoom';
+
+  @override
+  String get canvasFitToContentAction => 'Ajustar ao conteúdo';
+
+  @override
+  String get canvasResetViewAction => 'Redefinir visualização';
+
+  @override
+  String get canvasClearAction => 'Limpar canvas';
+
+  @override
+  String get canvasHelpAction => 'Ajuda';
+
+  @override
+  String get canvasHelpShortcutsAction => 'Ajuda e atalhos';
+
+  @override
+  String get canvasSelectHint =>
+      'Ativa o modo de seleção para mover e editar estados.';
+
+  @override
+  String get canvasAddStateHint =>
+      'Adiciona um novo estado ao canvas do autômato.';
+
+  @override
+  String get canvasAddTransitionHint =>
+      'Ativa o modo de transição para conectar dois estados.';
+
+  @override
+  String get canvasUndoHint => 'Desfaz a alteração mais recente no canvas.';
+
+  @override
+  String get canvasRedoHint =>
+      'Refaz a alteração desfeita mais recentemente no canvas.';
+
+  @override
+  String get canvasZoomOutHint => 'Diminui o nível de zoom do canvas.';
+
+  @override
+  String get canvasZoomInHint => 'Aumenta o nível de zoom do canvas.';
+
+  @override
+  String get canvasFitToContentHint =>
+      'Ajusta o zoom e a posição para mostrar o autômato inteiro.';
+
+  @override
+  String get canvasResetViewHint => 'Redefine o zoom e a posição do canvas.';
+
+  @override
+  String get canvasClearHint =>
+      'Remove todos os estados e transições do canvas.';
+
+  @override
+  String get canvasHelpShortcutsHint =>
+      'Abre a ajuda do canvas e as informações sobre atalhos de teclado.';
+
+  @override
+  String get pdaInputSymbol => 'Símbolo de entrada';
+
+  @override
+  String get pdaLambdaInput => 'λ-entrada';
+
+  @override
+  String get pdaInputSymbolRequired => 'Insira um símbolo ou ative λ-entrada';
+
+  @override
+  String get pdaPopSymbol => 'Símbolo para desempilhar';
+
+  @override
+  String get pdaLambdaPop => 'λ-desempilhar';
+
+  @override
+  String get pdaPopSymbolRequired => 'Insira um símbolo ou ative λ-desempilhar';
+
+  @override
+  String get pdaPushSymbol => 'Símbolo para empilhar';
+
+  @override
+  String get pdaLambdaPush => 'λ-empilhar';
+
+  @override
+  String get pdaPushSymbolRequired => 'Insira um símbolo ou ative λ-empilhar';
+
+  @override
+  String get tmReadSymbol => 'Símbolo lido';
+
+  @override
+  String get tmReadSymbolRequired => 'Insira um símbolo de leitura';
+
+  @override
+  String get tmWriteSymbol => 'Símbolo escrito';
+
+  @override
+  String get tmWriteSymbolRequired => 'Insira um símbolo de escrita';
+
+  @override
+  String get tmDirection => 'Direção';
+
+  @override
+  String get transitionEditorCancel => 'Cancelar';
+
+  @override
+  String get transitionEditorDelete => 'Excluir';
+
+  @override
+  String get transitionEditorSave => 'Salvar';
+
+  @override
+  String get transitionLabel => 'Rótulo';
+
+  @override
+  String get transitionEditLabelSemantics => 'Editar rótulo da transição';
+
+  @override
   String get contextAwareHelp => 'Ajuda contextual';
 
   @override
@@ -586,6 +878,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get traceTape => 'fita';
+
+  @override
+  String get pdaStackPanelLabel => 'Pilha';
 
   @override
   String get timeout => 'Tempo limite excedido';

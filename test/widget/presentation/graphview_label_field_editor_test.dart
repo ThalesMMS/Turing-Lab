@@ -66,7 +66,7 @@ void main() {
     expect(canceled, isTrue);
   });
 
-  testWidgets('GraphViewLabelFieldEditor cancels when focus is lost', (
+  testWidgets('GraphViewLabelFieldEditor stays open when focus is lost', (
     tester,
   ) async {
     var canceled = false;
@@ -92,7 +92,8 @@ void main() {
     await tester.tap(find.byKey(const Key('other')));
     await tester.pump();
 
-    expect(canceled, isTrue);
+    expect(canceled, isFalse);
+    expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
   });
 
   testWidgets('GraphViewLabelFieldEditor triggers delete without canceling', (

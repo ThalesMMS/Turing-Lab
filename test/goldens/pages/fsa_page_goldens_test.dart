@@ -25,12 +25,15 @@ import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 import 'package:turing_lab/injection/dependency_injection.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/fsa_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/fsa/determinism_badge.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
+import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 
 class _TestAutomatonStateNotifier extends AutomatonStateNotifier {
   _TestAutomatonStateNotifier() : super();
@@ -41,9 +44,8 @@ late SharedPreferences _prefs;
 // Widget that composes toolbar + canvas like FSA page does
 class _FSAPageTestWidget extends StatefulWidget {
   final FSA? automaton;
-  final bool isMobile;
 
-  const _FSAPageTestWidget({this.automaton, this.isMobile = false});
+  const _FSAPageTestWidget({this.automaton});
 
   @override
   State<_FSAPageTestWidget> createState() => _FSAPageTestWidgetState();
@@ -94,8 +96,6 @@ class _FSAPageTestWidgetState extends State<_FSAPageTestWidget> {
                 canvasKey: _canvasKey,
                 controller: _canvasController,
                 toolController: _toolController,
-                simulationResult: null,
-                showTrace: false,
               ),
             ),
             // Determinism badge
@@ -105,9 +105,6 @@ class _FSAPageTestWidgetState extends State<_FSAPageTestWidget> {
               animation: combinedListenable,
               builder: (context, _) {
                 return GraphViewCanvasToolbar(
-                  layout: widget.isMobile
-                      ? GraphViewCanvasToolbarLayout.mobile
-                      : GraphViewCanvasToolbarLayout.desktop,
                   controller: _canvasController,
                   enableToolSelection: true,
                   activeTool: _toolController.activeTool,
@@ -146,15 +143,41 @@ Future<void> _pumpFSAPageComponents(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
 
+  if (isMobile) {
+    final notifier = _TestAutomatonStateNotifier();
+    if (automaton != null) {
+      notifier.updateAutomaton(automaton);
+    }
+    await tester.pumpWidgetBuilder(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(_prefs),
+          automatonStateProvider.overrideWith((ref) => notifier),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: FSAPage(),
+        ),
+      ),
+      surfaceSize: size,
+    );
+    expect(tester.view.physicalSize, size);
+    await tester.pumpAndSettle();
+    return;
+  }
+
   await tester.pumpWidgetBuilder(
     MaterialApp(
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeMode,
-      home: _FSAPageTestWidget(automaton: automaton, isMobile: isMobile),
+      home: _FSAPageTestWidget(automaton: automaton),
     ),
+    surfaceSize: size,
   );
 
+  expect(tester.view.physicalSize, size);
   await tester.pumpAndSettle();
 }
 
@@ -205,7 +228,7 @@ void main() {
       await screenMatchesGolden(tester, 'fsa_page_empty_tablet');
     });
 
-    testGoldens('renders empty canvas with toolbar in mobile layout', (
+    testGoldens('renders empty canvas with real controls in mobile layout', (
       tester,
     ) async {
       addTearDown(() {
@@ -219,6 +242,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(FSAPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'fsa_page_empty_mobile');
     });
 
@@ -745,6 +771,9 @@ void main() {
         isMobile: true,
       );
 
+      expect(find.byType(FSAPage), findsOneWidget);
+      expect(find.byType(MobileAutomatonControls), findsOneWidget);
+      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
       await screenMatchesGolden(tester, 'fsa_page_mobile_dfa');
     });
   });

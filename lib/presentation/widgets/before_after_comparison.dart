@@ -11,8 +11,9 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter/material.dart';
-import '../../core/models/automaton.dart';
-import 'automaton_graphview_canvas.dart';
+import '../../core/models/fsa.dart';
+import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import 'read_only_fsa_graphview_canvas.dart';
 
 /// Widget for side-by-side comparison of automata before and after algorithm execution
 ///
@@ -20,10 +21,10 @@ import 'automaton_graphview_canvas.dart';
 /// enabling educational visualization of transformations applied by conversion algorithms.
 class BeforeAfterComparison extends StatefulWidget {
   /// The original automaton before algorithm execution
-  final Automaton beforeAutomaton;
+  final FSA beforeAutomaton;
 
   /// The result automaton after algorithm execution
-  final Automaton afterAutomaton;
+  final FSA afterAutomaton;
 
   /// Optional title for the before section (defaults to "Before")
   final String? beforeTitle;
@@ -256,7 +257,7 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
 
   Widget _buildAutomatonSection({
     required BuildContext context,
-    required Automaton automaton,
+    required FSA automaton,
     required String title,
     required GlobalKey canvasKey,
     required ColorScheme colorScheme,
@@ -317,22 +318,10 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: AutomatonGraphViewCanvas(
+              child: ReadOnlyFsaGraphViewCanvas(
                 automaton: automaton,
                 canvasKey: canvasKey,
-                customization: AutomatonGraphViewCanvasCustomization(
-                  transitionConfigBuilder: (controller) {
-                    return AutomatonGraphViewTransitionConfig(
-                      initialPayloadBuilder: (edge) =>
-                          AutomatonLabelTransitionPayload(edge?.label ?? ''),
-                      overlayBuilder: (context, data, controller) =>
-                          const SizedBox.shrink(),
-                      persistTransition: (request) {},
-                    );
-                  },
-                  enableStateDrag: false,
-                  enableToolSelection: false,
-                ),
+                edgeRenderMode: TuringLabEdgeRenderMode.standard,
               ),
             ),
           ),

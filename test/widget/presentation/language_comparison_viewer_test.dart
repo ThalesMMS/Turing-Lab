@@ -22,7 +22,10 @@ import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/presentation/widgets/read_only_fsa_graphview_canvas.dart';
 
 /// Helper function to create a simple test FSA
 FSA _createTestFSA({
@@ -418,6 +421,56 @@ void main() {
 
         expect(find.text('Product Automaton'), findsOneWidget);
         expect(find.byIcon(Icons.expand_more), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('renders detached canvases when product section opens', (
+        tester,
+      ) async {
+        final result = _createNonEquivalentResult(
+          includeProductAutomaton: true,
+        );
+
+        await _pumpLanguageComparisonViewer(
+          tester,
+          comparisonResult: result,
+        );
+
+        await tester.ensureVisible(find.text('Product Automaton'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Product Automaton'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ReadOnlyFsaGraphViewCanvas), findsNWidgets(3));
+        final canvases = tester
+            .widgetList<ReadOnlyFsaGraphViewCanvas>(
+              find.byType(ReadOnlyFsaGraphViewCanvas),
+            )
+            .toList();
+        expect(
+          canvases.map((canvas) => canvas.edgeRenderMode),
+          everyElement(TuringLabEdgeRenderMode.groupedFsa),
+        );
+        final innerCanvases = tester
+            .widgetList<AutomatonGraphViewCanvas>(
+              find.byType(AutomatonGraphViewCanvas),
+            )
+            .toList();
+        expect(innerCanvases, hasLength(3));
+        expect(
+          innerCanvases.map(
+            (canvas) => canvas.customization!.edgeRenderMode,
+          ),
+          everyElement(TuringLabEdgeRenderMode.groupedFsa),
+        );
+        final canvasKeys = canvases.map((canvas) => canvas.canvasKey).toSet();
+        expect(canvasKeys, hasLength(3));
+        expect(
+          innerCanvases.map((canvas) => canvas.canvasKey).toSet(),
+          equals(canvasKeys),
+        );
+        for (final canvasKey in canvasKeys) {
+          expect(find.byKey(canvasKey), findsOneWidget);
+        }
       });
 
       testWidgets('toggles product automaton section when tapped', (

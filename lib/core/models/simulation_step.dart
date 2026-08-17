@@ -7,12 +7,22 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 
+import 'package:collection/collection.dart';
+
 import 'step_explanation.dart';
 
 /// Single step in an automaton simulation
 class SimulationStep {
+  static const SetEquality<String> _setEquality = SetEquality<String>();
+
   /// Current state in this step
   final String currentState;
+
+  /// Stable ids of the states active in this configuration.
+  ///
+  /// A null value means the trace does not provide authoritative state ids.
+  /// An empty set explicitly means that no state is active.
+  final Set<String>? activeStateIds;
 
   /// Remaining input string
   final String remainingInput;
@@ -52,6 +62,7 @@ class SimulationStep {
 
   const SimulationStep({
     required this.currentState,
+    this.activeStateIds,
     required this.remainingInput,
     this.stackContents = '',
     this.tapeContents = '',
@@ -67,8 +78,13 @@ class SimulationStep {
   });
 
   /// Creates a copy of this simulation step with updated properties
+  ///
+  /// Omitting [activeStateIds] retains the existing set, and passing `null` is
+  /// indistinguishable from omitting it. Construct a new [SimulationStep] when
+  /// a trace has to drop its authoritative state ids.
   SimulationStep copyWith({
     String? currentState,
+    Set<String>? activeStateIds,
     String? remainingInput,
     String? stackContents,
     String? tapeContents,
@@ -84,6 +100,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: currentState ?? this.currentState,
+      activeStateIds: activeStateIds ?? this.activeStateIds,
       remainingInput: remainingInput ?? this.remainingInput,
       stackContents: stackContents ?? this.stackContents,
       tapeContents: tapeContents ?? this.tapeContents,
@@ -103,6 +120,7 @@ class SimulationStep {
   Map<String, dynamic> toJson() {
     return {
       'currentState': currentState,
+      'activeStateIds': activeStateIds?.toList(),
       'remainingInput': remainingInput,
       'stackContents': stackContents,
       'tapeContents': tapeContents,
@@ -122,6 +140,11 @@ class SimulationStep {
   factory SimulationStep.fromJson(Map<String, dynamic> json) {
     return SimulationStep(
       currentState: json['currentState'] as String,
+      activeStateIds: json['activeStateIds'] is List
+          ? Set<String>.unmodifiable(
+              (json['activeStateIds'] as List).whereType<String>(),
+            )
+          : null,
       remainingInput: json['remainingInput'] as String,
       stackContents: json['stackContents'] as String? ?? '',
       tapeContents: json['tapeContents'] as String? ?? '',
@@ -146,6 +169,7 @@ class SimulationStep {
     if (identical(this, other)) return true;
     return other is SimulationStep &&
         other.currentState == currentState &&
+        _setEquality.equals(other.activeStateIds, activeStateIds) &&
         other.remainingInput == remainingInput &&
         other.stackContents == stackContents &&
         other.tapeContents == tapeContents &&
@@ -164,6 +188,7 @@ class SimulationStep {
   int get hashCode {
     return Object.hash(
       currentState,
+      _setEquality.hash(activeStateIds),
       remainingInput,
       stackContents,
       tapeContents,
@@ -265,6 +290,7 @@ class SimulationStep {
   /// Creates a simulation step for FSA
   factory SimulationStep.fsa({
     required String currentState,
+    Set<String>? activeStateIds,
     required String remainingInput,
     String? usedTransition,
     required int stepNumber,
@@ -273,6 +299,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: currentState,
+      activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       usedTransition: usedTransition,
       stepNumber: stepNumber,
@@ -284,6 +311,7 @@ class SimulationStep {
   /// Creates a simulation step for PDA
   factory SimulationStep.pda({
     required String currentState,
+    Set<String>? activeStateIds,
     required String remainingInput,
     required String stackContents,
     String? usedTransition,
@@ -293,6 +321,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: currentState,
+      activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       stackContents: stackContents,
       usedTransition: usedTransition,
@@ -305,6 +334,7 @@ class SimulationStep {
   /// Creates a simulation step for TM
   factory SimulationStep.tm({
     required String currentState,
+    Set<String>? activeStateIds,
     required String remainingInput,
     required String tapeContents,
     String? usedTransition,
@@ -315,6 +345,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: currentState,
+      activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       tapeContents: tapeContents,
       usedTransition: usedTransition,
@@ -328,6 +359,7 @@ class SimulationStep {
   /// Creates an initial simulation step
   factory SimulationStep.initial({
     required String initialState,
+    Set<String>? activeStateIds,
     required String inputString,
     String? initialStackSymbol,
     String? initialTapeSymbol,
@@ -335,6 +367,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: initialState,
+      activeStateIds: activeStateIds,
       remainingInput: inputString,
       stackContents: initialStackSymbol ?? '',
       tapeContents: initialTapeSymbol ?? '',
@@ -346,6 +379,7 @@ class SimulationStep {
   /// Creates a final simulation step
   factory SimulationStep.finalStep({
     required String finalState,
+    Set<String>? activeStateIds,
     required String remainingInput,
     required String stackContents,
     required String tapeContents,
@@ -355,6 +389,7 @@ class SimulationStep {
   }) {
     return SimulationStep(
       currentState: finalState,
+      activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       stackContents: stackContents,
       tapeContents: tapeContents,

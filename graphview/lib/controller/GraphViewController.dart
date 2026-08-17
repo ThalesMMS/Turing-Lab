@@ -2,6 +2,10 @@ part of graphview;
 
 class GraphViewController {
   _GraphViewState? _state;
+
+  /// Viewport transformation used by the attached graph view.
+  ///
+  /// When omitted from the constructor, this controller creates and owns one.
   final TransformationController? transformationController;
   final bool _ownsTransformationController;
   bool _hasAttachedView = false;
@@ -18,18 +22,22 @@ class GraphViewController {
   GraphViewController({
     TransformationController? transformationController,
     bool ownsTransformationController = false,
-  })  : transformationController = transformationController,
+  })  : transformationController =
+            transformationController ?? TransformationController(),
         _ownsTransformationController =
             ownsTransformationController || transformationController == null;
 
   bool get hasAttachedView => _hasAttachedView;
 
-  void _attach(_GraphViewState? state) {
+  void _attach(_GraphViewState state) {
     _state = state;
     _hasAttachedView = true;
   }
 
-  void _detach() {
+  void _detach(_GraphViewState state) {
+    if (!identical(_state, state)) {
+      return;
+    }
     _state = null;
     _hasAttachedView = false;
     if (_disposeRequested) {
@@ -52,7 +60,7 @@ class GraphViewController {
     if (_hasAttachedView) {
       return;
     }
-    _detach();
+    _disposeOwnedTransformationController();
   }
 
   void animateToNode(ValueKey key) => _state?.jumpToNodeUsingKey(key, true);

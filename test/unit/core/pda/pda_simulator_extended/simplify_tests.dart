@@ -27,9 +27,8 @@ void _runPdaSimplifyTests() {
       final pda = _pdaWithUnreachableState();
       final result = PDASimulator.simplify(pda);
       expect(result.isSuccess, true);
-      final stateIds = result.data!.minimizedPda.states
-          .map((s) => s.id)
-          .toSet();
+      final stateIds =
+          result.data!.minimizedPda.states.map((s) => s.id).toSet();
       expect(stateIds, isNot(contains('qU')));
     });
 

@@ -85,6 +85,7 @@ EditorStateMutation upsertEditorState({
     changedStateIds: {id},
     normalizeInitial: normalizeInitial,
     fallbackInitial: normalizeInitial,
+    preferredInitialId: isInitial == true ? id : null,
   );
 }
 
@@ -220,6 +221,7 @@ EditorStateMutation _normalizeInitialState({
   required Set<String> changedStateIds,
   required bool normalizeInitial,
   required bool fallbackInitial,
+  String? preferredInitialId,
 }) {
   final nextStates = states.toList();
   final changedIds = {...changedStateIds};
@@ -230,7 +232,10 @@ EditorStateMutation _normalizeInitialState({
         .map((state) => state.id)
         .toList(growable: false);
     if (initialIds.length > 1) {
-      final retainedInitialId = initialIds.last;
+      final retainedInitialId =
+          preferredInitialId != null && initialIds.contains(preferredInitialId)
+              ? preferredInitialId
+              : initialIds.last;
       for (var i = 0; i < nextStates.length; i++) {
         final state = nextStates[i];
         if (state.isInitial && state.id != retainedInitialId) {

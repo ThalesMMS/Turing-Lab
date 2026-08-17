@@ -46,8 +46,12 @@ Run package checks from this directory:
 
 ```sh
 flutter pub get
-flutter test --concurrency=1
+flutter test
 flutter analyze
+
+# Run timing gates in isolated Flutter processes.
+flutter test benchmark/interaction_benchmark_test.dart --concurrency=1 --name "single-node drag"
+flutter test benchmark/interaction_benchmark_test.dart --concurrency=1 --name "zoom and pan"
 ```
 
 When changing app-facing API, also run the Turing Lab canvas tests from the

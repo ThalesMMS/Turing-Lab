@@ -61,7 +61,7 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
           ),
           if (mobileFloatingPanel != null)
             Positioned(
-              top: 16,
+              top: 72,
               right: 16,
               child: mobileFloatingPanel!,
             ),

@@ -77,7 +77,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   void didUpdateWidget(covariant PDASimulationPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.highlightService != widget.highlightService) {
-      (oldWidget.highlightService ?? _fallbackHighlightService).clear();
+      _fallbackHighlightService.clear();
     }
   }
 
@@ -86,7 +86,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     _activeTask?.cancel();
     _inputController.dispose();
     _initialStackController.dispose();
-    _highlightService.clear();
+    _fallbackHighlightService.clear();
     super.dispose();
   }
 
@@ -102,9 +102,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         _buildInputSection(context),
         const SizedBox(height: 16),
         _buildSimulateButton(context),
-        if (hasSteps && _stepByStep) ...[
-          const SizedBox(height: 16),
-          _buildStepControls(context, simState),
+        if (hasSteps) ...[
           const SizedBox(height: 16),
           _buildStackPreview(context, simState),
         ],
@@ -152,14 +150,6 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
               setState(() {
                 _stepByStep = value;
               });
-              if (!value) {
-                _highlightService.clear();
-              } else if (_simulationResult?.steps.isNotEmpty == true) {
-                _highlightService.emitFromSteps(
-                  _simulationResult!.steps,
-                  0,
-                );
-              }
             },
           ),
         ),
@@ -184,105 +174,6 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       label: 'Simulate PDA',
       onPressed: _simulatePDA,
       onCancel: _cancelSimulation,
-    );
-  }
-
-  Widget _buildStepControls(BuildContext context, PDASimulationState simState) {
-    final l10n = appLocalizationsOf(context);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.stepOf(
-                  simState.currentStepIndex + 1,
-                  simState.totalSteps,
-                ),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                'State: ${simState.currentState ?? "—"}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              IconButton.outlined(
-                onPressed: simState.canGoToPreviousStep
-                    ? () {
-                        ref.read(pdaSimulationProvider.notifier).previousStep();
-                        _updateStackFromCurrentStep();
-                      }
-                    : null,
-                icon: const Icon(Icons.skip_previous),
-                tooltip: l10n.previousStep,
-              ),
-              const SizedBox(width: 8),
-              IconButton.outlined(
-                onPressed: simState.currentStepIndex > 0
-                    ? () {
-                        ref
-                            .read(pdaSimulationProvider.notifier)
-                            .resetToFirstStep();
-                        _updateStackFromCurrentStep();
-                      }
-                    : null,
-                icon: const Icon(Icons.first_page),
-                tooltip: l10n.resetToFirst,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: LinearProgressIndicator(
-                  value: simState.totalSteps > 0
-                      ? (simState.currentStepIndex + 1) / simState.totalSteps
-                      : 0,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.outlined(
-                onPressed: simState.currentStepIndex < simState.totalSteps - 1
-                    ? () {
-                        ref.read(pdaSimulationProvider.notifier).goToLastStep();
-                        _updateStackFromCurrentStep();
-                      }
-                    : null,
-                icon: const Icon(Icons.last_page),
-                tooltip: l10n.jumpToLast,
-              ),
-              const SizedBox(width: 8),
-              IconButton.outlined(
-                onPressed: simState.canGoToNextStep
-                    ? () {
-                        ref.read(pdaSimulationProvider.notifier).nextStep();
-                        _updateStackFromCurrentStep();
-                      }
-                    : null,
-                icon: const Icon(Icons.skip_next),
-                tooltip: l10n.nextStep,
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -493,6 +384,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
           PDATraceViewer(
             result: simulationResult,
             highlightService: _highlightService,
+            onStepChanged: _handleTraceStepChanged,
           ),
         ],
       ],
@@ -580,12 +472,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         simNotifier.setResult(simulation);
 
         _highlightService.emitFromSteps(simulation.steps, 0);
-        // Update stack to first step for step-by-step mode
-        if (_stepByStep) {
-          _updateStackFromStep(simulation.steps.first);
-        } else {
-          _updateStackFromStep(simulation.steps.last);
-        }
+        _updateStackFromStep(simulation.steps.first);
       } else {
         _highlightService.clear();
       }
@@ -641,6 +528,20 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     );
   }
 
+  void _handleTraceStepChanged(int stepIndex) {
+    final result = _simulationResult;
+    if (result == null || stepIndex < 0 || stepIndex >= result.steps.length) {
+      return;
+    }
+
+    final simState = ref.read(pdaSimulationProvider);
+    if (!identical(simState.result, result)) return;
+    if (simState.currentStepIndex != stepIndex) {
+      ref.read(pdaSimulationProvider.notifier).goToStep(stepIndex);
+    }
+    _updateStackFromStep(result.steps[stepIndex]);
+  }
+
   /// Determines the stack operation type from a PDA transition label
   /// Format: "input,pop→push" where ε represents epsilon
   StackOperationType _determineOperationType(String? transitionLabel) {
@@ -679,21 +580,6 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     } else {
       // Both epsilon - no stack operation
       return StackOperationType.none;
-    }
-  }
-
-  void _updateStackFromCurrentStep() {
-    final simState = ref.read(pdaSimulationProvider);
-    final currentStep = simState.currentStep;
-    if (currentStep != null) {
-      _updateStackFromStep(currentStep);
-      // Update highlight service to show current step
-      if (_stepByStep && simState.result != null) {
-        _highlightService.emitFromSteps(
-          simState.result!.steps,
-          simState.currentStepIndex,
-        );
-      }
     }
   }
 

@@ -16,13 +16,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/algorithms/tm_simulator.dart';
 import '../../core/models/state.dart' as automaton_models;
+import '../../core/models/simulation_highlight.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_analysis.dart';
 import '../../core/models/tm_transition.dart';
-import '../../core/models/tm_transition.dart' as tm_models show TapeDirection;
 import '../../core/models/asset_example.dart';
 import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
+import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
@@ -73,6 +74,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
   TM? _analyzedTm;
   _TMAnalysisFocus? _currentFocus;
   String? _loadingExampleName;
+  CanvasHighlightSourceHandle? _analysisHighlights;
   late final ExamplesRepository _examplesDataSource;
   late final Future<ListResult<AssetExample<TM>>> _tmExamplesFuture;
 
@@ -82,6 +84,15 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
     _examplesDataSource =
         widget.examplesDataSource ?? ref.read(examplesRepositoryProvider);
     _tmExamplesFuture = _examplesDataSource.loadAllTypedTmExamples();
+    _analysisHighlights = ref
+        .read(canvasHighlightCoordinatorProvider)
+        ?.source(CanvasHighlightSource.analysis);
+  }
+
+  @override
+  void dispose() {
+    _analysisHighlights?.dispose();
+    super.dispose();
   }
 
   @override
@@ -497,6 +508,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
   }
 
   Future<void> _performAnalysis(_TMAnalysisFocus focus) async {
+    final highlights = _analysisHighlights;
+    if (highlights != null) {
+      highlights.clearFor(highlights.target);
+    }
     setState(() {
       _isAnalyzing = true;
       _analysis = null;
@@ -527,6 +542,13 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
 
     if (!mounted) return;
 
+    if (result.isSuccess && highlights != null) {
+      highlights.sendFor(
+        highlights.target,
+        _highlightForAnalysis(focus, result.data!),
+      );
+    }
+
     setState(() {
       _isAnalyzing = false;
       if (result.isSuccess) {
@@ -537,6 +559,20 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             'Analysis failed due to an unknown error. Please verify the machine configuration.';
       }
     });
+  }
+
+  SimulationHighlight _highlightForAnalysis(
+    _TMAnalysisFocus focus,
+    TMAnalysis analysis,
+  ) {
+    if (focus != _TMAnalysisFocus.reachability) {
+      return SimulationHighlight.empty;
+    }
+    return SimulationHighlight(
+      stateIds: analysis.reachabilityAnalysis.reachableStates
+          .map((state) => state.id)
+          .toSet(),
+    );
   }
 
   Widget _buildFocusBanner(BuildContext context, _TMAnalysisFocus focus) {
@@ -807,7 +843,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           (transition) =>
               transition.fromState == transition.toState &&
               transition.readSymbol == transition.writeSymbol &&
-              transition.direction == tm_models.TapeDirection.stay,
+              transition.direction == TapeDirection.stay,
         )
         .toList();
   }

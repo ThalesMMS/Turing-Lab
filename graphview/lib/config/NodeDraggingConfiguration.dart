@@ -20,6 +20,12 @@ class NodeDraggingConfiguration {
   /// Receives the [Node] that is being dragged.
   void Function(Node node)? onNodeDragStart;
 
+  /// Callback invoked when a pointer goes down on a node.
+  ///
+  /// This remains available when [enabled] is false so clients can delegate
+  /// gesture arbitration without enabling GraphView's built-in node drag.
+  void Function(Node node, PointerDownEvent event)? onNodePointerDown;
+
   /// Callback invoked during node dragging.
   ///
   /// Called repeatedly as the node is dragged to a new position.
@@ -41,6 +47,7 @@ class NodeDraggingConfiguration {
 
   NodeDraggingConfiguration({
     this.enabled = DEFAULT_ENABLED,
+    this.onNodePointerDown,
     this.onNodeDragStart,
     this.onNodeDragUpdate,
     this.onNodeDragEnd,

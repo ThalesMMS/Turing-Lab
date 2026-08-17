@@ -53,18 +53,13 @@ class GraphViewCanvasController
     stateLabelsOf: (automaton) => automaton.states.map((state) => state.label),
     transitionIdsOf: (automaton) =>
         automaton.transitions.map((transition) => transition.id),
-    addState: ({required id, required label, required position}) {
-      final isFirstState = nodesCache.isEmpty &&
-          (_provider.currentAutomaton?.states.isEmpty ?? true);
-      _provider.addState(
-        id: id,
-        label: label,
-        x: position.dx,
-        y: position.dy,
-        isInitial: isFirstState ? true : null,
-        isAccepting: false,
-      );
-    },
+    addState: ({required id, required label, required position}) =>
+        _provider.addState(
+      id: id,
+      label: label,
+      x: position.dx,
+      y: position.dy,
+    ),
     moveState: ({required id, required position}) =>
         _provider.moveState(id: id, x: position.dx, y: position.dy),
     updateStateLabel: ({required id, required label}) =>

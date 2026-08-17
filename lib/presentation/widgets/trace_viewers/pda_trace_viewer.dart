@@ -21,23 +21,47 @@ import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
 
-class PDATraceViewer extends StatelessWidget {
+class PDATraceViewer extends StatefulWidget {
   final PDASimulationResult result;
   final SimulationHighlightService? highlightService;
+  final ValueChanged<int>? onStepChanged;
 
   const PDATraceViewer({
     super.key,
     required this.result,
     this.highlightService,
+    this.onStepChanged,
   });
+
+  @override
+  State<PDATraceViewer> createState() => _PDATraceViewerState();
+}
+
+class _PDATraceViewerState extends State<PDATraceViewer> {
+  late SimulationResult _adaptedResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _adaptedResult = _asSimulationResult(widget.result);
+  }
+
+  @override
+  void didUpdateWidget(covariant PDATraceViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.result, oldWidget.result)) {
+      _adaptedResult = _asSimulationResult(widget.result);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
     return BaseTraceViewer(
-      result: _asSimulationResult(),
-      title: l10n.pdaTrace(result.steps.length),
-      highlightService: highlightService,
+      result: _adaptedResult,
+      title: l10n.pdaTrace(widget.result.steps.length),
+      highlightService: widget.highlightService,
+      onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
         final remaining =
             step.remainingInput.isEmpty ? 'λ' : step.remainingInput;
@@ -76,7 +100,7 @@ class PDATraceViewer extends StatelessWidget {
   }
 
   // Convert PDASimulationResult to the core SimulationResult used by BaseTraceViewer.
-  SimulationResult _asSimulationResult() {
+  SimulationResult _asSimulationResult(PDASimulationResult result) {
     if (result.accepted) {
       return SimulationResult.success(
         inputString: result.inputString,

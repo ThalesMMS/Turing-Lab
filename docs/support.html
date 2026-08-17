@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turing Lab Support</title>
+  <meta name="description" content="Support and contact information for Turing Lab.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fb;
+      --text: #18212f;
+      --muted: #536171;
+      --panel: #ffffff;
+      --border: #d9e0e8;
+      --accent: #155e75;
+      --accent-soft: #e6f4f7;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101418;
+        --text: #edf2f7;
+        --muted: #b8c3cf;
+        --panel: #171d24;
+        --border: #2b3642;
+        --accent: #67c7dc;
+        --accent-soft: #12313a;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(880px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0;
+    }
+
+    nav {
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 7vw, 3.25rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1.125rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .card {
+      min-height: 160px;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .faq {
+      display: grid;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .faq article {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Site navigation">
+      <a href="index.html">Turing Lab</a> /
+      <a href="privacy.html">Privacy Policy</a>
+    </nav>
+
+    <header>
+      <h1>Turing Lab Support</h1>
+      <p class="lead">Turing Lab is an educational automata and formal language tool for students, educators, researchers, and developers studying automata theory.</p>
+    </header>
+
+    <section class="grid" aria-label="Support options">
+      <article class="card">
+        <h2>Email Support</h2>
+        <p>For support, privacy questions, or release inquiries, contact:</p>
+        <p><a href="mailto:thalesmmsradio@gmail.com">thalesmmsradio@gmail.com</a></p>
+      </article>
+      <article class="card">
+        <h2>Bug Reports and Feature Requests</h2>
+        <p>Use GitHub Issues to report reproducible bugs or request improvements.</p>
+        <p><a href="https://github.com/ThalesMMS/Turing-Lab/issues">Open GitHub Issues</a></p>
+      </article>
+      <article class="card">
+        <h2>Documentation</h2>
+        <p>Read the project README for setup instructions, scope, supported workflows, and licensing notes.</p>
+        <p><a href="https://github.com/ThalesMMS/Turing-Lab#readme">Open the README</a></p>
+      </article>
+    </section>
+
+    <section aria-label="Frequently asked questions">
+      <h2>FAQ</h2>
+      <div class="faq">
+        <article>
+          <h2>Does Turing Lab work offline?</h2>
+          <p>Yes. Turing Lab includes bundled examples and core educational workflows that run locally without an account or developer-operated network service.</p>
+        </article>
+        <article>
+          <h2>Where are my files stored?</h2>
+          <p>Imported and exported files are handled through user-initiated file picker and export flows. Files are opened from or saved to locations you choose.</p>
+        </article>
+        <article>
+          <h2>Does Turing Lab collect analytics or tracking data?</h2>
+          <p>No. Turing Lab does not collect analytics, use tracking SDKs, show ads, or send your app content to developer-operated servers. See the <a href="privacy.html">Privacy Policy</a>.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <p>Turing Lab is not affiliated with, endorsed by, or an official release of JFLAP, Duke University, or Susan H. Rodger.</p>
+    </footer>
+  </main>
+</body>
+</html>

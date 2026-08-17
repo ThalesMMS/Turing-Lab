@@ -95,6 +95,7 @@ void main() {
       expect(edge.readSymbol, equals('a'));
       expect(edge.writeSymbol, equals('b'));
       expect(edge.direction, equals(TapeDirection.right));
+      expect(edge.tapeNumber, 0);
     });
 
     test('mergeIntoTemplate rebuilds TM from snapshot', () {
@@ -253,5 +254,67 @@ void main() {
       expect(rebuilt.blankSymbol, '_');
       expect(rebuilt.tapeAlphabet, containsAll({'a', 'b', '_'}));
     });
+
+    test(
+      'empty snapshot metadata preserves configuration and derives edge symbols',
+      () {
+        final template = machine.copyWith(
+          id: 'stable-machine-id',
+          name: 'Imported multi-tape machine',
+          alphabet: {'a', 'unused-input'},
+          tapeAlphabet: {'a', 'unused-input', 'Y', '_'},
+          blankSymbol: '_',
+          tapeCount: 3,
+        );
+
+        const snapshot = GraphViewAutomatonSnapshot(
+          nodes: [
+            GraphViewCanvasNode(
+              id: 'q0',
+              label: 'start',
+              x: 10,
+              y: 20,
+              isInitial: true,
+              isAccepting: false,
+            ),
+            GraphViewCanvasNode(
+              id: 'q1',
+              label: 'accept',
+              x: 180,
+              y: 150,
+              isInitial: false,
+              isAccepting: true,
+            ),
+          ],
+          edges: [
+            GraphViewCanvasEdge(
+              id: 't0',
+              fromStateId: 'q0',
+              toStateId: 'q1',
+              symbols: <String>[],
+              readSymbol: 'c',
+              writeSymbol: 'X',
+              direction: TapeDirection.left,
+              tapeNumber: 2,
+            ),
+          ],
+          metadata: GraphViewAutomatonMetadata.empty(),
+        );
+
+        final rebuilt = GraphViewTmMapper.mergeIntoTemplate(snapshot, template);
+
+        expect(rebuilt.id, 'stable-machine-id');
+        expect(rebuilt.name, 'Imported multi-tape machine');
+        expect(rebuilt.alphabet, {'a', 'unused-input'});
+        expect(
+          rebuilt.tapeAlphabet,
+          {'a', 'unused-input', 'Y', '_', 'c', 'X'},
+        );
+        expect(rebuilt.blankSymbol, '_');
+        expect(rebuilt.tapeCount, 3);
+        expect(rebuilt.tmTransitions.single.tapeNumber, 2);
+        expect(rebuilt.validate(), isEmpty);
+      },
+    );
   });
 }
