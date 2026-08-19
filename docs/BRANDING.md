@@ -34,6 +34,3 @@ historical record or break a live external locator:
 These values are compatibility locators or historical evidence, not current
 branding. Update them only after the corresponding external resource is
 migrated, and update every inbound reference in the same change.
-
-Run `./tool/check_branding.sh` locally before review. The check rejects the
-former name in tracked paths or outside the compatibility cases above.
