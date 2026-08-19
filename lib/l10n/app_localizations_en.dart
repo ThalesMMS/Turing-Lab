@@ -754,6 +754,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get simulation => 'Simulation';
 
   @override
+  String get viewOnCanvas => 'View on Canvas';
+
+  @override
   String get inputString => 'Input String';
 
   @override

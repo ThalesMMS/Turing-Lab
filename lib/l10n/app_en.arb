@@ -550,6 +550,7 @@
     "description": "Label for the before-and-after automaton conversion comparison."
   },
   "simulation": "Simulation",
+  "viewOnCanvas": "View on Canvas",
   "inputString": "Input String",
   "simulationInputHint": "Leave blank for ε; whitespace is preserved",
   "simulationInputString": "Simulation input string",

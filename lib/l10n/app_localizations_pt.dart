@@ -763,6 +763,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get simulation => 'Simulação';
 
   @override
+  String get viewOnCanvas => 'Visualizar no Canvas';
+
+  @override
   String get inputString => 'Cadeia de entrada';
 
   @override

@@ -1437,6 +1437,12 @@ abstract class AppLocalizations {
   /// **'Simulation'**
   String get simulation;
 
+  /// No description provided for @viewOnCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'View on Canvas'**
+  String get viewOnCanvas;
+
   /// No description provided for @inputString.
   ///
   /// In en, this message translates to:

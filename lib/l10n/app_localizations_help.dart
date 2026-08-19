@@ -52,6 +52,10 @@ extension AppHelpLocalizations on AppLocalizations {
   String get close => _copy('close');
   String get viewAllRelatedHelp => _copy('viewAllRelatedHelp');
   String get moreHelp => _copy('moreHelp');
+  String get helpCenter => _copy('helpCenter');
+  String get workspaceSimulateTooltip => _copy('workspaceSimulateTooltip');
+  String get workspaceAlgorithmsTooltip => _copy('workspaceAlgorithmsTooltip');
+  String get workspaceMetricsTooltip => _copy('workspaceMetricsTooltip');
   String get relatedConcepts => _copy('relatedConcepts');
   String get hideExamples => _copy('hideExamples');
   String get viewExamples => _copy('viewExamples');
