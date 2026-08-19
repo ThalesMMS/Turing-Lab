@@ -234,6 +234,7 @@ class AutomatonGraphViewCanvasCustomization {
   }) {
     return AutomatonGraphViewCanvasCustomization(
       enableToolSelection: true,
+      edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
       transitionConfigBuilder: (controller) {
         return AutomatonGraphViewTransitionConfig(
           initialPayloadBuilder: (edge) {
@@ -245,9 +246,9 @@ class AutomatonGraphViewCanvasCustomization {
               popSymbol: pop,
               pushSymbol: push,
               pushSymbols: edge?.pushSymbols,
-              isLambdaInput: edge?.isLambdaInput ?? edge == null,
-              isLambdaPop: edge?.isLambdaPop ?? edge == null,
-              isLambdaPush: edge?.isLambdaPush ?? edge == null,
+              isLambdaInput: edge?.isLambdaInput ?? false,
+              isLambdaPop: edge?.isLambdaPop ?? false,
+              isLambdaPush: edge?.isLambdaPush ?? false,
             );
           },
           overlayBuilder: (context, data, overlayController) {
@@ -322,6 +323,7 @@ class AutomatonGraphViewCanvasCustomization {
 
   factory AutomatonGraphViewCanvasCustomization.tm() {
     return AutomatonGraphViewCanvasCustomization(
+      edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
       transitionConfigBuilder: (controller) {
         return AutomatonGraphViewTransitionConfig(
           initialPayloadBuilder: (edge) => AutomatonTmTransitionPayload(

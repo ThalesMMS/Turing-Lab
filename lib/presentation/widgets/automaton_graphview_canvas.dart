@@ -263,6 +263,12 @@ class _AutomatonGraphViewCanvasState
   Color? _edgeHighlightColor;
   Color? _edgeLabelSurfaceColor;
 
+  @visibleForTesting
+  TuringLabEdgeRenderGeometry? debugGeometryForTransition(String id) {
+    final edge = _controller.graphEdgeById(id);
+    return edge == null ? null : _edgeRenderer.geometryForEdge(edge);
+  }
+
   void _setCanvasPanSuppressed(bool value, {String reason = ''}) {
     if (!mounted || _isDisposing) {
       return;
@@ -1070,6 +1076,17 @@ class _AutomatonGraphViewCanvasState
                                 if (viewport.width.isFinite &&
                                     viewport.height.isFinite) {
                                   _controller.updateViewportSize(viewport);
+                                  _edgeRenderer.updateViewportWorldBounds(
+                                    Rect.fromPoints(
+                                      _controller.toWorldOffset(Offset.zero),
+                                      _controller.toWorldOffset(
+                                        Offset(
+                                          viewport.width,
+                                          viewport.height,
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                 }
                                 return RepaintBoundary(
                                   child: AbsorbPointer(

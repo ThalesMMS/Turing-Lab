@@ -14,13 +14,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/pda.dart';
 import '../../core/models/simulation_highlight.dart';
+import '../../core/models/simulation_step.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../providers/pda_editor_provider.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/automaton_canvas_tool.dart';
-import '../widgets/canvas_quick_actions.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/canvas_simulation_playback_bar.dart';
+import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
 import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/pda_canvas_graphview.dart';
@@ -53,6 +56,8 @@ class _PDAPageState extends ConsumerState<PDAPage>
   ProviderSubscription<PDAEditorState>? _pdaEditorSub;
   StackState _currentStack = const StackState.empty();
   bool _isSimulating = false;
+  bool _canvasPlaybackSupported = false;
+  List<SimulationStep>? _canvasSimulationSteps;
   late final GraphViewPdaCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
   late final CanvasHighlightSourceHandle _validationHighlights;
@@ -105,6 +110,16 @@ class _PDAPageState extends ConsumerState<PDAPage>
       if (!identical(previous?.pda, next.pda)) {
         _highlightRevision++;
         _highlightCoordinator.retarget(_highlightTarget(next.pda));
+        if (_canvasSimulationSteps != null) {
+          _stopCanvasSimulation();
+          _handleStackChanged(const StackState.empty());
+          final simulationNotifier = ref.read(pdaSimulationProvider.notifier);
+          if (next.pda case final pda?) {
+            simulationNotifier.setPda(pda);
+          } else {
+            simulationNotifier.clear();
+          }
+        }
       }
       _scheduleEditorHighlights(next);
       if (next.pda == null && _latestPda != null) {
@@ -113,6 +128,22 @@ class _PDAPageState extends ConsumerState<PDAPage>
         });
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isSupported = supportsCanvasSimulationPlayback(context);
+    if (_canvasPlaybackSupported &&
+        !isSupported &&
+        _canvasSimulationSteps != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !supportsCanvasSimulationPlayback(context)) {
+          _stopCanvasSimulation();
+        }
+      });
+    }
+    _canvasPlaybackSupported = isSupported;
   }
 
   void _handleAddStatePressed() {
@@ -148,6 +179,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
   }
 
   void _clearCanvasPda() {
+    _stopCanvasSimulation();
     _canvasController.clearCanvas();
     setState(() {
       _currentStack = const StackState.empty();
@@ -208,24 +240,31 @@ class _PDAPageState extends ConsumerState<PDAPage>
           onSimulationStart: _handleSimulationStart,
           onSimulationEnd: _handleSimulationEnd,
         ),
-        mobileFloatingPanel: pda == null
+        mobileFloatingPanelBuilder: pda == null
             ? null
-            : CollapsibleCanvasPanel(
-                label: appLocalizationsOf(context).pdaStackPanelLabel,
-                icon: Icons.layers,
-                child: PDAStackPanel(
-                  stackState: _currentStack,
-                  initialStackSymbol: pda.initialStackSymbol,
-                  stackAlphabet: pda.stackAlphabet,
-                  isSimulating: _isSimulating,
-                  highlightedIndex: _inferHighlightedStackIndex(),
-                  onClear: () {
-                    setState(() {
-                      _currentStack = const StackState.empty();
-                    });
-                  },
+            : (
+                context, {
+                required onDragDelta,
+                required onPanelSizeChanged,
+              }) =>
+                CollapsibleCanvasPanel(
+                  label: appLocalizationsOf(context).pdaStackPanelLabel,
+                  icon: Icons.layers,
+                  onDragDelta: onDragDelta,
+                  onPanelSizeChanged: onPanelSizeChanged,
+                  child: PDAStackPanel(
+                    stackState: _currentStack,
+                    initialStackSymbol: pda.initialStackSymbol,
+                    stackAlphabet: pda.stackAlphabet,
+                    isSimulating: _isSimulating,
+                    highlightedIndex: _inferHighlightedStackIndex(),
+                    onClear: () {
+                      setState(() {
+                        _currentStack = const StackState.empty();
+                      });
+                    },
+                  ),
                 ),
-              ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'pda_context_help_fab',
           onPressed: _showContextualHelp,
@@ -367,42 +406,35 @@ class _PDAPageState extends ConsumerState<PDAPage>
       onPdaModified: _handlePdaModified,
     );
 
-    final onHelp = _showContextualHelp;
-    final onSimulate = hasPda
-        ? () => _showPanelSheet(
-              context: context,
-              title: 'PDA Simulation',
-              icon: Icons.play_arrow,
-              child: PDASimulationPanel(
-                highlightService: _highlightService,
-                onStackChanged: _handleStackChanged,
-                onSimulationStart: _handleSimulationStart,
-                onSimulationEnd: _handleSimulationEnd,
-              ),
-            )
-        : null;
-    final onAlgorithms = hasPda
-        ? () => _showPanelSheet(
-              context: context,
-              title: 'PDA Algorithms',
-              icon: Icons.auto_awesome,
-              child: const PDAAlgorithmPanel(),
-            )
-        : null;
+    final onSimulate = hasPda ? _openSimulationSheet : null;
+    final onAlgorithms = hasPda ? _openAlgorithmSheet : null;
+    publishWorkspaceQuickActions(
+      ref,
+      WorkspaceTab.pda,
+      WorkspaceQuickActions(
+        onHelp: _showContextualHelp,
+        onSimulate: onSimulate,
+        onAlgorithms: onAlgorithms,
+      ),
+    );
 
     if (isMobile) {
       return Stack(
         children: [
           Positioned.fill(child: canvas),
-          Positioned(
-            top: 16,
-            left: 16,
-            child: CanvasQuickActions(
-              onHelp: onHelp,
-              onSimulate: onSimulate,
-              onAlgorithms: onAlgorithms,
+          if (_canvasSimulationSteps case final steps?)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 144,
+              child: CanvasSimulationPlaybackBar(
+                key: ValueKey(steps),
+                stepCount: steps.length,
+                words: projectInputWordSteps(steps),
+                onStepChanged: _handleCanvasSimulationStep,
+                onClose: _stopCanvasSimulation,
+              ),
             ),
-          ),
           AnimatedBuilder(
             animation: _canvasListenable,
             builder: (context, _) {
@@ -481,6 +513,62 @@ class _PDAPageState extends ConsumerState<PDAPage>
         ),
       ],
     );
+  }
+
+  void _openSimulationSheet() {
+    _stopCanvasSimulation();
+    _showPanelSheet(
+      context: context,
+      title: 'PDA Simulation',
+      icon: Icons.play_arrow,
+      child: PDASimulationPanel(
+        highlightService: _highlightService,
+        onStackChanged: _handleStackChanged,
+        onSimulationStart: _handleSimulationStart,
+        onSimulationEnd: _handleSimulationEnd,
+        onViewOnCanvas: supportsCanvasSimulationPlayback(context)
+            ? _startCanvasSimulation
+            : null,
+      ),
+    );
+  }
+
+  void _openAlgorithmSheet() {
+    _showPanelSheet(
+      context: context,
+      title: 'PDA Algorithms',
+      icon: Icons.auto_awesome,
+      child: const PDAAlgorithmPanel(),
+    );
+  }
+
+  void _startCanvasSimulation(List<SimulationStep> steps) {
+    if (steps.isEmpty || !supportsCanvasSimulationPlayback(context)) return;
+    final recordedSteps = List<SimulationStep>.unmodifiable(steps);
+    setState(() {
+      _canvasSimulationSteps = recordedSteps;
+      _isSimulating = true;
+    });
+    _handleCanvasSimulationStep(0);
+    Navigator.of(context).pop();
+  }
+
+  void _handleCanvasSimulationStep(int stepIndex) {
+    final steps = _canvasSimulationSteps;
+    if (steps == null || stepIndex < 0 || stepIndex >= steps.length) return;
+    ref.read(pdaSimulationProvider.notifier).goToStep(stepIndex);
+    _highlightService.emitFromSteps(steps, stepIndex);
+    _handleStackChanged(projectPdaStackStep(steps[stepIndex]));
+  }
+
+  void _stopCanvasSimulation() {
+    if (_canvasSimulationSteps != null && mounted) {
+      setState(() {
+        _canvasSimulationSteps = null;
+        _isSimulating = false;
+      });
+    }
+    _highlightService.clear();
   }
 
   String _buildToolbarStatusMessage(PDAEditorState editorState) {

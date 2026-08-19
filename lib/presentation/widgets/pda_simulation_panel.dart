@@ -24,6 +24,7 @@ import '../../l10n/app_localizations_workflows.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart';
 import 'base_simulation_panel.dart';
+import 'canvas_simulation_step_projection.dart';
 import 'trace_viewers/pda_trace_viewer.dart';
 import 'pda/stack_drawer.dart';
 
@@ -34,6 +35,7 @@ class PDASimulationPanel extends ConsumerStatefulWidget {
   final VoidCallback? onSimulationStart;
   final VoidCallback? onSimulationEnd;
   final SimulationRunner? simulationRunner;
+  final ValueChanged<List<SimulationStep>>? onViewOnCanvas;
 
   const PDASimulationPanel({
     super.key,
@@ -42,6 +44,7 @@ class PDASimulationPanel extends ConsumerStatefulWidget {
     this.onSimulationStart,
     this.onSimulationEnd,
     this.simulationRunner,
+    this.onViewOnCanvas,
   });
 
   @override
@@ -386,6 +389,14 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
             highlightService: _highlightService,
             onStepChanged: _handleTraceStepChanged,
           ),
+          if (_stepByStep && widget.onViewOnCanvas != null) ...[
+            const SizedBox(height: 12),
+            SimulationViewOnCanvasButton(
+              onPressed: () => widget.onViewOnCanvas!(
+                List<SimulationStep>.unmodifiable(simulationResult.steps),
+              ),
+            ),
+          ],
         ],
       ],
     );
@@ -512,20 +523,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   }
 
   void _updateStackFromStep(SimulationStep step) {
-    final stackContents = step.stackContents;
-    final symbols =
-        stackContents.isEmpty ? <String>[] : stackContents.split('').toList();
-
-    final operation = step.usedTransition ?? 'step ${step.stepNumber}';
-    final operationType = _determineOperationType(step.usedTransition);
-
-    _updateStackState(
-      StackState(
-        symbols: symbols,
-        lastOperation: operation,
-        operationType: operationType,
-      ),
-    );
+    _updateStackState(projectPdaStackStep(step));
   }
 
   void _handleTraceStepChanged(int stepIndex) {
@@ -540,47 +538,6 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       ref.read(pdaSimulationProvider.notifier).goToStep(stepIndex);
     }
     _updateStackFromStep(result.steps[stepIndex]);
-  }
-
-  /// Determines the stack operation type from a PDA transition label
-  /// Format: "input,pop→push" where ε represents epsilon
-  StackOperationType _determineOperationType(String? transitionLabel) {
-    if (transitionLabel == null || transitionLabel.isEmpty) {
-      return StackOperationType.none;
-    }
-
-    // Parse transition label: "input,pop→push"
-    final parts = transitionLabel.split(',');
-    if (parts.length < 2) {
-      return StackOperationType.none;
-    }
-
-    final stackPart = parts[1]; // "pop→push"
-    final stackParts = stackPart.split('→');
-    if (stackParts.length < 2) {
-      return StackOperationType.none;
-    }
-
-    final pop = stackParts[0].trim();
-    final push = stackParts[1].trim();
-
-    // Determine operation type based on pop and push symbols
-    final isPopEpsilon = pop == 'ε' || pop.isEmpty;
-    final isPushEpsilon = push == 'ε' || push.isEmpty;
-
-    if (!isPopEpsilon && !isPushEpsilon) {
-      // Both pop and push - replace operation
-      return StackOperationType.replace;
-    } else if (!isPopEpsilon && isPushEpsilon) {
-      // Only pop, no push
-      return StackOperationType.pop;
-    } else if (isPopEpsilon && !isPushEpsilon) {
-      // Only push, no pop
-      return StackOperationType.push;
-    } else {
-      // Both epsilon - no stack operation
-      return StackOperationType.none;
-    }
   }
 
   void _showError(String message) {

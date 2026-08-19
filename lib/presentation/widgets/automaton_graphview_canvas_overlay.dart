@@ -51,7 +51,8 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
 
     final payload = _transitionConfig.initialPayloadBuilder(existing);
     final worldAnchor = !createNew && existing != null
-        ? resolveLinkAnchorWorld(_controller, existing) ??
+        ? _renderedTransitionAnchor(existing) ??
+            resolveLinkAnchorWorld(_controller, existing) ??
             Offset(existing.controlPointX ?? 0, existing.controlPointY ?? 0)
         : _deriveControlPoint(fromId, toId);
     final overlayData = AutomatonTransitionOverlayData(
@@ -227,6 +228,13 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     return midpoint + normalized;
   }
 
+  Offset? _renderedTransitionAnchor(GraphViewCanvasEdge edge) {
+    final graphEdge = _controller.graphEdgeById(edge.id);
+    return graphEdge == null
+        ? null
+        : _edgeRenderer.geometryForEdge(graphEdge)?.editorAnchor;
+  }
+
   void _handleGraphRevisionChangedExtracted() {
     if (!mounted) {
       return;
@@ -254,8 +262,9 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
         _hideTransitionOverlay();
         return;
       }
-      final anchor =
-          resolveLinkAnchorWorld(_controller, edge) ?? data.worldAnchor;
+      final anchor = _renderedTransitionAnchor(edge) ??
+          resolveLinkAnchorWorld(_controller, edge) ??
+          data.worldAnchor;
       final payload = _transitionConfig.initialPayloadBuilder(edge);
       _transitionOverlayState.value = state.copyWith(
         data: data.copyWith(payload: payload, worldAnchor: anchor, edge: edge),

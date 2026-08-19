@@ -110,56 +110,23 @@ extension _AutomatonGraphViewCanvasInteractions
     final hits = <_CanvasEdgeHit>[];
 
     for (final edge in _controller.edges) {
-      final from = _controller.nodeById(edge.fromStateId);
-      final to = _controller.nodeById(edge.toStateId);
-      final control = resolveLinkAnchorWorld(_controller, edge);
-      if (from == null || to == null || control == null) {
+      final graphEdge = _controller.graphEdgeById(edge.id);
+      final geometry =
+          graphEdge == null ? null : _edgeRenderer.geometryForEdge(graphEdge);
+      if (geometry == null) {
         continue;
       }
-
-      final start = resolveNodeCenter(from);
-      final end = resolveNodeCenter(to);
-      var minimumDistance = double.infinity;
-      var previous = start;
-      const sampleCount = 24;
-      for (var index = 1; index <= sampleCount; index++) {
-        final t = index / sampleCount;
-        final inverse = 1 - t;
-        final current = start * (inverse * inverse) +
-            control * (2 * inverse * t) +
-            end * (t * t);
-        minimumDistance = math.min(
-          minimumDistance,
-          _distanceToSegmentExtracted(world, previous, current),
-        );
-        previous = current;
-      }
-
-      if (minimumDistance <= tolerance) {
-        hits.add(_CanvasEdgeHit(edge: edge, distance: minimumDistance));
+      final distance = geometry.pathGeometry.distanceTo(
+        world,
+        sampleSpacing: math.max(4, tolerance * 0.5),
+      );
+      if (distance <= tolerance) {
+        hits.add(_CanvasEdgeHit(edge: edge, distance: distance));
       }
     }
 
     hits.sort((left, right) => left.distance.compareTo(right.distance));
     return hits;
-  }
-
-  double _distanceToSegmentExtracted(
-    Offset point,
-    Offset start,
-    Offset end,
-  ) {
-    final segment = end - start;
-    final lengthSquared = segment.distanceSquared;
-    if (lengthSquared == 0) {
-      return (point - start).distance;
-    }
-    final relative = point - start;
-    final projection =
-        ((relative.dx * segment.dx + relative.dy * segment.dy) / lengthSquared)
-            .clamp(0.0, 1.0);
-    final closest = start + segment * projection;
-    return (point - closest).distance;
   }
 
   Future<void> _editHitEdgeExtracted(List<_CanvasEdgeHit> hits) async {

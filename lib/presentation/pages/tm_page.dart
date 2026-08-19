@@ -13,12 +13,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/simulation_highlight.dart';
+import '../../core/models/simulation_step.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_transition.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
-import '../widgets/canvas_quick_actions.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/canvas_simulation_playback_bar.dart';
+import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
 import '../providers/tm_editor_provider.dart';
 import '../widgets/tm_canvas_graphview.dart';
@@ -57,6 +60,8 @@ class _TMPageState extends ConsumerState<TMPage>
   bool _hasAcceptingState = false;
   ProviderSubscription<TMEditorState>? _tmEditorSub;
   TapeState _currentTape = TapeState.initial();
+  bool _canvasPlaybackSupported = false;
+  List<SimulationStep>? _canvasSimulationSteps;
   late final GraphViewTmCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
   late final CanvasHighlightSourceHandle _validationHighlights;
@@ -79,7 +84,24 @@ class _TMPageState extends ConsumerState<TMPage>
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isSupported = supportsCanvasSimulationPlayback(context);
+    if (_canvasPlaybackSupported &&
+        !isSupported &&
+        _canvasSimulationSteps != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !supportsCanvasSimulationPlayback(context)) {
+          _stopCanvasSimulation();
+        }
+      });
+    }
+    _canvasPlaybackSupported = isSupported;
+  }
+
   void _clearCanvasMachine() {
+    _stopCanvasSimulation();
     final blankSymbol = ref.read(tmEditorProvider).tm?.blankSymbol ?? '□';
     _canvasController.clearCanvas();
     setState(() {
@@ -129,6 +151,9 @@ class _TMPageState extends ConsumerState<TMPage>
       }
       _scheduleEditorHighlights(next);
       if (tmChanged || machineWasRemoved) {
+        if (_canvasSimulationSteps != null) {
+          _stopCanvasSimulation();
+        }
         setState(() {
           if (tmChanged) {
             _currentTape = TapeState.initial(
@@ -211,23 +236,30 @@ class _TMPageState extends ConsumerState<TMPage>
         tabletAlgorithmPanel: const TMAlgorithmPanel(useExpanded: false),
         simulationPanel: _buildSimulationPanel(),
         infoPanel: _buildInfoPanel(context),
-        mobileFloatingPanel: tm == null
+        mobileFloatingPanelBuilder: tm == null
             ? null
-            : CollapsibleCanvasPanel(
-                label: appLocalizationsOf(context).traceTape,
-                icon: Icons.horizontal_rule,
-                child: TMTapePanel(
-                  tapeState: _currentTape,
-                  tapeAlphabet: tm.tapeAlphabet,
-                  onClear: () {
-                    setState(() {
-                      _currentTape = TapeState.initial(
-                        blankSymbol: tm.blankSymbol,
-                      );
-                    });
-                  },
+            : (
+                context, {
+                required onDragDelta,
+                required onPanelSizeChanged,
+              }) =>
+                CollapsibleCanvasPanel(
+                  label: appLocalizationsOf(context).traceTape,
+                  icon: Icons.horizontal_rule,
+                  onDragDelta: onDragDelta,
+                  onPanelSizeChanged: onPanelSizeChanged,
+                  child: TMTapePanel(
+                    tapeState: _currentTape,
+                    tapeAlphabet: tm.tapeAlphabet,
+                    onClear: () {
+                      setState(() {
+                        _currentTape = TapeState.initial(
+                          blankSymbol: tm.blankSymbol,
+                        );
+                      });
+                    },
+                  ),
                 ),
-              ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'tm_context_help_fab',
           onPressed: _showContextualHelp,
@@ -272,24 +304,37 @@ class _TMPageState extends ConsumerState<TMPage>
       toolController: _toolController,
       onTmModified: _handleTMUpdate,
     );
-    final onSimulate = _isMachineReady ? _openSimulationSheet : null;
+    final onSimulate = hasMachine ? _openSimulationSheet : null;
     final onAlgorithms = hasMachine ? _openAlgorithmSheet : null;
     final onMetrics = hasMachine ? _openMetricsSheet : null;
+    publishWorkspaceQuickActions(
+      ref,
+      WorkspaceTab.tm,
+      WorkspaceQuickActions(
+        onHelp: _showContextualHelp,
+        onSimulate: onSimulate,
+        onAlgorithms: onAlgorithms,
+        onMetrics: onMetrics,
+      ),
+    );
 
     if (isMobile) {
       return Stack(
         children: [
           Positioned.fill(child: canvas),
-          Positioned(
-            top: 16,
-            left: 16,
-            child: CanvasQuickActions(
-              onHelp: _showContextualHelp,
-              onSimulate: onSimulate,
-              onAlgorithms: onAlgorithms,
-              onMetrics: onMetrics,
+          if (_canvasSimulationSteps case final steps?)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 144,
+              child: CanvasSimulationPlaybackBar(
+                key: ValueKey(steps),
+                stepCount: steps.length,
+                words: projectTapeWordSteps(steps),
+                onStepChanged: _handleCanvasSimulationStep,
+                onClose: _stopCanvasSimulation,
+              ),
             ),
-          ),
           AnimatedBuilder(
             animation: _canvasListenable,
             builder: (context, _) {
@@ -403,25 +448,62 @@ class _TMPageState extends ConsumerState<TMPage>
   }
 
   void _openSimulationSheet() {
-    if (!_isMachineReady) return;
+    if (!_hasMachine) return;
+    _stopCanvasSimulation();
 
     _showDraggableSheet(
       builder: (context, controller) {
         return ListView(
           controller: controller,
           padding: const EdgeInsets.all(16),
-          children: [_buildSimulationPanel()],
+          children: [_buildSimulationPanel(allowCanvasPlayback: true)],
         );
       },
       initialChildSize: 0.7,
     );
   }
 
-  TMSimulationPanel _buildSimulationPanel() {
+  TMSimulationPanel _buildSimulationPanel({bool allowCanvasPlayback = false}) {
     return TMSimulationPanel(
       highlightService: _highlightService,
       onTapeChanged: _handleTapeChanged,
+      onViewOnCanvas:
+          allowCanvasPlayback && supportsCanvasSimulationPlayback(context)
+              ? _startCanvasSimulation
+              : null,
     );
+  }
+
+  void _startCanvasSimulation(List<SimulationStep> steps) {
+    if (steps.isEmpty || !supportsCanvasSimulationPlayback(context)) return;
+    final recordedSteps = List<SimulationStep>.unmodifiable(steps);
+    setState(() {
+      _canvasSimulationSteps = recordedSteps;
+    });
+    _handleCanvasSimulationStep(0);
+    Navigator.of(context).pop();
+  }
+
+  void _handleCanvasSimulationStep(int stepIndex) {
+    final steps = _canvasSimulationSteps;
+    if (steps == null || stepIndex < 0 || stepIndex >= steps.length) return;
+    final blankSymbol = ref.read(tmEditorProvider).tm?.blankSymbol ?? '□';
+    _highlightService.emitFromSteps(steps, stepIndex);
+    _handleTapeChanged(
+      projectTmTapeStep(
+        steps[stepIndex],
+        blankSymbol: blankSymbol,
+      ),
+    );
+  }
+
+  void _stopCanvasSimulation() {
+    if (_canvasSimulationSteps != null && mounted) {
+      setState(() {
+        _canvasSimulationSteps = null;
+      });
+    }
+    _highlightService.clear();
   }
 
   void _openAlgorithmSheet() {

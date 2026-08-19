@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/conversion_step_history.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/simulation_highlight.dart';
+import '../../core/models/simulation_step.dart';
 import '../../core/models/validation_diagnostic.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../providers/algorithm_step_provider.dart';
@@ -27,7 +28,9 @@ import '../widgets/algorithm_step_viewer.dart';
 import '../widgets/automaton_graphview_canvas.dart';
 import '../widgets/automaton_canvas_tool.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
-import '../widgets/canvas_quick_actions.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/canvas_simulation_playback_bar.dart';
+import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/simulation_panel.dart';
@@ -76,7 +79,10 @@ class _FSAPageState extends ConsumerState<FSAPage>
   late final SimulationHighlightService _highlightService;
   late final AlgorithmStepHighlightService _algorithmStepHighlightService;
   late final AutomatonCanvasToolController _toolController;
+  ProviderSubscription<AutomatonStateProviderState>? _automatonStateSub;
   bool _stepByStepMode = false;
+  bool _canvasPlaybackSupported = false;
+  List<SimulationStep>? _canvasSimulationSteps;
   SimulationHighlight? _lastValidationHighlight;
   String? _lastValidationHighlightKey;
   String? _cachedValidationAutomatonKey;
@@ -102,10 +108,37 @@ class _FSAPageState extends ConsumerState<FSAPage>
     _toolController = AutomatonCanvasToolController(
       AutomatonCanvasTool.selection,
     );
+    _automatonStateSub =
+        ref.listenManual<AutomatonStateProviderState>(automatonStateProvider, (
+      previous,
+      next,
+    ) {
+      if (!mounted || _canvasSimulationSteps == null) return;
+      if (!identical(previous?.currentAutomaton, next.currentAutomaton)) {
+        _stopCanvasSimulation();
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isSupported = supportsCanvasSimulationPlayback(context);
+    if (_canvasPlaybackSupported &&
+        !isSupported &&
+        _canvasSimulationSteps != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !supportsCanvasSimulationPlayback(context)) {
+          _stopCanvasSimulation();
+        }
+      });
+    }
+    _canvasPlaybackSupported = isSupported;
   }
 
   @override
   void dispose() {
+    _automatonStateSub?.close();
     _highlightService.clear();
     _algorithmStepHighlightService.clear();
     _canvasController.dispose();

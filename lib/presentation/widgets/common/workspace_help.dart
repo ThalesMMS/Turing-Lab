@@ -35,5 +35,6 @@ Future<void> showWorkspaceHelp({
     context,
     helpContent: content,
     showKeyboardShortcutsAction: true,
+    showHelpCenterAction: true,
   );
 }

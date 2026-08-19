@@ -102,6 +102,10 @@ class PDASimulationState {
 class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
   PDASimulationNotifier() : super(const PDASimulationState());
 
+  void clear() {
+    state = const PDASimulationState();
+  }
+
   void setPda(PDA pda) {
     state = state.copyWith(pda: pda, result: null, currentStepIndex: 0);
   }

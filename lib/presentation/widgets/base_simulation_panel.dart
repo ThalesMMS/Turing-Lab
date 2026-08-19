@@ -261,6 +261,29 @@ class SimulationRunButton extends StatelessWidget {
   }
 }
 
+class SimulationViewOnCanvasButton extends StatelessWidget {
+  const SimulationViewOnCanvasButton({
+    super.key,
+    required this.onPressed,
+  });
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        key: const ValueKey('view-simulation-on-canvas'),
+        onPressed: onPressed,
+        icon: const Icon(Icons.open_in_full),
+        label: Text(l10n.viewOnCanvas),
+      ),
+    );
+  }
+}
+
 /// Shared title wrapper for simulation results.
 class SimulationResultsSection extends StatelessWidget {
   const SimulationResultsSection({

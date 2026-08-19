@@ -8,6 +8,8 @@
 //  Created for Phase 1 improvements - November 2025
 //
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 /// Estado da fita em um momento específico
@@ -110,6 +112,13 @@ class TMTapePanel extends StatefulWidget {
 
 class _TMTapePanelState extends State<TMTapePanel>
     with TickerProviderStateMixin {
+  /// Cell width (50) plus its horizontal margins (2 + 2).
+  static const double _cellExtent = 54.0;
+
+  /// Dimmed off-tape cells rendered on both ends so the tape reads as
+  /// infinite while it slides under the fixed head frame.
+  static const int _phantomCells = 3;
+
   late AnimationController _headAnimationController;
   late AnimationController _readBadgeController;
   late AnimationController _writeBadgeController;
@@ -125,6 +134,7 @@ class _TMTapePanelState extends State<TMTapePanel>
   int _previousTapeLength = 0;
   String? _previousCellContent;
   bool _isExpanding = false;
+  bool _needsCenterJump = true;
 
   @override
   void initState() {
@@ -237,6 +247,12 @@ class _TMTapePanelState extends State<TMTapePanel>
       _scrollToHead();
     }
 
+    // The scroll view only exists once the tape has cells; center the head
+    // as soon as it first appears.
+    if (oldWidget.tapeState.isEmpty && !widget.tapeState.isEmpty) {
+      _needsCenterJump = true;
+    }
+
     // Trigger read badge animation when read symbol changes
     if (oldWidget.tapeState.lastReadSymbol != widget.tapeState.lastReadSymbol) {
       if (widget.tapeState.wasRead) {
@@ -265,29 +281,44 @@ class _TMTapePanelState extends State<TMTapePanel>
     _previousCellContent = currentCellContent;
   }
 
+  /// Offset that puts the head cell exactly under the fixed center frame.
+  ///
+  /// The row starts with a side spacer sized to (viewport - cell) / 2
+  /// followed by [_phantomCells] off-tape cells, so the offset depends only
+  /// on the head index — never on the viewport width.
+  double _headOffset() {
+    final target =
+        (_phantomCells + widget.tapeState.headPosition) * _cellExtent;
+    if (!_horizontalScrollController.hasClients) {
+      return target;
+    }
+    final position = _horizontalScrollController.position;
+    return target
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
+        .toDouble();
+  }
+
   void _scrollToHead() {
-    // Auto-scroll para manter cabeça centralizada na viewport
+    // Slide the tape so the head lands under the fixed center frame.
     if (_horizontalScrollController.hasClients) {
-      const cellWidth = 50.0; // Adjusted for compact view
-      final scrollPosition = _horizontalScrollController.position;
-      final viewportWidth = scrollPosition.viewportDimension;
-
-      // Calcula offset para centralizar a cabeça
-      final headCenterOffset = widget.tapeState.headPosition * cellWidth;
-      final targetOffset =
-          headCenterOffset - (viewportWidth / 2) + (cellWidth / 2);
-
-      // Clamp para não ultrapassar os limites do conteúdo
-      final minOffset = scrollPosition.minScrollExtent;
-      final maxOffset = scrollPosition.maxScrollExtent;
-      final clampedOffset = targetOffset.clamp(minOffset, maxOffset);
-
       _horizontalScrollController.animateTo(
-        clampedOffset,
+        _headOffset(),
         duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        curve: Curves.easeInOutCubic,
       );
     }
+  }
+
+  void _scheduleCenterJump() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          !_needsCenterJump ||
+          !_horizontalScrollController.hasClients) {
+        return;
+      }
+      _needsCenterJump = false;
+      _horizontalScrollController.jumpTo(_headOffset());
+    });
   }
 
   @override
@@ -477,7 +508,7 @@ class _TMTapePanelState extends State<TMTapePanel>
 
             // Tape Visual
             SizedBox(
-              height: 60,
+              height: widget.tapeState.isEmpty ? 60 : 72,
               child: _buildTapeContent(theme), // Always compact mode
             ),
           ],
@@ -498,41 +529,141 @@ class _TMTapePanelState extends State<TMTapePanel>
       );
     }
 
-    final visibleCells = widget.tapeState.getVisibleCells(padding: 4);
-    final headIndex = widget.tapeState.getHeadIndexInVisible(padding: 4);
-    const padding = 4;
-    final startIndex = widget.tapeState.headPosition - padding;
+    final tapeState = widget.tapeState;
+    final head = tapeState.headPosition;
+    // Cover the head even when it sits on a blank beyond the written tape.
+    final renderLength = math.max(tapeState.cells.length, head + 1);
+    final cardColor = theme.cardTheme.color ?? theme.colorScheme.surface;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      controller: _horizontalScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        children: List.generate(visibleCells.length, (index) {
-          final isHead = index == headIndex;
-          final wasRead = isHead && widget.tapeState.wasRead;
-          final wasWritten = isHead && widget.tapeState.wasWritten;
-          final actualCellIndex = startIndex + index;
-          final isHighlighted =
-              widget.tapeState.highlightedCellIndices.contains(actualCellIndex);
+    _scheduleCenterJump();
 
-          // Determine if this cell is at the edge (newly expanded)
-          final isAtLeftEdge = index == 0;
-          final isAtRightEdge = index == visibleCells.length - 1;
-          final isNewCell = _isExpanding && (isAtLeftEdge || isAtRightEdge);
+    return Column(
+      children: [
+        // Fixed head marker: the frame below never moves — the tape does.
+        SizedBox(
+          height: 14,
+          child: Icon(
+            Icons.arrow_downward,
+            size: 12,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sideSpacer =
+                  math.max(0.0, (constraints.maxWidth - _cellExtent) / 2);
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: _horizontalScrollController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Row(
+                      children: [
+                        SizedBox(width: sideSpacer),
+                        for (var i = 0; i < _phantomCells; i++)
+                          _buildPhantomCell(theme),
+                        for (var i = 0; i < renderLength; i++)
+                          _buildIndexedTapeCell(i, renderLength, theme),
+                        for (var i = 0; i < _phantomCells; i++)
+                          _buildPhantomCell(theme),
+                        SizedBox(width: sideSpacer),
+                      ],
+                    ),
+                  ),
+                  // Fixed selection frame the tape slides underneath.
+                  IgnorePointer(
+                    child: Center(
+                      child: Container(
+                        width: _cellExtent,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: theme.colorScheme.primary,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.06),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.18),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Edge fades hint that the tape continues off-screen.
+                  for (final alignLeft in const [true, false])
+                    Positioned(
+                      left: alignLeft ? 0 : null,
+                      right: alignLeft ? null : 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 24,
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: alignLeft
+                                  ? Alignment.centerLeft
+                                  : Alignment.centerRight,
+                              end: alignLeft
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              colors: [
+                                cardColor,
+                                cardColor.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
-          return _buildTapeCell(
-            visibleCells[index],
-            actualCellIndex,
-            isHead,
-            wasRead,
-            wasWritten,
-            isHighlighted,
-            theme,
-            isNewCell: isNewCell,
-            slideFromLeft: isAtLeftEdge,
-          );
-        }),
+  Widget _buildIndexedTapeCell(int index, int renderLength, ThemeData theme) {
+    final tapeState = widget.tapeState;
+    final symbol = index < tapeState.cells.length
+        ? tapeState.cells[index]
+        : tapeState.blankSymbol;
+    final isHead = index == tapeState.headPosition;
+
+    return _buildTapeCell(
+      symbol,
+      index,
+      isHead,
+      isHead && tapeState.wasRead,
+      isHead && tapeState.wasWritten,
+      tapeState.highlightedCellIndices.contains(index),
+      theme,
+      isNewCell: _isExpanding && (index == 0 || index == renderLength - 1),
+      slideFromLeft: index == 0,
+    );
+  }
+
+  Widget _buildPhantomCell(ThemeData theme) {
+    return Container(
+      width: 50,
+      height: 50,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.15),
+        ),
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }
@@ -570,16 +701,10 @@ class _TMTapePanelState extends State<TMTapePanel>
             border: Border.all(
               color: isHighlighted
                   ? theme.colorScheme.tertiary
-                  : isHead
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outline.withValues(alpha: 0.3),
-              width: isHighlighted
-                  ? 2.5
-                  : isHead
-                      ? 2
-                      : 1,
+                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+              width: isHighlighted ? 2.5 : 1,
             ),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: isNewCell && glowIntensity > 0
                 ? [
                     BoxShadow(
@@ -596,36 +721,45 @@ class _TMTapePanelState extends State<TMTapePanel>
       child: Stack(
         children: [
           // Main cell content
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isHead)
-                Icon(
-                  Icons.arrow_downward,
-                  size: 10,
-                  color: theme.colorScheme.primary,
-                ),
-              AnimatedBuilder(
-                animation: _cellScaleAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: isHead ? _cellScaleAnimation.value : 1.0,
-                    child: child,
-                  );
-                },
-                child: Text(
-                  symbol,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: isHead ? FontWeight.bold : FontWeight.normal,
-                    fontFamily: 'monospace',
-                    color: isHead
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface,
-                  ),
+          Center(
+            child: AnimatedBuilder(
+              animation: _cellScaleAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: isHead ? _cellScaleAnimation.value : 1.0,
+                  child: child,
+                );
+              },
+              child: Text(
+                symbol,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: isHead ? FontWeight.bold : FontWeight.normal,
+                  fontFamily: 'monospace',
+                  color: isHead
+                      ? theme.colorScheme.primary
+                      : symbol == widget.tapeState.blankSymbol
+                          ? theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.45)
+                          : theme.colorScheme.onSurface,
                 ),
               ),
-            ],
+            ),
+          ),
+          // Cell index
+          Positioned(
+            bottom: 1,
+            left: 0,
+            right: 0,
+            child: Text(
+              '$cellIndex',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 8,
+                color:
+                    theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+            ),
           ),
           // Read indicator badge (top-left) with fade-in animation
           if (wasRead)
@@ -704,7 +838,7 @@ class _TMTapePanelState extends State<TMTapePanel>
 
     return InkWell(
       onTap: () => _showCellEditDialog(cellIndex, symbol),
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(8),
       child: boundedResult,
     );
   }

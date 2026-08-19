@@ -13,8 +13,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
 import '../providers/home_navigation_provider.dart';
+import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/mobile_navigation.dart';
 import '../widgets/desktop_navigation.dart';
+import '../widgets/workspace_quick_actions_bar.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import 'fsa_page.dart';
 import 'grammar_page.dart';
@@ -225,6 +227,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       });
     }
 
+    final currentTab = WorkspaceTab.values[visibleCurrentIndex];
+    final quickActions =
+        isMobile ? ref.watch(workspaceQuickActionsProvider(currentTab)) : null;
+
     final theme = Theme.of(context);
     final pageView = PageView(
       key: _pageViewKey,
@@ -238,6 +244,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       policy: ReadingOrderTraversalPolicy(),
       child: Scaffold(
         appBar: AppBar(
+          leading: isMobile ? WorkspaceQuickActionsBar(tab: currentTab) : null,
+          leadingWidth: isMobile ? 144 : null,
           title: isMobile
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +296,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             _buildAppBarAction(
               label: l10n.homeHelpTooltip,
               icon: Icons.help_outline,
-              onPressed: () => _showHelpDialog(context),
+              onPressed: quickActions?.onHelp ?? () => _showHelpDialog(context),
             ),
             _buildAppBarAction(
               label: l10n.homeSettingsTooltip,

@@ -404,10 +404,19 @@ extension _FSAPageStateBehavior on _FSAPageState {
     final statusMessage = _buildToolbarStatusMessage(state);
 
     Widget buildCanvasWithToolbar(Widget child) {
-      final hasAutomaton = state.currentAutomaton != null;
-      final onHelp = _showContextualHelp;
+      final hasAutomaton = state.currentAutomaton != null &&
+          state.currentAutomaton!.states.isNotEmpty;
       final onSimulate = hasAutomaton ? _openSimulationSheet : null;
       final onAlgorithms = hasAutomaton ? _openAlgorithmSheet : null;
+      publishWorkspaceQuickActions(
+        ref,
+        WorkspaceTab.fsa,
+        WorkspaceQuickActions(
+          onHelp: _showContextualHelp,
+          onSimulate: onSimulate,
+          onAlgorithms: onAlgorithms,
+        ),
+      );
 
       final combinedListenable = Listenable.merge([
         _toolController,
@@ -418,17 +427,21 @@ extension _FSAPageStateBehavior on _FSAPageState {
         return Stack(
           children: [
             Positioned.fill(child: child),
-            Positioned(
-              top: 16,
-              left: 16,
-              child: CanvasQuickActions(
-                onHelp: onHelp,
-                onSimulate: onSimulate,
-                onAlgorithms: onAlgorithms,
-              ),
-            ),
             // Badge DFA/NFA/ε-NFA
             FSADeterminismOverlay(automaton: state.currentAutomaton),
+            if (_canvasSimulationSteps case final steps?)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 144,
+                child: CanvasSimulationPlaybackBar(
+                  key: ValueKey(steps),
+                  stepCount: steps.length,
+                  words: projectInputWordSteps(steps),
+                  onStepChanged: _handleCanvasSimulationStep,
+                  onClose: _stopCanvasSimulation,
+                ),
+              ),
             AnimatedBuilder(
               animation: combinedListenable,
               builder: (context, _) {
@@ -448,7 +461,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
                   onZoomOut: _canvasController.zoomOut,
                   onFitToContent: _canvasController.fitToContent,
                   onResetView: _canvasController.resetView,
-                  onClear: _canvasController.clearCanvas,
+                  onClear: _clearCanvasAutomaton,
                   onUndo: _canvasController.undo,
                   onRedo: _canvasController.redo,
                   canUndo: _canvasController.canUndo,
@@ -481,7 +494,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
                 onHelp: _showContextualHelp,
                 onAddTransition: () =>
                     _toolController.toggleTool(AutomatonCanvasTool.transition),
-                onClear: _canvasController.clearCanvas,
+                onClear: _clearCanvasAutomaton,
                 statusMessage: statusMessage,
               );
             },
@@ -575,6 +588,10 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Future<void> _openSimulationSheet() async {
+    _stopCanvasSimulation();
+    final onViewOnCanvas = supportsCanvasSimulationPlayback(context)
+        ? _startCanvasSimulation
+        : null;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -605,6 +622,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
                         simulationResult: simulationState.simulationResult,
                         regexResult: algorithmState.regexResult,
                         highlightService: _highlightService,
+                        onViewOnCanvas: onViewOnCanvas,
                       );
                     },
                   ),
@@ -695,6 +713,36 @@ extension _FSAPageStateBehavior on _FSAPageState {
         );
       },
     );
+  }
+
+  void _startCanvasSimulation(List<SimulationStep> steps) {
+    if (steps.isEmpty || !supportsCanvasSimulationPlayback(context)) return;
+    final recordedSteps = List<SimulationStep>.unmodifiable(steps);
+    _updatePageState(() {
+      _canvasSimulationSteps = recordedSteps;
+    });
+    _highlightService.emitFromSteps(recordedSteps, 0);
+    Navigator.of(context).pop();
+  }
+
+  void _handleCanvasSimulationStep(int stepIndex) {
+    final steps = _canvasSimulationSteps;
+    if (steps == null || stepIndex < 0 || stepIndex >= steps.length) return;
+    _highlightService.emitFromSteps(steps, stepIndex);
+  }
+
+  void _stopCanvasSimulation() {
+    if (_canvasSimulationSteps != null && mounted) {
+      _updatePageState(() {
+        _canvasSimulationSteps = null;
+      });
+    }
+    _highlightService.clear();
+  }
+
+  void _clearCanvasAutomaton() {
+    _stopCanvasSimulation();
+    _canvasController.clearCanvas();
   }
 
   List<ValidationDiagnostic> _validationDiagnosticsFor(FSA? automaton) {

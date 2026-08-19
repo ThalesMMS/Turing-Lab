@@ -21,8 +21,8 @@ import '../../core/services/simulation_runner.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../providers/tm_editor_provider.dart';
-import '../../core/models/step_explanation.dart';
 import 'base_simulation_panel.dart';
+import 'canvas_simulation_step_projection.dart';
 import 'tm/tape_drawer.dart';
 import 'trace_viewers/tm_trace_viewer.dart';
 
@@ -31,12 +31,14 @@ class TMSimulationPanel extends ConsumerStatefulWidget {
   final SimulationHighlightService? highlightService;
   final SimulationRunner? simulationRunner;
   final ValueChanged<TapeState>? onTapeChanged;
+  final ValueChanged<List<SimulationStep>>? onViewOnCanvas;
 
   const TMSimulationPanel({
     super.key,
     this.highlightService,
     this.simulationRunner,
     this.onTapeChanged,
+    this.onViewOnCanvas,
   });
 
   @override
@@ -226,6 +228,14 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
                 onStepChanged: _handleStepChanged,
               ),
             ),
+          if (widget.onViewOnCanvas != null) ...[
+            const SizedBox(height: 12),
+            SimulationViewOnCanvasButton(
+              onPressed: () => widget.onViewOnCanvas!(
+                List<SimulationStep>.unmodifiable(_simulationSteps),
+              ),
+            ),
+          ],
         ],
       ],
     );
@@ -290,7 +300,10 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     }
 
     final nextTapeState = simulation.steps.isNotEmpty
-        ? _convertStepToTapeState(simulation.steps[0])
+        ? projectTmTapeStep(
+            simulation.steps[0],
+            blankSymbol: tm.blankSymbol,
+          )
         : TapeState.initial(blankSymbol: tm.blankSymbol);
     setState(() {
       _isSimulating = false;
@@ -379,7 +392,13 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     }
 
     // Update state with new step
-    _replaceTapeState(_convertStepToTapeState(result.steps[stepIndex]));
+    final blankSymbol = ref.read(tmEditorProvider).tm?.blankSymbol ?? '□';
+    _replaceTapeState(
+      projectTmTapeStep(
+        result.steps[stepIndex],
+        blankSymbol: blankSymbol,
+      ),
+    );
 
     // Fade in new step
     await _stepTransitionController.forward();
@@ -394,58 +413,6 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
         await _handleStepChanged(pendingStepIndex);
       }
     }
-  }
-
-  TapeState _convertStepToTapeState(SimulationStep step) {
-    final tm = ref.read(tmEditorProvider).tm;
-    final blankSymbol = tm?.blankSymbol ?? '□';
-
-    final highlightedCells = <int>{
-      if (step.explanation != null)
-        for (final highlight in step.explanation!.highlights)
-          if (highlight.type == HighlightTargetType.tapeCell)
-            _highlightedCellIndex(highlight.data['index']) ?? -1,
-    }..removeWhere((index) => index < 0);
-
-    // Parse tape contents
-    final cells =
-        step.tapeContents.isEmpty ? <String>[] : step.tapeContents.split('');
-
-    // Get head position from step (now available)
-    final headPos = step.headPosition ?? 0;
-
-    // Parse last operation from transition
-    String? lastRead;
-    String? lastWrite;
-    String? lastOp;
-
-    if (step.usedTransition != null) {
-      // Format: "state,readSymbol → nextState,writeSymbol,direction"
-      final parts = step.usedTransition!.split(' → ');
-      if (parts.length == 2) {
-        final before = parts[0].split(',');
-        final after = parts[1].split(',');
-        if (before.length >= 2) {
-          lastRead = before[1];
-        }
-        if (after.length >= 2) {
-          lastWrite = after[1];
-        }
-        if (after.length >= 3) {
-          lastOp = after[2];
-        }
-      }
-    }
-
-    return TapeState(
-      cells: cells,
-      headPosition: headPos,
-      blankSymbol: blankSymbol,
-      lastOperation: lastOp,
-      lastReadSymbol: lastRead,
-      lastWriteSymbol: lastWrite,
-      highlightedCellIndices: highlightedCells,
-    );
   }
 
   void _replaceTapeState(TapeState tapeState) {
@@ -481,16 +448,6 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     );
   }
 
-  int? _highlightedCellIndex(Object? value) {
-    if (value is int) return value;
-    if (value is double &&
-        value.isFinite &&
-        value == value.truncateToDouble()) {
-      return value.toInt();
-    }
-    return null;
-  }
-
   Widget _buildTapePanel(BuildContext context) {
     final editorState = ref.watch(tmEditorProvider);
     final tapeAlphabet = editorState.tapeSymbols;
@@ -498,7 +455,7 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
     return FadeTransition(
       opacity: _stepFadeAnimation,
       child: Container(
-        height: 120,
+        height: 136,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),

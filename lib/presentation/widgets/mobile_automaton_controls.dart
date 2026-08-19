@@ -70,78 +70,126 @@ class MobileAutomatonControls extends StatelessWidget {
     final textTheme = theme.textTheme;
     final l10n = appLocalizationsOf(context);
 
-    final canvasActions = <_ControlAction>[
-      _ControlAction(
-        icon: Icons.help_outline,
-        tooltip: l10n.canvasHelpAction,
-        onPressed: onHelp,
-      ),
-      if (onUndo != null)
+    // Row 1: help · history · editing tools. Row 2: viewport · destructive.
+    final editingGroups = <List<_ControlAction>>[
+      [
         _ControlAction(
-          icon: Icons.undo,
-          tooltip: l10n.canvasUndoAction,
-          onPressed: canUndo ? onUndo : null,
+          icon: Icons.help_outline,
+          tooltip: l10n.canvasHelpAction,
+          onPressed: onHelp,
         ),
-      if (onRedo != null)
+      ],
+      [
+        if (onUndo != null)
+          _ControlAction(
+            icon: Icons.undo,
+            tooltip: l10n.canvasUndoAction,
+            onPressed: canUndo ? onUndo : null,
+          ),
+        if (onRedo != null)
+          _ControlAction(
+            icon: Icons.redo,
+            tooltip: l10n.canvasRedoAction,
+            onPressed: canRedo ? onRedo : null,
+          ),
+      ],
+      [
+        if (enableToolSelection && showSelectionTool)
+          _ControlAction(
+            icon: Icons.pan_tool,
+            label: l10n.canvasSelectAction,
+            onPressed: onSelectTool,
+            isToggle: true,
+            isSelected: activeTool == AutomatonCanvasTool.selection,
+          ),
         _ControlAction(
-          icon: Icons.redo,
-          tooltip: l10n.canvasRedoAction,
-          onPressed: canRedo ? onRedo : null,
-        ),
-      if (enableToolSelection && showSelectionTool)
-        _ControlAction(
-          icon: Icons.pan_tool,
-          label: l10n.canvasSelectAction,
-          onPressed: onSelectTool,
-          isToggle: true,
-          isSelected: activeTool == AutomatonCanvasTool.selection,
-        ),
-      _ControlAction(
-        icon: Icons.add,
-        tooltip: l10n.canvasAddStateAction,
-        onPressed: onAddState,
-        isToggle: enableToolSelection,
-        isSelected:
-            enableToolSelection && activeTool == AutomatonCanvasTool.addState,
-      ),
-      if (onAddTransition != null)
-        _ControlAction(
-          icon: Icons.arrow_right_alt,
-          label: l10n.canvasAddTransitionAction,
-          onPressed: onAddTransition,
+          icon: Icons.add,
+          tooltip: l10n.canvasAddStateAction,
+          onPressed: onAddState,
           isToggle: enableToolSelection,
-          isSelected: enableToolSelection &&
-              activeTool == AutomatonCanvasTool.transition,
+          isSelected:
+              enableToolSelection && activeTool == AutomatonCanvasTool.addState,
         ),
-      if (onZoomOut != null)
-        _ControlAction(
-          icon: Icons.zoom_out,
-          tooltip: l10n.canvasZoomOutAction,
-          onPressed: onZoomOut,
-        ),
-      if (onZoomIn != null)
-        _ControlAction(
-          icon: Icons.zoom_in,
-          tooltip: l10n.canvasZoomInAction,
-          onPressed: onZoomIn,
-        ),
-      _ControlAction(
-        icon: Icons.fit_screen,
-        tooltip: l10n.canvasFitToContentAction,
-        onPressed: onFitToContent,
-      ),
-      _ControlAction(
-        icon: Icons.center_focus_strong,
-        tooltip: l10n.canvasResetViewAction,
-        onPressed: onResetView,
-      ),
-      if (onClear != null)
-        _ControlAction(
-          icon: Icons.delete_outline,
-          tooltip: l10n.canvasClearAction,
-          onPressed: onClear,
-        ),
+        if (onAddTransition != null)
+          _ControlAction(
+            icon: Icons.arrow_right_alt,
+            label: l10n.canvasAddTransitionAction,
+            onPressed: onAddTransition,
+            isToggle: enableToolSelection,
+            isSelected: enableToolSelection &&
+                activeTool == AutomatonCanvasTool.transition,
+          ),
+      ],
     ];
+    final viewGroups = <List<_ControlAction>>[
+      [
+        if (onZoomOut != null)
+          _ControlAction(
+            icon: Icons.zoom_out,
+            tooltip: l10n.canvasZoomOutAction,
+            onPressed: onZoomOut,
+          ),
+        if (onZoomIn != null)
+          _ControlAction(
+            icon: Icons.zoom_in,
+            tooltip: l10n.canvasZoomInAction,
+            onPressed: onZoomIn,
+          ),
+        _ControlAction(
+          icon: Icons.fit_screen,
+          tooltip: l10n.canvasFitToContentAction,
+          onPressed: onFitToContent,
+        ),
+        _ControlAction(
+          icon: Icons.center_focus_strong,
+          tooltip: l10n.canvasResetViewAction,
+          onPressed: onResetView,
+        ),
+      ],
+      [
+        if (onClear != null)
+          _ControlAction(
+            icon: Icons.delete_outline,
+            tooltip: l10n.canvasClearAction,
+            onPressed: onClear,
+            isDestructive: true,
+          ),
+      ],
+    ];
+
+    Widget buildActionRow(List<List<_ControlAction>> groups) {
+      final visibleGroups =
+          groups.where((group) => group.isNotEmpty).toList(growable: false);
+      final children = <Widget>[];
+      for (var groupIndex = 0;
+          groupIndex < visibleGroups.length;
+          groupIndex++) {
+        if (groupIndex > 0) {
+          children.add(
+            SizedBox(
+              height: 22,
+              child: VerticalDivider(
+                width: 13,
+                thickness: 1,
+                color: colorScheme.outlineVariant,
+              ),
+            ),
+          );
+        }
+        for (var index = 0; index < visibleGroups[groupIndex].length; index++) {
+          if (index > 0) {
+            children.add(const SizedBox(width: 4));
+          }
+          children.add(
+            _MobileControlButton(action: visibleGroups[groupIndex][index]),
+          );
+        }
+      }
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(mainAxisSize: MainAxisSize.min, children: children),
+      );
+    }
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -154,25 +202,16 @@ class MobileAutomatonControls extends StatelessWidget {
             color: colorScheme.surface,
             elevation: 10,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (canvasActions.isNotEmpty)
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: canvasActions
-                          .map(
-                            (action) => _MobileControlButton(action: action),
-                          )
-                          .toList(),
-                    ),
+                  buildActionRow(editingGroups),
+                  const SizedBox(height: 6),
+                  buildActionRow(viewGroups),
                   if (statusMessage != null && statusMessage!.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         statusMessage!,
                         maxLines: 2,
@@ -201,6 +240,7 @@ class _ControlAction {
     required this.onPressed,
     this.isToggle = false,
     this.isSelected = false,
+    this.isDestructive = false,
   });
 
   final IconData icon;
@@ -213,6 +253,7 @@ class _ControlAction {
   final VoidCallback? onPressed;
   final bool isToggle;
   final bool isSelected;
+  final bool isDestructive;
 
   String get effectiveTooltip =>
       (tooltip?.trim().isNotEmpty == true) ? tooltip! : (label ?? '');
@@ -239,13 +280,19 @@ class _MobileControlButton extends StatelessWidget {
     final bool canPress = action.onPressed != null;
     final bool selected = action.isToggle && action.isSelected && canPress;
 
-    // Cores para estado selecionado vs normal (herda do tema).
+    // Cores para estado selecionado, destrutivo ou normal (herda do tema).
     final ButtonStyle effectiveStyle = baseStyle.merge(
       IconButton.styleFrom(
         backgroundColor: selected
             ? colorScheme.secondaryContainer
-            : null, // deixa default quando não selecionado
-        foregroundColor: selected ? colorScheme.onSecondaryContainer : null,
+            : action.isDestructive
+                ? colorScheme.errorContainer.withValues(alpha: 0.55)
+                : null, // deixa default quando não selecionado
+        foregroundColor: selected
+            ? colorScheme.onSecondaryContainer
+            : action.isDestructive
+                ? colorScheme.error
+                : null,
       ),
     );
 

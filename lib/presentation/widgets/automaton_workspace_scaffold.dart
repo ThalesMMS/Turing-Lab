@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'movable_canvas_panel_host.dart';
 import 'tablet_layout_container.dart';
 
 typedef AutomatonCanvasBuilder = Widget Function({required bool isMobile});
 
-class AutomatonWorkspaceScaffold extends StatelessWidget {
+class AutomatonWorkspaceScaffold extends StatefulWidget {
   const AutomatonWorkspaceScaffold({
     super.key,
     required this.canvasWithToolbar,
@@ -12,7 +13,7 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
     required this.simulationPanel,
     this.tabletAlgorithmPanel,
     this.infoPanel,
-    this.mobileFloatingPanel,
+    this.mobileFloatingPanelBuilder,
     this.floatingActionButton,
   });
 
@@ -24,25 +25,34 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
   final Widget? tabletAlgorithmPanel;
   final Widget simulationPanel;
   final Widget? infoPanel;
-  final Widget? mobileFloatingPanel;
+  final MovableCanvasPanelBuilder? mobileFloatingPanelBuilder;
   final Widget? floatingActionButton;
+
+  @override
+  State<AutomatonWorkspaceScaffold> createState() =>
+      _AutomatonWorkspaceScaffoldState();
+}
+
+class _AutomatonWorkspaceScaffoldState
+    extends State<AutomatonWorkspaceScaffold> {
+  Offset? _mobileFloatingPanelPosition;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final isMobile = width < mobileBreakpoint;
+        final isMobile = width < AutomatonWorkspaceScaffold.mobileBreakpoint;
 
         return FocusTraversalGroup(
           policy: ReadingOrderTraversalPolicy(),
           child: Scaffold(
             body: isMobile
                 ? _buildMobileLayout()
-                : width < tabletBreakpoint
+                : width < AutomatonWorkspaceScaffold.tabletBreakpoint
                     ? _buildTabletLayout()
                     : _buildDesktopLayout(),
-            floatingActionButton: isMobile ? null : floatingActionButton,
+            floatingActionButton: isMobile ? null : widget.floatingActionButton,
           ),
         );
       },
@@ -56,14 +66,18 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: canvasWithToolbar(isMobile: true),
+              child: widget.canvasWithToolbar(isMobile: true),
             ),
           ),
-          if (mobileFloatingPanel != null)
-            Positioned(
-              top: 72,
-              right: 16,
-              child: mobileFloatingPanel!,
+          if (widget.mobileFloatingPanelBuilder != null)
+            Positioned.fill(
+              child: MovableCanvasPanelHost(
+                builder: widget.mobileFloatingPanelBuilder!,
+                initialPosition: _mobileFloatingPanelPosition,
+                onPositionChanged: (position) {
+                  _mobileFloatingPanelPosition = position;
+                },
+              ),
             ),
         ],
       ),
@@ -72,10 +86,10 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
 
   Widget _buildTabletLayout() {
     return TabletLayoutContainer(
-      canvas: canvasWithToolbar(isMobile: false),
-      algorithmPanel: tabletAlgorithmPanel ?? algorithmPanel,
-      simulationPanel: simulationPanel,
-      infoPanel: infoPanel,
+      canvas: widget.canvasWithToolbar(isMobile: false),
+      algorithmPanel: widget.tabletAlgorithmPanel ?? widget.algorithmPanel,
+      simulationPanel: widget.simulationPanel,
+      infoPanel: widget.infoPanel,
     );
   }
 
@@ -84,20 +98,22 @@ class AutomatonWorkspaceScaffold extends StatelessWidget {
       children: [
         Expanded(
           flex: 2,
-          child: _buildDesktopPanel(canvasWithToolbar(isMobile: false)),
+          child: _buildDesktopPanel(
+            widget.canvasWithToolbar(isMobile: false),
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildDesktopPanel(simulationPanel),
+          child: _buildDesktopPanel(widget.simulationPanel),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildDesktopPanel(algorithmPanel),
+          child: _buildDesktopPanel(widget.algorithmPanel),
         ),
-        if (infoPanel != null) ...[
+        if (widget.infoPanel != null) ...[
           const SizedBox(width: 16),
           Flexible(
-            child: _buildDesktopPanel(infoPanel!),
+            child: _buildDesktopPanel(widget.infoPanel!),
           ),
         ],
       ],

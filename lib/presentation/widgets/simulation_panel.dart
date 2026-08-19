@@ -15,6 +15,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../../core/models/simulation_result.dart';
+import '../../core/models/simulation_step.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import 'base_simulation_panel.dart';
@@ -30,6 +31,7 @@ class SimulationPanel extends StatefulWidget {
   final SimulationHighlightService? highlightService;
   final double animationSpeed;
   final ValueChanged<double>? onAnimationSpeedChanged;
+  final ValueChanged<List<SimulationStep>>? onViewOnCanvas;
 
   const SimulationPanel({
     super.key,
@@ -39,6 +41,7 @@ class SimulationPanel extends StatefulWidget {
     this.highlightService,
     this.animationSpeed = 1.0,
     this.onAnimationSpeedChanged,
+    this.onViewOnCanvas,
   });
 
   @override
@@ -155,6 +158,16 @@ class _SimulationPanelState extends State<SimulationPanel> {
             widget.simulationResult != null &&
             widget.simulationResult!.steps.isNotEmpty) ...[
           const SizedBox(height: 16),
+          if (widget.onViewOnCanvas != null) ...[
+            SimulationViewOnCanvasButton(
+              onPressed: () => widget.onViewOnCanvas!(
+                List<SimulationStep>.unmodifiable(
+                  widget.simulationResult!.steps,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           FsaTraceViewer(
             result: widget.simulationResult!,
             highlightService: _highlightService,
