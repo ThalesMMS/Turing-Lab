@@ -88,3 +88,4 @@ CLAUDE.md
 docs/BRANCH_PROTECTION.md
 /.github/workflows
 docs/reference-deviations.md
+/.playwright-mcp
