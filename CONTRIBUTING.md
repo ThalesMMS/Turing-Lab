@@ -48,7 +48,6 @@ At minimum, run:
 ```bash
 dart format .
 flutter analyze --no-fatal-infos
-./tool/check_branding.sh
 ```
 
 Run focused tests for the code you changed, for example:

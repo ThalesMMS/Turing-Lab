@@ -212,9 +212,8 @@ flutter test test/widget/                  # Widget harnesses
 flutter test --coverage
 lcov --list coverage/lcov.info
 
-# Static analysis and branding
+# Static analysis
 flutter analyze --no-fatal-infos
-./tool/check_branding.sh
 ```
 
 ## Reference Implementation Methodology

@@ -66,8 +66,6 @@ test/**/failures/
 .gemini/
 .playwright-cli/
 gha-creds-*.json
-/.project_doc_record/
-/output/
 
 # Vendored GraphView Auto Claude data
 graphview/.auto-claude/
@@ -82,7 +80,11 @@ graphview/logs/security/
 .auto-claude/
 /.auto-claude
 /.taskforge/
+/docs/superpowers
+/release
+/output/playwright
 AGENTS.md
 CLAUDE.md
-/docs
-/release
+docs/BRANCH_PROTECTION.md
+/.github/workflows
+docs/reference-deviations.md
