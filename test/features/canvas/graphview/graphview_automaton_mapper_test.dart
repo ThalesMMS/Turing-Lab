@@ -93,6 +93,20 @@ void main() {
       expect(edge.controlPointY, closeTo(18, 0.0001));
     });
 
+    test('round-trips legacy control-point metadata unchanged', () {
+      final configured = baseAutomaton.copyWith(
+        transitions: {transition.copyWith(controlPoint: Vector2(73, 91))},
+      );
+
+      final snapshot = GraphViewAutomatonMapper.toSnapshot(configured);
+      final restored = GraphViewAutomatonMapper.mergeIntoTemplate(
+        snapshot,
+        configured,
+      );
+
+      expect(restored.fsaTransitions.single.controlPoint, Vector2(73, 91));
+    });
+
     test('mergeIntoTemplate rebuilds automaton from snapshot', () {
       const snapshot = GraphViewAutomatonSnapshot(
         nodes: [

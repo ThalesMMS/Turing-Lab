@@ -289,6 +289,118 @@ void main() {
       expect(renderer.debugLabelPainterCacheSize, equals(cachedPainterCount));
     });
 
+    test('legacy absolute control point does not pin automatic geometry', () {
+      setTuringLabEdgeControlPoint(edge, const Offset(-800, -900));
+
+      renderer.prepareForRenderCycle();
+      final geometry = renderer.geometryForEdge(edge)!;
+
+      expect(geometry.pathGeometry.bounds.left, greaterThan(-100));
+      expect(geometry.pathGeometry.bounds.right, lessThan(400));
+    });
+
+    test('geometry follows live node position in the next generation', () {
+      renderer.prepareForRenderCycle();
+      final before = renderer.geometryForEdge(edge)!.pathGeometry.pointAt(0.5);
+
+      destination.position = const Offset(220, 180);
+      graph.markModified();
+      renderer.prepareForRenderCycle();
+      final geometry = renderer.geometryForEdge(edge)!;
+      final during = geometry.pathGeometry.pointAt(0.5);
+
+      expect((during - before).distance, greaterThan(40));
+      expect(
+        (geometry.pathGeometry.start - renderer.getNodeCenter(source)).distance,
+        closeTo(30, 0.5),
+      );
+    });
+
+    test('position-only generation reuses an unrelated cached route', () {
+      final otherSource = Node.Id('other-source')
+        ..position = const Offset(0, 400)
+        ..size = const Size(100, 60);
+      final otherDestination = Node.Id('other-destination')
+        ..position = const Offset(220, 400)
+        ..size = const Size(100, 60);
+      final unrelatedEdge = Edge(
+        otherSource,
+        otherDestination,
+        key: const ValueKey('unrelated-edge'),
+        label: 'other',
+      );
+      graph
+        ..addNode(otherSource)
+        ..addNode(otherDestination)
+        ..addEdgeS(unrelatedEdge);
+      renderer.prepareForRenderCycle();
+      final movedBefore = renderer.geometryForEdge(edge);
+      final unrelatedBefore = renderer.geometryForEdge(unrelatedEdge);
+
+      destination.position = const Offset(220, 180);
+      graph.markModified();
+      renderer.prepareForRenderCycle();
+
+      expect(renderer.geometryForEdge(unrelatedEdge), same(unrelatedBefore));
+      expect(renderer.geometryForEdge(edge), isNot(same(movedBefore)));
+    });
+
+    test('distinct standard loops receive distinct paths', () {
+      final firstLoop = Edge(
+        source,
+        source,
+        key: const ValueKey('loop-a'),
+        label: 'first',
+      );
+      final secondLoop = Edge(
+        source,
+        source,
+        key: const ValueKey('loop-b'),
+        label: 'second',
+      );
+      graph
+        ..addEdgeS(firstLoop)
+        ..addEdgeS(secondLoop);
+      renderer.renderMode = TuringLabEdgeRenderMode.standard;
+      renderer.prepareForRenderCycle();
+
+      final firstGeometry = renderer.geometryForEdge(firstLoop)!.pathGeometry;
+      final secondGeometry = renderer.geometryForEdge(secondLoop)!.pathGeometry;
+
+      expect(firstGeometry.bounds, isNot(equals(secondGeometry.bounds)));
+    });
+
+    test('standard PDA/TM label card clears its painted path', () {
+      renderer.renderMode = TuringLabEdgeRenderMode.standard;
+      edge.label = 'a, Z/AZ';
+      renderer.prepareForRenderCycle();
+
+      final geometry = renderer.geometryForEdge(edge)!;
+      final labelRect = renderer.debugLabelRectForEdge(edge);
+
+      expect(labelRect, isNotNull);
+      expect(
+        _pathIntersectsRect(
+          geometry.pathGeometry.path,
+          labelRect!,
+          padding: 8,
+        ),
+        isFalse,
+      );
+    });
+
+    test('standard label rect changes with the live route generation', () {
+      renderer.renderMode = TuringLabEdgeRenderMode.standard;
+      renderer.prepareForRenderCycle();
+      final before = renderer.debugLabelRectForEdge(edge)!;
+
+      destination.position = const Offset(220, 180);
+      graph.markModified();
+      renderer.prepareForRenderCycle();
+
+      expect(renderer.debugLabelRectForEdge(edge), isNot(equals(before)));
+    });
+
     test('caps label painter cache at 200 entries', () {
       for (var index = 0; index < 220; index++) {
         graph.addEdgeS(

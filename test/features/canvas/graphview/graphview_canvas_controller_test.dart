@@ -113,6 +113,15 @@ class _InspectableGraphViewCanvasController extends GraphViewCanvasController {
   Map<String, Edge> get debugGraphEdges => graphEdges;
 }
 
+class _CountingGraphObserver implements GraphObserver {
+  int notifications = 0;
+
+  @override
+  void notifyGraphInvalidated() {
+    notifications++;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -335,13 +344,31 @@ void main() {
       controller.addStateAt(const Offset(0, 0));
       final id = provider.addStateCalls.first['id'] as String;
       final revisionBeforeDrag = controller.graphRevision.value;
+      final observer = _CountingGraphObserver();
+      controller.graph.graphObserver.add(observer);
+      addTearDown(() => controller.graph.graphObserver.remove(observer));
+      final generationBefore = controller.graph.generation;
 
       controller.previewStatePosition(id, const Offset(40, 20));
+
+      expect(controller.graph.generation, generationBefore + 1);
+      expect(observer.notifications, 1);
+      expect(provider.moveStateCalls, isEmpty);
+
       controller.previewStatePosition(id, const Offset(120, 80));
 
       expect(provider.moveStateCalls, isEmpty);
       expect(controller.graphRevision.value, revisionBeforeDrag);
       expect(controller.nodePosition(id), const Offset(120, 80));
+      expect(observer.notifications, 2);
+
+      final generationBeforeInvalid = controller.graph.generation;
+      final notificationsBeforeInvalid = observer.notifications;
+      controller.previewStatePosition(id, const Offset(double.nan, 20));
+      controller.previewStatePosition(id, const Offset(20, double.infinity));
+      expect(controller.nodePosition(id), const Offset(120, 80));
+      expect(controller.graph.generation, generationBeforeInvalid);
+      expect(observer.notifications, notificationsBeforeInvalid);
 
       controller.moveState(id, const Offset(120, 80));
 

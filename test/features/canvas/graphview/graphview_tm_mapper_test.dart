@@ -98,6 +98,20 @@ void main() {
       expect(edge.tapeNumber, 0);
     });
 
+    test('round-trips legacy control-point metadata unchanged', () {
+      final configured = machine.copyWith(
+        transitions: {transition.copyWith(controlPoint: Vector2(73, 91))},
+      );
+
+      final snapshot = GraphViewTmMapper.toSnapshot(configured);
+      final restored = GraphViewTmMapper.mergeIntoTemplate(
+        snapshot,
+        configured,
+      );
+
+      expect(restored.tmTransitions.single.controlPoint, Vector2(73, 91));
+    });
+
     test('mergeIntoTemplate rebuilds TM from snapshot', () {
       final template = machine.copyWith(
         states: {initialState},

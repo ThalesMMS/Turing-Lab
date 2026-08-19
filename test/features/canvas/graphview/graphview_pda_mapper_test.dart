@@ -108,6 +108,20 @@ void main() {
       expect(edge.isLambdaPush, isFalse);
     });
 
+    test('round-trips legacy control-point metadata unchanged', () {
+      final configured = basePda.copyWith(
+        transitions: {transition.copyWith(controlPoint: Vector2(73, 91))},
+      );
+
+      final snapshot = GraphViewPdaMapper.toSnapshot(configured);
+      final restored = GraphViewPdaMapper.mergeIntoTemplate(
+        snapshot,
+        configured,
+      );
+
+      expect(restored.pdaTransitions.single.controlPoint, Vector2(73, 91));
+    });
+
     test('mergeIntoTemplate rebuilds PDA from snapshot', () {
       final template = basePda.copyWith(
         states: {initialState},
