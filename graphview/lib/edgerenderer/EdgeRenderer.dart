@@ -285,6 +285,7 @@ abstract class EdgeRenderer {
     Edge edge, {
     double loopPadding = 16.0,
     double arrowLength = 12.0,
+    LoopHeading heading = LoopHeading.northEast,
   }) {
     if (edge.source != edge.destination) {
       return null;
@@ -295,18 +296,22 @@ abstract class EdgeRenderer {
 
     final anchorRadius = node.size.shortestSide * 0.5;
 
-    final start = nodeCenter + Offset(anchorRadius, 0);
-
-    final end = nodeCenter + Offset(0, -anchorRadius);
+    final outward = Offset(cos(heading.angle), sin(heading.angle));
+    final tangent = Offset(-outward.dy, outward.dx);
+    final startVector = outward + tangent;
+    final endVector = outward - tangent;
+    final startDirection = startVector / startVector.distance;
+    final endDirection = endVector / endVector.distance;
+    final start = nodeCenter + startDirection * anchorRadius;
+    final end = nodeCenter + endDirection * anchorRadius;
 
     final loopRadius = max(
       loopPadding + anchorRadius,
       anchorRadius * 1.5,
     );
 
-    final controlPoint1 = start + Offset(loopRadius, 0);
-
-    final controlPoint2 = end + Offset(0, -loopRadius);
+    final controlPoint1 = start + startDirection * loopRadius;
+    final controlPoint2 = end + endDirection * loopRadius;
 
     final path = Path()
       ..moveTo(start.dx, start.dy)
@@ -319,23 +324,18 @@ abstract class EdgeRenderer {
         end.dy,
       );
 
-    final metrics = path.computeMetrics().toList();
-    if (metrics.isEmpty) {
-      return LoopRenderResult(path, start, end);
-    }
-
-    final metric = metrics.first;
-    final totalLength = metric.length;
-    final effectiveArrowLength =
-        arrowLength <= 0 ? 0.0 : min(arrowLength, totalLength * 0.3);
-    final arrowBaseOffset = max(0.0, totalLength - effectiveArrowLength);
-    final arrowBaseTangent = metric.getTangentForOffset(arrowBaseOffset);
-    final arrowTipTangent = metric.getTangentForOffset(totalLength);
+    final geometry = EdgePathGeometry.fromPath(
+      path,
+      fallbackStart: start,
+      fallbackEnd: end,
+      arrowLength: arrowLength,
+      kind: EdgePathKind.selfLoop,
+    );
 
     return LoopRenderResult(
-      path,
-      arrowBaseTangent?.position ?? end,
-      arrowTipTangent?.position ?? end,
+      geometry.path,
+      geometry.arrowBase,
+      geometry.arrowTip,
     );
   }
 

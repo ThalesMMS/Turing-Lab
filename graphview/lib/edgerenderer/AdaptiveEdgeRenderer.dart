@@ -21,7 +21,7 @@ part of graphview;
 ///   builder: (node) => Text('${node.key?.value}'),
 /// );
 /// ```
-class AdaptiveEdgeRenderer extends EdgeRenderer {
+class AdaptiveEdgeRenderer extends EdgeRenderer implements RenderCycleAware {
   final EdgeRoutingConfig config;
   final bool noArrow;
 
@@ -29,11 +29,15 @@ class AdaptiveEdgeRenderer extends EdgeRenderer {
   final EdgeRepulsionSolver _repulsionSolver = EdgeRepulsionSolver();
 
   /// Cache for repulsion offsets calculated for each edge.
-  /// This cache is invalidated on each render cycle to ensure fresh calculations.
+  /// Geometry stamps invalidate it when edges, nodes, or solver settings change.
   Map<Edge, Offset> _repulsionOffsets = {};
 
   /// Flag to track if repulsion has been calculated for the current render cycle.
   bool _repulsionCalculated = false;
+  Graph? _repulsionCacheGraph;
+  int _repulsionCacheEdgeSignature = 0;
+  int _repulsionCacheConfigSignature = 0;
+  Map<Node, Offset> _repulsionCacheNodeCenters = <Node, Offset>{};
   bool _warnedBundlingFallback = false;
 
   AdaptiveEdgeRenderer({
@@ -44,8 +48,61 @@ class AdaptiveEdgeRenderer extends EdgeRenderer {
   @override
   void setGraph(Graph graph) {
     super.setGraph(graph);
-    // Reset repulsion calculation flag when graph is set (start of new render cycle)
     _repulsionCalculated = false;
+  }
+
+  @override
+  void prepareForRenderCycle() {
+    _repulsionCalculated = false;
+    _ensureRepulsionPrepared();
+  }
+
+  void _ensureRepulsionPrepared() {
+    if (_repulsionCalculated) {
+      return;
+    }
+    if (!config.enableRepulsion || _graph == null) {
+      _repulsionOffsets = <Edge, Offset>{};
+      _repulsionCalculated = true;
+      return;
+    }
+
+    final edgeSignature = Object.hashAll(
+      _graph!.edges.map(identityHashCode),
+    );
+    final nodeCenters = <Node, Offset>{
+      for (final node in _graph!.nodes) node: getNodeCenter(node),
+    };
+    final configSignature = Object.hash(
+      config.enableRepulsion,
+      config.repulsionStrength,
+      config.minEdgeDistance,
+      config.maxRepulsionIterations,
+    );
+    if (identical(_repulsionCacheGraph, _graph) &&
+        _repulsionCacheEdgeSignature == edgeSignature &&
+        _repulsionCacheConfigSignature == configSignature &&
+        mapEquals(_repulsionCacheNodeCenters, nodeCenters)) {
+      _repulsionCalculated = true;
+      return;
+    }
+
+    _calculateRepulsionForAllEdges();
+    _repulsionCacheGraph = _graph;
+    _repulsionCacheEdgeSignature = edgeSignature;
+    _repulsionCacheConfigSignature = configSignature;
+    _repulsionCacheNodeCenters = nodeCenters;
+    _repulsionCalculated = true;
+  }
+
+  @visibleForTesting
+  int get debugRepulsionGeneration =>
+      _repulsionSolver.getStatistics()['generation'] as int;
+
+  @protected
+  Offset preparedRepulsionOffsetFor(Edge edge) {
+    _ensureRepulsionPrepared();
+    return _repulsionOffsets[edge] ?? Offset.zero;
   }
 
   @override
@@ -56,11 +113,7 @@ class AdaptiveEdgeRenderer extends EdgeRenderer {
       return;
     }
 
-    // Calculate repulsion offsets for all edges once per render cycle
-    if (!_repulsionCalculated && config.enableRepulsion && _graph != null) {
-      _calculateRepulsionForAllEdges();
-      _repulsionCalculated = true;
-    }
+    _ensureRepulsionPrepared();
 
     var source = edge.source;
     var destination = edge.destination;
@@ -266,6 +319,8 @@ class AdaptiveEdgeRenderer extends EdgeRenderer {
     if (!config.enableRepulsion) {
       return path;
     }
+
+    _ensureRepulsionPrepared();
 
     // Get the repulsion offset for the current edge
     final repulsionOffset = _repulsionOffsets[currentEdge] ?? Offset.zero;

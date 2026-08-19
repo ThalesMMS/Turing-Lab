@@ -4,8 +4,80 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphview/GraphView.dart';
 
+class _InspectableAdaptiveRenderer extends AdaptiveEdgeRenderer {
+  _InspectableAdaptiveRenderer(EdgeRoutingConfig config)
+      : super(config: config);
+
+  Offset offsetFor(Edge edge) => preparedRepulsionOffsetFor(edge);
+}
+
 void main() {
   group('EdgeRepulsionSolver Integration with AdaptiveEdgeRenderer', () {
+    test('coincident parallel edges receive stable opposite offsets', () {
+      final graph = Graph();
+      final source = Node.Id('source')
+        ..position = Offset.zero
+        ..size = const Size.square(96);
+      final destination = Node.Id('destination')
+        ..position = const Offset(260, 0)
+        ..size = const Size.square(96);
+      final first = Edge(source, destination, key: const ValueKey('a'));
+      final second = Edge(source, destination, key: const ValueKey('b'));
+      graph
+        ..addNode(source)
+        ..addNode(destination)
+        ..addEdgeS(first)
+        ..addEdgeS(second);
+      final renderer = _InspectableAdaptiveRenderer(
+        EdgeRoutingConfig(
+          routingMode: RoutingMode.bezier,
+          enableRepulsion: true,
+          minEdgeDistance: 24,
+          repulsionStrength: 1,
+          maxRepulsionIterations: 4,
+        ),
+      )..setGraph(graph);
+
+      renderer.prepareForRenderCycle();
+
+      final firstOffset = renderer.offsetFor(first);
+      final secondOffset = renderer.offsetFor(second);
+      expect(firstOffset.distance, greaterThan(0));
+      expect(secondOffset.distance, greaterThan(0));
+      expect(firstOffset.dy * secondOffset.dy, lessThan(0));
+    });
+
+    test('stable repaint reuses repulsion until node geometry changes', () {
+      final graph = Graph();
+      final source = Node.Id('source')
+        ..position = Offset.zero
+        ..size = const Size.square(96);
+      final destination = Node.Id('destination')
+        ..position = const Offset(260, 0)
+        ..size = const Size.square(96);
+      graph
+        ..addEdgeS(Edge(source, destination, key: const ValueKey('a')))
+        ..addEdgeS(Edge(source, destination, key: const ValueKey('b')));
+      final renderer = AdaptiveEdgeRenderer(
+        config: EdgeRoutingConfig(
+          enableRepulsion: true,
+          minEdgeDistance: 24,
+          maxRepulsionIterations: 4,
+        ),
+      )..setGraph(graph);
+
+      renderer.prepareForRenderCycle();
+      final firstGeneration = renderer.debugRepulsionGeneration;
+      renderer.prepareForRenderCycle();
+
+      expect(renderer.debugRepulsionGeneration, firstGeneration);
+
+      destination.position = const Offset(260, 80);
+      renderer.prepareForRenderCycle();
+
+      expect(renderer.debugRepulsionGeneration, greaterThan(firstGeneration));
+    });
+
     test('Repulsion is applied when enabled in config', () {
       // Create a graph with two parallel edges that should repel each other
       final graph = Graph();
@@ -103,7 +175,7 @@ void main() {
       expect(true, isTrue);
     });
 
-    test('Repulsion calculation is reset on new render cycle', () {
+    test('Repulsion remains stable across new render cycles', () {
       final graph = Graph();
       final node1 = Node.Id(1);
       final node2 = Node.Id(2);
@@ -133,7 +205,7 @@ void main() {
       final paint = Paint()..color = Colors.black;
       renderer.renderEdge(canvas1, edge1, paint);
 
-      // Second render cycle (should reset repulsion calculation)
+      // Second render cycle reuses the unchanged geometry.
       renderer.setGraph(graph);
       final recorder2 = PictureRecorder();
       final canvas2 = Canvas(recorder2);

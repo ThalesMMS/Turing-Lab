@@ -17,6 +17,7 @@ part 'delegate/GraphChildDelegate.dart';
 part 'delegate/GraphChildManager.dart';
 part 'edgerenderer/ArrowEdgeRenderer.dart';
 part 'edgerenderer/EdgeRenderer.dart';
+part 'edgerenderer/EdgePathGeometry.dart';
 part 'edgerenderer/CurvedEdgeRenderer.dart';
 part 'edgerenderer/AnimatedEdgeRenderer.dart';
 part 'edgerenderer/AdaptiveEdgeRenderer.dart';

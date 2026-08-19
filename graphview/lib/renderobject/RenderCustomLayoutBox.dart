@@ -256,6 +256,7 @@ class RenderCustomLayoutBox extends RenderBox
       context.canvas.save();
       context.canvas.translate(offset.dx, offset.dy);
       algorithm.renderer?.setGraph(graph);
+      algorithm.renderer?.setAnimatedPositions(const <Node, Offset>{});
       _prepareRendererForEdgePass();
       graph.edges.forEach((edge) {
         algorithm.renderer?.renderEdge(context.canvas, edge, edgePaint);

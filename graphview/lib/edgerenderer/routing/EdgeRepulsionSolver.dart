@@ -108,9 +108,13 @@ class EdgeRepulsionSolver {
   void buildGrid(List<Edge> edges, EdgeRenderer renderer) {
     clear();
 
-    for (final edge in edges) {
-      final sourcePos = renderer.getNodePosition(edge.source);
-      final destPos = renderer.getNodePosition(edge.destination);
+    final sortedEdges = [...edges]..sort(
+        (left, right) => _stableEdgeKey(left).compareTo(_stableEdgeKey(right)),
+      );
+
+    for (final edge in sortedEdges) {
+      final sourcePos = renderer.getNodeCenter(edge.source);
+      final destPos = renderer.getNodeCenter(edge.destination);
 
       // For now, create a single segment from source to destination.
       // This can be extended to handle multi-segment paths in the future.
@@ -367,7 +371,6 @@ class EdgeRepulsionSolver {
       repulsionOffsets[edge] = Offset.zero;
     }
 
-    // Build spatial grid for efficient collision detection
     buildGrid(edges, renderer);
 
     // Iterate to apply forces until convergence or max iterations
@@ -406,8 +409,13 @@ class EdgeRepulsionSolver {
 
         // Apply force with strength scaling
         final scaledForce = force * config.repulsionStrength;
-        repulsionOffsets[edge] =
+        final accumulated =
             (repulsionOffsets[edge] ?? Offset.zero) + scaledForce;
+        final maximumOffset = config.minEdgeDistance * 2;
+        repulsionOffsets[edge] = accumulated.distance > maximumOffset &&
+                accumulated.distance > VectorUtils.epsilon
+            ? VectorUtils.normalize(accumulated) * maximumOffset
+            : accumulated;
 
         totalMovement += scaledForce.distance;
       }
@@ -471,9 +479,13 @@ class EdgeRepulsionSolver {
     final cross = VectorUtils.crossProduct(segment1Direction, toSegment2);
 
     // Force direction: perpendicular to segment1, pointing away from segment2
-    final forceDirection = cross > 0
-        ? normalizedPerpendicular
-        : Offset(-normalizedPerpendicular.dx, -normalizedPerpendicular.dy);
+    final stableCompare =
+        _stableEdgeKey(segment1.edge).compareTo(_stableEdgeKey(segment2.edge));
+    final forceDirection = cross.abs() < VectorUtils.epsilon
+        ? (stableCompare <= 0
+            ? -normalizedPerpendicular
+            : normalizedPerpendicular)
+        : (cross > 0 ? normalizedPerpendicular : -normalizedPerpendicular);
 
     // Calculate force magnitude based on distance
     // Use inverse relationship: closer segments get stronger forces
@@ -506,4 +518,11 @@ class EdgeRepulsionSolver {
   Offset getRepulsionOffset(Edge edge, Map<Edge, Offset> repulsionOffsets) {
     return repulsionOffsets[edge] ?? Offset.zero;
   }
+
+  String _stableEdgeKey(Edge edge) => <String>[
+        edge.key is ValueKey ? (edge.key as ValueKey).value.toString() : '',
+        edge.source.key?.value?.toString() ?? '',
+        edge.destination.key?.value?.toString() ?? '',
+        edge.label ?? '',
+      ].join('|');
 }
