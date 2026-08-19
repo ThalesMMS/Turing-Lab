@@ -17,8 +17,10 @@ enum WorkspaceTab { fsa, grammar, pda, tm, regex, pumping }
 
 /// Quick actions the active workspace exposes to the global app bar.
 ///
-/// A null callback means the action is unavailable right now (e.g. no
-/// machine loaded) and its button is hidden.
+/// A null callback means the workspace does not support that action and its
+/// button is hidden. A provided callback with its `enabled` flag false is
+/// rendered as a disabled button (e.g. no machine loaded yet), keeping the
+/// toolbar discoverable on empty canvases.
 @immutable
 class WorkspaceQuickActions {
   const WorkspaceQuickActions({
@@ -26,12 +28,18 @@ class WorkspaceQuickActions {
     this.onSimulate,
     this.onAlgorithms,
     this.onMetrics,
+    this.simulateEnabled = true,
+    this.algorithmsEnabled = true,
+    this.metricsEnabled = true,
   });
 
   final VoidCallback? onHelp;
   final VoidCallback? onSimulate;
   final VoidCallback? onAlgorithms;
   final VoidCallback? onMetrics;
+  final bool simulateEnabled;
+  final bool algorithmsEnabled;
+  final bool metricsEnabled;
 
   @override
   bool operator ==(Object other) {
@@ -40,11 +48,22 @@ class WorkspaceQuickActions {
             other.onHelp == onHelp &&
             other.onSimulate == onSimulate &&
             other.onAlgorithms == onAlgorithms &&
-            other.onMetrics == onMetrics;
+            other.onMetrics == onMetrics &&
+            other.simulateEnabled == simulateEnabled &&
+            other.algorithmsEnabled == algorithmsEnabled &&
+            other.metricsEnabled == metricsEnabled;
   }
 
   @override
-  int get hashCode => Object.hash(onHelp, onSimulate, onAlgorithms, onMetrics);
+  int get hashCode => Object.hash(
+        onHelp,
+        onSimulate,
+        onAlgorithms,
+        onMetrics,
+        simulateEnabled,
+        algorithmsEnabled,
+        metricsEnabled,
+      );
 }
 
 /// Latest quick actions published by each workspace tab.

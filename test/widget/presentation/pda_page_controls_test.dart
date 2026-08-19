@@ -270,7 +270,8 @@ void main() {
     });
   }
 
-  testWidgets('empty PDA mobile keeps help reachable and hides quick actions', (
+  testWidgets(
+      'empty PDA mobile keeps help reachable and disables quick actions', (
     tester,
   ) async {
     await _pumpPdaPage(tester, size: const Size(800, 900));
@@ -280,9 +281,18 @@ void main() {
       matching: find.byTooltip('Help'),
     );
     expect(trayHelp, findsOneWidget);
-    // With no machine loaded the app bar exposes no quick actions.
-    expect(find.byTooltip('Simulate'), findsNothing);
-    expect(find.byTooltip('Algorithms'), findsNothing);
+    // With no machine loaded the quick actions stay visible but disabled,
+    // and the stack inspector is still available.
+    for (final tooltip in const ['Simulate', 'Algorithms']) {
+      final button = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip(tooltip),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(button.onPressed, isNull, reason: '$tooltip should be disabled');
+    }
+    expect(find.byType(PDAStackPanel), findsOneWidget);
 
     await tester.tap(trayHelp);
     await tester.pumpAndSettle();

@@ -240,31 +240,29 @@ class _PDAPageState extends ConsumerState<PDAPage>
           onSimulationStart: _handleSimulationStart,
           onSimulationEnd: _handleSimulationEnd,
         ),
-        mobileFloatingPanelBuilder: pda == null
-            ? null
-            : (
-                context, {
-                required onDragDelta,
-                required onPanelSizeChanged,
-              }) =>
-                CollapsibleCanvasPanel(
-                  label: appLocalizationsOf(context).pdaStackPanelLabel,
-                  icon: Icons.layers,
-                  onDragDelta: onDragDelta,
-                  onPanelSizeChanged: onPanelSizeChanged,
-                  child: PDAStackPanel(
-                    stackState: _currentStack,
-                    initialStackSymbol: pda.initialStackSymbol,
-                    stackAlphabet: pda.stackAlphabet,
-                    isSimulating: _isSimulating,
-                    highlightedIndex: _inferHighlightedStackIndex(),
-                    onClear: () {
-                      setState(() {
-                        _currentStack = const StackState.empty();
-                      });
-                    },
-                  ),
-                ),
+        mobileFloatingPanelBuilder: (
+          context, {
+          required onDragDelta,
+          required onPanelSizeChanged,
+        }) =>
+            CollapsibleCanvasPanel(
+          label: appLocalizationsOf(context).pdaStackPanelLabel,
+          icon: Icons.layers,
+          onDragDelta: onDragDelta,
+          onPanelSizeChanged: onPanelSizeChanged,
+          child: PDAStackPanel(
+            stackState: _currentStack,
+            initialStackSymbol: pda?.initialStackSymbol ?? 'Z',
+            stackAlphabet: pda?.stackAlphabet ?? const <String>{},
+            isSimulating: _isSimulating,
+            highlightedIndex: _inferHighlightedStackIndex(),
+            onClear: () {
+              setState(() {
+                _currentStack = const StackState.empty();
+              });
+            },
+          ),
+        ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'pda_context_help_fab',
           onPressed: _showContextualHelp,
@@ -406,15 +404,15 @@ class _PDAPageState extends ConsumerState<PDAPage>
       onPdaModified: _handlePdaModified,
     );
 
-    final onSimulate = hasPda ? _openSimulationSheet : null;
-    final onAlgorithms = hasPda ? _openAlgorithmSheet : null;
     publishWorkspaceQuickActions(
       ref,
       WorkspaceTab.pda,
       WorkspaceQuickActions(
         onHelp: _showContextualHelp,
-        onSimulate: onSimulate,
-        onAlgorithms: onAlgorithms,
+        onSimulate: _openSimulationSheet,
+        onAlgorithms: _openAlgorithmSheet,
+        simulateEnabled: hasPda,
+        algorithmsEnabled: hasPda,
       ),
     );
 

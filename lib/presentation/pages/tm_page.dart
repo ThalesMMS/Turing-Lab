@@ -236,30 +236,28 @@ class _TMPageState extends ConsumerState<TMPage>
         tabletAlgorithmPanel: const TMAlgorithmPanel(useExpanded: false),
         simulationPanel: _buildSimulationPanel(),
         infoPanel: _buildInfoPanel(context),
-        mobileFloatingPanelBuilder: tm == null
-            ? null
-            : (
-                context, {
-                required onDragDelta,
-                required onPanelSizeChanged,
-              }) =>
-                CollapsibleCanvasPanel(
-                  label: appLocalizationsOf(context).traceTape,
-                  icon: Icons.horizontal_rule,
-                  onDragDelta: onDragDelta,
-                  onPanelSizeChanged: onPanelSizeChanged,
-                  child: TMTapePanel(
-                    tapeState: _currentTape,
-                    tapeAlphabet: tm.tapeAlphabet,
-                    onClear: () {
-                      setState(() {
-                        _currentTape = TapeState.initial(
-                          blankSymbol: tm.blankSymbol,
-                        );
-                      });
-                    },
-                  ),
-                ),
+        mobileFloatingPanelBuilder: (
+          context, {
+          required onDragDelta,
+          required onPanelSizeChanged,
+        }) =>
+            CollapsibleCanvasPanel(
+          label: appLocalizationsOf(context).traceTape,
+          icon: Icons.horizontal_rule,
+          onDragDelta: onDragDelta,
+          onPanelSizeChanged: onPanelSizeChanged,
+          child: TMTapePanel(
+            tapeState: _currentTape,
+            tapeAlphabet: tm?.tapeAlphabet ?? const <String>{},
+            onClear: () {
+              setState(() {
+                _currentTape = TapeState.initial(
+                  blankSymbol: tm?.blankSymbol ?? '□',
+                );
+              });
+            },
+          ),
+        ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'tm_context_help_fab',
           onPressed: _showContextualHelp,
@@ -304,17 +302,17 @@ class _TMPageState extends ConsumerState<TMPage>
       toolController: _toolController,
       onTmModified: _handleTMUpdate,
     );
-    final onSimulate = hasMachine ? _openSimulationSheet : null;
-    final onAlgorithms = hasMachine ? _openAlgorithmSheet : null;
-    final onMetrics = hasMachine ? _openMetricsSheet : null;
     publishWorkspaceQuickActions(
       ref,
       WorkspaceTab.tm,
       WorkspaceQuickActions(
         onHelp: _showContextualHelp,
-        onSimulate: onSimulate,
-        onAlgorithms: onAlgorithms,
-        onMetrics: onMetrics,
+        onSimulate: _openSimulationSheet,
+        onAlgorithms: _openAlgorithmSheet,
+        onMetrics: _openMetricsSheet,
+        simulateEnabled: hasMachine,
+        algorithmsEnabled: hasMachine,
+        metricsEnabled: hasMachine,
       ),
     );
 

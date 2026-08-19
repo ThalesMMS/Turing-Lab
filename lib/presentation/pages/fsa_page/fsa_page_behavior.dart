@@ -406,15 +406,15 @@ extension _FSAPageStateBehavior on _FSAPageState {
     Widget buildCanvasWithToolbar(Widget child) {
       final hasAutomaton = state.currentAutomaton != null &&
           state.currentAutomaton!.states.isNotEmpty;
-      final onSimulate = hasAutomaton ? _openSimulationSheet : null;
-      final onAlgorithms = hasAutomaton ? _openAlgorithmSheet : null;
       publishWorkspaceQuickActions(
         ref,
         WorkspaceTab.fsa,
         WorkspaceQuickActions(
           onHelp: _showContextualHelp,
-          onSimulate: onSimulate,
-          onAlgorithms: onAlgorithms,
+          onSimulate: _openSimulationSheet,
+          onAlgorithms: _openAlgorithmSheet,
+          simulateEnabled: hasAutomaton,
+          algorithmsEnabled: hasAutomaton,
         ),
       );
 

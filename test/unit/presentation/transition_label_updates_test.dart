@@ -19,6 +19,7 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
@@ -75,6 +76,71 @@ void main() {
         expect(updatedTransition.label, 'b,c');
         expect(updatedTransition.inputSymbols, {'b', 'c'});
         expect(updated.alphabet.containsAll({'a', 'b', 'c'}), isTrue);
+      },
+    );
+
+    test(
+      'editing a lambda self-loop to a symbol clears the epsilon marker',
+      () {
+        final provider = AutomatonStateNotifier();
+
+        final stateA = automaton_state.State(
+          id: 'q0',
+          label: 'q0',
+          position: Vector2.zero(),
+          isInitial: true,
+          isAccepting: true,
+        );
+        final loop = FSATransition.epsilon(
+          id: 't0',
+          fromState: stateA,
+          toState: stateA,
+        );
+        final automaton = FSA(
+          id: 'fa',
+          name: 'test',
+          states: {stateA},
+          transitions: {loop},
+          alphabet: const {},
+          initialState: stateA,
+          acceptingStates: {stateA},
+          created: DateTime.now(),
+          modified: DateTime.now(),
+          bounds: const math.Rectangle(0, 0, 400, 300),
+        );
+
+        provider.updateAutomaton(automaton);
+        expect(
+          provider.state.currentAutomaton!.hasEpsilonTransitions,
+          isTrue,
+        );
+
+        // Route used by the canvas transition editor.
+        provider.addOrUpdateTransition(
+          id: 't0',
+          fromStateId: 'q0',
+          toStateId: 'q0',
+          label: 'a',
+        );
+
+        var updatedTransition = provider.state.currentAutomaton!.transitions
+            .whereType<FSATransition>()
+            .firstWhere((element) => element.id == 't0');
+        expect(updatedTransition.lambdaSymbol, isNull);
+        expect(updatedTransition.isEpsilonTransition, isFalse);
+        expect(updatedTransition.type, isNot(TransitionType.epsilon));
+        expect(updatedTransition.inputSymbols, {'a'});
+        expect(
+          provider.state.currentAutomaton!.hasEpsilonTransitions,
+          isFalse,
+        );
+
+        // And back to epsilon via the label-only route.
+        provider.updateTransitionLabel(id: 't0', label: 'ε');
+        updatedTransition = provider.state.currentAutomaton!.transitions
+            .whereType<FSATransition>()
+            .firstWhere((element) => element.id == 't0');
+        expect(updatedTransition.isEpsilonTransition, isTrue);
       },
     );
 

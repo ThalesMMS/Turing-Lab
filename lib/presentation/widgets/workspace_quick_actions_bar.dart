@@ -29,19 +29,19 @@ class WorkspaceQuickActionsBar extends ConsumerWidget {
         IconButton(
           tooltip: l10n.workspaceSimulateTooltip,
           icon: const Icon(Icons.play_arrow),
-          onPressed: onSimulate,
+          onPressed: actions!.simulateEnabled ? onSimulate : null,
         ),
       if (actions?.onAlgorithms case final onAlgorithms?)
         IconButton(
           tooltip: l10n.workspaceAlgorithmsTooltip,
           icon: const Icon(Icons.auto_awesome),
-          onPressed: onAlgorithms,
+          onPressed: actions!.algorithmsEnabled ? onAlgorithms : null,
         ),
       if (actions?.onMetrics case final onMetrics?)
         IconButton(
           tooltip: l10n.workspaceMetricsTooltip,
           icon: const Icon(Icons.bar_chart),
-          onPressed: onMetrics,
+          onPressed: actions!.metricsEnabled ? onMetrics : null,
         ),
     ];
     if (buttons.isEmpty) {

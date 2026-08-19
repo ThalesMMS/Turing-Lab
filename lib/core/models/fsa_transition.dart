@@ -65,7 +65,13 @@ class FSATransition extends Transition {
               }()),
         );
 
-  /// Creates a copy of this FSA transition with updated properties
+  static const Object _unset = Object();
+
+  /// Creates a copy of this FSA transition with updated properties.
+  ///
+  /// [lambdaSymbol] uses a sentinel default so that explicitly passing null
+  /// clears the epsilon marker (turning the transition into a symbol
+  /// transition), while omitting the argument keeps the current value.
   @override
   FSATransition copyWith({
     String? id,
@@ -75,19 +81,32 @@ class FSATransition extends Transition {
     Vector2? controlPoint,
     TransitionType? type,
     Set<String>? inputSymbols,
-    String? lambdaSymbol,
+    Object? lambdaSymbol = _unset,
   }) {
+    final resolvedLambda =
+        lambdaSymbol == _unset ? this.lambdaSymbol : lambdaSymbol as String?;
+    final resolvedSymbols = inputSymbols != null
+        ? Set<String>.unmodifiable(inputSymbols)
+        : this.inputSymbols;
+    final symbolsChanged = inputSymbols != null || lambdaSymbol != _unset;
     return FSATransition(
       id: id ?? this.id,
       fromState: fromState ?? this.fromState,
       toState: toState ?? this.toState,
       label: label ?? this.label,
       controlPoint: controlPoint ?? this.controlPoint,
-      type: type ?? this.type,
-      inputSymbols: inputSymbols != null
-          ? Set<String>.unmodifiable(inputSymbols)
-          : this.inputSymbols,
-      lambdaSymbol: lambdaSymbol ?? this.lambdaSymbol,
+      // When the symbol content changes, derive the type from it again so a
+      // cleared lambda stops reporting TransitionType.epsilon.
+      type: type ??
+          (symbolsChanged
+              ? (resolvedLambda != null
+                  ? TransitionType.epsilon
+                  : resolvedSymbols.length <= 1
+                      ? TransitionType.deterministic
+                      : TransitionType.nondeterministic)
+              : this.type),
+      inputSymbols: resolvedSymbols,
+      lambdaSymbol: resolvedLambda,
     );
   }
 
