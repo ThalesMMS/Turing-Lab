@@ -26,6 +26,7 @@ class AutomaticTransitionRouteRequest {
     required this.destinationRadius,
     required this.laneOffset,
     required this.repulsionOffset,
+    this.previousLoopHeading,
   });
 
   final String stableId;
@@ -37,6 +38,11 @@ class AutomaticTransitionRouteRequest {
   final double destinationRadius;
   final double laneOffset;
   final Offset repulsionOffset;
+
+  /// Heading chosen for this self-loop on the previous plan, if any. The
+  /// planner keeps it unless another heading is meaningfully better, so
+  /// loops don't flip between near-tie headings across replans.
+  final LoopHeading? previousLoopHeading;
 
   bool get isSelfLoop => sourceId == destinationId;
 }
@@ -63,6 +69,11 @@ class AutomaticTransitionRoutePlanner {
 
   final double routeClearance;
   final double gridCellSize;
+
+  /// Score bonus applied to a self-loop's previous heading. Large enough to
+  /// absorb tie-breaking noise and grazing path-segment overlaps, small
+  /// enough that a heading colliding with a node (100000) still loses.
+  static const double _loopHeadingStickiness = 250.0;
 
   Map<String, AutomaticTransitionRoutePlan> plan({
     required List<AutomaticTransitionRouteRequest> requests,
@@ -126,13 +137,16 @@ class AutomaticTransitionRoutePlanner {
           center: apex,
           radius: request.sourceRadius + padding,
         );
-        final score = _loopCollisionScore(
+        var score = _loopCollisionScore(
           request,
           heading,
           candidateBounds,
           obstacles,
           grid,
         );
+        if (heading == request.previousLoopHeading) {
+          score -= _loopHeadingStickiness;
+        }
         if (score < selectedScore) {
           selectedScore = score;
           selectedHeading = heading;

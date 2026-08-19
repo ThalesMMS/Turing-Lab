@@ -507,6 +507,35 @@ void main() {
       expect(rect.center.dy, lessThan(path.getBounds().center.dy));
     });
 
+    test('keeps cached geometry when an equivalent graph container arrives',
+        () {
+      final selfLoop = Edge(
+        source,
+        source,
+        key: const ValueKey('sticky-loop'),
+        label: 'loop',
+      );
+      graph.addEdgeS(selfLoop);
+      renderer.setGraph(graph);
+      renderer.prepareForRenderCycle();
+      final loopBefore = renderer.geometryForEdge(selfLoop);
+      final edgeBefore = renderer.geometryForEdge(edge);
+      expect(loopBefore, isNotNull);
+
+      // GraphView re-derives its visible graph on every rebuild: a new
+      // container holding the exact same node and edge instances.
+      final rebuiltContainer = Graph()
+        ..addNode(source)
+        ..addNode(destination)
+        ..addEdgeS(edge)
+        ..addEdgeS(selfLoop);
+      renderer.setGraph(rebuiltContainer);
+      renderer.prepareForRenderCycle();
+
+      expect(renderer.geometryForEdge(selfLoop), same(loopBefore));
+      expect(renderer.geometryForEdge(edge), same(edgeBefore));
+    });
+
     test('GraphView AdaptiveEdgeRenderer routing fallback never throws', () {
       final baseRenderer = AdaptiveEdgeRenderer(
         config: EdgeRoutingConfig(

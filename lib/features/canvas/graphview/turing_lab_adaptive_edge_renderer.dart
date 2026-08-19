@@ -109,10 +109,12 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       const AutomaticTransitionRoutePlanner();
   final Map<Edge, TuringLabEdgeRenderGeometry> _automaticRouteGeometry =
       <Edge, TuringLabEdgeRenderGeometry>{};
+
+  /// Last chosen self-loop heading per route group, kept across cache clears
+  /// so replans stay sticky instead of flipping between near-tie headings.
+  final Map<String, LoopHeading> _lastLoopHeadings = <String, LoopHeading>{};
   Map<String, _NodeGeometryStamp> _automaticRouteNodeStamps =
       <String, _NodeGeometryStamp>{};
-  Graph? _automaticRouteGraph;
-  int _automaticRouteGeneration = -1;
   int _automaticRouteEdgeSignature = 0;
   TuringLabEdgeRenderMode? _automaticRouteRenderMode;
   Rect? _viewportWorldBounds;
@@ -128,10 +130,44 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     if (identical(graph, this.graph)) {
       return;
     }
+    final sameContent = _hasSameRenderContent(graph);
     super.setGraph(graph);
+    if (sameContent) {
+      // GraphView re-derives its visible graph on every rebuild, handing us a
+      // new container that holds the exact same node and edge instances.
+      // Keeping the cached routes prevents a full (order-sensitive) replan
+      // that makes edges flicker on unrelated rebuilds.
+      return;
+    }
     _invalidateEdgeCaches();
     invalidatePathGeometryCache();
     _clearAutomaticRouteGeometry();
+  }
+
+  bool _hasSameRenderContent(Graph next) {
+    final previous = graph;
+    if (previous == null) {
+      return false;
+    }
+    final previousNodes = previous.nodes;
+    final nextNodes = next.nodes;
+    final previousEdges = previous.edges;
+    final nextEdges = next.edges;
+    if (previousNodes.length != nextNodes.length ||
+        previousEdges.length != nextEdges.length) {
+      return false;
+    }
+    for (var i = 0; i < nextNodes.length; i++) {
+      if (!identical(previousNodes[i], nextNodes[i])) {
+        return false;
+      }
+    }
+    for (var i = 0; i < nextEdges.length; i++) {
+      if (!identical(previousEdges[i], nextEdges[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @override

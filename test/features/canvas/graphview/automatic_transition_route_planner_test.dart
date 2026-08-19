@@ -78,4 +78,39 @@ void main() {
     expect(open['loop-a']!.loopHeading, LoopHeading.north);
     expect(blocked['loop-a']!.loopHeading, isNot(LoopHeading.north));
   });
+
+  test('loop keeps its previous heading across near-tie replans', () {
+    const planner = AutomaticTransitionRoutePlanner();
+    const previous = LoopHeading.east;
+    const loop = AutomaticTransitionRouteRequest(
+      stableId: 'loop-a',
+      sourceId: 'q0',
+      destinationId: 'q0',
+      sourceCenter: Offset(200, 200),
+      destinationCenter: Offset(200, 200),
+      sourceRadius: 48,
+      destinationRadius: 48,
+      laneOffset: 0,
+      repulsionOffset: Offset.zero,
+      previousLoopHeading: previous,
+    );
+
+    // With every heading free, the previous choice must win the tie instead
+    // of flipping back to the default heading order.
+    final replanned = planner.plan(requests: [loop], obstacles: const []);
+    expect(replanned['loop-a']!.loopHeading, previous);
+
+    // A heading colliding with a node must still lose despite stickiness.
+    final blocked = planner.plan(
+      requests: [loop],
+      obstacles: const [
+        AutomaticTransitionObstacle(
+          id: 'east-blocker',
+          center: Offset(320, 200),
+          radius: 48,
+        ),
+      ],
+    );
+    expect(blocked['loop-a']!.loopHeading, isNot(previous));
+  });
 }

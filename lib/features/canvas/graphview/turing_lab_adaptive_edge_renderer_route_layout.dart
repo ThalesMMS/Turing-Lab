@@ -14,22 +14,23 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
         Object.hashAll(currentGraph.edges.map(identityHashCode));
     final currentNodeStamps = <String, _NodeGeometryStamp>{
       for (final node in currentGraph.nodes)
-        _nodeId(node): _NodeGeometryStamp(
+        _nodeId(node): _NodeGeometryStamp.quantized(
           position: getNodePosition(node),
           size: node.size,
         ),
     };
-    if (identical(_automaticRouteGraph, currentGraph) &&
-        _automaticRouteGeneration == currentGraph.generation &&
-        _automaticRouteEdgeSignature == edgeSignature &&
+    // Structure and geometry are compared by content, never by the identity
+    // of the Graph container: GraphView re-derives an equivalent visible
+    // graph on every rebuild and a full identity-based replan makes edges
+    // flicker.
+    if (_automaticRouteEdgeSignature == edgeSignature &&
         _automaticRouteRenderMode == renderMode &&
         mapEquals(_automaticRouteNodeStamps, currentNodeStamps)) {
       return;
     }
 
     final groups = _visibleRouteGroups();
-    final structureChanged = !identical(_automaticRouteGraph, currentGraph) ||
-        _automaticRouteEdgeSignature != edgeSignature ||
+    final structureChanged = _automaticRouteEdgeSignature != edgeSignature ||
         _automaticRouteRenderMode != renderMode;
     final affectedGroups = structureChanged
         ? groups.toSet()
@@ -66,6 +67,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
           repulsionOffset: renderMode == TuringLabEdgeRenderMode.groupedFsa
               ? Offset.zero
               : _preparedRepulsionOffsetFor(group.representative),
+          previousLoopHeading: _lastLoopHeadings[group.stableId],
         ),
     ];
     final obstacles = <AutomaticTransitionObstacle>[
@@ -83,9 +85,13 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     );
 
     for (final group in affectedGroups) {
+      final plan = plans[group.stableId];
+      if (plan?.loopHeading case final heading?) {
+        _lastLoopHeadings[group.stableId] = heading;
+      }
       final geometry = group.isSelfLoop
-          ? _buildAutomaticLoopGeometry(group, plans[group.stableId])
-          : _buildAutomaticNormalGeometry(group, plans[group.stableId]);
+          ? _buildAutomaticLoopGeometry(group, plan)
+          : _buildAutomaticNormalGeometry(group, plan);
       if (geometry == null) {
         continue;
       }
@@ -94,8 +100,6 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
       }
     }
 
-    _automaticRouteGraph = currentGraph;
-    _automaticRouteGeneration = currentGraph.generation;
     _automaticRouteEdgeSignature = edgeSignature;
     _automaticRouteRenderMode = renderMode;
     _automaticRouteNodeStamps = currentNodeStamps;
@@ -291,8 +295,6 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
   void _clearAutomaticRouteGeometry() {
     _automaticRouteGeometry.clear();
     _automaticRouteNodeStamps = <String, _NodeGeometryStamp>{};
-    _automaticRouteGraph = null;
-    _automaticRouteGeneration = -1;
     _automaticRouteEdgeSignature = 0;
     _automaticRouteRenderMode = null;
   }

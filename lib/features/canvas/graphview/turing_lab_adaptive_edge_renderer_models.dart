@@ -42,6 +42,20 @@ class _VisibleRouteGroup {
 class _NodeGeometryStamp {
   const _NodeGeometryStamp({required this.position, required this.size});
 
+  /// Builds a stamp with sub-pixel noise removed, so float jitter coming from
+  /// animation interpolation does not trigger spurious route replans.
+  factory _NodeGeometryStamp.quantized({
+    required Offset position,
+    required Size size,
+  }) {
+    return _NodeGeometryStamp(
+      position: Offset(_quantize(position.dx), _quantize(position.dy)),
+      size: Size(_quantize(size.width), _quantize(size.height)),
+    );
+  }
+
+  static double _quantize(double value) => (value * 4).roundToDouble() / 4;
+
   final Offset position;
   final Size size;
 
