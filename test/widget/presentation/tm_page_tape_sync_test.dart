@@ -9,7 +9,9 @@ import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
+import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
@@ -94,10 +96,16 @@ Future<void> _pumpTmPage(
         sharedPreferencesProvider.overrideWithValue(preferences),
         tmEditorProvider.overrideWith((ref) => notifier),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: TMPage(),
+        home: Scaffold(
+          appBar: AppBar(
+            leading: const WorkspaceQuickActionsBar(tab: WorkspaceTab.tm),
+            leadingWidth: 144,
+          ),
+          body: const TMPage(),
+        ),
       ),
     ),
   );
@@ -146,7 +154,11 @@ void main() {
     expect(find.byType(CollapsibleCanvasPanel), findsOneWidget);
     expect(find.byType(TMTapePanel), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Collapse tape panel'));
+    // Tapping the panel body (outside interactive children) collapses it.
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(CollapsibleCanvasPanel)) +
+          const Offset(4, 4),
+    );
     await tester.pump();
 
     expect(find.byType(TMTapePanel), findsNothing);

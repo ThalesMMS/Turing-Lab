@@ -18,6 +18,7 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
@@ -44,11 +45,23 @@ void main() {
       position: Vector2(400, 260),
       isInitial: true,
     );
+    final otherState = automaton_state.State(
+      id: 'B',
+      label: 'B',
+      position: Vector2(620, 260),
+    );
+    final transition = FSATransition(
+      id: 'drag-transition',
+      fromState: state,
+      toState: otherState,
+      label: 'a',
+      inputSymbols: const <String>{'a'},
+    );
     final automaton = FSA(
       id: 'drag-live-preview',
       name: 'Automaton',
-      states: {state},
-      transitions: const <FSATransition>{},
+      states: {state, otherState},
+      transitions: {transition},
       alphabet: const <String>{'a'},
       initialState: state,
       acceptingStates: <automaton_state.State>{},
@@ -79,6 +92,14 @@ void main() {
     final nodeFinder = find.text('A');
     expect(nodeFinder, findsOneWidget);
     final before = tester.getCenter(nodeFinder);
+    final dynamic canvasState = tester.state(
+      find.byType(AutomatonGraphViewCanvas),
+    );
+    final routeBefore = (canvasState.debugGeometryForTransition(
+      'drag-transition',
+    ) as TuringLabEdgeRenderGeometry)
+        .pathGeometry
+        .pointAt(0.5);
 
     final gesture = await tester.startGesture(before);
     await tester.pump();
@@ -88,6 +109,17 @@ void main() {
     // Pointer is still down: the node must already have moved on screen.
     final during = tester.getCenter(nodeFinder);
     final movedWhileDragging = (during - before).distance;
+    final routeDuring = (canvasState.debugGeometryForTransition(
+      'drag-transition',
+    ) as TuringLabEdgeRenderGeometry)
+        .pathGeometry
+        .pointAt(0.5);
+    final domainDuring = provider.state.currentAutomaton!.states.firstWhere(
+      (candidate) => candidate.id == 'A',
+    );
+
+    expect((routeDuring - routeBefore).distance, greaterThan(20));
+    expect(domainDuring.position, Vector2(400, 260));
 
     await gesture.up();
     await tester.pumpAndSettle();
@@ -100,7 +132,9 @@ void main() {
     );
 
     // And the domain must have received the final position on drop.
-    final moved = provider.state.currentAutomaton!.states.first.position;
+    final moved = provider.state.currentAutomaton!.states
+        .firstWhere((candidate) => candidate.id == 'A')
+        .position;
     expect(moved.x != 400 || moved.y != 260, isTrue);
   });
 }

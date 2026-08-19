@@ -75,6 +75,7 @@ Future<void> _pumpSimulationPanel(
   _TestSimulationHighlightService? highlightService,
   double animationSpeed = 1.0,
   ValueChanged<double>? onAnimationSpeedChanged,
+  ValueChanged<List<SimulationStep>>? onViewOnCanvas,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -87,6 +88,7 @@ Future<void> _pumpSimulationPanel(
               highlightService ?? _TestSimulationHighlightService(),
           animationSpeed: animationSpeed,
           onAnimationSpeedChanged: onAnimationSpeedChanged,
+          onViewOnCanvas: onViewOnCanvas,
         ),
       ),
     ),
@@ -110,6 +112,61 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SimulationPanel', () {
+    testWidgets('View on Canvas hands the exact FSA trace to its callback', (
+      tester,
+    ) async {
+      final callback = _SimulationCallback();
+      final result = SimulationResult.success(
+        inputString: 'ab',
+        steps: const [
+          SimulationStep(
+            currentState: 'q0',
+            remainingInput: 'ab',
+            stepNumber: 0,
+          ),
+          SimulationStep(
+            currentState: 'q1',
+            remainingInput: 'b',
+            stepNumber: 1,
+          ),
+          SimulationStep(
+            currentState: 'q2',
+            remainingInput: '',
+            stepNumber: 2,
+          ),
+        ],
+        executionTime: Duration.zero,
+      );
+      List<SimulationStep>? received;
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: result,
+        onViewOnCanvas: (steps) => received = steps,
+      );
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+      await _ensureVisibleAndTap(tester, find.text('View on Canvas'));
+
+      expect(received, orderedEquals(result.steps));
+      expect(() => received!.add(result.steps.first), throwsUnsupportedError);
+    });
+
+    testWidgets('View on Canvas is absent without a callback', (tester) async {
+      final callback = _SimulationCallback();
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        simulationResult: _traceResult('q0'),
+      );
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+
+      expect(find.text('View on Canvas'), findsNothing);
+    });
+
     testWidgets('renders basic UI elements', (tester) async {
       final callback = _SimulationCallback();
 

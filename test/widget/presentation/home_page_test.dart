@@ -12,6 +12,7 @@ import 'package:turing_lab/presentation/providers/automaton_state_provider.dart'
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/pages/home_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
+import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
@@ -435,16 +436,11 @@ void main() {
       },
     );
 
-    for (final scenario in [
-      ('mobile', const Size(430, 932)),
-      ('desktop', const Size(1400, 1080)),
-    ]) {
-      testWidgets('pushes HelpPage from app bar on ${scenario.$1} layout', (
-        tester,
-      ) async {
+    testWidgets(
+      'opens consolidated workspace help from app bar on mobile layout',
+      (tester) async {
         final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
         final highlightService = _TestSimulationHighlightService();
-        final observer = _RecordingNavigatorObserver();
 
         addTearDown(() {
           tester.view.resetPhysicalSize();
@@ -455,16 +451,53 @@ void main() {
           tester,
           navigationNotifier: navigationNotifier,
           highlightService: highlightService,
-          size: scenario.$2,
-          navigatorObservers: [observer],
+          size: const Size(430, 932),
         );
 
         _triggerEnabledAppBarAction(tester, Icons.help_outline);
         await tester.pumpAndSettle();
 
-        _expectSinglePushTo<HelpPage>(observer);
+        expect(find.byType(ContextAwareHelpPanel), findsOneWidget);
+
+        await tester
+            .tap(find.widgetWithIcon(TextButton, Icons.menu_book_outlined));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ContextAwareHelpPanel), findsNothing);
+        expect(find.byType(HelpPage), findsOneWidget);
+      },
+    );
+
+    testWidgets('pushes HelpPage from app bar on desktop layout', (
+      tester,
+    ) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
+      final highlightService = _TestSimulationHighlightService();
+      final observer = _RecordingNavigatorObserver();
+
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
       });
 
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+        size: const Size(1400, 1080),
+        navigatorObservers: [observer],
+      );
+
+      _triggerEnabledAppBarAction(tester, Icons.help_outline);
+      await tester.pumpAndSettle();
+
+      _expectSinglePushTo<HelpPage>(observer);
+    });
+
+    for (final scenario in [
+      ('mobile', const Size(430, 932)),
+      ('desktop', const Size(1400, 1080)),
+    ]) {
       testWidgets('pushes SettingsPage from app bar on ${scenario.$1} layout', (
         tester,
       ) async {

@@ -35,6 +35,7 @@ import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dar
 import 'package:turing_lab/features/canvas/graphview/graphview_highlight_channel.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_label_field_editor.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_utils.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
@@ -182,6 +183,15 @@ Offset _edgePathMidpoint(
   final end = resolveNodeCenter(to);
   final control = resolveLinkAnchorWorld(controller, edge)!;
   return start * 0.25 + control * 0.5 + end * 0.25;
+}
+
+TuringLabEdgeRenderGeometry _paintedGeometry(
+  WidgetTester tester,
+  String transitionId,
+) {
+  final dynamic state = tester.state(find.byType(AutomatonGraphViewCanvas));
+  return state.debugGeometryForTransition(transitionId)
+      as TuringLabEdgeRenderGeometry;
 }
 
 Offset _worldToViewport(
@@ -1277,10 +1287,10 @@ void main() {
       final automaton = buildAutomaton({transition});
       final canvasKey = GlobalKey();
       await pumpCanvas(tester, automaton, canvasKey: canvasKey);
-      final edge = controller.edgeById(transitionId)!;
+      final geometry = _paintedGeometry(tester, transitionId);
       final localPosition = _worldToViewport(
         controller,
-        _edgePathMidpoint(controller, edge),
+        geometry.pathGeometry.pointAt(0.45),
       );
       final canvasBox =
           canvasKey.currentContext!.findRenderObject()! as RenderBox;
@@ -1310,21 +1320,14 @@ void main() {
         toState: stateB,
         label: 'x',
         inputSymbols: const {'x'},
+        controlPoint: Vector2(120, 300),
       );
-      final reverseTransition = FSATransition(
-        id: 'reverse-curved-edge',
-        fromState: stateB,
-        toState: stateA,
-        label: 'y',
-        inputSymbols: const {'y'},
-      );
-      final automaton = buildAutomaton({transition, reverseTransition});
+      final automaton = buildAutomaton({transition});
       final canvasKey = GlobalKey();
       await pumpCanvas(tester, automaton, canvasKey: canvasKey);
-      final edge = controller.edgeById(transitionId)!;
       final localPosition = _worldToViewport(
         controller,
-        resolveLinkAnchorWorld(controller, edge)!,
+        const Offset(120, 300),
       );
       final canvasBox =
           canvasKey.currentContext!.findRenderObject()! as RenderBox;

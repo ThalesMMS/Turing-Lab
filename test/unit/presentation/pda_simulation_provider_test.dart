@@ -42,6 +42,19 @@ void main() {
       expect(notifier.state.result, isNull);
       expect(notifier.state.currentStepIndex, equals(0));
     });
+
+    test('clear drops the PDA and stale simulation cursor', () {
+      final notifier = PDASimulationNotifier();
+      addTearDown(notifier.dispose);
+      notifier.setPda(_pda('old'));
+      notifier.setResult(_result(), currentStepIndex: 1);
+
+      notifier.clear();
+
+      expect(notifier.state.pda, isNull);
+      expect(notifier.state.result, isNull);
+      expect(notifier.state.currentStepIndex, 0);
+    });
   });
 }
 

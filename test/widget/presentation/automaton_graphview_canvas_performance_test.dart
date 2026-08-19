@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
@@ -17,6 +18,7 @@ import 'package:turing_lab/features/canvas/graphview/base_graphview_canvas_contr
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
@@ -159,6 +161,48 @@ void main() {
         expect(controller.highlightNotifier.value, SimulationHighlight.empty);
         expect(controller.graphRevision.value, revision);
       }
+    });
+
+    test('dense automatic route generations stay bounded', () {
+      final notifier = AutomatonStateNotifier();
+      final controller = GraphViewCanvasController(
+        automatonStateNotifier: notifier,
+      );
+      addTearDown(controller.dispose);
+      controller.synchronize(_createLargeDfa(120));
+
+      final renderer = TuringLabAdaptiveEdgeRenderer(
+        config: EdgeRoutingConfig(
+          anchorMode: AnchorMode.dynamic,
+          routingMode: RoutingMode.bezier,
+          enableRepulsion: true,
+        ),
+        renderMode: TuringLabEdgeRenderMode.groupedFsa,
+      )..setGraph(controller.graph);
+      final measuredEdge = controller.graphEdgeById('t0_primary');
+      expect(measuredEdge, isNotNull);
+
+      final stopwatch = Stopwatch()..start();
+      for (var index = 0; index < 30; index++) {
+        controller.previewStatePosition(
+          'q0',
+          Offset(100 + index.toDouble(), 100 + index * 0.5),
+        );
+        renderer.prepareForRenderCycle();
+        expect(renderer.geometryForEdge(measuredEdge!), isNotNull);
+      }
+      stopwatch.stop();
+
+      final averageGenerationMs = stopwatch.elapsedMilliseconds / 30;
+      print(
+        'Automatic route benchmark (120 states, 240 transitions): '
+        '${averageGenerationMs.toStringAsFixed(2)}ms/generation',
+      );
+      expect(
+        averageGenerationMs,
+        lessThan(80),
+        reason: 'route preparation must remain bounded in widget-test mode',
+      );
     });
 
     testWidgets('rapid highlight cycling stays within frame budget', (

@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/pda_page.dart';
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:turing_lab/presentation/widgets/canvas_quick_actions.dart';
+import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
+import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
+import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
 import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
@@ -19,6 +24,7 @@ import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 Future<void> _pumpPdaPage(
   WidgetTester tester, {
   required Size size,
+  TargetPlatform platform = TargetPlatform.android,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -31,10 +37,17 @@ Future<void> _pumpPdaPage(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
-      child: const MaterialApp(
+      child: MaterialApp(
+        theme: ThemeData(platform: platform),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: PDAPage(),
+        home: Scaffold(
+          appBar: AppBar(
+            leading: const WorkspaceQuickActionsBar(tab: WorkspaceTab.pda),
+            leadingWidth: 144,
+          ),
+          body: const PDAPage(),
+        ),
       ),
     ),
   );
@@ -43,6 +56,148 @@ Future<void> _pumpPdaPage(
 }
 
 void main() {
+  testWidgets('PDA iOS canvas playback updates stack and highlights', (
+    tester,
+  ) async {
+    await _pumpPdaPage(
+      tester,
+      size: const Size(800, 900),
+      platform: TargetPlatform.iOS,
+    );
+    final canvas = tester.widget<PDACanvasGraphView>(
+      find.byType(PDACanvasGraphView),
+    );
+    final controller = canvas.controller!;
+    controller.addStateAt(const Offset(140, 180));
+    controller.addStateAt(const Offset(340, 180));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Simulate'));
+    await tester.pumpAndSettle();
+    final panel = tester.widget<PDASimulationPanel>(
+      find.byType(PDASimulationPanel),
+    );
+    expect(panel.onViewOnCanvas, isNotNull);
+    final stateIds = controller.nodes.map((node) => node.id).toList();
+    panel.onViewOnCanvas!(
+      [
+        SimulationStep(
+          currentState: stateIds[0],
+          activeStateIds: {stateIds[0]},
+          remainingInput: 'a',
+          stackContents: 'Z',
+          stepNumber: 0,
+        ),
+        SimulationStep(
+          currentState: stateIds[1],
+          activeStateIds: {stateIds[1]},
+          remainingInput: '',
+          stackContents: 'AZ',
+          stepNumber: 1,
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PDASimulationPanel), findsNothing);
+    expect(find.byType(CanvasSimulationPlaybackBar), findsOneWidget);
+    expect(
+      tester
+          .widget<PDAStackPanel>(find.byType(PDAStackPanel))
+          .stackState
+          .symbols,
+      ['Z'],
+    );
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CanvasSimulationPlaybackBar),
+        matching: find.byTooltip('Next Step'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<PDAStackPanel>(find.byType(PDAStackPanel))
+          .stackState
+          .symbols,
+      ['A', 'Z'],
+    );
+    expect(controller.highlightNotifier.value.stateIds, {stateIds[1]});
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CanvasSimulationPlaybackBar),
+        matching: find.byTooltip('Close'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
+    expect(controller.highlightNotifier.value.isEmpty, isTrue);
+  });
+
+  testWidgets('PDA replacement clears canvas playback and projected stack', (
+    tester,
+  ) async {
+    await _pumpPdaPage(
+      tester,
+      size: const Size(800, 900),
+      platform: TargetPlatform.iOS,
+    );
+    final canvas = tester.widget<PDACanvasGraphView>(
+      find.byType(PDACanvasGraphView),
+    );
+    final controller = canvas.controller!;
+    controller.addStateAt(const Offset(140, 180));
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PDACanvasGraphView)),
+    );
+    final pda = container.read(pdaEditorProvider).pda!;
+    final stateId = pda.states.single.id;
+    final steps = [
+      SimulationStep(
+        currentState: stateId,
+        activeStateIds: {stateId},
+        remainingInput: '',
+        stackContents: 'AZ',
+        stepNumber: 0,
+      ),
+    ];
+
+    await tester.tap(find.byTooltip('Simulate'));
+    await tester.pumpAndSettle();
+    tester
+        .widget<PDASimulationPanel>(find.byType(PDASimulationPanel))
+        .onViewOnCanvas!(steps);
+    await tester.pumpAndSettle();
+    container.read(pdaSimulationProvider.notifier)
+      ..setPda(pda)
+      ..setResult(
+        PDASimulationResult.success(
+          inputString: '',
+          steps: steps,
+          executionTime: Duration.zero,
+        ),
+      );
+
+    container.read(pdaEditorProvider.notifier).setPda(
+          pda.copyWith(id: 'replacement-pda'),
+        );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
+    expect(
+      tester
+          .widget<PDAStackPanel>(find.byType(PDAStackPanel))
+          .stackState
+          .symbols,
+      isEmpty,
+    );
+    expect(container.read(pdaSimulationProvider).result, isNull);
+    expect(controller.highlightNotifier.value.isEmpty, isTrue);
+  });
+
   testWidgets('PDA mobile stack inspector collapses out of the canvas', (
     tester,
   ) async {
@@ -56,7 +211,11 @@ void main() {
     expect(find.byType(CollapsibleCanvasPanel), findsOneWidget);
     expect(find.byType(PDAStackPanel), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Collapse Stack panel'));
+    // Tapping the panel body (outside interactive children) collapses it.
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(CollapsibleCanvasPanel)) +
+          const Offset(4, 4),
+    );
     await tester.pump();
 
     expect(find.byType(PDAStackPanel), findsNothing);
@@ -66,6 +225,36 @@ void main() {
     );
     await tester.tap(find.byTooltip('Fit to content'));
     await tester.pump();
+  });
+
+  testWidgets('PDA mobile moves expanded and collapsed stack inspector', (
+    tester,
+  ) async {
+    await _pumpPdaPage(tester, size: const Size(800, 900));
+    final canvas = tester.widget<PDACanvasGraphView>(
+      find.byType(PDACanvasGraphView),
+    );
+    canvas.controller!.addStateAt(const Offset(120, 120));
+    await tester.pumpAndSettle();
+
+    final panel = find.byType(CollapsibleCanvasPanel);
+    final expandedStart = tester.getTopLeft(panel);
+    await tester.drag(panel, const Offset(-96, 112), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(panel), isNot(expandedStart));
+
+    // Tapping the expanded panel body collapses it to the toggle button.
+    await tester.tapAt(tester.getTopLeft(panel) + const Offset(4, 4));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(panel), const Size.square(48));
+
+    final collapsedStart = tester.getTopLeft(panel);
+    await tester.drag(
+      find.byTooltip('Expand Stack panel'),
+      const Offset(-48, 56),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(panel), isNot(collapsedStart));
   });
 
   for (final width in const [1200.0, 1500.0]) {
@@ -81,7 +270,7 @@ void main() {
     });
   }
 
-  testWidgets('empty PDA mobile keeps help reachable from both surfaces', (
+  testWidgets('empty PDA mobile keeps help reachable and hides quick actions', (
     tester,
   ) async {
     await _pumpPdaPage(tester, size: const Size(800, 900));
@@ -90,12 +279,10 @@ void main() {
       of: find.byType(MobileAutomatonControls),
       matching: find.byTooltip('Help'),
     );
-    final quickHelp = find.descendant(
-      of: find.byType(CanvasQuickActions),
-      matching: find.byTooltip('Help'),
-    );
     expect(trayHelp, findsOneWidget);
-    expect(quickHelp, findsOneWidget);
+    // With no machine loaded the app bar exposes no quick actions.
+    expect(find.byTooltip('Simulate'), findsNothing);
+    expect(find.byTooltip('Algorithms'), findsNothing);
 
     await tester.tap(trayHelp);
     await tester.pumpAndSettle();

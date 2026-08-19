@@ -235,6 +235,71 @@ Future<void> _completeLatestTmSimulation(
 
 void main() {
   group('PDA/TM simulation panel shared scaffolding', () {
+    testWidgets('View on Canvas hands the exact PDA trace to its callback', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      List<SimulationStep>? received;
+      await _pumpPanel(
+        tester,
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+          onViewOnCanvas: (steps) => received = steps,
+        ),
+        overrides: [
+          pdaEditorProvider.overrideWith(
+            (ref) => _pdaEditorWithInitialState(),
+          ),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate PDA'));
+      await tester.pump();
+      await _completeLatestPdaSimulation(tester, backend);
+      await tester.ensureVisible(find.text('View on Canvas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View on Canvas'));
+
+      expect(received, orderedEquals(_pdaTraceResult().steps));
+      expect(() => received!.add(received!.first), throwsUnsupportedError);
+    });
+
+    testWidgets('View on Canvas hands the exact TM trace to its callback', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      List<SimulationStep>? received;
+      await _pumpPanel(
+        tester,
+        TMSimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+          onViewOnCanvas: (steps) => received = steps,
+        ),
+        overrides: [
+          tmEditorProvider.overrideWith((ref) => _tmEditorWithInitialState()),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate TM'));
+      await tester.pump();
+      await _completeLatestTmSimulation(tester, backend);
+      await tester.ensureVisible(find.text('View on Canvas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View on Canvas'));
+
+      expect(received, orderedEquals(_tmTraceResult().steps));
+      expect(() => received!.add(received!.first), throwsUnsupportedError);
+    });
+
+    testWidgets('View on Canvas is absent without panel callbacks', (
+      tester,
+    ) async {
+      await _pumpPanel(tester, const PDASimulationPanel());
+      expect(find.text('View on Canvas'), findsNothing);
+      await _pumpPanel(tester, const TMSimulationPanel());
+      expect(find.text('View on Canvas'), findsNothing);
+    });
+
     testWidgets('PDA panel keeps stack-specific input slots', (tester) async {
       await _pumpPanel(tester, const PDASimulationPanel());
 

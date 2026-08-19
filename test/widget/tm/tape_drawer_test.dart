@@ -423,6 +423,49 @@ void main() {
       expect(card.elevation, 4);
     });
 
+    testWidgets('keeps the head cell centered while the tape slides', (
+      tester,
+    ) async {
+      Widget buildPanel(TapeState tapeState) {
+        return MaterialApp(
+          home: Scaffold(
+            body: TMTapePanel(
+              tapeState: tapeState,
+              tapeAlphabet: const {'a', 'b', 'c', 'd', 'e'},
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(
+        buildPanel(
+          const TapeState(cells: ['a', 'b', 'c', 'd', 'e'], headPosition: 1),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final viewport = tester.getRect(find.byType(SingleChildScrollView));
+      expect(
+        tester.getCenter(find.text('b')).dx,
+        closeTo(viewport.center.dx, 1.0),
+      );
+
+      await tester.pumpWidget(
+        buildPanel(
+          const TapeState(cells: ['a', 'b', 'c', 'd', 'e'], headPosition: 3),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 120));
+      final midFlightDx = tester.getCenter(find.text('d')).dx;
+      expect(midFlightDx, isNot(closeTo(viewport.center.dx, 1.0)));
+
+      await tester.pumpAndSettle();
+      expect(
+        tester.getCenter(find.text('d')).dx,
+        closeTo(viewport.center.dx, 1.0),
+      );
+    });
+
     testWidgets('displays visible cells with horizontal scroll', (
       tester,
     ) async {

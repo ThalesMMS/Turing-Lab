@@ -16,8 +16,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
@@ -129,7 +131,62 @@ void main() {
       expect(transitions, hasLength(1));
     });
 
-    testWidgets('commits a beyond-slop touch drag to PDA editor state', (
+    testWidgets('groups PDA self-loops into one path with a shared label card',
+        (
+      tester,
+    ) async {
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+      );
+
+      controller.addStateAt(const Offset(160, 160));
+      await tester.pumpAndSettle();
+      final state = notifier.state.pda!.states.single;
+      controller.addOrUpdateTransition(
+        fromStateId: state.id,
+        toStateId: state.id,
+        readSymbol: 'a',
+        popSymbol: 'Z',
+        pushSymbol: 'AZ',
+        isLambdaInput: false,
+        isLambdaPop: false,
+        isLambdaPush: false,
+        transitionId: 'pda-loop-a',
+        controlPointX: 160,
+        controlPointY: 40,
+      );
+      controller.addOrUpdateTransition(
+        fromStateId: state.id,
+        toStateId: state.id,
+        readSymbol: 'b',
+        popSymbol: 'A',
+        pushSymbol: '',
+        isLambdaInput: false,
+        isLambdaPop: false,
+        isLambdaPush: true,
+        transitionId: 'pda-loop-b',
+        controlPointX: 160,
+        controlPointY: 40,
+      );
+      await tester.pumpAndSettle();
+
+      final dynamic canvasState = tester.state(
+        find.byType(AutomatonGraphViewCanvas),
+      );
+      final firstLoop = canvasState.debugGeometryForTransition('pda-loop-a')
+          as TuringLabEdgeRenderGeometry;
+      final secondLoop = canvasState.debugGeometryForTransition('pda-loop-b')
+          as TuringLabEdgeRenderGeometry;
+
+      expect(
+          identical(firstLoop.pathGeometry, secondLoop.pathGeometry), isTrue);
+      expect(firstLoop.labelRect, isNotNull);
+      expect(firstLoop.labelRect, secondLoop.labelRect);
+    });
+
+    testWidgets('updates a PDA route before committing its dragged state', (
       tester,
     ) async {
       await _pumpPdaCanvas(
@@ -139,22 +196,66 @@ void main() {
       );
 
       controller.addStateAt(const Offset(40, 40));
+      controller.addStateAt(const Offset(260, 40));
       await tester.pumpAndSettle();
-      final initialState = notifier.state.pda!.states.single;
-      final initialX = initialState.position.x;
+      final states = notifier.state.pda!.states.toList();
+      final initialState = states.first;
+      const transitionId = 'pda-live-drag-transition';
+      controller.addOrUpdateTransition(
+        fromStateId: initialState.id,
+        toStateId: states.last.id,
+        readSymbol: 'a',
+        popSymbol: 'Z',
+        pushSymbol: 'AZ',
+        isLambdaInput: false,
+        isLambdaPop: false,
+        isLambdaPush: false,
+        transitionId: transitionId,
+      );
+      await tester.pumpAndSettle();
+      final originalPosition = Offset(
+        initialState.position.x,
+        initialState.position.y,
+      );
+      final dynamic canvasState = tester.state(
+        find.byType(AutomatonGraphViewCanvas),
+      );
+      final routeBefore = (canvasState.debugGeometryForTransition(transitionId)
+              as TuringLabEdgeRenderGeometry)
+          .pathGeometry
+          .pointAt(0.5);
 
       final gesture = await tester.startGesture(
         tester.getCenter(find.text('q0')),
         kind: PointerDeviceKind.touch,
       );
-      await gesture.moveBy(const Offset(24, 0));
+      await gesture.moveBy(const Offset(60, 45));
       await tester.pump();
+      final routeDuring = (canvasState.debugGeometryForTransition(transitionId)
+              as TuringLabEdgeRenderGeometry)
+          .pathGeometry
+          .pointAt(0.5);
+      final domainDuring = notifier.state.pda!.states.firstWhere(
+        (state) => state.id == initialState.id,
+      );
+
+      expect((routeDuring - routeBefore).distance, greaterThan(20));
+      expect(
+        Offset(domainDuring.position.x, domainDuring.position.y),
+        originalPosition,
+      );
+
       await gesture.up();
       await tester.pumpAndSettle();
 
-      final movedState = notifier.state.pda!.states.single;
+      final movedState = notifier.state.pda!.states.firstWhere(
+        (state) => state.id == initialState.id,
+      );
       expect(movedState.id, initialState.id);
-      expect(movedState.position.x, greaterThan(initialX));
+      expect(
+        Offset(movedState.position.x, movedState.position.y),
+        isNot(originalPosition),
+      );
     });
 
     testWidgets('deletes the selected existing PDA transition', (tester) async {
@@ -314,7 +415,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('new PDA transition defaults to a valid lambda operation', (
+    testWidgets('new PDA transition defaults lambda switches off', (
       tester,
     ) async {
       final toolController = AutomatonCanvasToolController(
@@ -342,16 +443,21 @@ void main() {
         find.byType(SwitchListTile),
       );
       expect(lambdaSwitches, hasLength(3));
-      expect(lambdaSwitches.every((toggle) => toggle.value), isTrue);
+      expect(lambdaSwitches.every((toggle) => !toggle.value), isTrue);
+
+      final symbolFields = find.byType(TextField);
+      await tester.enterText(symbolFields.at(0), 'a');
+      await tester.enterText(symbolFields.at(1), 'Z');
+      await tester.enterText(symbolFields.at(2), 'Z');
 
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
       final transition = notifier.state.pda!.pdaTransitions.single;
-      expect(transition.isLambdaInput, isTrue);
-      expect(transition.isLambdaPop, isTrue);
-      expect(transition.isLambdaPush, isTrue);
-      expect(transition.label, 'λ, λ/λ');
+      expect(transition.isLambdaInput, isFalse);
+      expect(transition.isLambdaPop, isFalse);
+      expect(transition.isLambdaPush, isFalse);
+      expect(transition.label, 'a, Z/Z');
       expect(transition.validate(), isEmpty);
     });
 

@@ -18,8 +18,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
+import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
 
@@ -120,7 +122,55 @@ void main() {
       expect(delivered, isNotEmpty);
     });
 
-    testWidgets('commits a beyond-slop touch drag to TM editor state', (
+    testWidgets('groups TM self-loops into one path with a shared label card', (
+      tester,
+    ) async {
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+      );
+
+      controller.addStateAt(const Offset(160, 160));
+      await tester.pumpAndSettle();
+      final state = notifier.state.tm!.states.single;
+      controller.addOrUpdateTransition(
+        fromStateId: state.id,
+        toStateId: state.id,
+        readSymbol: 'a',
+        writeSymbol: 'a',
+        direction: TapeDirection.right,
+        transitionId: 'tm-loop-a',
+        controlPointX: 160,
+        controlPointY: 40,
+      );
+      controller.addOrUpdateTransition(
+        fromStateId: state.id,
+        toStateId: state.id,
+        readSymbol: 'Y',
+        writeSymbol: 'Y',
+        direction: TapeDirection.right,
+        transitionId: 'tm-loop-y',
+        controlPointX: 160,
+        controlPointY: 40,
+      );
+      await tester.pumpAndSettle();
+
+      final dynamic canvasState = tester.state(
+        find.byType(AutomatonGraphViewCanvas),
+      );
+      final firstLoop = canvasState.debugGeometryForTransition('tm-loop-a')
+          as TuringLabEdgeRenderGeometry;
+      final secondLoop = canvasState.debugGeometryForTransition('tm-loop-y')
+          as TuringLabEdgeRenderGeometry;
+
+      expect(
+          identical(firstLoop.pathGeometry, secondLoop.pathGeometry), isTrue);
+      expect(firstLoop.labelRect, isNotNull);
+      expect(firstLoop.labelRect, secondLoop.labelRect);
+    });
+
+    testWidgets('updates a TM route before committing its dragged state', (
       tester,
     ) async {
       await _pumpTmCanvas(
@@ -130,22 +180,63 @@ void main() {
       );
 
       controller.addStateAt(const Offset(40, 40));
+      controller.addStateAt(const Offset(260, 40));
       await tester.pumpAndSettle();
-      final initialState = notifier.state.tm!.states.single;
-      final initialX = initialState.position.x;
+      final states = notifier.state.tm!.states.toList();
+      final initialState = states.first;
+      const transitionId = 'tm-live-drag-transition';
+      controller.addOrUpdateTransition(
+        fromStateId: initialState.id,
+        toStateId: states.last.id,
+        readSymbol: 'a',
+        writeSymbol: 'b',
+        direction: TapeDirection.right,
+        transitionId: transitionId,
+      );
+      await tester.pumpAndSettle();
+      final originalPosition = Offset(
+        initialState.position.x,
+        initialState.position.y,
+      );
+      final dynamic canvasState = tester.state(
+        find.byType(AutomatonGraphViewCanvas),
+      );
+      final routeBefore = (canvasState.debugGeometryForTransition(transitionId)
+              as TuringLabEdgeRenderGeometry)
+          .pathGeometry
+          .pointAt(0.5);
 
       final gesture = await tester.startGesture(
         tester.getCenter(find.text('q0')),
         kind: PointerDeviceKind.touch,
       );
-      await gesture.moveBy(const Offset(24, 0));
+      await gesture.moveBy(const Offset(60, 45));
       await tester.pump();
+      final routeDuring = (canvasState.debugGeometryForTransition(transitionId)
+              as TuringLabEdgeRenderGeometry)
+          .pathGeometry
+          .pointAt(0.5);
+      final domainDuring = notifier.state.tm!.states.firstWhere(
+        (state) => state.id == initialState.id,
+      );
+
+      expect((routeDuring - routeBefore).distance, greaterThan(20));
+      expect(
+        Offset(domainDuring.position.x, domainDuring.position.y),
+        originalPosition,
+      );
+
       await gesture.up();
       await tester.pumpAndSettle();
 
-      final movedState = notifier.state.tm!.states.single;
+      final movedState = notifier.state.tm!.states.firstWhere(
+        (state) => state.id == initialState.id,
+      );
       expect(movedState.id, initialState.id);
-      expect(movedState.position.x, greaterThan(initialX));
+      expect(
+        Offset(movedState.position.x, movedState.position.y),
+        isNot(originalPosition),
+      );
     });
 
     testWidgets('deletes the selected existing TM transition', (tester) async {
