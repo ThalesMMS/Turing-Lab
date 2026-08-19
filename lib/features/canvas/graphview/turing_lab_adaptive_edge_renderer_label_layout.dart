@@ -2,6 +2,66 @@ part of 'turing_lab_adaptive_edge_renderer.dart';
 
 extension _TuringLabAdaptiveEdgeRendererLabelLayout
     on TuringLabAdaptiveEdgeRenderer {
+  void _ensureGroupedLabelRects() {
+    if (renderMode != TuringLabEdgeRenderMode.groupedFsa ||
+        _automaticRouteGeometry.isEmpty) {
+      return;
+    }
+
+    _ensureEdgeCaches();
+    for (final groupedEdges in _groupedEdgeCache.values) {
+      if (groupedEdges.isEmpty) {
+        continue;
+      }
+      final representative = groupedEdges.first;
+      final geometry = _automaticRouteGeometry[representative];
+      if (geometry == null || geometry.labelRect != null) {
+        continue;
+      }
+      final labeledEdges = groupedEdges
+          .where((candidate) => (candidate.label ?? '').trim().isNotEmpty)
+          .toList(growable: false);
+      if (labeledEdges.isEmpty) {
+        continue;
+      }
+      final groupedGeometry =
+          representative.source == representative.destination
+              ? _buildGroupedSelfLoopGeometry(representative, groupedEdges)
+              : _buildGroupedNormalGeometry(representative);
+      if (groupedGeometry == null) {
+        continue;
+      }
+      final labelEntries = labeledEdges
+          .map(
+            (edge) => _GroupedLabelEntry(painter: _buildLabelPainter(edge)),
+          )
+          .toList(growable: false);
+      try {
+        final labelRect = _resolveGroupedLabelRect(
+          representative,
+          groupedGeometry,
+          labelEntries,
+        );
+        for (final member in groupedEdges) {
+          final memberGeometry = _automaticRouteGeometry[member];
+          if (memberGeometry != null) {
+            _automaticRouteGeometry[member] =
+                memberGeometry.withLabelRect(labelRect);
+          }
+        }
+      } finally {
+        _releaseLabelEntries(labelEntries);
+      }
+    }
+  }
+
+  void _clearGroupedLabelRects() {
+    for (final edge in _automaticRouteGeometry.keys.toList(growable: false)) {
+      _automaticRouteGeometry[edge] =
+          _automaticRouteGeometry[edge]!.withLabelRect(null);
+    }
+  }
+
   void _paintGroupedEdgeLabels(
     Canvas canvas,
     Edge edge,
@@ -20,37 +80,15 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       );
       final totalHeight = _sumLabelHeights(labelEntries);
       final visibleHeight = _sumLabelHeights(labelEntries.take(maxVisible));
-      final cardRect = _resolveGroupedLabelRect(
-        edge,
-        groupedGeometry,
-        labelEntries,
-      );
-      final borderColor = _colorFor(
+      final cardRect = _automaticRouteGeometry[edge]?.labelRect ??
+          _resolveGroupedLabelRect(edge, groupedGeometry, labelEntries);
+      _paintLabelCard(
+        canvas,
+        rect: cardRect,
+        entries: labelEntries,
         highlighted: anyHighlighted,
-      ).withValues(alpha: anyHighlighted || anySelected ? 0.55 : 0.22);
-      final cardRRect = RRect.fromRectAndRadius(
-        cardRect,
-        const Radius.circular(12),
-      );
-
-      canvas.drawShadow(
-        Path()..addRRect(cardRRect),
-        Colors.black.withValues(alpha: 0.16),
-        4,
-        false,
-      );
-      canvas.drawRRect(
-        cardRRect,
-        Paint()
-          ..color = labelSurfaceColor.withValues(alpha: 0.96)
-          ..style = PaintingStyle.fill,
-      );
-      canvas.drawRRect(
-        cardRRect,
-        Paint()
-          ..color = borderColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0,
+        selected: anySelected,
+        paintEntries: false,
       );
 
       final overflowHeight = math.max(0.0, totalHeight - visibleHeight);
@@ -86,6 +124,160 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
     } finally {
       _releaseLabelEntries(labelEntries);
     }
+  }
+
+  void _paintLabelCard(
+    Canvas canvas, {
+    required Rect rect,
+    required List<_GroupedLabelEntry> entries,
+    required bool highlighted,
+    required bool selected,
+    bool paintEntries = true,
+  }) {
+    final borderColor = _colorFor(highlighted: highlighted).withValues(
+      alpha: highlighted || selected ? 0.55 : 0.22,
+    );
+    final card = RRect.fromRectAndRadius(rect, const Radius.circular(12));
+    canvas.drawShadow(
+      Path()..addRRect(card),
+      Colors.black.withValues(alpha: 0.16),
+      4,
+      false,
+    );
+    canvas.drawRRect(
+      card,
+      Paint()
+        ..color = labelSurfaceColor.withValues(alpha: 0.96)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      card,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+    if (paintEntries) {
+      _paintLabelColumn(
+        canvas,
+        entries,
+        rect.left + _labelPaddingHorizontal,
+        rect.top + _labelPaddingVertical,
+      );
+    }
+  }
+
+  void _ensureStandardLabelRects() {
+    if (renderMode != TuringLabEdgeRenderMode.standard ||
+        _automaticRouteGeometry.isEmpty) {
+      return;
+    }
+
+    final placedRects = <Rect>[
+      for (final geometry in _automaticRouteGeometry.values)
+        if (geometry.labelRect != null) geometry.labelRect!,
+    ];
+    final edges = _automaticRouteGeometry.keys.toList(growable: false)
+      ..sort((left, right) => _edgeId(left).compareTo(_edgeId(right)));
+    for (final edge in edges) {
+      final geometry = _automaticRouteGeometry[edge];
+      if (geometry == null ||
+          geometry.labelRect != null ||
+          (edge.label ?? '').trim().isEmpty) {
+        continue;
+      }
+
+      final labelEntries = <_GroupedLabelEntry>[
+        _GroupedLabelEntry(painter: _buildLabelPainter(edge)),
+      ];
+      try {
+        final (:width, :height) = _computeCardSize(labelEntries);
+        var normal = geometry.labelNormal;
+        if (!normal.dx.isFinite ||
+            !normal.dy.isFinite ||
+            normal.distanceSquared < 0.0001) {
+          normal = const Offset(0, -1);
+        } else {
+          normal /= normal.distance;
+        }
+        final anchor = geometry.pathGeometry.pointAt(0.5);
+        final baseRect = Rect.fromCenter(
+          center: anchor + normal * (_labelPathGap + height / 2),
+          width: width,
+          height: height,
+        );
+        final labelRect = _resolveStandardLabelRect(
+          baseRect,
+          normal,
+          anchor,
+          edge,
+          geometry,
+          placedRects,
+        );
+        _automaticRouteGeometry[edge] = geometry.withLabelRect(labelRect);
+        placedRects.add(labelRect);
+      } finally {
+        _releaseLabelEntries(labelEntries);
+      }
+    }
+  }
+
+  Rect _resolveStandardLabelRect(
+    Rect baseRect,
+    Offset normal,
+    Offset pathAnchor,
+    Edge edge,
+    TuringLabEdgeRenderGeometry geometry,
+    List<Rect> placedRects,
+  ) {
+    var resolved = baseRect;
+    for (var attempt = 0; attempt < _labelCollisionAttempts; attempt++) {
+      if (!_standardLabelRectCollides(
+        resolved,
+        pathAnchor,
+        edge,
+        geometry,
+        placedRects,
+      )) {
+        return resolved;
+      }
+      resolved = resolved.shift(
+        normal * (_labelCollisionStep + attempt * 4.0),
+      );
+    }
+    return resolved;
+  }
+
+  bool _standardLabelRectCollides(
+    Rect rect,
+    Offset pathAnchor,
+    Edge edge,
+    TuringLabEdgeRenderGeometry geometry,
+    List<Rect> placedRects,
+  ) {
+    final arrowBounds = Rect.fromPoints(
+      geometry.pathGeometry.arrowBase,
+      geometry.pathGeometry.arrowTip,
+    ).inflate(ARROW_LENGTH);
+    if (rect.overlaps(arrowBounds) ||
+        placedRects.any(
+          (placed) => rect.inflate(_labelCardSpacing).overlaps(placed),
+        )) {
+      return true;
+    }
+    final viewport = _viewportWorldBounds?.deflate(12);
+    if (viewport != null &&
+        viewport.contains(pathAnchor) &&
+        (!viewport.contains(rect.topLeft) ||
+            !viewport.contains(rect.bottomRight))) {
+      return true;
+    }
+    return _labelRectCollides(
+      rect,
+      geometry.pathGeometry.path,
+      edge,
+      null,
+    );
   }
 
   TextPainter _buildLabelPainter(

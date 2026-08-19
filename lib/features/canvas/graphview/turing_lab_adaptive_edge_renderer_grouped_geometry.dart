@@ -18,66 +18,13 @@ extension _TuringLabAdaptiveEdgeRendererGroupedGeometry
       edge,
       hasOpposingTraffic: hasOpposingTraffic,
     );
-    final manualControlPoint = turingLabEdgeControlPoint(edge);
-    if (manualControlPoint != null) {
-      final sourcePoint = calculateSourceConnectionPoint(
-        edge,
-        manualControlPoint,
-        0,
-      );
-      final destinationPoint = calculateDestinationConnectionPoint(
-        edge,
-        manualControlPoint,
-        0,
-      );
-      final path = Path()
-        ..moveTo(sourcePoint.dx, sourcePoint.dy)
-        ..quadraticBezierTo(
-          manualControlPoint.dx,
-          manualControlPoint.dy,
-          destinationPoint.dx,
-          destinationPoint.dy,
-        );
-      return _GroupedFsaRenderGeometry(
-        geometry: buildPathGeometry(
-          path,
-          arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-        ),
-        laneOffset: laneOffset,
-      );
+    final geometry = _preparedGeometryForEdge(edge)?.pathGeometry;
+    if (geometry == null) {
+      return null;
     }
 
-    final sourceCenter = getNodeCenter(edge.source);
-    final destinationCenter = getNodeCenter(edge.destination);
-    final controlPoint = resolveGroupedFsaControlPoint(
-      fromId: _nodeId(edge.source),
-      toId: _nodeId(edge.destination),
-      fromCenter: sourceCenter,
-      toCenter: destinationCenter,
-      hasOpposingTraffic: hasOpposingTraffic,
-      spacing: _groupLaneSpacing,
-    );
-    final sourcePoint = calculateSourceConnectionPoint(edge, controlPoint, 0);
-    final destinationPoint = calculateDestinationConnectionPoint(
-      edge,
-      controlPoint,
-      0,
-    );
-
-    final path = Path()
-      ..moveTo(sourcePoint.dx, sourcePoint.dy)
-      ..quadraticBezierTo(
-        controlPoint.dx,
-        controlPoint.dy,
-        destinationPoint.dx,
-        destinationPoint.dy,
-      );
-
     return _GroupedFsaRenderGeometry(
-      geometry: buildPathGeometry(
-        path,
-        arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-      ),
+      geometry: geometry,
       laneOffset: laneOffset,
     );
   }
@@ -86,31 +33,12 @@ extension _TuringLabAdaptiveEdgeRendererGroupedGeometry
     Edge edge,
     List<Edge> groupedEdges,
   ) {
-    final loopPadding =
-        16.0 + resolveGroupedFsaLoopExtraOffset(groupedEdges.length);
-    final loopResult = buildSelfLoopPath(
-      edge,
-      loopPadding: loopPadding,
-      arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-    );
-    if (loopResult == null) {
+    final geometry = _preparedGeometryForEdge(edge)?.pathGeometry;
+    if (geometry == null) {
       return null;
     }
-
-    final geometry = buildPathGeometry(
-      loopResult.path,
-      arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-      isSelfLoop: true,
-    );
     return _GroupedFsaRenderGeometry(
-      geometry: EdgePathGeometry(
-        path: geometry.path,
-        start: geometry.start,
-        end: geometry.end,
-        arrowBase: loopResult.arrowBase,
-        arrowTip: loopResult.arrowTip,
-        isSelfLoop: true,
-      ),
+      geometry: geometry,
       laneOffset: 0.0,
     );
   }

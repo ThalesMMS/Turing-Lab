@@ -70,18 +70,13 @@ extension _TuringLabAdaptiveEdgeRendererGroupedRendering
   }
 
   void _renderSelfLoopCluster(Canvas canvas, Edge edge) {
-    final group = _groupedEdges(edge);
-    if (group.isEmpty || !identical(group.first, edge)) {
-      return;
-    }
+    final group = <Edge>[edge];
 
-    final geometry = buildEdgeGeometry(
-      edge,
-      arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-    );
-    if (geometry == null) {
+    final renderGeometry = _preparedGeometryForEdge(edge);
+    if (renderGeometry == null) {
       return;
     }
+    final geometry = renderGeometry.pathGeometry;
 
     final anyHighlighted = group.any(
       (candidate) => _isHighlighted(_edgeId(candidate)),

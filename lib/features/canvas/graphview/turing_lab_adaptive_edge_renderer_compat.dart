@@ -13,24 +13,6 @@ Offset? turingLabEdgeControlPoint(Edge edge) {
   return edge.controlPoint ?? _turingLabEdgeControlPoints[edge];
 }
 
-class EdgePathGeometry {
-  const EdgePathGeometry({
-    required this.path,
-    required this.start,
-    required this.end,
-    required this.arrowBase,
-    required this.arrowTip,
-    this.isSelfLoop = false,
-  });
-
-  final Path path;
-  final Offset start;
-  final Offset end;
-  final Offset arrowBase;
-  final Offset arrowTip;
-  final bool isSelfLoop;
-}
-
 class EdgeLabelGeometry {
   const EdgeLabelGeometry({required this.position, this.angle});
 
@@ -80,7 +62,7 @@ class AnimatedAdaptiveEdgeRenderer extends AdaptiveEdgeRenderer
 
   @override
   void prepareForRenderCycle() {
-    resetRepulsionCalculation();
+    super.prepareForRenderCycle();
     _ensureParallelEdgeCache();
     _ensurePathGeometryCache(verifyEdgeSignature: true);
   }
@@ -111,17 +93,9 @@ class AnimatedAdaptiveEdgeRenderer extends AdaptiveEdgeRenderer
       if (loopResult == null) {
         return null;
       }
-      final geometry = buildPathGeometry(
+      return buildPathGeometry(
         loopResult.path,
         arrowLength: arrowLength,
-        isSelfLoop: true,
-      );
-      return EdgePathGeometry(
-        path: loopResult.path,
-        start: geometry.start,
-        end: geometry.end,
-        arrowBase: loopResult.arrowBase,
-        arrowTip: loopResult.arrowTip,
         isSelfLoop: true,
       );
     }
@@ -190,39 +164,12 @@ class AnimatedAdaptiveEdgeRenderer extends AdaptiveEdgeRenderer
     double arrowLength = ARROW_LENGTH,
     bool isSelfLoop = false,
   }) {
-    final metric = path.computeMetrics().firstOrNull;
-    if (metric == null) {
-      if (kDebugMode) {
-        debugPrint(
-          'Cannot build EdgePathGeometry for an empty path '
-          '(isSelfLoop: $isSelfLoop, path: $path).',
-        );
-      }
-      return EdgePathGeometry(
-        path: path,
-        start: Offset.zero,
-        end: Offset.zero,
-        arrowBase: Offset.zero,
-        arrowTip: Offset.zero,
-        isSelfLoop: isSelfLoop,
-      );
-    }
-
-    final start = metric.getTangentForOffset(0)?.position ?? Offset.zero;
-    final end = metric.getTangentForOffset(metric.length)?.position ?? start;
-    final effectiveArrowLength =
-        arrowLength <= 0 ? 0.0 : math.min(arrowLength, metric.length * 0.3);
-    final arrowBaseOffset = math.max(0.0, metric.length - effectiveArrowLength);
-    final arrowBase =
-        metric.getTangentForOffset(arrowBaseOffset)?.position ?? end;
-
-    return EdgePathGeometry(
-      path: path,
-      start: start,
-      end: end,
-      arrowBase: arrowBase,
-      arrowTip: end,
-      isSelfLoop: isSelfLoop,
+    return EdgePathGeometry.fromPath(
+      path,
+      fallbackStart: Offset.zero,
+      fallbackEnd: Offset.zero,
+      arrowLength: arrowLength,
+      kind: isSelfLoop ? EdgePathKind.selfLoop : EdgePathKind.curved,
     );
   }
 

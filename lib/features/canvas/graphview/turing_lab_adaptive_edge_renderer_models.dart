@@ -1,5 +1,68 @@
 part of 'turing_lab_adaptive_edge_renderer.dart';
 
+class TuringLabEdgeRenderGeometry {
+  const TuringLabEdgeRenderGeometry({
+    required this.pathGeometry,
+    required this.labelNormal,
+    this.labelRect,
+  });
+
+  final EdgePathGeometry pathGeometry;
+  final Offset labelNormal;
+  final Rect? labelRect;
+
+  Offset get editorAnchor => labelRect?.center ?? pathGeometry.pointAt(0.5);
+
+  TuringLabEdgeRenderGeometry withLabelRect(Rect? value) =>
+      TuringLabEdgeRenderGeometry(
+        pathGeometry: pathGeometry,
+        labelNormal: labelNormal,
+        labelRect: value,
+      );
+}
+
+class _VisibleRouteGroup {
+  const _VisibleRouteGroup({
+    required this.stableId,
+    required this.sourceId,
+    required this.destinationId,
+    required this.representative,
+    required this.members,
+  });
+
+  final String stableId;
+  final String sourceId;
+  final String destinationId;
+  final Edge representative;
+  final List<Edge> members;
+
+  bool get isSelfLoop => sourceId == destinationId;
+}
+
+class _NodeGeometryStamp {
+  const _NodeGeometryStamp({required this.position, required this.size});
+
+  final Offset position;
+  final Size size;
+
+  Rect get bounds => Rect.fromLTWH(
+        position.dx,
+        position.dy,
+        size.width,
+        size.height,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _NodeGeometryStamp &&
+          other.position == position &&
+          other.size == size;
+
+  @override
+  int get hashCode => Object.hash(position, size);
+}
+
 class _GroupedFsaRenderGeometry {
   const _GroupedFsaRenderGeometry({
     required this.geometry,

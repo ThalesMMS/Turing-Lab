@@ -367,6 +367,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   /// This deliberately avoids mutating the domain or recording undo history;
   /// callers must finish the gesture with [moveState].
   void previewStatePosition(String id, Offset position) {
+    if (!position.dx.isFinite || !position.dy.isFinite) {
+      return;
+    }
     final node = _nodes[id];
     final graphNode = _graphNodes[id];
     if (node == null || graphNode == null) {
@@ -379,7 +382,6 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     _nodes[id] = node.copyWith(x: position.dx, y: position.dy);
     graphNode.position = position;
     graph.markModified();
-    graph.notifyGraphObserver();
   }
 
   /// Updates the human-readable label associated with the state [id].

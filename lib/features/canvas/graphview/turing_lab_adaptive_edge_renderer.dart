@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphview/graphview_turing_lab.dart';
 
+import 'automatic_transition_route_planner.dart';
 import 'grouped_fsa_geometry.dart';
 
 part 'turing_lab_adaptive_edge_renderer_compat.dart';
@@ -13,6 +14,7 @@ part 'turing_lab_adaptive_edge_renderer_grouped_geometry.dart';
 part 'turing_lab_adaptive_edge_renderer_label_layout.dart';
 part 'turing_lab_adaptive_edge_renderer_cache.dart';
 part 'turing_lab_adaptive_edge_renderer_models.dart';
+part 'turing_lab_adaptive_edge_renderer_route_layout.dart';
 
 enum TuringLabEdgeRenderMode { standard, groupedFsa }
 
@@ -53,14 +55,7 @@ EdgePathGeometry _dashGeometryForEpsilonEdges(
     return geometry;
   }
 
-  return EdgePathGeometry(
-    path: _createDashedPath(geometry.path),
-    start: geometry.start,
-    end: geometry.end,
-    arrowBase: geometry.arrowBase,
-    arrowTip: geometry.arrowTip,
-    isSelfLoop: geometry.isSelfLoop,
-  );
+  return geometry.withPath(_createDashedPath(geometry.path));
 }
 
 Path _createDashedPath(Path source) {
@@ -110,6 +105,17 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   Graph? _edgeCacheGraph;
   int _edgeCacheCount = -1;
   bool _edgeCachesDirty = true;
+  final AutomaticTransitionRoutePlanner _routePlanner =
+      const AutomaticTransitionRoutePlanner();
+  final Map<Edge, TuringLabEdgeRenderGeometry> _automaticRouteGeometry =
+      <Edge, TuringLabEdgeRenderGeometry>{};
+  Map<String, _NodeGeometryStamp> _automaticRouteNodeStamps =
+      <String, _NodeGeometryStamp>{};
+  Graph? _automaticRouteGraph;
+  int _automaticRouteGeneration = -1;
+  int _automaticRouteEdgeSignature = 0;
+  TuringLabEdgeRenderMode? _automaticRouteRenderMode;
+  Rect? _viewportWorldBounds;
 
   Color baseColor;
   Color highlightColor;
@@ -125,6 +131,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     super.setGraph(graph);
     _invalidateEdgeCaches();
     invalidatePathGeometryCache();
+    _clearAutomaticRouteGeometry();
   }
 
   @override
@@ -145,6 +152,10 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   }) {
     final labelStyleChanged =
         this.baseColor != baseColor || this.highlightColor != highlightColor;
+    final labelLayoutChanged = !setEquals(
+      _selectedEdgeIds,
+      selectedEdgeIds,
+    );
     _highlightedEdgeIds = Set<String>.from(highlightedEdgeIds);
     _selectedEdgeIds = Set<String>.from(selectedEdgeIds);
     this.baseColor = baseColor;
@@ -153,12 +164,19 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     if (labelStyleChanged) {
       _clearLabelPainterCache();
     }
+    if (labelLayoutChanged &&
+        renderMode == TuringLabEdgeRenderMode.groupedFsa) {
+      _clearGroupedLabelRects();
+    }
   }
 
   @override
   void prepareForRenderCycle() {
     super.prepareForRenderCycle();
     _ensureEdgeCaches();
+    _ensureAutomaticRouteGeometry();
+    _ensureStandardLabelRects();
+    _ensureGroupedLabelRects();
     _pruneCachedLabelPainters();
     _usedLabelPaintersInRenderCycle.clear();
   }
@@ -166,7 +184,43 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   void invalidateEdgeCaches() {
     _invalidateEdgeCaches();
     invalidatePathGeometryCache();
+    _clearAutomaticRouteGeometry();
   }
+
+  TuringLabEdgeRenderGeometry? geometryForEdge(Edge edge) {
+    _ensureAutomaticRouteGeometry();
+    _ensureStandardLabelRects();
+    _ensureGroupedLabelRects();
+    return _automaticRouteGeometry[edge];
+  }
+
+  TuringLabEdgeRenderGeometry? _preparedGeometryForEdge(Edge edge) {
+    final prepared = _automaticRouteGeometry[edge];
+    if (prepared != null) {
+      return prepared;
+    }
+    return geometryForEdge(edge);
+  }
+
+  Offset _preparedRepulsionOffsetFor(Edge edge) =>
+      preparedRepulsionOffsetFor(edge);
+
+  void updateViewportWorldBounds(Rect? bounds) {
+    if (_viewportWorldBounds == bounds) {
+      return;
+    }
+    _viewportWorldBounds = bounds;
+    if (renderMode != TuringLabEdgeRenderMode.standard) {
+      return;
+    }
+    for (final edge in _automaticRouteGeometry.keys.toList(growable: false)) {
+      _automaticRouteGeometry[edge] =
+          _automaticRouteGeometry[edge]!.withLabelRect(null);
+    }
+  }
+
+  @visibleForTesting
+  Rect? debugLabelRectForEdge(Edge edge) => geometryForEdge(edge)?.labelRect;
 
   @visibleForTesting
   double debugLaneOffsetForEdge(Edge edge) => _laneOffsetForDirectedPair(edge);
@@ -176,8 +230,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     if (renderMode != TuringLabEdgeRenderMode.groupedFsa) {
       return null;
     }
-    final groupedGeometry = _representativeGroupedGeometry(edge);
-    return groupedGeometry?.geometry.path;
+    return geometryForEdge(edge)?.pathGeometry.path;
   }
 
   @visibleForTesting
@@ -186,6 +239,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       return null;
     }
     final representative = _groupRepresentative(edge);
+    geometryForEdge(representative);
     final groupedGeometry = _representativeGroupedGeometry(representative);
     if (groupedGeometry == null) {
       return null;
@@ -243,13 +297,11 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       return;
     }
 
-    final geometry = buildEdgeGeometry(
-      edge,
-      arrowLength: noArrow ? 0.0 : ARROW_LENGTH,
-    );
-    if (geometry == null) {
+    final renderGeometry = _preparedGeometryForEdge(edge);
+    if (renderGeometry == null) {
       return;
     }
+    final geometry = renderGeometry.pathGeometry;
 
     final edgeId = _edgeId(edge);
     final strokePaint = _buildStrokePaint(
@@ -282,29 +334,23 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       );
     }
 
-    if ((edge.label ?? '').isEmpty) {
+    if ((edge.label ?? '').trim().isEmpty || renderGeometry.labelRect == null) {
       return;
     }
 
-    final labelGeometry = buildLabelGeometry(edge, geometry.path);
-    if (labelGeometry == null) {
-      return;
-    }
-
-    final previousStyle = edge.labelStyle;
-    final previousDirection = edge.labelFollowsEdgeDirection;
-    edge
-      ..labelStyle = TextStyle(
-        color: _colorFor(highlighted: _isHighlighted(edgeId)),
-        fontSize: labelFontSize,
-      )
-      ..labelFollowsEdgeDirection = false;
+    final labelEntries = <_GroupedLabelEntry>[
+      _GroupedLabelEntry(painter: _buildLabelPainter(edge)),
+    ];
     try {
-      renderEdgeLabel(canvas, edge, labelGeometry.position, null);
+      _paintLabelCard(
+        canvas,
+        rect: renderGeometry.labelRect!,
+        entries: labelEntries,
+        highlighted: _isHighlighted(edgeId),
+        selected: _isSelected(edgeId),
+      );
     } finally {
-      edge
-        ..labelStyle = previousStyle
-        ..labelFollowsEdgeDirection = previousDirection;
+      _releaseLabelEntries(labelEntries);
     }
   }
 }
