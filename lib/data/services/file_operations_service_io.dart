@@ -2,7 +2,7 @@
 //  file_operations_service_io.dart
 //  Turing Lab
 //
-//  Centraliza a leitura e escrita de autômatos e gramáticas nos formatos JFLAP, além de gerar exportações em PNG e SVG desenhando o canvas com ajustes visuais consistentes.
+//  Centralizes reading and writing automata and grammars in JFLAP formats, and generates PNG and SVG exports by drawing the canvas with consistent visual settings.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

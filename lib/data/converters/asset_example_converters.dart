@@ -8,11 +8,44 @@ import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
 import '../../core/models/pda_transition.dart';
 import '../../core/models/production.dart';
+import '../../core/models/regex_preset.dart';
 import '../../core/models/state.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_transition.dart';
 import '../../core/models/transition.dart';
 import '../../core/result.dart';
+
+Result<RegexPreset> convertAssetJsonToRegexPreset(
+  Map<String, dynamic> json,
+  String exampleName,
+) {
+  final expression = json['expression'];
+  if (expression is! String || expression.isEmpty) {
+    return Failure('Example "$exampleName" must define expression.');
+  }
+
+  final alphabetResult = _parseStringList(
+    json['alphabet'],
+    'alphabet',
+    exampleName,
+    requiredField: true,
+  );
+  if (alphabetResult.isFailure) return Failure(alphabetResult.error!);
+  if (alphabetResult.data!.any((symbol) => symbol.runes.length != 1)) {
+    return Failure(
+      'Example "$exampleName" alphabet must contain single-character symbols.',
+    );
+  }
+
+  return Success(
+    RegexPreset(
+      id: _stringOr(json['id'], 'example_${_slug(exampleName)}'),
+      name: _stringOr(json['name'], exampleName),
+      expression: expression,
+      alphabet: alphabetResult.data!.join(),
+    ),
+  );
+}
 
 Result<FSA> convertAssetJsonToFsa(
   Map<String, dynamic> json,

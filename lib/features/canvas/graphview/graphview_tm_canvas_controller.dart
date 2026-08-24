@@ -2,11 +2,11 @@
 //  graphview_tm_canvas_controller.dart
 //  Turing Lab
 //
-//  Controlador que mantém o canvas GraphView alinhado ao estado de edição de
-//  máquinas de Turing, sincronizando nós e transições com o TMEditorNotifier e
-//  oferecendo operações de criação, movimentação, rótulo e flags. Também cuida
-//  da geração de identificadores estáveis, da aplicação de snapshots vindos do
-//  domínio e do registro de telemetria útil durante mutações do grafo.
+//  Controller that keeps the GraphView canvas aligned with Turing machine
+//  editing state, syncing nodes and transitions with TMEditorNotifier and
+//  providing create, move, label, and flag operations. It also generates
+//  stable identifiers, applies domain snapshots, and records useful
+//  telemetry during graph mutations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

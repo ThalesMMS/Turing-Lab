@@ -2,11 +2,10 @@
 //  graphview_pda_canvas_controller.dart
 //  Turing Lab
 //
-//  Controlador dedicado aos autômatos de pilha que sincroniza o GraphView com o
-//  estado do PDAEditorNotifier, lidando com criação, movimentação e rótulos dos
-//  nós, além de manter transições configuradas com símbolos de pilha. Também
-//  orquestra snapshots vindos do domínio e registra logs úteis durante
-//  mutações do grafo.
+//  Controller dedicated to pushdown automata that keeps GraphView in sync with
+//  PDAEditorNotifier, handling node creation, movement, and labels, as well as
+//  transitions configured with stack symbols. It also applies domain snapshots
+//  and records useful logs during graph mutations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -85,6 +84,11 @@ class GraphViewPdaCanvasController
       'Synchronizing PDA canvas (states=${automaton?.states.length ?? 0}, transitions=${automaton?.pdaTransitions.length ?? 0})',
     );
     synchronizeGraph(automaton);
+  }
+
+  /// Replaces the current PDA as one undoable editor operation.
+  void replacePda(PDA pda) {
+    performMutation(() => _notifier.setPda(pda));
   }
 
   /// Adds or updates a transition between [fromStateId] and [toStateId].

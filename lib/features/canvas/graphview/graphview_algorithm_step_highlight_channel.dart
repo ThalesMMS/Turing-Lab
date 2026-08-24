@@ -2,10 +2,10 @@
 //  graphview_algorithm_step_highlight_channel.dart
 //  Turing Lab
 //
-//  Canal que recebe realces do AlgorithmStepHighlightService e os encaminha para o
-//  controlador GraphView responsável pelo canvas, garantindo que o estado
-//  visual acompanhe cada etapa do algoritmo e permitindo limpar o destaque
-//  ativo quando necessário.
+//  Channel that receives highlights from AlgorithmStepHighlightService and
+//  forwards them to the GraphView canvas controller, keeping visual state in
+//  sync with each algorithm step and allowing the active highlight to be
+//  cleared when needed.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,7 +2,7 @@
 //  settings_repository_impl.dart
 //  Turing Lab
 //
-//  Persiste preferências de interface e símbolos no SharedPreferences por meio de uma camada de repositório que aplica padrões e sincroniza o modelo de configurações.
+//  Persists UI and symbol preferences in SharedPreferences through a repository layer that applies defaults and keeps the settings model in sync.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,10 +2,10 @@
 //  graphview_canvas_models.dart
 //  Turing Lab
 //
-//  Declara os modelos imutáveis utilizados pelo canvas GraphView para
-//  transportar metadados do autômato, nós e arestas renderizadas, além de
-//  serializações auxiliares. Essas estruturas intermediam a comunicação entre o
-//  domínio e a camada de apresentação durante snapshots e exportações.
+//  Declares the immutable models used by the GraphView canvas to carry
+//  automaton metadata, rendered nodes and edges, plus helper serializations.
+//  These structures mediate communication between the domain and the
+//  presentation layer during snapshots and exports.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -229,7 +229,7 @@ class GraphViewCanvasEdge {
   final bool? isLambdaPop;
   final bool? isLambdaPush;
 
-  /// Indica se esta transição é epsilon (para FSA)
+  /// Whether this transition is an epsilon transition (for FSA).
   bool get isEpsilonTransition {
     return lambdaSymbol != null && lambdaSymbol!.isNotEmpty;
   }

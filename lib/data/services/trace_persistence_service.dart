@@ -2,7 +2,7 @@
 //  trace_persistence_service.dart
 //  Turing Lab
 //
-//  Gerencia o armazenamento de históricos de simulação via SharedPreferences, preservando metadados, seleção atual e consultas segmentadas por autômato ou tipo.
+//  Manages simulation history storage via SharedPreferences, preserving metadata, the current selection, and queries segmented by automaton or type.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

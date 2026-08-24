@@ -2,9 +2,9 @@
 //  graphview_highlight_controller.dart
 //  Turing Lab
 //
-//  Contrato compartilhado pelos controladores GraphView que lidam com
-//  destaques de simulação, padronizando a aplicação de realces vindos dos
-//  serviços de execução e a remoção segura desses efeitos do canvas.
+//  Shared contract for GraphView controllers that handle simulation
+//  highlights, standardizing application of highlights from execution
+//  services and safe removal of those effects from the canvas.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

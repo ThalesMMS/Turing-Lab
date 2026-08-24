@@ -2,10 +2,10 @@
 //  graphview_label_field_editor.dart
 //  Turing Lab
 //
-//  Widget de overlay que permite editar rótulos de transições diretamente no
-//  GraphView, coordenando foco, confirmação e cancelamento com o canvas. A
-//  implementação lida com ciclo de vida dos FocusNodes e invoca o formulário de
-//  edição compartilhado para padronizar a experiência.
+//  Overlay widget that edits transition labels directly on GraphView,
+//  coordinating focus, confirmation, and cancellation with the canvas. The
+//  implementation manages FocusNode lifecycles and invokes the shared edit
+//  form so the experience stays consistent.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,11 +2,10 @@
 //  graphview_viewport_highlight_mixin.dart
 //  Turing Lab
 //
-//  Mixin que reúne utilidades de viewport e de destaque para controladores do
-//  GraphView, oferecendo animações de zoom, centralização, ajuste automático ao
-//  conteúdo e rastreamento dos realces ativos. Ele também expõe notifiers
-//  reutilizáveis que acionam repaints e permitem observar mudanças de transições
-//  destacadas.
+//  Mixin that gathers viewport and highlight helpers for GraphView
+//  controllers, providing zoom animations, centering, auto-fit, and tracking
+//  of active highlights. It also exposes reusable notifiers that trigger
+//  repaints and let callers observe highlighted-transition changes.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -51,6 +50,10 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
   /// Returns the most recent viewport size reported by the hosting widget.
   @protected
   Size? get currentViewportSize;
+
+  /// Returns the portion of the viewport not covered by canvas chrome.
+  @protected
+  Rect? get currentSafeViewportRect;
 
   /// Notifier used to broadcast highlight updates to listeners.
   final ValueNotifier<SimulationHighlight> highlightNotifier = ValueNotifier(
@@ -97,6 +100,23 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     return (scaleX.abs() + scaleY.abs()) / 2;
   }
 
+  /// Returns the scale currently rendered by the canvas viewport.
+  double get currentScale {
+    final transformation = graphController.transformationController;
+    if (transformation == null) {
+      return 1;
+    }
+    return _extractScale(transformation.value);
+  }
+
+  /// Whether a zoom-in command can change the current viewport scale.
+  bool get canZoomIn =>
+      currentScale < kAutomatonCanvasMaxScale - precisionErrorTolerance;
+
+  /// Whether a zoom-out command can change the current viewport scale.
+  bool get canZoomOut =>
+      currentScale > kAutomatonCanvasMinScale + precisionErrorTolerance;
+
   void _applyScale(double factor) {
     final transformation = graphController.transformationController;
     if (transformation == null) {
@@ -112,23 +132,24 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
       kAutomatonCanvasMaxScale,
     );
     final relativeScale = targetScale / safeCurrent;
-    final viewport = currentViewportSize;
+    final safeViewport = currentSafeViewportRect;
     late final Matrix4 target;
-    if (viewport == null) {
+    if (safeViewport == null) {
       target = Matrix4.copy(matrix)
         ..scaleByDouble(relativeScale, relativeScale, relativeScale, 1.0);
     } else {
+      final viewportCenter = safeViewport.center;
       target = Matrix4.identity()
         ..translateByDouble(
-          viewport.width / 2,
-          viewport.height / 2,
+          viewportCenter.dx,
+          viewportCenter.dy,
           0.0,
           1.0,
         )
         ..scaleByDouble(relativeScale, relativeScale, relativeScale, 1.0)
         ..translateByDouble(
-          -viewport.width / 2,
-          -viewport.height / 2,
+          -viewportCenter.dx,
+          -viewportCenter.dy,
           0.0,
           1.0,
         )
@@ -168,8 +189,8 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
       return;
     }
     final transformation = graphController.transformationController;
-    final viewport = currentViewportSize;
-    if (viewport == null || transformation == null) {
+    final safeViewport = currentSafeViewportRect;
+    if (safeViewport == null || transformation == null) {
       resetView();
       _logViewportEvent('fitToContent reset before viewport was available');
       return;
@@ -179,8 +200,8 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     final contentWidth = math.max(bounds.width, _kFitToContentFallbackExtent);
     final contentHeight = math.max(bounds.height, _kFitToContentFallbackExtent);
 
-    final scaleX = viewport.width / contentWidth;
-    final scaleY = viewport.height / contentHeight;
+    final scaleX = safeViewport.width / contentWidth;
+    final scaleY = safeViewport.height / contentHeight;
     final rawScale = math.min(scaleX, scaleY) * 0.9;
     final targetScale = rawScale.clamp(
       kAutomatonCanvasMinScale,
@@ -189,8 +210,8 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
 
     final contentCenterX = bounds.left + bounds.width / 2;
     final contentCenterY = bounds.top + bounds.height / 2;
-    final targetCenterX = viewport.width / 2;
-    final targetCenterY = viewport.height / 2;
+    final targetCenterX = safeViewport.center.dx;
+    final targetCenterY = safeViewport.center.dy;
 
     final matrix = Matrix4.identity()
       ..translateByDouble(

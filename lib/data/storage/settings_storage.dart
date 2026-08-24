@@ -2,11 +2,11 @@
 //  settings_storage.dart
 //  Turing Lab
 //
-//  Declara a interface de armazenamento de preferências da aplicação e
-//  implementações concretas com SharedPreferences e mapas em memória para
-//  persistir símbolos, temas e demais ajustes controlados pelo usuário.
-//  A abstração permite injeção de dependências, facilita testes unitários e
-//  esconde detalhes específicos da plataforma ao manipular chave-valor.
+//  Declares the application preferences storage interface and concrete
+//  implementations using SharedPreferences and in-memory maps to persist
+//  symbols, themes, and other user-controlled settings.
+//  The abstraction supports dependency injection, simplifies unit tests, and
+//  hides platform-specific details when handling key-value storage.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

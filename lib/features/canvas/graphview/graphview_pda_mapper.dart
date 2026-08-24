@@ -2,10 +2,10 @@
 //  graphview_pda_mapper.dart
 //  Turing Lab
 //
-//  Utilitário que traduz autômatos de pilha para snapshots manipulados pelo
-//  GraphView e recompõe modelos do domínio durante salvamentos do canvas. O
-//  código mantém estados, símbolos de entrada e de pilha, além de inferir
-//  marcadores lambda ao reconstruir as transições.
+//  Utility that maps pushdown automata to snapshots used by GraphView and
+//  rebuilds domain models when the canvas is saved. It preserves states,
+//  input and stack symbols, and infers lambda markers when reconstructing
+//  transitions.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

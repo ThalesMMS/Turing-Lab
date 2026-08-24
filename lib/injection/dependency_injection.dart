@@ -2,8 +2,8 @@
 //  dependency_injection.dart
 //  Turing Lab
 //
-//  Inicializa SharedPreferences para providers Riverpod que dependem de estado
-//  assíncrono de plataforma durante o startup.
+//  Initializes SharedPreferences for Riverpod providers that depend on
+//  asynchronous platform state during startup.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

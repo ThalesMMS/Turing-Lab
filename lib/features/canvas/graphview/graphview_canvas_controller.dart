@@ -2,11 +2,10 @@
 //  graphview_canvas_controller.dart
 //  Turing Lab
 //
-//  Controlador responsável por manter o canvas GraphView de autômatos finitos
-//  sincronizado com o AutomatonStateProvider, coordenando criação de estados,
-//  transições e rótulos conforme o usuário interage. O componente também gera
-//  identificadores previsíveis, trata undo/redo e aplica snapshots recebidos do
-//  domínio para atualizar o grafo exibido.
+//  Controller that keeps the finite-automaton GraphView canvas in sync with
+//  AutomatonStateProvider, coordinating state, transition, and label creation
+//  as the user interacts. It also generates predictable identifiers, handles
+//  undo/redo, and applies domain snapshots to update the displayed graph.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

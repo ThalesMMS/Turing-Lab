@@ -2,11 +2,10 @@
 //  base_graphview_canvas_controller.dart
 //  Turing Lab
 //
-//  Classe base que centraliza infraestrutura comum aos controladores GraphView,
-//  incluindo caches de nós e arestas, histórico para undo/redo, animações de
-//  viewport e conversões entre coordenadas de tela e mundo. Também integra o
-//  suporte a destaques de simulação e garante descarte adequado dos recursos de
-//  transformação.
+//  Base class that centralizes infrastructure shared by GraphView controllers,
+//  including node and edge caches, undo/redo history, viewport animations,
+//  and conversions between screen and world coordinates. It also integrates
+//  simulation highlighting and disposes transformation resources correctly.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -330,6 +329,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   final List<_GraphHistoryEntry> _redoHistory = [];
 
   Size? _viewportSize;
+  EdgeInsets _viewportInsets = EdgeInsets.zero;
 
   @protected
   Map<String, Node> get graphNodes => _graphNodes;
@@ -345,6 +345,26 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
   @override
   Size? get currentViewportSize => _viewportSize;
+
+  @override
+  Rect? get currentSafeViewportRect {
+    final size = _viewportSize;
+    if (size == null) {
+      return null;
+    }
+    final left = _viewportInsets.left.clamp(0.0, size.width).toDouble();
+    final top = _viewportInsets.top.clamp(0.0, size.height).toDouble();
+    final right =
+        (size.width - _viewportInsets.right).clamp(left, size.width).toDouble();
+    final bottom = (size.height - _viewportInsets.bottom)
+        .clamp(top, size.height)
+        .toDouble();
+    final safeRect = Rect.fromLTRB(left, top, right, bottom);
+    if (safeRect.isEmpty) {
+      return Offset.zero & size;
+    }
+    return safeRect;
+  }
 
   Iterable<GraphViewCanvasNode> get nodes => _nodes.values;
   Iterable<GraphViewCanvasEdge> get edges => _edges.values;
@@ -451,6 +471,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   @visibleForTesting
   Size? get viewportSize => _viewportSize;
 
+  /// Canvas chrome insets excluded from viewport-centred actions.
+  EdgeInsets get viewportInsets => _viewportInsets;
+
   /// Updates the cached viewport [size] used when translating screen
   /// coordinates into world coordinates.
   void updateViewportSize(Size size) {
@@ -463,6 +486,35 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     _viewportSize = size;
     _logGraphViewBase(
       'Viewport size updated (${size.width.toStringAsFixed(1)} x ${size.height.toStringAsFixed(1)})',
+    );
+  }
+
+  /// Updates the canvas chrome insets used by viewport-centred actions.
+  void updateViewportInsets(EdgeInsets insets) {
+    final sanitized = EdgeInsets.fromLTRB(
+      insets.left.isFinite
+          ? insets.left.clamp(0, double.infinity).toDouble()
+          : 0.0,
+      insets.top.isFinite
+          ? insets.top.clamp(0, double.infinity).toDouble()
+          : 0.0,
+      insets.right.isFinite
+          ? insets.right.clamp(0, double.infinity).toDouble()
+          : 0.0,
+      insets.bottom.isFinite
+          ? insets.bottom.clamp(0, double.infinity).toDouble()
+          : 0.0,
+    );
+    if (_viewportInsets == sanitized) {
+      return;
+    }
+    _viewportInsets = sanitized;
+    _logGraphViewBase(
+      'Viewport insets updated '
+      '(left=${sanitized.left.toStringAsFixed(1)}, '
+      'top=${sanitized.top.toStringAsFixed(1)}, '
+      'right=${sanitized.right.toStringAsFixed(1)}, '
+      'bottom=${sanitized.bottom.toStringAsFixed(1)})',
     );
   }
 
@@ -491,9 +543,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   /// returned.
   @protected
   Offset resolveViewportCenterWorld() {
-    final size = _viewportSize;
-    final viewportCenter =
-        size != null ? Offset(size.width / 2, size.height / 2) : Offset.zero;
+    final viewportCenter = currentSafeViewportRect?.center ?? Offset.zero;
     final world = toWorldOffset(viewportCenter);
     _logGraphViewBase(
       'Viewport centre resolved to (${world.dx.toStringAsFixed(2)}, ${world.dy.toStringAsFixed(2)})',
@@ -716,6 +766,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     final previousHighlight = SimulationHighlight(
       stateIds: Set<String>.from(highlightNotifier.value.stateIds),
       transitionIds: Set<String>.from(highlightNotifier.value.transitionIds),
+      warningStateIds:
+          Set<String>.from(highlightNotifier.value.warningStateIds),
+      errorStateIds: Set<String>.from(highlightNotifier.value.errorStateIds),
     );
 
     _isSynchronizing = true;
@@ -855,6 +908,12 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
         transitionIds: previousHighlight.transitionIds
             .where((id) => incomingEdges.containsKey(id))
             .toSet(),
+        warningStateIds: previousHighlight.warningStateIds
+            .where((id) => incomingNodes.containsKey(id))
+            .toSet(),
+        errorStateIds: previousHighlight.errorStateIds
+            .where((id) => incomingNodes.containsKey(id))
+            .toSet(),
       );
 
       updateLinkHighlights(sanitizedHighlight.transitionIds);
@@ -894,7 +953,10 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     if (currentHighlight.transitionIds.contains(edgeId)) {
       final remaining = Set<String>.from(currentHighlight.transitionIds)
         ..remove(edgeId);
-      if (remaining.isEmpty && currentHighlight.stateIds.isEmpty) {
+      if (remaining.isEmpty &&
+          currentHighlight.stateIds.isEmpty &&
+          currentHighlight.warningStateIds.isEmpty &&
+          currentHighlight.errorStateIds.isEmpty) {
         highlightNotifier.value = SimulationHighlight.empty;
       } else {
         highlightNotifier.value = currentHighlight.copyWith(
@@ -903,7 +965,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       }
     } else if (updatedHighlighted.isEmpty &&
         currentHighlight.transitionIds.isEmpty &&
-        currentHighlight.stateIds.isEmpty) {
+        currentHighlight.stateIds.isEmpty &&
+        currentHighlight.warningStateIds.isEmpty &&
+        currentHighlight.errorStateIds.isEmpty) {
       highlightNotifier.value = SimulationHighlight.empty;
     }
   }
@@ -918,6 +982,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       final highlight = SimulationHighlight(
         stateIds: Set<String>.from(highlightNotifier.value.stateIds),
         transitionIds: Set<String>.from(highlightNotifier.value.transitionIds),
+        warningStateIds:
+            Set<String>.from(highlightNotifier.value.warningStateIds),
+        errorStateIds: Set<String>.from(highlightNotifier.value.errorStateIds),
       );
       return _GraphHistoryEntry(
         serializedSnapshot: compressed,
@@ -992,6 +1059,8 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     final highlight = SimulationHighlight(
       stateIds: Set<String>.from(entry.highlight.stateIds),
       transitionIds: Set<String>.from(entry.highlight.transitionIds),
+      warningStateIds: Set<String>.from(entry.highlight.warningStateIds),
+      errorStateIds: Set<String>.from(entry.highlight.errorStateIds),
     );
 
     updateLinkHighlights(highlight.transitionIds);

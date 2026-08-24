@@ -2,10 +2,10 @@
 //  graphview_link_overlay_utils.dart
 //  Turing Lab
 //
-//  Conjunto de utilitários que calcula âncoras e posições para sobreposições de
-//  arestas no GraphView, normalizando pontos de controle e loops para manter o
-//  alinhamento visual do canvas. As funções auxiliam widgets a posicionar
-//  indicadores e editores diretamente sobre as ligações renderizadas.
+//  Utilities that compute anchors and positions for GraphView edge overlays,
+//  normalizing control points and loops so canvas alignment stays consistent.
+//  The helpers let widgets place indicators and editors directly on the
+//  rendered links.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,8 +2,8 @@
 //  examples_asset_data_source.dart
 //  Turing Lab
 //
-//  Disponibiliza exemplos tipados a partir de assets, combinando metadados
-//  de categoria com conversores para os modelos atuais.
+//  Provides typed examples from assets, combining category metadata
+//  with converters for the current models.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -15,6 +15,7 @@ import '../../core/models/asset_example.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
+import '../../core/models/regex_preset.dart';
 import '../../core/models/tm.dart';
 import '../../core/result.dart';
 import '../../core/repositories/examples_repository.dart';
@@ -53,6 +54,15 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       tags: ['dfa', 'parity', 'counting', 'multiple-counters'],
       estimatedComplexity: ExampleComplexityLevel.medium,
     ),
+    'AFD - Contém AB': _ExampleMetadata(
+      fileName: 'afd_contains_ab.json',
+      category: ExampleCategory.dfa,
+      difficulty: DifficultyLevel.easy,
+      description:
+          'DFA que reconhece palavras que contêm a sequência "ab" em qualquer posição.',
+      tags: ['dfa', 'substring', 'contains', 'patterns'],
+      estimatedComplexity: ExampleComplexityLevel.low,
+    ),
 
     // NFA Examples - Non-deterministic concepts
     'AFNλ - A ou AB': _ExampleMetadata(
@@ -84,6 +94,33 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       tags: ['cfg', 'parentheses', 'balanced', 'stack'],
       estimatedComplexity: ExampleComplexityLevel.medium,
     ),
+    'GLC - a^n b^n': _ExampleMetadata(
+      fileName: 'glc_anbn.json',
+      category: ExampleCategory.cfg,
+      difficulty: DifficultyLevel.medium,
+      description:
+          'GLC que gera a linguagem a^n b^n com a mesma quantidade de símbolos a e b.',
+      tags: ['cfg', 'anbn', 'counting', 'recursion'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
+    ),
+    'GLC - Zeros em quantidade par': _ExampleMetadata(
+      fileName: 'glc_even_zeros.json',
+      category: ExampleCategory.cfg,
+      difficulty: DifficultyLevel.easy,
+      description:
+          'Gramática regular que gera cadeias binárias com quantidade par de zeros.',
+      tags: ['cfg', 'regular', 'binary', 'parity'],
+      estimatedComplexity: ExampleComplexityLevel.low,
+    ),
+    'GLC - Expressões aritméticas': _ExampleMetadata(
+      fileName: 'glc_arithmetic_expressions.json',
+      category: ExampleCategory.cfg,
+      difficulty: DifficultyLevel.hard,
+      description:
+          'GLC clássica para expressões com soma, multiplicação, parênteses e identificadores.',
+      tags: ['cfg', 'arithmetic', 'expressions', 'precedence'],
+      estimatedComplexity: ExampleComplexityLevel.high,
+    ),
 
     // PDA Examples - Pushdown concepts
     'APD - Parênteses Balanceados': _ExampleMetadata(
@@ -112,6 +149,24 @@ class ExamplesAssetDataSource implements ExamplesRepository {
           'Autômato de pilha não determinístico que empilha a primeira metade da palavra e desempilha a segunda para validar palíndromos.',
       tags: ['pda', 'palindrome', 'stack', 'non-deterministic', 'mirroring'],
       estimatedComplexity: ExampleComplexityLevel.high,
+    ),
+    'APD - a^n b^2n': _ExampleMetadata(
+      fileName: 'apda_anb2n.json',
+      category: ExampleCategory.pda,
+      difficulty: DifficultyLevel.hard,
+      description:
+          'Autômato de pilha que reconhece a linguagem a^n b^2n empilhando dois marcadores para cada a.',
+      tags: ['pda', 'anb2n', 'stack', 'counting'],
+      estimatedComplexity: ExampleComplexityLevel.high,
+    ),
+    'APD - w#reverse(w)': _ExampleMetadata(
+      fileName: 'apda_mirrored_separator.json',
+      category: ExampleCategory.pda,
+      difficulty: DifficultyLevel.medium,
+      description:
+          'Autômato de pilha determinístico que compara uma palavra com seu reverso após o separador #.',
+      tags: ['pda', 'reverse', 'separator', 'deterministic'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
     ),
 
     // Turing Machine Examples - Computational power
@@ -160,6 +215,50 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       tags: ['tm', 'palindrome', 'binary', 'verification'],
       estimatedComplexity: ExampleComplexityLevel.high,
     ),
+
+    // Regular expression examples
+    'Regex - Repetição de A': _ExampleMetadata(
+      fileName: 'regex_a_star.json',
+      category: ExampleCategory.regex,
+      difficulty: DifficultyLevel.easy,
+      description: 'Expressão que aceita zero ou mais ocorrências de a.',
+      tags: ['regex', 'kleene-star', 'repetition'],
+      estimatedComplexity: ExampleComplexityLevel.low,
+    ),
+    'Regex - Termina com AB': _ExampleMetadata(
+      fileName: 'regex_ends_with_ab.json',
+      category: ExampleCategory.regex,
+      difficulty: DifficultyLevel.medium,
+      description: 'Expressão sobre a e b para cadeias que terminam em ab.',
+      tags: ['regex', 'suffix', 'union', 'concatenation'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
+    ),
+    'Regex - Binário iniciado por 0': _ExampleMetadata(
+      fileName: 'regex_binary_starts_zero.json',
+      category: ExampleCategory.regex,
+      difficulty: DifficultyLevel.easy,
+      description:
+          'Expressão para cadeias binárias não vazias iniciadas por zero.',
+      tags: ['regex', 'binary', 'prefix'],
+      estimatedComplexity: ExampleComplexityLevel.low,
+    ),
+    'Regex - Pares AB ou BA': _ExampleMetadata(
+      fileName: 'regex_ab_or_ba_pairs.json',
+      category: ExampleCategory.regex,
+      difficulty: DifficultyLevel.medium,
+      description: 'Expressão que repete blocos ab ou ba.',
+      tags: ['regex', 'union', 'pairs', 'repetition'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
+    ),
+    'Regex - Blocos de A e B': _ExampleMetadata(
+      fileName: 'regex_a_then_b.json',
+      category: ExampleCategory.regex,
+      difficulty: DifficultyLevel.easy,
+      description:
+          'Expressão para qualquer quantidade de a seguida por qualquer quantidade de b.',
+      tags: ['regex', 'concatenation', 'kleene-star'],
+      estimatedComplexity: ExampleComplexityLevel.low,
+    ),
   };
 
   @override
@@ -199,6 +298,15 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   }
 
   @override
+  Future<Result<AssetExample<RegexPreset>>> loadTypedRegexExample(String name) {
+    return _loadTypedExample(
+      name,
+      {ExampleCategory.regex},
+      convertAssetJsonToRegexPreset,
+    );
+  }
+
+  @override
   Future<ListResult<AssetExample<FSA>>> loadAllTypedFsaExamples() {
     return _loadAllTypedExamples(
       {ExampleCategory.dfa, ExampleCategory.nfa},
@@ -227,6 +335,14 @@ class ExamplesAssetDataSource implements ExamplesRepository {
     return _loadAllTypedExamples(
       {ExampleCategory.tm},
       loadTypedTmExample,
+    );
+  }
+
+  @override
+  Future<ListResult<AssetExample<RegexPreset>>> loadAllTypedRegexExamples() {
+    return _loadAllTypedExamples(
+      {ExampleCategory.regex},
+      loadTypedRegexExample,
     );
   }
 

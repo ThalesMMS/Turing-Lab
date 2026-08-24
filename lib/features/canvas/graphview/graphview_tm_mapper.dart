@@ -2,10 +2,10 @@
 //  graphview_tm_mapper.dart
 //  Turing Lab
 //
-//  Utilitário que converte máquinas de Turing em snapshots compatíveis com o
-//  GraphView e reidrata modelos do domínio a partir de edições visuais. O
-//  mapeamento preserva estados, transições, direção de fita e alfabetos para
-//  garantir consistência entre a camada visual e os dados centrais.
+//  Utility that converts Turing machines into GraphView-compatible snapshots
+//  and rehydrates domain models from visual edits. The mapping preserves
+//  states, transitions, tape direction, and alphabets so the visual layer
+//  stays consistent with the core data.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

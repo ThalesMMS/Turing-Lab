@@ -2,10 +2,9 @@
 //  graphview_automaton_mapper.dart
 //  Turing Lab
 //
-//  Utilitário que traduz autômatos finitos para snapshots consumidos pelo
-//  GraphView e reconstrói instâncias do domínio a partir do resultado da
-//  edição visual. Ele cria nós, arestas, metadados e trata consistência de
-//  estados durante merges de template.
+//  Utility that maps finite automata to snapshots consumed by GraphView and
+//  rebuilds domain instances from visual edits. It creates nodes, edges, and
+//  metadata, and keeps state consistent during template merges.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,8 +2,8 @@
 //  graphview_state_notifier_adapter.dart
 //  Turing Lab
 //
-//  Adapta as superfícies de CRUD dos notifiers de FSA, PDA e TM para o
-//  controlador compartilhado do canvas GraphView.
+//  Adapts the CRUD surfaces of the FSA, PDA, and TM notifiers for the
+//  shared GraphView canvas controller.
 //
 //  Thales Matheus Mendonça Santos - July 2026
 //
