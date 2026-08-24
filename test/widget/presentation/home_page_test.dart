@@ -5,17 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
+import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/pages/home_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
-import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
+import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
-import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+
+import 'examples_test_helpers.dart';
 
 late SharedPreferences _prefs;
 
@@ -75,6 +80,7 @@ Future<void> _pumpHomePage(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(_prefs),
+        examplesRepositoryProvider.overrideWithValue(TestExamplesRepository()),
         homeNavigationProvider.overrideWith((ref) {
           return navigationNotifier;
         }),
@@ -102,6 +108,15 @@ void _triggerEnabledAppBarAction(WidgetTester tester, IconData icon) {
       .widgetList<IconButton>(appBarActionFinder)
       .firstWhere((candidate) => candidate.onPressed != null);
   button.onPressed!.call();
+}
+
+void _expectFocusedHelpTopic(WidgetTester tester, String topicId) {
+  final page = tester.widget<HelpPage>(find.byType(HelpPage));
+  final node = find.byKey(ValueKey('help-node-$topicId'));
+  expect(page.initialTopicId, topicId);
+  expect(node, findsOneWidget);
+  expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+  expect(find.byKey(ValueKey('help-body-$topicId')), findsOneWidget);
 }
 
 void _expectSinglePushTo<T>(
@@ -242,11 +257,15 @@ void main() {
 
       expect(find.bySemanticsLabel('Navigate to FSA'), findsOneWidget);
       expect(find.bySemanticsLabel('Navigate to Regex'), findsOneWidget);
-      expect(find.bySemanticsLabel('Help'), findsOneWidget);
+      final appBarHelp = find.descendant(
+        of: find.byType(AppBar),
+        matching: find.bySemanticsLabel('Help'),
+      );
+      expect(appBarHelp, findsOneWidget);
       expect(find.bySemanticsLabel('Settings'), findsOneWidget);
       expect(
         tester
-            .getSemantics(find.bySemanticsLabel('Help'))
+            .getSemantics(appBarHelp)
             .getSemanticsData()
             .hasAction(SemanticsAction.tap),
         isTrue,
@@ -412,7 +431,13 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.text('Convert to DFA'));
+        final convertToDfaButton = tester.widget<ElevatedButton>(
+          find.ancestor(
+            of: find.text('Convert to DFA'),
+            matching: find.byType(ElevatedButton),
+          ),
+        );
+        convertToDfaButton.onPressed!.call();
         await tester.pumpAndSettle();
 
         final automatonState = container.read(automatonStateProvider);
@@ -437,7 +462,7 @@ void main() {
     );
 
     testWidgets(
-      'opens consolidated workspace help from app bar on mobile layout',
+      'Home and local FSA Help agree and back preserves the automaton',
       (tester) async {
         final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
         final highlightService = _TestSimulationHighlightService();
@@ -454,17 +479,41 @@ void main() {
           size: const Size(430, 932),
         );
 
+        final canvas = tester.widget<AutomatonGraphViewCanvas>(
+          find.byType(AutomatonGraphViewCanvas),
+        );
+        canvas.controller!.addStateAt(const Offset(180, 240));
+        await tester.pumpAndSettle();
+        final stateIdsBeforeHelp =
+            canvas.controller!.nodes.map((node) => node.id).toSet();
+
         _triggerEnabledAppBarAction(tester, Icons.help_outline);
         await tester.pumpAndSettle();
 
-        expect(find.byType(ContextAwareHelpPanel), findsOneWidget);
+        _expectFocusedHelpTopic(tester, HelpTopicIds.fsaTheoryDfa);
 
-        await tester
-            .tap(find.widgetWithIcon(TextButton, Icons.menu_book_outlined));
+        await tester.pageBack();
         await tester.pumpAndSettle();
 
-        expect(find.byType(ContextAwareHelpPanel), findsNothing);
-        expect(find.byType(HelpPage), findsOneWidget);
+        final restoredCanvas = tester.widget<AutomatonGraphViewCanvas>(
+          find.byType(AutomatonGraphViewCanvas),
+        );
+        expect(restoredCanvas.controller, same(canvas.controller));
+        expect(
+          restoredCanvas.controller!.nodes.map((node) => node.id).toSet(),
+          stateIdsBeforeHelp,
+        );
+
+        await tester.tap(find.byIcon(Icons.open_in_full));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('canvas-toolbar-overflow')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Help & Shortcuts').last);
+        await tester.pumpAndSettle();
+
+        _expectFocusedHelpTopic(tester, HelpTopicIds.fsaTheoryDfa);
       },
     );
 
@@ -492,6 +541,146 @@ void main() {
       await tester.pumpAndSettle();
 
       _expectSinglePushTo<HelpPage>(observer);
+      _expectFocusedHelpTopic(tester, HelpTopicIds.fsaEditorOverview);
+    });
+
+    for (final scenario in const [
+      (
+        'Grammar',
+        HomeNavigationNotifier.grammarIndex,
+        HelpTopicIds.grammarEditorOverview,
+      ),
+      (
+        'Regex',
+        HomeNavigationNotifier.regexIndex,
+        HelpTopicIds.regexEditorInput,
+      ),
+      (
+        'Pumping Lemma',
+        HomeNavigationNotifier.pumpingLemmaIndex,
+        HelpTopicIds.pumpingEditorGame,
+      ),
+    ]) {
+      testWidgets('Home ${scenario.$1} Help opens its empty workspace topic', (
+        tester,
+      ) async {
+        final navigationNotifier = _TestHomeNavigationNotifier()
+          ..setIndex(scenario.$2);
+        final highlightService = _TestSimulationHighlightService();
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await _pumpHomePage(
+          tester,
+          navigationNotifier: navigationNotifier,
+          highlightService: highlightService,
+          size: const Size(430, 1100),
+        );
+
+        _triggerEnabledAppBarAction(tester, Icons.help_outline);
+        await tester.pumpAndSettle();
+        _expectFocusedHelpTopic(tester, scenario.$3);
+      });
+    }
+
+    testWidgets('Home Grammar Help follows populated workspace state', (
+      tester,
+    ) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()
+        ..setIndex(HomeNavigationNotifier.grammarIndex);
+      final highlightService = _TestSimulationHighlightService();
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomePage)),
+        listen: false,
+      );
+      container.read(grammarProvider.notifier).addProduction(
+        leftSide: const ['S'],
+        rightSide: const ['a'],
+      );
+      await tester.pumpAndSettle();
+
+      _triggerEnabledAppBarAction(tester, Icons.help_outline);
+      await tester.pumpAndSettle();
+      _expectFocusedHelpTopic(tester, HelpTopicIds.grammarTheoryCfg);
+    });
+
+    testWidgets('Home Regex Help follows valid workspace state',
+        (tester) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()
+        ..setIndex(HomeNavigationNotifier.regexIndex);
+      final highlightService = _TestSimulationHighlightService();
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+        size: const Size(1400, 1080),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomePage)),
+        listen: false,
+      );
+      container.read(regexEditorProvider.notifier).validateRegex('a*');
+      await tester.pumpAndSettle();
+
+      _triggerEnabledAppBarAction(tester, Icons.help_outline);
+      await tester.pumpAndSettle();
+      _expectFocusedHelpTopic(tester, HelpTopicIds.regexEditorConversions);
+    });
+
+    testWidgets('Home Regex exposes Algorithms at the upper left on mobile', (
+      tester,
+    ) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()
+        ..setIndex(HomeNavigationNotifier.regexIndex);
+      final highlightService = _TestSimulationHighlightService();
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+        size: const Size(430, 932),
+      );
+
+      final algorithms = find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byTooltip('Algorithms'),
+      );
+      expect(algorithms, findsOneWidget);
+      expect(tester.getCenter(algorithms).dx, lessThan(100));
+      expect(find.text('Convert to NFA'), findsNothing);
+
+      await tester.tap(algorithms);
+      await tester.pumpAndSettle();
+      for (final example in const [
+        'Regex - Repetição de A',
+        'Regex - Termina com AB',
+        'Regex - Binário iniciado por 0',
+        'Regex - Pares AB ou BA',
+        'Regex - Blocos de A e B',
+      ]) {
+        expect(find.text(example), findsOneWidget);
+      }
     });
 
     for (final scenario in [

@@ -58,30 +58,13 @@ void main() {
           ParsingStrategyHint.auto,
           ParsingStrategyHint.bruteForce,
           ParsingStrategyHint.cyk,
+          ParsingStrategyHint.ll,
         },
       );
       expect(
         GrammarParser.capabilityFor(ParsingStrategyHint.ll).unavailableReason,
-        contains('FIRST/FOLLOW'),
+        isNull,
       );
-    });
-
-    test('LL fails explicitly from both entry points', () {
-      final legacy = GrammarParser.parse(
-        grammar,
-        'a',
-        strategyHint: ParsingStrategyHint.ll,
-      );
-      final report = GrammarParser.parseWithReport(
-        grammar,
-        'a',
-        strategyHint: ParsingStrategyHint.ll,
-      );
-
-      expect(legacy.isFailure, isTrue);
-      expect(report.isFailure, isTrue);
-      expect(legacy.error, contains('LL parsing is not available'));
-      expect(report.error, legacy.error);
     });
 
     for (final strategy in [

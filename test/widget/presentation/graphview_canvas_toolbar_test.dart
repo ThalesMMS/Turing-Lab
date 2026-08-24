@@ -2,31 +2,32 @@
 //  graphview_canvas_toolbar_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes de widget que exercita o GraphViewCanvasToolbar,
-//  validando exibição de mensagens de status e disparo dos callbacks de zoom,
-//  enquadramento, reset e histórico no controlador falso durante interações.
-//  Os cenários confirmam que botões opcionais e ferramentas adicionais aparecem
-//  apenas quando fornecidos, mantendo o contrato da interface responsiva.
+//  Widget tests for GraphViewCanvasToolbar, covering status messages and
+//  zoom, fit, reset, and history callbacks on a fake controller. Scenarios
+//  confirm optional buttons and extra tools appear only when provided,
+//  preserving the responsive UI contract.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 
 import 'dart:math' as math;
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart';
 
 class _TestGraphViewCanvasController extends GraphViewCanvasController {
@@ -38,6 +39,13 @@ class _TestGraphViewCanvasController extends GraphViewCanvasController {
   int resetCount = 0;
   int undoCount = 0;
   int redoCount = 0;
+  int viewportInsetsUpdateCount = 0;
+
+  @override
+  void updateViewportInsets(EdgeInsets insets) {
+    viewportInsetsUpdateCount++;
+    super.updateViewportInsets(insets);
+  }
 
   @override
   void zoomIn() {
@@ -91,6 +99,441 @@ void main() {
     controller.dispose();
   });
 
+  testWidgets('defaults to one collapsed row of primary editing actions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final icons = tester
+        .widgetList<IconButton>(find.byType(IconButton))
+        .map((button) => (button.icon as Icon).icon)
+        .toList();
+    expect(
+      icons,
+      <IconData>[
+        Icons.pan_tool,
+        Icons.add,
+        Icons.arrow_right_alt,
+        Icons.open_in_full,
+      ],
+    );
+    expect(find.byType(FittedBox), findsNothing);
+    expect(find.byType(SingleChildScrollView), findsNothing);
+
+    final toolbarHeight = tester
+        .getSize(find.byKey(const ValueKey('canvas-toolbar-surface')))
+        .height;
+    for (final button
+        in tester.widgetList<IconButton>(find.byType(IconButton))) {
+      expect(
+        tester.getSize(find.byWidget(button)).shortestSide,
+        greaterThanOrEqualTo(44),
+      );
+    }
+    expect(toolbarHeight, lessThan(72));
+  });
+
+  testWidgets('expands in one row and exposes the ordered secondary actions', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+              onClear: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    final icons = tester
+        .widgetList<IconButton>(find.byType(IconButton))
+        .map((button) => (button.icon as Icon).icon)
+        .toList();
+    expect(
+      icons,
+      <IconData>[
+        Icons.pan_tool,
+        Icons.add,
+        Icons.arrow_right_alt,
+        Icons.undo,
+        Icons.redo,
+        Icons.zoom_out,
+        Icons.zoom_in,
+        Icons.fit_screen,
+        Icons.center_focus_strong,
+        Icons.delete_outline,
+        Icons.help_outline,
+        Icons.close_fullscreen,
+      ],
+    );
+    expect(find.text('100%'), findsOneWidget);
+    for (final button
+        in tester.widgetList<IconButton>(find.byType(IconButton))) {
+      expect(
+        tester.getSize(find.byWidget(button)).shortestSide,
+        greaterThanOrEqualTo(44),
+      );
+    }
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('canvas-toolbar-surface')))
+          .height,
+      lessThan(72),
+    );
+  });
+
+  testWidgets('uses explicit overflow instead of shrinking on narrow widths', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+              onClear: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.byKey(const ValueKey('canvas-toolbar-overflow')), findsOneWidget);
+    expect(find.byType(FittedBox), findsNothing);
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
+    await tester.pumpAndSettle();
+    expect(find.text('Fit to content'), findsOneWidget);
+    expect(find.text('Clear canvas'), findsOneWidget);
+  });
+
+  testWidgets('keeps every compact toolbar control visible at 320 width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('100%'), findsNothing);
+
+    final surfaceRect = tester.getRect(
+      find.byKey(const ValueKey('canvas-toolbar-surface')),
+    );
+    final visibleControls = <Finder>[
+      find.widgetWithIcon(IconButton, Icons.pan_tool),
+      find.widgetWithIcon(IconButton, Icons.add),
+      find.widgetWithIcon(IconButton, Icons.arrow_right_alt),
+      find.byKey(const ValueKey('canvas-toolbar-overflow')),
+      find.widgetWithIcon(IconButton, Icons.close_fullscreen),
+    ];
+    for (final control in visibleControls) {
+      expect(control, findsOneWidget);
+      final controlRect = tester.getRect(control);
+      expect(surfaceRect.contains(controlRect.topLeft), isTrue);
+      expect(surfaceRect.contains(controlRect.bottomRight), isTrue);
+    }
+
+    await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Zoom 100%'), findsOneWidget);
+    expect(find.text('Fit to content'), findsOneWidget);
+  });
+
+  testWidgets('keeps zoom percentage and bound states synchronized', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    final transformation = controller.graphController.transformationController!;
+    transformation.value = Matrix4.diagonal3Values(2, 2, 1);
+    await tester.pump();
+
+    expect(find.text('200%'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_in))
+          .onPressed,
+      isNull,
+    );
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out))
+          .onPressed,
+      isNotNull,
+    );
+
+    transformation.value = Matrix4.diagonal3Values(0.05, 0.05, 1);
+    await tester.pump();
+
+    expect(find.text('5%'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out))
+          .onPressed,
+      isNull,
+    );
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_in))
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('reports measured safe viewport inset for bottom placement', (
+    tester,
+  ) async {
+    EdgeInsets? reportedInsets;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              placement: CanvasToolbarPlacement.bottomCenter,
+              onViewportInsetsChanged: (insets) => reportedInsets = insets,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(reportedInsets, isNotNull);
+    expect(reportedInsets!.bottom, greaterThanOrEqualTo(60));
+    expect(reportedInsets!.top, 0);
+    expect(controller.viewportInsets, reportedInsets);
+
+    final initialUpdateCount = controller.viewportInsetsUpdateCount;
+    controller.graphController.transformationController!.value =
+        Matrix4.translationValues(12, 8, 0);
+    await tester.pumpAndSettle();
+
+    expect(controller.viewportInsetsUpdateCount, initialUpdateCount);
+  });
+
+  testWidgets('respects reduced motion and 200 percent text scaling', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              textScaler: TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                enableToolSelection: true,
+                showSelectionTool: true,
+                onSelectTool: () {},
+                onAddState: () {},
+                onAddTransition: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pump();
+
+    expect(find.byType(AnimatedSize), findsNothing);
+    expect(
+      find.byKey(const ValueKey('canvas-toolbar-reduced-motion')),
+      findsOneWidget,
+    );
+    expect(
+        find.byKey(const ValueKey('canvas-toolbar-overflow')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('focus traversal orders follow the expanded visual order', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: GraphViewCanvasToolbar(
+              controller: controller,
+              enableToolSelection: true,
+              showSelectionTool: true,
+              onSelectTool: () {},
+              onAddState: () {},
+              onAddTransition: () {},
+              onClear: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    final collapsedOrders = tester
+        .widgetList<FocusTraversalOrder>(find.byType(FocusTraversalOrder))
+        .map((widget) => (widget.order as NumericFocusOrder).order)
+        .toList();
+    expect(collapsedOrders, orderedEquals(<double>[0, 1, 2, 900]));
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    final expandedOrders = tester
+        .widgetList<FocusTraversalOrder>(find.byType(FocusTraversalOrder))
+        .map((widget) => (widget.order as NumericFocusOrder).order)
+        .toList();
+    expect(
+      expandedOrders,
+      orderedEquals(<double>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 900]),
+    );
+  });
+
+  testWidgets('exposes the selected editing tool as a toggled semantic', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                enableToolSelection: true,
+                showSelectionTool: true,
+                activeTool: AutomatonCanvasTool.selection,
+                onSelectTool: () {},
+                onAddState: () {},
+                onAddTransition: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(
+        find.bySemanticsLabel('Canvas action: Select'),
+      );
+      expect(
+        node.getSemanticsData().flagsCollection.isToggled,
+        Tristate.isTrue,
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('GraphViewCanvasToolbar renders provided status message', (
     tester,
   ) async {
@@ -108,7 +551,10 @@ void main() {
       ),
     );
 
-    expect(find.text('2 states · 1 transition'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('2 states · 1 transition'), findsOneWidget);
   });
 
   testWidgets('GraphViewCanvasToolbar hides status message when absent', (
@@ -131,7 +577,7 @@ void main() {
     expect(find.textContaining('transition'), findsNothing);
   });
 
-  testWidgets('Desktop layout renders expected actions', (tester) async {
+  testWidgets('Expanded layout renders expected actions', (tester) async {
     bool addStateInvoked = false;
 
     await tester.pumpWidget(
@@ -147,7 +593,10 @@ void main() {
       ),
     );
 
-    expect(find.byType(IconButton), findsNWidgets(8));
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(IconButton), findsNWidgets(9));
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
     await tester.pump();
@@ -157,9 +606,15 @@ void main() {
       tester.getSize(find.widgetWithIcon(IconButton, Icons.add)).height,
       greaterThanOrEqualTo(44),
     );
+    expect(
+      tester
+          .getSize(find.widgetWithIcon(IconButton, Icons.help_outline))
+          .height,
+      greaterThanOrEqualTo(48),
+    );
   });
 
-  testWidgets('Desktop layout renders actions in grouped order', (
+  testWidgets('Expanded layout renders actions in grouped order', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -175,6 +630,9 @@ void main() {
         ),
       ),
     );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
 
     final buttons =
         tester.widgetList<IconButton>(find.byType(IconButton)).toList();
@@ -192,6 +650,7 @@ void main() {
         Icons.center_focus_strong,
         Icons.delete_outline,
         Icons.help_outline,
+        Icons.close_fullscreen,
       ]),
     );
   });
@@ -218,6 +677,9 @@ void main() {
         ),
       ),
     );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
 
     expect(find.bySemanticsLabel('Canvas action: Add state'), findsOneWidget);
     expect(
@@ -267,6 +729,9 @@ void main() {
         ),
       );
 
+      await tester.tap(find.byIcon(Icons.open_in_full));
+      await tester.pumpAndSettle();
+
       for (final label in <String>[
         'Selecionar',
         'Adicionar estado',
@@ -305,6 +770,9 @@ void main() {
         ),
       ),
     );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
 
     final initialFitCount = controller.fitCount;
     final initialResetCount = controller.resetCount;
@@ -387,6 +855,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
     final transformation = controller.graphController.transformationController!;
     transformation.value = Matrix4.identity();
     await tester.pump();
@@ -423,6 +894,9 @@ void main() {
         ),
       ),
     );
+
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
 
     final undoFinder = find.widgetWithIcon(IconButton, Icons.undo);
     final redoFinder = find.widgetWithIcon(IconButton, Icons.redo);
@@ -482,6 +956,9 @@ void main() {
       ),
     );
 
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
     await tester.tap(
       find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
     );
@@ -490,7 +967,7 @@ void main() {
     expect(helpCount, equals(1));
   });
 
-  testWidgets('opens keyboard shortcuts when no help callback is provided', (
+  testWidgets('fallback Help opens and focuses canvas shortcuts', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -506,11 +983,25 @@ void main() {
       ),
     );
 
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
     await tester.tap(
       find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(KeyboardShortcutsDialog), findsOneWidget);
+    final page = tester.widget<HelpPage>(find.byType(HelpPage));
+    final node = find.byKey(
+      const ValueKey('help-node-${HelpTopicIds.shortcutsCanvas}'),
+    );
+    expect(page.initialTopicId, HelpTopicIds.shortcutsCanvas);
+    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+    expect(
+      find.byKey(
+        const ValueKey('help-body-${HelpTopicIds.shortcutsCanvas}'),
+      ),
+      findsOneWidget,
+    );
   });
 }

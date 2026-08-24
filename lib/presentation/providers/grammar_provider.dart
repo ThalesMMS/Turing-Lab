@@ -2,10 +2,10 @@
 //  grammar_provider.dart
 //  Turing Lab
 //
-//  Administra a edição de gramáticas formais no workspace, mantendo produções,
-//  símbolo inicial, tipo selecionado e resultados recentes de conversões enquanto
-//  integra serviços de transformação para gerar autômatos e PDAs consumidos por
-//  widgets e feedback visual.
+//  Manages formal grammar editing in the workspace, keeping productions,
+//  the start symbol, selected type, and recent conversion results while
+//  integrating transformation services to generate automata and PDAs
+//  consumed by widgets and visual feedback.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

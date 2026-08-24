@@ -2,10 +2,10 @@
 //  pda_simulation_provider.dart
 //  Turing Lab
 //
-//  Orquestra simulações de autômatos de pilha na interface, permitindo alternar
-//  entre modos de aceitação, executar passos incrementais e publicar resultados
-//  estruturados obtidos da fachada de simulação do domínio para feedback
-//  consistente entre widgets e painéis.
+//  Orchestrates pushdown-automaton simulations in the UI, allowing
+//  acceptance-mode switching, incremental steps, and publishing of
+//  structured results from the domain simulation facade for consistent
+//  feedback across widgets and panels.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -122,6 +122,22 @@ class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
     state = state.copyWith(
       result: result,
       currentStepIndex: currentStepIndex,
+    );
+  }
+
+  /// Opens a previously verified trace in the regular simulation controls.
+  void loadTrace({
+    required PDA pda,
+    required String input,
+    required PDAAcceptanceMode mode,
+    required PDASimulationResult result,
+  }) {
+    state = PDASimulationState(
+      pda: pda,
+      result: result,
+      stepByStep: true,
+      mode: mode,
+      lastInput: input,
     );
   }
 

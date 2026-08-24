@@ -2,9 +2,9 @@
 //  graphview_canvas_controller_test.dart
 //  Turing Lab
 //
-//  Testa o controlador base do canvas GraphView para autômatos, coordenando providers, repositórios
-//  de layout e atualizações de seleção. Inspeciona comandos de layout, zoom e sincronização de
-//  transições para garantir que o estado visual reflita o modelo lógico.
+//  Tests the base GraphView canvas controller for automata, coordinating
+//  providers, layout repositories, and selection updates. Inspects layout, zoom,
+//  and transition-sync commands so the visual state matches the logical model.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -280,6 +281,42 @@ void main() {
       },
     );
 
+    test('addStateAtCenter uses the safe viewport centre', () {
+      controller.updateViewportSize(const Size(800, 600));
+      controller.updateViewportInsets(const EdgeInsets.only(bottom: 120));
+
+      controller.addStateAtCenter();
+
+      final call = provider.addStateCalls.single;
+      expect(call['x'], closeTo(352, 0.0001));
+      expect(call['y'], closeTo(192, 0.0001));
+    });
+
+    test('exposes live zoom percentage bounds', () {
+      final transformation =
+          controller.graphController.transformationController!;
+
+      transformation.value = Matrix4.diagonal3Values(
+        kAutomatonCanvasMaxScale,
+        kAutomatonCanvasMaxScale,
+        1,
+      );
+
+      expect(controller.currentScale, kAutomatonCanvasMaxScale);
+      expect(controller.canZoomIn, isFalse);
+      expect(controller.canZoomOut, isTrue);
+
+      transformation.value = Matrix4.diagonal3Values(
+        kAutomatonCanvasMinScale,
+        kAutomatonCanvasMinScale,
+        1,
+      );
+
+      expect(controller.currentScale, kAutomatonCanvasMinScale);
+      expect(controller.canZoomIn, isTrue);
+      expect(controller.canZoomOut, isFalse);
+    });
+
     test('zoomIn keeps the viewport centre anchored', () {
       final transformation = TransformationController();
       addTearDown(transformation.dispose);
@@ -308,6 +345,50 @@ void main() {
       expect(afterCenter.x, closeTo(400, 0.0001));
       expect(afterCenter.y, closeTo(300, 0.0001));
       expect(transformation.value.getMaxScaleOnAxis(), closeTo(0.96, 0.0001));
+    });
+
+    test('zoomIn keeps the safe viewport centre anchored', () {
+      final transformation = TransformationController();
+      addTearDown(transformation.dispose);
+      final viewController = RecordingGraphViewController(transformation);
+      recreateController(viewController: viewController);
+      controller.updateViewportSize(const Size(800, 600));
+      controller.updateViewportInsets(const EdgeInsets.only(bottom: 120));
+
+      transformation.value = Matrix4.identity()
+        ..translateByDouble(-80.0, -60.0, 0.0, 1.0)
+        ..scaleByDouble(0.8, 0.8, 0.8, 1.0);
+      final inverse = Matrix4.copy(transformation.value);
+      expect(inverse.invert(), isNot(0));
+      final worldAtSafeCenter = inverse.transform3(Vector3(400, 240, 0));
+
+      controller.zoomIn();
+
+      final afterCenter = transformation.value.transform3(worldAtSafeCenter);
+      expect(afterCenter.x, closeTo(400, 0.0001));
+      expect(afterCenter.y, closeTo(240, 0.0001));
+    });
+
+    test('fitToContent centres graph inside the safe viewport', () {
+      final transformation = TransformationController();
+      addTearDown(transformation.dispose);
+      final viewController = RecordingGraphViewController(transformation);
+      recreateController(viewController: viewController);
+      controller.updateViewportSize(const Size(800, 600));
+      controller.updateViewportInsets(const EdgeInsets.only(bottom: 200));
+      controller.addStateAt(const Offset(200, 160));
+      final bounds = controller.graph.calculateGraphBounds();
+      final contentCenter = Vector3(
+        bounds.left + bounds.width / 2,
+        bounds.top + bounds.height / 2,
+        0,
+      );
+
+      controller.fitToContent();
+
+      final renderedCenter = transformation.value.transform3(contentCenter);
+      expect(renderedCenter.x, closeTo(400, 0.0001));
+      expect(renderedCenter.y, closeTo(200, 0.0001));
     });
 
     test('fitToContent uses a bounded reset before viewport is known', () {

@@ -158,13 +158,15 @@ class _AutomatonGraphNode extends StatefulWidget {
   State<_AutomatonGraphNode> createState() => _AutomatonGraphNodeState();
 }
 
+enum _AutomatonNodeHighlightTone { none, primary, warning, error }
+
 class _AutomatonGraphNodeState extends State<_AutomatonGraphNode> {
-  late bool _isHighlighted;
+  late _AutomatonNodeHighlightTone _highlightTone;
 
   @override
   void initState() {
     super.initState();
-    _isHighlighted = _resolveHighlight();
+    _highlightTone = _resolveHighlight();
     widget.highlightListenable.addListener(_handleHighlightChanged);
   }
 
@@ -176,8 +178,8 @@ class _AutomatonGraphNodeState extends State<_AutomatonGraphNode> {
       widget.highlightListenable.addListener(_handleHighlightChanged);
     }
     final nextHighlight = _resolveHighlight();
-    if (nextHighlight != _isHighlighted) {
-      _isHighlighted = nextHighlight;
+    if (nextHighlight != _highlightTone) {
+      _highlightTone = nextHighlight;
     }
   }
 
@@ -187,43 +189,63 @@ class _AutomatonGraphNodeState extends State<_AutomatonGraphNode> {
     super.dispose();
   }
 
-  bool _resolveHighlight() =>
-      widget.highlightListenable.value.stateIds.contains(widget.nodeId);
+  _AutomatonNodeHighlightTone _resolveHighlight() {
+    final highlight = widget.highlightListenable.value;
+    if (highlight.errorStateIds.contains(widget.nodeId)) {
+      return _AutomatonNodeHighlightTone.error;
+    }
+    if (highlight.warningStateIds.contains(widget.nodeId)) {
+      return _AutomatonNodeHighlightTone.warning;
+    }
+    if (highlight.stateIds.contains(widget.nodeId)) {
+      return _AutomatonNodeHighlightTone.primary;
+    }
+    return _AutomatonNodeHighlightTone.none;
+  }
 
   void _handleHighlightChanged() {
     final nextHighlight = _resolveHighlight();
-    if (nextHighlight == _isHighlighted) {
+    if (nextHighlight == _highlightTone) {
       return;
     }
     setState(() {
-      _isHighlighted = nextHighlight;
+      _highlightTone = nextHighlight;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final borderColor = _isHighlighted
-        ? theme.colorScheme.primary
-        : widget.isTransitionSource
-            ? theme.colorScheme.tertiary
-            : widget.isSelected
-                ? theme.colorScheme.secondary
-                : theme.colorScheme.outline;
-    final backgroundColor = _isHighlighted
-        ? theme.colorScheme.primaryContainer
-        : widget.isTransitionSource
-            ? theme.colorScheme.tertiaryContainer
-            : widget.isSelected
-                ? theme.colorScheme.secondaryContainer
-                : theme.colorScheme.surface;
+    final borderColor = switch (_highlightTone) {
+      _AutomatonNodeHighlightTone.primary => theme.colorScheme.primary,
+      _AutomatonNodeHighlightTone.warning => theme.colorScheme.tertiary,
+      _AutomatonNodeHighlightTone.error => theme.colorScheme.error,
+      _AutomatonNodeHighlightTone.none => widget.isTransitionSource
+          ? theme.colorScheme.tertiary
+          : widget.isSelected
+              ? theme.colorScheme.secondary
+              : theme.colorScheme.outline,
+    };
+    final backgroundColor = switch (_highlightTone) {
+      _AutomatonNodeHighlightTone.primary => theme.colorScheme.primaryContainer,
+      _AutomatonNodeHighlightTone.warning =>
+        theme.colorScheme.tertiaryContainer,
+      _AutomatonNodeHighlightTone.error => theme.colorScheme.errorContainer,
+      _AutomatonNodeHighlightTone.none => widget.isTransitionSource
+          ? theme.colorScheme.tertiaryContainer
+          : widget.isSelected
+              ? theme.colorScheme.secondaryContainer
+              : theme.colorScheme.surface,
+    };
 
     final badgeColor = theme.colorScheme.primary;
 
     return AnimatedScale(
       duration: widget.motionPreset.highlightDuration,
       curve: widget.motionPreset.highlightCurve,
-      scale: _isHighlighted ? widget.motionPreset.highlightScale : 1.0,
+      scale: _highlightTone == _AutomatonNodeHighlightTone.none
+          ? 1.0
+          : widget.motionPreset.highlightScale,
       child: SizedBox(
         width: _kNodeDiameter,
         height: _kNodeDiameter,

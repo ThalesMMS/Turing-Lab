@@ -2,11 +2,11 @@
 //  home_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para componentes da Home page (navegação e
-//  layout), capturando snapshots de estados críticos: layouts desktop/mobile,
-//  navegação rail/bottom bar, diferentes seleções de abas. Garante consistência
-//  visual da interface principal de navegação entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for Home page components (navigation and
+//  layout), capturing snapshots of critical states: desktop/mobile layouts,
+//  rail/bottom-bar navigation, and different tab selections. Guards visual
+//  consistency of the main navigation UI across changes and catches automatic
+//  regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,11 +2,10 @@
 //  automaton_canvas_tool.dart
 //  Turing Lab
 //
-//  Definição dos modos de edição disponíveis no canvas de autômatos e de um
-//  controlador baseado em ChangeNotifier que propaga alterações da ferramenta
-//  ativa. O módulo oferece integração simples com toolbars e componentes que
-//  reagem às trocas de modo, mantendo estado enxuto e extensível para futuros
-//  tipos de interação.
+//  Defines the editing modes available on the automaton canvas and a
+//  ChangeNotifier controller that broadcasts the active tool. The module
+//  integrates simply with toolbars and components that react to mode
+//  changes, keeping lean, extensible state for future interaction types.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

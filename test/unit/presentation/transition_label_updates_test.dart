@@ -2,10 +2,10 @@
 //  transition_label_updates_test.dart
 //  Turing Lab
 //
-//  Testes voltados aos providers de edição de transições, assegurando que
-//  autômatos finitos, PDAs e máquinas de Turing recebam atualizações consistentes
-//  de rótulos, símbolos e parâmetros específicos de cada modelo durante as
-//  operações de edição em tempo real.
+//  Tests for transition-editing providers, ensuring that
+//  finite automata, PDAs, and Turing machines receive consistent updates
+//  to labels, symbols, and model-specific parameters during
+//  live editing.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

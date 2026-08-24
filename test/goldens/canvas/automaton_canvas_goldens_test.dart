@@ -2,11 +2,11 @@
 //  automaton_canvas_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para AutomatonGraphViewCanvas, capturando
-//  snapshots de estados críticos do canvas: vazio, estados únicos, múltiplos
-//  estados com transições, marcações de inicial/aceitação e highlights de
-//  simulação. Garante consistência visual entre mudanças e detecta regressões
-//  automáticas na renderização de autômatos.
+//  Visual regression golden tests for AutomatonGraphViewCanvas, capturing
+//  snapshots of critical canvas states: empty, single states, multiple states
+//  with transitions, start/accept markings, and simulation highlights. Guards
+//  visual consistency across changes and catches automatic regressions in
+//  automaton rendering.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

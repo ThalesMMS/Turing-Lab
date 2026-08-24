@@ -2,10 +2,10 @@
 //  simulation_speed_control.dart
 //  Turing Lab
 //
-//  Widget de controle de velocidade de animação para simulações passo a passo.
-//  Provê seleção rápida entre velocidades predefinidas (0.25x, 0.5x, 1x, 2x, 4x)
-//  com feedback visual claro e integração com SettingsModel. Garante experiência
-//  consistente em todas as visualizações de traços (FA, PDA, TM).
+//  Animation-speed control widget for step-by-step simulations.
+//  Provides quick selection among preset speeds (0.25x, 0.5x, 1x, 2x, 4x)
+//  with clear visual feedback and SettingsModel integration. Keeps a
+//  consistent experience across all trace views (FA, PDA, TM).
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,15 +2,18 @@
 //  grammar_to_pda_validation_test.dart
 //  Turing Lab
 //
-//  Suite que garante a fidelidade da conversão de gramáticas livres de contexto em autômatos de pilha mantendo equivalência de linguagem.
-//  Cobre gramáticas simples, produções lambda e estruturas complexas validando o PDA resultante por simulação.
+//  Suite that checks CFG-to-PDA conversion fidelity while preserving language equivalence.
+//  Covers simple grammars, lambda productions, and complex structure, validating the resulting PDA by simulation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:isolate';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda_simplifier.dart';
 import 'package:turing_lab/core/algorithms/pda_simulator.dart';
 
 void main() {
@@ -99,6 +102,33 @@ void main() {
           );
         }
       });
+
+      test(
+        'Converted PDA with an input-consuming cycle can be simplified',
+        () async {
+          final resultPort = ReceivePort();
+          final isolate = await Isolate.spawn(
+            _runConvertedPdaSimplification,
+            resultPort.sendPort,
+          );
+
+          try {
+            final result = await resultPort.first.timeout(
+              const Duration(seconds: 2),
+            );
+            expect(result, {
+              'conversionSucceeded': true,
+              'simplificationSucceeded': true,
+              'hasInitialState': true,
+              'hasAcceptingState': true,
+            });
+          } finally {
+            isolate.kill(priority: Isolate.immediate);
+            resultPort.close();
+          }
+        },
+        timeout: const Timeout(Duration(seconds: 5)),
+      );
     });
 
     group('Language Equivalence Tests', () {
@@ -298,6 +328,48 @@ void main() {
 }
 
 /// Helper functions to create test grammars
+
+void _runConvertedPdaSimplification(SendPort sendPort) {
+  final now = DateTime.now();
+  final grammar = Grammar(
+    id: 'simplification-regression',
+    name: 'Simplification Regression',
+    terminals: {'a'},
+    nonterminals: {'S', 'A', 'B'},
+    startSymbol: 'S',
+    productions: {
+      const Production(id: 'p1', leftSide: ['S'], rightSide: ['A']),
+      const Production(id: 'p2', leftSide: ['A'], rightSide: ['a']),
+      const Production(id: 'p3', leftSide: ['A'], rightSide: ['B']),
+    },
+    type: GrammarType.contextFree,
+    created: now,
+    modified: now,
+  );
+
+  final conversionResult = GrammarToPDAConverter.convert(grammar);
+  if (!conversionResult.isSuccess) {
+    sendPort.send({
+      'conversionSucceeded': false,
+      'simplificationSucceeded': false,
+      'hasInitialState': false,
+      'hasAcceptingState': false,
+    });
+    return;
+  }
+
+  final simplificationResult = PDASimplifier.simplify(
+    conversionResult.data!,
+    acceptanceMode: PDAAcceptanceMode.finalState,
+  );
+  final simplifiedPda = simplificationResult.data?.simplifiedPda;
+  sendPort.send({
+    'conversionSucceeded': true,
+    'simplificationSucceeded': simplificationResult.isSuccess,
+    'hasInitialState': simplifiedPda?.initialState != null,
+    'hasAcceptingState': simplifiedPda?.acceptingStates.isNotEmpty ?? false,
+  });
+}
 
 Grammar _createSimpleGrammar() {
   final productions = {

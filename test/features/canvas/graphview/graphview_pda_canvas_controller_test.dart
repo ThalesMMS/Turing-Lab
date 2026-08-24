@@ -2,9 +2,9 @@
 //  graphview_pda_canvas_controller_test.dart
 //  Turing Lab
 //
-//  Avalia o GraphViewPdaCanvasController na mediação entre o editor de PDA e o canvas, garantindo
-//  sincronia das transições com a pilha. Exercita construção do grafo, seleção de elementos e
-//  descarte seguro dos recursos associados.
+//  Evaluates GraphViewPdaCanvasController as the bridge between the PDA editor
+//  and the canvas, keeping transitions in sync with the stack. Exercises graph
+//  construction, element selection, and safe disposal of associated resources.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -172,6 +172,28 @@ void main() {
       expect(controller.redo(), isTrue);
       expect(notifier.state.pda!.states, isEmpty);
       expect(notifier.state.pda!.transitions, isEmpty);
+    });
+
+    test('replacePda is recorded as one undoable operation', () {
+      final source = buildSamplePda();
+      notifier.setPda(source);
+      controller.synchronize(source);
+      final replacement = source.copyWith(
+        name: 'Simplified PDA',
+        transitions: const {},
+        alphabet: const {},
+        modified: DateTime.utc(2026, 1, 1),
+      );
+
+      controller.replacePda(replacement);
+
+      expect(notifier.currentPda, same(replacement));
+      expect(controller.canUndo, isTrue);
+      expect(controller.undo(), isTrue);
+      expect(notifier.currentPda!.name, source.name);
+      expect(notifier.currentPda!.pdaTransitions, hasLength(1));
+      expect(controller.canUndo, isFalse);
+      expect(controller.canRedo, isTrue);
     });
 
     test('addStateAt inserts state into notifier', () {

@@ -2,24 +2,28 @@
 //  grammar_page.dart
 //  Turing Lab
 //
-//  Monta a página de gramáticas livres de contexto com layouts adaptáveis,
-//  exibindo editor, simulação e algoritmos em painéis configuráveis para
-//  desktop e mobile, além de controles que alternam seções conforme o espaço
-//  disponível.
+//  Builds the context-free grammar page with adaptive layouts, showing
+//  productions as the main area and moving editing, parsing, and
+//  algorithms onto the workspace's responsive surfaces.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/grammar_provider.dart';
-import '../providers/help_provider.dart';
-import '../widgets/context_aware_help_panel.dart';
-import '../widgets/grammar_editor.dart';
-import '../widgets/grammar_simulation_panel.dart';
-import '../widgets/grammar_algorithm_panel.dart';
-import '../widgets/tablet_layout_container.dart';
 
-/// Page for working with Context-Free Grammars
+import '../../core/constants/help_topic_ids.dart';
+import '../../core/models/production.dart';
+import '../../l10n/app_localizations_help.dart';
+import '../providers/grammar_provider.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/automaton_workspace_scaffold.dart';
+import '../widgets/common/help_navigation.dart';
+import '../widgets/grammar_algorithm_panel.dart';
+import '../widgets/grammar_editor.dart';
+import '../widgets/grammar_editor_section.dart';
+import '../widgets/grammar_simulation_panel.dart';
+
+/// Page for working with Context-Free Grammars.
 class GrammarPage extends ConsumerStatefulWidget {
   const GrammarPage({super.key});
 
@@ -28,237 +32,156 @@ class GrammarPage extends ConsumerStatefulWidget {
 }
 
 class _GrammarPageState extends ConsumerState<GrammarPage> {
-  bool _showControls = true;
-  bool _showSimulation = false;
-  bool _showAlgorithms = false;
-
   void _showContextualHelp() {
-    final helpNotifier = ref.read(helpProvider.notifier);
     final grammarState = ref.read(grammarProvider);
+    final topicId = grammarState.isConverting
+        ? HelpTopicIds.grammarEditorAlgorithms
+        : grammarState.productions.isEmpty
+            ? HelpTopicIds.grammarEditorOverview
+            : HelpTopicIds.grammarTheoryCfg;
 
-    // Determine the most relevant help content based on current grammar state
-    String helpContextId;
-    if (grammarState.productions.isEmpty) {
-      helpContextId = 'usage_getting_started';
-    } else if (grammarState.isConverting || _showAlgorithms) {
-      helpContextId = 'concept_parsing';
-    } else {
-      helpContextId = 'concept_cfg';
-    }
-
-    final helpContent = helpNotifier.getHelpByContext(helpContextId);
-    if (helpContent != null) {
-      ContextAwareHelpPanel.show(
-        context,
-        helpContent: helpContent,
-      );
-    }
+    openHelp(context, topicId: topicId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isMobile = screenSize.width < 1024;
-
-    return FocusTraversalGroup(
-      policy: ReadingOrderTraversalPolicy(),
-      child: Scaffold(
-        body: isMobile
-            ? _buildMobileLayout()
-            : screenSize.width < 1400
-                ? _buildTabletLayout()
-                : _buildDesktopLayout(),
-        floatingActionButton: !isMobile
-            ? FloatingActionButton(
-                heroTag: 'grammar_context_help_fab',
-                onPressed: _showContextualHelp,
-                tooltip: 'Context-Aware Help',
-                child: const Icon(Icons.help_outline),
-              )
-            : null,
+    final l10n = jflapLocalizationsOf(context);
+    return AutomatonWorkspaceScaffold(
+      canvasWithToolbar: _buildProductionsEditor,
+      algorithmPanel: const GrammarAlgorithmPanel(),
+      tabletAlgorithmPanel: const GrammarAlgorithmPanel(useExpanded: false),
+      simulationPanel: const GrammarSimulationPanel(),
+      simulationTabTitle: 'Parser',
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'grammar_context_help_fab',
+        onPressed: _showContextualHelp,
+        tooltip: l10n.contextAwareHelp,
+        child: const Icon(Icons.help_outline),
       ),
     );
   }
 
-  Widget _buildMobileLayout() {
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final buttonWidth = (constraints.maxWidth - 8) / 2;
-                return Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    SizedBox(
-                      width: buttonWidth,
-                      child: _buildToggleButton(
-                        icon: Icons.edit,
-                        label: 'Editor',
-                        isActive: _showControls,
-                        onPressed: () =>
-                            setState(() => _showControls = !_showControls),
-                      ),
-                    ),
-                    SizedBox(
-                      width: buttonWidth,
-                      child: _buildToggleButton(
-                        icon: Icons.play_arrow,
-                        label: 'Parse',
-                        isActive: _showSimulation,
-                        onPressed: () =>
-                            setState(() => _showSimulation = !_showSimulation),
-                      ),
-                    ),
-                    SizedBox(
-                      width: buttonWidth,
-                      child: _buildToggleButton(
-                        icon: Icons.auto_awesome,
-                        label: 'Algorithms',
-                        isActive: _showAlgorithms,
-                        onPressed: () =>
-                            setState(() => _showAlgorithms = !_showAlgorithms),
-                      ),
-                    ),
-                    SizedBox(
-                      width: buttonWidth,
-                      child: _buildToggleButton(
-                        icon: Icons.help_outline,
-                        label: 'Help',
-                        isActive: false,
-                        onPressed: _showContextualHelp,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
+  Widget _buildProductionsEditor({required bool isMobile}) {
+    final grammarState = ref.watch(grammarProvider);
+    final l10n = jflapLocalizationsOf(context);
+    final hasProductions = grammarState.productions.isNotEmpty;
 
-          // Content area with proper scrolling
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Column(
-                children: [
-                  // Collapsible panels with better space management
-                  if (_showControls || _showSimulation || _showAlgorithms) ...[
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      child: _buildPanelsColumn(),
-                    ),
-                  ] else
-                    const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-        ],
+    publishWorkspaceQuickActions(
+      ref,
+      WorkspaceTab.grammar,
+      WorkspaceQuickActions(
+        onHelp: _showContextualHelp,
+        onSimulate: _openParserSheet,
+        onAlgorithms: _openAlgorithmSheet,
+        onEdit: _openGrammarEditorSheet,
+        simulateTooltip: l10n.workspaceParserTooltip,
+        editTooltip: l10n.workspaceEditTooltip,
+        algorithmsBeforeSimulation: true,
+        simulateEnabled: hasProductions,
+      ),
+    );
+
+    return GrammarEditor(
+      section: GrammarEditorSection.productions,
+      onEditGrammar: isMobile ? null : _openGrammarEditorSheet,
+      onEditProduction: _openProductionEditorSheet,
+    );
+  }
+
+  Future<void> _openAlgorithmSheet() {
+    return _showWorkspaceSheet(
+      title: 'Algorithms',
+      helpTopicId: HelpTopicIds.grammarEditorAlgorithms,
+      child: const GrammarAlgorithmPanel(useExpanded: false),
+    );
+  }
+
+  Future<void> _openParserSheet() {
+    return _showWorkspaceSheet(
+      title: 'Parser',
+      helpTopicId: HelpTopicIds.grammarEditorParserWorkflow,
+      child: const GrammarSimulationPanel(useExpanded: false),
+    );
+  }
+
+  Future<void> _openGrammarEditorSheet() => _openEditSheet();
+
+  Future<void> _openProductionEditorSheet(Production production) {
+    return _openEditSheet(production);
+  }
+
+  Future<void> _openEditSheet([Production? production]) {
+    return _showWorkspaceSheet(
+      title: 'Edit Grammar',
+      helpTopicId: production == null
+          ? HelpTopicIds.grammarEditorOverview
+          : HelpTopicIds.grammarEditorProductionRowsAndAlternatives,
+      initialChildSize: 0.85,
+      child: GrammarEditor(
+        section: GrammarEditorSection.details,
+        productionToEdit: production,
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
-    return Row(
-      children: [
-        // Left panel - Grammar Editor
-        Expanded(
-          flex: 2,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const GrammarEditor(),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Center panel - Simulation
-        Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const GrammarSimulationPanel(),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Right panel - Algorithms
-        Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const GrammarAlgorithmPanel(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToggleButton({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onPressed,
+  Future<void> _showWorkspaceSheet({
+    required String title,
+    required String helpTopicId,
+    required Widget child,
+    double initialChildSize = 0.72,
   }) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 12),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.surface,
-        foregroundColor: isActive
-            ? Theme.of(context).colorScheme.onPrimary
-            : Theme.of(context).colorScheme.onSurface,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-        minimumSize: Size.zero,
-      ),
-    );
-  }
-
-  Widget _buildPanelsColumn() {
-    final panelMaxHeight =
-        (MediaQuery.sizeOf(context).height * 0.35).clamp(220.0, 360.0);
-
-    return Column(
-      children: [
-        // Grammar editor
-        if (_showControls) ...[
-          const GrammarEditor(),
-          const SizedBox(height: 8),
-        ],
-
-        // Simulation panel
-        if (_showSimulation) ...[
-          Container(
-            constraints: BoxConstraints(maxHeight: panelMaxHeight),
-            child: const GrammarSimulationPanel(),
-          ),
-          const SizedBox(height: 8),
-        ],
-
-        // Algorithm panel
-        if (_showAlgorithms) ...[
-          Container(
-            constraints: BoxConstraints(maxHeight: panelMaxHeight),
-            child: const GrammarAlgorithmPanel(),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildTabletLayout() {
-    return const TabletLayoutContainer(
-      canvas: GrammarEditor(),
-      algorithmPanel: GrammarAlgorithmPanel(useExpanded: false),
-      simulationPanel: GrammarSimulationPanel(useExpanded: false),
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: initialChildSize,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: jflapLocalizationsOf(context).homeHelpTooltip,
+                        onPressed: () => openHelp(
+                          sheetContext,
+                          topicId: helpTopicId,
+                        ),
+                        icon: const Icon(Icons.help_outline),
+                      ),
+                      IconButton(
+                        tooltip: jflapLocalizationsOf(context).close,
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(16),
+                    children: [child],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

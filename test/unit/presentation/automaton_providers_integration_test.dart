@@ -22,6 +22,7 @@ import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/data/services/trace_persistence_service.dart';
 import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
+import 'package:turing_lab/presentation/providers/algorithm_step_provider.dart';
 import 'package:turing_lab/presentation/providers/conversion_history_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_layout_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_simulation_provider.dart';
@@ -295,6 +296,80 @@ void main() {
       expect(updatedAutomaton, isNotNull);
       await _expectAccepts(updatedAutomaton!, '', isTrue);
       await _expectAccepts(updatedAutomaton, 'aa', isTrue);
+    });
+
+    test('Algorithm provider concatenates FSAs and publishes its step report',
+        () async {
+      final stateNotifier = container.read(automatonStateProvider.notifier);
+      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+
+      final algorithmNotifier = container.read(
+        automatonAlgorithmProvider.notifier,
+      );
+      await algorithmNotifier.concatenateFsa(
+        _createAStarDfa(id: 'other-a-star'),
+        withSteps: true,
+      );
+
+      final algorithmState = container.read(automatonAlgorithmProvider);
+      final stepState = container.read(algorithmStepProvider);
+      expect(algorithmState.error, isNull);
+      expect(algorithmState.fsaConcatenationResult, isNotNull);
+      expect(stepState.steps, hasLength(3));
+
+      final updatedAutomaton =
+          container.read(automatonStateProvider).currentAutomaton;
+      expect(updatedAutomaton, isNotNull);
+      await _expectAccepts(updatedAutomaton!, '', isFalse);
+      await _expectAccepts(updatedAutomaton, 'a', isTrue);
+      await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
+    });
+
+    test('Algorithm provider applies Kleene star and publishes its step report',
+        () async {
+      final stateNotifier = container.read(automatonStateProvider.notifier);
+      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+
+      final algorithmNotifier = container.read(
+        automatonAlgorithmProvider.notifier,
+      );
+      await algorithmNotifier.kleeneStarFsa(withSteps: true);
+
+      final algorithmState = container.read(automatonAlgorithmProvider);
+      final stepState = container.read(algorithmStepProvider);
+      expect(algorithmState.error, isNull);
+      expect(algorithmState.fsaKleeneStarResult, isNotNull);
+      expect(stepState.steps, hasLength(4));
+
+      final updatedAutomaton =
+          container.read(automatonStateProvider).currentAutomaton;
+      expect(updatedAutomaton, isNotNull);
+      await _expectAccepts(updatedAutomaton!, '', isTrue);
+      await _expectAccepts(updatedAutomaton, 'a', isTrue);
+      await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
+    });
+
+    test('Algorithm provider reverses an FSA and publishes its step report',
+        () async {
+      final stateNotifier = container.read(automatonStateProvider.notifier);
+      stateNotifier.updateAutomaton(_createAbDfa(id: 'current-ab'));
+
+      final algorithmNotifier = container.read(
+        automatonAlgorithmProvider.notifier,
+      );
+      await algorithmNotifier.reverseFsa(withSteps: true);
+
+      final algorithmState = container.read(automatonAlgorithmProvider);
+      final stepState = container.read(algorithmStepProvider);
+      expect(algorithmState.error, isNull);
+      expect(algorithmState.fsaReversalResult, isNotNull);
+      expect(stepState.steps, hasLength(4));
+
+      final updatedAutomaton =
+          container.read(automatonStateProvider).currentAutomaton;
+      expect(updatedAutomaton, isNotNull);
+      await _expectAccepts(updatedAutomaton!, 'ba', isTrue);
+      await _expectAccepts(updatedAutomaton, 'ab', isFalse);
     });
 
     test('Algorithm provider intersects the current DFA with another FSA',
@@ -727,6 +802,52 @@ FSA _createAPlusDfa({required String id}) {
     acceptingStates: {q1},
     created: DateTime.now(),
     modified: DateTime.now(),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
+}
+
+FSA _createAbDfa({required String id}) {
+  final q0 = automaton_state.State(
+    id: '${id}_q0',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  final q1 = automaton_state.State(
+    id: '${id}_q1',
+    label: 'q1',
+    position: Vector2(100, 0),
+  );
+  final q2 = automaton_state.State(
+    id: '${id}_q2',
+    label: 'q2',
+    position: Vector2(200, 0),
+    isAccepting: true,
+  );
+  final timestamp = DateTime.utc(2026);
+  return FSA(
+    id: id,
+    name: id,
+    states: {q0, q1, q2},
+    transitions: {
+      FSATransition.deterministic(
+        id: '${id}_a',
+        fromState: q0,
+        toState: q1,
+        symbol: 'a',
+      ),
+      FSATransition.deterministic(
+        id: '${id}_b',
+        fromState: q1,
+        toState: q2,
+        symbol: 'b',
+      ),
+    },
+    alphabet: {'a', 'b'},
+    initialState: q0,
+    acceptingStates: {q2},
+    created: timestamp,
+    modified: timestamp,
     bounds: const math.Rectangle(0, 0, 400, 300),
   );
 }

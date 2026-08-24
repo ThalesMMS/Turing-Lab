@@ -2,13 +2,12 @@
 //  base_trace_viewer.dart
 //  Turing Lab
 //
-//  Provê widget base reutilizado pelos visualizadores de traços de FA, PDA e
-//  TM, tratando colapso de listas extensas, seleção de passos e integração
-//  opcional com o SimulationHighlightService para sincronizar destaques no
-//  canvas.
-//  Aceita um SimulationResult genérico e um builder de linhas especializado,
-//  garantindo comportamento consistente e acessível para qualquer algoritmo que
-//  produza sequências de passos.
+//  Provides the base widget reused by FA, PDA, and TM trace viewers,
+//  handling collapse of long lists, step selection, and optional
+//  SimulationHighlightService integration to sync canvas highlights.
+//  Accepts a generic SimulationResult and a specialized row builder,
+//  keeping consistent, accessible behavior for any algorithm that
+//  produces step sequences.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

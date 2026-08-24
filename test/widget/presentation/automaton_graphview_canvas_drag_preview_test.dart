@@ -2,9 +2,9 @@
 //  automaton_graphview_canvas_drag_preview_test.dart
 //  Turing Lab
 //
-//  Garante que arrastar um estado move o nó visualmente em tempo real, antes
-//  de o ponteiro ser solto (pré-visualização ao vivo via previewStatePosition
-//  e GraphObserver), em vez de o movimento aparecer apenas após o drop.
+//  Ensures dragging a state moves the node visually in real time, before
+//  the pointer is released (live preview via previewStatePosition and
+//  GraphObserver), instead of applying movement only after drop.
 //
 //  Thales Matheus Mendonça Santos - July 2026
 //

@@ -2,10 +2,10 @@
 //  pda_to_cfg_converter_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes que confirma a conversão de autômatos de pilha em
-//  gramáticas livres de contexto, cobrindo a derivação de produções a partir
-//  de transições, a montagem de regras iniciais com estados intermediários e a
-//  sinalização de erros quando o autômato de origem é inválido.
+//  Test suite that confirms PDA-to-CFG conversion,
+//  covering production derivation from
+//  transitions, start-rule assembly with intermediate states, and
+//  error signaling when the source automaton is invalid.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -268,6 +268,67 @@ void main() {
           grammar.productions.map(productionToString).toSet();
 
       expect(productionStrings, contains('[p, Z, q] → λ'));
+    });
+
+    test('stops the triple construction at the configured production limit',
+        () {
+      final p = buildState('p', isInitial: true);
+      final q = buildState('q', isAccepting: true);
+      final transition = PDATransition(
+        id: 'large-push',
+        fromState: p,
+        toState: q,
+        label: 'a,Z→XYZ',
+        inputSymbol: 'a',
+        popSymbol: 'Z',
+        pushSymbol: 'XYZ',
+      );
+      final pda = buildPda(
+        states: {p, q},
+        transitions: {transition},
+        initial: p,
+        accepting: {q},
+        stackAlphabet: {'Z', 'X', 'Y'},
+      );
+
+      final result = PDAtoCFGConverter.convert(
+        pda,
+        maxGeneratedProductions: 2,
+      );
+
+      expect(result, isA<Failure<PdaToCfgConversion>>());
+      expect(result.error, startsWith('PDA to CFG production limit exceeded'));
+    });
+
+    test('polls cancellation while intermediate sequences are generated', () {
+      final p = buildState('p', isInitial: true);
+      final q = buildState('q', isAccepting: true);
+      final transition = PDATransition(
+        id: 'cancel-push',
+        fromState: p,
+        toState: q,
+        label: 'a,Z→XYZ',
+        inputSymbol: 'a',
+        popSymbol: 'Z',
+        pushSymbol: 'XYZ',
+      );
+      final pda = buildPda(
+        states: {p, q},
+        transitions: {transition},
+        initial: p,
+        accepting: {q},
+        stackAlphabet: {'Z', 'X', 'Y'},
+      );
+      var polls = 0;
+
+      final result = PDAtoCFGConverter.convert(
+        pda,
+        isCancelled: () => ++polls > 6,
+      );
+
+      expect(result, isA<Failure<PdaToCfgConversion>>());
+      expect(result.error, PDAtoCFGConverter.cancellationError);
+      expect(polls, greaterThan(6));
     });
   });
 }

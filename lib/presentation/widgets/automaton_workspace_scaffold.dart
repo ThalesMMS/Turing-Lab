@@ -15,6 +15,9 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
     this.infoPanel,
     this.mobileFloatingPanelBuilder,
     this.floatingActionButton,
+    this.algorithmTabTitle = 'Algorithms',
+    this.simulationTabTitle = 'Simulation',
+    this.infoTabTitle = 'Info',
   });
 
   static const double mobileBreakpoint = 1024;
@@ -27,6 +30,9 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
   final Widget? infoPanel;
   final MovableCanvasPanelBuilder? mobileFloatingPanelBuilder;
   final Widget? floatingActionButton;
+  final String algorithmTabTitle;
+  final String simulationTabTitle;
+  final String infoTabTitle;
 
   @override
   State<AutomatonWorkspaceScaffold> createState() =>
@@ -90,6 +96,9 @@ class _AutomatonWorkspaceScaffoldState
       algorithmPanel: widget.tabletAlgorithmPanel ?? widget.algorithmPanel,
       simulationPanel: widget.simulationPanel,
       infoPanel: widget.infoPanel,
+      algorithmTabTitle: widget.algorithmTabTitle,
+      simulationTabTitle: widget.simulationTabTitle,
+      infoTabTitle: widget.infoTabTitle,
     );
   }
 

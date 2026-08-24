@@ -2,8 +2,8 @@
 //  pda_validation_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes que confirma o comportamento do simulador de autômatos de pilha e da conversão de gramáticas livres de contexto para PDAs.
-//  Inclui cenários determinísticos e não determinísticos com manipulação de pilha, transições lambda e validação de linguagem contra a referência.
+//  Tests that confirm PDA simulator behavior and CFG-to-PDA conversion.
+//  Includes deterministic and nondeterministic stack-manipulation scenarios, lambda transitions, and language checks against the reference.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

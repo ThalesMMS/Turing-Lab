@@ -2,9 +2,9 @@
 //  graphview_canvas_models_test.dart
 //  Turing Lab
 //
-//  Verifica os modelos de dados utilizados pelo canvas GraphView, confirmando a imutabilidade e a
-//  correta propagação de metadados de transições. Exercita métodos utilitários como copyWith para
-//  garantir que updates mantenham integridade do grafo.
+//  Checks the data models used by the GraphView canvas, confirming immutability
+//  and correct propagation of transition metadata. Exercises helpers such as
+//  copyWith so updates keep the graph intact.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

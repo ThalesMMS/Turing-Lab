@@ -2,9 +2,9 @@
 //  graphview_tm_canvas_controller_test.dart
 //  Turing Lab
 //
-//  Verifica o GraphViewTmCanvasController na orquestração do editor de máquinas de Turing,
-//  garantindo que o grafo responda a interações e eventos emitidos pelo provider. Analisa seleção
-//  de estados, atualização de transições e ciclo de vida do controlador.
+//  Verifies GraphViewTmCanvasController while orchestrating the Turing machine
+//  editor, ensuring the graph responds to interactions and provider events.
+//  Covers state selection, transition updates, and controller lifecycle.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

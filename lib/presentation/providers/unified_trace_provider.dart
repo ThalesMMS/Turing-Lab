@@ -2,10 +2,10 @@
 //  unified_trace_provider.dart
 //  Turing Lab
 //
-//  Consolida a gestão de traços de simulação para diferentes autômatos,
-//  administrando histórico persistido, contexto ativo e estatísticas
-//  compartilhadas entre módulos enquanto coordena carregamento lazily, navegação
-//  por passos e tratamento de erros de persistência.
+//  Consolidates simulation-trace management for different automata,
+//  handling persisted history, active context, and shared statistics
+//  across modules while coordinating lazy loading, step navigation, and
+//  persistence error handling.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

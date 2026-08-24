@@ -2,8 +2,8 @@
 //  result_test.dart
 //  Turing Lab
 //
-//  Testes unitários que asseguram o comportamento das extensões da classe Result ao propagar sucessos e falhas.
-//  Valida especialmente o método mapOrElse preservando mensagens de erro e tipos em cenários de falha.
+//  Unit tests that confirm Result class extensions when propagating success and failure.
+//  Especially validates mapOrElse, preserving error messages and types in failure scenarios.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

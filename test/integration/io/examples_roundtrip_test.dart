@@ -2,9 +2,9 @@
 //  examples_roundtrip_test.dart
 //  Turing Lab
 //
-//  Realiza testes de integração de round-trip para os exemplos embarcados, percorrendo leitura de
-//  assets, serviços de serialização e exportação gráfica. Valida autômatos, gramáticas e máquinas
-//  de Turing para garantir consistência entre entidades e artefatos gerados.
+//  Runs round-trip integration tests for the bundled examples, covering asset
+//  loading, serialization services, and graphic export. Validates automata,
+//  grammars, and Turing machines so entities stay consistent with generated artifacts.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -166,6 +166,7 @@ void main() {
         expect(categories, contains(ExampleCategory.cfg));
         expect(categories, contains(ExampleCategory.pda));
         expect(categories, contains(ExampleCategory.tm));
+        expect(categories, contains(ExampleCategory.regex));
       });
 
       test('Provides example counts by category', () {
@@ -217,7 +218,7 @@ void main() {
       test('Example category enum works correctly', () {
         expect(
           ExampleCategory.values.map((value) => value.name),
-          ['dfa', 'nfa', 'cfg', 'pda', 'tm'],
+          ['dfa', 'nfa', 'cfg', 'pda', 'tm', 'regex'],
         );
       });
 
@@ -228,6 +229,7 @@ void main() {
         expect(categories, contains(ExampleCategory.cfg));
         expect(categories, contains(ExampleCategory.pda));
         expect(categories, contains(ExampleCategory.tm));
+        expect(categories, contains(ExampleCategory.regex));
       });
 
       test('Data source provides category counts', () {
@@ -265,7 +267,7 @@ void main() {
         final dataSource = ExamplesAssetDataSource();
 
         final categories = dataSource.getAvailableCategories();
-        expect(categories.length, equals(5)); // DFA, NFA, CFG, PDA, TM
+        expect(categories.length, equals(6));
 
         final counts = dataSource.getExamplesCountByCategory();
         expect(counts.isNotEmpty, isTrue);
@@ -308,16 +310,19 @@ void main() {
         final cfgResult = await dataSource.loadAllTypedCfgExamples();
         final pdaResult = await dataSource.loadAllTypedPdaExamples();
         final tmResult = await dataSource.loadAllTypedTmExamples();
+        final regexResult = await dataSource.loadAllTypedRegexExamples();
 
         expect(fsaResult.isSuccess, isTrue);
         expect(cfgResult.isSuccess, isTrue);
         expect(pdaResult.isSuccess, isTrue);
         expect(tmResult.isSuccess, isTrue);
+        expect(regexResult.isSuccess, isTrue);
 
-        expect(fsaResult.data, hasLength(4));
-        expect(cfgResult.data, hasLength(2));
-        expect(pdaResult.data, hasLength(3));
+        expect(fsaResult.data, hasLength(5));
+        expect(cfgResult.data, hasLength(5));
+        expect(pdaResult.data, hasLength(5));
         expect(tmResult.data, hasLength(5));
+        expect(regexResult.data, hasLength(5));
 
         expect(
           fsaResult.data!.every((example) => example.payload.states.isNotEmpty),
@@ -338,6 +343,12 @@ void main() {
         expect(
           tmResult.data!.every(
             (example) => example.payload.transitions.isNotEmpty,
+          ),
+          isTrue,
+        );
+        expect(
+          regexResult.data!.every(
+            (example) => example.payload.expression.isNotEmpty,
           ),
           isTrue,
         );

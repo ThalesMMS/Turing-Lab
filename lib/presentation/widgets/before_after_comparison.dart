@@ -2,11 +2,11 @@
 //  before_after_comparison.dart
 //  Turing Lab
 //
-//  Widget para comparação lado a lado de autômatos antes e depois da execução de
-//  algoritmos de conversão. Exibe o autômato original à esquerda e o resultado
-//  à direita, permitindo visualização educacional das transformações aplicadas
-//  por NFA→DFA, minimização de DFA e conversão FA→Regex.
-//  Utiliza canvas GraphView em modo somente-leitura para renderização não-interativa.
+//  Widget for side-by-side comparison of automata before and after
+//  conversion algorithms. Shows the original automaton on the left and
+//  the result on the right for educational views of NFA→DFA, DFA
+//  minimization, and FA→Regex transformations.
+//  Uses a GraphView canvas in read-only mode for non-interactive rendering.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

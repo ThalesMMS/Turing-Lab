@@ -2,9 +2,9 @@
 //  home_page.dart
 //  Turing Lab
 //
-//  Orquestra a página inicial com navegação por PageView e bottom navigation
-//  responsiva, integrando provedores de autômatos, gramáticas e destaques para
-//  coordenar os módulos centrais do aplicativo em todas as plataformas.
+//  Orchestrates the home page with PageView navigation and a responsive
+//  bottom bar, integrating automaton, grammar, and highlight providers to
+//  coordinate the app's core modules on every platform.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -17,6 +17,7 @@ import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/mobile_navigation.dart';
 import '../widgets/desktop_navigation.dart';
 import '../widgets/workspace_quick_actions_bar.dart';
+import '../widgets/common/help_navigation.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import 'fsa_page.dart';
 import 'grammar_page.dart';
@@ -25,7 +26,6 @@ import 'tm_page.dart';
 import 'regex_page.dart';
 import 'pumping_lemma_page.dart';
 import 'settings_page.dart';
-import 'help_page.dart';
 
 /// Main home page with modern design and mobile-first approach
 class HomePage extends ConsumerStatefulWidget {
@@ -228,8 +228,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     final currentTab = WorkspaceTab.values[visibleCurrentIndex];
-    final quickActions =
-        isMobile ? ref.watch(workspaceQuickActionsProvider(currentTab)) : null;
+    final quickActions = ref.watch(workspaceQuickActionsProvider(currentTab));
 
     final theme = Theme.of(context);
     final pageView = PageView(
@@ -296,7 +295,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             _buildAppBarAction(
               label: l10n.homeHelpTooltip,
               icon: Icons.help_outline,
-              onPressed: quickActions?.onHelp ?? () => _showHelpDialog(context),
+              onPressed: quickActions?.onHelp ?? () => openHelp(context),
             ),
             _buildAppBarAction(
               label: l10n.homeSettingsTooltip,
@@ -369,12 +368,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       default:
         return null;
     }
-  }
-
-  void _showHelpDialog(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const HelpPage()));
   }
 
   void _showSettingsDialog(BuildContext context) {

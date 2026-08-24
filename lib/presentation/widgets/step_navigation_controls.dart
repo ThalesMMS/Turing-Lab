@@ -2,11 +2,11 @@
 //  step_navigation_controls.dart
 //  Turing Lab
 //
-//  Widget reutilizável para controles de navegação passo a passo de algoritmos.
-//  Fornece botões de play/pause, navegação anterior/próxima, contador de passos
-//  e controle deslizante de velocidade de reprodução.
-//  Usado na visualização educacional de algoritmos como NFA→DFA, minimização
-//  de DFA e conversão FA→Regex.
+//  Reusable widget for step-by-step algorithm navigation controls.
+//  Provides play/pause buttons, previous/next navigation, a step counter,
+//  and a playback-speed slider.
+//  Used in educational views of algorithms such as NFA→DFA, DFA
+//  minimization, and FA→Regex conversion.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

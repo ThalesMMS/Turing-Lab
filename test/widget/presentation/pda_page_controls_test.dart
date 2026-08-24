@@ -2,24 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/pda_page.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart';
-import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
-import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
-import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
+
+import 'canvas_toolbar_test_helpers.dart';
+import 'examples_test_helpers.dart';
 
 Future<void> _pumpPdaPage(
   WidgetTester tester, {
@@ -36,7 +40,10 @@ Future<void> _pumpPdaPage(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        examplesRepositoryProvider.overrideWithValue(TestExamplesRepository()),
+      ],
       child: MaterialApp(
         theme: ThemeData(platform: platform),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -101,6 +108,13 @@ void main() {
 
     expect(find.byType(PDASimulationPanel), findsNothing);
     expect(find.byType(CanvasSimulationPlaybackBar), findsOneWidget);
+    final playbackRect = tester.getRect(
+      find.byType(CanvasSimulationPlaybackBar),
+    );
+    final toolbarRect = tester.getRect(
+      find.byKey(const ValueKey('canvas-toolbar-surface')),
+    );
+    expect(playbackRect.bottom, lessThanOrEqualTo(toolbarRect.top));
     expect(
       tester
           .widget<PDAStackPanel>(find.byType(PDAStackPanel))
@@ -134,6 +148,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
     expect(controller.highlightNotifier.value.isEmpty, isTrue);
+  });
+
+  testWidgets('PDA uses one shared toolbar across canvas breakpoints', (
+    tester,
+  ) async {
+    await _pumpPdaPage(tester, size: const Size(390, 900));
+
+    for (final width in const [390.0, 430.0, 800.0, 1200.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
+      final toolbar = tester.widget<GraphViewCanvasToolbar>(
+        find.byType(GraphViewCanvasToolbar),
+      );
+      expect(
+        toolbar.placement,
+        width < AutomatonWorkspaceScaffold.mobileBreakpoint
+            ? CanvasToolbarPlacement.bottomCenter
+            : CanvasToolbarPlacement.topRight,
+        reason: 'unexpected PDA toolbar placement at ${width.toInt()}px',
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('PDA replacement clears canvas playback and projected stack', (
@@ -223,7 +262,13 @@ void main() {
       tester.getSize(find.byType(CollapsibleCanvasPanel)),
       const Size.square(48),
     );
-    await tester.tap(find.byTooltip('Fit to content'));
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Fit to content',
+      menuLabel: 'Fit to content',
+      opensRoute: false,
+    );
     await tester.pump();
   });
 
@@ -271,45 +316,151 @@ void main() {
   }
 
   testWidgets(
-      'empty PDA mobile keeps help reachable and disables quick actions', (
+      'empty PDA keeps Algorithms presets reachable and other actions disabled',
+      (
     tester,
   ) async {
     await _pumpPdaPage(tester, size: const Size(800, 900));
 
-    final trayHelp = find.descendant(
-      of: find.byType(MobileAutomatonControls),
-      matching: find.byTooltip('Help'),
+    await expandCanvasToolbar(tester);
+    final simulateButton = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byTooltip('Simulate'),
+        matching: find.byType(IconButton),
+      ),
     );
-    expect(trayHelp, findsOneWidget);
-    // With no machine loaded the quick actions stay visible but disabled,
-    // and the stack inspector is still available.
-    for (final tooltip in const ['Simulate', 'Algorithms']) {
-      final button = tester.widget<IconButton>(
-        find.ancestor(
-          of: find.byTooltip(tooltip),
-          matching: find.byType(IconButton),
-        ),
-      );
-      expect(button.onPressed, isNull, reason: '$tooltip should be disabled');
-    }
+    expect(simulateButton.onPressed, isNull);
+    final algorithms = find.byTooltip('Algorithms');
+    expect(
+      tester
+          .widget<IconButton>(
+            find.ancestor(
+              of: algorithms,
+              matching: find.byType(IconButton),
+            ),
+          )
+          .onPressed,
+      isNotNull,
+    );
     expect(find.byType(PDAStackPanel), findsOneWidget);
 
-    await tester.tap(trayHelp);
+    await tester.tap(algorithms);
+    await tester.pumpAndSettle();
+    await pumpUntilFound(tester, find.text('APD - Parênteses Balanceados'));
+    for (final example in const [
+      'APD - Parênteses Balanceados',
+      'APD - a^n b^n',
+      'APD - Palíndromo',
+      'APD - a^n b^2n',
+      'APD - w#reverse(w)',
+    ]) {
+      expect(find.text(example), findsOneWidget);
+    }
+    Navigator.of(tester.element(find.byType(BottomSheet))).pop();
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsOneWidget);
-    await tester.tap(find.widgetWithIcon(TextButton, Icons.keyboard));
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Help & Shortcuts',
+      menuLabel: 'Help & Shortcuts',
+      opensRoute: true,
+    );
+
+    final page = tester.widget<HelpPage>(find.byType(HelpPage));
+    final node = find.byKey(
+      const ValueKey('help-node-${HelpTopicIds.pdaEditorOverview}'),
+    );
+    expect(page.initialTopicId, HelpTopicIds.pdaEditorOverview);
+    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+    expect(
+      find.byKey(
+        const ValueKey('help-body-${HelpTopicIds.pdaEditorOverview}'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('populated PDA Help maps theory and active stack workflow', (
+    tester,
+  ) async {
+    await _pumpPdaPage(tester, size: const Size(800, 900));
+    final canvas = tester.widget<PDACanvasGraphView>(
+      find.byType(PDACanvasGraphView),
+    );
+    canvas.controller!.addStateAt(const Offset(140, 180));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsNothing);
-    expect(find.byType(KeyboardShortcutsDialog), findsOneWidget);
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Help & Shortcuts',
+      menuLabel: 'Help & Shortcuts',
+      opensRoute: true,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
+      HelpTopicIds.pdaTheoryPda,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('help-body-${HelpTopicIds.pdaTheoryPda}'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Simulate'));
+    await tester.pumpAndSettle();
+    final simulation = tester.widget<PDASimulationPanel>(
+      find.byType(PDASimulationPanel),
+    );
+    simulation.onStackChanged!(const StackState(symbols: ['Z']));
+    await tester.pump();
+    Navigator.of(tester.element(find.byType(PDASimulationPanel))).pop();
+    await tester.pumpAndSettle();
+
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Help & Shortcuts',
+      menuLabel: 'Help & Shortcuts',
+      opensRoute: true,
+    );
+    await tester.pumpAndSettle();
+    final workflowNode = find.byKey(
+      const ValueKey('help-node-${HelpTopicIds.pdaEditorSimulation}'),
+    );
+    expect(
+      tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
+      HelpTopicIds.pdaEditorSimulation,
+    );
+    expect(
+      tester.widget<InkWell>(workflowNode).focusNode?.hasFocus,
+      isTrue,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final determinismButton = tester.widget<AlgorithmButton>(
+      find.ancestor(
+        of: find.text('Check Determinism'),
+        matching: find.byType(AlgorithmButton),
+      ),
+    );
+    expect(determinismButton.icon, Icons.fact_check_outlined);
   });
 
   testWidgets('PDA mobile transition action toggles back to selection', (
     tester,
   ) async {
     await _pumpPdaPage(tester, size: const Size(800, 900));
-    final transitionAction = find.bySemanticsLabel('Add transition');
+    final transitionAction = find.bySemanticsLabel(
+      'Canvas action: Add transition',
+    );
     final originalCanvas = tester.widget<PDACanvasGraphView>(
       find.byType(PDACanvasGraphView),
     );
@@ -324,8 +475,8 @@ void main() {
 
     expect(
       tester
-          .widget<MobileAutomatonControls>(
-            find.byType(MobileAutomatonControls),
+          .widget<GraphViewCanvasToolbar>(
+            find.byType(GraphViewCanvasToolbar),
           )
           .activeTool,
       AutomatonCanvasTool.transition,
@@ -336,8 +487,8 @@ void main() {
 
     expect(
       tester
-          .widget<MobileAutomatonControls>(
-            find.byType(MobileAutomatonControls),
+          .widget<GraphViewCanvasToolbar>(
+            find.byType(GraphViewCanvasToolbar),
           )
           .activeTool,
       AutomatonCanvasTool.selection,
@@ -405,10 +556,13 @@ void main() {
     );
     expect(canvas.currentStack!.symbols, ['Z', 'A']);
 
-    await tester.tap(
-      find.bySemanticsLabel('Canvas action: Clear canvas'),
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Clear canvas',
+      menuLabel: 'Clear canvas',
+      opensRoute: false,
     );
-    await tester.pump();
 
     canvas = tester.widget<PDACanvasGraphView>(
       find.byType(PDACanvasGraphView),

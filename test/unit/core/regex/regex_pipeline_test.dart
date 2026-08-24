@@ -2,10 +2,10 @@
 //  regex_pipeline_test.dart
 //  Turing Lab
 //
-//  Testes que validam o pipeline de expressões regulares até a construção de
-//  autômatos finitos não determinísticos, avaliando literais, concatenação,
-//  união, estrela de Kleene e operadores opcionais, além de assegurar o
-//  tratamento adequado de entradas inválidas pelo parser.
+//  Tests that validate the regular-expression pipeline through construction of
+//  nondeterministic finite automata, covering literals, concatenation,
+//  union, Kleene star, and optional operators, and confirming
+//  proper handling of invalid parser input.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

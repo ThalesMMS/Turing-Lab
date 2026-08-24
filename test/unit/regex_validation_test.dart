@@ -2,8 +2,8 @@
 //  regex_validation_test.dart
 //  Turing Lab
 //
-//  Suite que verifica as conversões entre expressões regulares e autômatos finitos cobrindo ida e volta no pipeline de linguagem formal.
-//  Os casos exercitam operadores avançados, simulam os autômatos gerados e confirmam consistência com a implementação de referência.
+//  Suite that verifies conversions between regular expressions and finite automata, covering the round-trip formal-language pipeline.
+//  Cases exercise advanced operators, simulate the generated automata, and confirm consistency with the reference implementation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

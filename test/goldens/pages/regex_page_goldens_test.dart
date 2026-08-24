@@ -2,12 +2,11 @@
 //  regex_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para componentes da Regex page,
-//  capturando snapshots de estados críticos: layouts desktop/tablet/mobile,
-//  formulário vazio, validação de regex, testes de string, comparação de
-//  equivalência, e resultados de conversão FA→Regex. Garante consistência
-//  visual da interface de expressões regulares entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for Regex page components, capturing
+//  snapshots of critical states: desktop/tablet/mobile layouts, empty form,
+//  regex validation, string tests, equivalence comparison, and FA→Regex
+//  conversion results. Guards visual consistency of the regular-expression UI
+//  across changes and catches automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -293,25 +292,6 @@ void main() {
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'regex_page_input_mobile');
-    });
-
-    testGoldens('renders page with help section in mobile layout', (
-      tester,
-    ) async {
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await _pumpRegexPage(tester, size: const Size(430, 932));
-
-      final helpButton = tester
-          .widgetList<FloatingActionButton>(find.byType(FloatingActionButton))
-          .firstWhere((button) => button.onPressed != null);
-      helpButton.onPressed!.call();
-      await tester.pumpAndSettle();
-
-      await screenMatchesGolden(tester, 'regex_page_help_mobile');
     });
   });
 }

@@ -2,12 +2,12 @@
 //  pda_simulation_panel.dart
 //  Turing Lab
 //
-//  Responsável pela simulação de autômatos de pilha no aplicativo, permitindo
-//  configurar cadeia de entrada, símbolo inicial da pilha, gravação de traço e
-//  visualizar resultados aceitos ou rejeitados com mensagens de erro.
-//  Integra-se ao PDAEditorProvider e ao serviço de destaque para sincronizar o
-//  canvas, administrando controladores e estado local a fim de preservar
-//  interações entre execuções.
+//  Handles pushdown-automaton simulation in the app, allowing input
+//  string and initial stack symbol configuration, trace recording, and
+//  accepted/rejected results with error messages.
+//  Integrates with PDAEditorProvider and the highlight service to sync
+//  the canvas, managing controllers and local state so interactions
+//  survive across runs.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

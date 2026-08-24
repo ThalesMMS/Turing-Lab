@@ -2,10 +2,10 @@
 //  regex_analyzer_test.dart
 //  Turing Lab
 //
-//  Testes que validam a análise de expressões regulares, incluindo métricas
-//  de complexidade (star height, nesting depth), contagem de operadores,
-//  extração de alfabeto e geração de strings de exemplo. Assegura que o
-//  analisador computa corretamente todas as métricas para uso educacional.
+//  Tests that validate regular-expression analysis, including complexity
+//  metrics (star height, nesting depth), operator counts,
+//  alphabet extraction, and sample-string generation. Ensures the
+//  analyzer computes all metrics correctly for educational use.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

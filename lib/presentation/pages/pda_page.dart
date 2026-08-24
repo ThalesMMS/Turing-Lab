@@ -2,10 +2,10 @@
 //  pda_page.dart
 //  Turing Lab
 //
-//  Administra a página de Autômatos de Pilha integrando canvas GraphView,
-//  painéis de simulação e algoritmos, monitorando métricas e mudanças para
-//  manter o estado sincronizado entre controladores, provedores e dispositivos
-//  móveis ou desktop.
+//  Hosts the Pushdown Automata page, integrating a GraphView canvas with
+//  simulation and algorithm panels, and tracking metrics and changes to
+//  keep state in sync across controllers, providers, and mobile or
+//  desktop devices.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/pda.dart';
+import '../../core/constants/help_topic_ids.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
@@ -25,7 +26,6 @@ import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/canvas_simulation_playback_bar.dart';
 import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
-import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/pda_canvas_graphview.dart';
 import '../widgets/pda_algorithm_panel.dart';
 import '../widgets/pda_simulation_panel.dart';
@@ -58,6 +58,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
   bool _isSimulating = false;
   bool _canvasPlaybackSupported = false;
   List<SimulationStep>? _canvasSimulationSteps;
+  EdgeInsets _canvasToolbarInsets = EdgeInsets.zero;
   late final GraphViewPdaCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
   late final CanvasHighlightSourceHandle _validationHighlights;
@@ -153,6 +154,13 @@ class _PDAPageState extends ConsumerState<PDAPage>
     _canvasController.addStateAtCenter();
   }
 
+  void _handleCanvasToolbarInsetsChanged(EdgeInsets insets) {
+    if (!mounted || _canvasToolbarInsets == insets) return;
+    setState(() {
+      _canvasToolbarInsets = insets;
+    });
+  }
+
   @override
   void dispose() {
     _pdaEditorSub?.close();
@@ -205,20 +213,18 @@ class _PDAPageState extends ConsumerState<PDAPage>
     final editorState = ref.read(pdaEditorProvider);
     final pda = editorState.pda;
 
-    // Determine the most relevant help content based on current PDA state
-    String helpContextId;
+    String topicId;
     if (pda == null || pda.states.isEmpty) {
-      helpContextId = 'usage_getting_started';
+      topicId = HelpTopicIds.pdaEditorOverview;
     } else if (_isSimulating || _currentStack.symbols.isNotEmpty) {
-      helpContextId = 'concept_stack';
+      topicId = HelpTopicIds.pdaEditorSimulation;
     } else {
-      helpContextId = 'concept_pda';
+      topicId = HelpTopicIds.pdaTheoryPda;
     }
 
     showWorkspaceHelp(
       context: context,
-      ref: ref,
-      contextId: helpContextId,
+      topicId: topicId,
     );
   }
 
@@ -232,8 +238,13 @@ class _PDAPageState extends ConsumerState<PDAPage>
       overrides: _canvasHighlightOverrides,
       child: AutomatonWorkspaceScaffold(
         canvasWithToolbar: _buildCanvasWithToolbar,
-        algorithmPanel: const PDAAlgorithmPanel(),
-        tabletAlgorithmPanel: const PDAAlgorithmPanel(useExpanded: false),
+        algorithmPanel: PDAAlgorithmPanel(
+          onApplyPda: _canvasController.replacePda,
+        ),
+        tabletAlgorithmPanel: PDAAlgorithmPanel(
+          useExpanded: false,
+          onApplyPda: _canvasController.replacePda,
+        ),
         simulationPanel: PDASimulationPanel(
           highlightService: _highlightService,
           onStackChanged: _handleStackChanged,
@@ -266,7 +277,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
         floatingActionButton: FloatingActionButton(
           heroTag: 'pda_context_help_fab',
           onPressed: _showContextualHelp,
-          tooltip: 'Context-Aware Help',
+          tooltip: appLocalizationsOf(context).canvasHelpAction,
           child: const Icon(Icons.help_outline),
         ),
       ),
@@ -412,7 +423,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
         onSimulate: _openSimulationSheet,
         onAlgorithms: _openAlgorithmSheet,
         simulateEnabled: hasPda,
-        algorithmsEnabled: hasPda,
       ),
     );
 
@@ -424,7 +434,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
             Positioned(
               left: 16,
               right: 16,
-              bottom: 144,
+              bottom: _canvasToolbarInsets.bottom + 16,
               child: CanvasSimulationPlaybackBar(
                 key: ValueKey(steps),
                 stepCount: steps.length,
@@ -436,8 +446,10 @@ class _PDAPageState extends ConsumerState<PDAPage>
           AnimatedBuilder(
             animation: _canvasListenable,
             builder: (context, _) {
-              return MobileAutomatonControls(
-                onHelp: _showContextualHelp,
+              return GraphViewCanvasToolbar(
+                controller: _canvasController,
+                placement: CanvasToolbarPlacement.bottomCenter,
+                onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
                 enableToolSelection: true,
                 showSelectionTool: true,
                 activeTool: _toolController.activeTool,
@@ -448,15 +460,8 @@ class _PDAPageState extends ConsumerState<PDAPage>
                 onAddTransition: () => _toolController.toggleTool(
                   AutomatonCanvasTool.transition,
                 ),
-                onZoomIn: _canvasController.zoomIn,
-                onZoomOut: _canvasController.zoomOut,
-                onFitToContent: _canvasController.fitToContent,
-                onResetView: _canvasController.resetView,
+                onHelp: _showContextualHelp,
                 onClear: _clearCanvasPda,
-                onUndo: _canvasController.undo,
-                onRedo: _canvasController.redo,
-                canUndo: _canvasController.canUndo,
-                canRedo: _canvasController.canRedo,
                 statusMessage: statusMessage,
               );
             },
@@ -473,6 +478,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
           builder: (context, _) {
             return GraphViewCanvasToolbar(
               controller: _canvasController,
+              onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
               enableToolSelection: true,
               showSelectionTool: true,
               activeTool: _toolController.activeTool,
@@ -536,7 +542,9 @@ class _PDAPageState extends ConsumerState<PDAPage>
       context: context,
       title: 'PDA Algorithms',
       icon: Icons.auto_awesome,
-      child: const PDAAlgorithmPanel(),
+      child: PDAAlgorithmPanel(
+        onApplyPda: _canvasController.replacePda,
+      ),
     );
   }
 

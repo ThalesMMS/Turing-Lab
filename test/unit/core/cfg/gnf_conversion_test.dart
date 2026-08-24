@@ -2,10 +2,10 @@
 //  gnf_conversion_test.dart
 //  Turing Lab
 //
-//  Bateria de testes que valida a conversão de gramáticas livres de contexto
-//  para Forma Normal de Greibach (GNF), verificando que todas as produções
-//  assumem a forma A→aα onde 'a' é um terminal e α é uma sequência de
-//  não-terminais, preservando a linguagem original.
+//  Test suite for converting context-free grammars
+//  to Greibach normal form (GNF), checking that every production
+//  has the form A→aα where 'a' is a terminal and α is a sequence of
+//  nonterminals, while preserving the original language.
 //
 //  Thales Matheus Mendonça Santos - January 2025
 //

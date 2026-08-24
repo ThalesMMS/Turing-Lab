@@ -2,10 +2,10 @@
 //  regex_to_nfa_converter_steps_test.dart
 //  Turing Lab
 //
-//  Testes que cobrem o método convertWithSteps do RegexToNFAConverter,
-//  incluindo a estrutura do resultado (RegexToNFAConversionResult), os
-//  passos detalhados de construção de Thompson e os metadados do passo
-//  final gerados pelos arquivos part refatorados.
+//  Tests covering RegexToNFAConverter.convertWithSteps,
+//  including the result structure (RegexToNFAConversionResult),
+//  detailed Thompson-construction steps, and final-step metadata
+//  produced by the refactored part files.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

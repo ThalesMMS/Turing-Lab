@@ -2,8 +2,8 @@
 //  nfa_to_dfa_validation_test.dart
 //  Turing Lab
 //
-//  Testes focados na conversão de AFNs para DFAs garantindo que a linguagem e os diagnósticos permaneçam equivalentes após o processo.
-//  Abrange exemplos com transições lambda e epsilon, construções complexas e validação dos autômatos resultantes por simulação.
+//  Tests focused on NFA-to-DFA conversion, ensuring the language and diagnostics stay equivalent after the process.
+//  Covers examples with lambda and epsilon transitions, complex constructions, and validation of the resulting automata by simulation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

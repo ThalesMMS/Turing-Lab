@@ -2,8 +2,8 @@
 //  cyk_parser_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes dedicado ao parser CYK da camada core verificando construção de tabela, árvores de derivação e integração com gramáticas normalizadas.
-//  Abrange cadeias válidas e inválidas, produções lambda e unitárias, além de assegurar o detalhamento do resultado retornado.
+//  Test suite for the core CYK parser, checking table construction, parse trees, and integration with normalized grammars.
+//  Covers valid and invalid strings, lambda and unit productions, and detailed returned results.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

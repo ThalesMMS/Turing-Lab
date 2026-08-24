@@ -2,10 +2,10 @@
 //  pda_simulator_test.dart
 //  Turing Lab
 //
-//  Testes que avaliam o simulador de autômatos de pilha, cobrindo aceitação por
-//  estado final e por pilha vazia, manipulação de símbolos iniciais e uso de
-//  operações push/pop para balanceamento de linguagens clássicas, além do
-//  tratamento de rejeições e ramos não determinísticos.
+//  Tests for the PDA simulator, covering acceptance by
+//  final state and by empty stack, initial-symbol handling, and
+//  push/pop operations for classic balanced languages, plus
+//  rejection handling and nondeterministic branches.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

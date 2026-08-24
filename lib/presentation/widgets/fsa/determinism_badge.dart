@@ -2,8 +2,8 @@
 //  determinism_badge.dart
 //  Turing Lab
 //
-//  Badge visual indicando tipo de autômato finito (DFA/NFA/ε-NFA) com
-//  informações detalhadas sobre determinismo e transições epsilon.
+//  Visual badge showing the finite-automaton type (DFA/NFA/ε-NFA) with
+//  detailed determinism and epsilon-transition information.
 //
 //  Created for Phase 1 improvements - November 2025
 //
@@ -11,7 +11,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/fsa.dart';
 
-/// Informações sobre determinismo do autômato
+/// Information about automaton determinism
 class DeterminismInfo {
   final bool isDeterministic;
   final bool hasEpsilonTransitions;
@@ -25,21 +25,21 @@ class DeterminismInfo {
     this.nonDeterministicSymbols = const [],
   });
 
-  /// Tipo do autômato
+  /// Automaton type
   String get type {
     if (isDeterministic && !hasEpsilonTransitions) return 'DFA';
     if (hasEpsilonTransitions) return 'ε-NFA';
     return 'NFA';
   }
 
-  /// Cor do badge
+  /// Badge color
   Color get badgeColor {
     if (isDeterministic) return Colors.green;
     if (hasEpsilonTransitions) return Colors.purple;
     return Colors.blue;
   }
 
-  /// Mensagem de ajuda
+  /// Help message
   String get helpMessage {
     if (isDeterministic) {
       return 'Deterministic Finite Automaton - each state has at most one transition per symbol';
@@ -50,7 +50,7 @@ class DeterminismInfo {
     }
   }
 
-  /// Cria informações a partir de um FSA
+  /// Creates information from an FSA
   factory DeterminismInfo.fromFSA(FSA fsa) {
     return DeterminismInfo(
       isDeterministic: fsa.isDeterministic,
@@ -101,7 +101,7 @@ class DeterminismInfo {
   }
 }
 
-/// Badge mostrando tipo de FSA (DFA/NFA/ε-NFA)
+/// Badge showing the FSA type (DFA/NFA/ε-NFA)
 class FsaTypeBadge extends StatelessWidget {
   final DeterminismInfo info;
   final VoidCallback? onTap;
@@ -156,7 +156,7 @@ class FsaTypeBadge extends StatelessWidget {
             ),
             if (onTap != null && !isMobile && !compact) ...[
               const SizedBox(width: 4),
-              const Icon(Icons.help_outline, color: Colors.white, size: 14),
+              const Icon(Icons.info_outline, color: Colors.white, size: 14),
             ],
           ],
         ),
@@ -165,7 +165,7 @@ class FsaTypeBadge extends StatelessWidget {
   }
 }
 
-/// Painel detalhado sobre determinismo
+/// Detailed panel about determinism
 class NonDeterminismPanel extends StatelessWidget {
   final DeterminismInfo info;
   final VoidCallback? onClose;
@@ -347,11 +347,18 @@ class NonDeterminismPanel extends StatelessWidget {
   }
 }
 
-/// Overlay do badge no canvas
+/// Canvas overlay for the badge
 class FSADeterminismOverlay extends StatefulWidget {
   final FSA? automaton;
+  final bool isMobile;
+  final double desktopTop;
 
-  const FSADeterminismOverlay({super.key, required this.automaton});
+  const FSADeterminismOverlay({
+    super.key,
+    required this.automaton,
+    this.isMobile = false,
+    this.desktopTop = 16,
+  });
 
   @override
   State<FSADeterminismOverlay> createState() => _FSADeterminismOverlayState();
@@ -365,17 +372,16 @@ class _FSADeterminismOverlayState extends State<FSADeterminismOverlay> {
     if (widget.automaton == null) return const SizedBox.shrink();
 
     final info = DeterminismInfo.fromFSA(widget.automaton!);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
 
     return Stack(
       children: [
         // Badge
         Positioned(
-          top: isMobile ? 60 : 16,
+          top: widget.isMobile ? 60 : widget.desktopTop,
           right: 16,
           child: FsaTypeBadge(
             info: info,
+            compact: widget.isMobile,
             onTap: () {
               setState(() {
                 _showDetails = !_showDetails;
@@ -387,9 +393,9 @@ class _FSADeterminismOverlayState extends State<FSADeterminismOverlay> {
         // Details panel
         if (_showDetails)
           Positioned(
-            top: isMobile ? 100 : 60,
+            top: widget.isMobile ? 100 : widget.desktopTop + 44,
             right: 16,
-            left: isMobile ? 16 : null,
+            left: widget.isMobile ? 16 : null,
             child: NonDeterminismPanel(
               info: info,
               onClose: () {

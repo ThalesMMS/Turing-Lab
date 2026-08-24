@@ -2,15 +2,16 @@
 //  fsa_page.dart
 //  Turing Lab
 //
-//  Configura o ambiente de Autômatos Finitos com canvas GraphView, painéis de
-//  simulação e algoritmos, coordenando controladores, destaques e ferramentas
-//  para oferecer fluxo completo de edição e experimentação responsiva.
+//  Sets up the Finite Automata workspace with a GraphView canvas,
+//  simulation and algorithm panels, coordinating controllers, highlights,
+//  and tools for a full responsive edit-and-experiment flow.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/conversion_step_history.dart';
+import '../../core/constants/help_topic_ids.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/models/simulation_step.dart';
@@ -32,7 +33,6 @@ import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/canvas_simulation_playback_bar.dart';
 import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
-import '../widgets/mobile_automaton_controls.dart';
 import '../widgets/simulation_panel.dart';
 import '../widgets/step_navigation_controls.dart';
 import '../widgets/app_snackbar.dart';
@@ -83,6 +83,7 @@ class _FSAPageState extends ConsumerState<FSAPage>
   bool _stepByStepMode = false;
   bool _canvasPlaybackSupported = false;
   List<SimulationStep>? _canvasSimulationSteps;
+  EdgeInsets _canvasToolbarInsets = EdgeInsets.zero;
   SimulationHighlight? _lastValidationHighlight;
   String? _lastValidationHighlightKey;
   String? _cachedValidationAutomatonKey;
@@ -148,6 +149,13 @@ class _FSAPageState extends ConsumerState<FSAPage>
 
   void _updatePageState(VoidCallback callback) => setState(callback);
 
+  void _handleCanvasToolbarInsetsChanged(EdgeInsets insets) {
+    if (!mounted || _canvasToolbarInsets == insets) return;
+    setState(() {
+      _canvasToolbarInsets = insets;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -190,7 +198,7 @@ class _FSAPageState extends ConsumerState<FSAPage>
         floatingActionButton: FloatingActionButton(
           heroTag: 'fsa_context_help_fab',
           onPressed: _showContextualHelp,
-          tooltip: 'Context-Aware Help',
+          tooltip: appLocalizationsOf(context).canvasHelpAction,
           child: const Icon(Icons.help_outline),
         ),
       ),

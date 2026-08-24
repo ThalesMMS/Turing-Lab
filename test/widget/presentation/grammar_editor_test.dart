@@ -2,11 +2,10 @@
 //  grammar_editor_test.dart
 //  Turing Lab
 //
-//  Suite abrangente que examina o GrammarEditor, garantindo integração com
-//  provedores simulados e validações de interação por formulários. Os testes
-//  validam adição, edição e remoção de produções, atualização de metadados,
-//  ações de limpeza e respostas a validações de entrada, assegurando
-//  consistência entre a interface e o estado da gramática.
+//  Comprehensive suite covering GrammarEditor, including stub providers and
+//  form-driven interaction. The tests validate adding, editing, and removing
+//  productions, metadata updates, clear actions, and input-validation
+//  responses, keeping the UI in sync with grammar state.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

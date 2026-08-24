@@ -2,10 +2,10 @@
 //  pda_editor_provider.dart
 //  Turing Lab
 //
-//  Declara o estado e o StateNotifier responsáveis por controlar o autômato de
-//  pilha editado no canvas, mantendo transições lambda, escolhas
-//  não determinísticas e sincronizando as mutações de estados com estruturas
-//  imutáveis usadas por simuladores, exportadores e destaques visuais.
+//  Declares the state and StateNotifier that control the pushdown
+//  automaton edited on the canvas, keeping lambda transitions and
+//  nondeterministic choices while syncing state mutations with immutable
+//  structures used by simulators, exporters, and visual highlights.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

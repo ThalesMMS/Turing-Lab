@@ -2,12 +2,11 @@
 //  automaton_graphview_canvas_test.dart
 //  Turing Lab
 //
-//  Suite abrangente que examina o AutomatonGraphViewCanvas, garantindo
-//  integração com provedores simulados, controlador personalizado e repositório
-//  de layout em cenários de interação por gestos. Os testes validam adição e
-//  movimentação de estados, edição inline de transições e respostas a layouts
-//  não suportados, assegurando consistência entre a interface e o estado do
-//  autômato.
+//  Comprehensive suite covering AutomatonGraphViewCanvas, including
+//  integration with stub providers, a custom controller, and a layout
+//  repository under gesture-driven interaction. The tests validate adding
+//  and moving states, inline transition editing, and unsupported-layout
+//  responses, keeping the UI in sync with automaton state.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -891,9 +890,12 @@ void main() {
 
       await tester.pump();
 
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
       await tester.pump();
       expect(controller.addStateAtCallCount, equals(1));
+      expect(controller.lastAddStateWorldOffset, const Offset(400, 300));
+      expect(toolController.activeTool, AutomatonCanvasTool.addState);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyT);
       await tester.pump();
@@ -1270,6 +1272,27 @@ void main() {
       await tester.pump();
 
       expect(_nodeBackgroundColor(tester, 'A'), colors.primaryContainer);
+    });
+
+    testWidgets('warning and error state highlights use distinct canvas tones',
+        (
+      tester,
+    ) async {
+      final automaton = buildAutomaton({});
+      await pumpCanvas(tester, automaton);
+      final colors = Theme.of(tester.element(find.text('A'))).colorScheme;
+
+      controller.applyHighlight(
+        SimulationHighlight(warningStateIds: {'A'}),
+      );
+      await tester.pump();
+      expect(_nodeBackgroundColor(tester, 'A'), colors.tertiaryContainer);
+
+      controller.applyHighlight(
+        SimulationHighlight(errorStateIds: {'A'}),
+      );
+      await tester.pump();
+      expect(_nodeBackgroundColor(tester, 'A'), colors.errorContainer);
     });
 
     testWidgets('tapping a transition path opens its editor directly', (

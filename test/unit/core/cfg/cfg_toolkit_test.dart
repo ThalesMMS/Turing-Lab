@@ -2,10 +2,10 @@
 //  cfg_toolkit_test.dart
 //  Turing Lab
 //
-//  Bateria de testes que valida o toolkit de gramáticas livres de contexto,
-//  cobrindo remoção de produções λ e unitárias, eliminação de símbolos inúteis,
-//  conversão para Forma Normal de Chomsky e verificação da preservação da
-//  linguagem após transformações sequenciais.
+//  Test suite for the context-free grammar toolkit,
+//  covering removal of λ and unit productions, elimination of useless symbols,
+//  conversion to Chomsky normal form, and checks that the language is preserved
+//  after sequential transformations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

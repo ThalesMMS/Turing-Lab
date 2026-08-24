@@ -2,24 +2,28 @@
 //  algorithm_panel.dart
 //  Turing Lab
 //
-//  Consolida os comandos de algoritmos aplicáveis aos autômatos finitos,
-//  reunindo conversões NFA→DFA, minimização, complementação, operações de
-//  linguagem e transformações com expressões regulares em um painel único.
-//  Controla progresso, feedback textual e carregamento de autômatos externos via
-//  FilePicker, executando callbacks fornecidos pela camada de apresentação para
-//  orquestrar algoritmos específicos.
+//  Consolidates algorithm commands for finite automata, gathering
+//  NFA→DFA conversion, minimization, complementation, language operations,
+//  and regular-expression transforms in a single panel.
+//  Controls progress, textual feedback, and loading of external automata
+//  via FilePicker, running presentation-layer callbacks to orchestrate
+//  specific algorithms.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/models/asset_example.dart';
 import '../../core/models/fsa.dart';
+import '../../core/repositories/examples_repository.dart';
+import '../../core/result.dart';
 import '../../core/services/file_operations_gateway.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../providers/algorithm_step_provider.dart';
+import '../providers/automaton_state_provider.dart';
 import 'algorithm_panel_scaffold.dart';
 import 'app_snackbar.dart';
 import 'algorithm_step_navigator.dart';
@@ -42,6 +46,9 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
   final VoidCallback? onCompleteDfa;
   final VoidCallback? onComplementDfa;
   final Future<void> Function(FSA other)? onUnionDfa;
+  final Future<void> Function(FSA other)? onConcatenateFsa;
+  final VoidCallback? onKleeneStarFsa;
+  final VoidCallback? onReverseFsa;
   final Future<void> Function(FSA other)? onIntersectionDfa;
   final Future<void> Function(FSA other)? onDifferenceDfa;
   final VoidCallback? onPrefixClosure;
@@ -54,6 +61,8 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
   final ValueChanged<bool>? onStepByStepModeChanged;
   final FileOperationsGateway? fileService;
   final AlgorithmStepRendererRegistry? rendererRegistry;
+  final bool showExamples;
+  final ExamplesRepository? examplesDataSource;
 
   const AlgorithmPanel({
     super.key,
@@ -67,6 +76,9 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
     this.onCompleteDfa,
     this.onComplementDfa,
     this.onUnionDfa,
+    this.onConcatenateFsa,
+    this.onKleeneStarFsa,
+    this.onReverseFsa,
     this.onIntersectionDfa,
     this.onDifferenceDfa,
     this.onPrefixClosure,
@@ -79,6 +91,8 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
     this.onStepByStepModeChanged,
     this.rendererRegistry,
     this.fileService,
+    this.showExamples = false,
+    this.examplesDataSource,
   });
 
   @override
@@ -93,6 +107,9 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   double _executionProgress = 0.0;
   String? _executionStatus;
   bool _stepByStepMode = false;
+  String? _loadingExampleName;
+  ExamplesRepository? _examplesDataSource;
+  Future<ListResult<AssetExample<FSA>>>? _fsaExamplesFuture;
 
   void _showSnack(String message, {bool isError = false}) {
     showAppSnackBar(
@@ -112,6 +129,11 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   void initState() {
     super.initState();
     _fileService = widget.fileService ?? ref.read(fileOperationsProvider);
+    if (widget.showExamples) {
+      _examplesDataSource =
+          widget.examplesDataSource ?? ref.read(examplesRepositoryProvider);
+      _fsaExamplesFuture = _examplesDataSource!.loadAllTypedFsaExamples();
+    }
   }
 
   @override
@@ -122,6 +144,17 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
       paddingInsideScroll: false,
       spacing: 0,
       children: [
+        if (_fsaExamplesFuture case final examplesFuture?) ...[
+          AlgorithmExamplesSection<FSA>(
+            examplesFuture: examplesFuture,
+            loadingExampleName: _loadingExampleName,
+            onExampleSelected: _loadSelectedExample,
+            failureMessage: 'Failed to load FSA examples.',
+            emptyMessage: 'No FSA examples available.',
+          ),
+          const SizedBox(height: 16),
+          const Divider(),
+        ],
         const SizedBox(height: 16),
 
         // Step-by-Step Mode toggle
@@ -261,6 +294,75 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
               _currentAlgorithm == 'Union of DFAs' ? _executionProgress : null,
           executionStatus:
               _currentAlgorithm == 'Union of DFAs' ? _executionStatus : null,
+        ),
+
+        const SizedBox(height: 12),
+
+        // Concatenation of FSAs
+        AlgorithmButton(
+          title: 'Concatenation of FSAs',
+          description: 'Append another automaton language using ε-transitions',
+          icon: Icons.link,
+          onPressed: () => _runBinaryOperation(
+            algorithmName: 'Concatenation of FSAs',
+            callback: widget.onConcatenateFsa,
+            dialogTitle: 'Select FSA for concatenation',
+            executingStatus: 'Building concatenation NFA...',
+            successStatus: 'Concatenation complete',
+            missingCallbackMessage:
+                'Load an FSA before computing the concatenation.',
+          ),
+          isExecuting:
+              _isExecuting && _currentAlgorithm == 'Concatenation of FSAs',
+          isSelected: _currentAlgorithm == 'Concatenation of FSAs',
+          executionProgress: _currentAlgorithm == 'Concatenation of FSAs'
+              ? _executionProgress
+              : null,
+          executionStatus: _currentAlgorithm == 'Concatenation of FSAs'
+              ? _executionStatus
+              : null,
+        ),
+
+        const SizedBox(height: 12),
+
+        // Kleene star of an FSA
+        AlgorithmButton(
+          title: 'Kleene Star',
+          description: 'Accept zero or more repetitions of this FSA language',
+          icon: Icons.all_inclusive,
+          onPressed: widget.onKleeneStarFsa == null
+              ? null
+              : () => _executeAlgorithm(
+                    'Kleene Star',
+                    widget.onKleeneStarFsa,
+                  ),
+          isExecuting: _isExecuting && _currentAlgorithm == 'Kleene Star',
+          isSelected: _currentAlgorithm == 'Kleene Star',
+          executionProgress:
+              _currentAlgorithm == 'Kleene Star' ? _executionProgress : null,
+          executionStatus:
+              _currentAlgorithm == 'Kleene Star' ? _executionStatus : null,
+        ),
+
+        const SizedBox(height: 12),
+
+        // Reverse an FSA language
+        AlgorithmButton(
+          title: 'Reverse FSA',
+          description: 'Accept the reverse of every word in this FSA language',
+          icon: Icons.swap_horiz,
+          onPressed: widget.onReverseFsa == null
+              ? null
+              : () => _executeAlgorithm(
+                    'Reverse FSA',
+                    widget.onReverseFsa,
+                  ),
+          isExecuting: _isExecuting && _currentAlgorithm == 'Reverse FSA',
+          isSelected: _currentAlgorithm == 'Reverse FSA',
+          executionProgress:
+              _currentAlgorithm == 'Reverse FSA' ? _executionProgress : null,
+          executionStatus:
+              _currentAlgorithm == 'Reverse FSA' ? _executionStatus : null,
         ),
 
         const SizedBox(height: 12),
@@ -455,6 +557,36 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
         if (_stepByStepMode) _buildStepNavigator(context),
       ],
     );
+  }
+
+  Future<void> _loadSelectedExample(String exampleName) async {
+    setState(() {
+      _loadingExampleName = exampleName;
+    });
+
+    try {
+      final result =
+          await _examplesDataSource!.loadTypedFsaExample(exampleName);
+      if (!mounted) return;
+
+      if (result.isFailure) {
+        _showSnack('Failed to load example: ${result.error}', isError: true);
+        return;
+      }
+
+      final automaton = result.data!.payload;
+      ref.read(automatonStateProvider.notifier).updateAutomaton(automaton);
+      _showSnack('Example loaded: ${automaton.name}');
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Failed to load example: $error', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingExampleName = null;
+        });
+      }
+    }
   }
 
   Widget _buildRegexInput(BuildContext context) {

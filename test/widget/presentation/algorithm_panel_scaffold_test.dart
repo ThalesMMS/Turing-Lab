@@ -78,9 +78,14 @@ void main() {
     );
 
     final scroll = find.byType(SingleChildScrollView);
+    final configuredPadding = find.byWidgetPredicate(
+      (widget) =>
+          widget is Padding && widget.padding == const EdgeInsets.all(16),
+    );
 
+    expect(configuredPadding, findsOneWidget);
     expect(
-      find.ancestor(of: scroll, matching: find.byType(Padding)),
+      find.descendant(of: configuredPadding, matching: scroll),
       findsOneWidget,
     );
   });
@@ -152,7 +157,8 @@ void main() {
       ),
     );
 
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byIcon(Icons.hourglass_top), findsOneWidget);
+    expect(find.text('Loading examples...'), findsOneWidget);
     await tester.pump();
   });
 

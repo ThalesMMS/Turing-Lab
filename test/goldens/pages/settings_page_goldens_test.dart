@@ -2,16 +2,15 @@
 //  settings_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para a Settings page, capturando snapshots
-//  de estados críticos: layouts desktop/tablet/mobile, configurações padrão,
-//  configurações customizadas, diferentes temas e tamanhos. Garante consistência
-//  visual da interface de configurações entre mudanças e detecta regressões
-//  automáticas.
+//  Visual regression golden tests for the Settings page, capturing snapshots
+//  of critical states: desktop/tablet/mobile layouts, default settings,
+//  custom settings, and different themes and sizes. Guards visual consistency
+//  of the settings UI across changes and catches automatic regressions.
 //
-//  NOTA: Devido a problemas de lifecycle do SettingsProvider com Riverpod em
-//  testes golden, este arquivo atualmente testa componentes visuais mockados da
-//  página de configurações ao invés da SettingsPage completa. Isso mantém a
-//  cobertura de regressão visual enquanto evita crashes de teste.
+//  NOTE: Because of SettingsProvider lifecycle issues with Riverpod in golden
+//  tests, this file currently tests mocked visual components of the settings
+//  page instead of the full SettingsPage. That keeps visual regression coverage
+//  while avoiding test crashes.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,8 +2,8 @@
 //  nfa_validation_test.dart
 //  Turing Lab
 //
-//  Casos de teste que avaliam o simulador de AFNs e a conversão para DFAs garantindo alinhamento com os exemplos clássicos usados como referência.
-//  Os experimentos exploram caminhos não determinísticos, fechos epsilon, símbolos fora do alfabeto e verificações de aceitação versus rejeição.
+//  Test cases for the NFA simulator and conversion to DFAs, aligned with the classic examples used as a reference.
+//  They explore nondeterministic paths, epsilon closures, symbols outside the alphabet, and acceptance versus rejection checks.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

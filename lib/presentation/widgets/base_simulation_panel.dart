@@ -2,10 +2,10 @@
 //  base_simulation_panel.dart
 //  Turing Lab
 //
-//  Componentes compartilhados para painéis de simulação, incluindo shell,
-//  cabeçalho, seção de entrada, botão de execução e estados de resultado.
-//  Mantém a estrutura visual comum sem assumir a lógica específica de FA, PDA
-//  ou TM.
+//  Shared components for simulation panels, including the shell, header,
+//  input section, run button, and result states.
+//  Keeps the common visual structure without assuming FA, PDA, or TM
+//  specific logic.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

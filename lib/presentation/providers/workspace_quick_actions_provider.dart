@@ -2,9 +2,9 @@
 //  workspace_quick_actions_provider.dart
 //  Turing Lab
 //
-//  Publica as ações rápidas (ajuda contextual, simulação, algoritmos e
-//  métricas) do workspace ativo para que a AppBar global renderize os
-//  atalhos no lugar do antigo menu flutuante sobre o canvas.
+//  Publishes quick actions (contextual help, simulation, algorithms, and
+//  metrics) for the active workspace so the global AppBar can render the
+//  shortcuts in place of the old floating menu over the canvas.
 //
 //  Thales Matheus Mendonça Santos - August 2026
 //
@@ -27,18 +27,28 @@ class WorkspaceQuickActions {
     this.onHelp,
     this.onSimulate,
     this.onAlgorithms,
+    this.onEdit,
     this.onMetrics,
+    this.simulateTooltip,
+    this.editTooltip,
+    this.algorithmsBeforeSimulation = false,
     this.simulateEnabled = true,
     this.algorithmsEnabled = true,
+    this.editEnabled = true,
     this.metricsEnabled = true,
   });
 
   final VoidCallback? onHelp;
   final VoidCallback? onSimulate;
   final VoidCallback? onAlgorithms;
+  final VoidCallback? onEdit;
   final VoidCallback? onMetrics;
+  final String? simulateTooltip;
+  final String? editTooltip;
+  final bool algorithmsBeforeSimulation;
   final bool simulateEnabled;
   final bool algorithmsEnabled;
+  final bool editEnabled;
   final bool metricsEnabled;
 
   @override
@@ -48,9 +58,14 @@ class WorkspaceQuickActions {
             other.onHelp == onHelp &&
             other.onSimulate == onSimulate &&
             other.onAlgorithms == onAlgorithms &&
+            other.onEdit == onEdit &&
             other.onMetrics == onMetrics &&
+            other.simulateTooltip == simulateTooltip &&
+            other.editTooltip == editTooltip &&
+            other.algorithmsBeforeSimulation == algorithmsBeforeSimulation &&
             other.simulateEnabled == simulateEnabled &&
             other.algorithmsEnabled == algorithmsEnabled &&
+            other.editEnabled == editEnabled &&
             other.metricsEnabled == metricsEnabled;
   }
 
@@ -59,9 +74,14 @@ class WorkspaceQuickActions {
         onHelp,
         onSimulate,
         onAlgorithms,
+        onEdit,
         onMetrics,
+        simulateTooltip,
+        editTooltip,
+        algorithmsBeforeSimulation,
         simulateEnabled,
         algorithmsEnabled,
+        editEnabled,
         metricsEnabled,
       );
 }

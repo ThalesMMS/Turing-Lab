@@ -2,10 +2,10 @@
 //  automaton_simulation_provider.dart
 //  Turing Lab
 //
-//  Gerencia operações de simulação de autômatos finitos, coordenando execução de
-//  passos, persistência de rastreamento e histórico de simulações. Integra o
-//  simulador de núcleo com serviços de apresentação mantendo separação de
-//  responsabilidades com AutomatonStateProvider para operações de estado CRUD.
+//  Manages finite-automaton simulation operations, coordinating step
+//  execution, trace persistence, and simulation history. Integrates the
+//  core simulator with presentation services while keeping CRUD state
+//  operations in AutomatonStateProvider.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

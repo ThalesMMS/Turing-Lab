@@ -2,10 +2,10 @@
 //  tm_page.dart
 //  Turing Lab
 //
-//  Garante o workspace de Máquinas de Turing com canvas GraphView, painéis de
-//  simulação e algoritmos, acompanhando métricas, ferramentas e destaques para
-//  preservar a coerência da máquina entre edições, simulações e layouts
-//  responsivos.
+//  Hosts the Turing Machines workspace with a GraphView canvas,
+//  simulation and algorithm panels, tracking metrics, tools, and
+//  highlights so the machine stays consistent across edits, simulations,
+//  and responsive layouts.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/simulation_highlight.dart';
+import '../../core/constants/help_topic_ids.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_transition.dart';
@@ -32,7 +33,6 @@ import '../widgets/common/workspace_helpers.dart';
 import '../widgets/common/workspace_help.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/automaton_canvas_tool.dart';
-import '../widgets/mobile_automaton_controls.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_tm_canvas_controller.dart';
@@ -62,6 +62,7 @@ class _TMPageState extends ConsumerState<TMPage>
   TapeState _currentTape = TapeState.initial();
   bool _canvasPlaybackSupported = false;
   List<SimulationStep>? _canvasSimulationSteps;
+  EdgeInsets _canvasToolbarInsets = EdgeInsets.zero;
   late final GraphViewTmCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
   late final CanvasHighlightSourceHandle _validationHighlights;
@@ -182,21 +183,26 @@ class _TMPageState extends ConsumerState<TMPage>
     _canvasController.addStateAtCenter();
   }
 
+  void _handleCanvasToolbarInsetsChanged(EdgeInsets insets) {
+    if (!mounted || _canvasToolbarInsets == insets) return;
+    setState(() {
+      _canvasToolbarInsets = insets;
+    });
+  }
+
   void _showContextualHelp() {
     final tm = ref.read(tmEditorProvider).tm;
 
-    // Determine the most relevant help content based on current TM state
-    String helpContextId;
+    String topicId;
     if (tm == null) {
-      helpContextId = 'usage_getting_started';
+      topicId = HelpTopicIds.tmEditorOverview;
     } else {
-      helpContextId = 'concept_tm';
+      topicId = HelpTopicIds.tmTheoryTm;
     }
 
     showWorkspaceHelp(
       context: context,
-      ref: ref,
-      contextId: helpContextId,
+      topicId: topicId,
     );
   }
 
@@ -261,7 +267,7 @@ class _TMPageState extends ConsumerState<TMPage>
         floatingActionButton: FloatingActionButton(
           heroTag: 'tm_context_help_fab',
           onPressed: _showContextualHelp,
-          tooltip: 'Context-Aware Help',
+          tooltip: appLocalizationsOf(context).canvasHelpAction,
           child: const Icon(Icons.help_outline),
         ),
       ),
@@ -311,7 +317,6 @@ class _TMPageState extends ConsumerState<TMPage>
         onAlgorithms: _openAlgorithmSheet,
         onMetrics: _openMetricsSheet,
         simulateEnabled: hasMachine,
-        algorithmsEnabled: hasMachine,
         metricsEnabled: hasMachine,
       ),
     );
@@ -324,7 +329,7 @@ class _TMPageState extends ConsumerState<TMPage>
             Positioned(
               left: 16,
               right: 16,
-              bottom: 144,
+              bottom: _canvasToolbarInsets.bottom + 16,
               child: CanvasSimulationPlaybackBar(
                 key: ValueKey(steps),
                 stepCount: steps.length,
@@ -336,8 +341,10 @@ class _TMPageState extends ConsumerState<TMPage>
           AnimatedBuilder(
             animation: _canvasListenable,
             builder: (context, _) {
-              return MobileAutomatonControls(
-                onHelp: _showContextualHelp,
+              return GraphViewCanvasToolbar(
+                controller: _canvasController,
+                placement: CanvasToolbarPlacement.bottomCenter,
+                onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
                 enableToolSelection: true,
                 showSelectionTool: true,
                 activeTool: _toolController.activeTool,
@@ -346,15 +353,8 @@ class _TMPageState extends ConsumerState<TMPage>
                 onAddState: _handleAddStatePressed,
                 onAddTransition: () =>
                     _toolController.toggleTool(AutomatonCanvasTool.transition),
-                onZoomIn: _canvasController.zoomIn,
-                onZoomOut: _canvasController.zoomOut,
-                onFitToContent: _canvasController.fitToContent,
-                onResetView: _canvasController.resetView,
+                onHelp: _showContextualHelp,
                 onClear: _clearCanvasMachine,
-                onUndo: _canvasController.undo,
-                onRedo: _canvasController.redo,
-                canUndo: _canvasController.canUndo,
-                canRedo: _canvasController.canRedo,
                 statusMessage: statusMessage,
               );
             },
@@ -371,6 +371,7 @@ class _TMPageState extends ConsumerState<TMPage>
           builder: (context, _) {
             return GraphViewCanvasToolbar(
               controller: _canvasController,
+              onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
               enableToolSelection: true,
               showSelectionTool: true,
               activeTool: _toolController.activeTool,
@@ -505,8 +506,6 @@ class _TMPageState extends ConsumerState<TMPage>
   }
 
   void _openAlgorithmSheet() {
-    if (!_hasMachine) return;
-
     _showDraggableSheet(
       builder: (context, controller) {
         return ListView(

@@ -2,7 +2,10 @@
 //  pumping_lemma_progress.dart
 //  Turing Lab
 //
-//  Renderiza painel de acompanhamento do jogo do Lema do Bombeamento com métricas agregadas e histórico recente. Observa o provider dedicado, calcula percentuais localmente e apresenta cartões e listas que facilitam a leitura pedagógica.
+//  Renders the Pumping Lemma game progress panel with aggregated metrics
+//  and recent history. Watches the dedicated provider, computes
+//  percentages locally, and presents cards and lists for pedagogical
+//  reading.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

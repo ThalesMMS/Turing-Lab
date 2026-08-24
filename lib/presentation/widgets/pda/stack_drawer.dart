@@ -2,18 +2,18 @@
 //  stack_drawer.dart
 //  Turing Lab
 //
-//  Bottom drawer para visualização da pilha do PDA, acessível durante edição
-//  e simulação. Suporta modo compacto para mobile e expandido para desktop.
+//  Bottom drawer for PDA stack visualization, available during editing
+//  and simulation. Supports compact mode on mobile and expanded on desktop.
 //
 //  Created for Phase 1 improvements - November 2025
 //
 
 import 'package:flutter/material.dart';
 
-/// Tipo de operação realizada na pilha
+/// Kind of operation performed on the stack
 enum StackOperationType { none, push, pop, replace }
 
-/// Estado da pilha em um momento específico
+/// Stack state at a specific moment
 class StackState {
   final List<String> symbols;
   final String? lastOperation;
@@ -31,7 +31,7 @@ class StackState {
     this.hasUnderflow = false,
   });
 
-  /// Pilha vazia
+  /// Empty stack
   const StackState.empty()
       : symbols = const [],
         lastOperation = null,
@@ -44,16 +44,16 @@ class StackState {
   String? get top => symbols.isEmpty ? null : symbols.last;
   int get size => symbols.length;
 
-  /// True se a pilha atingiu ou excedeu o tamanho máximo
+  /// True if the stack has reached or exceeded the maximum size
   bool get isAtCapacity => symbols.length >= maxStackSize;
 
-  /// True se houve tentativa de pop em pilha vazia
+  /// True if a pop was attempted on an empty stack
   bool get attemptedUnderflow => hasUnderflow;
 
-  /// True se a pilha excedeu o limite
+  /// True if the stack exceeded its limit
   bool get exceededCapacity => hasOverflow;
 
-  /// Cria cópia com push
+  /// Returns a copy after a push
   StackState push(String symbol) {
     final newSymbols = [...symbols, symbol];
     final willOverflow = newSymbols.length > maxStackSize;
@@ -68,7 +68,7 @@ class StackState {
     );
   }
 
-  /// Cria cópia com pop
+  /// Returns a copy after a pop
   StackState pop() {
     if (symbols.isEmpty) {
       // Attempting to pop from empty stack - underflow
@@ -92,7 +92,7 @@ class StackState {
     );
   }
 
-  /// Cria cópia substituindo o topo
+  /// Returns a copy with the top symbol replaced
   StackState replace(String newSymbol) {
     if (symbols.isEmpty) return push(newSymbol);
     final newSymbols = [...symbols];
@@ -108,7 +108,7 @@ class StackState {
   }
 }
 
-/// Painel flutuante para visualização da pilha
+/// Floating panel for stack visualization
 class PDAStackPanel extends StatefulWidget {
   final StackState stackState;
   final String initialStackSymbol;
@@ -208,7 +208,7 @@ class _PDAStackPanelState extends State<PDAStackPanel>
   }
 
   void _scrollToTop() {
-    // Auto-scroll para manter topo da pilha visível
+    // Auto-scroll to keep the stack top visible
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         0.0,

@@ -2,8 +2,8 @@
 //  tm_validation_test.dart
 //  Turing Lab
 //
-//  Bateria de testes que confronta o simulador de máquinas de Turing com casos reais de aceitação, rejeição e detecção de laços infinitos para validar respostas.
-//  As rotinas montam máquinas variadas, verificam transformações de fita e confirmam limites operacionais alinhados com a implementação de referência.
+//  Test suite that compares the Turing-machine simulator with real acceptance, rejection, and infinite-loop detection cases.
+//  Routines build varied machines, check tape transformations, and confirm operational limits aligned with the reference implementation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

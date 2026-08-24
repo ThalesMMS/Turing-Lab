@@ -2,9 +2,9 @@
 //  regex_simplifier_test.dart
 //  Turing Lab
 //
-//  Testes que validam a simplificação de expressões regulares através da
-//  aplicação de identidades algébricas e remoção de parênteses desnecessários,
-//  assegurando que as transformações preservam a semântica da expressão original.
+//  Tests that validate regular-expression simplification via
+//  algebraic identities and removal of unnecessary parentheses,
+//  ensuring transformations preserve the original expression's semantics.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,7 +2,10 @@
 //  pumping_lemma_game.dart
 //  Turing Lab
 //
-//  Entrega o jogo interativo do Lema do Bombeamento com níveis, pontuação e feedback imediato aos estudantes. Orquestra desafios locais, controla estados de rodada e conversa com o provedor de progresso para persistir conquistas e estatísticas.
+//  Delivers the interactive Pumping Lemma game with levels, scoring, and
+//  immediate student feedback. Orchestrates local challenges, controls
+//  round state, and talks to the progress provider to persist
+//  achievements and statistics.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

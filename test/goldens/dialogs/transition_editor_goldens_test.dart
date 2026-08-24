@@ -2,11 +2,11 @@
 //  transition_editor_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para editores de transições (PDA, TM, e
-//  genérico), capturando snapshots de estados críticos: valores iniciais,
-//  toggles lambda ativados/desativados, diferentes direções de fita, modos
-//  touch-optimized. Garante consistência visual dos formulários de edição entre
-//  mudanças e detecta regressões automáticas.
+//  Visual regression golden tests for transition editors (PDA, TM, and
+//  generic), capturing snapshots of critical states: initial values, lambda
+//  toggles on/off, different tape directions, and touch-optimized modes.
+//  Guards visual consistency of edit forms across changes and catches
+//  automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,7 +2,10 @@
 //  tm_transition_operations_editor.dart
 //  Turing Lab
 //
-//  Fornece formulário compacto para editar leituras, escritas e direção de transições de Máquina de Turing. Mantém estado mínimo dos campos, valida submissões e entrega o resultado por callback para integração com editores contextuais.
+//  Provides a compact form to edit Turing-machine transition reads,
+//  writes, and direction. Keeps minimal field state, validates
+//  submissions, and delivers the result via callback for contextual
+//  editors.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

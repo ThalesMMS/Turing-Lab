@@ -2,8 +2,8 @@
 //  direction_icon.dart
 //  Turing Lab
 //
-//  Ícones visuais para direções de movimento da Máquina de Turing (L/R/S)
-//  com cores diferenciadas e tooltips.
+//  Visual icons for Turing-machine movement directions (L/R/S) with
+//  distinct colors and tooltips.
 //
 //  Created for Phase 1 improvements - November 2025
 //
@@ -11,11 +11,11 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/tm_transition.dart';
 
-/// Helper para ícones e cores de direção
+/// Helper for direction icons and colors
 class TMDirectionHelper {
   const TMDirectionHelper._();
 
-  /// Retorna ícone para uma direção
+  /// Returns the icon for a direction
   static IconData getIcon(TapeDirection direction) {
     switch (direction) {
       case TapeDirection.left:
@@ -27,7 +27,7 @@ class TMDirectionHelper {
     }
   }
 
-  /// Retorna cor para uma direção
+  /// Returns the color for a direction
   static Color getColor(TapeDirection direction) {
     switch (direction) {
       case TapeDirection.left:
@@ -39,7 +39,7 @@ class TMDirectionHelper {
     }
   }
 
-  /// Retorna tooltip/label para uma direção
+  /// Returns the tooltip/label for a direction
   static String getLabel(TapeDirection direction) {
     switch (direction) {
       case TapeDirection.left:
@@ -51,7 +51,7 @@ class TMDirectionHelper {
     }
   }
 
-  /// Retorna símbolo de texto simples
+  /// Returns a simple text symbol
   static String getSymbol(TapeDirection direction) {
     switch (direction) {
       case TapeDirection.left:
@@ -64,7 +64,7 @@ class TMDirectionHelper {
   }
 }
 
-/// Widget de ícone de direção
+/// Direction icon widget
 class TMDirectionIcon extends StatelessWidget {
   final TapeDirection direction;
   final double size;
@@ -104,7 +104,7 @@ class TMDirectionIcon extends StatelessWidget {
           Icon(icon, size: size, color: color),
           const SizedBox(width: 4),
           Text(
-            direction.name.toUpperCase()[0], // L, R, ou S
+            direction.name.toUpperCase()[0], // L, R, or S
             style: TextStyle(
               fontSize: size * 0.75,
               fontWeight: FontWeight.bold,
@@ -117,7 +117,7 @@ class TMDirectionIcon extends StatelessWidget {
   }
 }
 
-/// Widget de indicador de direção com texto e ícone
+/// Direction indicator widget with text and icon
 class TMDirectionIndicator extends StatelessWidget {
   final TapeDirection direction;
   final bool showIcon;
@@ -162,7 +162,7 @@ class TMDirectionIndicator extends StatelessWidget {
   }
 }
 
-/// Chip de direção para uso em listas/grids
+/// Direction chip for use in lists/grids
 class TMDirectionChip extends StatelessWidget {
   final TapeDirection direction;
   final VoidCallback? onTap;
@@ -220,7 +220,7 @@ class TMDirectionChip extends StatelessWidget {
   }
 }
 
-/// Seletor de direção com as 3 opções
+/// Direction selector with the three options
 class TMDirectionSelector extends StatelessWidget {
   final TapeDirection selected;
   final ValueChanged<TapeDirection> onChanged;

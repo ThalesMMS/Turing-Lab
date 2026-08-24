@@ -2,11 +2,11 @@
 //  language_comparison_viewer.dart
 //  Turing Lab
 //
-//  Widget para visualização de resultados de comparação de equivalência de
-//  linguagens entre dois autômatos finitos. Exibe o resultado da comparação,
-//  string distinguidora (contraexemplo), autômatos lado a lado, autômato produto
-//  (opcional) e passos do algoritmo, permitindo análise educacional completa da
-//  comparação de linguagens via construção do autômato produto e BFS.
+//  Widget for viewing language-equivalence comparison results between two
+//  finite automata. Shows the comparison outcome, a distinguishing string
+//  (counterexample), side-by-side automata, an optional product automaton,
+//  and algorithm steps for a full educational analysis via product
+//  construction and BFS.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

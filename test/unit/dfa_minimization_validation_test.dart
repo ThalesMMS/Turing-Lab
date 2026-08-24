@@ -2,8 +2,8 @@
 //  dfa_minimization_validation_test.dart
 //  Turing Lab
 //
-//  Testes que verificam o algoritmo de minimização de DFAs assegurando redução correta de estados sem alterar a linguagem reconhecida.
-//  Englobam autômatos básicos, estruturas redundantes, casos já minimizados e máquinas sem estados de aceitação para checar diagnósticos.
+//  Tests that verify DFA minimization, ensuring states are reduced correctly without changing the recognized language.
+//  They cover basic automata, redundant structure, already-minimized cases, and machines with no accepting states to check diagnostics.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,13 +2,12 @@
 //  pda_trace_viewer.dart
 //  Turing Lab
 //
-//  Apresenta os traços de simulação de autômatos de pilha traduzindo os dados
-//  retornados pelo PDASimulator em SimulationResult genérico para reutilizar o
-//  BaseTraceViewer, com destaque para entrada remanescente, conteúdo da pilha e
-//  transições utilizadas.
-//  Harmoniza mensagens de aceitação e rejeição, integra-se ao serviço de
-//  destaque do canvas e reforça convenções teóricas como λ para representar
-//  cadeia vazia e pilhas descarregadas.
+//  Presents PDA simulation traces by translating PDASimulator data into a
+//  generic SimulationResult so BaseTraceViewer can be reused, highlighting
+//  remaining input, stack contents, and used transitions.
+//  Harmonizes accept/reject messages, integrates with the canvas
+//  highlight service, and reinforces theoretical conventions such as λ
+//  for the empty string and emptied stacks.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

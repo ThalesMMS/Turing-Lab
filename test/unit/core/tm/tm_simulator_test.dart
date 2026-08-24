@@ -2,9 +2,9 @@
 //  tm_simulator_test.dart
 //  Turing Lab
 //
-//  Testes abrangentes para o simulador de máquinas de Turing, incluindo cenários
-//  determinísticos, alternativas não determinísticas e configurações com múltiplas
-//  fitas, avaliando aceitação, rejeição e comportamento das transições no tempo.
+//  Comprehensive tests for the Turing-machine simulator, including
+//  deterministic scenarios, nondeterministic alternatives, and multi-tape
+//  configurations, evaluating acceptance, rejection, and transition behavior over time.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

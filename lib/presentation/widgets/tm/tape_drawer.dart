@@ -2,8 +2,8 @@
 //  tape_drawer.dart
 //  Turing Lab
 //
-//  Bottom drawer para visualização da fita da Máquina de Turing, acessível
-//  durante edição e simulação. Mostra células, posição da cabeça e operações.
+//  Bottom drawer for Turing-machine tape visualization, available during
+//  editing and simulation. Shows cells, head position, and operations.
 //
 //  Created for Phase 1 improvements - November 2025
 //
@@ -12,7 +12,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Estado da fita em um momento específico
+/// Tape state at a specific moment
 class TapeState {
   final List<String> cells;
   final int headPosition;
@@ -37,7 +37,7 @@ class TapeState {
     this.highlightedCellIndices = const <int>{},
   });
 
-  /// Fita vazia/inicial
+  /// Empty/initial tape
   TapeState.initial({this.blankSymbol = '□'})
       : cells = const [],
         headPosition = 0,
@@ -48,7 +48,7 @@ class TapeState {
 
   bool get isEmpty => cells.isEmpty;
 
-  /// Célula sob a cabeça
+  /// Cell under the head
   String get currentCell {
     if (headPosition < 0 || headPosition >= cells.length) {
       return blankSymbol;
@@ -56,13 +56,13 @@ class TapeState {
     return cells[headPosition];
   }
 
-  /// True se a célula atual foi lida na última operação
+  /// True if the current cell was read in the last operation
   bool get wasRead => lastReadSymbol != null;
 
-  /// True se a célula atual foi escrita na última operação
+  /// True if the current cell was written in the last operation
   bool get wasWritten => lastWriteSymbol != null;
 
-  /// Retorna células visíveis (com padding de blanks se necessário)
+  /// Returns visible cells (padded with blanks if needed)
   List<String> getVisibleCells({int padding = 3}) {
     if (cells.isEmpty) {
       return List.filled(padding * 2 + 1, blankSymbol);
@@ -83,13 +83,13 @@ class TapeState {
     return result;
   }
 
-  /// Índice da cabeça nas células visíveis
+  /// Head index within the visible cells
   int getHeadIndexInVisible({int padding = 3}) {
     return padding;
   }
 }
 
-/// Painel flutuante para visualização da fita
+/// Floating panel for tape visualization
 class TMTapePanel extends StatefulWidget {
   final TapeState tapeState;
   final Set<String> tapeAlphabet;

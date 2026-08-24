@@ -2,8 +2,8 @@
 //  settings_repository_impl_test.dart
 //  Turing Lab
 //
-//  Testes que confirmam que chaves legadas desconhecidas não interferem nas
-//  preferências atuais persistidas pelo SharedPreferencesSettingsRepository.
+//  Tests confirming that unknown legacy keys do not interfere with
+//  current preferences persisted by SharedPreferencesSettingsRepository.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

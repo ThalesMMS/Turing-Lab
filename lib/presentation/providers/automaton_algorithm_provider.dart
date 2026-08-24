@@ -2,10 +2,10 @@
 //  automaton_algorithm_provider.dart
 //  Turing Lab
 //
-//  Gerencia a execução de algoritmos formais (conversões, minimização,
-//  equivalência) sobre autômatos, expondo operações reativas que invocam
-//  algoritmos do núcleo e atualizam estados de resultado, mantendo separação
-//  de responsabilidades com AutomatonStateProvider para operações CRUD.
+//  Manages formal algorithm execution (conversions, minimization,
+//  equivalence) on automata, exposing reactive operations that invoke
+//  core algorithms and update result state while keeping CRUD operations
+//  separated in AutomatonStateProvider.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -15,6 +15,9 @@ import '../../core/algorithms/dfa_minimizer.dart';
 import '../../core/algorithms/dfa_operations.dart';
 import '../../core/algorithms/equivalence_checker.dart';
 import '../../core/algorithms/fa_to_regex_converter.dart';
+import '../../core/algorithms/fsa_concatenator.dart';
+import '../../core/algorithms/fsa_kleene_star.dart';
+import '../../core/algorithms/fsa_reverser.dart';
 import '../../core/algorithms/fsa_to_grammar_converter.dart';
 import '../../core/algorithms/nfa_to_dfa_converter.dart';
 import '../../core/algorithms/regex_simplifier.dart';
@@ -42,6 +45,9 @@ class AlgorithmOperationState {
   final DFAMinimizationResult? dfaMinimizationStepResult;
   final FAToRegexConversionResult? faToRegexStepResult;
   final RegexToNFAConversionResult? regexToNfaStepResult;
+  final FSAConcatenationResult? fsaConcatenationResult;
+  final FSAKleeneStarResult? fsaKleeneStarResult;
+  final FSAReversalResult? fsaReversalResult;
 
   const AlgorithmOperationState({
     this.regexResult,
@@ -56,6 +62,9 @@ class AlgorithmOperationState {
     this.dfaMinimizationStepResult,
     this.faToRegexStepResult,
     this.regexToNfaStepResult,
+    this.fsaConcatenationResult,
+    this.fsaKleeneStarResult,
+    this.fsaReversalResult,
   });
 
   static const _unset = Object();
@@ -73,6 +82,9 @@ class AlgorithmOperationState {
     Object? dfaMinimizationStepResult = _unset,
     Object? faToRegexStepResult = _unset,
     Object? regexToNfaStepResult = _unset,
+    Object? fsaConcatenationResult = _unset,
+    Object? fsaKleeneStarResult = _unset,
+    Object? fsaReversalResult = _unset,
   }) {
     return AlgorithmOperationState(
       regexResult:
@@ -106,6 +118,15 @@ class AlgorithmOperationState {
       regexToNfaStepResult: regexToNfaStepResult == _unset
           ? this.regexToNfaStepResult
           : regexToNfaStepResult as RegexToNFAConversionResult?,
+      fsaConcatenationResult: fsaConcatenationResult == _unset
+          ? this.fsaConcatenationResult
+          : fsaConcatenationResult as FSAConcatenationResult?,
+      fsaKleeneStarResult: fsaKleeneStarResult == _unset
+          ? this.fsaKleeneStarResult
+          : fsaKleeneStarResult as FSAKleeneStarResult?,
+      fsaReversalResult: fsaReversalResult == _unset
+          ? this.fsaReversalResult
+          : fsaReversalResult as FSAReversalResult?,
     );
   }
 
@@ -365,6 +386,127 @@ class AutomatonAlgorithmNotifier
       state = state.copyWith(
         isLoading: false,
         error: 'Error computing DFA union: $e',
+      );
+    }
+  }
+
+  /// Concatenates the current FSA language with another FSA language.
+  Future<void> concatenateFsa(FSA other, {bool withSteps = false}) async {
+    final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
+    if (currentAutomaton == null) return;
+
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      equivalenceResult: null,
+      equivalenceDetails: null,
+      fsaConcatenationResult: null,
+    );
+
+    try {
+      final result = FSAConcatenator.concatenate(currentAutomaton, other);
+
+      if (result.isSuccess) {
+        final concatenation = result.data!;
+        ref
+            .read(automatonStateProvider.notifier)
+            .updateAutomaton(concatenation.resultNFA);
+        if (withSteps) {
+          ref
+              .read(algorithmStepProvider.notifier)
+              .initializeSteps(concatenation.steps);
+        }
+        state = state.copyWith(
+          isLoading: false,
+          fsaConcatenationResult: concatenation,
+        );
+      } else {
+        state = state.copyWith(isLoading: false, error: result.error);
+      }
+    } catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Error concatenating FSAs: $error',
+      );
+    }
+  }
+
+  /// Applies Kleene star to the current FSA language.
+  Future<void> kleeneStarFsa({bool withSteps = false}) async {
+    final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
+    if (currentAutomaton == null) return;
+
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      equivalenceResult: null,
+      equivalenceDetails: null,
+      fsaKleeneStarResult: null,
+    );
+
+    try {
+      final result = FSAKleeneStar.apply(currentAutomaton);
+
+      if (result.isSuccess) {
+        final star = result.data!;
+        ref
+            .read(automatonStateProvider.notifier)
+            .updateAutomaton(star.resultNFA);
+        if (withSteps) {
+          ref.read(algorithmStepProvider.notifier).initializeSteps(star.steps);
+        }
+        state = state.copyWith(
+          isLoading: false,
+          fsaKleeneStarResult: star,
+        );
+      } else {
+        state = state.copyWith(isLoading: false, error: result.error);
+      }
+    } catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Error applying Kleene star: $error',
+      );
+    }
+  }
+
+  /// Reverses the language of the current FSA.
+  Future<void> reverseFsa({bool withSteps = false}) async {
+    final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
+    if (currentAutomaton == null) return;
+
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      equivalenceResult: null,
+      equivalenceDetails: null,
+      fsaReversalResult: null,
+    );
+
+    try {
+      final result = FSAReverser.reverse(currentAutomaton);
+
+      if (result.isSuccess) {
+        final reversal = result.data!;
+        ref
+            .read(automatonStateProvider.notifier)
+            .updateAutomaton(reversal.resultNFA);
+        if (withSteps) {
+          ref
+              .read(algorithmStepProvider.notifier)
+              .initializeSteps(reversal.steps);
+        }
+        state = state.copyWith(
+          isLoading: false,
+          fsaReversalResult: reversal,
+        );
+      } else {
+        state = state.copyWith(isLoading: false, error: result.error);
+      }
+    } catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Error reversing FSA: $error',
       );
     }
   }

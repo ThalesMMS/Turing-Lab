@@ -2,11 +2,11 @@
 //  pda_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para componentes da PDA page (toolbar e
-//  canvas), capturando snapshots de estados críticos: layouts desktop/mobile,
-//  canvas vazio, canvas com autômato de pilha, toolbar, painéis de pilha.
-//  Garante consistência visual da interface principal entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for PDA page components (toolbar and
+//  canvas), capturing snapshots of critical states: desktop/mobile layouts,
+//  empty canvas, canvas with a pushdown automaton, toolbar, and stack panels.
+//  Guards visual consistency of the main UI across changes and catches
+//  automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -31,7 +31,6 @@ import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
 
@@ -109,7 +108,11 @@ class _PDAPageTestWidgetState extends ConsumerState<_PDAPageTestWidget> {
               return GraphViewCanvasToolbar(
                 controller: _canvasController,
                 enableToolSelection: true,
+                showSelectionTool: true,
                 activeTool: _toolController.activeTool,
+                onSelectTool: () => _toolController.setActiveTool(
+                  AutomatonCanvasTool.selection,
+                ),
                 onAddState: () {
                   _toolController.setActiveTool(AutomatonCanvasTool.addState);
                   _canvasController.addStateAtCenter();
@@ -279,8 +282,7 @@ void main() {
       );
 
       expect(find.byType(PDAPage), findsOneWidget);
-      expect(find.byType(MobileAutomatonControls), findsOneWidget);
-      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
       await screenMatchesGolden(tester, 'pda_page_empty_mobile');
     });
 
@@ -631,8 +633,7 @@ void main() {
       );
 
       expect(find.byType(PDAPage), findsOneWidget);
-      expect(find.byType(MobileAutomatonControls), findsOneWidget);
-      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
       await screenMatchesGolden(tester, 'pda_page_mobile_pda');
     });
   });

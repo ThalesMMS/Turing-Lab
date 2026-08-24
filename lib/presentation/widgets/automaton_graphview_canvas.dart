@@ -2,13 +2,13 @@
 //  automaton_graphview_canvas.dart
 //  Turing Lab
 //
-//  Implementa o canvas interativo baseado em GraphView responsável por editar e
-//  visualizar autômatos nos diferentes modos do aplicativo, coordenando
-//  ferramentas, arrastos de estados, criação de transições e emissão de destaques
-//  durante simulações.
-//  Orquestra controladores especializados para FSA, PDA e TM, integra editores de
-//  rótulos, sobreposições contextuais e sincronização com providers Riverpod para
-//  manter o modelo consistente mesmo em autômatos de grande porte.
+//  Implements the GraphView-based interactive canvas for editing and
+//  viewing automata in the app's different modes, coordinating tools,
+//  state dragging, transition creation, and highlight emission during
+//  simulations.
+//  Orchestrates specialized FSA, PDA, and TM controllers, integrates
+//  label editors, contextual overlays, and Riverpod provider sync to keep
+//  the model consistent even for large automata.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -850,6 +850,7 @@ class _AutomatonGraphViewCanvasState
     if (_hasEditableTextFocus() || !_customization.enableToolSelection) {
       return;
     }
+    _toolController.setActiveTool(AutomatonCanvasTool.addState);
     _controller.addStateAtCenter();
   }
 

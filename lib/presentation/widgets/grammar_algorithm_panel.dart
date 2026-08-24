@@ -2,11 +2,11 @@
 //  grammar_algorithm_panel.dart
 //  Turing Lab
 //
-//  Painel que centraliza algoritmos de gramáticas, oferecendo botões para
-//  conversões, remoção de recursão à esquerda, fatoração e cálculos de FIRST e
-//  FOLLOW, além da construção de tabelas de análise. O widget integra múltiplos
-//  providers para disparar operações, gerencia estados de carregamento e exibe
-//  resultados textuais que orientam a próxima ação do usuário.
+//  Panel that centralizes grammar algorithms, offering buttons for
+//  conversions, left-recursion removal, factoring, FIRST and FOLLOW
+//  computations, and parse-table construction. The widget wires multiple
+//  providers to fire operations, manages loading states, and shows
+//  textual results that guide the user's next action.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -17,10 +17,13 @@ import '../../core/algorithms/grammar_analyzer.dart';
 import '../../core/algorithms/grammar_cnf_transformer.dart';
 import '../../core/algorithms/grammar_gnf_transformer.dart';
 import '../../core/models/grammar.dart';
+import '../../core/models/asset_example.dart';
 import '../../core/models/grammar_diagnostic_severity.dart';
 import '../../core/models/grammar_transformation_step.dart';
 import '../../core/models/pda.dart';
+import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
+import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import 'algorithm_panel_scaffold.dart';
@@ -36,9 +39,14 @@ import 'app_snackbar.dart';
 
 /// Panel for grammar analysis algorithms
 class GrammarAlgorithmPanel extends ConsumerStatefulWidget {
-  const GrammarAlgorithmPanel({super.key, this.useExpanded = true});
+  const GrammarAlgorithmPanel({
+    super.key,
+    this.useExpanded = true,
+    this.examplesDataSource,
+  });
 
   final bool useExpanded;
+  final ExamplesRepository? examplesDataSource;
 
   @override
   ConsumerState<GrammarAlgorithmPanel> createState() =>
@@ -47,8 +55,19 @@ class GrammarAlgorithmPanel extends ConsumerStatefulWidget {
 
 class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   bool _isAnalyzing = false;
+  String? _loadingExampleName;
   String? _analysisResult;
   List<GrammarTransformationStep> _transformationSteps = const [];
+  late final ExamplesRepository _examplesDataSource;
+  late final Future<ListResult<AssetExample<Grammar>>> _grammarExamplesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _examplesDataSource =
+        widget.examplesDataSource ?? ref.read(examplesRepositoryProvider);
+    _grammarExamplesFuture = _examplesDataSource.loadAllTypedCfgExamples();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +84,16 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
     final grammarState = ref.watch(grammarProvider);
     return Column(
       children: [
+        AlgorithmExamplesSection<Grammar>(
+          examplesFuture: _grammarExamplesFuture,
+          loadingExampleName: _loadingExampleName,
+          onExampleSelected: _loadSelectedExample,
+          failureMessage: 'Failed to load grammar examples.',
+          emptyMessage: 'No grammar examples available.',
+        ),
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 16),
         _buildConversionSection(context, grammarState),
         const SizedBox(height: 24),
         AlgorithmButton.fromConfig(
@@ -92,7 +121,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
             title: 'Remove Left Recursion',
-            description: 'Eliminate left recursion from grammar',
+            description: 'Eliminate direct and indirect left recursion',
             icon: Icons.transform,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -148,13 +177,59 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
           AlgorithmButtonConfig(
             title: 'Check Ambiguity',
             description: 'Detect if grammar is ambiguous',
-            icon: Icons.help_outline,
+            icon: Icons.rule,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
             onPressed: _checkAmbiguity,
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _loadSelectedExample(String exampleName) async {
+    setState(() {
+      _loadingExampleName = exampleName;
+    });
+
+    try {
+      final result = await _examplesDataSource.loadTypedCfgExample(exampleName);
+      if (!mounted) return;
+
+      if (result.isFailure) {
+        _showExampleFeedback(
+          'Failed to load example: ${result.error}',
+          tone: AppSnackBarTone.error,
+        );
+        return;
+      }
+
+      final grammar = result.data!.payload;
+      ref.read(grammarProvider.notifier).applyGrammar(grammar);
+      _showExampleFeedback('Example loaded: ${grammar.name}');
+    } catch (error) {
+      if (!mounted) return;
+      _showExampleFeedback(
+        'Failed to load example: $error',
+        tone: AppSnackBarTone.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingExampleName = null;
+        });
+      }
+    }
+  }
+
+  void _showExampleFeedback(
+    String message, {
+    AppSnackBarTone tone = AppSnackBarTone.success,
+  }) {
+    showAppSnackBar(
+      context,
+      message: appLocalizationsOf(context).localizeWorkflowText(message),
+      tone: tone,
     );
   }
 
@@ -393,14 +468,17 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   void _removeLeftRecursion() {
     _performAnalysis<Grammar>(
       'Remove Left Recursion',
-      (grammar) async => GrammarAnalyzer.removeDirectLeftRecursion(grammar),
-      (original, report) => _formatTransformationResult(
-        title: 'Left Recursion Removal Analysis',
-        original: original,
-        transformed: report.value,
-        notes: report.notes,
-        derivations: report.derivations,
-      ),
+      (grammar) async => GrammarAnalyzer.removeLeftRecursion(grammar),
+      (original, report) {
+        _transformationSteps = report.steps;
+        return _formatTransformationResult(
+          title: 'Direct and Indirect Left Recursion Removal',
+          original: original,
+          transformed: report.value,
+          notes: report.notes,
+          derivations: report.derivations,
+        );
+      },
     );
   }
 

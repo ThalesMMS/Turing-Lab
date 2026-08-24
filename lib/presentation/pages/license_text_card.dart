@@ -2,6 +2,7 @@ part of 'help_page.dart';
 
 class _LicenseTextCard extends StatefulWidget {
   const _LicenseTextCard({
+    super.key,
     required this.title,
     required this.assetPath,
     required this.summary,

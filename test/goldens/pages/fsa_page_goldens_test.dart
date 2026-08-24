@@ -2,11 +2,11 @@
 //  fsa_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para componentes da FSA page (toolbar e
-//  canvas), capturando snapshots de estados críticos: layouts desktop/mobile,
-//  canvas vazio, canvas com autômato, toolbar, badges de determinismo. Garante
-//  consistência visual da interface principal entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for FSA page components (toolbar and
+//  canvas), capturing snapshots of critical states: desktop/mobile layouts,
+//  empty canvas, canvas with an automaton, toolbar, and determinism badges.
+//  Guards visual consistency of the main UI across changes and catches
+//  automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -33,7 +33,6 @@ import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart'
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/fsa/determinism_badge.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
 
 class _TestAutomatonStateNotifier extends AutomatonStateNotifier {
   _TestAutomatonStateNotifier() : super();
@@ -107,7 +106,11 @@ class _FSAPageTestWidgetState extends State<_FSAPageTestWidget> {
                 return GraphViewCanvasToolbar(
                   controller: _canvasController,
                   enableToolSelection: true,
+                  showSelectionTool: true,
                   activeTool: _toolController.activeTool,
+                  onSelectTool: () => _toolController.setActiveTool(
+                    AutomatonCanvasTool.selection,
+                  ),
                   onAddState: () {
                     _toolController.setActiveTool(AutomatonCanvasTool.addState);
                     _canvasController.addStateAtCenter();
@@ -243,8 +246,7 @@ void main() {
       );
 
       expect(find.byType(FSAPage), findsOneWidget);
-      expect(find.byType(MobileAutomatonControls), findsOneWidget);
-      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
       await screenMatchesGolden(tester, 'fsa_page_empty_mobile');
     });
 
@@ -772,8 +774,7 @@ void main() {
       );
 
       expect(find.byType(FSAPage), findsOneWidget);
-      expect(find.byType(MobileAutomatonControls), findsOneWidget);
-      expect(find.byType(GraphViewCanvasToolbar), findsNothing);
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
       await screenMatchesGolden(tester, 'fsa_page_mobile_dfa');
     });
   });

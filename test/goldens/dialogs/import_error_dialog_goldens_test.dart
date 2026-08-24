@@ -2,12 +2,11 @@
 //  import_error_dialog_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para o diálogo de erro de importação,
-//  capturando snapshots de todos os tipos de erro (JFF malformado, JSON
-//  inválido, versão não suportada, dados corrompidos, autômato inválido),
-//  com e sem detalhes técnicos, em estados expandidos/colapsados. Garante
-//  consistência visual das mensagens de erro entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for the import error dialog, capturing
+//  snapshots of every error type (malformed JFF, invalid JSON, unsupported
+//  version, corrupted data, invalid automaton), with and without technical
+//  details, in expanded/collapsed states. Guards visual consistency of error
+//  messages across changes and catches automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,10 +2,9 @@
 //  app_theme.dart
 //  Turing Lab
 //
-//  Declara os temas claro e escuro do aplicativo com paleta Material 3,
-//  centralizando cores, estilos de botões, barras e campos para manter
-//  aparência consistente entre plataformas e facilitar ajustes de identidade
-//  visual futuros.
+//  Declares the app's light and dark Material 3 themes, centralizing
+//  colors, button styles, bars, and fields to keep a consistent look
+//  across platforms and simplify future branding tweaks.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

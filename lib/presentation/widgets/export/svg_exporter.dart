@@ -2,11 +2,11 @@
 //  svg_exporter.dart
 //  Turing Lab
 //
-//  Utilitário responsável por gerar representações SVG de autômatos, gramáticas
-//  e máquinas de Turing, convertendo entidades do domínio em diagramas vetoriais
-//  com estilos consistentes. A classe oferece opções de personalização, monta
-//  cabeçalhos e definições gráficas e encapsula rotinas de layout para estados,
-//  transições e fitas.
+//  Utility that generates SVG representations of automata, grammars, and
+//  Turing machines, converting domain entities into vector diagrams with
+//  consistent styles. The class offers customization options, builds
+//  headers and graphic definitions, and encapsulates layout routines for
+//  states, transitions, and tapes.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

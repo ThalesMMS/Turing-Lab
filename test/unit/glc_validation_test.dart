@@ -2,8 +2,8 @@
 //  glc_validation_test.dart
 //  Turing Lab
 //
-//  Coleção de testes que examina o parser de gramáticas livres de contexto e utilitários associados para validar derivação, normalização e análise.
-//  Os cenários detectam recursões, ambiguidades, conversões para CNF e confrontam exemplos importados de bibliotecas de apoio.
+//  Tests for the context-free grammar parser and related utilities: derivation, normalization, and analysis.
+//  Scenarios detect recursion, ambiguity, CNF conversions, and compare imported examples from supporting libraries.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

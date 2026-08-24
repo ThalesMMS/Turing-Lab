@@ -14,6 +14,7 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/regex_preset.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
@@ -162,6 +163,22 @@ void main() {
       expect(example.payload.validate(), isEmpty);
     });
 
+    test('loads five registered FSA examples', () async {
+      final examples = await _expectLoadedList<FSA>(
+        dataSource.loadAllTypedFsaExamples(),
+      );
+
+      expect(examples, hasLength(5));
+      expect(
+        examples.map((example) => example.name),
+        contains('AFD - Contém AB'),
+      );
+      expect(
+        examples.every((example) => example.payload.validate().isEmpty),
+        isTrue,
+      );
+    });
+
     test('loads CFG examples as typed Grammar payloads', () async {
       final example = await _expectLoaded<Grammar>(
         dataSource.loadTypedCfgExample('GLC - Parênteses balanceados'),
@@ -187,18 +204,40 @@ void main() {
       expect(example.payload.validate(), isEmpty);
     });
 
+    test('loads five registered Grammar examples', () async {
+      final examples = await _expectLoadedList<Grammar>(
+        dataSource.loadAllTypedCfgExamples(),
+      );
+
+      expect(examples, hasLength(5));
+      expect(
+        examples.map((example) => example.name),
+        containsAll([
+          'GLC - a^n b^n',
+          'GLC - Zeros em quantidade par',
+          'GLC - Expressões aritméticas',
+        ]),
+      );
+      expect(
+        examples.every((example) => example.payload.validate().isEmpty),
+        isTrue,
+      );
+    });
+
     test('loads all registered PDA examples as typed PDA payloads', () async {
       final examples = await _expectLoadedList<PDA>(
         dataSource.loadAllTypedPdaExamples(),
       );
 
-      expect(examples, hasLength(3));
+      expect(examples, hasLength(5));
       expect(
         examples.map((example) => example.name),
         containsAll([
           'APD - Parênteses Balanceados',
           'APD - a^n b^n',
           'APD - Palíndromo',
+          'APD - a^n b^2n',
+          'APD - w#reverse(w)',
         ]),
       );
 
@@ -210,6 +249,58 @@ void main() {
         expect(pda.stackAlphabet, contains(pda.initialStackSymbol));
         expect(pda.acceptingStates, isNotEmpty);
       }
+    });
+
+    test('new PDA examples recognize their intended languages', () async {
+      final anb2n = (await _expectLoaded<PDA>(
+        dataSource.loadTypedPdaExample('APD - a^n b^2n'),
+      ))
+          .payload;
+      final mirrored = (await _expectLoaded<PDA>(
+        dataSource.loadTypedPdaExample('APD - w#reverse(w)'),
+      ))
+          .payload;
+
+      for (final word in ['', 'abb', 'aabbbb', 'aaabbbbbb']) {
+        expect(_runPda(anb2n, word), isTrue, reason: word);
+      }
+      for (final word in ['a', 'ab', 'aabb', 'abbb']) {
+        expect(_runPda(anb2n, word), isFalse, reason: word);
+      }
+
+      for (final word in ['#', 'a#a', 'ab#ba', 'aab#baa']) {
+        expect(_runPda(mirrored, word), isTrue, reason: word);
+      }
+      for (final word in ['', 'a#b', 'ab#ab', 'ab#baa']) {
+        expect(_runPda(mirrored, word), isFalse, reason: word);
+      }
+    });
+
+    test('loads all registered Regex examples as typed presets', () async {
+      final examples = await _expectLoadedList<RegexPreset>(
+        dataSource.loadAllTypedRegexExamples(),
+      );
+
+      expect(examples, hasLength(5));
+      expect(
+        examples.map((example) => example.name),
+        containsAll([
+          'Regex - Repetição de A',
+          'Regex - Termina com AB',
+          'Regex - Binário iniciado por 0',
+          'Regex - Pares AB ou BA',
+          'Regex - Blocos de A e B',
+        ]),
+      );
+      expect(
+        examples.every(
+          (example) =>
+              example.category == ExampleCategory.regex &&
+              example.payload.expression.isNotEmpty &&
+              example.payload.alphabet.isNotEmpty,
+        ),
+        isTrue,
+      );
     });
 
     test(

@@ -2,12 +2,11 @@
 //  tm_canvas_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para TMCanvasGraphView, capturando
-//  snapshots de estados críticos do canvas de máquinas de Turing: vazio, estados
-//  únicos com marcações, múltiplos estados com transições TM (símbolos de
-//  leitura, escrita e direção de movimento), e máquinas complexas. Garante
-//  consistência visual entre mudanças e detecta regressões automáticas na
-//  renderização de TMs.
+//  Visual regression golden tests for TMCanvasGraphView, capturing snapshots
+//  of critical Turing-machine canvas states: empty, single marked states,
+//  multiple states with TM transitions (read, write, and move symbols), and
+//  complex machines. Guards visual consistency across changes and catches
+//  automatic regressions in TM rendering.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

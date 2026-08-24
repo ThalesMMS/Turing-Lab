@@ -2,9 +2,9 @@
 //  workspace_quick_actions_bar.dart
 //  Turing Lab
 //
-//  Fileira de atalhos do workspace ativo (simulação, algoritmos e métricas)
-//  renderizada no canto esquerdo da AppBar global, substituindo o antigo
-//  menu flutuante sobre o canvas.
+//  Shortcut row for the active workspace (simulation, algorithms, and
+//  metrics) rendered on the left of the global AppBar, replacing the old
+//  floating menu over the canvas.
 //
 //  Thales Matheus Mendonça Santos - August 2026
 //
@@ -24,24 +24,41 @@ class WorkspaceQuickActionsBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actions = ref.watch(workspaceQuickActionsProvider(tab));
     final l10n = jflapLocalizationsOf(context);
+    if (actions == null) {
+      return const SizedBox.shrink();
+    }
+
+    final simulationButton = actions.onSimulate == null
+        ? null
+        : IconButton(
+            tooltip: actions.simulateTooltip ?? l10n.workspaceSimulateTooltip,
+            icon: const Icon(Icons.play_arrow),
+            onPressed: actions.simulateEnabled ? actions.onSimulate : null,
+          );
+    final algorithmButton = actions.onAlgorithms == null
+        ? null
+        : IconButton(
+            tooltip: l10n.workspaceAlgorithmsTooltip,
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: actions.algorithmsEnabled ? actions.onAlgorithms : null,
+          );
     final buttons = <Widget>[
-      if (actions?.onSimulate case final onSimulate?)
+      if (actions.algorithmsBeforeSimulation && algorithmButton != null)
+        algorithmButton,
+      if (simulationButton != null) simulationButton,
+      if (!actions.algorithmsBeforeSimulation && algorithmButton != null)
+        algorithmButton,
+      if (actions.onEdit case final onEdit?)
         IconButton(
-          tooltip: l10n.workspaceSimulateTooltip,
-          icon: const Icon(Icons.play_arrow),
-          onPressed: actions!.simulateEnabled ? onSimulate : null,
+          tooltip: actions.editTooltip ?? l10n.workspaceEditTooltip,
+          icon: const Icon(Icons.edit),
+          onPressed: actions.editEnabled ? onEdit : null,
         ),
-      if (actions?.onAlgorithms case final onAlgorithms?)
-        IconButton(
-          tooltip: l10n.workspaceAlgorithmsTooltip,
-          icon: const Icon(Icons.auto_awesome),
-          onPressed: actions!.algorithmsEnabled ? onAlgorithms : null,
-        ),
-      if (actions?.onMetrics case final onMetrics?)
+      if (actions.onMetrics case final onMetrics?)
         IconButton(
           tooltip: l10n.workspaceMetricsTooltip,
           icon: const Icon(Icons.bar_chart),
-          onPressed: actions!.metricsEnabled ? onMetrics : null,
+          onPressed: actions.metricsEnabled ? onMetrics : null,
         ),
     ];
     if (buttons.isEmpty) {

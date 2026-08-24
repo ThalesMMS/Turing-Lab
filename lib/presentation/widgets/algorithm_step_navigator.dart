@@ -2,10 +2,10 @@
 //  algorithm_step_navigator.dart
 //  Turing Lab
 //
-//  Widget de navegação para controlar a visualização passo a passo de algoritmos
-//  educacionais. Oferece botões prev/next, play/pause, slider de navegação e
-//  contador de passos (Step X of Y), integrando-se ao AlgorithmStepProvider
-//  para controle de estado centralizado.
+//  Navigation widget for step-by-step educational algorithm views.
+//  Offers prev/next buttons, play/pause, a navigation slider, and a
+//  step counter (Step X of Y), integrating with AlgorithmStepProvider
+//  for centralized state.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

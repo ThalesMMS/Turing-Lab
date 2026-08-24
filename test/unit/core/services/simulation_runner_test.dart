@@ -15,7 +15,7 @@ import 'package:vector_math/vector_math_64.dart';
 
 void main() {
   group('simulation outcome classification', () {
-    test('keeps accept, reject, timeout, and configuration limit distinct', () {
+    test('keeps accept, reject, timeout, and proven cycles distinct', () {
       const elapsed = Duration.zero;
       expect(
         classifyPdaResult(
@@ -56,7 +56,7 @@ void main() {
             executionTime: elapsed,
           ),
         ).kind,
-        SimulationOutcomeKind.configurationLimit,
+        SimulationOutcomeKind.provenCycle,
       );
       expect(
         classifyTmResult(
@@ -68,6 +68,36 @@ void main() {
           ),
         ).kind,
         SimulationOutcomeKind.rejected,
+      );
+      expect(
+        classifyTmResult(
+          TMSimulationResult.timeout(
+            inputString: '',
+            steps: const [],
+            executionTime: elapsed,
+          ),
+        ).kind,
+        SimulationOutcomeKind.timeout,
+      );
+      expect(
+        classifyTmResult(
+          TMSimulationResult.configurationLimit(
+            inputString: '',
+            steps: const [],
+            executionTime: elapsed,
+          ),
+        ).kind,
+        SimulationOutcomeKind.configurationLimit,
+      );
+      expect(
+        classifyTmResult(
+          TMSimulationResult.stepLimit(
+            inputString: '',
+            steps: const [],
+            executionTime: elapsed,
+          ),
+        ).kind,
+        SimulationOutcomeKind.boundedUnknown,
       );
     });
   });

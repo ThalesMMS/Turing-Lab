@@ -257,8 +257,4 @@ void _runPdaAnalysisTests() {
       expect(result.error, contains('PDA must have at least one state'));
     });
   });
-
-  // =========================================================================
-  // PDASimulator.simplify
-  // =========================================================================
 }

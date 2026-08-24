@@ -1,7 +1,7 @@
 part of 'regex_page.dart';
 
 extension _RegexPageLayoutSections on _RegexPageState {
-  Widget _buildMobileLayout(AlgorithmOperationState algorithmState) {
+  Widget _buildMobileLayout() {
     final l10n = AppLocalizations.of(context);
     return FocusTraversalGroup(
       policy: ReadingOrderTraversalPolicy(),
@@ -9,7 +9,7 @@ extension _RegexPageLayoutSections on _RegexPageState {
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            child: _buildInputArea(algorithmState),
+            child: _buildInputArea(),
           ),
         ),
         floatingActionButton: FloatingActionButton(
@@ -44,9 +44,7 @@ extension _RegexPageLayoutSections on _RegexPageState {
                     ),
                   ),
                 ),
-                child: SingleChildScrollView(
-                  child: _buildInputArea(algorithmState),
-                ),
+                child: SingleChildScrollView(child: _buildInputArea()),
               ),
             ),
 
@@ -58,29 +56,8 @@ extension _RegexPageLayoutSections on _RegexPageState {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.algorithms,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Algorithm panel
                     Expanded(
-                      child: AlgorithmPanel(
-                        onNfaToDfa: _convertToDFA,
-                        onMinimizeDfa: null,
-                        onClear: _clearInputs,
-                        onRegexToNfa: (regex) {
-                          _regexController.text = regex;
-                          _validateRegex();
-                          _convertToNFA();
-                        },
-                        onFaToRegex: null,
-                      ),
+                      child: _buildRegexAlgorithmsPanel(algorithmState),
                     ),
 
                     const SizedBox(height: 16),
@@ -118,19 +95,9 @@ extension _RegexPageLayoutSections on _RegexPageState {
         body: TabletLayoutContainer(
           canvas: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: _buildInputArea(algorithmState),
+            child: _buildInputArea(),
           ),
-          algorithmPanel: AlgorithmPanel(
-            onNfaToDfa: _convertToDFA,
-            onMinimizeDfa: null,
-            onClear: _clearInputs,
-            onRegexToNfa: (regex) {
-              _regexController.text = regex;
-              _validateRegex();
-              _convertToNFA();
-            },
-            onFaToRegex: null,
-          ),
+          algorithmPanel: _buildRegexAlgorithmsPanel(algorithmState),
           simulationPanel: SimulationPanel(
             onSimulate: (input) {
               _testStringController.text = input;
@@ -148,10 +115,9 @@ extension _RegexPageLayoutSections on _RegexPageState {
     );
   }
 
-  Widget _buildInputArea(AlgorithmOperationState algorithmState) {
+  Widget _buildInputArea() {
     final l10n = AppLocalizations.of(context);
     final regexState = ref.watch(regexEditorProvider);
-    final faToRegexWidget = _buildFaToRegexResult(algorithmState);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,74 +230,37 @@ extension _RegexPageLayoutSections on _RegexPageState {
             showDismissButton: false,
           ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 
-        // Conversion buttons
-        Text(
-          l10n.convertToAutomaton,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 12),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 420) {
-              return Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _convertToNFA,
-                      icon: const Icon(Icons.account_tree),
-                      label: Text(l10n.convertToNfa),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _convertToDFA,
-                      icon: const Icon(Icons.account_tree_outlined),
-                      label: Text(l10n.convertToDfa),
-                    ),
-                  ),
-                ],
-              );
-            }
+  Widget _buildRegexAlgorithmsPanel(AlgorithmOperationState algorithmState) {
+    final l10n = AppLocalizations.of(context);
+    final regexState = ref.watch(regexEditorProvider);
+    final faToRegexWidget = _buildFaToRegexResult(algorithmState);
 
-            return Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _convertToNFA,
-                    icon: const Icon(Icons.account_tree),
-                    label: Text(l10n.convertToNfa),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _convertToDFA,
-                    icon: const Icon(Icons.account_tree_outlined),
-                    label: Text(l10n.convertToDfa),
-                  ),
-                ),
-              ],
+    return AlgorithmPanelScaffold(
+      title: l10n.algorithms,
+      children: [
+        ValueListenableBuilder<String?>(
+          valueListenable: _loadingExampleName,
+          builder: (context, loadingExampleName, _) {
+            return AlgorithmExamplesSection<RegexPreset>(
+              examplesFuture: _regexExamplesFuture,
+              loadingExampleName: loadingExampleName,
+              onExampleSelected: _loadSelectedRegexExample,
+              failureMessage: 'Failed to load Regex examples.',
+              emptyMessage: 'No Regex examples available.',
             );
           },
         ),
-
-        const SizedBox(height: 24),
-
-        // FA→Regex conversion result display
-        if (faToRegexWidget != null) ...[
-          faToRegexWidget,
-          const SizedBox(height: 16),
-        ],
-
-        // Simplification toggle
+        const Divider(),
+        _buildRegexConversionActions(),
+        if (faToRegexWidget != null) faToRegexWidget,
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: SwitchSettingTile(
               title: l10n.simplifyOutput,
               subtitle: l10n.simplifyOutputSubtitle,
@@ -341,25 +270,77 @@ extension _RegexPageLayoutSections on _RegexPageState {
             ),
           ),
         ),
-
-        const SizedBox(height: 16),
-
-        // Simplification steps section
         _buildSimplificationStepsSection(),
-
-        const SizedBox(height: 16),
-
-        // Complexity analysis section
         _buildComplexityAnalysisSection(),
-
-        const SizedBox(height: 16),
-
-        // Sample strings section
         _buildSampleStringsSection(),
+        _buildRegexEquivalenceSection(),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _clearInputs,
+            icon: const Icon(Icons.clear_all),
+            label: Text(l10n.clear),
+          ),
+        ),
+      ],
+    );
+  }
 
-        const SizedBox(height: 24),
+  Widget _buildRegexConversionActions() {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.convertToAutomaton,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final buttons = [
+              ElevatedButton.icon(
+                onPressed: _convertToNFA,
+                icon: const Icon(Icons.account_tree),
+                label: Text(l10n.convertToNfa),
+              ),
+              ElevatedButton.icon(
+                onPressed: _convertToDFA,
+                icon: const Icon(Icons.account_tree_outlined),
+                label: Text(l10n.convertToDfa),
+              ),
+            ];
 
-        // Compare regular expressions
+            if (constraints.maxWidth < 420) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  buttons.first,
+                  const SizedBox(height: 12),
+                  buttons.last
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: buttons.first),
+                const SizedBox(width: 12),
+                Expanded(child: buttons.last),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegexEquivalenceSection() {
+    final l10n = AppLocalizations.of(context);
+    final regexState = ref.watch(regexEditorProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
           l10n.compareRegularExpressions,
           style: Theme.of(context).textTheme.titleMedium,
@@ -376,7 +357,8 @@ extension _RegexPageLayoutSections on _RegexPageState {
           keyboardType: TextInputType.visiblePassword,
         ),
         const SizedBox(height: 12),
-        Center(
+        SizedBox(
+          width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _compareRegexEquivalence,
             icon: const Icon(Icons.compare_arrows),
@@ -394,35 +376,6 @@ extension _RegexPageLayoutSections on _RegexPageState {
             showDismissButton: false,
           ),
         ],
-
-        const SizedBox(height: 24),
-
-        // Help section
-        SizedBox(
-          width: double.infinity,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.regexHelp,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.regexHelpPatterns,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
       ],
     );
   }

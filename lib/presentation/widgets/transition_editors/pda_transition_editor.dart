@@ -2,7 +2,9 @@
 //  pda_transition_editor.dart
 //  Turing Lab
 //
-//  Disponibiliza editor focado em transições de PDA com campos para leitura, pop e push e toggles para λ. Limpa e valida entradas, disparando callbacks estruturados para que a tela hospedeira aplique alterações com segurança.
+//  Provides a PDA-focused transition editor with read, pop, and push
+//  fields plus λ toggles. Clears and validates input, firing structured
+//  callbacks so the host screen can apply changes safely.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

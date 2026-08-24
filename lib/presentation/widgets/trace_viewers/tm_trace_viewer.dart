@@ -2,12 +2,12 @@
 //  tm_trace_viewer.dart
 //  Turing Lab
 //
-//  Renderiza os traços de simulação de Máquinas de Turing convertendo o
-//  resultado especializado do simulador em um SimulationResult genérico para o
-//  BaseTraceViewer, com suporte a destaques de fita, transições e estados.
-//  Normaliza mensagens de erro para diferenciar rejeições, timeouts e laços
-//  infinitos, oferecendo uma apresentação consistente reaproveitável em qualquer
-//  tela que consuma execuções de TM.
+//  Renders Turing-machine simulation traces by converting the
+//  simulator's specialized result into a generic SimulationResult for
+//  BaseTraceViewer, with tape, transition, and state highlights.
+//  Normalizes error messages to distinguish rejections, timeouts, and
+//  infinite loops, offering a consistent presentation reusable on any
+//  screen that consumes TM runs.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,9 +2,9 @@
 //  algorithm_step_provider.dart
 //  Turing Lab
 //
-//  Gerencia o estado de navegação passo a passo durante a execução de
-//  algoritmos educacionais, permitindo ao usuário avançar, retroceder e
-//  pausar para compreender cada etapa da conversão de autômatos.
+//  Manages step-by-step navigation during educational algorithm
+//  execution, letting the user step forward, backward, and pause to
+//  understand each automata conversion stage.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -425,9 +425,9 @@ Presentation → Core ← Data
 - **Factory Pattern** - Object creation
 - **Observer Pattern** - State changes
 
-## Referências para a Migração
+## Migration References
 
-Este checkout não inclui snapshots locais das implementações de referência. Use os links upstream no README como âncoras de paridade para algoritmos e estruturas de dados. Sempre que um módulo for reescrito, compare o comportamento com essas fontes, valide por testes automatizados e registre desvios intencionais em testes, comentários de código ou descrições de pull requests.
+This checkout does not include local snapshots of the reference implementations. Use the upstream links in the README as parity anchors for algorithms and data structures. Whenever a module is rewritten, compare its behavior with those sources, validate with automated tests, and record intentional deviations in tests, code comments, or pull request descriptions.
 
 ## Development Guidelines
 

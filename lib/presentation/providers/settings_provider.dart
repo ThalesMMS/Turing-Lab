@@ -2,10 +2,9 @@
 //  settings_provider.dart
 //  Turing Lab
 //
-//  Expõe um StateNotifier responsável por carregar, atualizar e persistir o
-//  SettingsModel da aplicação, abstraindo o repositório subjacente baseado em
-//  SharedPreferences e garantindo sincronização segura das preferências com a
-//  árvore de widgets e seus testes.
+//  Exposes a StateNotifier that loads, updates, and persists the app's
+//  SettingsModel, abstracting the SharedPreferences-backed repository and
+//  keeping preferences safely in sync with the widget tree and tests.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

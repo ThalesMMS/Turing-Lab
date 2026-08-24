@@ -1,6 +1,6 @@
 # Turing Lab User Guide Supplement
 
-_Nota: migração em andamento._
+_Note: migration in progress._
 
 ## Table of Contents
 

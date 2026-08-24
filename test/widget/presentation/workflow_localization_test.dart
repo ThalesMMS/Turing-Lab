@@ -66,6 +66,46 @@ void main() {
     expect(find.text('Expressão regular para AFN'), findsOneWidget);
   });
 
+  testWidgets('localizes indirect left-recursion removal in Portuguese', (
+    tester,
+  ) async {
+    await _pumpPortuguese(
+      tester,
+      const AlgorithmButton(
+        title: 'Remove Left Recursion',
+        description: 'Eliminate direct and indirect left recursion',
+        icon: Icons.transform,
+      ),
+    );
+
+    expect(find.text('Remover recursão à esquerda'), findsOneWidget);
+    expect(
+      find.text('Eliminar recursão direta e indireta à esquerda'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('localizes the bounded TM time-profile action in Portuguese', (
+    tester,
+  ) async {
+    await _pumpPortuguese(
+      tester,
+      const AlgorithmButton(
+        title: 'Time Profile',
+        description: 'Measure transition steps by input length within bounds',
+        icon: Icons.timer,
+      ),
+    );
+
+    expect(find.text('Perfil de tempo'), findsOneWidget);
+    expect(
+      find.text(
+        'Meça passos de transição por comprimento de entrada dentro dos limites',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('localizes trace navigation and semantics in Portuguese',
       (tester) async {
     final result = SimulationResult.success(

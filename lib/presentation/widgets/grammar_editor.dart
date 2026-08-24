@@ -2,23 +2,35 @@
 //  grammar_editor.dart
 //  Turing Lab
 //
-//  Disponibiliza o editor completo de gramáticas formais com formulários para
-//  símbolos iniciais, produções e metadados, oferecendo validações rápidas e
-//  ações de limpeza para acelerar a modelagem de linguagens.
-//  Sincroniza-se com o GrammarProvider via Riverpod para refletir atualizações em
-//  tempo real e ajustar layouts responsivos que atendem tanto a telas móveis
-//  quanto desktops.
+//  Provides the full formal-grammar editor with forms for start symbols,
+//  productions, and metadata, offering quick validation and clear actions
+//  to speed up language modeling.
+//  Syncs with GrammarProvider via Riverpod so updates show in real time
+//  and responsive layouts work on both mobile and desktop screens.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/production.dart';
+import '../../l10n/app_localizations_help.dart';
 import '../providers/grammar_provider.dart';
+import 'grammar_editor_section.dart';
 
 /// Comprehensive grammar editor widget
 class GrammarEditor extends ConsumerStatefulWidget {
-  const GrammarEditor({super.key});
+  const GrammarEditor({
+    super.key,
+    this.section = GrammarEditorSection.all,
+    this.productionToEdit,
+    this.onEditGrammar,
+    this.onEditProduction,
+  });
+
+  final GrammarEditorSection section;
+  final Production? productionToEdit;
+  final VoidCallback? onEditGrammar;
+  final ValueChanged<Production>? onEditProduction;
 
   @override
   ConsumerState<GrammarEditor> createState() => _GrammarEditorState();
@@ -46,6 +58,12 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final state = ref.read(grammarProvider);
     _startSymbolController.text = state.startSymbol;
     _grammarNameController.text = state.name;
+    if (widget.productionToEdit case final production?) {
+      _selectedProductionId = production.id;
+      _isEditing = true;
+      _leftSideController.text = _formatSymbols(production.leftSide);
+      _rightSideController.text = _formatRightSide(production);
+    }
   }
 
   @override
@@ -84,13 +102,19 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildHeader(context),
-              const SizedBox(height: 16),
-              _buildGrammarInfo(context),
-              const SizedBox(height: 16),
-              _buildProductionEditor(context),
-              const SizedBox(height: 16),
-              _buildProductionsList(context, grammarState.productions),
+              if (widget.section != GrammarEditorSection.details) ...[
+                _buildHeader(context),
+                const SizedBox(height: 16),
+              ],
+              if (widget.section != GrammarEditorSection.productions) ...[
+                _buildGrammarInfo(context),
+                const SizedBox(height: 16),
+                _buildProductionEditor(context),
+              ],
+              if (widget.section == GrammarEditorSection.all)
+                const SizedBox(height: 16),
+              if (widget.section != GrammarEditorSection.details)
+                _buildProductionsList(context, grammarState.productions),
             ],
           ),
         ),
@@ -103,6 +127,12 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final isSmallScreen =
         screenWidth < 600; // Increased breakpoint for better mobile support
     final theme = Theme.of(context);
+    final l10n = jflapLocalizationsOf(context);
+    final editButton = OutlinedButton.icon(
+      onPressed: widget.onEditGrammar,
+      icon: const Icon(Icons.edit, size: 16),
+      label: Text(l10n.workspaceEditTooltip),
+    );
     final clearButton = ElevatedButton.icon(
       onPressed: _clearGrammar,
       icon: const Icon(Icons.clear, size: 16),
@@ -135,6 +165,10 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                   ),
                 ),
               ),
+              if (widget.onEditGrammar != null) ...[
+                editButton,
+                const SizedBox(width: 8),
+              ],
               clearButton,
             ],
           ),
@@ -154,6 +188,10 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
             ),
           ),
         ),
+        if (widget.onEditGrammar != null) ...[
+          editButton,
+          const SizedBox(width: 8),
+        ],
         const SizedBox(width: 8),
         clearButton,
       ],
@@ -528,6 +566,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final l10n = jflapLocalizationsOf(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -546,7 +585,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add your first production rule above',
+            widget.section == GrammarEditorSection.productions
+                ? l10n.grammarEmptyProductionEditInstruction
+                : 'Add your first production rule above',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -605,7 +646,12 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
           trailing: PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'edit') {
-                _editProduction(production);
+                final onEditProduction = widget.onEditProduction;
+                if (onEditProduction != null) {
+                  onEditProduction(production);
+                } else {
+                  _editProduction(production);
+                }
               } else if (value == 'delete') {
                 _deleteProduction(production);
               }

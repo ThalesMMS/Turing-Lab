@@ -2,11 +2,10 @@
 //  file_operations_panel_test.dart
 //  Turing Lab
 //
-//  Suíte de testes de widget para o painel de operações de arquivo, validando
-//  a renderização de botões contextuais, estados de carregamento, exibição de
-//  banners de erro e integração com callbacks de salvamento, carregamento e
-//  exportação. Os cenários cobrem automatos e gramáticas em ambientes web e
-//  desktop, garantindo que operações assíncronas atualizem o estado visual.
+//  Widget tests for the file operations panel, covering contextual buttons,
+//  loading states, error banners, and save/load/export callbacks. Scenarios
+//  include automata and grammars on web and desktop, confirming that async
+//  operations update the visual state.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

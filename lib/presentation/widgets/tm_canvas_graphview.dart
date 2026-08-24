@@ -2,11 +2,11 @@
 //  tm_canvas_graphview.dart
 //  Turing Lab
 //
-//  Widget que encapsula o canvas de Máquinas de Turing sobre a infraestrutura
-//  compartilhada de automatos, delegando gestos, destaques e edições de
-//  transições ao AutomatonGraphViewCanvas. A classe conecta o controlador
-//  específico de TM aos provedores Riverpod, expõe ganchos para personalizar
-//  ferramentas e habilita formulários inline para operações de fita.
+//  Widget that wraps the Turing-machine canvas on the shared automata
+//  infrastructure, delegating gestures, highlights, and transition edits
+//  to AutomatonGraphViewCanvas. The class connects the TM-specific
+//  controller to Riverpod providers, exposes hooks to customize tools,
+//  and enables inline forms for tape operations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -71,12 +71,6 @@ class _TMCanvasGraphViewState extends ConsumerState<TMCanvasGraphView> {
 
     final initialState = ref.read(tmEditorProvider);
     _controller.synchronize(initialState.tm);
-    if (initialState.tm?.states.isNotEmpty ?? false) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _controller.fitToContent();
-      });
-    }
 
     _lastDeliveredTm = initialState.tm;
     if (initialState.tm != null) {

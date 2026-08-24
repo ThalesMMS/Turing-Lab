@@ -4,21 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
-import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
-import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
-import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
-import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
+import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
+
+import 'canvas_toolbar_test_helpers.dart';
+import 'examples_test_helpers.dart';
 
 Future<void> _pumpMobileTmPage(
   WidgetTester tester, {
@@ -35,7 +40,10 @@ Future<void> _pumpMobileTmPage(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        examplesRepositoryProvider.overrideWithValue(TestExamplesRepository()),
+      ],
       child: MaterialApp(
         theme: ThemeData(platform: platform),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -102,6 +110,13 @@ void main() {
 
     expect(find.byType(TMSimulationPanel), findsNothing);
     expect(find.byType(CanvasSimulationPlaybackBar), findsOneWidget);
+    final playbackRect = tester.getRect(
+      find.byType(CanvasSimulationPlaybackBar),
+    );
+    final toolbarRect = tester.getRect(
+      find.byKey(const ValueKey('canvas-toolbar-surface')),
+    );
+    expect(playbackRect.bottom, lessThanOrEqualTo(toolbarRect.top));
     expect(
       tester.widget<TMTapePanel>(find.byType(TMTapePanel)).tapeState.cells,
       ['0', '1'],
@@ -128,6 +143,31 @@ void main() {
     expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
   });
 
+  testWidgets('TM uses one shared toolbar across canvas breakpoints', (
+    tester,
+  ) async {
+    await _pumpMobileTmPage(tester, size: const Size(390, 900));
+
+    for (final width in const [390.0, 430.0, 800.0, 1200.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
+      final toolbar = tester.widget<GraphViewCanvasToolbar>(
+        find.byType(GraphViewCanvasToolbar),
+      );
+      expect(
+        toolbar.placement,
+        width < AutomatonWorkspaceScaffold.mobileBreakpoint
+            ? CanvasToolbarPlacement.bottomCenter
+            : CanvasToolbarPlacement.topRight,
+        reason: 'unexpected TM toolbar placement at ${width.toInt()}px',
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('TM mobile panels do not overlap editing controls', (
     tester,
   ) async {
@@ -139,8 +179,11 @@ void main() {
       canvas.controller!.addStateAt(const Offset(180, 300));
       await tester.pumpAndSettle();
 
-      expect(find.bySemanticsLabel('Select'), findsOneWidget);
-      expect(find.bySemanticsLabel('Add transition'), findsOneWidget);
+      expect(find.bySemanticsLabel('Canvas action: Select'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Canvas action: Add transition'),
+        findsOneWidget,
+      );
 
       final appBarAlgorithms = find.descendant(
         of: find.byType(AppBar),
@@ -148,11 +191,8 @@ void main() {
       );
       expect(appBarAlgorithms, findsOneWidget);
       final tape = tester.getRect(find.byType(CollapsibleCanvasPanel));
-      final controlsSurface = find.descendant(
-        of: find.byType(MobileAutomatonControls),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is Material && widget.elevation == 10,
-        ),
+      final controlsSurface = find.byKey(
+        const ValueKey('canvas-toolbar-surface'),
       );
       expect(controlsSurface, findsOneWidget);
       final controls = tester.getRect(controlsSurface);
@@ -193,20 +233,19 @@ void main() {
     expect(tester.getTopLeft(panel), isNot(collapsedStart));
   });
 
-  testWidgets('empty TM mobile keeps help reachable and disables quick actions',
-      (
+  testWidgets('empty TM keeps examples reachable and other actions disabled', (
     tester,
   ) async {
     await _pumpMobileTmPage(tester);
 
-    final trayHelp = find.descendant(
-      of: find.byType(MobileAutomatonControls),
-      matching: find.byTooltip('Help'),
+    await expandCanvasToolbar(tester);
+    expect(
+      find.byKey(const ValueKey('canvas-toolbar-overflow')),
+      findsOneWidget,
     );
-    expect(trayHelp, findsOneWidget);
-    // With no machine loaded the quick actions stay visible but disabled,
-    // and the tape inspector is still available.
-    for (final tooltip in const ['Simulate', 'Algorithms', 'Metrics']) {
+    // Content-dependent actions remain disabled, while Algorithms still opens
+    // the examples that can create the first machine.
+    for (final tooltip in const ['Simulate', 'Metrics']) {
       final button = tester.widget<IconButton>(
         find.ancestor(
           of: find.byTooltip(tooltip),
@@ -215,17 +254,95 @@ void main() {
       );
       expect(button.onPressed, isNull, reason: '$tooltip should be disabled');
     }
+    final algorithms = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byTooltip('Algorithms'),
+        matching: find.byType(IconButton),
+      ),
+    );
+    expect(algorithms.onPressed, isNotNull);
     expect(find.byType(TMTapePanel), findsOneWidget);
 
-    await tester.tap(trayHelp);
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pumpAndSettle();
+    await pumpUntilFound(tester, find.text('MT - a^n b^n'));
+    for (final example in const [
+      'MT - a^n b^n',
+      'MT - Binário para unário',
+      'MT - Cópia de string',
+      'MT - Incremento binário',
+      'MT - Verificador de palíndromo',
+    ]) {
+      expect(find.text(example), findsOneWidget);
+    }
+    Navigator.of(tester.element(find.byType(BottomSheet))).pop();
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsOneWidget);
-    await tester.tap(find.widgetWithIcon(TextButton, Icons.keyboard));
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Help & Shortcuts',
+      menuLabel: 'Help & Shortcuts',
+      opensRoute: true,
+    );
+
+    final page = tester.widget<HelpPage>(find.byType(HelpPage));
+    final node = find.byKey(
+      const ValueKey('help-node-${HelpTopicIds.tmEditorOverview}'),
+    );
+    expect(page.initialTopicId, HelpTopicIds.tmEditorOverview);
+    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+    expect(
+      find.byKey(
+        const ValueKey('help-body-${HelpTopicIds.tmEditorOverview}'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('populated TM Help opens theory and keeps decidability command', (
+    tester,
+  ) async {
+    await _pumpMobileTmPage(tester);
+    final canvas = tester.widget<TMCanvasGraphView>(
+      find.byType(TMCanvasGraphView),
+    );
+    canvas.controller!.addStateAt(const Offset(180, 300));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsNothing);
-    expect(find.byType(KeyboardShortcutsDialog), findsOneWidget);
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Help & Shortcuts',
+      menuLabel: 'Help & Shortcuts',
+      opensRoute: true,
+    );
+    await tester.pumpAndSettle();
+
+    final node = find.byKey(
+      const ValueKey('help-node-${HelpTopicIds.tmTheoryTm}'),
+    );
+    expect(
+      tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
+      HelpTopicIds.tmTheoryTm,
+    );
+    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+    expect(
+      find.byKey(const ValueKey('help-body-${HelpTopicIds.tmTheoryTm}')),
+      findsOneWidget,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final decidabilityButton = tester.widget<AlgorithmButton>(
+      find.ancestor(
+        of: find.text('Check Decidability'),
+        matching: find.byType(AlgorithmButton),
+      ),
+    );
+    expect(decidabilityButton.icon, Icons.fact_check_outlined);
   });
 
   testWidgets('TMPage mobile exposes and toggles transition mode', (
@@ -241,8 +358,10 @@ void main() {
     });
     await _pumpMobileTmPage(tester);
 
-    final select = find.bySemanticsLabel('Select');
-    final addTransition = find.bySemanticsLabel('Add transition');
+    final select = find.bySemanticsLabel('Canvas action: Select');
+    final addTransition = find.bySemanticsLabel(
+      'Canvas action: Add transition',
+    );
     final originalCanvas = tester.widget<TMCanvasGraphView>(
       find.byType(TMCanvasGraphView),
     );
@@ -300,7 +419,7 @@ void main() {
     });
     await _pumpMobileTmPage(tester);
 
-    final addState = find.bySemanticsLabel('Add state');
+    final addState = find.bySemanticsLabel('Canvas action: Add state');
     await tester.tap(addState);
     await tester.pump();
 
@@ -328,8 +447,13 @@ void main() {
     controller.addStateAt(const Offset(120, 120));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Clear canvas'));
-    await tester.pumpAndSettle();
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Clear canvas',
+      menuLabel: 'Clear canvas',
+      opensRoute: false,
+    );
 
     final tapePanel = tester.widget<TMTapePanel>(find.byType(TMTapePanel));
     expect(tapePanel.tapeState.isEmpty, isTrue);

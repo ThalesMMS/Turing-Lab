@@ -2,9 +2,9 @@
 //  interoperability_roundtrip_test.dart
 //  Turing Lab
 //
-//  Examina a interoperabilidade entre formatos JFLAP, JSON e SVG garantindo round-trips sem perdas
-//  estruturais. Verifica conversões, serializações e exportações para assegurar compatibilidade
-//  entre o editor e ferramentas externas.
+//  Examines interoperability among JFLAP, JSON, and SVG formats, ensuring
+//  round-trips without structural loss. Checks conversions, serialization, and
+//  exports to keep the editor compatible with external tools.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

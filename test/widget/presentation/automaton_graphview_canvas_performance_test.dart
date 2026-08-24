@@ -45,6 +45,18 @@ void main() {
       expect(first, equals(second));
       expect(first.hashCode, equals(second.hashCode));
       expect(first, isNot(equals(different)));
+      expect(
+        first,
+        isNot(
+          equals(
+            SimulationHighlight(
+              stateIds: {'q1', 'q2'},
+              transitionIds: {'t1'},
+              warningStateIds: {'q3'},
+            ),
+          ),
+        ),
+      );
     });
 
     test('large DFA/NFA/PDA/TM synchronization stays bounded', () {

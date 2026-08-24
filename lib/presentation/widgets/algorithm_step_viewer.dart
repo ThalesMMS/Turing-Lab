@@ -2,10 +2,10 @@
 //  algorithm_step_viewer.dart
 //  Turing Lab
 //
-//  Widget para exibir detalhes e explicações de um passo específico durante a
-//  execução educacional de algoritmos de conversão (NFA→DFA, minimização,
-//  FA→Regex). Renderiza título, explicação textual e dados específicos do
-//  algoritmo (subconjuntos, partições, transições) de forma didática.
+//  Widget that shows details and explanations for a specific step during
+//  educational conversion algorithms (NFA→DFA, minimization, FA→Regex).
+//  Renders the title, textual explanation, and algorithm-specific data
+//  (subsets, partitions, transitions) in a didactic layout.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -413,6 +413,12 @@ class AlgorithmStepViewer extends StatelessWidget {
         return 'CYK Parse';
       case AlgorithmType.regexSimplification:
         return 'Simplify';
+      case AlgorithmType.fsaConcatenation:
+        return 'Concatenate';
+      case AlgorithmType.fsaKleeneStar:
+        return 'Kleene Star';
+      case AlgorithmType.fsaReversal:
+        return 'Reverse';
     }
   }
 }

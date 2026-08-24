@@ -9,6 +9,8 @@ import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 class _TestCallbacks {
   int autoLayoutCallCount = 0;
   int clearCallCount = 0;
+  int kleeneStarCallCount = 0;
+  int reverseFsaCallCount = 0;
   String? lastRegexValue;
 
   void onClear() {
@@ -21,6 +23,14 @@ class _TestCallbacks {
 
   void onAutoLayout() {
     autoLayoutCallCount++;
+  }
+
+  void onKleeneStar() {
+    kleeneStarCallCount++;
+  }
+
+  void onReverseFsa() {
+    reverseFsaCallCount++;
   }
 }
 
@@ -41,6 +51,9 @@ Future<void> _pumpAlgorithmPanel(
   VoidCallback? onCompleteDfa,
   VoidCallback? onComplementDfa,
   Future<void> Function(FSA)? onUnionDfa,
+  Future<void> Function(FSA)? onConcatenateFsa,
+  VoidCallback? onKleeneStarFsa,
+  VoidCallback? onReverseFsa,
   Future<void> Function(FSA)? onIntersectionDfa,
   Future<void> Function(FSA)? onDifferenceDfa,
   VoidCallback? onPrefixClosure,
@@ -66,6 +79,9 @@ Future<void> _pumpAlgorithmPanel(
             onCompleteDfa: onCompleteDfa,
             onComplementDfa: onComplementDfa,
             onUnionDfa: onUnionDfa,
+            onConcatenateFsa: onConcatenateFsa,
+            onKleeneStarFsa: onKleeneStarFsa,
+            onReverseFsa: onReverseFsa,
             onIntersectionDfa: onIntersectionDfa,
             onDifferenceDfa: onDifferenceDfa,
             onPrefixClosure: onPrefixClosure,
@@ -102,6 +118,9 @@ void main() {
       expect(find.text('Complete DFA'), findsOneWidget);
       expect(find.text('Complement DFA'), findsOneWidget);
       expect(find.text('Union of DFAs'), findsOneWidget);
+      expect(find.text('Concatenation of FSAs'), findsOneWidget);
+      expect(find.text('Kleene Star'), findsOneWidget);
+      expect(find.text('Reverse FSA'), findsOneWidget);
       expect(find.text('Intersection of DFAs'), findsOneWidget);
       expect(find.text('Difference of DFAs'), findsOneWidget);
       expect(find.text('Prefix Closure'), findsOneWidget);
@@ -153,6 +172,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(callbacks.clearCallCount, 1);
+    });
+
+    testWidgets('triggers Kleene star callback when button is tapped', (
+      tester,
+    ) async {
+      final callbacks = _TestCallbacks();
+
+      await _pumpAlgorithmPanel(
+        tester,
+        onKleeneStarFsa: callbacks.onKleeneStar,
+      );
+
+      await tester.ensureVisible(find.text('Kleene Star'));
+      await tester.tap(find.text('Kleene Star'));
+      await tester.pumpAndSettle();
+
+      expect(callbacks.kleeneStarCallCount, 1);
+    });
+
+    testWidgets('triggers FSA reversal callback when button is tapped', (
+      tester,
+    ) async {
+      final callbacks = _TestCallbacks();
+
+      await _pumpAlgorithmPanel(
+        tester,
+        onReverseFsa: callbacks.onReverseFsa,
+      );
+
+      await tester.ensureVisible(find.text('Reverse FSA'));
+      await tester.tap(find.text('Reverse FSA'));
+      await tester.pumpAndSettle();
+
+      expect(callbacks.reverseFsaCallCount, 1);
     });
 
     testWidgets('triggers regex to NFA callback when button is pressed', (
@@ -270,6 +323,9 @@ void main() {
       expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
       expect(find.byIcon(Icons.flip), findsOneWidget);
       expect(find.byIcon(Icons.merge_type), findsOneWidget);
+      expect(find.byIcon(Icons.link), findsOneWidget);
+      expect(find.byIcon(Icons.all_inclusive), findsOneWidget);
+      expect(find.byIcon(Icons.swap_horiz), findsOneWidget);
       expect(find.byIcon(Icons.call_merge), findsOneWidget);
       expect(find.byIcon(Icons.call_split), findsOneWidget);
       expect(find.byIcon(Icons.vertical_align_top), findsOneWidget);
@@ -336,6 +392,9 @@ void main() {
       await _pumpAlgorithmPanel(tester);
 
       expect(find.text('Union of DFAs'), findsOneWidget);
+      expect(find.text('Concatenation of FSAs'), findsOneWidget);
+      expect(find.text('Kleene Star'), findsOneWidget);
+      expect(find.text('Reverse FSA'), findsOneWidget);
       expect(find.text('Intersection of DFAs'), findsOneWidget);
       expect(find.text('Difference of DFAs'), findsOneWidget);
     });

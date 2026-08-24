@@ -129,18 +129,18 @@ class StackOperationPreview extends StatelessWidget {
   }
 
   Widget _buildStackPreview(ThemeData theme) {
-    // Simular a operação
+    // Simulate the operation
     var resultStack = currentStack;
 
-    // Pop se não for lambda
+    // Pop unless the symbol is lambda
     if (popSymbol != 'λ' && popSymbol != 'ε' && popSymbol.isNotEmpty) {
       resultStack = resultStack.pop();
     }
 
-    // Push se não for lambda
+    // Push unless the symbol is lambda
     if (pushSymbol != 'λ' && pushSymbol != 'ε' && pushSymbol.isNotEmpty) {
-      // Push pode ser múltiplos símbolos (ex: "ABC")
-      // Empilhar da direita para esquerda para manter ordem correta
+      // Push may be multiple symbols (e.g. "ABC")
+      // Push right-to-left to keep the correct order
       for (var i = pushSymbol.length - 1; i >= 0; i--) {
         resultStack = resultStack.push(pushSymbol[i]);
       }

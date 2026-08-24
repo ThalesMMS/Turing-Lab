@@ -2,8 +2,8 @@
 //  equivalence_validation_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes que valida o EquivalenceChecker para DFAs e NFAs, cobrindo cenários equivalentes, não equivalentes e comparações cruzadas entre autômatos construídos de maneiras distintas.
-//  O arquivo monta máquinas de exemplo para assegurar diagnósticos coerentes e resultados consistentes mesmo em casos extremos e entradas malformadas.
+//  Test suite for EquivalenceChecker on DFAs and NFAs, covering equivalent, non-equivalent, and cross-comparisons of automata built in different ways.
+//  The file builds sample machines so diagnostics stay coherent and results stay consistent even on edge cases and malformed input.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

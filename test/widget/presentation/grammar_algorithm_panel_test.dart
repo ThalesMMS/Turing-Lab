@@ -20,6 +20,7 @@ import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
 class _MockGrammarNotifier extends GrammarProvider {
   _MockGrammarNotifier({
     GrammarState? initialState,
+    this.grammarOverride,
     this.convertToFsaResult,
     this.convertToPdaResult,
     this.convertToPdaStandardResult,
@@ -31,11 +32,13 @@ class _MockGrammarNotifier extends GrammarProvider {
   }
 
   final Result<FSA>? convertToFsaResult;
+  final Grammar? grammarOverride;
   final Result<PDA>? convertToPdaResult;
   final Result<PDA>? convertToPdaStandardResult;
   final Result<PDA>? convertToPdaGreibachResult;
   @override
   Grammar buildGrammar() {
+    if (grammarOverride != null) return grammarOverride!;
     return Grammar(
       id: 'test-grammar-${DateTime.now().millisecondsSinceEpoch}',
       name: state.name,
@@ -260,6 +263,7 @@ class _MockHomeNavigationNotifier extends HomeNavigationNotifier {
 Future<void> _pumpGrammarAlgorithmPanel(
   WidgetTester tester, {
   GrammarState? grammarState,
+  Grammar? grammarOverride,
   Result<FSA>? convertToFsaResult,
   Result<PDA>? convertToPdaResult,
   Result<PDA>? convertToPdaStandardResult,
@@ -269,6 +273,7 @@ Future<void> _pumpGrammarAlgorithmPanel(
 }) async {
   final mockGrammarNotifier = _MockGrammarNotifier(
     initialState: grammarState,
+    grammarOverride: grammarOverride,
     convertToFsaResult: convertToFsaResult,
     convertToPdaResult: convertToPdaResult,
     convertToPdaStandardResult: convertToPdaStandardResult,
@@ -771,7 +776,7 @@ void main() {
 
       await tester.ensureVisible(find.text('Check Ambiguity'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.help_outline), findsWidgets);
+      expect(find.byIcon(Icons.rule), findsWidgets);
     });
 
     testWidgets('conversion buttons have correct icons', (tester) async {
@@ -820,10 +825,10 @@ void main() {
       );
 
       await tester.ensureVisible(
-        find.text('Eliminate left recursion from grammar'),
+        find.text('Eliminate direct and indirect left recursion'),
       );
       expect(
-        find.text('Eliminate left recursion from grammar'),
+        find.text('Eliminate direct and indirect left recursion'),
         findsOneWidget,
       );
 
@@ -853,6 +858,77 @@ void main() {
 
       await tester.ensureVisible(find.text('Detect if grammar is ambiguous'));
       expect(find.text('Detect if grammar is ambiguous'), findsOneWidget);
+    });
+
+    testWidgets('left-recursion action shows substitution and direct steps', (
+      tester,
+    ) async {
+      final productions = [
+        const Production(
+          id: 'p0',
+          order: 0,
+          leftSide: ['S'],
+          rightSide: ['A', 'a'],
+        ),
+        const Production(
+          id: 'p1',
+          order: 1,
+          leftSide: ['S'],
+          rightSide: ['b'],
+        ),
+        const Production(
+          id: 'p2',
+          order: 2,
+          leftSide: ['A'],
+          rightSide: ['S', 'c'],
+        ),
+        const Production(
+          id: 'p3',
+          order: 3,
+          leftSide: ['A'],
+          rightSide: ['d'],
+        ),
+      ];
+      final grammar = Grammar(
+        id: 'indirect-widget',
+        name: 'Indirect recursion',
+        terminals: const {'a', 'b', 'c', 'd'},
+        nonterminals: const {'S', 'A'},
+        startSymbol: 'S',
+        productions: productions.toSet(),
+        type: GrammarType.contextFree,
+        created: DateTime(2026),
+        modified: DateTime(2026),
+      );
+      final grammarState = GrammarState.initial().copyWith(
+        name: grammar.name,
+        startSymbol: grammar.startSymbol,
+        productions: productions,
+        type: grammar.type,
+      );
+
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: grammarState,
+        grammarOverride: grammar,
+      );
+      await tester.ensureVisible(find.text('Remove Left Recursion'));
+      await tester.tap(find.text('Remove Left Recursion'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Transformation steps'), findsOneWidget);
+      expect(
+        find.textContaining('Substitution for A via S'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Direct recursion removal for A'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Direct and Indirect Left Recursion Removal'),
+        findsOneWidget,
+      );
     });
   });
 }

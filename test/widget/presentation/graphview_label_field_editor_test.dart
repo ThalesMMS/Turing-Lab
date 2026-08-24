@@ -2,11 +2,10 @@
 //  graphview_label_field_editor_test.dart
 //  Turing Lab
 //
-//  Testes de widget que avaliam o editor inline de rótulos do GraphView,
-//  garantindo que submissões por teclado e cancelamentos preservem os valores
-//  esperados. As provas verificam interação com mudança de foco, teclas Enter e
-//  Escape, além de assegurar que callbacks fornecidos sejam acionados conforme o
-//  contrato do componente.
+//  Widget tests for the GraphView inline label editor, ensuring keyboard
+//  submit and cancel keep the expected values. Cases cover focus changes,
+//  Enter and Escape, and that supplied callbacks fire according to the
+//  component contract.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

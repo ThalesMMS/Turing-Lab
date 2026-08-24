@@ -2,11 +2,11 @@
 //  grammar_page_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para componentes da Grammar page
-//  (editor, simulação e algoritmos), capturando snapshots de estados críticos:
-//  layouts desktop/tablet/mobile, editor vazio, editor com gramáticas regulares
-//  e livres de contexto. Garante consistência visual da interface de gramáticas
-//  entre mudanças e detecta regressões automáticas.
+//  Visual regression golden tests for Grammar page components (editor,
+//  simulation, and algorithms), capturing snapshots of critical states:
+//  desktop/tablet/mobile layouts, empty editor, and editors with regular and
+//  context-free grammars. Guards visual consistency of the grammar UI across
+//  changes and catches automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

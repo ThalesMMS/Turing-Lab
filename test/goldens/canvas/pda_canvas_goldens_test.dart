@@ -2,11 +2,11 @@
 //  pda_canvas_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para PDACanvasGraphView, capturando
-//  snapshots de estados críticos do canvas de autômatos de pilha: vazio, estados
-//  únicos com marcações, múltiplos estados com transições PDA (símbolos de
-//  leitura, pop e push), e autômatos balanceados. Garante consistência visual
-//  entre mudanças e detecta regressões automáticas na renderização de PDAs.
+//  Visual regression golden tests for PDACanvasGraphView, capturing snapshots
+//  of critical pushdown-automaton canvas states: empty, single marked states,
+//  multiple states with PDA transitions (read, pop, and push symbols), and
+//  balanced automata. Guards visual consistency across changes and catches
+//  automatic regressions in PDA rendering.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,10 +2,10 @@
 //  algorithm_step_test.dart
 //  Turing Lab
 //
-//  Testes unitários para modelos de passos de algoritmos educacionais,
-//  abrangendo AlgorithmStep base, NFAToDFAStep, DFAMinimizationStep e
-//  FAToRegexStep. Valida construtores, factories, serialização JSON,
-//  validação, operadores de igualdade e métodos auxiliares.
+//  Unit tests for educational algorithm-step models,
+//  covering the base AlgorithmStep, NFAToDFAStep, DFAMinimizationStep, and
+//  FAToRegexStep. Validates constructors, factories, JSON serialization,
+//  validation, equality operators, and helper methods.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

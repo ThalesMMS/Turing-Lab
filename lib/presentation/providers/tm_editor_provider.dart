@@ -2,10 +2,10 @@
 //  tm_editor_provider.dart
 //  Turing Lab
 //
-//  Gerencia o estado do editor de máquinas de Turing no canvas, convertendo
-//  interações do usuário em estruturas imutáveis que preservam estados,
-//  transições, símbolos de fita e direções de movimento enquanto fornece
-//  metadados auxiliares para simuladores, exportadores e destaques visuais.
+//  Manages Turing-machine editor state on the canvas, converting user
+//  interactions into immutable structures that preserve states,
+//  transitions, tape symbols, and movement directions while providing
+//  supporting metadata for simulators, exporters, and visual highlights.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/fsa_page.dart';
-import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_navigator.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
-import 'package:turing_lab/presentation/widgets/context_aware_help_panel.dart';
 import 'package:turing_lab/presentation/widgets/fsa/determinism_badge.dart';
-import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
-import 'package:turing_lab/presentation/widgets/mobile_automaton_controls.dart';
+import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
+
+import 'canvas_toolbar_test_helpers.dart';
+import 'examples_test_helpers.dart';
 
 Future<void> _pumpFsaPage(
   WidgetTester tester, {
@@ -42,7 +47,10 @@ Future<void> _pumpFsaPage(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        examplesRepositoryProvider.overrideWithValue(TestExamplesRepository()),
+      ],
       child: MaterialApp(
         theme: ThemeData(platform: platform),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -61,6 +69,52 @@ Future<void> _pumpFsaPage(
 }
 
 void main() {
+  testWidgets('empty FSA exposes five presets through Algorithms', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+
+    final algorithms = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byTooltip('Algorithms'),
+    );
+    expect(
+      tester
+          .widget<IconButton>(
+            find.ancestor(
+              of: algorithms,
+              matching: find.byType(IconButton),
+            ),
+          )
+          .onPressed,
+      isNotNull,
+    );
+
+    await tester.tap(algorithms);
+    await tester.pumpAndSettle();
+    await pumpUntilFound(tester, find.text('AFD - Termina com A'));
+
+    for (final example in const [
+      'AFD - Termina com A',
+      'AFD - Binário divisível por 3',
+      'AFD - Paridade AB',
+      'AFD - Contém AB',
+      'AFNλ - A ou AB',
+    ]) {
+      expect(find.text(example), findsOneWidget);
+    }
+
+    await tester.tap(find.text('AFD - Contém AB'));
+    await pumpUntilFound(tester, find.textContaining('Example loaded:'));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(AutomatonGraphViewCanvas)),
+    );
+    expect(
+      container.read(automatonStateProvider).currentAutomaton?.name,
+      'AFD - Contém AB',
+    );
+  });
+
   testWidgets('FSA iOS canvas playback closes the sheet and highlights steps', (
     tester,
   ) async {
@@ -102,6 +156,13 @@ void main() {
 
     expect(find.byType(SimulationPanel), findsNothing);
     expect(find.byType(CanvasSimulationPlaybackBar), findsOneWidget);
+    final playbackRect = tester.getRect(
+      find.byType(CanvasSimulationPlaybackBar),
+    );
+    final toolbarRect = tester.getRect(
+      find.byKey(const ValueKey('canvas-toolbar-surface')),
+    );
+    expect(playbackRect.bottom, lessThanOrEqualTo(toolbarRect.top));
     expect(controller.highlightNotifier.value.stateIds, {stateIds[0]});
 
     await tester.tap(
@@ -122,6 +183,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
     expect(controller.highlightNotifier.value.isEmpty, isTrue);
+  });
+
+  testWidgets('FSA uses one shared toolbar across canvas breakpoints', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(390, 900));
+
+    for (final width in const [390.0, 430.0, 800.0, 1200.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
+      final toolbar = tester.widget<GraphViewCanvasToolbar>(
+        find.byType(GraphViewCanvasToolbar),
+      );
+      expect(
+        toolbar.placement,
+        width < AutomatonWorkspaceScaffold.mobileBreakpoint
+            ? CanvasToolbarPlacement.bottomCenter
+            : CanvasToolbarPlacement.topRight,
+        reason: 'unexpected FSA toolbar placement at ${width.toInt()}px',
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('FSA clear canvas stops an active canvas playback', (
@@ -157,8 +243,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CanvasSimulationPlaybackBar), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Clear canvas'));
-    await tester.pumpAndSettle();
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Clear canvas',
+      menuLabel: 'Clear canvas',
+      opensRoute: false,
+    );
 
     expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
     expect(controller.highlightNotifier.value.isEmpty, isTrue);
@@ -239,10 +330,36 @@ void main() {
     );
 
     expect(find.byType(AutomatonWorkspaceScaffold), findsOneWidget);
-    expect(find.byType(MobileAutomatonControls), findsOneWidget);
+    expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
     expect(find.byType(AlgorithmPanel), findsNothing);
     expect(find.byType(FSADeterminismOverlay), findsOneWidget);
     expect(find.byType(AlgorithmStepNavigator), findsOneWidget);
+  });
+
+  testWidgets(
+      'FSAPage uses mobile determinism overlay geometry in a narrow pane', (
+    tester,
+  ) async {
+    await _pumpFsaPage(
+      tester,
+      viewSize: const Size(1600, 900),
+      paneWidth: 800,
+    );
+    final canvasFinder = find.byType(AutomatonGraphViewCanvas);
+    final canvas = tester.widget<AutomatonGraphViewCanvas>(canvasFinder);
+    canvas.controller!.addStateAt(const Offset(140, 180));
+    await tester.pumpAndSettle();
+
+    final canvasRect = tester.getRect(canvasFinder);
+    final badgeFinder = find.byType(FsaTypeBadge);
+    expect(tester.getTopLeft(badgeFinder).dy, canvasRect.top + 60);
+
+    await tester.tap(badgeFinder);
+    await tester.pumpAndSettle();
+
+    final panelRect = tester.getRect(find.byType(NonDeterminismPanel));
+    expect(panelRect.top, canvasRect.top + 100);
+    expect(panelRect.left, canvasRect.left + 16);
   });
 
   testWidgets('FSAPage desktop uses shared canvas simulation algorithm order', (
@@ -260,22 +377,109 @@ void main() {
     expect(find.byType(AlgorithmStepNavigator), findsOneWidget);
   });
 
-  testWidgets('FSAPage desktop help opens context then keyboard shortcuts', (
+  testWidgets('FSAPage desktop places the determinism badge below the toolbar',
+      (
     tester,
   ) async {
     await _pumpFsaPage(tester, viewSize: const Size(1600, 900));
-
-    await tester.tap(
-      find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
+    final canvas = tester.widget<AutomatonGraphViewCanvas>(
+      find.byType(AutomatonGraphViewCanvas),
     );
+    canvas.controller!.addStateAt(const Offset(140, 180));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsOneWidget);
-    await tester.tap(find.widgetWithIcon(TextButton, Icons.keyboard));
+    final badgeRect = tester.getRect(find.byType(FsaTypeBadge));
+    final toolbarRect = tester.getRect(
+      find.byKey(const ValueKey('canvas-toolbar-surface')),
+    );
+    expect(badgeRect.top, greaterThanOrEqualTo(toolbarRect.bottom + 8));
+  });
+
+  testWidgets('FSA Help maps empty, DFA, epsilon, and NFA contexts', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(1600, 900));
+    await expandCanvasToolbar(tester);
+
+    Future<void> expectHelpTopic(String topicId) async {
+      await tapSecondaryCanvasAction(
+        tester,
+        semanticLabel: 'Canvas action: Help & Shortcuts',
+        menuLabel: 'Help & Shortcuts',
+        opensRoute: true,
+      );
+      await tester.pumpAndSettle();
+      final page = tester.widget<HelpPage>(find.byType(HelpPage));
+      final node = find.byKey(ValueKey('help-node-$topicId'));
+      expect(page.initialTopicId, topicId);
+      expect(node, findsOneWidget);
+      expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+      expect(find.byKey(ValueKey('help-body-$topicId')), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+
+    await expectHelpTopic(HelpTopicIds.fsaEditorOverview);
+
+    final canvas = tester.widget<AutomatonGraphViewCanvas>(
+      find.byType(AutomatonGraphViewCanvas),
+    );
+    canvas.controller!
+      ..addStateAt(const Offset(120, 160))
+      ..addStateAt(const Offset(320, 160))
+      ..addStateAt(const Offset(520, 160));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ContextAwareHelpPanel), findsNothing);
-    expect(find.byType(KeyboardShortcutsDialog), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(AutomatonGraphViewCanvas)),
+    );
+    final notifier = container.read(automatonStateProvider.notifier);
+    var automaton = container.read(automatonStateProvider).currentAutomaton!;
+    final states = automaton.states.toList(growable: false);
+
+    await expectHelpTopic(HelpTopicIds.fsaTheoryDfa);
+    expect(
+      find.descendant(
+        of: find.byType(FsaTypeBadge),
+        matching: find.byIcon(Icons.info_outline),
+      ),
+      findsOneWidget,
+    );
+
+    automaton = automaton.copyWith(
+      transitions: {
+        FSATransition(
+          id: 'epsilon',
+          fromState: states[0],
+          toState: states[1],
+          lambdaSymbol: 'ε',
+        ),
+      },
+    );
+    notifier.updateAutomaton(automaton);
+    await tester.pumpAndSettle();
+    await expectHelpTopic(HelpTopicIds.fsaTheoryEpsilon);
+
+    automaton = automaton.copyWith(
+      alphabet: {'a'},
+      transitions: {
+        FSATransition(
+          id: 'nfa-1',
+          fromState: states[0],
+          toState: states[1],
+          inputSymbols: {'a'},
+        ),
+        FSATransition(
+          id: 'nfa-2',
+          fromState: states[0],
+          toState: states[2],
+          inputSymbols: {'a'},
+        ),
+      },
+    );
+    notifier.updateAutomaton(automaton);
+    await tester.pumpAndSettle();
+    await expectHelpTopic(HelpTopicIds.fsaTheoryNfa);
   });
 
   testWidgets('FSAPage mobile Clear remains undoable', (tester) async {
@@ -287,8 +491,13 @@ void main() {
     controller.addStateAt(const Offset(120, 120));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Clear canvas'));
-    await tester.pumpAndSettle();
+    await expandCanvasToolbar(tester);
+    await tapSecondaryCanvasAction(
+      tester,
+      semanticLabel: 'Canvas action: Clear canvas',
+      menuLabel: 'Clear canvas',
+      opensRoute: false,
+    );
 
     expect(controller.nodes, isEmpty);
     expect(controller.canUndo, isTrue);

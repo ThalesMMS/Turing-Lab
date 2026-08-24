@@ -2,9 +2,10 @@
 //  graphview_automaton_mapper_test.dart
 //  Turing Lab
 //
-//  Confere o GraphViewAutomatonMapper na tradução de autômatos finitos para nós e arestas, cobrindo
-//  casos com loops, transições múltiplas e estados especiais. Verifica se os cálculos de geometria
-//  e agrupamento resultam em modelos consistentes para o canvas interativo.
+//  Checks GraphViewAutomatonMapper when translating finite automata into nodes
+//  and edges, covering loops, multiple transitions, and special states. Verifies
+//  that geometry and grouping calculations produce consistent models for the
+//  interactive canvas.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

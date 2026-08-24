@@ -2,19 +2,21 @@
 //  pumping_lemma_page.dart
 //  Turing Lab
 //
-//  Controla o módulo do jogo do Lema do Bombeamento com alternância de seções
-//  para jogo, ajuda e progresso, adaptando o layout a telas móveis e desktop
-//  enquanto mantém um fluxo pedagógico contínuo para explorar linguagens
-//  regulares e não regulares.
+//  Hosts the Pumping Lemma game with play and progress sections, adapting
+//  the layout for mobile and desktop and routing pedagogical guidance to
+//  the unified help tree.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/help_topic_ids.dart';
+import '../../l10n/app_localizations.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/common/help_navigation.dart';
+import '../widgets/help_action_button.dart';
 import '../widgets/pumping_lemma_game/pumping_lemma_game.dart';
-import '../widgets/pumping_lemma_help.dart';
 import '../widgets/pumping_lemma_progress.dart';
-import '../widgets/tablet_layout_container.dart';
 
 /// Page for the Pumping Lemma Game
 class PumpingLemmaPage extends ConsumerStatefulWidget {
@@ -26,13 +28,21 @@ class PumpingLemmaPage extends ConsumerStatefulWidget {
 
 class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
   bool _showGame = true;
-  bool _showHelp = false;
   bool _showProgress = false;
+
+  void _openHelp() {
+    openHelp(context, topicId: HelpTopicIds.pumpingEditorGame);
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isMobile = screenSize.width < 1024;
+    publishWorkspaceQuickActions(
+      ref,
+      WorkspaceTab.pumping,
+      WorkspaceQuickActions(onHelp: _openHelp),
+    );
 
     return Scaffold(
       body: isMobile
@@ -40,17 +50,22 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
           : screenSize.width < 1400
               ? _buildTabletLayout()
               : _buildDesktopLayout(),
+      floatingActionButton: isMobile ? null : _buildWideHelpButton(),
+    );
+  }
+
+  Widget _buildWideHelpButton() {
+    final tooltip = AppLocalizations.of(context).contextAwareHelp;
+
+    return HelpActionButton(
+      topicId: HelpTopicIds.pumpingEditorGame,
+      tooltip: tooltip,
+      filled: true,
     );
   }
 
   Widget _buildTabletLayout() {
-    return const TabletLayoutContainer(
-      canvas: PumpingLemmaGame(),
-      algorithmPanel: PumpingLemmaHelp(),
-      simulationPanel: PumpingLemmaProgress(),
-      algorithmTabTitle: 'Help',
-      simulationTabTitle: 'Progress',
-    );
+    return _buildWideLayout(gap: 8);
   }
 
   Widget _buildMobileLayout() {
@@ -76,11 +91,9 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _showHelp = !_showHelp),
-                        icon: Icon(
-                          _showHelp ? Icons.visibility_off : Icons.help,
-                        ),
-                        label: Text(_showHelp ? 'Hide Help' : 'Show Help'),
+                        onPressed: _openHelp,
+                        icon: const Icon(Icons.help_outline),
+                        label: const Text('Show Help'),
                       ),
                     ),
                   ],
@@ -111,16 +124,6 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
             ),
             const SizedBox(height: 8),
           ],
-
-          // Help panel (collapsible on mobile)
-          if (_showHelp) ...[
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              child: const PumpingLemmaHelp(),
-            ),
-            const SizedBox(height: 8),
-          ],
-
           // Progress panel (collapsible on mobile)
           if (_showProgress) ...[
             Container(
@@ -135,9 +138,12 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
   }
 
   Widget _buildDesktopLayout() {
+    return _buildWideLayout(gap: 16);
+  }
+
+  Widget _buildWideLayout({required double gap}) {
     return Row(
       children: [
-        // Left panel - Game
         Expanded(
           flex: 2,
           child: Container(
@@ -145,17 +151,7 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
             child: const PumpingLemmaGame(),
           ),
         ),
-        const SizedBox(width: 16),
-        // Center panel - Help
-        Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const PumpingLemmaHelp(),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Right panel - Progress
+        SizedBox(width: gap),
         Expanded(
           flex: 1,
           child: Container(

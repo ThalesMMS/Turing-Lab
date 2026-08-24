@@ -2,9 +2,9 @@
 //  pumping_lemma_game_test.dart
 //  Turing Lab
 //
-//  Testes do modo jogo do lema do bombeamento, garantindo inicialização limpa,
-//  progressão linear pelos desafios, registro de respostas corretas e incorretas
-//  com atualização de pontuação e a liberação adequada de recursos ao reiniciar.
+//  Tests for pumping-lemma game mode, ensuring a clean start,
+//  linear progress through challenges, scoring of correct and incorrect
+//  answers, and proper resource cleanup on restart.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

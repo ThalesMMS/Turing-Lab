@@ -2,11 +2,10 @@
 //  language_comparison_viewer_test.dart
 //  Turing Lab
 //
-//  Suite abrangente que testa o widget LanguageComparisonViewer, validando
-//  visualização de resultados de comparação de equivalência, exibição de
-//  contraexemplos, estatísticas, autômatos lado a lado, autômato produto
-//  (colapsável) e passos do algoritmo, garantindo comportamento correto em
-//  cenários de equivalência e não-equivalência de linguagens.
+//  Comprehensive suite for LanguageComparisonViewer, covering equivalence
+//  comparison results, counterexamples, statistics, side-by-side automata,
+//  a collapsible product automaton, and algorithm steps for equivalent and
+//  non-equivalent languages.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

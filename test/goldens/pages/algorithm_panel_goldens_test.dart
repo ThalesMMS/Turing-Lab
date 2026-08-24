@@ -2,11 +2,11 @@
 //  algorithm_panel_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para o painel de algoritmos, capturando
-//  snapshots de estados críticos: painel vazio, botões de algoritmos, entrada
-//  de regex, resultados de equivalência, modo step-by-step, e layouts
-//  responsivos. Garante consistência visual da interface de algoritmos entre
-//  mudanças e detecta regressões automáticas.
+//  Visual regression golden tests for the algorithm panel, capturing snapshots
+//  of critical states: empty panel, algorithm buttons, regex input, equivalence
+//  results, step-by-step mode, and responsive layouts. Guards visual
+//  consistency of the algorithm UI across changes and catches automatic
+//  regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

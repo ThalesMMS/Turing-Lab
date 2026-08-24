@@ -165,6 +165,37 @@ extension _FSAPageStateBehavior on _FSAPageState {
     );
   }
 
+  Future<void> _handleConcatenateFsa(FSA other) async {
+    await _runCurrentAutomatonOperation(
+      operation: (notifier) => notifier.concatenateFsa(
+        other,
+        withSteps: _stepByStepMode,
+      ),
+      successMessage: 'Concatenation computed successfully.',
+      invalidMessage: 'Load an FSA before computing the concatenation.',
+    );
+  }
+
+  Future<void> _handleKleeneStarFsa() async {
+    await _runCurrentAutomatonOperation(
+      operation: (notifier) => notifier.kleeneStarFsa(
+        withSteps: _stepByStepMode,
+      ),
+      successMessage: 'Kleene star computed successfully.',
+      invalidMessage: 'Load an FSA before applying Kleene star.',
+    );
+  }
+
+  Future<void> _handleReverseFsa() async {
+    await _runCurrentAutomatonOperation(
+      operation: (notifier) => notifier.reverseFsa(
+        withSteps: _stepByStepMode,
+      ),
+      successMessage: 'FSA language reversed successfully.',
+      invalidMessage: 'Load an FSA before reversing its language.',
+    );
+  }
+
   Future<void> _handleIntersectionDfa(FSA other) async {
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.intersectionDfa(other),
@@ -257,6 +288,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
         !automaton.hasEpsilonTransitions;
 
     return AlgorithmPanel(
+      showExamples: true,
       currentAutomaton: hasAutomaton ? automaton : null,
       onNfaToDfa: hasAutomaton ? _handleNfaToDfa : null,
       onRemoveLambda: hasLambda ? _handleRemoveLambda : null,
@@ -264,6 +296,9 @@ extension _FSAPageStateBehavior on _FSAPageState {
       onCompleteDfa: isDfa ? () => algorithmNotifier.completeDfa() : null,
       onComplementDfa: isDfa ? _handleComplementDfa : null,
       onUnionDfa: isDfa ? _handleUnionDfa : null,
+      onConcatenateFsa: hasAutomaton ? _handleConcatenateFsa : null,
+      onKleeneStarFsa: hasAutomaton ? _handleKleeneStarFsa : null,
+      onReverseFsa: hasAutomaton ? _handleReverseFsa : null,
       onIntersectionDfa: isDfa ? _handleIntersectionDfa : null,
       onDifferenceDfa: isDfa ? _handleDifferenceDfa : null,
       onPrefixClosure: isDfa ? _handlePrefixClosure : null,
@@ -369,22 +404,20 @@ extension _FSAPageStateBehavior on _FSAPageState {
   void _showContextualHelp() {
     final automaton = ref.read(automatonStateProvider).currentAutomaton;
 
-    // Determine the most relevant help content based on current automaton state
-    String helpContextId;
+    String topicId;
     if (automaton == null) {
-      helpContextId = 'usage_getting_started';
+      topicId = HelpTopicIds.fsaEditorOverview;
     } else if (automaton.hasEpsilonTransitions) {
-      helpContextId = 'concept_nfa';
+      topicId = HelpTopicIds.fsaTheoryEpsilon;
     } else if (automaton.isDeterministic) {
-      helpContextId = 'concept_dfa';
+      topicId = HelpTopicIds.fsaTheoryDfa;
     } else {
-      helpContextId = 'concept_nfa';
+      topicId = HelpTopicIds.fsaTheoryNfa;
     }
 
     showWorkspaceHelp(
       context: context,
-      ref: ref,
-      contextId: helpContextId,
+      topicId: topicId,
     );
   }
 
@@ -414,7 +447,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
           onSimulate: _openSimulationSheet,
           onAlgorithms: _openAlgorithmSheet,
           simulateEnabled: hasAutomaton,
-          algorithmsEnabled: hasAutomaton,
         ),
       );
 
@@ -428,12 +460,15 @@ extension _FSAPageStateBehavior on _FSAPageState {
           children: [
             Positioned.fill(child: child),
             // Badge DFA/NFA/ε-NFA
-            FSADeterminismOverlay(automaton: state.currentAutomaton),
+            FSADeterminismOverlay(
+              automaton: state.currentAutomaton,
+              isMobile: isMobile,
+            ),
             if (_canvasSimulationSteps case final steps?)
               Positioned(
                 left: 16,
                 right: 16,
-                bottom: 144,
+                bottom: _canvasToolbarInsets.bottom + 16,
                 child: CanvasSimulationPlaybackBar(
                   key: ValueKey(steps),
                   stepCount: steps.length,
@@ -445,8 +480,10 @@ extension _FSAPageStateBehavior on _FSAPageState {
             AnimatedBuilder(
               animation: combinedListenable,
               builder: (context, _) {
-                return MobileAutomatonControls(
-                  onHelp: _showContextualHelp,
+                return GraphViewCanvasToolbar(
+                  controller: _canvasController,
+                  placement: CanvasToolbarPlacement.bottomCenter,
+                  onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
                   enableToolSelection: true,
                   showSelectionTool: true,
                   activeTool: _toolController.activeTool,
@@ -457,15 +494,8 @@ extension _FSAPageStateBehavior on _FSAPageState {
                   onAddTransition: () => _toolController.toggleTool(
                     AutomatonCanvasTool.transition,
                   ),
-                  onZoomIn: _canvasController.zoomIn,
-                  onZoomOut: _canvasController.zoomOut,
-                  onFitToContent: _canvasController.fitToContent,
-                  onResetView: _canvasController.resetView,
+                  onHelp: _showContextualHelp,
                   onClear: _clearCanvasAutomaton,
-                  onUndo: _canvasController.undo,
-                  onRedo: _canvasController.redo,
-                  canUndo: _canvasController.canUndo,
-                  canRedo: _canvasController.canRedo,
                   statusMessage: statusMessage,
                 );
               },
@@ -478,12 +508,18 @@ extension _FSAPageStateBehavior on _FSAPageState {
         children: [
           Positioned.fill(child: child),
           // Badge DFA/NFA/ε-NFA (desktop)
-          FSADeterminismOverlay(automaton: state.currentAutomaton),
+          FSADeterminismOverlay(
+            automaton: state.currentAutomaton,
+            isMobile: isMobile,
+            desktopTop:
+                _canvasToolbarInsets.top > 0 ? _canvasToolbarInsets.top : 88,
+          ),
           AnimatedBuilder(
             animation: combinedListenable,
             builder: (context, _) {
               return GraphViewCanvasToolbar(
                 controller: _canvasController,
+                onViewportInsetsChanged: _handleCanvasToolbarInsetsChanged,
                 enableToolSelection: true,
                 showSelectionTool: true,
                 activeTool: _toolController.activeTool,

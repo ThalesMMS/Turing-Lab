@@ -2,11 +2,11 @@
 //  tm_canvas_graphview_test.dart
 //  Turing Lab
 //
-//  Bateria de testes de widget que verifica o TMCanvasGraphView, assegurando
-//  que o controlador GraphView de máquinas de Turing sincronize estados e
-//  transições com o provider Riverpod durante interações típicas de edição.
-//  As verificações incluem criação dinâmica de nós, adição de transições e
-//  descarte apropriado do controlador ao término de cada cenário.
+//  Widget tests for TMCanvasGraphView, confirming the Turing machine
+//  GraphView controller syncs states and transitions with the Riverpod
+//  provider during typical editing. Checks include dynamic node creation,
+//  adding transitions, and disposing the controller at the end of each
+//  scenario.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -24,6 +24,18 @@ import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
+
+class _FitCountingTmCanvasController extends GraphViewTmCanvasController {
+  _FitCountingTmCanvasController({required super.editorNotifier});
+
+  int fitToContentCallCount = 0;
+
+  @override
+  void fitToContent() {
+    fitToContentCallCount++;
+    super.fitToContent();
+  }
+}
 
 Future<void> _pumpTmCanvas(
   WidgetTester tester, {
@@ -120,6 +132,23 @@ void main() {
       final transitions = notifier.state.tm!.transitions;
       expect(transitions, hasLength(1));
       expect(delivered, isNotEmpty);
+    });
+
+    testWidgets('fits initial TM content once', (tester) async {
+      final fitController = _FitCountingTmCanvasController(
+        editorNotifier: notifier,
+      );
+      addTearDown(fitController.dispose);
+      fitController.addStateAt(const Offset(120, 120));
+
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: fitController,
+      );
+      await tester.pumpAndSettle();
+
+      expect(fitController.fitToContentCallCount, 1);
     });
 
     testWidgets('groups TM self-loops into one path with a shared label card', (

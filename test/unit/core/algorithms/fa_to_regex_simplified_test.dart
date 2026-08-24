@@ -2,10 +2,10 @@
 //  fa_to_regex_simplified_test.dart
 //  Turing Lab
 //
-//  Suite que verifica a conversão de autômatos finitos para expressões regulares
-//  com simplificação algébrica ativada. Os casos testam se a simplificação produz
-//  regexes equivalentes e mais legíveis, aplicando identidades e removendo parênteses
-//  desnecessários. Valida round-trip (FA→Regex→NFA) para garantir equivalência.
+//  Suite that verifies finite-automaton-to-regular-expression conversion
+//  with algebraic simplification enabled. Cases check that simplification yields
+//  equivalent, more readable regexes by applying identities and dropping unnecessary
+//  parentheses. Validates the FA→Regex→NFA round-trip for equivalence.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

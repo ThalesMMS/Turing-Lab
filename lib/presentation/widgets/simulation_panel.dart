@@ -2,12 +2,12 @@
 //  simulation_panel.dart
 //  Turing Lab
 //
-//  Constrói o painel de simulação de autômatos com entrada textual, botões de
-//  execução e modos passo a passo que descrevem cada transição realizada e o
-//  restante da cadeia processada.
-//  Gerencia timers, destaques compartilhados com o canvas e renderização de
-//  resultados aceitos ou rejeitados, permitindo alternar entre reprodução
-//  automática e navegação manual pelas etapas.
+//  Builds the automaton simulation panel with text input, run buttons,
+//  and step-by-step modes that describe each transition taken and the
+//  remaining processed string.
+//  Manages timers, highlights shared with the canvas, and rendering of
+//  accepted or rejected results, allowing automatic playback or manual
+//  step navigation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

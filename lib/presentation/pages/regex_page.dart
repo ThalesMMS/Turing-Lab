@@ -2,28 +2,34 @@
 //  regex_page.dart
 //  Turing Lab
 //
-//  Centraliza as ferramentas de expressões regulares permitindo validar,
-//  simular e converter padrões em autômatos, reutilizando algoritmos do núcleo
-//  para checar equivalência, aceitação de cadeias e sincronizar resultados com
-//  o provedor de autômatos ativo.
+//  Centralizes regular-expression tools for validating, simulating, and
+//  converting patterns into automata, reusing core algorithms to check
+//  equivalence, string acceptance, and to sync results with the active
+//  automaton provider.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/help_topic_ids.dart';
+import '../../core/models/asset_example.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/regex_analysis.dart';
+import '../../core/models/regex_preset.dart';
 import '../../core/models/regex_simplification_step.dart';
+import '../../core/repositories/examples_repository.dart';
+import '../../core/result.dart';
+import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/automaton_algorithm_provider.dart';
 import '../providers/automaton_state_provider.dart';
-import '../providers/help_provider.dart';
 import '../providers/home_navigation_provider.dart';
 import '../providers/regex_editor_provider.dart';
-import '../widgets/algorithm_panel.dart';
+import '../providers/workspace_quick_actions_provider.dart';
+import '../widgets/algorithm_panel_scaffold.dart';
 import '../widgets/app_snackbar.dart';
-import '../widgets/context_aware_help_panel.dart';
+import '../widgets/common/help_navigation.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/simulation_panel.dart';
 import '../widgets/switch_setting_tile.dart';
@@ -50,10 +56,15 @@ class _RegexPageState extends ConsumerState<RegexPage> {
   final TextEditingController _comparisonRegexController =
       TextEditingController();
   ProviderSubscription<RegexEditorState>? _regexEditorSub;
+  final ValueNotifier<String?> _loadingExampleName = ValueNotifier(null);
+  late final ExamplesRepository _examplesDataSource;
+  late final Future<ListResult<AssetExample<RegexPreset>>> _regexExamplesFuture;
 
   @override
   void initState() {
     super.initState();
+    _examplesDataSource = ref.read(examplesRepositoryProvider);
+    _regexExamplesFuture = _examplesDataSource.loadAllTypedRegexExamples();
     _syncInputControllers(ref.read(regexEditorProvider));
     _regexEditorSub = ref.listenManual<RegexEditorState>(
       regexEditorProvider,
@@ -64,6 +75,7 @@ class _RegexPageState extends ConsumerState<RegexPage> {
   @override
   void dispose() {
     _regexEditorSub?.close();
+    _loadingExampleName.dispose();
     _regexController.dispose();
     _testStringController.dispose();
     _alphabetController.dispose();
@@ -174,22 +186,78 @@ class _RegexPageState extends ConsumerState<RegexPage> {
   }
 
   void _showContextualHelp() {
-    final helpNotifier = ref.read(helpProvider.notifier);
     final regexState = ref.read(regexEditorProvider);
 
-    // Determine the most relevant help content based on current regex state
-    String helpContextId;
-    if (regexState.currentRegex.isNotEmpty && regexState.isValid) {
-      // Show conversion help if user has a valid regex
-      helpContextId = 'algo_regex_to_nfa';
-    } else {
-      // Default: show general regex concepts
-      helpContextId = 'concept_regex';
-    }
+    final topicId = regexState.isValid
+        ? HelpTopicIds.regexEditorConversions
+        : HelpTopicIds.regexEditorInput;
+    openHelp(context, topicId: topicId);
+  }
 
-    final helpContent = helpNotifier.getHelpByContext(helpContextId);
-    if (helpContent != null) {
-      ContextAwareHelpPanel.show(context, helpContent: helpContent);
+  Future<void> _openAlgorithmSheet() {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.8,
+          minChildSize: 0.45,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Consumer(
+              builder: (context, sheetRef, _) {
+                final algorithmState =
+                    sheetRef.watch(automatonAlgorithmProvider);
+                sheetRef.watch(regexEditorProvider);
+                return ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [_buildRegexAlgorithmsPanel(algorithmState)],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _loadSelectedRegexExample(String exampleName) async {
+    _loadingExampleName.value = exampleName;
+
+    try {
+      final result =
+          await _examplesDataSource.loadTypedRegexExample(exampleName);
+      if (!mounted) return;
+
+      if (result.isFailure) {
+        _showFeedback(
+          'Failed to load example: ${result.error}',
+          tone: AppSnackBarTone.error,
+        );
+        return;
+      }
+
+      final preset = result.data!.payload;
+      final notifier = ref.read(regexEditorProvider.notifier);
+      notifier.setAlphabet(preset.alphabet);
+      notifier.validateRegex(preset.expression);
+      _showFeedback(
+        'Example loaded: ${preset.name}',
+        tone: AppSnackBarTone.success,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      _showFeedback(
+        'Failed to load example: $error',
+        tone: AppSnackBarTone.error,
+      );
+    } finally {
+      if (mounted) {
+        _loadingExampleName.value = null;
+      }
     }
   }
 
@@ -256,9 +324,17 @@ class _RegexPageState extends ConsumerState<RegexPage> {
     final screenSize = MediaQuery.of(context).size;
     final isMobile = screenSize.width < 768;
     final isTablet = screenSize.width >= 768 && screenSize.width < 1400;
+    publishWorkspaceQuickActions(
+      ref,
+      WorkspaceTab.regex,
+      WorkspaceQuickActions(
+        onHelp: _showContextualHelp,
+        onAlgorithms: _openAlgorithmSheet,
+      ),
+    );
 
     if (isMobile) {
-      return _buildMobileLayout(algorithmState);
+      return _buildMobileLayout();
     } else if (isTablet) {
       return _buildTabletLayout(algorithmState);
     } else {

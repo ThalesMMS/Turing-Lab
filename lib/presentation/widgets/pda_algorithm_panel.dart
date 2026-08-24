@@ -2,7 +2,9 @@
 //  pda_algorithm_panel.dart
 //  Turing Lab
 //
-//  Apresenta hub de algoritmos para autômatos de pilha disponibilizando conversões, verificações e diagnósticos. Coordena chamadas ao serviço de conversão, exibe estados de carregamento e resume resultados textuais para orientar ajustes no PDA.
+//  Presents a PDA algorithm hub with conversions, checks, and diagnostics.
+//  Coordinates conversion-service calls, shows loading states, and
+//  summarizes textual results to guide PDA adjustments.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -11,19 +13,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/algorithms/pda_to_cfg_converter.dart';
+import '../../core/algorithms/pda_language_emptiness_analyzer.dart';
+import '../../core/algorithms/pda_normalizer.dart';
+import '../../core/algorithms/pda_simplifier.dart';
 import '../../core/algorithms/pda_simulator.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
+import '../../core/models/pda_simplification.dart';
 import '../../core/models/simulation_highlight.dart';
-import '../../core/models/state.dart' as automaton_models;
 import '../../core/models/asset_example.dart';
 import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
+import '../../core/utils/epsilon_utils.dart';
 import '../../injection/data_providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../providers/pda_editor_provider.dart';
+import '../providers/pda_simulation_provider.dart' show pdaSimulationProvider;
 import 'algorithm_panel_scaffold.dart';
 import 'app_snackbar.dart';
 import 'base_simulation_panel.dart';
@@ -36,10 +44,12 @@ class PDAAlgorithmPanel extends ConsumerStatefulWidget {
     super.key,
     this.useExpanded = true,
     this.examplesDataSource,
+    this.onApplyPda,
   });
 
   final bool useExpanded;
   final ExamplesRepository? examplesDataSource;
+  final ValueChanged<PDA>? onApplyPda;
 
   @override
   ConsumerState<PDAAlgorithmPanel> createState() => _PDAAlgorithmPanelState();
@@ -50,6 +60,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   String? _loadingExampleName;
   String? _analysisResult;
   Grammar? _latestConvertedGrammar;
+  PDALanguageEmptinessProof? _latestLanguageProof;
+  PDA? _latestLanguageSourcePda;
   CanvasHighlightSourceHandle? _analysisHighlights;
   late final ExamplesRepository _examplesDataSource;
   late final Future<ListResult<AssetExample<PDA>>> _pdaExamplesFuture;
@@ -89,7 +101,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   }
 
   Widget _buildAlgorithmButtons(BuildContext context) {
-    final algorithmConfigs = _algorithmButtonConfigs();
+    final algorithmConfigs = _algorithmButtonConfigs(context);
 
     return Column(
       children: [
@@ -102,7 +114,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     );
   }
 
-  List<AlgorithmButtonConfig> _algorithmButtonConfigs() {
+  List<AlgorithmButtonConfig> _algorithmButtonConfigs(BuildContext context) {
+    final strings = appLocalizationsOf(context);
     return [
       AlgorithmButtonConfig(
         title: 'Convert to CFG',
@@ -113,17 +126,17 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         onPressed: _convertToCFG,
       ),
       AlgorithmButtonConfig(
-        title: 'Minimize PDA',
-        description: 'Minimize the number of states in PDA',
+        title: strings.pdaSimplificationButtonTitle,
+        description: strings.pdaSimplificationButtonDescription,
         icon: Icons.compress,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
-        onPressed: _minimizePDA,
+        onPressed: _simplifyPDA,
       ),
       AlgorithmButtonConfig(
         title: 'Check Determinism',
         description: 'Determine if PDA is deterministic',
-        icon: Icons.help_outline,
+        icon: Icons.fact_check_outlined,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
         onPressed: _checkDeterminism,
@@ -138,7 +151,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       ),
       AlgorithmButtonConfig(
         title: 'Language Analysis',
-        description: 'Analyze the language accepted by PDA',
+        description: 'Prove emptiness and find a shortest accepted word',
         icon: Icons.analytics,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
@@ -194,6 +207,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
               const SizedBox(height: 12),
               _buildGrammarSummary(context, grammar),
             ],
+            if (_latestLanguageProof case final proof?
+                when !proof.isEmpty && proof.witnessTrace != null) ...[
+              const SizedBox(height: 16),
+              FilledButton.tonalIcon(
+                onPressed: _openWitnessTrace,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Open witness in Simulator'),
+              ),
+            ],
           ],
         ),
       ),
@@ -217,14 +239,56 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     });
 
     _performAnalysis('PDA to CFG Conversion', (_) async {
-      final conversionResult = PDAtoCFGConverter.convert(pda);
+      var conversionPda = pda;
+      var conversionResult = PDAtoCFGConverter.convert(conversionPda);
+      String? normalizationSummary;
+
+      if (conversionResult.isFailure && _canNormalizeForCfg(pda)) {
+        final sourceMode = ref.read(pdaSimulationProvider).mode;
+        final normalizationResult = PDANormalizer.normalize(
+          pda,
+          sourceMode: sourceMode,
+          targetForm: PDANormalForm.finalStateAndSinglePop,
+        );
+        if (normalizationResult.isFailure) {
+          final message =
+              'Conversion failed: ${normalizationResult.error ?? conversionResult.error}';
+          _latestConvertedGrammar = null;
+          _showSnackbar(message, tone: AppSnackBarTone.error);
+          return message;
+        }
+
+        final report = normalizationResult.data!;
+        final shouldApply = await _showNormalizationPreview(pda, report);
+        if (!shouldApply) {
+          return 'Conversion canceled. The editor PDA was not changed.';
+        }
+        if (!mounted) {
+          return 'Conversion canceled because the panel was closed.';
+        }
+        if (!identical(ref.read(pdaEditorProvider).pda, pda)) {
+          return 'Conversion canceled because the editor PDA changed during review.';
+        }
+
+        conversionPda = report.normalizedPda;
+        ref.read(pdaEditorProvider.notifier).setPda(conversionPda);
+        conversionResult = PDAtoCFGConverter.convert(conversionPda);
+        normalizationSummary =
+            'Applied normalization: ${pda.states.length} → ${conversionPda.states.length} states, '
+            '${pda.pdaTransitions.length} → ${conversionPda.pdaTransitions.length} transitions.';
+      }
+
       if (conversionResult.isSuccess) {
         _latestConvertedGrammar = conversionResult.data!.grammar;
         final grammar = _latestConvertedGrammar!;
         final extraSummary =
             'Generated grammar has ${grammar.productions.length} productions '
             'and ${grammar.nonterminals.length} non-terminals.';
-        return '${conversionResult.data!.description}\n$extraSummary';
+        return [
+          if (normalizationSummary != null) normalizationSummary,
+          conversionResult.data!.description,
+          extraSummary,
+        ].join('\n');
       }
 
       final message = 'Conversion failed: ${conversionResult.error}';
@@ -234,92 +298,257 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     }, resetConvertedGrammar: false);
   }
 
-  void _minimizePDA() {
+  bool _canNormalizeForCfg(PDA pda) {
+    return pda.acceptingStates.isEmpty ||
+        pda.pdaTransitions.any(
+          (transition) =>
+              transition.isLambdaPop || isEpsilonSymbol(transition.popSymbol),
+        );
+  }
+
+  Future<bool> _showNormalizationPreview(
+    PDA source,
+    PDANormalizationReport report,
+  ) async {
+    if (!mounted) return false;
+
+    final decision = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final strings = appLocalizationsOf(dialogContext);
+        String formatAcceptanceMode(PDAAcceptanceMode mode) {
+          return switch (mode) {
+            PDAAcceptanceMode.finalState => strings.pdaAcceptanceFinalState,
+            PDAAcceptanceMode.emptyStack => strings.pdaAcceptanceEmptyStack,
+            PDAAcceptanceMode.both => strings.pdaAcceptanceBoth,
+          };
+        }
+
+        return AlertDialog(
+          title: Text(strings.pdaNormalizationReviewTitle),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.pdaNormalizationSourceAcceptance(
+                      formatAcceptanceMode(report.sourceMode),
+                    ),
+                  ),
+                  Text(
+                    strings.pdaNormalizationTargetAcceptance(
+                      formatAcceptanceMode(report.targetMode),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    strings.pdaNormalizationStateCount(
+                      source.states.length,
+                      report.normalizedPda.states.length,
+                    ),
+                  ),
+                  Text(
+                    strings.pdaNormalizationTransitionCount(
+                      source.pdaTransitions.length,
+                      report.normalizedPda.pdaTransitions.length,
+                    ),
+                  ),
+                  Text(
+                    strings.pdaNormalizationNewStackSymbol(
+                      report.addedStackSymbols.join(', '),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.pdaNormalizationGrowthWarning),
+                  const SizedBox(height: 8),
+                  Text(strings.pdaNormalizationCancelHint),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.pdaNormalizationCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.pdaNormalizationApplyAndConvert),
+            ),
+          ],
+        );
+      },
+    );
+    return decision ?? false;
+  }
+
+  void _simplifyPDA() {
     final editorState = ref.read(pdaEditorProvider);
     final pda = editorState.pda;
+    final strings = appLocalizationsOf(context);
 
     if (pda == null) {
       _showSnackbar(
-        'Create a PDA to analyze minimization.',
+        strings.pdaSimplificationMissingPda,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
-    _performAnalysis('PDA Minimization', (_) async {
-      final simplificationResult = PDASimulator.simplify(pda);
+    _performAnalysis(strings.pdaSimplificationAnalysisTitle, (_) async {
+      final acceptanceMode = ref.read(pdaSimulationProvider).mode;
+      final simplificationResult = PDASimplifier.simplify(
+        pda,
+        acceptanceMode: acceptanceMode,
+      );
       if (!simplificationResult.isSuccess) {
-        final message = 'Minimization failed: ${simplificationResult.error}';
+        final message = strings.pdaSimplificationFailed(
+          simplificationResult.error!,
+        );
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
 
-      final summary = simplificationResult.data!;
-      ref.read(pdaEditorProvider.notifier).setPda(summary.minimizedPda);
+      final report = simplificationResult.data!;
+      if (!report.changed) return strings.pdaSimplificationNoChange;
 
-      final buffer = StringBuffer();
-
-      buffer.writeln(
-        summary.changed
-            ? 'PDA minimization applied successfully.'
-            : 'The PDA is already minimal; no structural changes were required.',
-      );
-      buffer.writeln(
-        'States: ${pda.states.length} → ${summary.minimizedPda.states.length}',
-      );
-      buffer.writeln(
-        'Transitions: ${pda.pdaTransitions.length} → ${summary.minimizedPda.pdaTransitions.length}',
-      );
-
-      if (summary.unreachableStates.isNotEmpty) {
-        buffer.writeln(
-          'Removed unreachable states: ${_formatStateList(summary.unreachableStates)}',
-        );
+      final shouldApply = await _showSimplificationPreview(report);
+      if (!shouldApply) return strings.pdaSimplificationCanceled;
+      if (!mounted) return strings.pdaSimplificationCanceled;
+      if (!identical(ref.read(pdaEditorProvider).pda, pda)) {
+        return strings.pdaSimplificationEditorChanged;
       }
 
-      final removedNonProductive = summary.nonProductiveStates
-          .difference(summary.unreachableStates)
-          .intersection(summary.removedStates);
-      if (removedNonProductive.isNotEmpty) {
-        buffer.writeln(
-          'Removed nonproductive states: ${_formatStateList(removedNonProductive)}',
-        );
+      final applyPda = widget.onApplyPda;
+      if (applyPda != null) {
+        applyPda(report.simplifiedPda);
+      } else {
+        ref.read(pdaEditorProvider.notifier).setPda(report.simplifiedPda);
       }
 
-      final mergedGroups = summary.mergeGroups.where(
-        (group) => group.isMeaningful,
-      );
-      if (mergedGroups.isNotEmpty) {
-        buffer.writeln('Merged equivalent states:');
-        for (final group in mergedGroups) {
-          final mergedNames = _formatStateList(group.mergedStates);
-          buffer.writeln(
-            '  $mergedNames → ${_formatStateName(group.representative)}',
-          );
-        }
-      }
-
-      if (summary.removedTransitionIds.isNotEmpty) {
-        buffer.writeln(
-          'Removed redundant transitions: ${summary.removedTransitionIds.length}',
-        );
-      }
-
-      if (summary.warnings.isNotEmpty) {
-        buffer.writeln('Warnings:');
-        for (final warning in summary.warnings) {
-          buffer.writeln('  • $warning');
-        }
-      }
-
-      buffer.writeln('');
-      buffer.writeln(
-        'Resulting states: ${_formatStateList(summary.minimizedPda.states)}',
-      );
-
-      return buffer.toString();
+      return _formatSimplificationSummary(report, applied: true);
     });
   }
+
+  Future<bool> _showSimplificationPreview(
+    PDASimplificationResult report,
+  ) async {
+    if (!mounted) return false;
+    final decision = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final strings = appLocalizationsOf(dialogContext);
+        return AlertDialog(
+          title: Text(strings.pdaSimplificationReviewTitle),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.pdaSimplificationActiveAcceptance(
+                      _formatAcceptanceMode(strings, report.acceptanceMode),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(strings.pdaSimplificationScope),
+                  const SizedBox(height: 12),
+                  Text(
+                    strings.pdaNormalizationStateCount(
+                      report.counts.statesBefore,
+                      report.counts.statesAfter,
+                    ),
+                  ),
+                  Text(
+                    strings.pdaNormalizationTransitionCount(
+                      report.counts.transitionsBefore,
+                      report.counts.transitionsAfter,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(strings.pdaSimplificationChangesHeading),
+                  ..._simplificationChangeLines(strings, report).map(Text.new),
+                  const SizedBox(height: 12),
+                  Text(strings.pdaSimplificationSkippedSemantic),
+                  const SizedBox(height: 8),
+                  Text(strings.pdaSimplificationCancelHint),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(strings.pdaSimplificationCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(strings.pdaSimplificationApply),
+            ),
+          ],
+        );
+      },
+    );
+    return decision ?? false;
+  }
+
+  String _formatSimplificationSummary(
+    PDASimplificationResult report, {
+    required bool applied,
+  }) {
+    final strings = appLocalizationsOf(context);
+    return [
+      if (applied) strings.pdaSimplificationApplied,
+      strings.pdaSimplificationActiveAcceptance(
+        _formatAcceptanceMode(strings, report.acceptanceMode),
+      ),
+      strings.pdaNormalizationStateCount(
+        report.counts.statesBefore,
+        report.counts.statesAfter,
+      ),
+      strings.pdaNormalizationTransitionCount(
+        report.counts.transitionsBefore,
+        report.counts.transitionsAfter,
+      ),
+      ..._simplificationChangeLines(strings, report),
+      strings.pdaSimplificationSkippedSemantic,
+    ].join('\n');
+  }
+
+  List<String> _simplificationChangeLines(
+    AppLocalizations strings,
+    PDASimplificationResult report,
+  ) {
+    int count(PDASimplificationChangeReason reason) =>
+        report.changes.where((change) => change.reason == reason).length;
+    return [
+      strings.pdaSimplificationUnreachableChange(
+        count(PDASimplificationChangeReason.unreachableControlState),
+      ),
+      strings.pdaSimplificationMergeChange(
+        count(PDASimplificationChangeReason.bisimilarControlStates),
+      ),
+      strings.pdaSimplificationDuplicateChange(
+        count(PDASimplificationChangeReason.duplicateTransition) +
+            count(PDASimplificationChangeReason.incidentToUnreachableState),
+      ),
+    ];
+  }
+
+  String _formatAcceptanceMode(
+    AppLocalizations strings,
+    PDAAcceptanceMode mode,
+  ) =>
+      switch (mode) {
+        PDAAcceptanceMode.finalState => strings.pdaAcceptanceFinalState,
+        PDAAcceptanceMode.emptyStack => strings.pdaAcceptanceEmptyStack,
+        PDAAcceptanceMode.both => strings.pdaAcceptanceBoth,
+      };
 
   void _checkDeterminism() {
     final editorState = ref.read(pdaEditorProvider);
@@ -448,90 +677,92 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     }
 
     _performAnalysis('Language Analysis', (_) async {
-      final analysisResult = PDASimulator.analyzePDA(pda);
-      if (!analysisResult.isSuccess) {
-        final message = 'Analysis failed: ${analysisResult.error}';
+      final acceptanceMode = ref.read(pdaSimulationProvider).mode;
+      final analysis = PDALanguageEmptinessAnalyzer.analyze(
+        pda,
+        acceptanceMode: acceptanceMode,
+        isCancelled: () => !mounted,
+      );
+      if (analysis is PDALanguageEmptinessFailure) {
+        final message = 'Emptiness proof unavailable: ${analysis.message}\n'
+            'No conclusion about language emptiness was made.';
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
 
-      final acceptedStringsResult = PDASimulator.findAcceptedStrings(
-        pda,
-        3,
-        maxResults: 10,
-      );
-      final rejectedStringsResult = PDASimulator.findRejectedStrings(
-        pda,
-        3,
-        maxResults: 10,
-      );
-
-      final acceptedStrings = acceptedStringsResult.isSuccess
-          ? acceptedStringsResult.data!.toList()
-          : <String>[];
-      final rejectedStrings = rejectedStringsResult.isSuccess
-          ? rejectedStringsResult.data!.toList()
-          : <String>[];
-      acceptedStrings.sort();
-      rejectedStrings.sort();
-
-      final analysis = analysisResult.data!;
+      final proof = analysis as PDALanguageEmptinessProof;
+      if (mounted) {
+        setState(() {
+          _latestLanguageProof = proof;
+          _latestLanguageSourcePda = pda;
+        });
+      }
       final buffer = StringBuffer();
-      buffer.writeln('Input alphabet:');
-      if (pda.alphabet.isEmpty) {
-        buffer.writeln('  ∅');
-      } else {
-        final sortedAlphabet = pda.alphabet.toList()..sort();
-        buffer.writeln('  {${sortedAlphabet.join(', ')}}');
-      }
-      buffer.writeln('Stack alphabet symbols observed:');
-      final stackSymbols = analysis.stackAnalysis.stackSymbols.toList()..sort();
       buffer.writeln(
-        stackSymbols.isEmpty ? '  ∅' : '  {${stackSymbols.join(', ')}}',
+        proof.isEmpty
+            ? 'Language is empty (proved).'
+            : 'Language is non-empty (proved).',
       );
-      buffer.writeln('Accepting states:');
-      final acceptingLabels = pda.acceptingStates.map((s) => s.label).toList()
-        ..sort();
+      buffer
+          .writeln('Acceptance mode: ${_acceptanceModeLabel(acceptanceMode)}');
       buffer.writeln(
-        acceptingLabels.isEmpty ? '  ∅' : '  {${acceptingLabels.join(', ')}}',
+        'Proof: mode-aware PDA normalization → CFG productivity fixed point.',
       );
-      buffer.writeln('');
-      buffer.writeln('Sample accepted strings (length ≤ 3):');
       buffer.writeln(
-        acceptedStrings.isEmpty
-            ? '  None found'
-            : '  {${acceptedStrings.join(', ')}}',
-      );
-      buffer.writeln('Sample rejected strings (length ≤ 3):');
-      buffer.writeln(
-        rejectedStrings.isEmpty
-            ? '  None found'
-            : '  {${rejectedStrings.join(', ')}}',
-      );
-      buffer.writeln('');
-      buffer.writeln('Determinism:');
-      buffer.writeln(
-        editorState.nondeterministicTransitionIds.isEmpty
-            ? '  Appears deterministic'
-            : '  Contains nondeterministic branching',
+        'Productive nonterminals: ${proof.productiveNonterminals.length}',
       );
 
-      if (!acceptedStringsResult.isSuccess) {
+      if (!proof.isEmpty) {
+        final witness = proof.witnessWord!.isEmpty ? 'ε' : proof.witnessWord!;
         buffer.writeln('');
+        buffer.writeln('Shortest witness: $witness');
         buffer.writeln(
-          'Warning: Failed to enumerate accepted strings: ${acceptedStringsResult.error}.',
+          'Terminal-symbol length: ${proof.terminalSymbolLength} '
+          '(multi-character terminals count as one symbol).',
         );
-      }
-      if (!rejectedStringsResult.isSuccess) {
+        buffer.writeln('Equal-length ties use deterministic shortlex order.');
         buffer.writeln('');
-        buffer.writeln(
-          'Warning: Failed to enumerate rejected strings: ${rejectedStringsResult.error}.',
-        );
+        buffer.writeln('Leftmost CFG derivation:');
+        buffer.writeln('  ${proof.grammar.startSymbol}');
+        const displayedStepLimit = 50;
+        for (final step in proof.derivation.take(displayedStepLimit)) {
+          buffer.writeln('  ⇒ ${_formatSententialForm(step.after)}');
+        }
+        if (proof.derivation.length > displayedStepLimit) {
+          buffer.writeln(
+            '  … ${proof.derivation.length - displayedStepLimit} more step(s)',
+          );
+        }
       }
 
       return buffer.toString();
     });
   }
+
+  void _openWitnessTrace() {
+    final proof = _latestLanguageProof;
+    final pda = _latestLanguageSourcePda;
+    final trace = proof?.witnessTrace;
+    final input = proof?.witnessWord;
+    if (proof == null || pda == null || trace == null || input == null) return;
+
+    ref.read(pdaSimulationProvider.notifier).loadTrace(
+          pda: pda,
+          input: input,
+          mode: proof.acceptanceMode,
+          result: trace,
+        );
+    _showSnackbar('Shortest-witness trace opened in the Simulator panel.');
+  }
+
+  String _acceptanceModeLabel(PDAAcceptanceMode mode) => switch (mode) {
+        PDAAcceptanceMode.finalState => 'final state',
+        PDAAcceptanceMode.emptyStack => 'empty stack',
+        PDAAcceptanceMode.both => 'final state and empty stack',
+      };
+
+  String _formatSententialForm(List<String> symbols) =>
+      symbols.isEmpty ? 'ε' : symbols.join(' ');
 
   void _analyzeStackOperations() {
     final editorState = ref.read(pdaEditorProvider);
@@ -594,6 +825,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     setState(() {
       _isAnalyzing = true;
       _analysisResult = null;
+      _latestLanguageProof = null;
+      _latestLanguageSourcePda = null;
       if (resetConvertedGrammar) {
         _latestConvertedGrammar = null;
       }
@@ -712,18 +945,6 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       message: appLocalizationsOf(context).localizeWorkflowText(message),
       tone: tone,
     );
-  }
-
-  String _formatStateList(Iterable<automaton_models.State> states) {
-    final names = states.map(_formatStateName).toList()..sort();
-    if (names.isEmpty) {
-      return '∅';
-    }
-    return names.join(', ');
-  }
-
-  String _formatStateName(automaton_models.State state) {
-    return state.label.isNotEmpty ? state.label : state.id;
   }
 
   Widget _buildExamplesSection(BuildContext context) {

@@ -2,11 +2,10 @@
 //  timeline_scrubber.dart
 //  Turing Lab
 //
-//  Widget de navegação temporal para simulações de autômatos. Provê controle
-//  deslizante (slider) para percorrer passos de execução, permitindo salto
-//  direto para qualquer ponto do traço. Exibe rótulos de passo atual/total
-//  e responde a interações de arrastar e tocar, garantindo navegação precisa
-//  em traços longos de FA, PDA e TM.
+//  Temporal navigation widget for automaton simulations. Provides a
+//  slider to walk execution steps, allowing a jump to any point in the
+//  trace. Shows current/total step labels and responds to drag and tap
+//  so long FA, PDA, and TM traces stay precise to navigate.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

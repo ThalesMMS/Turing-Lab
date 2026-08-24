@@ -2,11 +2,10 @@
 //  transition_editors_test.dart
 //  Turing Lab
 //
-//  Suite abrangente de testes para editores de transições, validando
-//  comportamento de formulários PDA, Turing Machine e editores genéricos de
-//  rótulos. Verifica interações com campos de texto, toggles lambda, seletores
-//  de direção, atalhos de teclado e callbacks de submissão/cancelamento,
-//  garantindo consistência e acessibilidade em todos os cenários de edição.
+//  Comprehensive tests for transition editors, covering PDA and Turing
+//  machine forms plus generic label editors. Cases include text fields,
+//  lambda toggles, direction selectors, keyboard shortcuts, and
+//  submit/cancel callbacks for consistent, accessible editing.
 //
 //  Thales Matheus Mendonça Santos - December 2025
 //

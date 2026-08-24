@@ -2,12 +2,12 @@
 //  pumping_lemma_progress_provider.dart
 //  Turing Lab
 //
-//  Organiza o estado imutável do jogo do Lema do Bombeamento, registrando
-//  desafios disponíveis, tentativas, pontuação e o histórico cronológico de
-//  interações do usuário para alimentar painéis pedagógicos e estatísticas.
-//  Expõe um StateNotifier com fábricas de eventos e operações para iniciar,
-//  reiniciar e acompanhar desafios, garantindo que widgets sincronizem métricas
-//  consistentes sem acessar fontes externas diretamente.
+//  Holds immutable Pumping Lemma game state, recording available
+//  challenges, attempts, score, and a chronological history of user
+//  interactions to feed pedagogical panels and statistics.
+//  Exposes a StateNotifier with event factories and operations to start,
+//  restart, and track challenges so widgets can sync consistent metrics
+//  without talking to external sources directly.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

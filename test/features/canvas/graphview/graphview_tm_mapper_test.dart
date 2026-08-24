@@ -2,9 +2,9 @@
 //  graphview_tm_mapper_test.dart
 //  Turing Lab
 //
-//  Avalia o GraphViewTmMapper na geração de grafos de máquinas de Turing, incluindo estados,
-//  transições e direções de fita. Simula múltiplas fitas e anotações para assegurar que os dados
-//  renderizados representem fielmente as operações do simulador.
+//  Evaluates GraphViewTmMapper when generating Turing machine graphs, including
+//  states, transitions, and tape directions. Simulates multiple tapes and
+//  annotations so rendered data matches simulator operations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

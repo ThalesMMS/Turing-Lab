@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -15,6 +16,8 @@ import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
+    show PDASimulationNotifier, pdaSimulationProvider;
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
 
@@ -47,24 +50,32 @@ class _RecordingHighlightChannel implements HighlightChannel {
 class _PdaPanelHarness {
   const _PdaPanelHarness({
     required this.notifier,
+    required this.simulationNotifier,
     required this.output,
     required this.coordinator,
+    required this.appliedPdas,
   });
 
   final PDAEditorNotifier notifier;
+  final PDASimulationNotifier simulationNotifier;
   final _RecordingHighlightChannel output;
   final CanvasHighlightCoordinator coordinator;
+  final List<PDA> appliedPdas;
 }
 
 Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
   WidgetTester tester, {
   PDA? initialPda,
+  PDAAcceptanceMode acceptanceMode = PDAAcceptanceMode.finalState,
 }) async {
   final pdaNotifier = PDAEditorNotifier();
   if (initialPda != null) {
     pdaNotifier.setPda(initialPda);
   }
   final examplesDataSource = _FakePdaExamplesDataSource();
+  final simulationNotifier = PDASimulationNotifier()
+    ..setAcceptanceMode(acceptanceMode);
+  final appliedPdas = <PDA>[];
   final output = _RecordingHighlightChannel();
   final coordinator = CanvasHighlightCoordinator(
     target: CanvasHighlightTarget(
@@ -81,6 +92,7 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
     ProviderScope(
       overrides: [
         pdaEditorProvider.overrideWith((ref) => pdaNotifier),
+        pdaSimulationProvider.overrideWith((ref) => simulationNotifier),
         canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
       child: MaterialApp(
@@ -88,6 +100,10 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
           body: PDAAlgorithmPanel(
             useExpanded: false,
             examplesDataSource: examplesDataSource,
+            onApplyPda: (pda) {
+              appliedPdas.add(pda);
+              pdaNotifier.setPda(pda);
+            },
           ),
         ),
       ),
@@ -99,8 +115,10 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
 
   return _PdaPanelHarness(
     notifier: pdaNotifier,
+    simulationNotifier: simulationNotifier,
     output: output,
     coordinator: coordinator,
+    appliedPdas: appliedPdas,
   );
 }
 
@@ -206,6 +224,89 @@ PDA _buildNondeterministicPda() {
   );
 }
 
+PDA _buildLambdaPopPda() {
+  final start = automaton_state.State(
+    id: 'normalization-start',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  final accept = automaton_state.State(
+    id: 'normalization-accept',
+    label: 'q1',
+    position: Vector2(120, 0),
+    isAccepting: true,
+  );
+  final transition = PDATransition(
+    id: 'lambda-pop',
+    fromState: start,
+    toState: accept,
+    label: 'a, ε/A',
+    inputSymbol: 'a',
+    popSymbol: '',
+    pushSymbol: 'A',
+    pushSymbols: const ['A'],
+    isLambdaPop: true,
+  );
+  return PDA(
+    id: 'normalization-pda',
+    name: 'Normalization PDA',
+    states: {start, accept},
+    transitions: {transition},
+    alphabet: const {'a'},
+    initialState: start,
+    acceptingStates: {accept},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: const {'Z', 'A'},
+    initialStackSymbol: 'Z',
+  );
+}
+
+PDA _buildReduciblePda() {
+  final start = automaton_state.State(
+    id: 'simplify-start',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  final accept = automaton_state.State(
+    id: 'simplify-accept',
+    label: 'q1',
+    position: Vector2(120, 0),
+    isAccepting: true,
+  );
+  final unreachable = automaton_state.State(
+    id: 'simplify-unreachable',
+    label: 'unused',
+    position: Vector2(240, 0),
+  );
+  final transition = PDATransition(
+    id: 'simplify-transition',
+    fromState: start,
+    toState: accept,
+    label: 'a, Z/Z',
+    inputSymbol: 'a',
+    popSymbol: 'Z',
+    pushSymbol: 'Z',
+  );
+  return PDA(
+    id: 'simplify-pda',
+    name: 'Simplify PDA',
+    states: {start, accept, unreachable},
+    transitions: {transition},
+    alphabet: const {'a'},
+    initialState: start,
+    acceptingStates: {accept},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: const {'Z'},
+    initialStackSymbol: 'Z',
+  );
+}
+
 Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
   for (var attempt = 0; attempt < 80; attempt++) {
     if (finder.evaluate().isNotEmpty) {
@@ -266,11 +367,41 @@ void main() {
 
     expect(find.byType(AlgorithmButton), findsNWidgets(6));
     expect(find.text('Convert to CFG'), findsOneWidget);
-    expect(find.text('Minimize PDA'), findsOneWidget);
+    expect(find.text('Simplify PDA'), findsOneWidget);
     expect(find.text('Check Determinism'), findsOneWidget);
     expect(find.text('Find Reachable States'), findsOneWidget);
     expect(find.text('Language Analysis'), findsOneWidget);
     expect(find.text('Stack Operations'), findsOneWidget);
+  });
+
+  testWidgets('proves non-emptiness and opens the shortest witness trace', (
+    tester,
+  ) async {
+    final pda = _buildPdaExample().payload;
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: pda,
+    );
+
+    await tester.ensureVisible(find.text('Language Analysis'));
+    await tester.tap(find.text('Language Analysis'));
+    await _pumpUntilFound(
+      tester,
+      find.textContaining('Language is non-empty (proved).'),
+    );
+
+    expect(find.textContaining('Shortest witness: a'), findsOneWidget);
+    expect(find.textContaining('Sample accepted strings'), findsNothing);
+    await tester.ensureVisible(find.text('Open witness in Simulator'));
+    await tester.tap(find.text('Open witness in Simulator'));
+    await tester.pump();
+
+    final simulation = harness.simulationNotifier.state;
+    expect(simulation.pda, same(pda));
+    expect(simulation.lastInput, 'a');
+    expect(simulation.stepByStep, isTrue);
+    expect(simulation.result?.accepted, isTrue);
+    expect(simulation.result?.steps, isNotEmpty);
   });
 
   testWidgets('PDA action still reports missing editor PDA', (tester) async {
@@ -286,6 +417,105 @@ void main() {
       find.text('Draw a PDA before converting to a grammar.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('previews normalization and applies it only after confirmation', (
+    tester,
+  ) async {
+    final source = _buildLambdaPopPda();
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: source,
+    );
+
+    await tester.ensureVisible(find.text('Convert to CFG'));
+    await tester.tap(find.text('Convert to CFG'));
+    await _pumpUntilFound(tester, find.text('Review PDA normalization'));
+
+    expect(harness.notifier.currentPda, same(source));
+    expect(
+      find.textContaining('may increase the state and transition count'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(harness.notifier.currentPda, same(source));
+
+    await tester.ensureVisible(find.text('Convert to CFG'));
+    await tester.tap(find.text('Convert to CFG'));
+    await _pumpUntilFound(tester, find.text('Review PDA normalization'));
+    await tester.tap(find.text('Apply and convert'));
+    await _pumpUntilFound(tester, find.text('Generated Grammar'));
+
+    final normalized = harness.notifier.currentPda;
+    expect(normalized, isNot(same(source)));
+    expect(normalized!.states.length, greaterThan(source.states.length));
+    expect(
+      normalized.pdaTransitions.any((transition) => transition.isLambdaPop),
+      isFalse,
+    );
+  });
+
+  testWidgets('previews active-mode simplification before cancel or apply', (
+    tester,
+  ) async {
+    final source = _buildReduciblePda();
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: source,
+      acceptanceMode: PDAAcceptanceMode.both,
+    );
+
+    await tester.ensureVisible(find.text('Simplify PDA'));
+    await tester.tap(find.text('Simplify PDA'));
+    await _pumpUntilFound(tester, find.text('Review PDA simplification'));
+
+    expect(harness.notifier.currentPda, same(source));
+    expect(harness.appliedPdas, isEmpty);
+    expect(find.text('Active acceptance: final state and empty stack'),
+        findsOneWidget);
+    expect(find.text('States: 3 → 2'), findsOneWidget);
+    expect(
+        find.textContaining('uncertain states were retained'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(harness.notifier.currentPda, same(source));
+    expect(harness.appliedPdas, isEmpty);
+
+    await tester.ensureVisible(find.text('Simplify PDA'));
+    await tester.tap(find.text('Simplify PDA'));
+    await _pumpUntilFound(tester, find.text('Review PDA simplification'));
+    await tester.tap(find.text('Apply simplification'));
+    await tester.pumpAndSettle();
+
+    expect(harness.appliedPdas, hasLength(1));
+    expect(harness.notifier.currentPda, same(harness.appliedPdas.single));
+    expect(
+      harness.notifier.currentPda!.states.map((state) => state.id),
+      isNot(contains('simplify-unreachable')),
+    );
+  });
+
+  testWidgets('reports no supported change without opening a preview', (
+    tester,
+  ) async {
+    final source = _buildPdaExample().payload;
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: source,
+    );
+
+    await tester.ensureVisible(find.text('Simplify PDA'));
+    await tester.tap(find.text('Simplify PDA'));
+    await _pumpUntilFound(
+      tester,
+      find.textContaining('No supported simplification was found'),
+    );
+
+    expect(find.text('Review PDA simplification'), findsNothing);
+    expect(harness.appliedPdas, isEmpty);
+    expect(harness.notifier.currentPda, same(source));
   });
 
   testWidgets('loads PDA examples from the configured catalog into the editor',

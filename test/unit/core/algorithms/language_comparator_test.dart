@@ -2,11 +2,11 @@
 //  language_comparator_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes que valida o LanguageComparator para comparação de
-//  linguagens entre DFAs e NFAs. Cobre cenários de equivalência, não-equivalência,
-//  geração de strings distinguidoras, e casos extremos. Verifica que o algoritmo
-//  de produto corretamente identifica diferenças entre linguagens reconhecidas
-//  por autômatos construídos de formas distintas.
+//  Test suite for LanguageComparator when comparing
+//  DFA and NFA languages. Covers equivalence, non-equivalence,
+//  distinguishing-string generation, and edge cases. Checks that the product
+//  algorithm correctly identifies differences between languages recognized
+//  by automata built in different ways.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

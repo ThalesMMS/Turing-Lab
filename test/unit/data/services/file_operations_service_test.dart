@@ -2,9 +2,9 @@
 //  file_operations_service_test.dart
 //  Turing Lab
 //
-//  Testes direcionados para o FileOperationsService cobrindo importação JFLAP
-//  em cenários de borda do parser legado, com foco em mensagens previsíveis e
-//  normalização de transições epsilon.
+//  Focused tests for FileOperationsService covering JFLAP import
+//  on legacy-parser edge cases, with emphasis on predictable messages and
+//  epsilon-transition normalization.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

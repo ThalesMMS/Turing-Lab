@@ -1,10 +1,45 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/widgets/error_banner.dart';
-import 'package:turing_lab/presentation/widgets/keyboard_shortcuts_dialog.dart';
+import 'package:turing_lab/presentation/widgets/help_tree_view.dart';
+
+Finder _helpNode(String id) => find.byKey(ValueKey('help-node-$id'));
+
+Future<void> _pumpHelpPage(
+  WidgetTester tester, {
+  Locale locale = const Locale('en'),
+  bool disableAnimations = false,
+}) async {
+  tester.view.physicalSize = const Size(430, 932);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(disableAnimations: disableAnimations),
+          child: child!,
+        ),
+        home: const HelpPage(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -38,37 +73,139 @@ void main() {
     });
   });
 
-  group('KeyboardShortcutsDialog', () {
-    testWidgets('closes when Escape is pressed', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: Center(
-                  child: ElevatedButton(
-                    onPressed: () => KeyboardShortcutsDialog.show(context),
-                    child: const Text('Open'),
-                  ),
-                ),
-              );
-            },
+  group('Help tree accessibility', () {
+    testWidgets(
+      'localizes heading and expanded semantics for category and subsection',
+      (tester) async {
+        final semanticsHandle = tester.ensureSemantics();
+        await _pumpHelpPage(tester, locale: const Locale('pt'));
+
+        final category = tester.getSemantics(_helpNode('getting-started'));
+        expect(category.label, 'Recolher Primeiros passos');
+        expect(category.flagsCollection.isHeader, isTrue);
+        expect(category.flagsCollection.isButton, isTrue);
+        expect(category.flagsCollection.isExpanded, Tristate.isTrue);
+
+        await tester.tap(_helpNode('fsa'));
+        await tester.pumpAndSettle();
+
+        final subsection = tester.getSemantics(_helpNode('fsa.editor'));
+        expect(subsection.label, 'Expandir Editor e canvas');
+        expect(subsection.flagsCollection.isHeader, isTrue);
+        expect(subsection.flagsCollection.isButton, isTrue);
+        expect(subsection.flagsCollection.isExpanded, Tristate.isFalse);
+        semanticsHandle.dispose();
+      },
+    );
+
+    testWidgets('category, subsection, and topic targets are at least 48x48', (
+      tester,
+    ) async {
+      await _pumpHelpPage(tester);
+
+      await tester.tap(_helpNode('fsa'));
+      await tester.pumpAndSettle();
+      await tester.tap(_helpNode('fsa.editor'));
+      await tester.pumpAndSettle();
+
+      for (final id in [
+        'fsa',
+        'fsa.editor',
+        HelpTopicIds.fsaEditorOverview,
+      ]) {
+        final size = tester.getSize(_helpNode(id));
+        expect(size.width, greaterThanOrEqualTo(48), reason: id);
+        expect(size.height, greaterThanOrEqualTo(48), reason: id);
+      }
+    });
+
+    testWidgets('Tab and Shift+Tab follow category subsection topic order', (
+      tester,
+    ) async {
+      await _pumpHelpPage(tester);
+      final tree = tester.widget<HelpTreeView>(find.byType(HelpTreeView));
+      tree.controller.toggle('getting-started');
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byKey(const ValueKey('help-search-action')),
+            )
+            .focusNode
+            ?.hasFocus,
+        isTrue,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        FocusManager.instance.primaryFocus?.debugLabel,
+        'help-node-getting-started',
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        tester.widget<InkWell>(_helpNode('fsa')).focusNode?.hasFocus,
+        isTrue,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(_helpNode('fsa.editor'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        tester.widget<InkWell>(_helpNode('fsa.editor')).focusNode?.hasFocus,
+        isTrue,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pumpAndSettle();
+      expect(_helpNode(HelpTopicIds.fsaEditorOverview), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        tester
+            .widget<InkWell>(_helpNode(HelpTopicIds.fsaEditorOverview))
+            .focusNode
+            ?.hasFocus,
+        isTrue,
+      );
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(
+        tester.widget<InkWell>(_helpNode('fsa.editor')).focusNode?.hasFocus,
+        isTrue,
+      );
+    });
+
+    testWidgets('reduced motion removes topic expansion animation', (
+      tester,
+    ) async {
+      await _pumpHelpPage(tester, disableAnimations: true);
+
+      await tester.tap(_helpNode(HelpTopicIds.gettingStartedQuickStart));
+      await tester.pump();
+
+      final expansion = tester.widget<AnimatedSwitcher>(
+        find.byKey(
+          const ValueKey(
+            'help-expansion-getting-started.quick-start',
           ),
         ),
       );
-
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Keyboard Shortcuts'), findsOneWidget);
-
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Keyboard Shortcuts'), findsNothing);
+      expect(expansion.duration, Duration.zero);
     });
   });
 }

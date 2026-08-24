@@ -2,10 +2,10 @@
 //  simulation_result_card.dart
 //  Turing Lab
 //
-//  Widget de exibição aprimorada de resultados de simulação com visualização
-//  do caminho percorrido. Apresenta status de aceitação, métricas de execução,
-//  sequência de estados visitados e transições utilizadas em formato compacto
-//  e visualmente claro. Suporta todos os tipos de autômatos (DFA, NFA, PDA, TM).
+//  Enhanced simulation-result display with path visualization.
+//  Shows acceptance status, run metrics, visited-state sequence, and
+//  used transitions in a compact, clear layout. Supports all automaton
+//  types (DFA, NFA, PDA, TM).
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,12 +2,12 @@
 //  file_operations_panel.dart
 //  Turing Lab
 //
-//  Painel de interface que agrupa ações de salvar, carregar e exportar
-//  autômatos, gramáticas, PDAs e máquinas de Turing nos formatos suportados,
-//  apresentando apenas as operações liberadas para cada módulo pelo escopo de
-//  release. O widget orquestra o FileOperationsService, interage com o
-//  FilePicker e exibe indicadores de progresso para operações assíncronas,
-//  atualizando callbacks fornecidos pela tela hospedeira.
+//  UI panel that groups save, load, and export actions for automata,
+//  grammars, PDAs, and Turing machines in the supported formats, showing
+//  only the operations each module is allowed by the release scope.
+//  The widget orchestrates FileOperationsService, talks to FilePicker,
+//  and shows progress for async operations, updating host-screen
+//  callbacks.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

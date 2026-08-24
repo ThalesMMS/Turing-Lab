@@ -2,9 +2,8 @@
 //  automaton_layout_provider.dart
 //  Turing Lab
 //
-//  Gerencia operações de layout automático para autômatos, aplicando
-//  posicionamento espacial diretamente sobre FSA e coordenando com
-//  AutomatonStateProvider.
+//  Manages automatic layout for automata, applying spatial positioning
+//  directly to FSAs and coordinating with AutomatonStateProvider.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 import 'package:flutter_riverpod/flutter_riverpod.dart';

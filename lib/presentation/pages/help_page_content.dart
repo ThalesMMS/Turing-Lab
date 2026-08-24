@@ -1,17 +1,5 @@
 part of 'help_page.dart';
 
-class HelpSection {
-  final String title;
-  final IconData icon;
-  final Widget content;
-
-  const HelpSection({
-    required this.title,
-    required this.icon,
-    required this.content,
-  });
-}
-
 Widget _buildSectionTitle(String title) {
   return Text(
     title,
@@ -61,32 +49,4 @@ Widget _buildCard({
       trailing: trailing,
     ),
   );
-}
-
-class _HelpArticleContent extends StatelessWidget {
-  const _HelpArticleContent({
-    required this.articleId,
-  });
-
-  final String articleId;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = jflapLocalizationsOf(context);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle(l10n.helpSectionTitle(articleId)),
-          const SizedBox(height: 16),
-          Text(
-            l10n.helpArticleBody(articleId),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -2,8 +2,8 @@
 //  cyk_validation_test.dart
 //  Turing Lab
 //
-//  Conjunto de testes que garante a fidelidade do algoritmo CYK ao analisar gramáticas convertidas para forma normal de Chomsky em cadeias de diversos comprimentos.
-//  Os cenários cobrem construções de tabela, tratamentos de produções especiais, rejeições esperadas e comportamentos extremos para manter a consistência do analisador.
+//  Test suite that checks CYK fidelity on grammars converted to Chomsky normal form, across strings of various lengths.
+//  Scenarios cover table construction, special productions, expected rejections, and edge cases so the parser stays consistent.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

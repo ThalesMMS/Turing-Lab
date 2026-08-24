@@ -49,9 +49,18 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
           future: examplesFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: LinearProgressIndicator(),
+              return Semantics(
+                liveRegion: true,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.hourglass_top, size: 20),
+                      const SizedBox(width: 8),
+                      Text(l10n.localizeWorkflowText('Loading examples...')),
+                    ],
+                  ),
+                ),
               );
             }
 

@@ -2,7 +2,10 @@
 //  pda_canvas_graphview.dart
 //  Turing Lab
 //
-//  Implementa o canvas especializado de PDA sobre a infraestrutura GraphView compartilhada, sincronizando provedores e destaques. Controla ciclo de vida do controlador, integra canal de highlight e emite callbacks sempre que o autômato é alterado.
+//  Implements the specialized PDA canvas on the shared GraphView
+//  infrastructure, syncing providers and highlights. Owns the controller
+//  lifecycle, wires the highlight channel, and emits callbacks whenever
+//  the automaton changes.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -81,12 +84,6 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
 
     final initialState = ref.read(pdaEditorProvider);
     _controller.synchronize(initialState.pda);
-    if (initialState.pda?.states.isNotEmpty ?? false) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _controller.fitToContent();
-      });
-    }
 
     _lastDeliveredPda = initialState.pda;
     if (initialState.pda != null) {

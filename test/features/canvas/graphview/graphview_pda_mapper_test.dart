@@ -2,9 +2,9 @@
 //  graphview_pda_mapper_test.dart
 //  Turing Lab
 //
-//  Valida o GraphViewPdaMapper ao converter autômatos de pilha em estruturas de grafo, assegurando
-//  que estados, transições e metadados de pilha sejam preservados. Exercita cenários com múltiplos
-//  símbolos e ajustes geométricos para garantir compatibilidade com a renderização do canvas.
+//  Validates GraphViewPdaMapper when converting pushdown automata into graph
+//  structures, preserving states, transitions, and stack metadata. Exercises
+//  multi-symbol cases and geometric adjustments for canvas rendering compatibility.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

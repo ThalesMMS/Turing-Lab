@@ -367,17 +367,20 @@ void main() {
       simulationService.clear();
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
-      await tester.ensureVisible(find.text('Find Reachable States'));
-      await tester.tap(find.text('Find Reachable States'));
+      await tester.ensureVisible(find.text('Reachability'));
+      await tester.tap(find.text('Reachability'));
       await _pumpUntilStateHighlights(
         tester,
         controller.highlightNotifier,
       );
       expect(controller.highlightNotifier.value.stateIds, {
         'shared-state-id',
+      });
+      expect(controller.highlightNotifier.value.warningStateIds, {
         'tm-target-a',
         'tm-target-b',
       });
+      expect(controller.highlightNotifier.value.errorStateIds, isEmpty);
 
       notifier.setTm(_tm(id: 'replacement-tm', nondeterministic: false));
       await tester.pump();

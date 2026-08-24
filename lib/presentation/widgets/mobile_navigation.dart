@@ -2,11 +2,11 @@
 //  mobile_navigation.dart
 //  Turing Lab
 //
-//  Fornece a barra inferior de navegação otimizada para dispositivos móveis,
-//  apresentando itens configuráveis com ícones, rótulos e descrições para
-//  suportar múltiplos módulos do aplicativo em telas compactas.
-//  Aplica estética Material 3 com SafeArea, sombras sutis e destaque do item
-//  ativo, garantindo acessibilidade e facilidade na expansão do menu.
+//  Provides a mobile-optimized bottom navigation bar with configurable
+//  items, icons, labels, and descriptions to support multiple app modules
+//  on compact screens.
+//  Applies Material 3 styling with SafeArea, subtle shadows, and an
+//  active-item highlight, keeping the menu accessible and easy to extend.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

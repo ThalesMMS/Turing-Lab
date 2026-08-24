@@ -2,8 +2,8 @@
 //  dfa_validation_test.dart
 //  Turing Lab
 //
-//  Bateria que compara o simulador de DFAs e o minimizador do Turing Lab com autômatos de referência para assegurar aceitação, rejeição e estabilidade da linguagem.
-//  Inclui verificações da cadeia vazia, de ciclos e da equivalência entre a máquina original e sua versão minimizada.
+//  Suite that compares Turing Lab's DFA simulator and minimizer with reference automata to confirm acceptance, rejection, and language stability.
+//  Includes checks for the empty string, cycles, and equivalence between the original machine and its minimized form.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

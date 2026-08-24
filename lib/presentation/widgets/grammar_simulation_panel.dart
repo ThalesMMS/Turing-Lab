@@ -2,7 +2,9 @@
 //  grammar_simulation_panel.dart
 //  Turing Lab
 //
-//  Constrói painel interativo para testar cadeias em gramáticas aplicando algoritmos como CYK e LL. Gerencia seleção de estratégia, entradas do usuário, execução assíncrona e apresentação de resultados com métricas de tempo e passos.
+//  Builds an interactive panel to test strings against grammars using
+//  algorithms such as CYK and LL. Manages strategy selection, user input,
+//  async execution, and result presentation with time and step metrics.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -16,6 +18,7 @@ import '../../core/algorithms/cfg/cyk_parser.dart';
 import '../../core/models/cyk_step.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/grammar_parse_report.dart';
+import '../../core/models/ll1_parse_step.dart';
 import '../../core/models/typed_algorithm_step.dart';
 import '../../core/result.dart';
 import '../../l10n/app_localizations_resolver.dart';
@@ -281,6 +284,7 @@ class _GrammarSimulationPanelState
       ..sort();
 
     final cykSteps = _cykStepsResult?.steps;
+    final ll1Steps = report.ll1Steps;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -322,6 +326,10 @@ class _GrammarSimulationPanelState
             const SizedBox(height: 16),
             _buildCykStepsSection(context, cykSteps),
           ] else ...[
+            if (ll1Steps.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildLl1StepsSection(context, ll1Steps),
+            ],
             if (!isAccepted) ...[
               const SizedBox(height: 8),
               Text(
@@ -595,6 +603,169 @@ class _GrammarSimulationPanelState
           StepExplanationCard(explanation: stepExplanation),
         ],
       ],
+    );
+  }
+
+  Widget _buildLl1StepsSection(
+    BuildContext context,
+    List<LL1ParseStep> steps,
+  ) {
+    final l10n = appLocalizationsOf(context);
+    final selectedStep = steps[_selectedStepIndex];
+    final production = selectedStep.productionDisplay;
+    final expected = selectedStep.expectedTerminals.toList()..sort();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.format_list_numbered,
+              size: 18,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.localizeWorkflowText('LL(1) Steps'),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              IconButton(
+                tooltip: l10n.previousStepLower,
+                onPressed: _selectedStepIndex > 0
+                    ? () => setState(() => _selectedStepIndex--)
+                    : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Expanded(
+                child: steps.length > 1
+                    ? Slider(
+                        value: _selectedStepIndex.toDouble(),
+                        min: 0,
+                        max: (steps.length - 1).toDouble(),
+                        divisions: steps.length - 1,
+                        label: '${_selectedStepIndex + 1} / ${steps.length}',
+                        onChanged: (value) => setState(
+                          () => _selectedStepIndex = value.round(),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              IconButton(
+                tooltip: l10n.nextStepLower,
+                onPressed: _selectedStepIndex < steps.length - 1
+                    ? () => setState(() => _selectedStepIndex++)
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.localizeWorkflowText(selectedStep.title),
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context)
+                .colorScheme
+                .tertiaryContainer
+                .withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildLl1StepRow(
+                context,
+                label: l10n.localizeWorkflowText('Stack'),
+                value: selectedStep.stack.join(' '),
+              ),
+              _buildLl1StepRow(
+                context,
+                label: l10n.localizeWorkflowText('Remaining input'),
+                value: selectedStep.remainingInput.join(' '),
+              ),
+              _buildLl1StepRow(
+                context,
+                label: l10n.localizeWorkflowText('Lookahead'),
+                value: selectedStep.lookahead,
+              ),
+              if (production != null)
+                _buildLl1StepRow(
+                  context,
+                  label: l10n.localizeWorkflowText('Production'),
+                  value: production,
+                ),
+              if (expected.isNotEmpty)
+                _buildLl1StepRow(
+                  context,
+                  label: l10n.localizeWorkflowText('Expected'),
+                  value: expected.join(', '),
+                ),
+              Text(
+                l10n.localizeWorkflowText(selectedStep.message),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLl1StepRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                  ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

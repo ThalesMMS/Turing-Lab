@@ -2,9 +2,9 @@
 //  simulation_highlight_service_test.dart
 //  Turing Lab
 //
-//  Testes que exercitam o SimulationHighlightService, certificando a emissão de
-//  destaques durante a simulação passo a passo e a limpeza adequada por meio do
-//  canal GraphView ao finalizar ou reiniciar execuções no canvas.
+//  Tests that exercise SimulationHighlightService, confirming highlight emission
+//  during step-by-step simulation and proper cleanup through the GraphView
+//  channel when executions on the canvas finish or restart.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

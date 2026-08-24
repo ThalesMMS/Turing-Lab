@@ -2,11 +2,10 @@
 //  pda_canvas_graphview_test.dart
 //  Turing Lab
 //
-//  Suite de testes de widget dedicada ao PDACanvasGraphView, certificando que o
-//  controlador GraphView de autômatos de pilha sincronize estados, transições e
-//  callbacks com o provider durante interações de edição. Os cenários incluem
-//  criação incremental de nós, atualização de transições com símbolos de pilha e
-//  descarte correto de recursos após cada execução.
+//  Widget tests for PDACanvasGraphView, confirming the PDA GraphView
+//  controller syncs states, transitions, and callbacks with the provider
+//  during editing. Scenarios include incremental node creation, stack-symbol
+//  transition updates, and correct disposal after each run.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -25,6 +24,18 @@ import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
+
+class _FitCountingPdaCanvasController extends GraphViewPdaCanvasController {
+  _FitCountingPdaCanvasController({required super.editorNotifier});
+
+  int fitToContentCallCount = 0;
+
+  @override
+  void fitToContent() {
+    fitToContentCallCount++;
+    super.fitToContent();
+  }
+}
 
 Future<void> _pumpPdaCanvas(
   WidgetTester tester, {
@@ -129,6 +140,23 @@ void main() {
       // Text widgets. Verify the transition was added to the model instead.
       final transitions = notifier.state.pda!.transitions;
       expect(transitions, hasLength(1));
+    });
+
+    testWidgets('fits initial PDA content once', (tester) async {
+      final fitController = _FitCountingPdaCanvasController(
+        editorNotifier: notifier,
+      );
+      addTearDown(fitController.dispose);
+      fitController.addStateAt(const Offset(120, 120));
+
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: fitController,
+      );
+      await tester.pumpAndSettle();
+
+      expect(fitController.fitToContentCallCount, 1);
     });
 
     testWidgets('groups PDA self-loops into one path with a shared label card',

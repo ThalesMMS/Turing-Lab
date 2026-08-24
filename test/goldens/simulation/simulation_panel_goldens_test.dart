@@ -2,11 +2,10 @@
 //  simulation_panel_goldens_test.dart
 //  Turing Lab
 //
-//  Testes golden de regressão visual para o painel de simulação, capturando
-//  snapshots de estados críticos: painel vazio, resultados aceitos/rejeitados,
-//  modo passo-a-passo, resultados de regex, e layouts responsivos. Garante
-//  consistência visual da interface de simulação entre mudanças e detecta
-//  regressões automáticas.
+//  Visual regression golden tests for the simulation panel, capturing snapshots
+//  of critical states: empty panel, accepted/rejected results, step-by-step
+//  mode, regex results, and responsive layouts. Guards visual consistency of
+//  the simulation UI across changes and catches automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

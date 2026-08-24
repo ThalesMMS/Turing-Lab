@@ -2,12 +2,11 @@
 //  home_navigation_provider.dart
 //  Turing Lab
 //
-//  Controla a navegação principal da HomePage utilizando um StateNotifier que
-//  mapeia índices simbólicos para os espaços de trabalho de autômatos,
-//  gramáticas, PDAs, máquinas de Turing e expressões regulares, permitindo
-//  alternância reativa entre módulos.
-//  Centraliza constantes de índices e expõe helpers de troca para que widgets
-//  mudem o workspace ativo de forma consistente em toda a interface.
+//  Controls HomePage navigation with a StateNotifier that maps symbolic
+//  indices to automata, grammar, PDA, Turing machine, and regular-expression
+//  workspaces, allowing reactive switching between modules.
+//  Centralizes index constants and exposes switch helpers so widgets
+//  change the active workspace consistently across the UI.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

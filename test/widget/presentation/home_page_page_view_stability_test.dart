@@ -2,10 +2,11 @@
 //  home_page_page_view_stability_test.dart
 //  Turing Lab
 //
-//  Garante que o PageView da HomePage mantém o mesmo elemento ao alternar
-//  entre módulos com e sem canvas. Recriar a subárvore nessa troca anexava
-//  transitoriamente duas ScrollPositions ao mesmo PageController e disparava
-//  a assertion "multiple PageViews attached to the same PageController".
+//  Ensures the HomePage PageView keeps the same element when switching
+//  between modules with and without a canvas. Recreating the subtree on
+//  that switch briefly attached two ScrollPositions to the same
+//  PageController and triggered the "multiple PageViews attached to the
+//  same PageController" assertion.
 //
 //  Thales Matheus Mendonça Santos - July 2026
 //

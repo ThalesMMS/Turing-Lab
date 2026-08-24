@@ -90,22 +90,26 @@ void main() {
         final cfg = await dataSource.loadAllTypedCfgExamples();
         final pda = await dataSource.loadAllTypedPdaExamples();
         final tm = await dataSource.loadAllTypedTmExamples();
+        final regex = await dataSource.loadAllTypedRegexExamples();
 
         expect(fsa.isSuccess, isTrue, reason: fsa.error);
         expect(cfg.isSuccess, isTrue, reason: cfg.error);
         expect(pda.isSuccess, isTrue, reason: pda.error);
         expect(tm.isSuccess, isTrue, reason: tm.error);
+        expect(regex.isSuccess, isTrue, reason: regex.error);
 
-        expect(fsa.data, hasLength(4));
-        expect(cfg.data, hasLength(2));
-        expect(pda.data, hasLength(3));
+        expect(fsa.data, hasLength(5));
+        expect(cfg.data, hasLength(5));
+        expect(pda.data, hasLength(5));
         expect(tm.data, hasLength(5));
+        expect(regex.data, hasLength(5));
 
         return {
           ...fsa.data!.map((example) => example.category),
           ...cfg.data!.map((example) => example.category),
           ...pda.data!.map((example) => example.category),
           ...tm.data!.map((example) => example.category),
+          ...regex.data!.map((example) => example.category),
         };
       });
 
@@ -117,6 +121,7 @@ void main() {
           ExampleCategory.cfg,
           ExampleCategory.pda,
           ExampleCategory.tm,
+          ExampleCategory.regex,
         }),
       );
       expect(
@@ -169,15 +174,17 @@ void main() {
         final cfg = await dataSource.loadAllTypedCfgExamples();
         final pda = await dataSource.loadAllTypedPdaExamples();
         final tm = await dataSource.loadAllTypedTmExamples();
+        final regex = await dataSource.loadAllTypedRegexExamples();
 
         expect(fsa.isSuccess, isTrue, reason: fsa.error);
         expect(cfg.isSuccess, isTrue, reason: cfg.error);
         expect(pda.isSuccess, isTrue, reason: pda.error);
         expect(tm.isSuccess, isTrue, reason: tm.error);
+        expect(regex.isSuccess, isTrue, reason: regex.error);
 
         expect(
           fsa.data!.where((example) => example.category == ExampleCategory.dfa),
-          hasLength(3),
+          hasLength(4),
         );
         expect(
           fsa.data!.where((example) => example.category == ExampleCategory.nfa),
@@ -193,6 +200,11 @@ void main() {
         );
         expect(
           tm.data!.every((example) => example.category == ExampleCategory.tm),
+          isTrue,
+        );
+        expect(
+          regex.data!
+              .every((example) => example.category == ExampleCategory.regex),
           isTrue,
         );
       });

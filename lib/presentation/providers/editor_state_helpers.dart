@@ -2,9 +2,9 @@
 //  editor_state_helpers.dart
 //  Turing Lab
 //
-//  Funções puras compartilhadas por editores baseados em estados de autômatos.
-//  Mantêm as regras comuns de mutação de State fora dos notifiers PDA/TM sem
-//  esconder as diferenças de transições de pilha e fita.
+//  Pure functions shared by automata state-based editors.
+//  Keep common State mutation rules outside the PDA/TM notifiers without
+//  hiding stack and tape transition differences.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,12 +2,12 @@
 //  tm_simulation_panel.dart
 //  Turing Lab
 //
-//  Realiza a simulação de Máquinas de Turing para o autômato ativo, oferecendo
-//  campos de entrada, controles de execução e apresentação de resultados com
-//  histórico de passos e mensagens de aceitação.
-//  Dialoga com o TMEditorProvider e com o SimulationHighlightService para manter
-//  sincronização com o canvas, limpando controladores e destaques conforme o
-//  ciclo de vida do widget.
+//  Runs Turing-machine simulation for the active automaton, offering
+//  input fields, run controls, and results with step history and
+//  acceptance messages.
+//  Talks to TMEditorProvider and SimulationHighlightService to stay in
+//  sync with the canvas, clearing controllers and highlights with the
+//  widget lifecycle.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

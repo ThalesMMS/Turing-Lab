@@ -21,7 +21,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+6
+version: 1.0.0+8
 
 environment:
   sdk: ^3.6.0
@@ -114,22 +114,34 @@ flutter:
   assets:
     # Finite automata examples
     - assets/examples/afd_binary_divisible_by_3.json
+    - assets/examples/afd_contains_ab.json
     - assets/examples/afd_ends_with_a.json
     - assets/examples/afd_parity_AB.json
     - assets/examples/afn_lambda_a_or_ab.json
     # Context-free grammar examples
     - assets/examples/glc_balanced_parentheses.json
+    - assets/examples/glc_anbn.json
+    - assets/examples/glc_arithmetic_expressions.json
+    - assets/examples/glc_even_zeros.json
     - assets/examples/glc_palindrome.json
     # Pushdown automaton examples
     - assets/examples/apda_balanced_parentheses.json
     - assets/examples/apda_anbn.json
+    - assets/examples/apda_anb2n.json
     - assets/examples/apda_palindrome.json
+    - assets/examples/apda_mirrored_separator.json
     # Turing machine examples
     - assets/examples/tm_anbn.json
     - assets/examples/tm_binary_to_unary.json
     - assets/examples/tm_copy_string.json
     - assets/examples/tm_increment.json
     - assets/examples/tm_palindrome.json
+    # Regular expression examples
+    - assets/examples/regex_a_star.json
+    - assets/examples/regex_ends_with_ab.json
+    - assets/examples/regex_binary_starts_zero.json
+    - assets/examples/regex_ab_or_ba_pairs.json
+    - assets/examples/regex_a_then_b.json
     # License texts bundled for in-app access and binary distribution
     - LICENSE.txt
     - LICENSE_JFLAP.txt

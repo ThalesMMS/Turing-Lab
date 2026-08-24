@@ -2,11 +2,10 @@
 //  ux_error_handling_test.dart
 //  Turing Lab
 //
-//  Extensa suíte de testes de widget dedicada a validar componentes de UX para
-//  tratamento de erros de importação, incluindo banners inline, diálogos e
-//  botões de repetição. Os cenários percorrem diferentes mensagens, fluxos de
-//  tentativa novamente e descarte, garantindo que callbacks sejam disparados e
-//  que o estado visual reaja às interações do usuário em sequências completas.
+//  Widget tests for import-error UX, including inline banners, dialogs, and
+//  retry buttons. Scenarios cover different messages, retry and dismiss
+//  flows, ensuring callbacks fire and the visual state reacts through full
+//  user-interaction sequences.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
