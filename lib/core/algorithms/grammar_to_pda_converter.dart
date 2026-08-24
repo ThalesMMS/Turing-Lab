@@ -2,12 +2,11 @@
 //  grammar_to_pda_converter.dart
 //  Turing Lab
 //
-//  Concentra a conversão de gramáticas livres de contexto em autômatos de
-//  pilha, oferecendo validações, análise de viabilidade e estimativas sobre o
-//  processo.
-//  Implementa a construção padrão CFG→PDA com criação de estados, transições
-//  parametrizadas por produções e geração de relatórios estruturados sobre o
-//  resultado.
+//  Converts context-free grammars into pushdown automata, including
+//  validation, feasibility analysis, and process estimates.
+//  Implements the standard CFG→PDA construction with state creation,
+//  production-parameterized transitions, and structured reports of the
+//  result.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

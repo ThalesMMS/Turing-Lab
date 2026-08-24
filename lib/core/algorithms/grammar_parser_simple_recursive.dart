@@ -2,10 +2,10 @@
 //  grammar_parser_simple_recursive.dart
 //  Turing Lab
 //
-//  Fornece um analisador sintático recursivo simples para gramáticas livres de
-//  contexto, validando entradas e produzindo derivações passo a passo quando a
-//  palavra pertence à linguagem. Complementa outros parsers ao oferecer uma
-//  opção mais direta para testes e demonstrações.
+//  Provides a simple recursive-descent parser for context-free grammars,
+//  validating input and producing step-by-step derivations when the
+//  word belongs to the language. Complements other parsers by offering a
+//  more direct option for tests and demonstrations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -13,6 +13,7 @@
 import '../models/grammar.dart';
 import '../models/grammar_parse_report.dart';
 import '../result.dart' as turing_lab_result;
+import 'grammar_input_tokenizer.dart';
 import 'grammar_parser.dart';
 
 /// Simple recursive descent parser for CFG
@@ -98,14 +99,9 @@ class SimpleRecursiveDescentParser {
 
   /// Validates the input string
   turing_lab_result.Result<void> _validateInput(String inputString) {
-    // Validate input string symbols
-    for (int i = 0; i < inputString.length; i++) {
-      final symbol = inputString[i];
-      if (!grammar.terminals.contains(symbol)) {
-        return turing_lab_result.Failure(
-          'Input string contains invalid symbol: $symbol',
-        );
-      }
+    final result = GrammarInputTokenizer.tokenize(grammar, inputString);
+    if (result.isFailure) {
+      return turing_lab_result.Failure(result.error!);
     }
 
     return const turing_lab_result.Success(null);
@@ -207,8 +203,16 @@ class SimpleRecursiveDescentParser {
 
         // Handle productions with multiple symbols
         if (production.rightSide.length > 1) {
-          // Try to split the input string in all possible ways
-          for (int split = 0; split <= inputString.length; split++) {
+          final splitResult = GrammarInputTokenizer.splitOffsets(
+            grammar,
+            inputString,
+          );
+          if (splitResult.isFailure) {
+            continue;
+          }
+
+          // Only split at maximal-munch token boundaries.
+          for (final split in splitResult.data!) {
             final leftPart = inputString.substring(0, split);
             final rightPart = inputString.substring(split);
 
@@ -238,23 +242,28 @@ class SimpleRecursiveDescentParser {
               final firstSymbol = production.rightSide[0];
               final middleSymbol = production.rightSide[1];
               final lastSymbol = production.rightSide[2];
+              final tokenResult = GrammarInputTokenizer.tokenize(
+                grammar,
+                inputString,
+              );
+              final tokens = tokenResult.data ?? const <GrammarInputToken>[];
 
-              // Protection for minimum length
-              if (inputString.length >=
-                      firstSymbol.length + lastSymbol.length &&
-                  inputString.startsWith(firstSymbol) &&
-                  inputString.endsWith(lastSymbol)) {
-                _recordFarthest(offset + firstSymbol.length);
+              if (tokens.length >= 2 &&
+                  tokens.first.lexeme == firstSymbol &&
+                  tokens.last.lexeme == lastSymbol) {
+                final innerStart = tokens.first.end;
+                final innerEnd = tokens.last.start;
+                _recordFarthest(offset + innerStart);
                 final innerString = inputString.substring(
-                  firstSymbol.length,
-                  inputString.length - lastSymbol.length,
+                  innerStart,
+                  innerEnd,
                 );
                 final innerResult = _parseNonTerminal(
                   middleSymbol,
                   innerString,
                   startTime,
                   timeout,
-                  offset + firstSymbol.length,
+                  offset + innerStart,
                   depth + 1,
                 );
                 if (innerResult != null) {

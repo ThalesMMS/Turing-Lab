@@ -2,11 +2,10 @@
 //  pumping_lemma_game.dart
 //  Turing Lab
 //
-//  Implementa o jogo interativo do lema do bombeamento para linguagens
-//  regulares, cuidando de validações, geração de desafios e acompanhamento de
-//  tentativas dos usuários. Coordena cálculos de comprimento de bombeamento,
-//  simulações de cadeias e pontuação para guiar a experiência educativa no
-//  aplicativo.
+//  Implements the interactive pumping-lemma game for regular languages,
+//  handling validation, challenge generation, and tracking of user
+//  attempts. Coordinates pumping-length calculations, string simulations,
+//  and scoring to guide the educational experience in the app.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

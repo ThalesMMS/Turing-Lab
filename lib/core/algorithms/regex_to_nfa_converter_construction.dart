@@ -338,14 +338,17 @@ FSA _handleConcatenationNode(
     stepContext: stepContext,
   );
 
-  final nfa = _concatenateAutomata(leftNFA, rightNFA);
-  final epsilonTransitions = nfa.fsaTransitions
-      .where(
-        (t) =>
-            leftNFA.acceptingStates.contains(t.fromState) &&
-            t.toState == rightNFA.initialState,
-      )
-      .toSet();
+  final concatenation = _concatenateFragments(leftNFA, rightNFA);
+  final nfa = concatenation.resultNFA;
+  final epsilonTransitions = concatenation.epsilonBridges;
+  final leftClones = {
+    for (final clone in concatenation.clonesFor(FSAConcatenationOperand.left))
+      clone.originalStateId: clone.clonedState,
+  };
+  final rightClones = {
+    for (final clone in concatenation.clonesFor(FSAConcatenationOperand.right))
+      clone.originalStateId: clone.clonedState,
+  };
   if (epsilonTransitions.isEmpty) {
     throw StateError(
       'Expected concatenation epsilon transition was not found '
@@ -363,10 +366,13 @@ FSA _handleConcatenationNode(
       position: position,
       firstFragmentLabel: leftNFA.name,
       secondFragmentLabel: rightNFA.name,
-      firstStart: leftNFA.initialState!,
-      firstAcceptStates: leftNFA.acceptingStates,
-      secondStart: rightNFA.initialState!,
-      secondAcceptStates: rightNFA.acceptingStates,
+      firstStart: leftClones[leftNFA.initialState!.id]!,
+      firstAcceptStates:
+          leftNFA.acceptingStates.map((state) => leftClones[state.id]!).toSet(),
+      secondStart: rightClones[rightNFA.initialState!.id]!,
+      secondAcceptStates: rightNFA.acceptingStates
+          .map((state) => rightClones[state.id]!)
+          .toSet(),
       epsilonTransitions: epsilonTransitions,
       stackSize: stackSize,
     ),
@@ -389,12 +395,15 @@ FSA _handleKleeneStarNode(
     contextAlphabet: contextAlphabet,
     stepContext: stepContext,
   );
-  final nfa = _buildKleeneStarFromFragment(childNFA);
-  final newStart = nfa.initialState!;
-  final newAccept = nfa.acceptingStates.firstWhere(
-    (s) => s != newStart,
-  );
-  final newTransitions = nfa.fsaTransitions.difference(childNFA.fsaTransitions);
+  final star = _applyKleeneStarToFragment(childNFA);
+  final nfa = star.resultNFA;
+  final newStart = star.newInitialState;
+  final newAccept = star.newAcceptingState;
+  final newTransitions = {
+    star.entryTransition,
+    ...star.repeatTransitions,
+    ...star.exitTransitions,
+  };
   final nextStepNumber = stepContext.nextStepNumber();
   final stackSize = stepContext.applyUnaryOperator();
 
@@ -406,8 +415,10 @@ FSA _handleKleeneStarNode(
       fragmentLabel: childNFA.name,
       newStart: newStart,
       newAccept: newAccept,
-      oldStart: childNFA.initialState!,
-      oldAcceptStates: childNFA.acceptingStates,
+      oldStart: star.stateClones[childNFA.initialState!.id]!,
+      oldAcceptStates: childNFA.acceptingStates
+          .map((state) => star.stateClones[state.id]!)
+          .toSet(),
       newTransitions: newTransitions,
       stackSize: stackSize,
     ),

@@ -2,12 +2,11 @@
 //  automaton_simulator.dart
 //  Turing Lab
 //
-//  Implementa o motor central de simulação para autômatos finitos, cobrindo
-//  execuções determinísticas e não determinísticas com suporte a rastreamento
-//  passo a passo. Realiza validações estruturais, controla tempo limite,
-//  compila listas de etapas e produz resultados ricos que incluem estatísticas
-//  de execução. Serve como base para fachadas de nível superior no domínio de
-//  autômatos.
+//  Implements the core simulation engine for finite automata, covering
+//  deterministic and nondeterministic executions with step-by-step tracing.
+//  Performs structural validation, enforces a time limit, compiles step
+//  lists, and produces rich results including execution statistics.
+//  Serves as the basis for higher-level facades in the automata domain.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

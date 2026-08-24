@@ -2,11 +2,10 @@
 //  dfa_minimizer.dart
 //  Turing Lab
 //
-//  Reúne a implementação completa da minimização de autômatos finitos
-//  determinísticos via algoritmo de Hopcroft, incluindo validações, remoção de
-//  estados inalcançáveis e reconstrução geométrica para preservar metadados.
-//  Fornece operações auxiliares para tratar símbolos epsilon e gerar respostas
-//  encapsuladas em objetos `Result` com mensagens claras de erro.
+//  Contains the full Hopcroft minimization implementation for deterministic
+//  finite automata, including validation, unreachable-state removal, and
+//  geometric reconstruction to preserve metadata. Provides helpers for
+//  epsilon symbols and Result-wrapped responses with clear error messages.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

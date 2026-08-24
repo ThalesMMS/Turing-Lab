@@ -2,11 +2,10 @@
 //  equivalence_checker.dart
 //  Turing Lab
 //
-//  Implementa verificação de equivalência entre dois autômatos finitos,
-//  normalizando alfabetos, convertendo NFAs para DFAs e completando transições
-//  antes de percorrer o produto cartesiano. Utiliza busca em largura para
-//  detectar divergências de aceitação e retorna rapidamente quando linguagens
-//  diferem.
+//  Checks language equivalence of two finite automata by normalizing
+//  alphabets, converting NFAs to DFAs, and completing transitions
+//  before traversing the Cartesian product. Uses breadth-first search to
+//  detect acceptance mismatches and returns early when the languages differ.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

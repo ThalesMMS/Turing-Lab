@@ -2,11 +2,10 @@
 //  grammar_analyzer.dart
 //  Turing Lab
 //
-//  Oferece rotinas avançadas para analisar e transformar gramáticas, incluindo
-//  remoção de recursão à esquerda, fatoração à esquerda e construção de
-//  relatórios ricos com notas, derivações e conflitos. Estruturas auxiliares
-//  encapsulam tabelas LL(1) e resultados tipados, permitindo futuras extensões
-//  de análise.
+//  Advanced routines for analyzing and transforming grammars, including
+//  left-recursion elimination, left factoring, and rich reports with
+//  notes, derivations, and conflicts. Auxiliary structures encapsulate
+//  LL(1) tables and typed results, allowing future analysis extensions.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -14,6 +13,7 @@ import '../models/grammar.dart';
 import '../models/grammar_diagnostic.dart';
 import '../models/grammar_diagnostic_severity.dart';
 import '../models/grammar_diagnostics_report.dart';
+import '../models/grammar_transformation_step.dart';
 import '../models/production.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
@@ -23,12 +23,14 @@ class GrammarAnalysisReport<T> {
   final List<String> notes;
   final List<String> derivations;
   final List<String> conflicts;
+  final List<GrammarTransformationStep> steps;
 
   const GrammarAnalysisReport({
     required this.value,
     this.notes = const [],
     this.derivations = const [],
     this.conflicts = const [],
+    this.steps = const [],
   });
 }
 
@@ -400,124 +402,264 @@ class GrammarAnalyzer {
     );
   }
 
-  static Result<GrammarAnalysisReport<Grammar>> removeDirectLeftRecursion(
+  /// Removes direct and indirect left recursion by ordered substitution.
+  ///
+  /// The start symbol is processed first. Remaining declared non-terminals use
+  /// their earliest production order, with lexical order as a stable fallback.
+  static Result<GrammarAnalysisReport<Grammar>> removeLeftRecursion(
     Grammar grammar,
   ) {
     if (grammar.productions.isEmpty) {
       return ResultFactory.failure('The grammar has no productions.');
     }
 
-    final productionsByNonTerminal = _groupProductions(grammar);
-    final newProductions = <Production>[];
-    final newNonTerminals = grammar.nonterminals.toSet();
-    final notes = <String>[];
-    final derivations = <String>[];
-    var productionCounter = 0;
-
-    bool changed = false;
-
-    for (final entry in productionsByNonTerminal.entries) {
-      final nonTerminal = entry.key;
-      final alternatives = entry.value;
-      final alpha = <List<String>>[];
-      final beta = <List<String>>[];
-
-      for (final alt in alternatives) {
-        if (alt.isNotEmpty && alt.first == nonTerminal) {
-          alpha.add(alt.sublist(1));
-        } else {
-          beta.add(alt);
-        }
-      }
-
-      if (alpha.isEmpty) {
-        for (final alt in alternatives) {
-          newProductions.add(
-            _productionFrom(
-              nonTerminal,
-              alt,
-              productionCounter++,
-              grammarId: grammar.id,
-            ),
-          );
-        }
-        continue;
-      }
-
-      changed = true;
-      final prime = _generatePrimeSymbol(nonTerminal, newNonTerminals);
-      newNonTerminals.add(prime);
-      notes.add(
-        'Introduced non-terminal $prime to remove left recursion from $nonTerminal.',
-      );
-
-      if (beta.isEmpty) {
-        beta.add(<String>[]);
-        notes.add(
-          'Added implicit ε-production for $nonTerminal to preserve language.',
-        );
-      }
-
-      for (final betaAlt in beta) {
-        final updated = [...betaAlt, prime];
-        newProductions.add(
-          _productionFrom(
-            nonTerminal,
-            updated,
-            productionCounter++,
-            grammarId: grammar.id,
-          ),
-        );
-        derivations.add(
-          '$nonTerminal → ${_formatSymbols(betaAlt)}$prime (from β production)',
-        );
-      }
-
-      for (final alphaAlt in alpha) {
-        final updated = [...alphaAlt, prime];
-        newProductions.add(
-          _productionFrom(
-            prime,
-            updated,
-            productionCounter++,
-            grammarId: grammar.id,
-          ),
-        );
-        derivations.add(
-          '$prime → ${_formatSymbols(alphaAlt)}$prime (from α production)',
-        );
-      }
-
-      newProductions.add(
-        Production(
-          id: '${grammar.id}_rec_$productionCounter',
-          leftSide: [prime],
-          rightSide: const [],
-          isLambda: true,
-          order: productionCounter++,
+    if (!_hasLeftCornerCycle(grammar)) {
+      return ResultFactory.success(
+        GrammarAnalysisReport<Grammar>(
+          value: grammar,
+          notes: const [
+            'No direct or indirect left recursion detected.',
+          ],
         ),
       );
-      derivations.add('$prime → ε (allows termination of recursion)');
     }
 
-    if (!changed) {
-      notes.add('No direct left recursion detected.');
+    final orderedNonTerminals = _orderedNonTerminals(grammar);
+    final working = <String, List<Production>>{
+      for (final nonTerminal in orderedNonTerminals)
+        nonTerminal: <Production>[],
+    };
+    final sortedProductions = grammar.productions.toList()
+      ..sort(_compareProductions);
+    for (final production in sortedProductions) {
+      if (production.leftSide.isEmpty) continue;
+      (working[production.leftSide.first] ??= <Production>[]).add(production);
     }
 
-    final transformed = grammar.copyWith(
-      nonterminals: newNonTerminals,
-      productions: newProductions.toSet(),
-      modified: DateTime.now(),
-    );
+    final newNonTerminals = Set<String>.from(grammar.nonterminals);
+    final usedProductionIds =
+        grammar.productions.map((production) => production.id).toSet();
+    final notes = <String>[
+      'Processing order: ${orderedNonTerminals.join(', ')}.',
+    ];
+    final derivations = <String>[];
+    final steps = <GrammarTransformationStep>[];
+    var currentGrammar = grammar;
+    var stepCounter = 0;
 
+    Grammar snapshot() => _leftRecursionSnapshot(
+          grammar,
+          working,
+          newNonTerminals,
+        );
+
+    for (var i = 0; i < orderedNonTerminals.length; i++) {
+      final currentNonTerminal = orderedNonTerminals[i];
+
+      for (var j = 0; j < i; j++) {
+        final earlierNonTerminal = orderedNonTerminals[j];
+        final substitutions = List<Production>.from(
+          working[currentNonTerminal]!.where((production) {
+            final right = _normalizedRight(production);
+            return right.isNotEmpty && right.first == earlierNonTerminal;
+          }),
+        );
+
+        for (final source in substitutions) {
+          final before = currentGrammar;
+          final sourceRight = _normalizedRight(source);
+          final suffix = sourceRight.sublist(1);
+          final replacements = <Production>[];
+
+          for (final earlier in working[earlierNonTerminal]!) {
+            final combined = <String>[
+              ..._normalizedRight(earlier),
+              ...suffix,
+            ];
+            replacements.add(
+              Production(
+                id: _uniqueProductionId(
+                  '${source.id}_via_${earlier.id}',
+                  usedProductionIds,
+                ),
+                leftSide: [currentNonTerminal],
+                rightSide: combined,
+                isLambda: combined.isEmpty,
+                order: source.order,
+              ),
+            );
+          }
+
+          final current = working[currentNonTerminal]!;
+          final sourceIndex = current.indexOf(source);
+          if (sourceIndex < 0) continue;
+          current
+            ..removeAt(sourceIndex)
+            ..insertAll(sourceIndex, replacements);
+          working[currentNonTerminal] = _deduplicateProductions(current);
+
+          final after = snapshot();
+          final replacementText = replacements.isEmpty
+              ? 'no alternatives'
+              : replacements.map(_describeProduction).join(' | ');
+          notes.add(
+            'Substitution step: replaced ${_describeProduction(source)} using $earlierNonTerminal.',
+          );
+          derivations.add(
+            'Substitution: ${_describeProduction(source)} ⇒ $replacementText',
+          );
+          steps.add(
+            GrammarTransformationStep(
+              id: 'left_recursion_substitution_${stepCounter++}',
+              operation:
+                  'Substitution for $currentNonTerminal via $earlierNonTerminal',
+              rationale:
+                  'Replace the leading $earlierNonTerminal with its current alternatives before processing $currentNonTerminal.',
+              before: before,
+              after: after,
+              changedSymbols: {
+                currentNonTerminal,
+                earlierNonTerminal,
+              },
+              changedProductionIds: {
+                source.id,
+                ...replacements.map((production) => production.id),
+              },
+            ),
+          );
+          currentGrammar = after;
+        }
+      }
+
+      final currentProductions = working[currentNonTerminal]!;
+      final recursive = currentProductions.where((production) {
+        final right = _normalizedRight(production);
+        return right.isNotEmpty && right.first == currentNonTerminal;
+      }).toList();
+      if (recursive.isEmpty) continue;
+
+      final before = currentGrammar;
+      final nonRecursive = currentProductions
+          .where((production) => !recursive.contains(production))
+          .toList();
+      final productiveRecursive = recursive
+          .where((production) => _normalizedRight(production).length > 1)
+          .toList();
+      final changedProductionIds =
+          recursive.map((production) => production.id).toSet();
+      String rationale;
+      String derivation;
+      String? prime;
+
+      if (productiveRecursive.isEmpty) {
+        working[currentNonTerminal] = nonRecursive;
+        rationale =
+            'Remove vacuous $currentNonTerminal → $currentNonTerminal alternatives, which add no strings to the language.';
+        derivation =
+            'Direct recursion: removed ${recursive.map(_describeProduction).join(' | ')}.';
+      } else if (nonRecursive.isEmpty) {
+        working[currentNonTerminal] = <Production>[];
+        rationale =
+            '$currentNonTerminal has no terminating alternative, so its recursive-only productions derive no terminal strings.';
+        derivation =
+            'Direct recursion: removed recursive-only alternatives for $currentNonTerminal.';
+      } else {
+        final introducedPrime = _generatePrimeSymbol(
+          currentNonTerminal,
+          newNonTerminals,
+        );
+        prime = introducedPrime;
+        newNonTerminals.add(introducedPrime);
+
+        final rewrittenBase = nonRecursive.map((production) {
+          final right = <String>[
+            ..._normalizedRight(production),
+            introducedPrime,
+          ];
+          changedProductionIds.add(production.id);
+          return Production(
+            id: production.id,
+            leftSide: [currentNonTerminal],
+            rightSide: right,
+            order: production.order,
+          );
+        }).toList();
+        final rewrittenRecursive = productiveRecursive.map((production) {
+          final right = <String>[
+            ..._normalizedRight(production).sublist(1),
+            introducedPrime,
+          ];
+          return Production(
+            id: production.id,
+            leftSide: [introducedPrime],
+            rightSide: right,
+            order: production.order,
+          );
+        }).toList();
+        final epsilonId = _uniqueProductionId(
+          '${grammar.id}_${introducedPrime}_epsilon',
+          usedProductionIds,
+        );
+        final epsilon = Production(
+          id: epsilonId,
+          leftSide: [introducedPrime],
+          rightSide: const [],
+          isLambda: true,
+          order: currentProductions.length,
+        );
+        changedProductionIds.add(epsilonId);
+        working[currentNonTerminal] = rewrittenBase;
+        working[introducedPrime] = [...rewrittenRecursive, epsilon];
+        notes.add(
+          'Direct-recursion step: introduced $introducedPrime for $currentNonTerminal.',
+        );
+        rationale =
+            'Move the recursive suffixes of $currentNonTerminal to $introducedPrime and add a terminating ε alternative.';
+        derivation =
+            'Direct recursion: rewrote $currentNonTerminal with $introducedPrime.';
+      }
+
+      final after = snapshot();
+      derivations.add(derivation);
+      steps.add(
+        GrammarTransformationStep(
+          id: 'left_recursion_direct_${stepCounter++}',
+          operation: 'Direct recursion removal for $currentNonTerminal',
+          rationale: rationale,
+          before: before,
+          after: after,
+          changedSymbols: {
+            currentNonTerminal,
+            if (prime != null) prime,
+          },
+          changedProductionIds: changedProductionIds,
+        ),
+      );
+      currentGrammar = after;
+    }
+
+    if (_hasLeftCornerCycle(currentGrammar)) {
+      return ResultFactory.failure(
+        'Ordered substitution left a cycle in the left-corner relation.',
+      );
+    }
+
+    notes.add('Removed direct and indirect left recursion.');
     return ResultFactory.success(
       GrammarAnalysisReport<Grammar>(
-        value: transformed,
+        value: currentGrammar,
         notes: notes,
         derivations: derivations,
+        steps: steps,
       ),
     );
   }
+
+  @Deprecated('Use removeLeftRecursion, which also handles indirect cycles.')
+  static Result<GrammarAnalysisReport<Grammar>> removeDirectLeftRecursion(
+    Grammar grammar,
+  ) =>
+      removeLeftRecursion(grammar);
 
   static Result<GrammarAnalysisReport<Grammar>> leftFactor(Grammar grammar) {
     if (grammar.productions.isEmpty) {
@@ -897,9 +1039,9 @@ class GrammarAnalyzer {
               terminal,
               () => <List<String>>[],
             );
-            cell.add(const []);
+            cell.add(right);
             derivations.add(
-              'Placed $left → ε in table[$left, $terminal] using FOLLOW set.',
+              'Placed $left → ${_formatSymbols(right)} in table[$left, $terminal] using FOLLOW set.',
             );
             if (cell.length > 1) {
               final conflictDescription =
@@ -978,13 +1120,144 @@ class GrammarAnalyzer {
       }
       final left = production.leftSide.first;
       grouped.putIfAbsent(left, () => <List<String>>[]);
-      if (production.isLambda || production.rightSide.isEmpty) {
+      if (production.isLambda ||
+          production.rightSide.isEmpty ||
+          (production.rightSide.length == 1 &&
+              isEpsilonSymbol(production.rightSide.single))) {
         grouped[left]!.add(<String>[]);
       } else {
         grouped[left]!.add(List<String>.from(production.rightSide));
       }
     }
     return grouped;
+  }
+
+  static List<String> _orderedNonTerminals(Grammar grammar) {
+    final earliestProductionOrder = <String, int>{};
+    for (final production in grammar.productions) {
+      if (production.leftSide.length != 1) continue;
+      final left = production.leftSide.single;
+      final current = earliestProductionOrder[left];
+      if (current == null || production.order < current) {
+        earliestProductionOrder[left] = production.order;
+      }
+    }
+
+    final ordered = grammar.nonterminals
+        .where((nonTerminal) => nonTerminal != grammar.startSymbol)
+        .toList()
+      ..sort((left, right) {
+        final leftOrder = earliestProductionOrder[left] ?? 0x7fffffff;
+        final rightOrder = earliestProductionOrder[right] ?? 0x7fffffff;
+        final orderComparison = leftOrder.compareTo(rightOrder);
+        return orderComparison != 0 ? orderComparison : left.compareTo(right);
+      });
+
+    if (grammar.nonterminals.contains(grammar.startSymbol)) {
+      ordered.insert(0, grammar.startSymbol);
+    }
+    return ordered;
+  }
+
+  static bool _hasLeftCornerCycle(Grammar grammar) {
+    final graph = <String, Set<String>>{
+      for (final nonTerminal in grammar.nonterminals) nonTerminal: <String>{},
+    };
+    for (final production in grammar.productions) {
+      if (production.leftSide.length != 1 || production.rightSide.isEmpty) {
+        continue;
+      }
+      final left = production.leftSide.single;
+      final corner = production.rightSide.first;
+      if (graph.containsKey(left) && graph.containsKey(corner)) {
+        graph[left]!.add(corner);
+      }
+    }
+
+    bool visit(String node, Set<String> visiting, Set<String> visited) {
+      if (visiting.contains(node)) return true;
+      if (!visited.add(node)) return false;
+      visiting.add(node);
+      for (final next in graph[node]!) {
+        if (visit(next, visiting, visited)) return true;
+      }
+      visiting.remove(node);
+      return false;
+    }
+
+    final visited = <String>{};
+    return graph.keys.any((node) => visit(node, <String>{}, visited));
+  }
+
+  static Grammar _leftRecursionSnapshot(
+    Grammar original,
+    Map<String, List<Production>> working,
+    Set<String> nonTerminals,
+  ) {
+    final productions = <Production>[];
+    var order = 0;
+    for (final alternatives in working.values) {
+      for (final production in alternatives) {
+        productions.add(production.copyWith(order: order++));
+      }
+    }
+    return original.copyWith(
+      nonterminals: Set<String>.from(nonTerminals),
+      productions: productions.toSet(),
+    );
+  }
+
+  static List<String> _normalizedRight(Production production) {
+    if (production.isLambda ||
+        production.rightSide.isEmpty ||
+        (production.rightSide.length == 1 &&
+            isEpsilonSymbol(production.rightSide.single))) {
+      return const <String>[];
+    }
+    return List<String>.from(production.rightSide);
+  }
+
+  static List<Production> _deduplicateProductions(
+    List<Production> productions,
+  ) {
+    final seen = <String>{};
+    final result = <Production>[];
+    for (final production in productions) {
+      final right = _normalizedRight(production);
+      final key = '${production.leftSide.join('\u0000')}\u0001'
+          '${right.join('\u0000')}';
+      if (seen.add(key)) result.add(production);
+    }
+    return result;
+  }
+
+  static String _uniqueProductionId(String base, Set<String> used) {
+    var candidate = base;
+    var suffix = 2;
+    while (!used.add(candidate)) {
+      candidate = '${base}_$suffix';
+      suffix++;
+    }
+    return candidate;
+  }
+
+  static String _describeProduction(Production production) {
+    return '${production.leftSide.join(' ')} → '
+        '${_formatSymbols(_normalizedRight(production))}';
+  }
+
+  static int _compareProductions(Production left, Production right) {
+    final orderComparison = left.order.compareTo(right.order);
+    if (orderComparison != 0) return orderComparison;
+    final idComparison = left.id.compareTo(right.id);
+    if (idComparison != 0) return idComparison;
+    final leftSideComparison = left.leftSide.join('\u0000').compareTo(
+          right.leftSide.join('\u0000'),
+        );
+    if (leftSideComparison != 0) return leftSideComparison;
+    return left.rightSide.join('\u0000').compareTo(
+          right.rightSide.join('\u0000'),
+        );
   }
 
   static Production _productionFrom(

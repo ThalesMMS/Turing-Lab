@@ -2,10 +2,10 @@
 //  regex_to_nfa_converter.dart
 //  Turing Lab
 //
-//  Converte expressões regulares em autômatos finitos não determinísticos
-//  aplicando construções de Thompson, validações e geração de identificadores
-//  únicos. Expõe utilitários para analisar a expressão, criar estados e
-//  transições e relatar erros detalhados quando a entrada é inválida.
+//  Converts regular expressions into nondeterministic finite automata
+//  using Thompson constructions, validation, and unique identifier
+//  generation. Exposes utilities to analyze the expression, create states
+//  and transitions, and report detailed errors when the input is invalid.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -19,6 +19,8 @@ import '../models/regex_to_nfa_step.dart';
 import '../models/state.dart';
 import '../models/transition.dart';
 import '../result.dart';
+import 'fsa_concatenator.dart';
+import 'fsa_kleene_star.dart';
 import 'state_renamer.dart';
 
 part 'regex_to_nfa_converter_parser.dart';

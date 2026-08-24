@@ -2,10 +2,10 @@
 //  grammar_to_fsa_converter.dart
 //  Turing Lab
 //
-//  Converte gramáticas lineares à direita em autômatos finitos equivalentes,
-//  validando restrições das produções e gerando estados com posicionamento
-//  calculado. Cria transições consistentes, estados finais quando necessário e
-//  retorna resultados padronizados com mensagens de erro amigáveis.
+//  Converts right-linear grammars into equivalent finite automata,
+//  validating production restrictions and generating states with computed
+//  positions. Creates consistent transitions, final states when needed, and
+//  returns standardized results with user-friendly error messages.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,10 +2,10 @@
 //  dfa_completer.dart
 //  Turing Lab
 //
-//  Fornece rotina para completar autômatos finitos determinísticos, garantindo
-//  transições definidas para todo símbolo do alfabeto a partir de cada estado.
-//  Cria estado armadilha quando necessário e copia metadados relevantes, mantendo
-//  coerência visual e temporal ao gerar um DFA plenamente definido.
+//  Completes deterministic finite automata so that every state has a
+//  defined transition for every alphabet symbol. Creates a trap state when
+//  needed and copies relevant metadata, preserving visual and temporal
+//  coherence when producing a fully defined DFA.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

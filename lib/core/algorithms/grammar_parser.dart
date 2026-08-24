@@ -2,10 +2,10 @@
 //  grammar_parser.dart
 //  Turing Lab
 //
-//  Coordena estratégias de parsing para gramáticas livres de contexto, incluindo
-//  heurísticas rápidas para gramáticas de Dyck, reconhecimento geral via Earley
-//  e derivação com análise recursiva. Realiza validações de entrada, seleciona
-//  abordagens conforme dicas e encapsula resultados ricos em `ParseResult`.
+//  Coordinates parsing strategies for context-free grammars, including
+//  fast heuristics for Dyck grammars, general recognition via Earley,
+//  and derivation with recursive analysis. Validates input, selects
+//  approaches from hints, and wraps rich results in `ParseResult`.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -13,8 +13,11 @@ import '../models/derivation_tree.dart';
 import '../models/derivation_tree_node.dart';
 import '../models/grammar.dart';
 import '../models/grammar_parse_report.dart';
+import '../models/ll1_parse_step.dart';
 import '../result.dart';
 import 'cfg/cyk_parser.dart';
+import 'grammar_analyzer.dart';
+import 'grammar_input_tokenizer.dart';
 import 'grammar_parser_simple_recursive.dart';
 import 'grammar_parser_earley.dart';
 
@@ -42,9 +45,6 @@ typedef _ParsingStrategy = ParseResult? Function(
 );
 
 class GrammarParser {
-  static const _llUnavailableMessage =
-      'LL parsing is not available because a complete LL(1) parser with '
-      'nullable, FIRST/FOLLOW, and conflict detection is not implemented.';
   static const _lrUnavailableMessage =
       'LR parsing is not available because the LR parser is not implemented.';
 
@@ -67,8 +67,7 @@ class GrammarParser {
     GrammarParserCapability(
       strategy: ParsingStrategyHint.ll,
       label: 'LL(1)',
-      isAvailable: false,
-      unavailableReason: _llUnavailableMessage,
+      isAvailable: true,
     ),
     GrammarParserCapability(
       strategy: ParsingStrategyHint.lr,
@@ -134,7 +133,12 @@ class GrammarParser {
           grammar.terminals.contains(open) &&
           grammar.terminals.contains(close);
       if (onlyDyckTerminals) {
-        final dyckAccepted = _fastDyck1Recognize(inputString, open, close);
+        final dyckAccepted = _fastDyck1Recognize(
+          grammar,
+          inputString,
+          open,
+          close,
+        );
         if (!dyckAccepted) {
           return Success(
             ParseResult.failure(
@@ -227,21 +231,26 @@ class GrammarParser {
         return Success(
           GrammarParseReport.rejected(
             inputString: inputString,
-            farthestPosition: 0,
+            farthestPosition: result.farthestPosition,
+            expectedSymbols: result.expectedSymbols,
             message: result.errorMessage ??
                 'String "$inputString" cannot be derived from grammar',
             executionTime: elapsed,
+            ll1Steps: result.ll1Steps,
           ),
         );
       }
 
-      final allTrees = _treesFromDerivations(result.derivations, inputString);
+      final allTrees = strategyHint == ParsingStrategyHint.ll
+          ? const <DerivationTree>[]
+          : _treesFromDerivations(result.derivations, inputString);
       return Success(
         GrammarParseReport.accepted(
           inputString: inputString,
           executionTime: elapsed,
           trees: allTrees.take(maxTrees).toList(growable: false),
           isAmbiguous: allTrees.length > maxTrees,
+          ll1Steps: result.ll1Steps,
         ),
       );
     }
@@ -257,7 +266,12 @@ class GrammarParser {
           grammar.terminals.contains(close);
 
       if (onlyDyckTerminals) {
-        final accepted = _fastDyck1Recognize(inputString, open, close);
+        final accepted = _fastDyck1Recognize(
+          grammar,
+          inputString,
+          open,
+          close,
+        );
         final elapsed = DateTime.now().difference(startTime);
         if (!accepted) {
           return Success(
@@ -365,12 +379,9 @@ class GrammarParser {
       return const Failure('Start symbol must be a non-terminal');
     }
 
-    // Validate input string symbols
-    for (int i = 0; i < inputString.length; i++) {
-      final symbol = inputString[i];
-      if (!grammar.terminals.contains(symbol)) {
-        return Failure('Input string contains invalid symbol: $symbol');
-      }
+    final tokens = GrammarInputTokenizer.tokenize(grammar, inputString);
+    if (tokens.isFailure) {
+      return Failure(tokens.error!);
     }
 
     return const Success(null);
@@ -418,7 +429,7 @@ class GrammarParser {
       case ParsingStrategyHint.cyk:
         return [_parseWithCYK];
       case ParsingStrategyHint.ll:
-        return const [];
+        return [_parseWithLL1];
       case ParsingStrategyHint.lr:
         return const [];
       case ParsingStrategyHint.auto:
@@ -492,13 +503,20 @@ class GrammarParser {
   }
 
   /// Linear-time recognizer for Dyck-1 strings over given delimiters
-  static bool _fastDyck1Recognize(String input, String open, String close) {
+  static bool _fastDyck1Recognize(
+    Grammar grammar,
+    String input,
+    String open,
+    String close,
+  ) {
+    final tokenResult = GrammarInputTokenizer.tokenize(grammar, input);
+    if (tokenResult.isFailure) return false;
+
     int balance = 0;
-    for (int i = 0; i < input.length; i++) {
-      final c = input[i];
-      if (c == open) {
+    for (final token in tokenResult.data!) {
+      if (token.lexeme == open) {
         balance++;
-      } else if (c == close) {
+      } else if (token.lexeme == close) {
         balance--;
         if (balance < 0) return false;
       } else {
@@ -511,6 +529,227 @@ class GrammarParser {
 
   /// Tiny tuple helper
   // Placeholder within class removed; see top-level class below.
+
+  /// Parses with the standard table-driven LL(1) algorithm recorded in
+  /// docs/reference-deviations.md.
+  static ParseResult? _parseWithLL1(
+    Grammar grammar,
+    String inputString,
+    Duration timeout,
+  ) {
+    final stopwatch = Stopwatch()..start();
+    final tableResult = GrammarAnalyzer.buildLL1ParseTable(grammar);
+    if (tableResult.isFailure) {
+      return ParseResult.failure(
+        inputString: inputString,
+        errorMessage: tableResult.error!,
+        executionTime: stopwatch.elapsed,
+      );
+    }
+
+    final tokenResult = GrammarInputTokenizer.tokenize(grammar, inputString);
+    if (tokenResult.isFailure) {
+      return ParseResult.failure(
+        inputString: inputString,
+        errorMessage: tokenResult.error!,
+        executionTime: stopwatch.elapsed,
+      );
+    }
+
+    final inputTokens = <GrammarInputToken>[
+      ...tokenResult.data!,
+      GrammarInputToken(
+        lexeme: r'$',
+        start: inputString.length,
+        end: inputString.length,
+      ),
+    ];
+    final stack = <String>[r'$', grammar.startSymbol];
+    final steps = <LL1ParseStep>[];
+    final derivations = <List<String>>[];
+    var inputIndex = 0;
+    var stepNumber = 1;
+
+    List<String> remainingInput() => inputTokens
+        .skip(inputIndex)
+        .map((token) => token.lexeme)
+        .toList(growable: false);
+
+    ParseResult reject({
+      required String message,
+      required Set<String> expected,
+      String? nonTerminal,
+    }) {
+      final lookahead = inputTokens[inputIndex].lexeme;
+      steps.add(
+        LL1ParseStep(
+          stepNumber: stepNumber,
+          action: LL1ParseAction.error,
+          stack: stack,
+          remainingInput: remainingInput(),
+          lookahead: lookahead,
+          nonTerminal: nonTerminal,
+          expectedTerminals: expected,
+          message: message,
+        ),
+      );
+      return ParseResult.failure(
+        inputString: inputString,
+        errorMessage: message,
+        executionTime: stopwatch.elapsed,
+        derivations: derivations,
+        farthestPosition: inputTokens[inputIndex].start,
+        expectedSymbols: expected,
+        ll1Steps: steps,
+      );
+    }
+
+    final tableReport = tableResult.data!;
+    final conflicts = <String>[];
+    final nonTerminals = tableReport.value.table.keys.toList()..sort();
+    for (final nonTerminal in nonTerminals) {
+      final row = tableReport.value.table[nonTerminal]!;
+      final terminals = row.keys.toList()..sort();
+      for (final terminal in terminals) {
+        final cell = row[terminal]!;
+        if (cell.length < 2) continue;
+        final productions = cell
+            .map((right) => right.isEmpty ? 'ε' : right.join(' '))
+            .toList()
+          ..sort();
+        conflicts.add(
+          'Conflict at [$nonTerminal, $terminal]: ${productions.join(' vs ')}',
+        );
+      }
+    }
+    if (conflicts.isNotEmpty) {
+      return reject(
+        message: 'Grammar is not LL(1): ${conflicts.join('; ')}.',
+        expected: const <String>{},
+        nonTerminal: grammar.startSymbol,
+      );
+    }
+
+    while (stack.isNotEmpty) {
+      if (stopwatch.elapsed >= timeout) {
+        return reject(
+          message: 'LL(1) parsing timed out after ${timeout.inMilliseconds}ms.',
+          expected: const <String>{},
+        );
+      }
+
+      final top = stack.last;
+      final lookaheadToken = inputTokens[inputIndex];
+      final lookahead = lookaheadToken.lexeme;
+      final stackSnapshot = List<String>.from(stack);
+      final remainingSnapshot = remainingInput();
+
+      if (top == r'$') {
+        if (lookahead != r'$') {
+          return reject(
+            message:
+                'Unexpected trailing input "$lookahead" at position ${lookaheadToken.start}; expected end of input.',
+            expected: const <String>{r'$'},
+          );
+        }
+
+        steps.add(
+          LL1ParseStep(
+            stepNumber: stepNumber,
+            action: LL1ParseAction.accept,
+            stack: stackSnapshot,
+            remainingInput: remainingSnapshot,
+            lookahead: lookahead,
+            message: 'The parser stack and input both reached the end marker.',
+          ),
+        );
+        stopwatch.stop();
+        return ParseResult.success(
+          inputString: inputString,
+          derivations: derivations,
+          executionTime: stopwatch.elapsed,
+          farthestPosition: inputString.length,
+          ll1Steps: steps,
+        );
+      }
+
+      if (!grammar.nonterminals.contains(top)) {
+        if (top != lookahead) {
+          final message = lookahead == r'$'
+              ? 'Unexpected end of input; expected "$top".'
+              : 'Terminal mismatch at position ${lookaheadToken.start}: expected "$top", found "$lookahead".';
+          return reject(message: message, expected: {top});
+        }
+
+        steps.add(
+          LL1ParseStep(
+            stepNumber: stepNumber++,
+            action: LL1ParseAction.match,
+            stack: stackSnapshot,
+            remainingInput: remainingSnapshot,
+            lookahead: lookahead,
+            expectedTerminals: {top},
+            message: 'Matched terminal "$top" and advanced the input.',
+          ),
+        );
+        stack.removeLast();
+        inputIndex++;
+        continue;
+      }
+
+      final row = tableReport.value.table[top] ?? const {};
+      final cell = row[lookahead];
+      if (cell == null || cell.isEmpty) {
+        final expected = row.keys.toList()..sort();
+        final expectedText = expected.isEmpty ? 'none' : expected.join(', ');
+        return reject(
+          message:
+              'No production for [$top, $lookahead]; expected one of: $expectedText.',
+          expected: expected.toSet(),
+          nonTerminal: top,
+        );
+      }
+
+      if (cell.length != 1) {
+        final productions = cell
+            .map((right) => right.isEmpty ? 'ε' : right.join(' '))
+            .toList()
+          ..sort();
+        return reject(
+          message:
+              'Grammar is not LL(1): conflict at [$top, $lookahead]: ${productions.join(' vs ')}.',
+          expected: {lookahead},
+          nonTerminal: top,
+        );
+      }
+
+      final production = List<String>.from(cell.single);
+      steps.add(
+        LL1ParseStep(
+          stepNumber: stepNumber++,
+          action: LL1ParseAction.expand,
+          stack: stackSnapshot,
+          remainingInput: remainingSnapshot,
+          lookahead: lookahead,
+          nonTerminal: top,
+          production: production,
+          expectedTerminals: row.keys.toSet(),
+          message:
+              'Selected $top → ${production.isEmpty ? 'ε' : production.join(' ')} from table[$top, $lookahead].',
+        ),
+      );
+      derivations.add([top, ...production]);
+      stack.removeLast();
+      for (final symbol in production.reversed) {
+        stack.add(symbol);
+      }
+    }
+
+    return reject(
+      message: 'LL(1) parser stopped with an empty stack.',
+      expected: const <String>{r'$'},
+    );
+  }
 
   /// Parses using brute force (exhaustive search)
   static ParseResult? _parseWithBruteForce(
@@ -600,7 +839,12 @@ class GrammarParser {
         // Handle productions with multiple symbols
         if (production.rightSide.length > 1) {
           // Try to split the target string in all possible ways
-          for (int split = 0; split <= targetString.length; split++) {
+          final splitResult = GrammarInputTokenizer.splitOffsets(
+            grammar,
+            targetString,
+          );
+          if (splitResult.isFailure) continue;
+          for (final split in splitResult.data!) {
             final leftPart = targetString.substring(0, split);
             final rightPart = targetString.substring(split);
 
@@ -805,6 +1049,9 @@ class ParseResult {
   final List<List<String>> derivations;
   final String? errorMessage;
   final Duration executionTime;
+  final int farthestPosition;
+  final Set<String> expectedSymbols;
+  final List<LL1ParseStep> ll1Steps;
 
   const ParseResult._({
     required this.inputString,
@@ -812,18 +1059,27 @@ class ParseResult {
     required this.derivations,
     this.errorMessage,
     required this.executionTime,
+    this.farthestPosition = 0,
+    this.expectedSymbols = const <String>{},
+    this.ll1Steps = const <LL1ParseStep>[],
   });
 
   factory ParseResult.success({
     required String inputString,
     required List<List<String>> derivations,
     required Duration executionTime,
+    int? farthestPosition,
+    Set<String> expectedSymbols = const <String>{},
+    List<LL1ParseStep> ll1Steps = const <LL1ParseStep>[],
   }) {
     return ParseResult._(
       inputString: inputString,
       accepted: true,
       derivations: derivations,
       executionTime: executionTime,
+      farthestPosition: farthestPosition ?? inputString.length,
+      expectedSymbols: Set<String>.unmodifiable(expectedSymbols),
+      ll1Steps: List<LL1ParseStep>.unmodifiable(ll1Steps),
     );
   }
 
@@ -831,13 +1087,20 @@ class ParseResult {
     required String inputString,
     required String errorMessage,
     required Duration executionTime,
+    List<List<String>> derivations = const <List<String>>[],
+    int farthestPosition = 0,
+    Set<String> expectedSymbols = const <String>{},
+    List<LL1ParseStep> ll1Steps = const <LL1ParseStep>[],
   }) {
     return ParseResult._(
       inputString: inputString,
       accepted: false,
-      derivations: [],
+      derivations: derivations,
       errorMessage: errorMessage,
       executionTime: executionTime,
+      farthestPosition: farthestPosition,
+      expectedSymbols: Set<String>.unmodifiable(expectedSymbols),
+      ll1Steps: List<LL1ParseStep>.unmodifiable(ll1Steps),
     );
   }
 
@@ -847,6 +1110,9 @@ class ParseResult {
     List<List<String>>? derivations,
     String? errorMessage,
     Duration? executionTime,
+    int? farthestPosition,
+    Set<String>? expectedSymbols,
+    List<LL1ParseStep>? ll1Steps,
   }) {
     return ParseResult._(
       inputString: inputString ?? this.inputString,
@@ -854,6 +1120,9 @@ class ParseResult {
       derivations: derivations ?? this.derivations,
       errorMessage: errorMessage ?? this.errorMessage,
       executionTime: executionTime ?? this.executionTime,
+      farthestPosition: farthestPosition ?? this.farthestPosition,
+      expectedSymbols: expectedSymbols ?? this.expectedSymbols,
+      ll1Steps: ll1Steps ?? this.ll1Steps,
     );
   }
 }

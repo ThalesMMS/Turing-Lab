@@ -2,11 +2,11 @@
 //  language_comparator.dart
 //  Turing Lab
 //
-//  Implementa a comparação de linguagens entre dois autômatos finitos via
-//  construção do autômato produto. Detecta equivalência ou não-equivalência,
-//  gerando strings distinguidoras quando as linguagens divergem. Utiliza
-//  busca em largura sobre pares de estados para determinar se os autômatos
-//  reconhecem o mesmo conjunto de palavras.
+//  Compares the languages of two finite automata via the product automaton
+//  construction. Detects equivalence or inequivalence and generates
+//  distinguishing strings when the languages diverge. Uses breadth-first
+//  search over state pairs to decide whether the automata recognize the
+//  same set of words.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

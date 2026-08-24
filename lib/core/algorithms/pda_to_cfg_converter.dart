@@ -2,16 +2,17 @@
 //  pda_to_cfg_converter.dart
 //  Turing Lab
 //
-//  Implementa a transformação clássica de PDA para gramática livre de contexto
-//  gerando variáveis estruturadas, produções e descrições textuais. Inclui
-//  verificações de pré-condições do autômato, construção de não-terminais
-//  especiais e retorno de um relatório pronto para visualização didática.
+//  Implements the classical PDA-to-CFG transformation, generating
+//  structured variables, productions, and textual descriptions. Includes
+//  automaton precondition checks, construction of special nonterminals,
+//  and a report ready for educational visualization.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/production.dart';
+import '../models/state.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
 
@@ -30,8 +31,28 @@ class PdaToCfgConversion {
 /// Converts a PDA into a structured CFG using the standard
 /// state/stack-variable construction.
 class PDAtoCFGConverter {
+  static const cancellationError = 'PDA to CFG conversion was cancelled.';
+  static const productionLimitErrorPrefix =
+      'PDA to CFG production limit exceeded';
+
   /// Converts the provided [pda] into a CFG description and structure.
-  static Result<PdaToCfgConversion> convert(PDA pda) {
+  ///
+  /// [maxGeneratedProductions] bounds the triple construction before it can
+  /// exhaust memory. [isCancelled] is polled while productions and
+  /// intermediate-state sequences are generated.
+  static Result<PdaToCfgConversion> convert(
+    PDA pda, {
+    int? maxGeneratedProductions,
+    bool Function()? isCancelled,
+  }) {
+    if (maxGeneratedProductions != null && maxGeneratedProductions <= 0) {
+      return const Failure(
+        'The PDA to CFG production limit must be greater than zero.',
+      );
+    }
+    if (isCancelled?.call() == true) {
+      return const Failure(cancellationError);
+    }
     if (pda.states.isEmpty) {
       return const Failure('Cannot convert an empty PDA to a grammar.');
     }
@@ -53,7 +74,20 @@ class PDAtoCFGConverter {
       return Failure(normalizationError);
     }
 
-    final grammar = _buildGrammar(pda);
+    Grammar grammar;
+    try {
+      grammar = _buildGrammar(
+        pda,
+        maxGeneratedProductions: maxGeneratedProductions,
+        isCancelled: isCancelled,
+      );
+    } on _PdaToCfgCancellation {
+      return const Failure(cancellationError);
+    } on _PdaToCfgProductionLimit catch (error) {
+      return Failure(
+        '$productionLimitErrorPrefix (${error.limit}).',
+      );
+    }
     if (grammar.productions.isEmpty) {
       return const Failure('No productions could be generated for this PDA.');
     }
@@ -64,41 +98,92 @@ class PDAtoCFGConverter {
     );
   }
 
-  static Grammar _buildGrammar(PDA pda) {
+  static Grammar _buildGrammar(
+    PDA pda, {
+    required int? maxGeneratedProductions,
+    required bool Function()? isCancelled,
+  }) {
     final now = DateTime.now();
-    final nonTerminals = <String>{'S'};
+    final transitions = pda.pdaTransitions.toList()
+      ..sort((left, right) => left.id.compareTo(right.id));
     final terminals = <String>{
       ...pda.alphabet.where((symbol) => !isEpsilonSymbol(symbol)),
+      ...transitions
+          .where(
+            (transition) =>
+                !transition.isLambdaInput &&
+                !isEpsilonSymbol(transition.inputSymbol),
+          )
+          .map((transition) => transition.inputSymbol),
     };
+    final usedGrammarSymbols = <String>{...terminals};
+    String freshNonterminal(String base) {
+      var candidate = base;
+      var suffix = 0;
+      while (!usedGrammarSymbols.add(candidate)) {
+        candidate = '${base}_${++suffix}';
+      }
+      return candidate;
+    }
+
+    final startSymbol = freshNonterminal('S');
+    final nonTerminals = <String>{startSymbol};
     final productions = <Production>{};
 
     final initialState = pda.initialState!;
     var productionCounter = 0;
-    final stateLabels = pda.states.map((state) => state.label).toList();
+    final states = pda.states.toList()
+      ..sort((left, right) => left.id.compareTo(right.id));
+    final variables = <(String, String, String), String>{};
 
-    String variable(String from, String stackSymbol, String to) =>
-        '[$from, $stackSymbol, $to]';
+    void checkCancellation() {
+      if (isCancelled?.call() == true) {
+        throw const _PdaToCfgCancellation();
+      }
+    }
 
-    // Start productions
-    for (final accept in pda.acceptingStates) {
-      final targetVariable = variable(
-        initialState.label,
-        pda.initialStackSymbol,
-        accept.label,
-      );
-      nonTerminals.add(targetVariable);
-      productions.add(
-        Production.unit(
-          id: 'p$productionCounter',
-          leftSide: 'S',
-          rightSide: targetVariable,
-          order: productionCounter,
-        ),
-      );
+    void addProduction(Production Function(int order) build) {
+      checkCancellation();
+      final limit = maxGeneratedProductions;
+      if (limit != null && productionCounter >= limit) {
+        throw _PdaToCfgProductionLimit(limit);
+      }
+      productions.add(build(productionCounter));
       productionCounter++;
     }
 
-    for (final transition in pda.pdaTransitions) {
+    String variable(State from, String stackSymbol, State to) {
+      final key = (from.id, stackSymbol, to.id);
+      return variables.putIfAbsent(
+        key,
+        () => freshNonterminal(
+          '[${from.label}, $stackSymbol, ${to.label}]',
+        ),
+      );
+    }
+
+    // Start productions
+    final acceptingStates = pda.acceptingStates.toList()
+      ..sort((left, right) => left.id.compareTo(right.id));
+    for (final accept in acceptingStates) {
+      final targetVariable = variable(
+        initialState,
+        pda.initialStackSymbol,
+        accept,
+      );
+      nonTerminals.add(targetVariable);
+      addProduction(
+        (order) => Production.unit(
+          id: 'p$order',
+          leftSide: startSymbol,
+          rightSide: targetVariable,
+          order: order,
+        ),
+      );
+    }
+
+    for (final transition in transitions) {
+      checkCancellation();
       final isLambdaInput =
           transition.isLambdaInput || isEpsilonSymbol(transition.inputSymbol);
       final input = isLambdaInput ? null : transition.inputSymbol;
@@ -112,39 +197,42 @@ class PDAtoCFGConverter {
           transition.isLambdaPush || isEpsilonSymbol(transition.pushSymbol);
       final pushSymbols = isLambdaPush ? <String>[] : transition.pushSymbols;
 
-      final from = transition.fromState.label;
-      final to = transition.toState.label;
+      final from = transition.fromState;
+      final to = transition.toState;
 
       if (pushSymbols.isEmpty) {
         final leftVariable = variable(from, pop, to);
         nonTerminals.add(leftVariable);
 
-        final production = input == null
-            ? Production.lambda(
-                id: 'p$productionCounter',
-                leftSide: leftVariable,
-                order: productionCounter,
-              )
-            : Production(
-                id: 'p$productionCounter',
-                leftSide: [leftVariable],
-                rightSide: [input],
-                isLambda: false,
-                order: productionCounter,
-              );
-        productions.add(production);
-        productionCounter++;
+        addProduction(
+          (order) => input == null
+              ? Production.lambda(
+                  id: 'p$order',
+                  leftSide: leftVariable,
+                  order: order,
+                )
+              : Production(
+                  id: 'p$order',
+                  leftSide: [leftVariable],
+                  rightSide: [input],
+                  isLambda: false,
+                  order: order,
+                ),
+        );
       } else {
-        final sequences = _stateLabelSequences(
-          stateLabels,
+        final sequences = _stateSequences(
+          states,
           pushSymbols.length - 1,
+          isCancelled,
         );
 
-        for (final target in stateLabels) {
+        for (final target in states) {
+          checkCancellation();
           final leftVariable = variable(from, pop, target);
           nonTerminals.add(leftVariable);
 
           for (final sequence in sequences) {
+            checkCancellation();
             final rightSide = <String>[];
             if (input != null) {
               rightSide.add(input);
@@ -161,16 +249,15 @@ class PDAtoCFGConverter {
               currentFrom = nextTo;
             }
 
-            productions.add(
-              Production(
-                id: 'p$productionCounter',
+            addProduction(
+              (order) => Production(
+                id: 'p$order',
                 leftSide: [leftVariable],
                 rightSide: rightSide,
                 isLambda: false,
-                order: productionCounter,
+                order: order,
               ),
             );
-            productionCounter++;
           }
         }
       }
@@ -181,7 +268,7 @@ class PDAtoCFGConverter {
       name: '${pda.name} (CFG)',
       terminals: terminals,
       nonterminals: nonTerminals,
-      startSymbol: 'S',
+      startSymbol: startSymbol,
       productions: productions,
       type: GrammarType.contextFree,
       created: now,
@@ -206,17 +293,19 @@ class PDAtoCFGConverter {
     buffer.writeln('Start productions:');
     for (final production in productions.where(
       (production) =>
-          production.leftSide.length == 1 && production.leftSide.first == 'S',
+          production.leftSide.length == 1 &&
+          production.leftSide.first == grammar.startSymbol,
     )) {
       final right = production.isLambda ? 'λ' : production.rightSide.join(' ');
-      buffer.writeln('  S → $right');
+      buffer.writeln('  ${grammar.startSymbol} → $right');
     }
 
     buffer.writeln('');
     buffer.writeln('Transition productions:');
     for (final production in productions.where(
       (production) =>
-          production.leftSide.length != 1 || production.leftSide.first != 'S',
+          production.leftSide.length != 1 ||
+          production.leftSide.first != grammar.startSymbol,
     )) {
       final left = production.leftSide.join(' ');
       final right = production.isLambda ? 'λ' : production.rightSide.join(' ');
@@ -243,30 +332,40 @@ class PDAtoCFGConverter {
     return null;
   }
 
-  static List<List<String>> _stateLabelSequences(
-    List<String> stateLabels,
+  static Iterable<List<State>> _stateSequences(
+    List<State> states,
     int length,
-  ) {
+    bool Function()? isCancelled,
+  ) sync* {
+    if (isCancelled?.call() == true) {
+      throw const _PdaToCfgCancellation();
+    }
     if (length <= 0) {
-      return [<String>[]];
+      yield const <State>[];
+      return;
     }
 
-    final sequences = <List<String>>[];
-
-    void build(List<String> current, int depth) {
-      if (depth == length) {
-        sequences.add(List<String>.unmodifiable(current));
-        return;
+    for (final state in states) {
+      if (isCancelled?.call() == true) {
+        throw const _PdaToCfgCancellation();
       }
-
-      for (final label in stateLabels) {
-        current.add(label);
-        build(current, depth + 1);
-        current.removeLast();
+      for (final suffix in _stateSequences(
+        states,
+        length - 1,
+        isCancelled,
+      )) {
+        yield <State>[state, ...suffix];
       }
     }
-
-    build(<String>[], 0);
-    return sequences;
   }
+}
+
+class _PdaToCfgCancellation implements Exception {
+  const _PdaToCfgCancellation();
+}
+
+class _PdaToCfgProductionLimit implements Exception {
+  const _PdaToCfgProductionLimit(this.limit);
+
+  final int limit;
 }

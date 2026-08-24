@@ -2,10 +2,10 @@
 //  nfa_to_dfa_converter.dart
 //  Turing Lab
 //
-//  Implementa a conversão de autômatos finitos não determinísticos em
-//  determinísticos utilizando construção por subconjuntos com fechos-ε.
-//  Inclui rotinas de validação, limpeza de transições lambda e criação das
-//  estruturas determinísticas preservando estados, símbolos e aceitação.
+//  Converts nondeterministic finite automata into deterministic automata
+//  using subset construction with ε-closures. Includes validation,
+//  lambda-transition cleanup, and creation of the deterministic structures
+//  while preserving states, symbols, and acceptance.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

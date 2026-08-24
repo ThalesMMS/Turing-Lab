@@ -2,10 +2,10 @@
 //  fsa_to_grammar_converter.dart
 //  Turing Lab
 //
-//  Responsável por transformar autômatos finitos em gramáticas regulares,
-//  atribuindo não terminais a estados, gerando produções rotuladas pelas
-//  transições e adicionando regras lambda para estados de aceitação. Retorna
-//  objeto `Grammar` pronto para consumo em módulos de análise e conversão.
+//  Transforms finite automata into regular grammars by assigning
+//  nonterminals to states, generating productions labeled by transitions,
+//  and adding lambda rules for accepting states. Returns a `Grammar`
+//  ready for analysis and conversion modules.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

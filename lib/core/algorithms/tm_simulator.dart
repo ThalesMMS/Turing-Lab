@@ -2,10 +2,10 @@
 //  tm_simulator.dart
 //  Turing Lab
 //
-//  Entrega a lógica de simulação para máquinas de Turing determinísticas e não
-//  determinísticas, abrangendo validações, execução passo a passo e métricas de
-//  análise. Gerencia configurações exploradas, movimentação de fita e detecção
-//  de condições de aceitação ou rejeição.
+//  Simulation logic for deterministic and nondeterministic Turing machines,
+//  covering validation, step-by-step execution, and analysis metrics.
+//  Manages explored configurations, tape movement, and detection of
+//  accept or reject conditions.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -18,12 +18,31 @@ import '../models/state.dart';
 import '../models/step_explanation.dart';
 import '../models/tm.dart';
 import '../models/tm_analysis.dart';
+import '../models/tm_execution_analysis.dart';
 import '../models/tm_transition.dart';
 import '../result.dart';
 import '../simulation_cancelled_exception.dart';
 
 String _ntmConfigurationKey(State state, List<String> tape, int head) =>
     '${state.id}\u0001$head\u0001${tape.join('\u0000')}';
+
+String _dtmConfigurationKey(
+  State state,
+  List<String> tape,
+  int head,
+  int tapeOrigin,
+  String blankSymbol,
+) {
+  return TMConfigurationSnapshot.canonical(
+    stateId: state.id,
+    headPosition: tapeOrigin + head,
+    tape: {
+      for (var index = 0; index < tape.length; index++)
+        tapeOrigin + index: tape[index],
+    },
+    blankSymbol: blankSymbol,
+  ).key;
+}
 
 /// Simulates Turing Machines (TM) with input strings
 class TMSimulator {
@@ -89,7 +108,7 @@ class TMSimulator {
     );
   }
 
-  /// Deterministic simulation (DTM) stepwise semantics similar às referências.
+  /// Deterministic simulation (DTM) stepwise semantics similar to the references.
   /// Always uses the deterministic path — errors on nondeterministic conflicts.
   static Result<TMSimulationResult> simulateDTM(
     TM tm,
@@ -123,7 +142,7 @@ class TMSimulator {
     }
   }
 
-  /// Non-deterministic simulation (NTM) via BFS sobre configurações, aceita se qualquer ramo aceita
+  /// Non-deterministic simulation (NTM) via BFS over configurations; accepts if any branch accepts.
   static Result<TMSimulationResult> simulateNTM(
     TM tm,
     String inputString, {
@@ -141,7 +160,7 @@ class TMSimulator {
       final startTime = DateTime.now();
       int explored = 0;
 
-      // Configuração: (state, tapeList, head, steps)
+      // Configuration: (state, tapeList, head, steps)
       final initialTape = inputString.split('').toList();
       final initial = (
         tm.initialState!,
@@ -177,7 +196,7 @@ class TMSimulator {
         }
         if (explored++ > maxConfigurations) {
           return Success(
-            TMSimulationResult.infiniteLoop(
+            TMSimulationResult.configurationLimit(
               inputString: inputString,
               steps: longestBranch,
               executionTime: DateTime.now().difference(startTime),
@@ -413,7 +432,17 @@ class TMSimulator {
     var currentState = tm.initialState!;
     final tape = inputString.split('').toList();
     var headPosition = 0;
+    var tapeOrigin = 0;
     int stepNumber = 0;
+    final seenConfigurations = <String>{
+      _dtmConfigurationKey(
+        currentState,
+        tape,
+        headPosition,
+        tapeOrigin,
+        tm.blankSymbol,
+      ),
+    };
 
     // Add initial step with tape data and head position
     steps.add(
@@ -445,9 +474,8 @@ class TMSimulator {
         );
       }
 
-      // Check for infinite loop (simplified)
-      if (steps.length > 10000) {
-        return TMSimulationResult.infiniteLoop(
+      if (stepNumber > 10000) {
+        return TMSimulationResult.stepLimit(
           inputString: inputString,
           steps: steps,
           executionTime: DateTime.now().difference(startTime),
@@ -496,6 +524,7 @@ class TMSimulator {
           if (headPosition < 0) {
             headPosition = 0;
             tape.insert(0, tm.blankSymbol);
+            tapeOrigin--;
           }
           break;
         case TapeDirection.right:
@@ -513,6 +542,15 @@ class TMSimulator {
       final previousStateId = currentState.id;
       currentState = transition.toState;
       final headAfter = headPosition;
+
+      final configurationKey = _dtmConfigurationKey(
+        currentState,
+        tape,
+        headPosition,
+        tapeOrigin,
+        tm.blankSymbol,
+      );
+      final repeatedConfiguration = !seenConfigurations.add(configurationKey);
 
       // Add step
       if (stepByStep) {
@@ -539,6 +577,13 @@ class TMSimulator {
               headAfter: headAfter,
             ),
           ),
+        );
+      }
+      if (repeatedConfiguration) {
+        return TMSimulationResult.infiniteLoop(
+          inputString: inputString,
+          steps: steps,
+          executionTime: DateTime.now().difference(startTime),
         );
       }
     }
@@ -581,7 +626,19 @@ class TMSimulator {
       return Failure(simulationResult.error!);
     }
 
-    return Success(simulationResult.data!.accepted);
+    final simulation = simulationResult.data!;
+    return switch (simulation.outcome) {
+      TMExecutionOutcome.accepted => const Success(true),
+      TMExecutionOutcome.haltedRejected => const Success(false),
+      TMExecutionOutcome.provenCycle ||
+      TMExecutionOutcome.boundedUnknown ||
+      TMExecutionOutcome.cancelled ||
+      TMExecutionOutcome.invalidMachine =>
+        Failure(
+          simulation.errorMessage ??
+              'The bounded simulation did not resolve acceptance.',
+        ),
+    };
   }
 
   /// Tests if a TM rejects a specific string
@@ -595,6 +652,7 @@ class TMSimulator {
   }
 
   /// Finds all strings of a given length that the TM accepts
+  @Deprecated('Use TMLanguageExplorer.explore for bounded four-way outcomes.')
   static Result<Set<String>> findAcceptedStrings(
     TM tm,
     int maxLength, {
@@ -649,6 +707,7 @@ class TMSimulator {
   }
 
   /// Finds all strings of a given length that the TM rejects
+  @Deprecated('Use TMLanguageExplorer.explore for bounded four-way outcomes.')
   static Result<Set<String>> findRejectedStrings(
     TM tm,
     int maxLength, {
@@ -876,6 +935,15 @@ class _DtmSearch implements _CooperativeTmSearch {
       : currentState = tm.initialState!,
         tape = inputString.split('').toList(),
         startTime = DateTime.now() {
+    seenConfigurations.add(
+      _dtmConfigurationKey(
+        currentState,
+        tape,
+        headPosition,
+        tapeOrigin,
+        tm.blankSymbol,
+      ),
+    );
     steps.add(
       SimulationStep.tm(
         currentState: currentState.id,
@@ -896,7 +964,9 @@ class _DtmSearch implements _CooperativeTmSearch {
   final List<SimulationStep> steps = [];
   State currentState;
   var headPosition = 0;
+  var tapeOrigin = 0;
   var stepNumber = 0;
+  final Set<String> seenConfigurations = {};
 
   @override
   TMSimulationResult? runBatch(int batchSize) {
@@ -919,7 +989,7 @@ class _DtmSearch implements _CooperativeTmSearch {
       );
     }
     if (stepNumber > 10000) {
-      return TMSimulationResult.infiniteLoop(
+      return TMSimulationResult.stepLimit(
         inputString: inputString,
         steps: steps,
         executionTime: elapsed,
@@ -958,6 +1028,7 @@ class _DtmSearch implements _CooperativeTmSearch {
         if (headPosition < 0) {
           headPosition = 0;
           tape.insert(0, tm.blankSymbol);
+          tapeOrigin--;
         }
       case TapeDirection.right:
         headPosition++;
@@ -966,6 +1037,14 @@ class _DtmSearch implements _CooperativeTmSearch {
         break;
     }
     currentState = transition.toState;
+    final configurationKey = _dtmConfigurationKey(
+      currentState,
+      tape,
+      headPosition,
+      tapeOrigin,
+      tm.blankSymbol,
+    );
+    final repeatedConfiguration = !seenConfigurations.add(configurationKey);
     if (stepByStep) {
       steps.add(
         SimulationStep.tm(
@@ -989,6 +1068,13 @@ class _DtmSearch implements _CooperativeTmSearch {
             headAfter: headPosition,
           ),
         ),
+      );
+    }
+    if (repeatedConfiguration) {
+      return TMSimulationResult.infiniteLoop(
+        inputString: inputString,
+        steps: steps,
+        executionTime: elapsed,
       );
     }
     return null;
@@ -1083,7 +1169,7 @@ class _NtmSearch implements _CooperativeTmSearch {
       );
     }
     if (explored++ > 100000) {
-      return TMSimulationResult.infiniteLoop(
+      return TMSimulationResult.configurationLimit(
         inputString: inputString,
         steps: longestBranch,
         executionTime: elapsed,
@@ -1175,6 +1261,8 @@ class _NtmSearch implements _CooperativeTmSearch {
 class TMSimulationResult {
   final String inputString;
   final bool accepted;
+  final TMExecutionOutcome outcome;
+  final TMExecutionLimit? limit;
   final List<SimulationStep> steps;
   final String? errorMessage;
   final Duration executionTime;
@@ -1182,6 +1270,8 @@ class TMSimulationResult {
   const TMSimulationResult._({
     required this.inputString,
     required this.accepted,
+    required this.outcome,
+    this.limit,
     required this.steps,
     this.errorMessage,
     required this.executionTime,
@@ -1195,6 +1285,7 @@ class TMSimulationResult {
     return TMSimulationResult._(
       inputString: inputString,
       accepted: true,
+      outcome: TMExecutionOutcome.accepted,
       steps: steps,
       executionTime: executionTime,
     );
@@ -1209,6 +1300,7 @@ class TMSimulationResult {
     return TMSimulationResult._(
       inputString: inputString,
       accepted: false,
+      outcome: TMExecutionOutcome.haltedRejected,
       steps: steps,
       errorMessage: errorMessage,
       executionTime: executionTime,
@@ -1223,6 +1315,8 @@ class TMSimulationResult {
     return TMSimulationResult._(
       inputString: inputString,
       accepted: false,
+      outcome: TMExecutionOutcome.boundedUnknown,
+      limit: TMExecutionLimit.timeout,
       steps: steps,
       errorMessage: 'Simulation timed out',
       executionTime: executionTime,
@@ -1237,8 +1331,41 @@ class TMSimulationResult {
     return TMSimulationResult._(
       inputString: inputString,
       accepted: false,
+      outcome: TMExecutionOutcome.provenCycle,
       steps: steps,
       errorMessage: 'Infinite loop detected',
+      executionTime: executionTime,
+    );
+  }
+
+  factory TMSimulationResult.stepLimit({
+    required String inputString,
+    required List<SimulationStep> steps,
+    required Duration executionTime,
+  }) {
+    return TMSimulationResult._(
+      inputString: inputString,
+      accepted: false,
+      outcome: TMExecutionOutcome.boundedUnknown,
+      limit: TMExecutionLimit.steps,
+      steps: steps,
+      errorMessage: 'Step limit reached; the result is inconclusive',
+      executionTime: executionTime,
+    );
+  }
+
+  factory TMSimulationResult.configurationLimit({
+    required String inputString,
+    required List<SimulationStep> steps,
+    required Duration executionTime,
+  }) {
+    return TMSimulationResult._(
+      inputString: inputString,
+      accepted: false,
+      outcome: TMExecutionOutcome.boundedUnknown,
+      limit: TMExecutionLimit.configurations,
+      steps: steps,
+      errorMessage: 'Configuration limit reached; the result is inconclusive',
       executionTime: executionTime,
     );
   }
@@ -1246,6 +1373,8 @@ class TMSimulationResult {
   TMSimulationResult copyWith({
     String? inputString,
     bool? accepted,
+    TMExecutionOutcome? outcome,
+    TMExecutionLimit? limit,
     List<SimulationStep>? steps,
     String? errorMessage,
     Duration? executionTime,
@@ -1253,6 +1382,8 @@ class TMSimulationResult {
     return TMSimulationResult._(
       inputString: inputString ?? this.inputString,
       accepted: accepted ?? this.accepted,
+      outcome: outcome ?? this.outcome,
+      limit: limit ?? this.limit,
       steps: steps ?? this.steps,
       errorMessage: errorMessage ?? this.errorMessage,
       executionTime: executionTime ?? this.executionTime,

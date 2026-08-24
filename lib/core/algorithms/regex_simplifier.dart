@@ -2,11 +2,10 @@
 //  regex_simplifier.dart
 //  Turing Lab
 //
-//  Implementa simplificação de expressões regulares através da aplicação de
-//  identidades algébricas e remoção de parênteses desnecessários. Recebe uma
-//  expressão regular gerada pelo algoritmo de eliminação de estados e produz
-//  uma versão equivalente mais legível, aplicando regras iterativamente até
-//  atingir um ponto fixo.
+//  Simplifies regular expressions by applying algebraic identities and
+//  removing unnecessary parentheses. Takes a regular expression produced
+//  by the state-elimination algorithm and yields a more readable
+//  equivalent form, applying rules iteratively until a fixed point.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

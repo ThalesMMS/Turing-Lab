@@ -2,10 +2,10 @@
 //  regex_analyzer.dart
 //  Turing Lab
 //
-//  Analisa expressões regulares para extrair métricas de complexidade, incluindo
-//  star height (altura de estrela), profundidade de aninhamento, contagem de
-//  operadores e tamanho do alfabeto. Utiliza parsing de AST para calcular métricas
-//  precisas e retorna estruturas tipadas prontas para visualização educacional.
+//  Analyzes regular expressions to extract complexity metrics, including
+//  star height, nesting depth, operator counts, and alphabet size. Uses AST
+//  parsing to compute precise metrics and returns typed structures ready
+//  for educational visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

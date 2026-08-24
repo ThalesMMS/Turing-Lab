@@ -2,9 +2,9 @@
 //  state_renamer.dart
 //  Turing Lab
 //
-//  Utilitário para renomear rótulos de estados em autômatos finitos após
-//  conversões algorítmicas, substituindo IDs internos por nomes legíveis
-//  como q0, q1, q2... e aplicando layout circular para evitar sobreposição.
+//  Utility for renaming state labels in finite automata after
+//  algorithmic conversions, replacing internal IDs with readable names
+//  such as q0, q1, q2... and applying a circular layout to avoid overlap.
 //
 //  Thales Matheus Mendonça Santos - February 2026
 //

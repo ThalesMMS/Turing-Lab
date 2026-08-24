@@ -215,79 +215,22 @@ FSA _buildConcatenationNFA(
   final leftNFA = _buildNFA(left, contextAlphabet: contextAlphabet);
   final rightNFA = _buildNFA(right, contextAlphabet: contextAlphabet);
 
-  return _concatenateAutomata(leftNFA, rightNFA);
+  return _concatenateFragments(leftNFA, rightNFA).resultNFA;
 }
 
 /// Builds NFA for Kleene star (*)
 FSA _buildKleeneStarNFA(RegexNode child, {Set<String>? contextAlphabet}) {
   final childNFA = _buildNFA(child, contextAlphabet: contextAlphabet);
 
-  return _buildKleeneStarFromFragment(childNFA);
+  return _applyKleeneStarToFragment(childNFA).resultNFA;
 }
 
-FSA _buildKleeneStarFromFragment(FSA childNFA) {
-  // Create new initial and final states
-  final now = DateTime.now();
-  final newInitial = State(
-    id: _newStateId('q_init'),
-    label: 'q_initial',
-    position: Vector2(50, 100),
-    isInitial: true,
-    isAccepting: true, // Accept empty string
-  );
-  final newFinal = State(
-    id: _newStateId('q_final'),
-    label: 'q_final',
-    position: Vector2(350, 100),
-    isInitial: false,
-    isAccepting: true,
-  );
-
-  // Combine states and transitions
-  final allStates = {newInitial, newFinal};
-  allStates.addAll(childNFA.states);
-
-  final allTransitions = <FSATransition>{};
-  allTransitions.addAll(childNFA.fsaTransitions);
-
-  // Add epsilon transitions
-  allTransitions.add(
-    FSATransition.epsilon(
-      id: _newTransId('t_eps'),
-      fromState: newInitial,
-      toState: childNFA.initialState!,
-    ),
-  );
-
-  for (final acceptingState in childNFA.acceptingStates) {
-    allTransitions.add(
-      FSATransition.epsilon(
-        id: _newTransId('t_eps'),
-        fromState: acceptingState,
-        toState: newFinal,
-      ),
-    );
-    allTransitions.add(
-      FSATransition.epsilon(
-        id: _newTransId('t_eps'),
-        fromState: acceptingState,
-        toState: childNFA.initialState!,
-      ),
-    );
+FSAKleeneStarResult _applyKleeneStarToFragment(FSA childNFA) {
+  final result = FSAKleeneStar.apply(childNFA);
+  if (result.isFailure) {
+    throw StateError(result.error ?? 'FSA Kleene-star construction failed.');
   }
-
-  return FSA(
-    id: 'kleene_${now.millisecondsSinceEpoch}',
-    name: 'Kleene Star',
-    states: allStates,
-    transitions: allTransitions,
-    alphabet: childNFA.alphabet,
-    initialState: newInitial,
-    acceptingStates: {newFinal, newInitial},
-    created: now,
-    modified: now,
-    bounds: const math.Rectangle(0, 0, 800, 600),
-  );
+  return result.data!;
 }
 
 /// Builds NFA for plus (+)
@@ -356,73 +299,12 @@ FSA _buildPlusFromFragment(FSA childNFA) {
   );
 }
 
-/// Concatenates two pre-built NFAs
-FSA _concatenateAutomata(FSA leftNFA, FSA rightNFA) {
-  final rightInitial = rightNFA.initialState;
-  if (rightInitial == null) {
-    throw ArgumentError(
-      'Right automaton must have an initial state for concatenation',
-    );
+FSAConcatenationResult _concatenateFragments(FSA leftNFA, FSA rightNFA) {
+  final result = FSAConcatenator.concatenate(leftNFA, rightNFA);
+  if (result.isFailure) {
+    throw StateError(result.error ?? 'FSA concatenation failed.');
   }
-
-  final allStates = <State>{...leftNFA.states, ...rightNFA.states};
-  final allTransitions = <FSATransition>{
-    ...leftNFA.fsaTransitions,
-    ...rightNFA.fsaTransitions,
-  };
-
-  int epsilonIndex = 0;
-  for (final acceptingState in leftNFA.acceptingStates) {
-    allTransitions.add(
-      FSATransition.epsilon(
-        id: 't_eps_concat_${acceptingState.id}_${rightInitial.id}_${epsilonIndex++}',
-        fromState: acceptingState,
-        toState: rightInitial,
-      ),
-    );
-  }
-
-  final created = leftNFA.created.isBefore(rightNFA.created)
-      ? leftNFA.created
-      : rightNFA.created;
-  final modified = leftNFA.modified.isAfter(rightNFA.modified)
-      ? leftNFA.modified
-      : rightNFA.modified;
-  final bounds = _combineBounds(leftNFA.bounds, rightNFA.bounds);
-
-  return FSA(
-    id: 'concat_${DateTime.now().millisecondsSinceEpoch}',
-    name: 'Concatenation',
-    states: allStates,
-    transitions: allTransitions,
-    alphabet: leftNFA.alphabet.union(rightNFA.alphabet),
-    initialState: leftNFA.initialState,
-    acceptingStates: Set<State>.from(rightNFA.acceptingStates),
-    created: created,
-    modified: modified,
-    bounds: bounds,
-  );
-}
-
-math.Rectangle<double> _combineBounds(
-  math.Rectangle leftBounds,
-  math.Rectangle rightBounds,
-) {
-  final left = math.min(
-    leftBounds.left.toDouble(),
-    rightBounds.left.toDouble(),
-  );
-  final top = math.min(leftBounds.top.toDouble(), rightBounds.top.toDouble());
-  final right = math.max(
-    leftBounds.right.toDouble(),
-    rightBounds.right.toDouble(),
-  );
-  final bottom = math.max(
-    leftBounds.bottom.toDouble(),
-    rightBounds.bottom.toDouble(),
-  );
-
-  return math.Rectangle<double>(left, top, right - left, bottom - top);
+  return result.data!;
 }
 
 /// Builds NFA for question (?)

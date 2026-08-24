@@ -2,11 +2,11 @@
 //  cyk_parser.dart
 //  Turing Lab
 //
-//  Implementa o algoritmo CYK para gramáticas em Forma Normal de Chomsky,
-//  incluindo a preparação da gramática em CNF, construção de tabela dinâmica e
-//  reconstrução opcional da derivação. Trata o caso da palavra vazia, registra
-//  apontadores de retrocesso e retorna resultados estruturados com árvore de
-//  derivação quando a sentença é aceita.
+//  Implements the CYK algorithm for grammars in Chomsky Normal Form,
+//  including CNF preparation, dynamic-programming table construction, and
+//  optional derivation reconstruction. Handles the empty word, records
+//  back-pointers, and returns structured results with a derivation tree
+//  when the sentence is accepted.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -14,6 +14,7 @@ import '../../models/grammar.dart';
 import '../../models/cyk_step.dart';
 import '../../result.dart';
 import '../grammar_cnf_transformer.dart';
+import '../grammar_input_tokenizer.dart';
 
 /// CYK parser for CFGs in CNF. Builds parse table and derivation tree.
 class CYKParser {
@@ -35,8 +36,16 @@ class CYKParser {
       final initialTimeout = timeoutFailure();
       if (initialTimeout != null) return initialTimeout;
 
+      final tokenResult = GrammarInputTokenizer.tokenize(g, input);
+      if (tokenResult.isFailure) {
+        return ResultFactory.success(
+          const CYKResult(accepted: false, table: [], derivation: null),
+        );
+      }
+      final tokens = tokenResult.data!;
+
       // Handle empty string using nullable analysis (original grammar)
-      if (input.isEmpty) {
+      if (tokens.isEmpty) {
         final acceptsEmpty = g.nullableNonterminals.contains(g.startSymbol);
         return ResultFactory.success(
           CYKResult(
@@ -53,7 +62,7 @@ class CYKParser {
       final conversionTimeout = timeoutFailure();
       if (conversionTimeout != null) return conversionTimeout;
 
-      final n = input.length;
+      final n = tokens.length;
       final table = List.generate(
         n,
         (i) => List.generate(n, (j) => <String>{}),
@@ -86,7 +95,7 @@ class CYKParser {
       for (int i = 0; i < n; i++) {
         final baseTimeout = timeoutFailure();
         if (baseTimeout != null) return baseTimeout;
-        final a = input[i];
+        final a = tokens[i].lexeme;
         for (final A in unary[a] ?? const <String>{}) {
           table[i][0].add(A);
           back[i][0][A] = CYKBackptr.leaf(a);
@@ -170,11 +179,26 @@ class CYKParser {
       final initialTimeout = timeoutFailure();
       if (initialTimeout != null) return initialTimeout;
 
+      final tokenResult = GrammarInputTokenizer.tokenize(g, input);
+      if (tokenResult.isFailure) {
+        stopwatch.stop();
+        return ResultFactory.success(
+          CYKParseResult(
+            accepted: false,
+            table: const [],
+            derivation: null,
+            steps: const [],
+            executionTime: stopwatch.elapsed,
+          ),
+        );
+      }
+      final tokens = tokenResult.data!;
+
       final steps = <CYKStep>[];
       int stepCounter = 1;
 
       // Handle empty string using nullable analysis (original grammar)
-      if (input.isEmpty) {
+      if (tokens.isEmpty) {
         final acceptsEmpty = g.nullableNonterminals.contains(g.startSymbol);
         steps.add(
           CYKStep.initialize(
@@ -213,7 +237,7 @@ class CYKParser {
       final conversionTimeout = timeoutFailure();
       if (conversionTimeout != null) return conversionTimeout;
 
-      final n = input.length;
+      final n = tokens.length;
       final table = List.generate(
         n,
         (i) => List.generate(n, (j) => <String>{}),
@@ -256,7 +280,7 @@ class CYKParser {
       for (int i = 0; i < n; i++) {
         final baseTimeout = timeoutFailure();
         if (baseTimeout != null) return baseTimeout;
-        final a = input[i];
+        final a = tokens[i].lexeme;
         final derivingVars = unary[a] ?? const <String>{};
         for (final A in derivingVars) {
           table[i][0].add(A);
@@ -283,7 +307,8 @@ class CYKParser {
           final cellTimeout = timeoutFailure();
           if (cellTimeout != null) return cellTimeout;
           final j = len - 1; // column width
-          final substring = input.substring(i, i + len);
+          final substring =
+              tokens.sublist(i, i + len).map((token) => token.lexeme).join();
 
           // Capture process cell step
           steps.add(
@@ -304,6 +329,14 @@ class CYKParser {
             final rightWidth = len - split - 1;
             final leftNTs = Set<String>.from(table[i][leftWidth]);
             final rightNTs = Set<String>.from(table[i + split][rightWidth]);
+            final leftSubstring = tokens
+                .sublist(i, i + split)
+                .map((token) => token.lexeme)
+                .join();
+            final rightSubstring = tokens
+                .sublist(i + split, i + len)
+                .map((token) => token.lexeme)
+                .join();
 
             // Capture check split step
             steps.add(
@@ -313,7 +346,10 @@ class CYKParser {
                 row: j,
                 col: i,
                 substring: substring,
+                substringLength: len,
                 splitPoint: split - 1,
+                leftSubstring: leftSubstring,
+                rightSubstring: rightSubstring,
                 leftRow: leftWidth,
                 leftCol: i,
                 rightRow: rightWidth,
@@ -351,6 +387,7 @@ class CYKParser {
                         leftVar: B,
                         rightVar: C,
                         substring: substring,
+                        substringLength: len,
                       ),
                     );
                   }
@@ -367,6 +404,7 @@ class CYKParser {
               row: j,
               col: i,
               substring: substring,
+              substringLength: len,
               cellNonTerminals: Set.from(table[i][j]),
             ),
           );

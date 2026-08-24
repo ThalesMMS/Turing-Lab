@@ -150,20 +150,20 @@ PDAReachabilityAnalysis _analyzeReachability(
   );
 }
 
-/// Recursively finds reachable states
+/// Finds states reachable within the configured input-length bound.
 void _findReachableStates(
   PDA pda,
   State currentState,
   Set<State> reachableStates, {
-  int maxInputLength = 1 << 30,
-  _PDAAnalysisDeadline? deadline,
+  required int maxInputLength,
+  required _PDAAnalysisDeadline deadline,
 }) {
   final queue = Queue<({State state, int inputLength})>()
     ..add((state: currentState, inputLength: 0));
   final seen = <String>{};
 
   while (queue.isNotEmpty) {
-    deadline?.check();
+    deadline.check();
     final current = queue.removeFirst();
     final key = '${current.state.id}|${current.inputLength}';
     if (!seen.add(key)) {
@@ -199,68 +199,4 @@ int _transitionInputLength(Transition transition) {
         .reduce((a, b) => a < b ? a : b);
   }
   return transition.label.length;
-}
-
-/// Finds all states that can eventually reach an accepting state.
-Set<State> _findProductiveStates(PDA pda) {
-  final productiveStates = <State>{};
-  final workQueue = Queue<State>();
-
-  for (final accepting in pda.acceptingStates) {
-    if (productiveStates.add(accepting)) {
-      workQueue.add(accepting);
-    }
-  }
-
-  while (workQueue.isNotEmpty) {
-    final current = workQueue.removeFirst();
-    for (final transition in pda.transitions) {
-      if (transition.toState == current) {
-        if (productiveStates.add(transition.fromState)) {
-          workQueue.add(transition.fromState);
-        }
-      }
-    }
-  }
-
-  return productiveStates;
-}
-
-String _stateSignature(
-  State state,
-  List<Transition> transitions,
-  Map<String, String> mergeTargets,
-  Map<String, State> canonicalStateMap,
-) {
-  final outgoing = transitions
-      .where((transition) => transition.fromState.id == state.id)
-      .map((transition) {
-    final canonicalToId =
-        mergeTargets[transition.toState.id] ?? transition.toState.id;
-    final canonicalTo = canonicalStateMap[canonicalToId];
-    final toId = canonicalTo?.id ?? canonicalToId;
-    return '$toId|${_transitionPayloadKey(transition)}';
-  }).toList()
-    ..sort();
-
-  return '${state.isInitial}|${state.isAccepting}|${outgoing.join(';')}';
-}
-
-String _transitionKey(Transition transition) {
-  return '${transition.fromState.id}|${transition.toState.id}|${_transitionPayloadKey(transition)}';
-}
-
-String _transitionPayloadKey(Transition transition) {
-  if (transition is PDATransition) {
-    final input = transition.isLambdaInput ? 'λ' : transition.inputSymbol;
-    final pop = transition.isLambdaPop ? 'λ' : transition.popSymbol;
-    final push = transition.isLambdaPush ? 'λ' : transition.pushSymbol;
-    return 'pda|$input|$pop|$push';
-  }
-  if (transition is FSATransition) {
-    final symbols = transition.inputSymbols.toList()..sort();
-    final input = transition.lambdaSymbol ?? symbols.join(',');
-    return 'fsa|$input';
-  }
-  return '${transition.runtimeType}|${transition.label}';
 }

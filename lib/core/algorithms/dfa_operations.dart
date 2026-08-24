@@ -2,11 +2,11 @@
 //  dfa_operations.dart
 //  Turing Lab
 //
-//  Consolida operações de alto nível sobre autômatos determinísticos, cobrindo
-//  complementação, construções de produto para união/interseção/diferença e
-//  fechamentos por prefixos e sufixos. Inclui validações detalhadas, normaliza
-//  alfabetos via completude e delega determinização quando necessário para
-//  preservar corretude formal dos resultados retornados.
+//  Consolidates high-level operations on deterministic automata, covering
+//  complementation, product constructions for union/intersection/difference, and
+//  prefix and suffix closures. Includes detailed validation, normalizes
+//  alphabets via completeness, and delegates determinization when needed to
+//  preserve the formal correctness of returned results.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

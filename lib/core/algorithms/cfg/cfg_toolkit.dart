@@ -2,12 +2,12 @@
 //  cfg_toolkit.dart
 //  Turing Lab
 //
-//  Agrupa utilitários para manipulação de gramáticas livres de contexto,
-//  oferecendo redução estrutural, conversão para Forma Normal de Chomsky (CNF)
-//  e Forma Normal de Greibach (GNF), além de verificações rápidas dessas
-//  normalizações. Reaproveita operações privadas para eliminar produções lambda
-//  e unitárias, além de remover símbolos inúteis, produzindo gramáticas
-//  equivalentes mais enxutas para análises subsequentes.
+//  Groups utilities for manipulating context-free grammars, offering
+//  structural reduction, conversion to Chomsky Normal Form (CNF) and
+//  Greibach Normal Form (GNF), plus fast checks of those normalizations.
+//  Reuses private operations to eliminate lambda and unit productions and
+//  to remove useless symbols, producing leaner equivalent grammars for
+//  subsequent analyses.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,11 +2,11 @@
 //  fa_to_regex_converter.dart
 //  Turing Lab
 //
-//  Implementa o método de eliminação de estados para converter autômatos
-//  finitos em expressões regulares equivalentes. Normaliza a estrutura para
-//  possuir estados iniciais e finais únicos, valida integridade do autômato e
-//  aplica manipulações iterativas de transições para gerar a expressão
-//  resultante encapsulada em `Result`.
+//  Implements the state-elimination method to convert finite automata into
+//  equivalent regular expressions. Normalizes the structure so that there
+//  are unique initial and final states, validates automaton integrity, and
+//  iteratively rewrites transitions to produce the resulting expression
+//  wrapped in `Result`.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
