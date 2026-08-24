@@ -2,10 +2,10 @@
 //  pda_transition.dart
 //  Turing Lab
 //
-//  Representa transições de PDAs, controlando símbolos de leitura, operações de
-//  pilha e marcadores lambda para suportar comportamentos não determinísticos.
-//  Disponibiliza clonagem, serialização completa e validações rigorosas sobre
-//  consistência de símbolos e estados ligados à transição.
+//  Represents PDA transitions, controlling read symbols, stack operations,
+//  and lambda markers to support nondeterministic behavior. Provides cloning,
+//  full serialization, and strict validations of symbol and state consistency
+//  for the transition.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

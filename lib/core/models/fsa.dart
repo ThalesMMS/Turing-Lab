@@ -2,11 +2,10 @@
 //  fsa.dart
 //  Turing Lab
 //
-//  Define o modelo de Autômato Finito, herdando da infraestrutura genérica e
-//  adicionando serialização, cópias e validações específicas de transições e
-//  determinismo.
-//  Facilita a persistência, importação e análise de máquinas ao padronizar
-//  formatos JSON, parâmetros de layout e integrações com simuladores.
+//  Defines the Finite Automaton model, inheriting generic infrastructure and
+//  adding serialization, copies, and transition- and determinism-specific
+//  validations. Facilitates persistence, import, and analysis of machines by
+//  standardizing JSON formats, layout parameters, and simulator integrations.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

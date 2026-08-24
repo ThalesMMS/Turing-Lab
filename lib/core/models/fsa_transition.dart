@@ -2,11 +2,10 @@
 //  fsa_transition.dart
 //  Turing Lab
 //
-//  Modelo de transição para autômatos finitos que deriva Transition e adiciona
-//  controle de símbolos de entrada, suporte a epsilon e serialização própria.
-//  Calcula rótulos e tipos automaticamente com base nos símbolos fornecidos,
-//  além de validar combinações ilegais para manter coerência das máquinas
-//  manipuladas pelo editor.
+//  Finite-automaton transition model that extends Transition and adds input
+//  symbol control, epsilon support, and its own serialization. Computes
+//  labels and types automatically from the given symbols and validates
+//  illegal combinations to keep editor-managed machines consistent.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,10 +2,10 @@
 //  state.dart
 //  Turing Lab
 //
-//  Define o modelo imutável de estados de autômatos com coordenadas, marcadores
-//  de inicialização, aceitação e propriedades adicionais para cada tipo de
-//  máquina. Inclui rotinas de serialização, validação e utilitários voltados a
-//  interações no canvas móvel, garantindo consistência nas simulações.
+//  Defines the immutable automaton-state model with coordinates, initial and
+//  accepting markers, and extra properties for each machine type. Includes
+//  serialization, validation, and utilities aimed at mobile canvas
+//  interactions, keeping simulations consistent.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

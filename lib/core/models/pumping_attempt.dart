@@ -2,7 +2,10 @@
 //  pumping_attempt.dart
 //  Turing Lab
 //
-//  Representa uma tentativa no jogo do Lema do Bombeamento, controlando decomposição x,y,z, feedback e datação. Expõe fábricas para tentativas corretas ou incorretas, validações e utilitários para reconstruir cadeias bombeadas durante a experiência interativa.
+//  Represents an attempt in the Pumping Lemma game, controlling x,y,z
+//  decomposition, feedback, and timestamps. Exposes factories for correct or
+//  incorrect attempts, validations, and utilities to rebuild pumped strings
+//  during the interactive experience.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

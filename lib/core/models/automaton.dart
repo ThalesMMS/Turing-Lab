@@ -2,11 +2,11 @@
 //  automaton.dart
 //  Turing Lab
 //
-//  Classe base abstrata que representa autômatos no domínio do aplicativo,
-//  mantendo coleções imutáveis de estados, transições, alfabetos e metadados de
-//  visualização. Define contratos de clonagem, serialização e validação comum
-//  para FSA, PDA e TM, além de oferecer fábricas que instanciam tipos concretos
-//  a partir de descrições JSON.
+//  Abstract base class representing automata in the application domain,
+//  keeping immutable collections of states, transitions, alphabets, and
+//  visualization metadata. Defines cloning, serialization, and common
+//  validation contracts for FSA, PDA, and TM, plus factories that instantiate
+//  concrete types from JSON descriptions.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

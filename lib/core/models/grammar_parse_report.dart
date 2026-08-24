@@ -5,6 +5,7 @@
 //  Structured feedback for grammar parse attempts.
 //
 import 'derivation_tree.dart';
+import 'll1_parse_step.dart';
 
 /// Structured feedback for a grammar parse attempt.
 ///
@@ -40,6 +41,9 @@ class GrammarParseReport {
   /// Total execution time for the parse attempt.
   final Duration executionTime;
 
+  /// Predictive-parser trace when the selected strategy is LL(1).
+  final List<LL1ParseStep> ll1Steps;
+
   const GrammarParseReport({
     required this.inputString,
     required this.accepted,
@@ -49,6 +53,7 @@ class GrammarParseReport {
     required this.trees,
     required this.isAmbiguous,
     required this.executionTime,
+    this.ll1Steps = const <LL1ParseStep>[],
   });
 
   factory GrammarParseReport.accepted({
@@ -56,6 +61,7 @@ class GrammarParseReport {
     required Duration executionTime,
     List<DerivationTree> trees = const <DerivationTree>[],
     bool isAmbiguous = false,
+    List<LL1ParseStep> ll1Steps = const <LL1ParseStep>[],
   }) {
     return GrammarParseReport(
       inputString: inputString,
@@ -66,6 +72,7 @@ class GrammarParseReport {
       trees: trees,
       isAmbiguous: isAmbiguous,
       executionTime: executionTime,
+      ll1Steps: List<LL1ParseStep>.unmodifiable(ll1Steps),
     );
   }
 
@@ -75,6 +82,7 @@ class GrammarParseReport {
     required Duration executionTime,
     Set<String> expectedSymbols = const <String>{},
     String? message,
+    List<LL1ParseStep> ll1Steps = const <LL1ParseStep>[],
   }) {
     return GrammarParseReport(
       inputString: inputString,
@@ -85,6 +93,7 @@ class GrammarParseReport {
       trees: const <DerivationTree>[],
       isAmbiguous: false,
       executionTime: executionTime,
+      ll1Steps: List<LL1ParseStep>.unmodifiable(ll1Steps),
     );
   }
 }

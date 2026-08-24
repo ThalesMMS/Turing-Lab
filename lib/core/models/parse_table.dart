@@ -2,10 +2,10 @@
 //  parse_table.dart
 //  Turing Lab
 //
-//  Representa tabelas de análise sintática para algoritmos LL e LR, mantendo
-//  ações, movimentos goto e referência à gramática associada. Disponibiliza
-//  operações de cópia, serialização e inspeção que suportam verificações de
-//  conflitos e navegação em simuladores de parsing.
+//  Represents parse tables for LL and LR algorithms, holding actions, goto
+//  moves, and a reference to the associated grammar. Provides copy,
+//  serialization, and inspection operations that support conflict checks
+//  and navigation in parsing simulators.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

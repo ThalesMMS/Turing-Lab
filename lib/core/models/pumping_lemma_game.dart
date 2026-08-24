@@ -2,10 +2,10 @@
 //  pumping_lemma_game.dart
 //  Turing Lab
 //
-//  Estrutura de domínio que modela o minigame do lema do bombeamento,
-//  relacionando autômatos finitos, tentativas do usuário, pontuação e estados
-//  de progresso. Fornece fábricas para iniciar desafios, métodos para registrar
-//  tentativas e utilidades que calculam métricas, status e igualdade profunda.
+//  Domain structure that models the pumping-lemma minigame, relating finite
+//  automata, user attempts, scoring, and progress states. Provides factories
+//  to start challenges, methods to record attempts, and utilities that
+//  compute metrics, status, and deep equality.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

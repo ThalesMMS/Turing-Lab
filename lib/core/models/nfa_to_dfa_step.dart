@@ -2,10 +2,10 @@
 //  nfa_to_dfa_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos da conversão NFA→DFA via construção por
-//  subconjuntos. Captura fechos-ε, símbolos processados, conjuntos de estados
-//  origem/destino e explicações textuais para cada etapa do algoritmo,
-//  permitindo visualização educacional passo a passo.
+//  Defines the detailed step model for NFA→DFA conversion via subset
+//  construction. Captures ε-closures, processed symbols, source/destination
+//  state sets, and textual explanations for each algorithm step, enabling
+//  educational step-by-step visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

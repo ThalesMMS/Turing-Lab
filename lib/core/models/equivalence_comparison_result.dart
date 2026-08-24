@@ -2,11 +2,11 @@
 //  equivalence_comparison_result.dart
 //  Turing Lab
 //
-//  Define o resultado detalhado da comparação de equivalência entre dois
-//  autômatos ou gramáticas. Armazena os autômatos originais, resultado da
-//  equivalência, string distinguidora (se houver), autômato produto (opcional),
-//  passos do algoritmo e tempo de execução, permitindo visualização educacional
-//  completa do processo de comparação de linguagens.
+//  Defines the detailed result of an equivalence comparison between two
+//  automata or grammars. Stores the original automata, the equivalence
+//  outcome, a distinguishing string (if any), an optional product automaton,
+//  algorithm steps, and execution time, enabling a complete educational
+//  visualization of language comparison.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

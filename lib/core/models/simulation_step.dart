@@ -2,7 +2,10 @@
 //  simulation_step.dart
 //  Turing Lab
 //
-//  Registra cada passo de simulação com estado atual, entradas restantes e artefatos específicos de PDA ou TM. Oferece cópia, serialização e campos auxiliares que documentam consumo de símbolos e aceitação para rastreamento detalhado.
+//  Records each simulation step with the current state, remaining input, and
+//  PDA- or TM-specific artifacts. Offers copy, serialization, and helper
+//  fields that document symbol consumption and acceptance for detailed
+//  tracing.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

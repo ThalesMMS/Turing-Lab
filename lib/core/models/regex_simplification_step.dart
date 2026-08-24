@@ -2,10 +2,11 @@
 //  regex_simplification_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos da simplificação de expressões regulares
-//  usando identidades algébricas. Captura a regra aplicada, subexpressão modificada,
-//  resultado da simplificação, e métricas de complexidade (star height, nesting depth)
-//  para cada etapa do algoritmo, permitindo visualização educacional passo a passo.
+//  Defines the detailed step model for regular-expression simplification
+//  using algebraic identities. Captures the applied rule, modified
+//  subexpression, simplification result, and complexity metrics (star height,
+//  nesting depth) for each algorithm step, enabling educational
+//  step-by-step visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

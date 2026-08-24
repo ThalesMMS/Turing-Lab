@@ -2,10 +2,10 @@
 //  transition.dart
 //  Turing Lab
 //
-//  Fornece a abstração base para transições de autômatos, centralizando campos
-//  comuns, operações de clonagem e utilidades de serialização dinâmica.
-//  Também agrega validações geométricas e auxiliares de cálculo utilizados por
-//  renderizadores e algoritmos que manipulam arcos no canvas.
+//  Provides the base abstraction for automaton transitions, centralizing
+//  common fields, cloning operations, and dynamic serialization utilities.
+//  Also aggregates geometric validations and calculation helpers used by
+//  renderers and algorithms that manipulate canvas arcs.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

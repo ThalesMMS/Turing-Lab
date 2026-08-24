@@ -2,11 +2,11 @@
 //  cyk_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos do algoritmo CYK (Cocke-Younger-Kasami)
-//  para parsing de gramáticas livres de contexto em Forma Normal de Chomsky.
-//  Captura o estado da tabela de parsing, células processadas, produções aplicadas,
-//  divisões de substring e não-terminais adicionados, permitindo visualização
-//  educacional passo a passo do processo de parsing bottom-up.
+//  Defines the detailed step model for the CYK (Cocke-Younger-Kasami)
+//  algorithm for parsing context-free grammars in Chomsky Normal Form.
+//  Captures parse-table state, processed cells, applied productions,
+//  substring splits, and added nonterminals, enabling educational
+//  step-by-step visualization of bottom-up parsing.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -35,13 +35,13 @@ class CYKStep {
   /// Substring being analyzed
   final String? substring;
 
-  /// Start index of substring in original input string
+  /// Start token index of the substring in the tokenized input
   final int? substringStart;
 
-  /// Length of substring being processed
+  /// Number of grammar tokens in the substring being processed
   final int? substringLength;
 
-  /// Split point being checked (0 to length-1)
+  /// Token split point being checked (0 to length-1)
   final int? splitPoint;
 
   /// Row of left cell in split
@@ -194,14 +194,14 @@ class CYKStep {
         stepNumber: stepNumber,
         title: 'Initialize CYK table',
         explanation:
-            'Initializing CYK parse table for input string "$inputString" (length $tableSize). '
+            'Initializing CYK parse table for input string "$inputString" ($tableSize tokens). '
             'The table is a triangular matrix where cell [i][j] will contain all non-terminals '
-            'that can derive the substring of length i+1 starting at position j.',
+            'that can derive the substring of i+1 tokens starting at token position j.',
         stepExplanation: StepExplanation(
           title: 'Initialize CYK table',
           bullets: [
-            'Input: "$inputString" (length $tableSize).',
-            'We create an empty triangular table: cell [i][j] stores non-terminals that derive the substring of length i+1 starting at j.',
+            'Input: "$inputString" ($tableSize tokens).',
+            'We create an empty triangular table: cell [i][j] stores non-terminals that derive the substring of i+1 tokens starting at token position j.',
           ],
           categories: const [ExplanationCategory.grammarDerivation],
         ),
@@ -278,12 +278,12 @@ class CYKStep {
         stepNumber: stepNumber,
         title: 'Process cell [$row][$col]',
         explanation:
-            'Processing substring "$substring" of length $length starting at position $col. '
+            'Processing substring "$substring" of $length tokens starting at token position $col. '
             'We will try all possible ways to split this substring and check if any productions apply.',
         stepExplanation: StepExplanation(
           title: 'Process substring "$substring"',
           bullets: [
-            'We are filling table cell [$row][$col] for substring length $length.',
+            'We are filling table cell [$row][$col] for a substring of $length tokens.',
             'Try all split points and apply productions A → B C where B derives the left part and C derives the right part.',
           ],
           categories: const [ExplanationCategory.grammarDerivation],
@@ -306,7 +306,10 @@ class CYKStep {
     required int row,
     required int col,
     required String substring,
+    required int substringLength,
     required int splitPoint,
+    required String leftSubstring,
+    required String rightSubstring,
     required int leftRow,
     required int leftCol,
     required int rightRow,
@@ -318,21 +321,17 @@ class CYKStep {
         leftNonTerminals.isEmpty ? '∅' : leftNonTerminals.join(', ');
     final rightVars =
         rightNonTerminals.isEmpty ? '∅' : rightNonTerminals.join(', ');
-    final leftLen = splitPoint + 1;
-    final leftSub = substring.substring(0, leftLen);
-    final rightSub = substring.substring(leftLen);
-
     return CYKStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Check split at position $splitPoint',
         explanation:
-            'Splitting "$substring" into "$leftSub" (cell [$leftRow][$leftCol]) and "$rightSub" (cell [$rightRow][$rightCol]). '
+            'Splitting "$substring" into "$leftSubstring" (cell [$leftRow][$leftCol]) and "$rightSubstring" (cell [$rightRow][$rightCol]). '
             'Left cell contains: {$leftVars}. Right cell contains: {$rightVars}. '
             'Looking for productions of the form A → B C where B ∈ left and C ∈ right.',
         stepExplanation: StepExplanation(
-          title: 'Try split "$leftSub" | "$rightSub"',
+          title: 'Try split "$leftSubstring" | "$rightSubstring"',
           bullets: [
             'Left part (cell [$leftRow][$leftCol]) has {$leftVars}.',
             'Right part (cell [$rightRow][$rightCol]) has {$rightVars}.',
@@ -347,7 +346,7 @@ class CYKStep {
       currentCol: col,
       substring: substring,
       substringStart: col,
-      substringLength: substring.length,
+      substringLength: substringLength,
       splitPoint: splitPoint,
       leftRow: leftRow,
       leftCol: leftCol,
@@ -368,6 +367,7 @@ class CYKStep {
     required String leftVar,
     required String rightVar,
     required String substring,
+    required int substringLength,
   }) {
     return CYKStep(
       baseStep: AlgorithmStep(
@@ -402,7 +402,7 @@ class CYKStep {
       currentCol: col,
       substring: substring,
       substringStart: col,
-      substringLength: substring.length,
+      substringLength: substringLength,
       production: '$variable → $leftVar $rightVar',
       productionLeft: variable,
       productionRight: [leftVar, rightVar],
@@ -418,6 +418,7 @@ class CYKStep {
     required int row,
     required int col,
     required String substring,
+    required int substringLength,
     required Set<String> cellNonTerminals,
   }) {
     final varList =
@@ -448,7 +449,7 @@ class CYKStep {
       currentCol: col,
       substring: substring,
       substringStart: col,
-      substringLength: substring.length,
+      substringLength: substringLength,
       cellNonTerminals: cellNonTerminals,
     );
   }

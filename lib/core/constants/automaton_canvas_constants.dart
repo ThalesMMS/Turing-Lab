@@ -2,10 +2,9 @@
 //  automaton_canvas_constants.dart
 //  Turing Lab
 //
-//  Armazena constantes de layout utilizadas pelos widgets do canvas de
-//  autômatos, padronizando dimensões e espaçamentos entre plataformas e
-//  garantindo uma experiência consistente na renderização interativa.
-//  Valores fixos centralizam ajustes e reduzem duplicidade de configurações.
+//  Stores layout constants used by automaton canvas widgets, standardizing
+//  dimensions and spacing across platforms and keeping interactive rendering
+//  consistent. Fixed values centralize tuning and reduce duplicated settings.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

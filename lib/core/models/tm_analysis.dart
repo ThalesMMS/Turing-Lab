@@ -2,11 +2,10 @@
 //  tm_analysis.dart
 //  Turing Lab
 //
-//  Estruturas imutáveis que armazenam métricas de análises sobre máquinas de
-//  Turing, separando estatísticas de estados, transições, operações de fita e
-//  alcançabilidade. O conjunto serve de retorno padronizado para rotinas de
-//  diagnóstico, mantendo duração de execução e conjuntos calculados prontos
-//  para visualização.
+//  Immutable structures that store Turing-machine analysis metrics, separating
+//  state, transition, tape-operation, and reachability statistics. The set is
+//  the standardized return type for diagnostic routines, keeping execution
+//  duration and computed sets ready for visualization.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

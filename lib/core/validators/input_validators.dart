@@ -2,12 +2,12 @@
 //  input_validators.dart
 //  Turing Lab
 //
-//  Centraliza verificações estáticas para autômatos finitos, de pilha, máquinas
-//  de Turing e gramáticas, garantindo que estruturas carregadas respeitem
-//  restrições básicas antes de serem simuladas ou convertidas. Inspeciona
-//  alfabetos, estados, transições e símbolos iniciais, reportando códigos de
-//  problema descritivos para cada inconsistência encontrada. Serve como camada
-//  de defesa que orienta correções na modelagem dos objetos acadêmicos.
+//  Centralizes static checks for finite automata, pushdown automata, Turing
+//  machines, and grammars, ensuring loaded structures satisfy basic
+//  constraints before they are simulated or converted. Inspects alphabets,
+//  states, transitions, and initial symbols, reporting descriptive issue
+//  codes for each inconsistency. Serves as a defense layer that guides
+//  corrections in academic object modeling.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -2,10 +2,10 @@
 //  tm_transition.dart
 //  Turing Lab
 //
-//  Modela transições de Máquinas de Turing incluindo leitura, escrita, direção
-//  de movimento e metadados de fita única.
-//  Suporta clonagem, serialização e validações que asseguram símbolos válidos e
-//  movimentos coerentes com a definição da máquina.
+//  Models Turing-machine transitions including read, write, move direction,
+//  and single-tape metadata. Supports cloning, serialization, and
+//  validations that ensure valid symbols and moves consistent with the
+//  machine definition.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

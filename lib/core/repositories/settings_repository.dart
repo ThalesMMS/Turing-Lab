@@ -2,10 +2,9 @@
 //  settings_repository.dart
 //  Turing Lab
 //
-//  Define a interface de acesso às configurações salvas do usuário,
-//  padronizando como preferências são carregadas e persistidas entre sessões.
-//  Serve como ponto de extensão para provedores concretos de armazenamento
-//  local ou remoto.
+//  Defines the access interface for saved user settings, standardizing how
+//  preferences are loaded and persisted across sessions. Serves as an
+//  extension point for concrete local or remote storage providers.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

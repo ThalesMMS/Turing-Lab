@@ -2,10 +2,10 @@
 //  fa_to_regex_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos da conversão FA→Regex via eliminação de
-//  estados. Captura estado eliminado, transições de entrada/saída, loops
-//  próprios, expressões regex intermediárias e combinações de caminhos para
-//  cada etapa do algoritmo, permitindo visualização educacional passo a passo.
+//  Defines the detailed step model for FA→Regex conversion via state
+//  elimination. Captures the eliminated state, incoming/outgoing transitions,
+//  self-loops, intermediate regex expressions, and path combinations for
+//  each algorithm step, enabling educational step-by-step visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,10 +2,10 @@
 //  settings_model.dart
 //  Turing Lab
 //
-//  Estrutura leve que representa as preferências persistidas do aplicativo,
-//  controlando símbolos especiais, preferências de interface e tamanhos de
-//  elementos. Garante valores padrão coesos, permite cópias imutáveis e facilita
-//  comparações para atualizar provedores de configuração.
+//  Lightweight structure representing persisted application preferences,
+//  controlling special symbols, interface preferences, and element sizes.
+//  Ensures cohesive defaults, allows immutable copies, and facilitates
+//  comparisons when updating configuration providers.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

@@ -37,4 +37,5 @@ enum ExampleCategory {
   cfg,
   pda,
   tm,
+  regex,
 }

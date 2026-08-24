@@ -2,10 +2,10 @@
 //  dfa_minimization_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos da minimização de DFA via algoritmo de
-//  Hopcroft. Captura partições, classes de equivalência, símbolos distinguidores,
-//  predecessores e refinamentos de partição para cada etapa, permitindo
-//  visualização educacional passo a passo do processo de minimização.
+//  Defines the detailed step model for DFA minimization via Hopcroft's
+//  algorithm. Captures partitions, equivalence classes, distinguishing
+//  symbols, predecessors, and partition refinements for each stage, enabling
+//  educational step-by-step visualization of minimization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

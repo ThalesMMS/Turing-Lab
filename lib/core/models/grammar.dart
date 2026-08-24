@@ -2,11 +2,10 @@
 //  grammar.dart
 //  Turing Lab
 //
-//  Estrutura de dados que modela gramáticas formais com conjuntos de símbolos,
-//  produções e metadados temporais, oferecendo cópias imutáveis e suporte a
-//  serialização. O tipo de gramática é preservado e validado para garantir
-//  consistência dos algoritmos de parsing, enquanto regras são verificadas
-//  contra símbolos declarados.
+//  Data structure that models formal grammars with symbol sets, productions,
+//  and temporal metadata, offering immutable copies and serialization
+//  support. The grammar type is preserved and validated for parsing-algorithm
+//  consistency, while rules are checked against declared symbols.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

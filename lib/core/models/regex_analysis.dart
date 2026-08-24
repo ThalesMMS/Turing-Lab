@@ -2,11 +2,11 @@
 //  regex_analysis.dart
 //  Turing Lab
 //
-//  Estruturas imutáveis que armazenam métricas de análise de complexidade
-//  para expressões regulares, incluindo star height, nesting depth, contagem
-//  de operadores, tamanho do alfabeto e strings de exemplo. Serve como retorno
-//  padronizado para o RegexAnalyzer, mantendo todas as métricas calculadas
-//  prontas para visualização educacional.
+//  Immutable structures that store complexity-analysis metrics for regular
+//  expressions, including star height, nesting depth, operator counts,
+//  alphabet size, and sample strings. Serves as the standardized return type
+//  for RegexAnalyzer, keeping all computed metrics ready for educational
+//  visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

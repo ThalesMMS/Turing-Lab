@@ -2,11 +2,10 @@
 //  nfa_computation_tree.dart
 //  Turing Lab
 //
-//  Modela a árvore de computação completa de um NFA, armazenando o nó raiz,
-//  metadados sobre a simulação e oferecendo métodos de travessia, análise
-//  de aceitação e estatísticas sobre caminhos. Permite visualização educacional
-//  de não determinismo através de estruturas em árvore, rastreamento de becos
-//  sem saída e identificação de caminhos de sucesso.
+//  Models the complete NFA computation tree, storing the root node, simulation
+//  metadata, and offering traversal, acceptance analysis, and path statistics.
+//  Enables educational visualization of nondeterminism via tree structures,
+//  dead-end tracking, and identification of accepting paths.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

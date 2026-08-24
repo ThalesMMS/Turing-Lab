@@ -2,11 +2,11 @@
 //  regex_to_nfa_step.dart
 //  Turing Lab
 //
-//  Define o modelo detalhado de passos da conversão Regex→NFA via construção de
-//  Thompson. Captura fragmentos de regex, operações (símbolo básico, concatenação,
-//  união, estrela de Kleene), estados e transições criadas, e pilha de fragmentos
-//  NFA para cada etapa do algoritmo, permitindo visualização educacional passo a
-//  passo.
+//  Defines the detailed step model for Regex→NFA conversion via Thompson's
+//  construction. Captures regex fragments, operations (basic symbol,
+//  concatenation, union, Kleene star), created states and transitions, and
+//  the NFA fragment stack for each algorithm step, enabling educational
+//  step-by-step visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -331,7 +331,7 @@ class RegexToNFAStep {
             'Applying Kleene star to fragment "$fragmentLabel" at position $position. '
             'Popping fragment from stack. Creating new start state ${newStart.label} and accept state ${newAccept.label}. '
             'Adding ε-transitions: (1) ${newStart.label} → ${oldStart.label} to enter the loop, '
-            '(2) ${newStart.label} → ${newAccept.label} to skip the loop (zero iterations), '
+            '(2) the new start state is accepting to allow zero iterations, '
             '(3) each old accept state ($oldAcceptLabels) → ${oldStart.label} to repeat the loop, '
             '(4) each old accept state ($oldAcceptLabels) → ${newAccept.label} to exit the loop. '
             'This allows zero or more repetitions of the pattern.',

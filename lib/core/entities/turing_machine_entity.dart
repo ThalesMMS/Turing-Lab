@@ -2,10 +2,10 @@
 //  turing_machine_entity.dart
 //  Turing Lab
 //
-//  Modela a entidade de domínio para máquinas de Turing, abrangendo alfabetos,
-//  estados, transições e atributos de aceitação necessários para análises
-//  formais. Fornece coleções e utilidades de acesso que sustentam simuladores e
-//  repositórios especializados.
+//  Models the domain entity for Turing machines, covering alphabets, states,
+//  transitions, and acceptance attributes needed for formal analyses.
+//  Provides collections and access utilities that support simulators and
+//  specialized repositories.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

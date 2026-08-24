@@ -2,11 +2,11 @@
 //  algorithm_step_highlight_service.dart
 //  Turing Lab
 //
-//  Orquestra a emissão de destaques de passos de algoritmos com suporte a canais
-//  plugáveis e dispatchers legados, oferecendo provedores Riverpod para integração
-//  com o canvas. Extrai conjuntos de estados e transições relevantes por passo,
-//  registra eventos em modo debug e disponibiliza utilidades para reemitir ou
-//  limpar seleções durante visualização passo a passo de algoritmos.
+//  Orchestrates emission of algorithm-step highlights with pluggable channels
+//  and legacy dispatchers, offering Riverpod providers for canvas
+//  integration. Extracts relevant state and transition sets per step, logs
+//  debug events, and provides utilities to re-emit or clear selections during
+//  step-by-step algorithm visualization.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

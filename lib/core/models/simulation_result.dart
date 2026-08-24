@@ -2,10 +2,10 @@
 //  simulation_result.dart
 //  Turing Lab
 //
-//  Modela o resultado das simulações de autômatos, armazenando entrada,
-//  aceitação, passos detalhados, mensagens de erro e métricas de execução.
-//  Oferece fábricas para diferentes cenários (sucesso, falha, timeout ou laço)
-//  além de utilidades de serialização e análises auxiliares usadas em painéis.
+//  Models automaton simulation results, storing input, acceptance, detailed
+//  steps, error messages, and execution metrics. Offers factories for
+//  different scenarios (success, failure, timeout, or loop) plus
+//  serialization utilities and helper analyses used in panels.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

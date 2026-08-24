@@ -2,11 +2,11 @@
 //  pda.dart
 //  Turing Lab
 //
-//  Implementação de autômatos com pilha que amplia Automaton com alfabeto da
-//  pilha e símbolo inicial, expondo cópias, serialização e validações
-//  específicas. Fornece utilitários para filtrar transições por tipo e garante
-//  que símbolos utilizados estejam sincronizados com a pilha, evitando erros em
-//  simulações e exportações.
+//  Pushdown-automaton implementation that extends Automaton with a stack
+//  alphabet and initial stack symbol, exposing copies, serialization, and
+//  specific validations. Provides utilities to filter transitions by type
+//  and keeps used symbols in sync with the stack, avoiding simulation and
+//  export errors.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

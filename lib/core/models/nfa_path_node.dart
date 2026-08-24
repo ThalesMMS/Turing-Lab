@@ -2,11 +2,11 @@
 //  nfa_path_node.dart
 //  Turing Lab
 //
-//  Representa um nó na árvore de computação de um NFA, capturando o estado
-//  atual, entrada restante, transição utilizada e ramificações filhas. Permite
-//  rastreamento completo de caminhos não determinísticos, identificação de becos
-//  sem saída e serialização para visualização em árvore. Oferece métodos auxiliares
-//  para travessia e análise de aceitação.
+//  Represents a node in an NFA computation tree, capturing the current
+//  state, remaining input, used transition, and child branches. Enables full
+//  tracking of nondeterministic paths, dead-end identification, and
+//  serialization for tree visualization. Offers helper methods for traversal
+//  and acceptance analysis.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //

@@ -2,10 +2,10 @@
 //  simulation_highlight_service.dart
 //  Turing Lab
 //
-//  Orquestra a emissão de destaques de simulação com suporte a canais plugáveis e
-//  dispatchers legados, oferecendo provedores Riverpod para integração com o canvas.
-//  Constrói conjuntos de estados e transições relevantes por passo, registra eventos
-//  em modo debug e disponibiliza utilidades para reemitir ou limpar seleções.
+//  Orchestrates emission of simulation highlights with pluggable channels and
+//  legacy dispatchers, offering Riverpod providers for canvas integration.
+//  Builds relevant state and transition sets per step, logs debug events, and
+//  provides utilities to re-emit or clear selections.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

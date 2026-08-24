@@ -2,10 +2,10 @@
 //  algorithm_step.dart
 //  Turing Lab
 //
-//  Define o modelo base para passos de algoritmos educacionais, armazenando
-//  índice, título, explicação e propriedades adicionais específicas a cada tipo
-//  de conversão (NFA→DFA, minimização, FA→Regex). Permite serialização,
-//  validação e extensão para modelos especializados de cada algoritmo.
+//  Defines the base model for educational algorithm steps, storing index,
+//  title, explanation, and extra properties specific to each conversion type
+//  (NFA→DFA, minimization, FA→Regex). Supports serialization, validation,
+//  and extension for specialized per-algorithm models.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -206,6 +206,15 @@ enum AlgorithmType {
 
   /// Regular expression simplification using algebraic identities
   regexSimplification,
+
+  /// Concatenation of two finite automata through epsilon bridges
+  fsaConcatenation,
+
+  /// Kleene star of a finite automaton through Thompson construction
+  fsaKleeneStar,
+
+  /// Reversal of a finite-automaton language through reversed transitions
+  fsaReversal,
 }
 
 /// Extension methods for AlgorithmType
@@ -225,6 +234,12 @@ extension AlgorithmTypeExtension on AlgorithmType {
         return 'CYK Parsing';
       case AlgorithmType.regexSimplification:
         return 'Regex Simplification';
+      case AlgorithmType.fsaConcatenation:
+        return 'FSA Concatenation';
+      case AlgorithmType.fsaKleeneStar:
+        return 'FSA Kleene Star';
+      case AlgorithmType.fsaReversal:
+        return 'FSA Reversal';
     }
   }
 
@@ -249,6 +264,15 @@ extension AlgorithmTypeExtension on AlgorithmType {
       case AlgorithmType.regexSimplification:
         return 'Simplifies regular expressions using algebraic identities '
             'and equivalence rules';
+      case AlgorithmType.fsaConcatenation:
+        return 'Builds an NFA for the concatenation of two finite automata '
+            'using epsilon transitions';
+      case AlgorithmType.fsaKleeneStar:
+        return 'Builds an NFA for zero or more repetitions of a finite '
+            'automaton language using Thompson construction';
+      case AlgorithmType.fsaReversal:
+        return 'Builds an NFA for the reversed language by reversing every '
+            'transition and connecting a fresh initial state';
     }
   }
 }

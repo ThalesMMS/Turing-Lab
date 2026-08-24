@@ -2,10 +2,10 @@
 //  grammar_entity.dart
 //  Turing Lab
 //
-//  Estruturas imutáveis que representam gramáticas formais com identificador,
-//  conjuntos terminais e não terminais, símbolo inicial e produções associadas.
-//  As produções encapsulam lados esquerdo e direito como listas ordenadas, facilitando
-//  a integração com conversões de autômatos e renderização de editores especializados.
+//  Immutable structures representing formal grammars with an identifier,
+//  terminal and nonterminal sets, start symbol, and associated productions.
+//  Productions encapsulate left- and right-hand sides as ordered lists,
+//  facilitating automaton conversions and specialized editor rendering.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

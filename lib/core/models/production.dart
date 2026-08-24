@@ -2,7 +2,10 @@
 //  production.dart
 //  Turing Lab
 //
-//  Modela regras de produção de gramáticas armazenando lados esquerdo e direito, flags de lambda e ordem de exibição. Inclui utilitários de cópia, serialização e comparação que suportam editores e algoritmos que manipulam gramáticas no aplicativo.
+//  Models grammar production rules storing left- and right-hand sides,
+//  lambda flags, and display order. Includes copy, serialization, and
+//  comparison utilities that support editors and algorithms that manipulate
+//  grammars in the application.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
