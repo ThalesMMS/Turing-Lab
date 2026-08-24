@@ -1,0 +1,8 @@
+{
+  "id": "example_regex_a_star",
+  "name": "Regex - Repetição de A",
+  "type": "regex",
+  "expression": "a*",
+  "alphabet": ["a"],
+  "description": "Zero ou mais ocorrências de a"
+}

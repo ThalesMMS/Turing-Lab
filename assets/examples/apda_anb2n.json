@@ -1,0 +1,45 @@
+{
+  "id": "pda_anb2n",
+  "name": "APD - a^n b^2n",
+  "type": "pda",
+  "alphabet": ["a", "b"],
+  "stackAlphabet": ["Z", "A"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 180.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 320.0,
+      "y": 180.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 540.0,
+      "y": 180.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a|Z": ["q0|AAZ"],
+    "q0|a|A": ["q0|AAA"],
+    "q0|b|A": ["q1|"],
+    "q0||Z": ["q2|"],
+    "q1|b|A": ["q1|"],
+    "q1||Z": ["q2|"]
+  },
+  "initialId": "q0",
+  "initialStack": ["Z"],
+  "finalStates": ["q2"],
+  "description": "Autômato de pilha que reconhece a linguagem a^n b^2n"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "example_regex_a_then_b",
+  "name": "Regex - Blocos de A e B",
+  "type": "regex",
+  "expression": "a*b*",
+  "alphabet": ["a", "b"],
+  "description": "Qualquer quantidade de a seguida por qualquer quantidade de b"
+}

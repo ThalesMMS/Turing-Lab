@@ -2,9 +2,9 @@
 //  app.dart
 //  Turing Lab
 //
-//  Configura o widget raiz do aplicativo com ProviderScope, definindo temas
-//  claro e escuro do Material 3 e estabelecendo a HomePage como tela inicial
-//  responsiva para todas as plataformas suportadas.
+//  Configures the app root widget with ProviderScope, defining Material 3
+//  light and dark themes and setting HomePage as the responsive home screen
+//  for all supported platforms.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

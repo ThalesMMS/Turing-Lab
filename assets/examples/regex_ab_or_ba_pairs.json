@@ -1,0 +1,8 @@
+{
+  "id": "example_regex_ab_or_ba_pairs",
+  "name": "Regex - Pares AB ou BA",
+  "type": "regex",
+  "expression": "(ab|ba)*",
+  "alphabet": ["a", "b"],
+  "description": "Zero ou mais blocos ab ou ba"
+}

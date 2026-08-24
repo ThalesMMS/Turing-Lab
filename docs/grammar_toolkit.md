@@ -10,7 +10,7 @@ The toolkit currently provides:
   - Malformed productions / symbol set problems
   - Unreachable non-terminals
   - Unproductive non-terminals
-- Parsing feedback with **farthest position**, **expected symbols**, and optional **derivation tree** on success.
+- Parsing feedback with **farthest position**, **expected symbols**, optional **derivation tree** on success, and a navigable LL(1) predictive trace.
 - Transformations with step history:
   - CNF (Chomsky Normal Form)
   - GNF (Greibach Normal Form)
@@ -80,6 +80,19 @@ In other words, the tool can reliably identify **non-LL(1)** behavior via confli
 
 ## Parse feedback
 
+Grammar input is raw text. A shared tokenizer splits it into declared terminal
+symbols before dispatch and in the direct Earley, simple-recursive, and CYK
+entry points. Tokenization uses deterministic maximal munch: longer terminals
+win, and lexical order breaks ties between terminals of equal length. Whitespace
+is not discarded. It participates only when the grammar declares it as a
+terminal.
+
+The LL(1) strategy builds the existing FIRST/FOLLOW parse table and refuses to
+run if any cell contains more than one production. For a conflict-free table it
+records every production expansion, terminal match, acceptance, or error. Each
+step includes the parser stack, remaining token stream, lookahead, and selected
+production when the action is an expansion.
+
 When you run a parse attempt, the tool returns a `GrammarParseReport` containing:
 
 - `accepted`: whether the input is accepted
@@ -100,6 +113,21 @@ All transformations return:
 - Final transformed grammar
 - `steps`: a list of `GrammarTransformationStep` entries (operation name, rationale, before/after snapshots, changed symbols/productions)
 - `diagnostics`: warnings/errors encountered during transformation
+
+### Left-recursion removal
+
+Remove Left Recursion handles direct recursion and indirect left-corner cycles.
+It processes the start symbol first. The remaining non-terminals follow the
+earliest production order, with lexical order as the fallback for ties or
+symbols without productions. For each non-terminal, the transformer substitutes
+earlier leading non-terminals before removing direct recursion. An epsilon
+replacement contributes no symbol when the transformer appends the remaining
+suffix.
+
+The report records substitution and direct-recursion steps separately. Each
+step has before and after snapshots that the UI can apply to the editor. A
+grammar without a left-corner cycle is returned unchanged. Left factoring and
+LL(1) conflict resolution remain separate operations.
 
 ### CNF (Chomsky Normal Form)
 

@@ -1,0 +1,14 @@
+{
+  "id": "example_glc_arithmetic_expressions",
+  "name": "GLC - Expressões aritméticas",
+  "type": "cfg",
+  "alphabet": ["id", "+", "*", "(", ")"],
+  "variables": ["E", "T", "F"],
+  "initialSymbol": "E",
+  "productions": {
+    "E": ["E+T", "T"],
+    "T": ["T*F", "F"],
+    "F": ["(E)", "id"]
+  },
+  "description": "Gramática livre de contexto para expressões aritméticas com precedência"
+}
