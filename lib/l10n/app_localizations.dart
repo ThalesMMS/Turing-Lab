@@ -387,6 +387,30 @@ abstract class AppLocalizations {
   /// **'Help & Shortcuts'**
   String get canvasHelpShortcutsAction;
 
+  /// No description provided for @canvasExpandToolbarAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand toolbar'**
+  String get canvasExpandToolbarAction;
+
+  /// No description provided for @canvasCollapseToolbarAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse toolbar'**
+  String get canvasCollapseToolbarAction;
+
+  /// No description provided for @canvasMoreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More canvas actions'**
+  String get canvasMoreActions;
+
+  /// No description provided for @canvasZoomLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom {percent}%'**
+  String canvasZoomLevel(int percent);
+
   /// No description provided for @canvasSelectHint.
   ///
   /// In en, this message translates to:
@@ -396,7 +420,7 @@ abstract class AppLocalizations {
   /// No description provided for @canvasAddStateHint.
   ///
   /// In en, this message translates to:
-  /// **'Adds a new state to the automaton canvas.'**
+  /// **'Adds a state at the viewport centre and keeps Add State mode active.'**
   String get canvasAddStateHint;
 
   /// No description provided for @canvasAddTransitionHint.
@@ -452,6 +476,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opens canvas help and keyboard shortcut information.'**
   String get canvasHelpShortcutsHint;
+
+  /// No description provided for @canvasExpandToolbarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows history, viewport, clear, and help actions.'**
+  String get canvasExpandToolbarHint;
+
+  /// No description provided for @canvasCollapseToolbarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hides secondary canvas actions.'**
+  String get canvasCollapseToolbarHint;
+
+  /// No description provided for @canvasMoreActionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the secondary canvas action menu.'**
+  String get canvasMoreActionsHint;
 
   /// No description provided for @pdaInputSymbol.
   ///
@@ -1959,6 +2001,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Double tap to start. {description}'**
   String algorithmStartHint(String description);
+
+  /// No description provided for @pdaNormalizationReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review PDA normalization'**
+  String get pdaNormalizationReviewTitle;
+
+  /// No description provided for @pdaNormalizationSourceAcceptance.
+  ///
+  /// In en, this message translates to:
+  /// **'Source acceptance: {mode}'**
+  String pdaNormalizationSourceAcceptance(String mode);
+
+  /// No description provided for @pdaNormalizationTargetAcceptance.
+  ///
+  /// In en, this message translates to:
+  /// **'Target acceptance: {mode}'**
+  String pdaNormalizationTargetAcceptance(String mode);
+
+  /// No description provided for @pdaNormalizationStateCount.
+  ///
+  /// In en, this message translates to:
+  /// **'States: {before} → {after}'**
+  String pdaNormalizationStateCount(int before, int after);
+
+  /// No description provided for @pdaNormalizationTransitionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transitions: {before} → {after}'**
+  String pdaNormalizationTransitionCount(int before, int after);
+
+  /// No description provided for @pdaNormalizationNewStackSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'New stack symbol: {symbol}'**
+  String pdaNormalizationNewStackSymbol(String symbol);
+
+  /// No description provided for @pdaNormalizationGrowthWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Normalization may increase the state and transition count. Acceptance conversion may also introduce non-determinism.'**
+  String get pdaNormalizationGrowthWarning;
+
+  /// No description provided for @pdaNormalizationCancelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the counts before applying. Cancel leaves the editor unchanged.'**
+  String get pdaNormalizationCancelHint;
+
+  /// No description provided for @pdaNormalizationCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get pdaNormalizationCancel;
+
+  /// No description provided for @pdaNormalizationApplyAndConvert.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply and convert'**
+  String get pdaNormalizationApplyAndConvert;
+
+  /// No description provided for @pdaSimplificationButtonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplify PDA'**
+  String get pdaSimplificationButtonTitle;
+
+  /// No description provided for @pdaSimplificationButtonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Safely remove unreachable or strongly bisimilar control states'**
+  String get pdaSimplificationButtonDescription;
+
+  /// No description provided for @pdaSimplificationAnalysisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PDA Simplification'**
+  String get pdaSimplificationAnalysisTitle;
+
+  /// No description provided for @pdaSimplificationMissingPda.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a PDA before simplifying it.'**
+  String get pdaSimplificationMissingPda;
+
+  /// No description provided for @pdaSimplificationReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review PDA simplification'**
+  String get pdaSimplificationReviewTitle;
+
+  /// No description provided for @pdaSimplificationActiveAcceptance.
+  ///
+  /// In en, this message translates to:
+  /// **'Active acceptance: {mode}'**
+  String pdaSimplificationActiveAcceptance(String mode);
+
+  /// No description provided for @pdaSimplificationScope.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a conservative structural reduction, not a globally minimal NPDA.'**
+  String get pdaSimplificationScope;
+
+  /// No description provided for @pdaSimplificationSkippedSemantic.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact semantic usefulness is not available for general NPDAs, so uncertain states were retained.'**
+  String get pdaSimplificationSkippedSemantic;
+
+  /// No description provided for @pdaSimplificationChangesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed changes'**
+  String get pdaSimplificationChangesHeading;
+
+  /// No description provided for @pdaSimplificationUnreachableChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Unreachable states removed: {count}'**
+  String pdaSimplificationUnreachableChange(int count);
+
+  /// No description provided for @pdaSimplificationMergeChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong-bisimulation merge groups: {count}'**
+  String pdaSimplificationMergeChange(int count);
+
+  /// No description provided for @pdaSimplificationDuplicateChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Redundant transitions removed: {count}'**
+  String pdaSimplificationDuplicateChange(int count);
+
+  /// No description provided for @pdaSimplificationCancelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review before applying. Cancel leaves the editor unchanged.'**
+  String get pdaSimplificationCancelHint;
+
+  /// No description provided for @pdaSimplificationCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get pdaSimplificationCancel;
+
+  /// No description provided for @pdaSimplificationApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply simplification'**
+  String get pdaSimplificationApply;
+
+  /// No description provided for @pdaSimplificationNoChange.
+  ///
+  /// In en, this message translates to:
+  /// **'No supported simplification was found. The PDA was copied without structural changes.'**
+  String get pdaSimplificationNoChange;
+
+  /// No description provided for @pdaSimplificationCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplification canceled. The editor PDA was not changed.'**
+  String get pdaSimplificationCanceled;
+
+  /// No description provided for @pdaSimplificationApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'PDA simplification applied.'**
+  String get pdaSimplificationApplied;
+
+  /// No description provided for @pdaSimplificationEditorChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplification canceled because the editor PDA changed during review.'**
+  String get pdaSimplificationEditorChanged;
+
+  /// No description provided for @pdaSimplificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplification failed: {error}'**
+  String pdaSimplificationFailed(String error);
+
+  /// No description provided for @pdaAcceptanceFinalState.
+  ///
+  /// In en, this message translates to:
+  /// **'final state'**
+  String get pdaAcceptanceFinalState;
+
+  /// No description provided for @pdaAcceptanceEmptyStack.
+  ///
+  /// In en, this message translates to:
+  /// **'empty stack'**
+  String get pdaAcceptanceEmptyStack;
+
+  /// No description provided for @pdaAcceptanceBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'final state and empty stack'**
+  String get pdaAcceptanceBoth;
 
   /// No description provided for @executing.
   ///

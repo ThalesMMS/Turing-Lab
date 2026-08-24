@@ -2,9 +2,9 @@
 //  main.dart
 //  Turing Lab
 //
-//  Ponto de entrada que inicializa o binding do Flutter, configura as
-//  dependências compartilhadas com o injetor e executa o TuringLabApp como
-//  aplicação raiz para iniciar a experiência multiplataforma.
+//  Entry point that initializes the Flutter binding, configures shared
+//  dependencies through the injector, and runs TuringLabApp as the root
+//  application to start the cross-platform experience.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //

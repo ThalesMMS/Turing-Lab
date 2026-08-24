@@ -209,11 +209,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasHelpShortcutsAction => 'Help & Shortcuts';
 
   @override
+  String get canvasExpandToolbarAction => 'Expand toolbar';
+
+  @override
+  String get canvasCollapseToolbarAction => 'Collapse toolbar';
+
+  @override
+  String get canvasMoreActions => 'More canvas actions';
+
+  @override
+  String canvasZoomLevel(int percent) {
+    return 'Zoom $percent%';
+  }
+
+  @override
   String get canvasSelectHint =>
       'Activates selection mode for moving and editing states.';
 
   @override
-  String get canvasAddStateHint => 'Adds a new state to the automaton canvas.';
+  String get canvasAddStateHint =>
+      'Adds a state at the viewport centre and keeps Add State mode active.';
 
   @override
   String get canvasAddTransitionHint =>
@@ -246,6 +261,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get canvasHelpShortcutsHint =>
       'Opens canvas help and keyboard shortcut information.';
+
+  @override
+  String get canvasExpandToolbarHint =>
+      'Shows history, viewport, clear, and help actions.';
+
+  @override
+  String get canvasCollapseToolbarHint => 'Hides secondary canvas actions.';
+
+  @override
+  String get canvasMoreActionsHint => 'Opens the secondary canvas action menu.';
 
   @override
   String get pdaInputSymbol => 'Input symbol';
@@ -1063,6 +1088,135 @@ class AppLocalizationsEn extends AppLocalizations {
   String algorithmStartHint(String description) {
     return 'Double tap to start. $description';
   }
+
+  @override
+  String get pdaNormalizationReviewTitle => 'Review PDA normalization';
+
+  @override
+  String pdaNormalizationSourceAcceptance(String mode) {
+    return 'Source acceptance: $mode';
+  }
+
+  @override
+  String pdaNormalizationTargetAcceptance(String mode) {
+    return 'Target acceptance: $mode';
+  }
+
+  @override
+  String pdaNormalizationStateCount(int before, int after) {
+    return 'States: $before → $after';
+  }
+
+  @override
+  String pdaNormalizationTransitionCount(int before, int after) {
+    return 'Transitions: $before → $after';
+  }
+
+  @override
+  String pdaNormalizationNewStackSymbol(String symbol) {
+    return 'New stack symbol: $symbol';
+  }
+
+  @override
+  String get pdaNormalizationGrowthWarning =>
+      'Normalization may increase the state and transition count. Acceptance conversion may also introduce non-determinism.';
+
+  @override
+  String get pdaNormalizationCancelHint =>
+      'Review the counts before applying. Cancel leaves the editor unchanged.';
+
+  @override
+  String get pdaNormalizationCancel => 'Cancel';
+
+  @override
+  String get pdaNormalizationApplyAndConvert => 'Apply and convert';
+
+  @override
+  String get pdaSimplificationButtonTitle => 'Simplify PDA';
+
+  @override
+  String get pdaSimplificationButtonDescription =>
+      'Safely remove unreachable or strongly bisimilar control states';
+
+  @override
+  String get pdaSimplificationAnalysisTitle => 'PDA Simplification';
+
+  @override
+  String get pdaSimplificationMissingPda =>
+      'Create a PDA before simplifying it.';
+
+  @override
+  String get pdaSimplificationReviewTitle => 'Review PDA simplification';
+
+  @override
+  String pdaSimplificationActiveAcceptance(String mode) {
+    return 'Active acceptance: $mode';
+  }
+
+  @override
+  String get pdaSimplificationScope =>
+      'This is a conservative structural reduction, not a globally minimal NPDA.';
+
+  @override
+  String get pdaSimplificationSkippedSemantic =>
+      'Exact semantic usefulness is not available for general NPDAs, so uncertain states were retained.';
+
+  @override
+  String get pdaSimplificationChangesHeading => 'Proposed changes';
+
+  @override
+  String pdaSimplificationUnreachableChange(int count) {
+    return 'Unreachable states removed: $count';
+  }
+
+  @override
+  String pdaSimplificationMergeChange(int count) {
+    return 'Strong-bisimulation merge groups: $count';
+  }
+
+  @override
+  String pdaSimplificationDuplicateChange(int count) {
+    return 'Redundant transitions removed: $count';
+  }
+
+  @override
+  String get pdaSimplificationCancelHint =>
+      'Review before applying. Cancel leaves the editor unchanged.';
+
+  @override
+  String get pdaSimplificationCancel => 'Cancel';
+
+  @override
+  String get pdaSimplificationApply => 'Apply simplification';
+
+  @override
+  String get pdaSimplificationNoChange =>
+      'No supported simplification was found. The PDA was copied without structural changes.';
+
+  @override
+  String get pdaSimplificationCanceled =>
+      'Simplification canceled. The editor PDA was not changed.';
+
+  @override
+  String get pdaSimplificationApplied => 'PDA simplification applied.';
+
+  @override
+  String get pdaSimplificationEditorChanged =>
+      'Simplification canceled because the editor PDA changed during review.';
+
+  @override
+  String pdaSimplificationFailed(String error) {
+    return 'Simplification failed: $error';
+  }
+
+  @override
+  String get pdaAcceptanceFinalState => 'final state';
+
+  @override
+  String get pdaAcceptanceEmptyStack => 'empty stack';
+
+  @override
+  String get pdaAcceptanceBoth => 'final state and empty stack';
 
   @override
   String get executing => 'Executing';

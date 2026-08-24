@@ -24,6 +24,12 @@ const enHelpUiCopy = {
   'helpSearchNoResults': 'No results found',
   'helpSearchNoResultsDescription':
       'Try different keywords or check your spelling',
+  'helpDisclosureExpand': 'Expand',
+  'helpDisclosureCollapse': 'Collapse',
+  'helpRelatedTopics': 'Related topics',
+  'helpTopicUnavailable': 'This help topic is not available.',
+  'helpTopicUnavailableDescription':
+      'Browse the help tree or search for another topic.',
   'contextualHelpPanelLabel': 'Contextual help panel',
   'closeHelpPanel': 'Close help panel',
   'close': 'Close',
@@ -32,6 +38,10 @@ const enHelpUiCopy = {
   'helpCenter': 'Help Center',
   'workspaceSimulateTooltip': 'Simulate',
   'workspaceAlgorithmsTooltip': 'Algorithms',
+  'workspaceParserTooltip': 'Parser',
+  'workspaceEditTooltip': 'Edit',
+  'grammarEmptyProductionEditInstruction':
+      'Use Edit to add your first production rule',
   'workspaceMetricsTooltip': 'Metrics',
   'relatedConcepts': 'Related Concepts',
   'hideExamples': 'Hide examples',

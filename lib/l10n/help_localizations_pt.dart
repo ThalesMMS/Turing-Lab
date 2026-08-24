@@ -24,6 +24,12 @@ const ptHelpUiCopy = {
   'helpSearchNoResults': 'Nenhum resultado encontrado',
   'helpSearchNoResultsDescription':
       'Tente outras palavras-chave ou confira a ortografia',
+  'helpDisclosureExpand': 'Expandir',
+  'helpDisclosureCollapse': 'Recolher',
+  'helpRelatedTopics': 'Tópicos relacionados',
+  'helpTopicUnavailable': 'Este tópico de ajuda não está disponível.',
+  'helpTopicUnavailableDescription':
+      'Navegue pela árvore de ajuda ou pesquise outro tópico.',
   'contextualHelpPanelLabel': 'Painel de ajuda contextual',
   'closeHelpPanel': 'Fechar painel de ajuda',
   'close': 'Fechar',
@@ -32,6 +38,10 @@ const ptHelpUiCopy = {
   'helpCenter': 'Central de ajuda',
   'workspaceSimulateTooltip': 'Simular',
   'workspaceAlgorithmsTooltip': 'Algoritmos',
+  'workspaceParserTooltip': 'Parser',
+  'workspaceEditTooltip': 'Editar',
+  'grammarEmptyProductionEditInstruction':
+      'Use Editar para adicionar sua primeira regra de produção',
   'workspaceMetricsTooltip': 'Métricas',
   'relatedConcepts': 'Conceitos relacionados',
   'hideExamples': 'Ocultar exemplos',
@@ -174,7 +184,7 @@ const ptHelpBodies = {
   'tool_select':
       'Use esta ferramenta para selecionar, mover e editar estados e transições. Toque em um estado para selecioná-lo, arraste para mover ou toque duas vezes para editar propriedades. Toque em uma transição para selecioná-la e editar o rótulo.',
   'tool_add_state':
-      'Toque em qualquer ponto do canvas para criar um novo estado nessa posição. O primeiro estado criado é marcado automaticamente como inicial. Depois, edite as propriedades para alterar estados inicial e finais.',
+      'Selecionar Adicionar estado na barra ou pressionar A cria imediatamente um estado no centro da área visível e mantém o modo Adicionar estado ativo. Toque em outro ponto do canvas para criar mais um estado nessa posição. O primeiro estado criado é marcado automaticamente como inicial. Depois, edite as propriedades para alterar estados inicial e finais.',
   'tool_add_transition':
       'Toque no estado de origem e depois no estado de destino para criar uma transição. Depois informe o rótulo da transição, como símbolos, epsilon ou operações de pilha, conforme o tipo de autômato.',
   'tool_undo':
@@ -230,7 +240,7 @@ const ptHelpBodies = {
   'algo_cfg_to_pda':
       'Converte uma GLC em AP equivalente criando um AP de um estado com pilha. O símbolo inicial é empilhado, variáveis são expandidas por produções e terminais são consumidos da entrada.',
   'shortcut_canvas_general':
-      'Atalhos gerais do canvas:\nA: adicionar estado no centro do canvas\nT: ativar modo de transição\nV: ativar modo de seleção\nDelete ou Backspace: remover transição selecionada\nCtrl/Cmd + Z: desfazer\nCtrl/Cmd + Y ou Ctrl/Cmd + Shift + Z: refazer\n• Tab: mover foco entre ações da barra do canvas\n• Shift + Tab: voltar foco\n• Enter ou Espaço: ativar ação em foco\n• Escape: cancelar diálogo ou editor atual',
+      'Atalhos gerais do canvas:\nA: ativar o modo de adicionar estado e criar um estado no centro do canvas\nT: ativar modo de transição\nV: ativar modo de seleção\nDelete ou Backspace: remover o estado ou a transição selecionada\nCtrl/Cmd + Z: desfazer\nCtrl/Cmd + Y ou Ctrl/Cmd + Shift + Z: refazer\n• Tab: mover foco entre ações da barra do canvas\n• Shift + Tab: voltar foco\n• Enter ou Espaço: ativar ação em foco\n• Escape: voltar à seleção ou cancelar diálogo ou editor atual',
   'shortcut_simulation':
       'Atalhos durante simulação:\n• Enter: enviar o campo em foco e executar a simulação\n• Tab: mover foco entre entrada, opções e controles\n• Shift + Tab: voltar para o controle anterior\n• Enter ou Espaço: ativar o botão de simulação em foco',
   'shortcut_dialogs':

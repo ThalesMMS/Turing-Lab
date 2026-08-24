@@ -1,7 +1,10 @@
 import 'package:flutter/widgets.dart';
 
-import '../core/models/help_content_model.dart';
+import '../core/constants/help_catalog.dart';
 import 'app_localizations.dart';
+import 'help_catalog_copy.dart';
+import 'help_catalog_copy_en.dart';
+import 'help_catalog_copy_pt.dart';
 import 'help_localizations_en.dart';
 import 'help_localizations_pt.dart';
 
@@ -23,6 +26,18 @@ AppLocalizations jflapLocalizationsOf(BuildContext context) {
 
 extension AppHelpLocalizations on AppLocalizations {
   bool get _isPortuguese => localeName.startsWith('pt');
+
+  HelpCatalogCopy get helpCatalogCopy => selectHelpCatalogCopy(
+        localeName: localeName,
+        english: enHelpCatalogCopy,
+        portuguese: ptHelpCatalogCopy,
+      );
+
+  HelpNodeCopy? helpNodeCopy(String id) => helpCatalogCopy[id];
+
+  bool hasCompleteHelpCopy(String id) {
+    return kHelpCatalog.hasCompleteHelpCopy(helpCatalogCopy, id);
+  }
 
   Map<String, String> get _uiCopy =>
       _isPortuguese ? ptHelpUiCopy : enHelpUiCopy;
@@ -47,6 +62,17 @@ extension AppHelpLocalizations on AppLocalizations {
   String get helpSearchNoResults => _copy('helpSearchNoResults');
   String get helpSearchNoResultsDescription =>
       _copy('helpSearchNoResultsDescription');
+  String helpDisclosureSemanticLabel(String title, {required bool expanded}) {
+    final action = _copy(
+      expanded ? 'helpDisclosureCollapse' : 'helpDisclosureExpand',
+    );
+    return '$action $title';
+  }
+
+  String get helpRelatedTopics => _copy('helpRelatedTopics');
+  String get helpTopicUnavailable => _copy('helpTopicUnavailable');
+  String get helpTopicUnavailableDescription =>
+      _copy('helpTopicUnavailableDescription');
   String get contextualHelpPanelLabel => _copy('contextualHelpPanelLabel');
   String get closeHelpPanel => _copy('closeHelpPanel');
   String get close => _copy('close');
@@ -55,6 +81,10 @@ extension AppHelpLocalizations on AppLocalizations {
   String get helpCenter => _copy('helpCenter');
   String get workspaceSimulateTooltip => _copy('workspaceSimulateTooltip');
   String get workspaceAlgorithmsTooltip => _copy('workspaceAlgorithmsTooltip');
+  String get workspaceParserTooltip => _copy('workspaceParserTooltip');
+  String get workspaceEditTooltip => _copy('workspaceEditTooltip');
+  String get grammarEmptyProductionEditInstruction =>
+      _copy('grammarEmptyProductionEditInstruction');
   String get workspaceMetricsTooltip => _copy('workspaceMetricsTooltip');
   String get relatedConcepts => _copy('relatedConcepts');
   String get hideExamples => _copy('hideExamples');
@@ -189,30 +219,5 @@ extension AppHelpLocalizations on AppLocalizations {
   String helpContentCategory(String category) {
     final categories = _isPortuguese ? ptHelpCategories : enHelpCategories;
     return categories[category] ?? enHelpCategories[category] ?? category;
-  }
-
-  HelpContentModel localizeHelpContent(HelpContentModel content) {
-    if (!_isPortuguese) {
-      return content.copyWith(
-        category: helpContentCategory(content.category),
-      );
-    }
-    return content.copyWith(
-      title: ptHelpTitles[content.id] ?? content.title,
-      content: ptHelpBodies[content.id] ?? content.content,
-      category: helpContentCategory(content.category),
-    );
-  }
-
-  String relatedConceptLabel(String id, HelpContentModel? content) {
-    if (content != null) {
-      return localizeHelpContent(content).title;
-    }
-    return id
-        .replaceAll(RegExp(r'^(tool|concept|algo)_'), '')
-        .split('_')
-        .where((word) => word.isNotEmpty)
-        .map((word) => word[0].toUpperCase() + word.substring(1))
-        .join(' ');
   }
 }
