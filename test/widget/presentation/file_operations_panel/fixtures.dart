@@ -183,7 +183,9 @@ class _StubFileOperationsService extends FileOperationsService {
   Future<StringResult> exportFsaToSVG(
     FSA automaton,
     String filePath, {
-    dynamic options,
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -200,7 +202,9 @@ class _StubFileOperationsService extends FileOperationsService {
   Future<StringResult> exportPdaToSVG(
     PDA pda,
     String filePath, {
-    dynamic options,
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -217,7 +221,9 @@ class _StubFileOperationsService extends FileOperationsService {
   Future<StringResult> exportGrammarModelToSVG(
     Grammar grammar,
     String filePath, {
-    dynamic options,
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -234,7 +240,9 @@ class _StubFileOperationsService extends FileOperationsService {
   Future<StringResult> exportGrammarToSVG(
     dynamic grammar,
     String filePath, {
-    dynamic options,
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -250,7 +258,9 @@ class _StubFileOperationsService extends FileOperationsService {
   Future<StringResult> exportTuringMachineToSVG(
     dynamic machine,
     String filePath, {
-    dynamic options,
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));

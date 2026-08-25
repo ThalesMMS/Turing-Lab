@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/derivation_tree.dart';
 import '../../core/models/derivation_tree_node.dart';
+import '../../core/constants/monospace_typography.dart';
 
 class DerivationTreeView extends StatelessWidget {
   const DerivationTreeView({
@@ -42,7 +43,7 @@ class _NodeView extends StatelessWidget {
         title: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontFamily: 'monospace',
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
               ),
         ),
       );
@@ -55,7 +56,7 @@ class _NodeView extends StatelessWidget {
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontFamily: 'monospace',
+              fontFamilyFallback: kMonospaceFontFamilyFallback,
               fontWeight: FontWeight.w600,
             ),
       ),

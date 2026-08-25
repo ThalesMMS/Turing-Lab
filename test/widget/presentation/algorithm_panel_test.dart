@@ -1,9 +1,15 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 
 class _TestCallbacks {
@@ -42,10 +48,11 @@ class _MockFileOperationsService extends FileOperationsService {
 
 Future<void> _pumpAlgorithmPanel(
   WidgetTester tester, {
+  FSA? currentAutomaton,
   VoidCallback? onNfaToDfa,
   VoidCallback? onMinimizeDfa,
   VoidCallback? onClear,
-  Function(String)? onRegexToNfa,
+  FutureOr<void> Function(String)? onRegexToNfa,
   VoidCallback? onFaToRegex,
   VoidCallback? onRemoveLambda,
   VoidCallback? onCompleteDfa,
@@ -65,11 +72,19 @@ Future<void> _pumpAlgorithmPanel(
   String? equivalenceDetails,
   FileOperationsService? fileService,
 }) async {
+  final automatonNotifier = AutomatonStateNotifier();
+  if (currentAutomaton != null) {
+    automatonNotifier.updateAutomaton(currentAutomaton);
+  }
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        automatonStateProvider.overrideWith((ref) => automatonNotifier),
+      ],
       child: MaterialApp(
         home: Scaffold(
           body: AlgorithmPanel(
+            currentAutomaton: currentAutomaton,
             onNfaToDfa: onNfaToDfa,
             onMinimizeDfa: onMinimizeDfa,
             onClear: onClear,
@@ -99,6 +114,27 @@ Future<void> _pumpAlgorithmPanel(
   );
 
   await tester.pumpAndSettle();
+}
+
+FSA _loadedAutomaton() {
+  final state = automaton_state.State(
+    id: 'loaded-state',
+    label: 'loaded',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  return FSA(
+    id: 'loaded-automaton',
+    name: 'Loaded automaton',
+    states: {state},
+    transitions: const {},
+    alphabet: const {'a'},
+    initialState: state,
+    acceptingStates: const {},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
 }
 
 void main() {
@@ -224,6 +260,33 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(callbacks.lastRegexValue, '(a|b)*');
+    });
+
+    testWidgets('embedded Regex to NFA asks before replacing loaded FSA', (
+      tester,
+    ) async {
+      final callbacks = _TestCallbacks();
+      await _pumpAlgorithmPanel(
+        tester,
+        currentAutomaton: _loadedAutomaton(),
+        onRegexToNfa: callbacks.onRegexToNfa,
+      );
+
+      await tester.enterText(find.byType(TextField), 'a');
+      await tester.tap(
+        find.widgetWithIcon(ElevatedButton, Icons.arrow_forward),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('An automaton is already loaded. Do you want to replace it?'),
+        findsOneWidget,
+      );
+      expect(callbacks.lastRegexValue, isNull);
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(callbacks.lastRegexValue, isNull);
     });
 
     testWidgets('triggers regex to NFA callback when enter is pressed', (

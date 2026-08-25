@@ -56,9 +56,10 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
     final l10n = appLocalizationsOf(context);
     final expandTooltip = l10n.expandCanvasPanel(widget.label);
     final collapseTooltip = l10n.collapseCanvasPanel(widget.label);
-    void Function(DragUpdateDetails)? onPanUpdate = widget.onDragDelta == null
-        ? null
-        : (details) => widget.onDragDelta!(details.delta);
+    final void Function(DragUpdateDetails)? onPanUpdate =
+        widget.onDragDelta == null
+            ? null
+            : (details) => widget.onDragDelta!(details.delta);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

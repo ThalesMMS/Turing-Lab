@@ -13,6 +13,22 @@ import '../../presentation/widgets/export/svg_exporter.dart';
 
 /// Shared platform-independent payload helpers for file operations.
 mixin FileOperationsPayloadMixin {
+  SvgExportOptions _svgOptionsWithLabels({
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  }) {
+    final base = options ?? const SvgExportOptions();
+    return SvgExportOptions(
+      includeTitle: base.includeTitle,
+      includeLegend: base.includeLegend,
+      scale: base.scale,
+      colorScheme: base.colorScheme,
+      emptyAutomatonLabel: emptyAutomatonLabel ?? base.emptyAutomatonLabel,
+      tmLegendLabel: tmLegendLabel ?? base.tmLegendLabel,
+    );
+  }
+
   /// Creates the JFLAP XML payload without writing it to disk.
   String serializeAutomatonToJFLAPString(FSA automaton) {
     return const JflapXmlCodec().encodeFsa(automaton);
@@ -32,26 +48,48 @@ mixin FileOperationsPayloadMixin {
   String exportFsaToSvgString(
     FSA automaton, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) {
-    return SvgExporter.exportFsaToSvg(automaton, options: options);
+    return SvgExporter.exportFsaToSvg(
+      automaton,
+      options: _svgOptionsWithLabels(
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      ),
+    );
   }
 
   /// Creates the grammar SVG payload without writing it to disk.
   String exportGrammarToSvgString(
     GrammarEntity grammar, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) {
-    return SvgExporter.exportGrammarToSvg(grammar, options: options);
+    return SvgExporter.exportGrammarToSvg(
+      grammar,
+      options: _svgOptionsWithLabels(
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      ),
+    );
   }
 
   /// Creates a grammar SVG payload from the current model.
   String exportGrammarModelToSvgString(
     Grammar grammar, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) {
     return exportGrammarToSvgString(
       _grammarToGrammarEntity(grammar),
       options: options,
+      emptyAutomatonLabel: emptyAutomatonLabel,
+      tmLegendLabel: tmLegendLabel,
     );
   }
 
@@ -59,16 +97,34 @@ mixin FileOperationsPayloadMixin {
   String exportPdaToSvgString(
     PDA pda, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) {
-    return SvgExporter.exportPdaToSvg(pda, options: options);
+    return SvgExporter.exportPdaToSvg(
+      pda,
+      options: _svgOptionsWithLabels(
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      ),
+    );
   }
 
   /// Creates the Turing machine SVG payload without writing it to disk.
   String exportTuringMachineToSvgString(
     TuringMachineEntity tm, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) {
-    return SvgExporter.exportTuringMachineToSvg(tm, options: options);
+    return SvgExporter.exportTuringMachineToSvg(
+      tm,
+      options: _svgOptionsWithLabels(
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      ),
+    );
   }
 
   /// Loads automaton from in-memory bytes (JFLAP XML format).

@@ -226,7 +226,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
     final tm = ref.watch(tmEditorProvider).tm;
 
     return AlgorithmPanelScaffold(
-      title: 'TM Analysis',
+      title: appLocalizationsOf(context).tmAnalysisTitle,
       children: [
         _buildAlgorithmButtons(context, tm),
         _buildResultsSection(context),
@@ -239,7 +239,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
   }
 
   Widget _buildAlgorithmButtons(BuildContext context, TM? tm) {
-    final algorithmConfigs = _algorithmButtonConfigs();
+    final algorithmConfigs = _algorithmButtonConfigs(context);
 
     return Column(
       children: [
@@ -258,41 +258,42 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
     );
   }
 
-  List<AlgorithmButtonConfig> _algorithmButtonConfigs() {
+  List<AlgorithmButtonConfig> _algorithmButtonConfigs(BuildContext context) {
+    final strings = appLocalizationsOf(context);
     return [
       _algorithmButtonConfig(
-        title: 'Termination and Cycles',
-        description: 'Classify one input under explicit execution limits',
+        title: strings.terminationAndCyclesTitle,
+        description: strings.terminationAndCyclesDescription,
         icon: Icons.fact_check_outlined,
         focus: _TMAnalysisFocus.termination,
       ),
       _algorithmButtonConfig(
-        title: 'Reachability',
-        description: 'Compare structural reachability with bounded witnesses',
+        title: strings.reachabilityTitle,
+        description: strings.reachabilityDescription,
         icon: Icons.explore,
         focus: _TMAnalysisFocus.reachability,
       ),
       _algorithmButtonConfig(
-        title: 'Language Explorer',
-        description: 'Classify a bounded shortlex sample into four outcomes',
+        title: strings.languageExplorerTitle,
+        description: strings.languageExplorerDescription,
         icon: Icons.manage_search,
         focus: _TMAnalysisFocus.language,
       ),
       _algorithmButtonConfig(
-        title: 'Tape Trace',
-        description: 'Measure operations on one concrete execution branch',
+        title: strings.tapeTraceTitle,
+        description: strings.tapeTraceDescription,
         icon: Icons.storage,
         focus: _TMAnalysisFocus.tape,
       ),
       _algorithmButtonConfig(
-        title: 'Time Profile',
-        description: 'Measure transition steps by input length within bounds',
+        title: strings.timeProfileTitle,
+        description: strings.timeProfileDescription,
         icon: Icons.timer,
         focus: _TMAnalysisFocus.time,
       ),
       _algorithmButtonConfig(
-        title: 'Space Profile',
-        description: 'Measure bounded tape-cell usage by input length',
+        title: strings.spaceProfileTitle,
+        description: strings.spaceProfileDescription,
         icon: Icons.memory,
         focus: _TMAnalysisFocus.space,
       ),
@@ -347,7 +348,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             _operationProgressLabel != null) ...[
           const SizedBox(height: 4),
           Text(
-            _operationProgressLabel!,
+            localizations.localizeWorkflowText(_operationProgressLabel!),
             key: const Key('tm-operation-progress'),
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -497,8 +498,11 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           const SizedBox(height: 8),
           Text(
             requested == null || planned == null
-                ? 'Estimated candidates: invalid limits'
-                : 'Estimated candidates: $requested; scheduled: $planned',
+                ? appLocalizationsOf(context).estimatedCandidatesInvalid
+                : appLocalizationsOf(context).estimatedCandidatesScheduled(
+                    '$requested',
+                    '$planned',
+                  ),
             key: const Key('tm-language-candidate-estimate'),
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -512,8 +516,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Evaluated ${progress.evaluatedCandidates} of '
-              '${progress.plannedCandidates}',
+              appLocalizationsOf(context).evaluatedOf(
+                progress.evaluatedCandidates,
+                progress.plannedCandidates,
+              ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -621,8 +627,11 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           const SizedBox(height: 8),
           Text(
             requested == null || scheduled == null
-                ? 'Estimated candidates: invalid limits'
-                : 'Estimated candidates: $requested; scheduled: $scheduled',
+                ? appLocalizationsOf(context).estimatedCandidatesInvalid
+                : appLocalizationsOf(context).estimatedCandidatesScheduled(
+                    '$requested',
+                    '$scheduled',
+                  ),
             key: const Key('tm-space-candidate-estimate'),
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -636,8 +645,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Evaluated ${progress.evaluatedCandidates} of '
-              '${progress.scheduledCandidates}',
+              appLocalizationsOf(context).evaluatedOf(
+                progress.evaluatedCandidates,
+                progress.scheduledCandidates,
+              ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -765,11 +776,15 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
     };
     final executionStatus = switch (focus) {
       _TMAnalysisFocus.language when _languageProgress != null =>
-        'Evaluated ${_languageProgress!.evaluatedCandidates} of '
-            '${_languageProgress!.plannedCandidates}',
+        appLocalizationsOf(context).evaluatedOf(
+          _languageProgress!.evaluatedCandidates,
+          _languageProgress!.plannedCandidates,
+        ),
       _TMAnalysisFocus.space when _spaceProfileProgress != null =>
-        'Evaluated ${_spaceProfileProgress!.evaluatedCandidates} of '
-            '${_spaceProfileProgress!.scheduledCandidates}',
+        appLocalizationsOf(context).evaluatedOf(
+          _spaceProfileProgress!.evaluatedCandidates,
+          _spaceProfileProgress!.scheduledCandidates,
+        ),
       _TMAnalysisFocus.time => _profileProgressLabel,
       _TMAnalysisFocus.termination ||
       _TMAnalysisFocus.reachability ||
@@ -805,10 +820,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
   }
 
   Widget _buildEmptyResults(BuildContext context) {
-    return const SimulationEmptyResults(
+    return SimulationEmptyResults(
       icon: Icons.analytics_outlined,
-      title: 'No analysis results yet',
-      message: 'Select an algorithm above to analyze your TM.',
+      title: appLocalizationsOf(context).noAnalysisResultsYet,
+      message: appLocalizationsOf(context).selectAlgorithmToAnalyzeTm,
     );
   }
 
@@ -1002,21 +1017,27 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 child: ExpansionTile(
                   key: const Key('tm-cycle-trace'),
                   tilePadding: EdgeInsets.zero,
-                  title: const Text('Repeated cycle trace'),
+                  title: Text(appLocalizationsOf(context).repeatedCycleTrace),
                   subtitle: Text(
-                    '${cycleTrace.length} retained configuration(s)',
+                    appLocalizationsOf(context)
+                        .retainedConfigurations(cycleTrace.length),
                   ),
                   children: [
                     for (final step in cycleTrace)
                       ListTile(
                         dense: true,
                         title: Text(
-                          'Step ${step.stepNumber} • ${step.currentState}',
+                          appLocalizationsOf(context).stepStateTitle(
+                            step.stepNumber,
+                            step.currentState,
+                          ),
                         ),
                         subtitle: Text(
-                          '${step.usedTransition ?? 'Initial configuration'}\n'
-                          'head ${step.headPosition ?? 0} • tape '
-                          '${step.tapeContents.isEmpty ? '∅' : step.tapeContents}',
+                          '${step.usedTransition ?? appLocalizationsOf(context).initialConfiguration}\n'
+                          '${appLocalizationsOf(context).headTapeSubtitle(
+                            step.headPosition ?? 0,
+                            step.tapeContents.isEmpty ? '∅' : step.tapeContents,
+                          )}',
                         ),
                       ),
                   ],
@@ -1217,9 +1238,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
               child: ExpansionTile(
                 key: const Key('tm-tape-related-trace'),
                 tilePadding: EdgeInsets.zero,
-                title: const Text('Related execution trace'),
+                title: Text(appLocalizationsOf(context).relatedExecutionTrace),
                 subtitle: Text(
-                  '${analysis.trace.length} retained configuration(s)',
+                  appLocalizationsOf(context)
+                      .retainedConfigurations(analysis.trace.length),
                 ),
                 children: [
                   SizedBox(
@@ -1231,11 +1253,19 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                         return ListTile(
                           dense: true,
                           title: Text(
-                            'Step ${step.stepNumber} • ${step.currentState}',
+                            appLocalizationsOf(context).stepStateTitle(
+                              step.stepNumber,
+                              step.currentState,
+                            ),
                           ),
                           subtitle: Text(
-                            '${step.usedTransition ?? 'Initial configuration'}\n'
-                            'head ${step.headPosition ?? 0} • tape ${step.tapeContents.isEmpty ? '∅' : step.tapeContents}',
+                            '${step.usedTransition ?? appLocalizationsOf(context).initialConfiguration}\n'
+                            '${appLocalizationsOf(context).headTapeSubtitle(
+                              step.headPosition ?? 0,
+                              step.tapeContents.isEmpty
+                                  ? '∅'
+                                  : step.tapeContents,
+                            )}',
                           ),
                         );
                       },
@@ -1324,7 +1354,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           if (report.cancelled)
             _buildStatusMessage(
               context,
-              message: 'Space profiling cancelled. Evaluated rows were kept.',
+              message: appLocalizationsOf(context).spaceProfilingCancelledKept,
               isWarning: true,
             ),
           const SizedBox(height: 12),
@@ -1333,7 +1363,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             const SizedBox(height: 8),
           ],
           if (report.rows.isEmpty)
-            const Text('No input-length group was evaluated.'),
+            Text(appLocalizationsOf(context).noInputLengthGroupEvaluated),
         ],
       ),
     );
@@ -1361,7 +1391,9 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Input length ${row.inputLength}',
+            appLocalizationsOf(context).localizeWorkflowText(
+              'Input length ${row.inputLength}',
+            ),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -1371,8 +1403,20 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              Chip(label: Text(sampled ? 'Sampled' : 'Exhaustive')),
-              Chip(label: Text(row.isIncomplete ? 'Incomplete' : 'Complete')),
+              Chip(
+                label: Text(
+                  appLocalizationsOf(context).localizeWorkflowText(
+                    sampled ? 'Sampled' : 'Exhaustive',
+                  ),
+                ),
+              ),
+              Chip(
+                label: Text(
+                  appLocalizationsOf(context).localizeWorkflowText(
+                    row.isIncomplete ? 'Incomplete' : 'Complete',
+                  ),
+                ),
+              ),
             ],
           ),
           _buildMetricRow(
@@ -1401,7 +1445,9 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             ),
           if (sampled)
             Text(
-              'The deterministic shortlex prefix was sampled because this length exceeds the candidate cap.',
+              appLocalizationsOf(context).localizeWorkflowText(
+                'The deterministic shortlex prefix was sampled because this length exceeds the candidate cap.',
+              ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -1558,7 +1604,8 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                     _buildMetricRow(
                       context,
                       'Incoming transition',
-                      witness.incomingTransitionId ?? 'Initial configuration',
+                      witness.incomingTransitionId ??
+                          appLocalizationsOf(context).initialConfiguration,
                     ),
                     _buildChipList(
                       context,
@@ -1665,7 +1712,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           if (report.cancelled)
             _buildStatusMessage(
               context,
-              message: 'Exploration cancelled. Evaluated results were kept.',
+              message: appLocalizationsOf(context).explorationCancelledKept,
               isWarning: true,
             ),
           if (report.count(TMLanguageOutcome.inconclusive) > 0)
@@ -1677,7 +1724,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             ),
           const SizedBox(height: 8),
           Text(
-            'Words',
+            appLocalizationsOf(context).words,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -1686,7 +1733,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
           for (final result in report.results)
             _buildLanguageWordTile(context, result),
           if (report.results.isEmpty)
-            const Text('No candidates were evaluated.'),
+            Text(appLocalizationsOf(context).noCandidatesEvaluated),
           if (_selectedLanguageWord != null) ...[
             const Divider(height: 24),
             _buildSelectedLanguageWord(context, _selectedLanguageWord!),
@@ -1803,9 +1850,11 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             child: Center(child: CircularProgressIndicator()),
           )
         else if (trace.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('No trace was recorded for this bounded run.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              appLocalizationsOf(context).noTraceRecordedBoundedRun,
+            ),
           )
         else
           SizedBox(
@@ -1818,10 +1867,17 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 final step = trace[index];
                 return ListTile(
                   dense: true,
-                  title: Text('Step ${step.stepNumber} • ${step.currentState}'),
+                  title: Text(
+                    appLocalizationsOf(context).stepStateTitle(
+                      step.stepNumber,
+                      step.currentState,
+                    ),
+                  ),
                   subtitle: Text(
                     step.usedTransition ??
-                        'Initial configuration at head ${step.headPosition ?? 0}',
+                        appLocalizationsOf(context).initialConfigurationAtHead(
+                          step.headPosition ?? 0,
+                        ),
                   ),
                 );
               },
@@ -2087,7 +2143,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 row.maximumTransitionWitness!,
                 row.inputLength,
                 metricKey: 'transitions',
-                title: 'Maximum transition-step witness',
+                title: appLocalizationsOf(context).maximumTransitionStepWitness,
               ),
           ] else ...[
             _buildMetricRow(
@@ -2112,7 +2168,8 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 row.maximumDepthWitness!,
                 row.inputLength,
                 metricKey: 'depth',
-                title: 'Maximum exploration-depth witness',
+                title:
+                    appLocalizationsOf(context).maximumExplorationDepthWitness,
               ),
             if (row.maximumConfigurationsWitness != null)
               _buildTimeProfileWitness(
@@ -2120,7 +2177,8 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 row.maximumConfigurationsWitness!,
                 row.inputLength,
                 metricKey: 'configurations',
-                title: 'Maximum explored-configurations witness',
+                title: appLocalizationsOf(context)
+                    .maximumExploredConfigurationsWitness,
               ),
           ],
         ],
@@ -2148,7 +2206,10 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
         tilePadding: EdgeInsets.zero,
         title: Text(title),
         subtitle: Text(
-          'Input $input • ${witness.execution.trace.length} retained configuration(s)',
+          appLocalizationsOf(context).inputRetainedConfigurations(
+            input,
+            witness.execution.trace.length,
+          ),
         ),
         children: [
           SizedBox(
@@ -2160,10 +2221,14 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
                 return ListTile(
                   dense: true,
                   title: Text(
-                    'Step ${step.stepNumber} • ${step.currentState}',
+                    appLocalizationsOf(context).stepStateTitle(
+                      step.stepNumber,
+                      step.currentState,
+                    ),
                   ),
                   subtitle: Text(
-                    step.usedTransition ?? 'Initial configuration',
+                    step.usedTransition ??
+                        appLocalizationsOf(context).initialConfiguration,
                   ),
                 );
               },
@@ -2248,8 +2313,7 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
     if (tm == null) {
       setState(() {
         _isAnalyzing = false;
-        _analysisError =
-            'No Turing machine available. Draw states and transitions on the canvas to analyze.';
+        _analysisError = appLocalizationsOf(context).noTmAvailableToAnalyze;
       });
       return;
     }
@@ -2302,8 +2366,11 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
         onProgress: (steps, configurations) {
           if (!_isCurrentAnalysis(generation, tm)) return;
           setState(() {
-            _operationProgressLabel = '$steps transition(s) • '
-                '$configurations configuration(s) explored';
+            _operationProgressLabel =
+                appLocalizationsOf(context).transitionsConfigurationsProgress(
+              steps,
+              configurations,
+            );
           });
         },
       );
@@ -2341,8 +2408,11 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
         onProgress: (transitions, configurations) {
           if (!_isCurrentAnalysis(generation, tm)) return;
           setState(() {
-            _operationProgressLabel = '$transitions transition(s) • '
-                '$configurations configuration(s) explored';
+            _operationProgressLabel =
+                appLocalizationsOf(context).transitionsConfigurationsProgress(
+              transitions,
+              configurations,
+            );
           });
         },
       );
@@ -2628,7 +2698,9 @@ class _TMAlgorithmPanelState extends ConsumerState<TMAlgorithmPanel> {
             children: values
                 .map(
                   (value) => Chip(
-                    label: Text(value),
+                    label: Text(
+                      localizations.localizeWorkflowText(value),
+                    ),
                     backgroundColor: isWarning
                         ? colorScheme.errorContainer.withValues(alpha: 0.5)
                         : colorScheme.secondaryContainer.withValues(alpha: 0.4),

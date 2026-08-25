@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
+
 class TabletLayoutContainer extends StatefulWidget {
   final Widget canvas;
   final Widget algorithmPanel;
@@ -27,9 +29,23 @@ class TabletLayoutContainer extends StatefulWidget {
 class _TabletLayoutContainerState extends State<TabletLayoutContainer> {
   bool _isSidebarExpanded = true;
 
+  String _localizedTabTitle(String title) {
+    final l10n = appLocalizationsOf(context);
+    return switch (title) {
+      'Algorithms' => l10n.algorithms,
+      'Simulation' => l10n.simulation,
+      'Info' => l10n.info,
+      'Parser' => l10n.parser,
+      _ => title,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top + 16;
+    final algorithmTitle = _localizedTabTitle(widget.algorithmTabTitle);
+    final simulationTitle = _localizedTabTitle(widget.simulationTabTitle);
+    final infoTitle = _localizedTabTitle(widget.infoTabTitle);
 
     return Stack(
       children: [
@@ -75,16 +91,16 @@ class _TabletLayoutContainerState extends State<TabletLayoutContainer> {
                           isScrollable: true,
                           tabs: [
                             Tab(
-                              text: widget.algorithmTabTitle,
+                              text: algorithmTitle,
                               icon: const Icon(Icons.auto_awesome),
                             ),
                             Tab(
-                              text: widget.simulationTabTitle,
+                              text: simulationTitle,
                               icon: const Icon(Icons.play_arrow),
                             ),
                             if (widget.infoPanel != null)
                               Tab(
-                                text: widget.infoTabTitle,
+                                text: infoTitle,
                                 icon: const Icon(Icons.info_outline),
                               ),
                           ],
@@ -141,7 +157,7 @@ class _TabletLayoutContainerState extends State<TabletLayoutContainer> {
             top: topInset,
             child: IconButton(
               icon: const Icon(Icons.close_fullscreen),
-              tooltip: 'Collapse Sidebar',
+              tooltip: appLocalizationsOf(context).collapseSidebar,
               onPressed: () => setState(() => _isSidebarExpanded = false),
               style: IconButton.styleFrom(
                 backgroundColor: Theme.of(

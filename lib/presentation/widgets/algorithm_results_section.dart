@@ -29,7 +29,7 @@ class AlgorithmResultsSection extends StatelessWidget {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
-        hasResults ? resultsBuilder(context) : emptyBuilder(context),
+        if (hasResults) resultsBuilder(context) else emptyBuilder(context),
       ],
     );
   }

@@ -10,6 +10,7 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:graphview/graphview_turing_lab.dart' show kSelfLoopRadiusFactor;
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:turing_lab/core/entities/turing_machine_entity.dart';

@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/pda_page.dart';
@@ -346,7 +348,14 @@ void main() {
 
     await tester.tap(algorithms);
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('APD - Parênteses Balanceados'));
+    // The examples keep their canonical names; the sheet shows them through
+    // the active locale, which is English here.
+    final exampleL10n = AppLocalizationsEn();
+    await pumpUntilFound(
+      tester,
+      find.text(
+          exampleL10n.localizedExampleName('APD - Parênteses Balanceados')),
+    );
     for (final example in const [
       'APD - Parênteses Balanceados',
       'APD - a^n b^n',
@@ -354,7 +363,10 @@ void main() {
       'APD - a^n b^2n',
       'APD - w#reverse(w)',
     ]) {
-      expect(find.text(example), findsOneWidget);
+      expect(
+        find.text(exampleL10n.localizedExampleName(example)),
+        findsOneWidget,
+      );
     }
     Navigator.of(tester.element(find.byType(BottomSheet))).pop();
     await tester.pumpAndSettle();

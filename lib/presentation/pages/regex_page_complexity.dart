@@ -21,13 +21,15 @@ extension _RegexPageComplexitySections on _RegexPageState {
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Complexity Analysis',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).complexityAnalysisTitle,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
                 if (regexState.regexAnalysis != null)
                   IconButton(
                     onPressed: () => ref
@@ -39,8 +41,8 @@ extension _RegexPageComplexitySections on _RegexPageState {
                           : Icons.expand_more,
                     ),
                     tooltip: regexState.showAnalysisDetails
-                        ? 'Hide details'
-                        : 'Show details',
+                        ? AppLocalizations.of(context).hideDetails
+                        : AppLocalizations.of(context).showDetails,
                   ),
               ],
             ),
@@ -53,7 +55,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
                 child: ElevatedButton.icon(
                   onPressed: _runComplexityAnalysis,
                   icon: const Icon(Icons.analytics_outlined),
-                  label: const Text('Analyze Complexity'),
+                  label: Text(AppLocalizations.of(context).analyzeComplexity),
                 ),
               )
             else ...[
@@ -78,13 +80,13 @@ extension _RegexPageComplexitySections on _RegexPageState {
                         .read(regexEditorProvider.notifier)
                         .clearComplexityAnalysis(),
                     icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Clear'),
+                    label: Text(AppLocalizations.of(context).clear),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: _runComplexityAnalysis,
                     icon: const Icon(Icons.analytics_outlined, size: 18),
-                    label: const Text('Re-analyze'),
+                    label: Text(AppLocalizations.of(context).reanalyze),
                   ),
                 ],
               ),
@@ -133,7 +135,10 @@ extension _RegexPageComplexitySections on _RegexPageState {
                 Icon(levelIcon, size: 16, color: complexityColors.foreground),
                 const SizedBox(width: 6),
                 Text(
-                  analysis.complexityLevel.displayName,
+                  _complexityLevelName(
+                    analysis.complexityLevel,
+                    AppLocalizations.of(context),
+                  ),
                   style: textTheme.labelMedium?.copyWith(
                     color: complexityColors.foreground,
                     fontWeight: FontWeight.bold,
@@ -150,7 +155,10 @@ extension _RegexPageComplexitySections on _RegexPageState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  analysis.complexityLevel.description,
+                  _complexityLevelDescription(
+                    analysis.complexityLevel,
+                    AppLocalizations.of(context),
+                  ),
                   style: textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -161,17 +169,17 @@ extension _RegexPageComplexitySections on _RegexPageState {
                   runSpacing: 4,
                   children: [
                     _buildMiniMetric(
-                      'Star Height',
+                      AppLocalizations.of(context).starHeight,
                       analysis.starHeight.toString(),
                       Icons.star_outline,
                     ),
                     _buildMiniMetric(
-                      'Nesting',
+                      AppLocalizations.of(context).nestingShort,
                       analysis.nestingDepth.toString(),
                       Icons.layers_outlined,
                     ),
                     _buildMiniMetric(
-                      'Alphabet',
+                      AppLocalizations.of(context).alphabetLabel,
                       analysis.alphabetSize.toString(),
                       Icons.abc,
                     ),
@@ -225,7 +233,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
       children: [
         // Complexity metrics section
         Text(
-          'Complexity Metrics',
+          AppLocalizations.of(context).complexityMetrics,
           style: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -233,25 +241,25 @@ extension _RegexPageComplexitySections on _RegexPageState {
         ),
         const SizedBox(height: 8),
         _buildMetricRow(
-          'Star Height',
+          AppLocalizations.of(context).starHeight,
           analysis.starHeight.toString(),
-          'Maximum nesting of Kleene star operators (*)',
+          AppLocalizations.of(context).starHeightDescription,
           Icons.star_outline,
           colorScheme.primary,
         ),
         const SizedBox(height: 8),
         _buildMetricRow(
-          'Nesting Depth',
+          AppLocalizations.of(context).nestingDepth,
           analysis.nestingDepth.toString(),
-          'Maximum depth of parentheses nesting',
+          AppLocalizations.of(context).nestingDepthDescription,
           Icons.layers_outlined,
           colorScheme.secondary,
         ),
         const SizedBox(height: 8),
         _buildMetricRow(
-          'Complexity Score',
+          AppLocalizations.of(context).complexityScore,
           analysis.complexityScore.toString(),
-          'Weighted sum of all complexity factors',
+          AppLocalizations.of(context).complexityScoreDescription,
           Icons.speed,
           colorScheme.tertiary,
         ),
@@ -260,7 +268,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
 
         // Operator breakdown section
         Text(
-          'Operator Breakdown',
+          AppLocalizations.of(context).operatorBreakdown,
           style: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -273,7 +281,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
 
         // Alphabet section
         Text(
-          'Alphabet',
+          AppLocalizations.of(context).alphabetLabel,
           style: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -359,12 +367,13 @@ extension _RegexPageComplexitySections on _RegexPageState {
     final textTheme = Theme.of(context).textTheme;
     final structure = analysis.structureAnalysis;
 
+    final l10n = AppLocalizations.of(context);
     final operators = [
-      ('Union (|)', structure.unionCount, Icons.call_split),
-      ('Concatenation', structure.concatenationCount, Icons.link),
-      ('Kleene Star (*)', structure.starCount, Icons.star),
-      ('Plus (+)', structure.plusCount, Icons.add),
-      ('Optional (?)', structure.questionCount, Icons.help_outline),
+      (l10n.operatorUnion, structure.unionCount, Icons.call_split),
+      (l10n.operatorConcatenation, structure.concatenationCount, Icons.link),
+      (l10n.operatorKleeneStar, structure.starCount, Icons.star),
+      (l10n.operatorPlus, structure.plusCount, Icons.add),
+      (l10n.operatorOptional, structure.questionCount, Icons.help_outline),
     ];
 
     // Filter to only show operators that are used
@@ -372,7 +381,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
 
     if (usedOperators.isEmpty) {
       return Text(
-        'No operators used (literal expression)',
+        AppLocalizations.of(context).noOperatorsUsed,
         style: textTheme.bodySmall?.copyWith(
           color: colorScheme.onSurfaceVariant,
           fontStyle: FontStyle.italic,
@@ -431,7 +440,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
 
     if (alphabet.isEmpty) {
       return Text(
-        'Empty alphabet (epsilon-only expression)',
+        AppLocalizations.of(context).emptyAlphabetExpression,
         style: textTheme.bodySmall?.copyWith(
           color: colorScheme.onSurfaceVariant,
           fontStyle: FontStyle.italic,
@@ -446,7 +455,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Size: ${alphabet.length} symbol(s)',
+          AppLocalizations.of(context).alphabetSizeCount(alphabet.length),
           style: textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -475,7 +484,7 @@ extension _RegexPageComplexitySections on _RegexPageState {
                 child: Text(
                   symbol,
                   style: textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                     fontWeight: FontWeight.bold,
                     color: colorScheme.primary,
                   ),
@@ -511,6 +520,31 @@ extension _RegexPageComplexitySections on _RegexPageState {
           background: colorScheme.error,
           foreground: colorScheme.onError,
         );
+    }
+  }
+
+  String _complexityLevelName(ComplexityLevel level, AppLocalizations l10n) {
+    switch (level) {
+      case ComplexityLevel.simple:
+        return l10n.complexitySimple;
+      case ComplexityLevel.moderate:
+        return l10n.complexityModerate;
+      case ComplexityLevel.complex:
+        return l10n.complexityComplex;
+    }
+  }
+
+  String _complexityLevelDescription(
+    ComplexityLevel level,
+    AppLocalizations l10n,
+  ) {
+    switch (level) {
+      case ComplexityLevel.simple:
+        return l10n.complexitySimpleDescription;
+      case ComplexityLevel.moderate:
+        return l10n.complexityModerateDescription;
+      case ComplexityLevel.complex:
+        return l10n.complexityComplexDescription;
     }
   }
 

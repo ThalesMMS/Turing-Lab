@@ -51,9 +51,9 @@ class _RecordingSettingsStorage implements SettingsStorage {
 
 class _FailingSettingsStorage extends _RecordingSettingsStorage {
   _FailingSettingsStorage(
-    Map<String, Object?> initialValues, {
+    Map<String, Object?> super.initialValues, {
     required this.failKey,
-  }) : super(initialValues);
+  });
 
   final String failKey;
 

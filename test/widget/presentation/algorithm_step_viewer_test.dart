@@ -6,6 +6,7 @@ import 'package:turing_lab/core/models/cyk_step.dart';
 import 'package:turing_lab/core/models/nfa_to_dfa_step.dart';
 import 'package:turing_lab/core/models/state.dart' as automata;
 import 'package:turing_lab/core/models/typed_algorithm_step.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_renderer_registry.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_viewer.dart';
 import 'package:turing_lab/presentation/widgets/step_navigation_controls.dart';
@@ -420,7 +421,7 @@ void main() {
 
       await _pumpStepViewer(tester, step: step, onShowDetails: () {});
 
-      expect(find.text('Show More Details'), findsOneWidget);
+      expect(find.text(AppLocalizationsEn().showDetails), findsOneWidget);
       expect(find.byIcon(Icons.expand_more), findsOneWidget);
     });
 
@@ -437,8 +438,8 @@ void main() {
 
       await _pumpStepViewer(tester, step: step);
 
-      expect(find.text('Show More Details'), findsNothing);
-      expect(find.text('Hide Details'), findsNothing);
+      expect(find.text(AppLocalizationsEn().showDetails), findsNothing);
+      expect(find.text(AppLocalizationsEn().hideDetails), findsNothing);
     });
 
     testWidgets('shows Hide Details when expanded', (tester) async {
@@ -457,7 +458,7 @@ void main() {
         showExpandedDetails: true,
       );
 
-      expect(find.text('Hide Details'), findsOneWidget);
+      expect(find.text(AppLocalizationsEn().hideDetails), findsOneWidget);
       expect(find.byIcon(Icons.expand_less), findsOneWidget);
     });
 
@@ -481,7 +482,7 @@ void main() {
 
       expect(callbacks.showDetailsCallCount, 0);
 
-      await tester.tap(find.text('Show More Details'));
+      await tester.tap(find.text(AppLocalizationsEn().showDetails));
       await tester.pumpAndSettle();
 
       expect(callbacks.showDetailsCallCount, 1);

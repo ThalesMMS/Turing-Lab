@@ -19,6 +19,7 @@ import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 class PDATraceViewer extends StatefulWidget {
   final PDASimulationResult result;
@@ -88,7 +89,8 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
                   '${l10n.traceStack}=$stack$transition',
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+                  ).textTheme.bodyMedium?.copyWith(
+                      fontFamilyFallback: kMonospaceFontFamilyFallback),
                 ),
               ),
             ],

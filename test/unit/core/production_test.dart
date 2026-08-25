@@ -4,7 +4,7 @@ import 'package:turing_lab/core/models/production.dart';
 void main() {
   group('Production equality', () {
     test('compares left and right sides by value', () {
-      final first = Production(
+      const first = Production(
         id: 'p',
         leftSide: ['S'],
         rightSide: ['A', 'B'],

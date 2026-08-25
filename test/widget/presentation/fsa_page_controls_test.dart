@@ -1,15 +1,27 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
+import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
+import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/fsa_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_navigator.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
@@ -68,7 +80,174 @@ Future<void> _pumpFsaPage(
   await tester.pumpAndSettle();
 }
 
+FSA _singleStateFsa() {
+  final state = automaton_state.State(
+    id: 'q0',
+    label: 'q0',
+    position: Vector2(120, 120),
+    isInitial: true,
+    isAccepting: true,
+  );
+  return FSA(
+    id: 'single-state-fsa',
+    name: 'Single state FSA',
+    states: {state},
+    transitions: const {},
+    alphabet: const {'a'},
+    initialState: state,
+    acceptingStates: {state},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
+}
+
+Grammar _loadedGrammar() {
+  const production = Production(
+    id: 'loaded-production',
+    leftSide: ['S'],
+    rightSide: ['b'],
+  );
+  return Grammar(
+    id: 'loaded-grammar',
+    name: 'Loaded grammar',
+    terminals: const {'b'},
+    nonterminals: const {'S'},
+    startSymbol: 'S',
+    productions: {production},
+    type: GrammarType.regular,
+    created: DateTime(2026),
+    modified: DateTime(2026),
+  );
+}
+
 void main() {
+  testWidgets('FSA to Grammar transfers the result and switches workspace', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FSAPage)),
+      listen: false,
+    );
+    container
+        .read(automatonStateProvider.notifier)
+        .updateAutomaton(_singleStateFsa());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('FSA to Grammar'));
+    await tester.tap(find.text('FSA to Grammar'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(grammarProvider).productions, isNotEmpty);
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.grammarIndex,
+    );
+    expect(find.byType(AlgorithmPanel), findsNothing);
+  });
+
+  testWidgets('FA to Regex transfers the result and switches workspace', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FSAPage)),
+      listen: false,
+    );
+    container
+        .read(automatonStateProvider.notifier)
+        .updateAutomaton(_singleStateFsa());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('FA to Regex'));
+    await tester.tap(find.text('FA to Regex'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(regexEditorProvider).currentRegex, isNotEmpty);
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.regexIndex,
+    );
+    expect(find.byType(AlgorithmPanel), findsNothing);
+  });
+
+  testWidgets('FSA to Grammar cancel preserves the loaded grammar', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FSAPage)),
+      listen: false,
+    );
+    final loadedGrammar = _loadedGrammar();
+    container
+        .read(automatonStateProvider.notifier)
+        .updateAutomaton(_singleStateFsa());
+    container.read(grammarProvider.notifier).applyGrammar(loadedGrammar);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('FSA to Grammar'));
+    await tester.tap(find.text('FSA to Grammar'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('A grammar is already loaded. Do you want to replace it?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(
+        container.read(grammarProvider).productions, loadedGrammar.productions);
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.fsaIndex,
+    );
+    expect(find.byType(AlgorithmPanel), findsOneWidget);
+  });
+
+  testWidgets('FA to Regex cancel preserves the loaded regex', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(FSAPage)),
+      listen: false,
+    );
+    container
+        .read(automatonStateProvider.notifier)
+        .updateAutomaton(_singleStateFsa());
+    container.read(regexEditorProvider.notifier).validateRegex('b');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('FA to Regex'));
+    await tester.tap(find.text('FA to Regex'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('A regex is already loaded. Do you want to replace it?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(regexEditorProvider).currentRegex, 'b');
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.fsaIndex,
+    );
+    expect(find.byType(AlgorithmPanel), findsOneWidget);
+  });
+
   testWidgets('empty FSA exposes five presets through Algorithms', (
     tester,
   ) async {
@@ -92,7 +271,11 @@ void main() {
 
     await tester.tap(algorithms);
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('AFD - Termina com A'));
+    final exampleL10n = AppLocalizationsEn();
+    await pumpUntilFound(
+      tester,
+      find.text(exampleL10n.localizedExampleName('AFD - Termina com A')),
+    );
 
     for (final example in const [
       'AFD - Termina com A',
@@ -101,10 +284,15 @@ void main() {
       'AFD - Contém AB',
       'AFNλ - A ou AB',
     ]) {
-      expect(find.text(example), findsOneWidget);
+      expect(
+        find.text(exampleL10n.localizedExampleName(example)),
+        findsOneWidget,
+      );
     }
 
-    await tester.tap(find.text('AFD - Contém AB'));
+    await tester.tap(
+      find.text(exampleL10n.localizedExampleName('AFD - Contém AB')),
+    );
     await pumpUntilFound(tester, find.textContaining('Example loaded:'));
     final container = ProviderScope.containerOf(
       tester.element(find.byType(AutomatonGraphViewCanvas)),

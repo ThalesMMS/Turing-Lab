@@ -25,6 +25,9 @@ import '../../core/models/tm_transition.dart';
 import '../../core/result.dart';
 import '../../core/services/file_operations_gateway.dart';
 import '../../injection/data_providers.dart';
+import '../../l10n/app_localizations.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_workflows.dart';
 import 'utils/platform_file_loader.dart';
 import 'error_banner.dart';
 import 'import_error_dialog.dart';
@@ -75,9 +78,6 @@ const _pdaCapabilities = _FileOperationCapabilities(
 const _tmCapabilities = _FileOperationCapabilities(
   supportsSvgExport: true,
 );
-
-const _kJsonUnreadableFileMessage =
-    'Turing Lab could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.';
 
 const _kFsaJflapExportButtonKey = ValueKey<String>(
   'fsa_jflap_export_button',
@@ -142,6 +142,12 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
   _PanelFeedback? _feedback;
   Future<void> Function()? _pendingRetry;
 
+  AppLocalizations get _l10n => appLocalizationsOf(context);
+
+  String get _svgEmptyAutomatonLabel => _l10n.svgNoStatesDefined;
+
+  String get _svgTmLegendLabel => _l10n.svgTmLegend;
+
   @override
   void initState() {
     super.initState();
@@ -157,6 +163,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -176,14 +183,14 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
               const SizedBox(height: 16),
             ],
             Text(
-              'File Operations',
+              l10n.fileOperationsTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
 
             // FSA operations
             if (widget.automaton != null) ...[
-              _buildSectionTitle('FSA'),
+              _buildSectionTitle(l10n.fileSectionFsa),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -191,42 +198,42 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 children: [
                   if (_fsaCapabilities.supportsJflapExport)
                     _buildButton(
-                      kIsWeb ? 'Download JFLAP' : 'Save as JFLAP',
+                      kIsWeb ? l10n.downloadJflap : l10n.saveAsJflap,
                       Icons.save,
                       () => _saveAutomatonAsJFLAP(),
                       key: _kFsaJflapExportButtonKey,
                     ),
                   if (_fsaCapabilities.supportsJflapImport)
                     _buildButton(
-                      'Load JFLAP',
+                      l10n.loadJflap,
                       Icons.folder_open,
                       () => _loadAutomatonFromJFLAP(),
                       key: _kFsaJflapImportButtonKey,
                     ),
                   if (_fsaCapabilities.supportsJsonExport)
                     _buildButton(
-                      kIsWeb ? 'Download JSON' : 'Save as JSON',
+                      kIsWeb ? l10n.downloadJson : l10n.saveAsJson,
                       Icons.data_object,
                       () => _saveAutomatonAsJson(),
                       key: _kFsaJsonExportButtonKey,
                     ),
                   if (_fsaCapabilities.supportsJsonImport)
                     _buildButton(
-                      'Load JSON',
+                      l10n.loadJson,
                       Icons.upload_file,
                       () => _loadAutomatonFromJson(),
                       key: _kFsaJsonImportButtonKey,
                     ),
                   if (_fsaCapabilities.supportsSvgExport)
                     _buildButton(
-                      kIsWeb ? 'Download SVG' : 'Export SVG',
+                      kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportAutomatonAsSVG(),
                       key: _kFsaSvgExportButtonKey,
                     ),
                   if (_fsaCapabilities.supportsPngExport && !kIsWeb)
                     _buildButton(
-                      'Export PNG',
+                      l10n.exportPng,
                       Icons.photo,
                       () => _exportAutomatonAsPNG(),
                       key: _kFsaPngExportButtonKey,
@@ -238,7 +245,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
 
             // Grammar operations
             if (widget.grammar != null) ...[
-              _buildSectionTitle('Grammar'),
+              _buildSectionTitle(l10n.fileSectionGrammar),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -246,19 +253,19 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 children: [
                   if (_grammarCapabilities.supportsJflapExport)
                     _buildButton(
-                      kIsWeb ? 'Download JFLAP' : 'Save as JFLAP',
+                      kIsWeb ? l10n.downloadJflap : l10n.saveAsJflap,
                       Icons.save,
                       () => _saveGrammarAsJFLAP(),
                     ),
                   if (_grammarCapabilities.supportsJflapImport)
                     _buildButton(
-                      'Load JFLAP',
+                      l10n.loadJflap,
                       Icons.folder_open,
                       () => _loadGrammarFromJFLAP(),
                     ),
                   if (_grammarCapabilities.supportsSvgExport)
                     _buildButton(
-                      kIsWeb ? 'Download SVG' : 'Export SVG',
+                      kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportGrammarAsSVG(),
                     ),
@@ -268,7 +275,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
             ],
 
             if (widget.pda != null) ...[
-              _buildSectionTitle('PDA'),
+              _buildSectionTitle(l10n.fileSectionPda),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -276,7 +283,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 children: [
                   if (_pdaCapabilities.supportsSvgExport)
                     _buildButton(
-                      kIsWeb ? 'Download SVG' : 'Export SVG',
+                      kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportPdaAsSVG(),
                     ),
@@ -286,7 +293,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
             ],
 
             if (widget.turingMachine != null) ...[
-              _buildSectionTitle('Turing Machine'),
+              _buildSectionTitle(l10n.fileSectionTm),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -294,7 +301,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 children: [
                   if (_tmCapabilities.supportsSvgExport)
                     _buildButton(
-                      kIsWeb ? 'Download SVG' : 'Export SVG',
+                      kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportTuringMachineAsSVG(),
                     ),

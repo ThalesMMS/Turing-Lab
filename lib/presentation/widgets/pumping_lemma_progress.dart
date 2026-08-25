@@ -13,7 +13,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
 import '../../presentation/providers/pumping_lemma_progress_provider.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Progress tracking panel for the Pumping Lemma Game.
 class PumpingLemmaProgress extends ConsumerWidget {
@@ -48,7 +50,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
         Icon(Icons.analytics, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 8),
         Text(
-          'Progress',
+          appLocalizationsOf(context).progressTitle,
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -75,7 +77,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Overall Progress',
+            appLocalizationsOf(context).overallProgress,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -95,7 +97,10 @@ class PumpingLemmaProgress extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${progress.completedChallenges} / ${progress.totalChallenges} challenges completed',
+                appLocalizationsOf(context).challengesCompleted(
+                  progress.completedChallenges,
+                  progress.totalChallenges,
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -129,7 +134,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Statistics',
+            appLocalizationsOf(context).statistics,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -140,7 +145,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Expanded(
                 child: _buildStatCard(
                   context,
-                  title: 'Accuracy',
+                  title: appLocalizationsOf(context).accuracy,
                   value: '${(accuracy * 100).toInt()}%',
                   icon: Icons.gps_fixed,
                   color: _getAccuracyColor(accuracy),
@@ -150,7 +155,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Expanded(
                 child: _buildStatCard(
                   context,
-                  title: 'Correct',
+                  title: appLocalizationsOf(context).correctCount,
                   value: '${progress.score}',
                   icon: Icons.check_circle,
                   color: Colors.green,
@@ -164,7 +169,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Expanded(
                 child: _buildStatCard(
                   context,
-                  title: 'Attempts',
+                  title: appLocalizationsOf(context).attempts,
                   value: '${progress.attempts}',
                   icon: Icons.quiz,
                   color: Colors.blue,
@@ -174,7 +179,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
               Expanded(
                 child: _buildStatCard(
                   context,
-                  title: 'Score',
+                  title: appLocalizationsOf(context).score,
                   value: '${progress.score}/${progress.totalChallenges}',
                   icon: Icons.star,
                   color: Colors.orange,
@@ -233,7 +238,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Challenge History',
+          appLocalizationsOf(context).challengeHistory,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -280,14 +285,14 @@ class PumpingLemmaProgress extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No challenges completed yet',
+            appLocalizationsOf(context).noChallengesCompletedYet,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Complete some challenges to see your progress here',
+            appLocalizationsOf(context).completeSomeChallengesHint,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -304,8 +309,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
     int index,
   ) {
     final color = entry.isCorrect == true ? Colors.green : Colors.red;
-    final title =
-        entry.challengeTitle ?? 'Challenge ${entry.challengeId ?? index + 1}';
+    final title = entry.challengeTitle ??
+        appLocalizationsOf(context)
+            .challengeNumber(entry.challengeId ?? index + 1);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -345,7 +351,8 @@ class PumpingLemmaProgress extends ConsumerWidget {
                     entry.language!,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+                    ).textTheme.bodySmall?.copyWith(
+                        fontFamilyFallback: kMonospaceFontFamilyFallback),
                   ),
                 Text(
                   _formatTime(entry.timestamp),
@@ -364,7 +371,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
                 size: 20,
               ),
               Text(
-                entry.isCorrect == true ? 'Correct' : 'Wrong',
+                entry.isCorrect == true
+                    ? appLocalizationsOf(context).correctShort
+                    : appLocalizationsOf(context).wrong,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: color,
                       fontWeight: FontWeight.bold,
@@ -379,8 +388,9 @@ class PumpingLemmaProgress extends ConsumerWidget {
 
   Widget _buildRetryItem(BuildContext context, PumpingLemmaHistoryEntry entry) {
     final color = Colors.amber.shade700;
-    final title =
-        entry.challengeTitle ?? 'Challenge ${entry.challengeId ?? '-'}';
+    final title = entry.challengeTitle ??
+        appLocalizationsOf(context)
+            .challengeFallback('${entry.challengeId ?? '-'}');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -403,7 +413,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Retry selected',
+                  appLocalizationsOf(context).retrySelected,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: color,
@@ -415,7 +425,8 @@ class PumpingLemmaProgress extends ConsumerWidget {
                     entry.language!,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+                    ).textTheme.bodySmall?.copyWith(
+                        fontFamilyFallback: kMonospaceFontFamilyFallback),
                   ),
                 Text(
                   _formatTime(entry.timestamp),

@@ -405,6 +405,10 @@ AutomatonGraphViewTransitionConfig _buildReadOnlyTransitionConfig(
   );
 }
 
+/// Top inset of the transition-mode indicator. It clears the band the mobile
+/// floating inspector occupies, which starts in the canvas's top-right corner.
+const double _kTransitionModeIndicatorTop = 76.0;
+
 const double _kNodeDiameter = kAutomatonStateDiameter;
 const double _kNodeRadius = _kNodeDiameter / 2;
 const Size _kInitialArrowSize = Size(24, 12);

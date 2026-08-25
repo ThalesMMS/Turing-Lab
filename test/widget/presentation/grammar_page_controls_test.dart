@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/grammar_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
@@ -110,7 +112,10 @@ void main() {
 
     await tester.tap(_appBarAction('Algorithms'));
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('GLC - Palíndromo'));
+    await pumpUntilFound(
+      tester,
+      find.text(AppLocalizationsEn().localizedExampleName('GLC - Palíndromo')),
+    );
     expect(find.byType(GrammarAlgorithmPanel), findsOneWidget);
 
     await tester.tap(
@@ -243,7 +248,11 @@ void main() {
 
     await tester.tap(_appBarAction('Algorithms'));
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('GLC - Palíndromo'));
+    final exampleL10n = AppLocalizationsEn();
+    await pumpUntilFound(
+      tester,
+      find.text(exampleL10n.localizedExampleName('GLC - Palíndromo')),
+    );
 
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.byType(GrammarAlgorithmPanel), findsOneWidget);
@@ -254,10 +263,15 @@ void main() {
       'GLC - Zeros em quantidade par',
       'GLC - Expressões aritméticas',
     ]) {
-      expect(find.text(example), findsOneWidget);
+      expect(
+        find.text(exampleL10n.localizedExampleName(example)),
+        findsOneWidget,
+      );
     }
 
-    await tester.tap(find.text('GLC - a^n b^n'));
+    await tester.tap(
+      find.text(exampleL10n.localizedExampleName('GLC - a^n b^n')),
+    );
     await pumpUntilFound(tester, find.textContaining('Example loaded:'));
     expect(container.read(grammarProvider).name, 'GLC - a^n b^n');
   });

@@ -484,14 +484,16 @@ void main() {
         expect(svg, contains('<g class="state">'));
         expect(svg, contains('>q0<'));
         expect(svg, contains('>qAccept<'));
-        expect(svg, contains('marker-end="url(#arrowhead)"'));
+        // Arrowheads are tinted per stroke colour, so the id carries the hex.
+        expect(svg,
+            matches(RegExp(r'marker-end="url\(#arrowhead-[0-9a-f]{6}\)"')));
 
         // Transition labelling and legend description
         expect(svg, contains('a/a, R'));
         expect(svg, contains('<g class="legend">'));
         expect(
           svg,
-          contains('δ(q, s) = (q′, w, d) — leitura/escrita/movimento'),
+          contains('δ(q, s) = (q′, w, d) — read/write/move'),
         );
       });
 

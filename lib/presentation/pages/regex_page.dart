@@ -30,10 +30,12 @@ import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/algorithm_panel_scaffold.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/common/help_navigation.dart';
+import '../widgets/conversion_replacement_dialog.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/simulation_panel.dart';
 import '../widgets/switch_setting_tile.dart';
 import '../widgets/tablet_layout_container.dart';
+import '../../core/constants/monospace_typography.dart';
 
 part 'regex_page_layout.dart';
 part 'regex_page_simplification.dart';
@@ -124,13 +126,20 @@ class _RegexPageState extends ConsumerState<RegexPage> {
         .testStringMatch(_testStringController.text);
   }
 
-  void _convertToNFA() {
+  Future<void> _convertToNFA() async {
     final l10n = AppLocalizations.of(context);
     final regexState = ref.read(regexEditorProvider);
     if (!regexState.canRunRegexOperation) {
       _showFeedback(l10n.enterValidRegexFirst, tone: AppSnackBarTone.error);
       return;
     }
+
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.automaton,
+    );
+    if (!mounted || !shouldReplace) return;
 
     final result = ref.read(regexEditorProvider.notifier).convertToNfa();
 
@@ -144,16 +153,25 @@ class _RegexPageState extends ConsumerState<RegexPage> {
 
     _pushAutomatonToProvider(result.data!);
 
+    ref.read(homeNavigationProvider.notifier).goToFsa();
+
     _showFeedback(l10n.convertedRegexToNfa, tone: AppSnackBarTone.success);
   }
 
-  void _convertToDFA() {
+  Future<void> _convertToDFA() async {
     final l10n = AppLocalizations.of(context);
     final regexState = ref.read(regexEditorProvider);
     if (!regexState.canRunRegexOperation) {
       _showFeedback(l10n.enterValidRegexFirst, tone: AppSnackBarTone.error);
       return;
     }
+
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.automaton,
+    );
+    if (!mounted || !shouldReplace) return;
 
     final result = ref.read(regexEditorProvider.notifier).convertToDfa();
 
@@ -234,7 +252,7 @@ class _RegexPageState extends ConsumerState<RegexPage> {
 
       if (result.isFailure) {
         _showFeedback(
-          'Failed to load example: ${result.error}',
+          AppLocalizations.of(context).failedToLoadExample('${result.error}'),
           tone: AppSnackBarTone.error,
         );
         return;
@@ -245,13 +263,13 @@ class _RegexPageState extends ConsumerState<RegexPage> {
       notifier.setAlphabet(preset.alphabet);
       notifier.validateRegex(preset.expression);
       _showFeedback(
-        'Example loaded: ${preset.name}',
+        AppLocalizations.of(context).exampleLoaded(preset.name),
         tone: AppSnackBarTone.success,
       );
     } catch (error) {
       if (!mounted) return;
       _showFeedback(
-        'Failed to load example: $error',
+        AppLocalizations.of(context).failedToLoadExample('$error'),
         tone: AppSnackBarTone.error,
       );
     } finally {

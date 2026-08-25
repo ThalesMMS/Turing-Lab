@@ -27,6 +27,7 @@ import 'base_simulation_panel.dart';
 import 'canvas_simulation_step_projection.dart';
 import 'trace_viewers/pda_trace_viewer.dart';
 import 'pda/stack_drawer.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Panel for PDA simulation and string testing
 class PDASimulationPanel extends ConsumerStatefulWidget {
@@ -136,7 +137,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         SimulationTextField(
           controller: _initialStackController,
           labelText: 'Initial Stack Symbol',
-          hintText: 'e.g., Z',
+          hintText: appLocalizationsOf(context).egInitialStack,
           isDense: false,
         ),
         const SizedBox(height: 8),
@@ -158,9 +159,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         ),
         const SizedBox(height: 8),
         Text(
-          appLocalizationsOf(context).localizeWorkflowText(
-            'Examples: aabb (for balanced parentheses), abab (for palindromes)',
-          ),
+          appLocalizationsOf(context).pdaExamplesHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(
                   context,
@@ -195,7 +194,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Current Stack State',
+            appLocalizationsOf(context).currentStackState,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -219,7 +218,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Stack:',
+                        '${appLocalizationsOf(context).pdaStackPanelLabel}:',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(
                                 context,
@@ -228,11 +227,13 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        stackContents.isEmpty ? '(empty)' : stackContents,
+                        stackContents.isEmpty
+                            ? appLocalizationsOf(context).emptyParen
+                            : stackContents,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontFamily: 'monospace',
+                              fontFamilyFallback: kMonospaceFontFamilyFallback,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.primary,
                             ),
@@ -249,7 +250,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                'Highlighting stack cell ${highlightedIndex + 1} (from bottom)',
+                                appLocalizationsOf(context)
+                                    .highlightingStackCell(
+                                  highlightedIndex + 1,
+                                ),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
@@ -285,7 +289,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Remaining Input:',
+                        appLocalizationsOf(context).remainingInputColon,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(
                                 context,
@@ -294,11 +298,13 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        remainingInput.isEmpty ? '(empty)' : remainingInput,
+                        remainingInput.isEmpty
+                            ? appLocalizationsOf(context).emptyParen
+                            : remainingInput,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontFamily: 'monospace',
+                              fontFamilyFallback: kMonospaceFontFamilyFallback,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.secondary,
                             ),
@@ -352,7 +358,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     final color = isAccepted ? colorScheme.tertiary : colorScheme.error;
     final message = hasResult
         ? (isAccepted ? 'Accepted' : 'Rejected')
-        : 'Simulation failed';
+        : appLocalizationsOf(context).simulationFailed;
     final errorText = _errorMessage ?? result?.errorMessage;
 
     return SimulationStatusCard(
@@ -361,7 +367,8 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       children: [
         if (result case final simulationResult?)
           Text(
-            'Time: ${simulationResult.executionTime.inMilliseconds} ms',
+            appLocalizationsOf(context)
+                .timeMs(simulationResult.executionTime.inMilliseconds),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         if (errorText != null && errorText.isNotEmpty)
@@ -378,7 +385,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
             when simulationResult.steps.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(
-            'Simulation Steps:',
+            appLocalizationsOf(context).simulationSteps,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -407,7 +414,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     final initialStack = _initialStackController.text.trim();
 
     if (initialStack.isEmpty) {
-      _showError('Please enter an initial stack symbol');
+      _showError(appLocalizationsOf(context).pleaseEnterInitialStackSymbol);
       return;
     }
 
@@ -415,7 +422,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     final currentPda = editorState.pda;
 
     if (currentPda == null) {
-      _showError('Create a PDA on the canvas before simulating.');
+      _showError(appLocalizationsOf(context).createPdaBeforeSimulating);
       return;
     }
 
@@ -491,7 +498,8 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       setState(() {
         _isSimulating = false;
         _simulationResult = null;
-        _errorMessage = outcome.message ?? 'Simulation failed';
+        _errorMessage =
+            outcome.message ?? appLocalizationsOf(context).simulationFailed;
       });
       _highlightService.clear();
     }
@@ -512,7 +520,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     setState(() {
       _isSimulating = false;
       _simulationResult = null;
-      _errorMessage = 'Simulation cancelled';
+      _errorMessage = appLocalizationsOf(context).simulationCancelled;
     });
     _highlightService.clear();
     widget.onSimulationEnd?.call();

@@ -19,6 +19,7 @@ import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 class TMTraceViewer extends StatefulWidget {
   final TMSimulationResult result;
@@ -90,7 +91,8 @@ class _TMTraceViewerState extends State<TMTraceViewer> {
                   'q=${step.currentState} | ${l10n.traceTape}=$tape$transition',
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+                  ).textTheme.bodyMedium?.copyWith(
+                      fontFamilyFallback: kMonospaceFontFamilyFallback),
                 ),
               ),
             ],

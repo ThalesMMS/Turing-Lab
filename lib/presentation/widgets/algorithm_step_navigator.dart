@@ -11,6 +11,7 @@
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations_resolver.dart';
 import '../providers/algorithm_step_provider.dart';
 
 /// Widget for navigating through algorithm execution steps
@@ -83,7 +84,7 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               _buildNavigationButton(
                 context: context,
                 icon: Icons.skip_previous,
-                label: 'Previous',
+                label: appLocalizationsOf(context).previous,
                 onPressed: stepState.hasPreviousStep
                     ? () {
                         stepNotifier.previousStep();
@@ -107,7 +108,7 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               _buildNavigationButton(
                 context: context,
                 icon: Icons.skip_next,
-                label: 'Next',
+                label: appLocalizationsOf(context).next,
                 onPressed: stepState.hasNextStep
                     ? () {
                         stepNotifier.nextStep();
@@ -142,7 +143,10 @@ class AlgorithmStepNavigator extends ConsumerWidget {
         Icon(Icons.pin_drop, size: 18, color: colorScheme.primary),
         const SizedBox(width: 8),
         Text(
-          'Step ${stepState.currentStepNumber} of ${stepState.totalSteps}',
+          appLocalizationsOf(context).stepOf(
+            stepState.currentStepNumber,
+            stepState.totalSteps,
+          ),
           style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -197,7 +201,9 @@ class AlgorithmStepNavigator extends ConsumerWidget {
     final canPlay = !stepState.isAtLastStep;
 
     return Tooltip(
-      message: isPlaying ? 'Pause' : 'Play',
+      message: isPlaying
+          ? appLocalizationsOf(context).pause
+          : appLocalizationsOf(context).play,
       child: ElevatedButton(
         onPressed: canPlay || isPlaying
             ? () {
@@ -240,7 +246,7 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           iconSize: 20,
           color: colorScheme.primary,
           disabledColor: colorScheme.onSurface.withValues(alpha: 0.3),
-          tooltip: 'First step',
+          tooltip: appLocalizationsOf(context).firstStep,
         ),
 
         // Slider
@@ -252,7 +258,11 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               thumbColor: colorScheme.primary,
               overlayColor: colorScheme.primary.withValues(alpha: 0.2),
               valueIndicatorColor: colorScheme.primary,
-              valueIndicatorTextStyle: TextStyle(
+              // Derived from the theme so the indicator keeps the app's
+              // typography instead of falling back to the default font.
+              valueIndicatorTextStyle:
+                  (Theme.of(context).textTheme.labelMedium ?? const TextStyle())
+                      .copyWith(
                 color: colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),
@@ -263,7 +273,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               max: (stepState.totalSteps - 1).toDouble(),
               divisions:
                   stepState.totalSteps > 1 ? stepState.totalSteps - 1 : 1,
-              label: 'Step ${stepState.currentStepNumber}',
+              label: appLocalizationsOf(context)
+                  .stepNumberLabel(stepState.currentStepNumber),
               onChanged: (value) {
                 final newIndex = value.toInt();
                 stepNotifier.jumpToStep(newIndex);
@@ -285,7 +296,7 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           iconSize: 20,
           color: colorScheme.primary,
           disabledColor: colorScheme.onSurface.withValues(alpha: 0.3),
-          tooltip: 'Last step',
+          tooltip: appLocalizationsOf(context).lastStep,
         ),
       ],
     );

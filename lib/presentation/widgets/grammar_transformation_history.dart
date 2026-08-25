@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/grammar.dart';
 import '../../core/models/grammar_transformation_step.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_workflows.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Renders a list of [GrammarTransformationStep] entries with optional
 /// expand/collapse details.
@@ -28,7 +31,7 @@ class GrammarTransformationHistory extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Transformation steps',
+          appLocalizationsOf(context).transformationSteps,
           style: Theme.of(context)
               .textTheme
               .titleMedium
@@ -66,15 +69,22 @@ class _StepTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        title: Text('${index + 1}. ${step.operation}'),
-        subtitle: step.rationale.trim().isEmpty ? null : Text(step.rationale),
+        title: Text(
+          '${index + 1}. ${appLocalizationsOf(context).localizeWorkflowText(step.operation)}',
+        ),
+        subtitle: step.rationale.trim().isEmpty
+            ? null
+            : Text(
+                appLocalizationsOf(context)
+                    .localizeWorkflowText(step.rationale),
+              ),
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         children: [
           Row(
             children: [
               Expanded(
                 child: Text(
-                  'Apply the grammar produced by this step.',
+                  appLocalizationsOf(context).applyGrammarStep,
                   style: theme.textTheme.bodySmall,
                 ),
               ),
@@ -82,14 +92,20 @@ class _StepTile extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: () => onApplyGrammar(step.after),
                 icon: const Icon(Icons.check),
-                label: const Text('Apply'),
+                label: Text(appLocalizationsOf(context).apply),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _GrammarSnapshot(title: 'Before', grammar: step.before),
+          _GrammarSnapshot(
+            title: appLocalizationsOf(context).before,
+            grammar: step.before,
+          ),
           const SizedBox(height: 12),
-          _GrammarSnapshot(title: 'After', grammar: step.after),
+          _GrammarSnapshot(
+            title: appLocalizationsOf(context).after,
+            grammar: step.after,
+          ),
         ],
       ),
     );
@@ -123,13 +139,13 @@ class _GrammarSnapshot extends StatelessWidget {
           ),
           child: Text(
             productions.isEmpty
-                ? '(no productions)'
+                ? appLocalizationsOf(context).noProductions
                 : productions
                     .map((p) => '${p.leftSide.join(' ')} → '
                         '${p.isLambda ? 'ε' : p.rightSide.join(' ')}')
                     .join('\n'),
             style: theme.textTheme.bodySmall?.copyWith(
-              fontFamily: 'monospace',
+              fontFamilyFallback: kMonospaceFontFamilyFallback,
             ),
           ),
         ),

@@ -1,5 +1,6 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:graphview/graphview_turing_lab.dart';
 import 'package:turing_lab/features/canvas/graphview/automatic_transition_route_planner.dart';
 
 void main() {
@@ -49,23 +50,19 @@ void main() {
     expect(result['b']!.controlPoint, reversed['b']!.controlPoint);
   });
 
-  test('loop selects a free heading and changes when it is occupied', () {
+  test('loop points up when the border around the state is free', () {
     const planner = AutomaticTransitionRoutePlanner();
-    const loop = AutomaticTransitionRouteRequest(
-      stableId: 'loop-a',
-      sourceId: 'q0',
-      destinationId: 'q0',
-      sourceCenter: Offset(200, 200),
-      destinationCenter: Offset(200, 200),
-      sourceRadius: 48,
-      destinationRadius: 48,
-      laneOffset: 0,
-      repulsionOffset: Offset.zero,
-    );
 
-    final open = planner.plan(requests: [loop], obstacles: const []);
+    final plan = planner.plan(requests: [_loopRequest()], obstacles: const []);
+
+    expect(plan['loop-a']!.loopAngle, closeTo(-math.pi / 2, 0.01));
+  });
+
+  test('loop turns away from a state blocking its heading', () {
+    const planner = AutomaticTransitionRoutePlanner();
+
     final blocked = planner.plan(
-      requests: [loop],
+      requests: [_loopRequest()],
       obstacles: const [
         AutomaticTransitionObstacle(
           id: 'north-blocker',
@@ -75,34 +72,98 @@ void main() {
       ],
     );
 
-    expect(open['loop-a']!.loopHeading, LoopHeading.north);
-    expect(blocked['loop-a']!.loopHeading, isNot(LoopHeading.north));
+    expect(
+      _angularGap(blocked['loop-a']!.loopAngle!, -math.pi / 2),
+      greaterThan(math.pi / 6),
+    );
   });
 
-  test('loop keeps its previous heading across near-tie replans', () {
+  test('loop keeps clear of the initial-state marker and of transitions', () {
     const planner = AutomaticTransitionRoutePlanner();
-    const previous = LoopHeading.east;
-    const loop = AutomaticTransitionRouteRequest(
-      stableId: 'loop-a',
-      sourceId: 'q0',
-      destinationId: 'q0',
-      sourceCenter: Offset(200, 200),
-      destinationCenter: Offset(200, 200),
-      sourceRadius: 48,
-      destinationRadius: 48,
-      laneOffset: 0,
-      repulsionOffset: Offset.zero,
-      previousLoopHeading: previous,
+
+    // The marker enters from the west and a transition leaves to the north,
+    // so the loop has to settle on one of the free sides.
+    final plan = planner.plan(
+      requests: [
+        _loopRequest(
+          repulsors: const [
+            AutomaticTransitionLoopRepulsor(
+              direction: math.pi,
+              halfWidth: 5 * math.pi / 18,
+              weight: 2.5,
+            ),
+            AutomaticTransitionLoopRepulsor(
+              direction: -math.pi / 2,
+              halfWidth: 7 * math.pi / 36,
+              weight: 2.0,
+            ),
+          ],
+        ),
+      ],
+      obstacles: const [],
     );
 
-    // With every heading free, the previous choice must win the tie instead
-    // of flipping back to the default heading order.
-    final replanned = planner.plan(requests: [loop], obstacles: const []);
-    expect(replanned['loop-a']!.loopHeading, previous);
+    final angle = plan['loop-a']!.loopAngle!;
+    expect(_angularGap(angle, math.pi), greaterThan(math.pi / 2));
+    expect(_angularGap(angle, -math.pi / 2), greaterThan(math.pi / 6));
+  });
 
-    // A heading colliding with a node must still lose despite stickiness.
+  test('loop slides with a moving neighbour instead of jumping sides', () {
+    const planner = AutomaticTransitionRoutePlanner();
+    var previous = -math.pi / 2;
+    final travelled = <double>[];
+
+    // Walks a neighbouring state across the top of the looping state, one
+    // replan per step, exactly as a drag would.
+    for (var step = 0; step <= 20; step++) {
+      final plan = planner.plan(
+        requests: [_loopRequest(previousLoopAngle: previous)],
+        obstacles: [
+          AutomaticTransitionObstacle(
+            id: 'walker',
+            center: Offset(120 + (step * 8), 90),
+            radius: 48,
+          ),
+        ],
+      );
+      final angle = plan['loop-a']!.loopAngle!;
+      travelled.add(_angularGap(angle, previous));
+      previous = angle;
+    }
+
+    expect(travelled.reduce(math.max), lessThan(math.pi / 6));
+  });
+
+  test('loop stays on the side it was already on when sides tie', () {
+    const planner = AutomaticTransitionRoutePlanner();
+    // A state due north leaves two mirror-image placements. Whichever one the
+    // loop already had must survive the replan.
+    const blocker = [
+      AutomaticTransitionObstacle(
+        id: 'north-blocker',
+        center: Offset(200, 80),
+        radius: 48,
+      ),
+    ];
+
+    final fromEast = planner.plan(
+      requests: [_loopRequest(previousLoopAngle: 0)],
+      obstacles: blocker,
+    );
+    final fromWest = planner.plan(
+      requests: [_loopRequest(previousLoopAngle: math.pi)],
+      obstacles: blocker,
+    );
+
+    expect(math.cos(fromEast['loop-a']!.loopAngle!), greaterThan(0));
+    expect(math.cos(fromWest['loop-a']!.loopAngle!), lessThan(0));
+  });
+
+  test('loop abandons its previous angle when a state moves onto it', () {
+    const planner = AutomaticTransitionRoutePlanner();
+
     final blocked = planner.plan(
-      requests: [loop],
+      requests: [_loopRequest(previousLoopAngle: 0)],
       obstacles: const [
         AutomaticTransitionObstacle(
           id: 'east-blocker',
@@ -111,6 +172,73 @@ void main() {
         ),
       ],
     );
-    expect(blocked['loop-a']!.loopHeading, isNot(previous));
+
+    expect(
+      _angularGap(blocked['loop-a']!.loopAngle!, 0),
+      greaterThan(math.pi / 6),
+    );
   });
+
+  test('loop planning ignores the order requests arrive in', () {
+    const planner = AutomaticTransitionRoutePlanner();
+    final requests = [
+      _loopRequest(stableId: 'loop-a'),
+      _loopRequest(
+          stableId: 'loop-b', sourceId: 'q1', center: const Offset(500, 200)),
+    ];
+    const obstacles = [
+      AutomaticTransitionObstacle(
+        id: 'q0',
+        center: Offset(200, 200),
+        radius: 48,
+      ),
+      AutomaticTransitionObstacle(
+        id: 'q1',
+        center: Offset(500, 200),
+        radius: 48,
+      ),
+      AutomaticTransitionObstacle(
+        id: 'blocker',
+        center: Offset(350, 130),
+        radius: 48,
+      ),
+    ];
+
+    final plan = planner.plan(requests: requests, obstacles: obstacles);
+    final reversed = planner.plan(
+      requests: requests.reversed.toList(),
+      obstacles: obstacles,
+    );
+
+    expect(plan['loop-a']!.loopAngle, reversed['loop-a']!.loopAngle);
+    expect(plan['loop-b']!.loopAngle, reversed['loop-b']!.loopAngle);
+  });
+}
+
+AutomaticTransitionRouteRequest _loopRequest({
+  String stableId = 'loop-a',
+  String sourceId = 'q0',
+  Offset center = const Offset(200, 200),
+  double? previousLoopAngle,
+  List<AutomaticTransitionLoopRepulsor> repulsors =
+      const <AutomaticTransitionLoopRepulsor>[],
+}) {
+  return AutomaticTransitionRouteRequest(
+    stableId: stableId,
+    sourceId: sourceId,
+    destinationId: sourceId,
+    sourceCenter: center,
+    destinationCenter: center,
+    sourceRadius: 48,
+    destinationRadius: 48,
+    laneOffset: 0,
+    repulsionOffset: Offset.zero,
+    previousLoopAngle: previousLoopAngle,
+    loopRepulsors: repulsors,
+  );
+}
+
+double _angularGap(double left, double right) {
+  final delta = (left - right) % (2 * math.pi);
+  return delta > math.pi ? (2 * math.pi) - delta : delta;
 }

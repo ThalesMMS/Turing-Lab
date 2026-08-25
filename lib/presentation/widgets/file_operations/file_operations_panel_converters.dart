@@ -13,7 +13,7 @@ extension _FileOperationsPanelConverters on _FileOperationsPanelState {
       return _fileService.loadAutomatonFromJson(normalizedPath);
     }
 
-    return const Failure<FSA>(_kJsonUnreadableFileMessage);
+    return Failure<FSA>(_l10n.jsonUnreadableFileMessage);
   }
 
   TuringMachineEntity _convertTmToEntity(TM tm) {

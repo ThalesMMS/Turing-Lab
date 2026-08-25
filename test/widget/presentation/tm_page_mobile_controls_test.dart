@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
@@ -265,7 +267,13 @@ void main() {
 
     await tester.tap(find.byTooltip('Algorithms'));
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('MT - a^n b^n'));
+    // The examples keep their canonical names; the sheet shows them through
+    // the active locale, which is English here.
+    final exampleL10n = AppLocalizationsEn();
+    await pumpUntilFound(
+      tester,
+      find.text(exampleL10n.localizedExampleName('MT - a^n b^n')),
+    );
     for (final example in const [
       'MT - a^n b^n',
       'MT - Binário para unário',
@@ -273,7 +281,10 @@ void main() {
       'MT - Incremento binário',
       'MT - Verificador de palíndromo',
     ]) {
-      expect(find.text(example), findsOneWidget);
+      expect(
+        find.text(exampleL10n.localizedExampleName(example)),
+        findsOneWidget,
+      );
     }
     Navigator.of(tester.element(find.byType(BottomSheet))).pop();
     await tester.pumpAndSettle();
@@ -299,7 +310,8 @@ void main() {
     );
   });
 
-  testWidgets('populated TM Help opens theory and keeps decidability command', (
+  testWidgets(
+      'populated TM Help opens theory and keeps the termination command', (
     tester,
   ) async {
     await _pumpMobileTmPage(tester);
@@ -336,13 +348,13 @@ void main() {
     await tester.tap(find.byTooltip('Algorithms'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-    final decidabilityButton = tester.widget<AlgorithmButton>(
+    final terminationButton = tester.widget<AlgorithmButton>(
       find.ancestor(
-        of: find.text('Check Decidability'),
+        of: find.text(AppLocalizationsEn().terminationAndCyclesTitle),
         matching: find.byType(AlgorithmButton),
       ),
     );
-    expect(decidabilityButton.icon, Icons.fact_check_outlined);
+    expect(terminationButton.icon, Icons.fact_check_outlined);
   });
 
   testWidgets('TMPage mobile exposes and toggles transition mode', (

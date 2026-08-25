@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 
 import '../../core/models/step_explanation.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../core/constants/monospace_typography.dart';
 
 class GrammarSententialFormCard extends StatelessWidget {
   final StepExplanation explanation;
@@ -54,7 +56,7 @@ class GrammarSententialFormCard extends StatelessWidget {
                     size: 18, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Before / After',
+                  appLocalizationsOf(context).beforeAfter,
                   style: Theme.of(context)
                       .textTheme
                       .titleSmall
@@ -65,7 +67,7 @@ class GrammarSententialFormCard extends StatelessWidget {
             const SizedBox(height: 10),
             _buildLabeledForm(
               context,
-              label: 'Before',
+              label: appLocalizationsOf(context).before,
               text: before,
               highlightStart: start,
               highlightEnd: end,
@@ -74,7 +76,7 @@ class GrammarSententialFormCard extends StatelessWidget {
             const SizedBox(height: 10),
             _buildLabeledForm(
               context,
-              label: 'After',
+              label: appLocalizationsOf(context).after,
               text: after,
               highlightStart: start,
               highlightEnd: end,
@@ -101,10 +103,8 @@ class GrammarSententialFormCard extends StatelessWidget {
     final mid = text.substring(safeStart, safeEnd);
     final suffix = text.substring(safeEnd);
 
-    final baseStyle = Theme.of(context)
-        .textTheme
-        .bodyMedium
-        ?.copyWith(fontFamily: 'monospace', height: 1.4);
+    final baseStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontFamilyFallback: kMonospaceFontFamilyFallback, height: 1.4);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

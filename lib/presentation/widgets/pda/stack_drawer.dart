@@ -10,6 +10,9 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations_resolver.dart';
+import '../../../core/constants/monospace_typography.dart';
+
 /// Kind of operation performed on the stack
 enum StackOperationType { none, push, pop, replace }
 
@@ -313,7 +316,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                 const SizedBox(width: 6), // Reduced spacing
                 Expanded(
                   child: Text(
-                    'Stack (${widget.stackState.size})',
+                    appLocalizationsOf(context)
+                        .stackCount(widget.stackState.size),
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 13, // Compact font size
@@ -345,7 +349,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
               child: widget.stackState.isEmpty
                   ? Center(
                       child: Text(
-                        'Empty\n(Z₀: ${widget.initialStackSymbol})',
+                        appLocalizationsOf(context)
+                            .emptyStack(widget.initialStackSymbol),
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11, // Compact font size
@@ -390,16 +395,17 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                         final cellPosition = index + 1;
                         final stackSize = widget.stackState.symbols.length +
                             (_isPopAnimation ? _poppedSymbols.length : 0);
+                        final l10n = appLocalizationsOf(context);
                         final semanticsLabel = [
-                          'Stack cell $cellPosition of $stackSize',
-                          'symbol $symbol',
-                          if (isTop) 'top of stack',
-                          if (isHighlighted) 'highlighted',
-                          if (isBeingPopped) 'being removed',
+                          l10n.stackCellSemantics(cellPosition, stackSize),
+                          l10n.stackCellSymbol(symbol),
+                          if (isTop) l10n.topOfStack,
+                          if (isHighlighted) l10n.highlighted,
+                          if (isBeingPopped) l10n.beingRemoved,
                         ].join(', ');
                         final semanticsHint = isHighlighted
-                            ? 'Double tap to clear the highlight. Swipe left to unhighlight this stack cell.'
-                            : 'Double tap to highlight this stack cell. Swipe right to highlight it.';
+                            ? l10n.stackCellHintClear
+                            : l10n.stackCellHintHighlight;
 
                         Widget itemWidget = Semantics(
                           label: semanticsLabel,
@@ -481,7 +487,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                                                 child: Text(
                                                   symbol,
                                                   style: TextStyle(
-                                                    fontFamily: 'monospace',
+                                                    fontFamilyFallback:
+                                                        kMonospaceFontFamilyFallback,
                                                     fontWeight:
                                                         isTop || isHighlighted
                                                             ? FontWeight.bold
@@ -556,7 +563,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                                             ),
                                           ),
                                           child: Text(
-                                            'TOP',
+                                            appLocalizationsOf(context)
+                                                .topBadge,
                                             style: TextStyle(
                                               color:
                                                   theme.colorScheme.onPrimary,
@@ -712,12 +720,15 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                     visualDensity: VisualDensity.compact,
                   ),
                   child: Semantics(
-                    label: 'Clear stack',
-                    hint: 'Removes every symbol from the stack view.',
+                    label: appLocalizationsOf(context).clearStack,
+                    hint: appLocalizationsOf(context).clearStackHint,
                     button: true,
                     enabled: true,
                     excludeSemantics: true,
-                    child: const Text('Clear', style: TextStyle(fontSize: 12)),
+                    child: Text(
+                      appLocalizationsOf(context).clear,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
               ),
@@ -757,8 +768,9 @@ class _PDAStackPanelState extends State<PDAStackPanel>
           Flexible(
             child: Text(
               isOverflow
-                  ? 'Overflow!\nMax: ${widget.stackState.maxStackSize}'
-                  : 'Underflow!\nPop on empty',
+                  ? appLocalizationsOf(context)
+                      .overflowMax(widget.stackState.maxStackSize)
+                  : appLocalizationsOf(context).underflowPopOnEmpty,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 9,
                 color: theme.colorScheme.onErrorContainer,
@@ -776,7 +788,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
 
   /// Builds compact info panel showing top symbol, size, and last operation
   Widget _buildStackInfo(ThemeData theme) {
-    final topSymbol = widget.stackState.top ?? '(empty)';
+    final topSymbol =
+        widget.stackState.top ?? appLocalizationsOf(context).emptyParen;
     final size = widget.stackState.size;
 
     return Container(
@@ -791,7 +804,7 @@ class _PDAStackPanelState extends State<PDAStackPanel>
           Row(
             children: [
               Text(
-                'Top: ',
+                appLocalizationsOf(context).topLabel,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 10, // Smaller for mobile
                 ),
@@ -803,7 +816,7 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                     fontSize: 11, // Slightly reduced
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.primary,
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -812,7 +825,7 @@ class _PDAStackPanelState extends State<PDAStackPanel>
           ),
           const SizedBox(height: 1), // Reduced spacing
           Text(
-            'Size: $size',
+            appLocalizationsOf(context).sizeLabel(size),
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 10, // Smaller for mobile
             ),
@@ -820,7 +833,8 @@ class _PDAStackPanelState extends State<PDAStackPanel>
           if (widget.stackState.lastOperation != null) ...[
             const SizedBox(height: 1), // Reduced spacing
             Text(
-              'Op: ${widget.stackState.lastOperation}', // Shortened label
+              appLocalizationsOf(context)
+                  .opLabel(widget.stackState.lastOperation!),
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 9, // Smaller for mobile
                 color: theme.colorScheme.outline,

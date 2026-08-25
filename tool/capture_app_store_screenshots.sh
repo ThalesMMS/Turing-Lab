@@ -1,105 +1,68 @@
 #!/usr/bin/env bash
-
+#
+# capture_app_store_screenshots.sh
+# Turing Lab
+#
+# Local-only entry point for App Store screenshot capture. It resolves the
+# Flutter and Dart toolchain, makes sure package resolution is current, and
+# hands the selection to tool/app_store/app_store_capture_cli.dart, which
+# drives one isolated `flutter test` process per slot, writes the run manifest
+# and validates the resulting directory.
+#
+# This pipeline never runs in CI and is never discovered by `flutter test`.
+#
+#   tool/capture_app_store_screenshots.sh --help
+#   tool/capture_app_store_screenshots.sh --all --output build/screenshots/candidate
+#   tool/capture_app_store_screenshots.sh --profile iphone-6.9 --screen fsa --locale en
+#
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FLUTTER_BIN="${FLUTTER_BIN:-/opt/homebrew/bin/flutter}"
-PYTHON_BIN="${PYTHON_BIN:-$(command -v python3 || true)}"
-TARGET="test/app_store_screenshots_test.dart"
-OUTPUT_ROOT="$ROOT_DIR/screenshots/app_store"
-TIMEOUT_SECONDS="${TIMEOUT_SECONDS:-20}"
+FLUTTER_BIN="${FLUTTER_BIN:-$(command -v flutter || echo /opt/homebrew/bin/flutter)}"
+DART_BIN="${DART_BIN:-$(dirname "$FLUTTER_BIN")/dart}"
+CLI_ENTRY="tool/app_store/app_store_capture_cli.dart"
 
-if [[ -z "$PYTHON_BIN" ]]; then
-  echo "python3 is required to run screenshot capture timeouts" >&2
+if [[ ! -x "$FLUTTER_BIN" ]]; then
+  echo "Flutter SDK not found at '$FLUTTER_BIN'. Set FLUTTER_BIN." >&2
   exit 1
 fi
+
+if [[ ! -x "$DART_BIN" ]]; then
+  DART_BIN="$(command -v dart || true)"
+fi
+
+if [[ -z "$DART_BIN" || ! -x "$DART_BIN" ]]; then
+  echo "Dart SDK not found. Set DART_BIN to the dart executable." >&2
+  exit 1
+fi
+
+if [[ -n "${TIMEOUT_SECONDS:-}" ]]; then
+  echo "TIMEOUT_SECONDS is no longer honored; pass --timeout <seconds> instead." >&2
+  exit 64
+fi
+
+skip_pub_get=0
+wants_help=0
+for arg in "$@"; do
+  case "$arg" in
+    --skip-pub-get) skip_pub_get=1 ;;
+    -h|--help) wants_help=1 ;;
+  esac
+done
 
 cd "$ROOT_DIR"
-"$FLUTTER_BIN" pub get
 
-profiles=(
-  "iphone-6.9"
-  "iphone-6.5"
-  "iphone-5.5"
-  "ipad-13"
-  "macos"
-)
-
-shots=(
-  "01-fsa"
-  "02-grammar"
-  "03-pda"
-  "04-tm"
-  "05-regex"
-)
-
-mkdir -p "$OUTPUT_ROOT"
-for profile in "${profiles[@]}"; do
-  rm -rf "${OUTPUT_ROOT}/${profile}"
-done
-
-for profile in "${profiles[@]}"; do
-  for shot in "${shots[@]}"; do
-"$PYTHON_BIN" - <<PY
-import subprocess
-import sys
-
-cmd = [
-    "${FLUTTER_BIN}",
-    "test",
-    "${TARGET}",
-    "--plain-name",
-    "captures ${profile} ${shot}",
-]
-try:
-    result = subprocess.run(
-        cmd,
-        cwd="${ROOT_DIR}",
-        timeout=${TIMEOUT_SECONDS},
-        check=False,
-    )
-    if result.returncode != 0:
-        print(
-            "FAILED ({code}): captures ${profile} ${shot}".format(
-                code=result.returncode,
-            ),
-            file=sys.stderr,
-        )
-        raise SystemExit(result.returncode)
-except subprocess.TimeoutExpired as exc:
-    print(
-        "TIMEOUT after {timeout}s: captures ${profile} ${shot}".format(
-            timeout=exc.timeout,
-        ),
-        file=sys.stderr,
-    )
-except Exception as exc:
-    print(
-        "ERROR: captures ${profile} ${shot}: {error}".format(error=exc),
-        file=sys.stderr,
-    )
-    raise
-PY
-
-    if [[ ! -f "${OUTPUT_ROOT}/${profile}/${shot}.png" ]]; then
-      echo "Missing screenshot: ${OUTPUT_ROOT}/${profile}/${shot}.png" >&2
-      exit 1
-    fi
-  done
-done
-
-if [[ "${OSTYPE:-}" == darwin* ]] && command -v sips >/dev/null 2>&1; then
-  find "$OUTPUT_ROOT" -name '*.png' -print0 | while IFS= read -r -d '' file; do
-    sips -g pixelWidth -g pixelHeight "$file"
-  done
-elif command -v identify >/dev/null 2>&1; then
-  find "$OUTPUT_ROOT" -name '*.png' -print0 | while IFS= read -r -d '' file; do
-    width_height="$(identify -format '%w %h' "$file")"
-    echo "$file"
-    echo "  pixelWidth: ${width_height%% *}"
-    echo "  pixelHeight: ${width_height##* }"
-  done
-else
-  echo "Unable to verify screenshot dimensions: neither sips nor identify is available" >&2
-  exit 1
+if [[ ! -f .dart_tool/package_config.json ]]; then
+  skip_pub_get=0
+elif [[ "$wants_help" -eq 1 ]]; then
+  skip_pub_get=1
 fi
+
+if [[ "$skip_pub_get" -eq 0 ]]; then
+  "$FLUTTER_BIN" pub get >/dev/null
+fi
+
+export FLUTTER_BIN
+export APP_STORE_REPO_ROOT="$ROOT_DIR"
+
+exec "$DART_BIN" run "$CLI_ENTRY" "$@"

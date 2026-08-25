@@ -30,17 +30,17 @@ class DFAOperations {
   static Result<void> _validateDfa(FSA dfa, {String context = 'DFA'}) {
     if (dfa.initialState == null) {
       return ResultFactory.failure(
-        '$context deve possuir estado inicial definido.',
+        '$context must have a defined initial state.',
       );
     }
     if (!dfa.isDeterministic) {
       return ResultFactory.failure(
-        '$context deve ser determinístico (sem transições não determinísticas).',
+        '$context must be deterministic (no nondeterministic transitions).',
       );
     }
     if (dfa.hasEpsilonTransitions) {
       return ResultFactory.failure(
-        '$context não pode conter transições ε (epsilon).',
+        '$context cannot contain ε (epsilon) transitions.',
       );
     }
     // Validate transitions symbols are part of alphabet
@@ -49,7 +49,7 @@ class DFAOperations {
       for (final s in t.inputSymbols) {
         if (!dfa.alphabet.contains(s)) {
           return ResultFactory.failure(
-            '$context possui transição com símbolo fora do alfabeto: "$s".',
+            '$context has a transition with a symbol outside the alphabet: "$s".',
           );
         }
       }
@@ -58,22 +58,22 @@ class DFAOperations {
   }
 
   static Result<void> _validateBinaryOperands(FSA a, FSA b, String opLabel) {
-    final va = _validateDfa(a, context: 'Operando A');
+    final va = _validateDfa(a, context: 'Operand A');
     if (va.isFailure) return va;
-    final vb = _validateDfa(b, context: 'Operando B');
+    final vb = _validateDfa(b, context: 'Operand B');
     if (vb.isFailure) return vb;
     // Alphabets may differ; we normalize via completion on the union, but we still
     // validate that no operand has empty alphabet while having labeled transitions.
     if (a.alphabet.isEmpty &&
         a.fsaTransitions.any((t) => !t.isEpsilonTransition)) {
       return ResultFactory.failure(
-        'Operando A possui transições rotuladas, mas alfabeto está vazio.',
+        'Operand A has labeled transitions, but the alphabet is empty.',
       );
     }
     if (b.alphabet.isEmpty &&
         b.fsaTransitions.any((t) => !t.isEpsilonTransition)) {
       return ResultFactory.failure(
-        'Operando B possui transições rotuladas, mas alfabeto está vazio.',
+        'Operand B has labeled transitions, but the alphabet is empty.',
       );
     }
     return ResultFactory.success(null);
@@ -82,7 +82,7 @@ class DFAOperations {
   /// Computes the complement of a DFA by completing it and toggling final states.
   static Result<FSA> complement(FSA dfa) {
     try {
-      final valid = _validateDfa(dfa, context: 'DFA para complemento');
+      final valid = _validateDfa(dfa, context: 'DFA for complement');
       if (valid.isFailure) return ResultFactory.failure(valid.error!);
       final completed = _completeWithAlphabet(dfa, dfa.alphabet);
       final updated = _rebuildWithStateUpdate(
@@ -92,13 +92,13 @@ class DFAOperations {
       );
       return ResultFactory.success(updated);
     } catch (e) {
-      return ResultFactory.failure('Erro ao calcular complemento do DFA: $e');
+      return ResultFactory.failure('Error computing DFA complement: $e');
     }
   }
 
   /// Computes the union of two DFAs using the standard product construction.
   static Result<FSA> union(FSA a, FSA b) {
-    final valid = _validateBinaryOperands(a, b, 'união');
+    final valid = _validateBinaryOperands(a, b, 'union');
     if (valid.isFailure) return ResultFactory.failure(valid.error!);
     return _productConstruction(
       a,
@@ -110,7 +110,7 @@ class DFAOperations {
 
   /// Computes the intersection of two DFAs.
   static Result<FSA> intersection(FSA a, FSA b) {
-    final valid = _validateBinaryOperands(a, b, 'interseção');
+    final valid = _validateBinaryOperands(a, b, 'intersection');
     if (valid.isFailure) return ResultFactory.failure(valid.error!);
     return _productConstruction(
       a,
@@ -122,7 +122,7 @@ class DFAOperations {
 
   /// Computes the language difference a \ b for two DFAs.
   static Result<FSA> difference(FSA a, FSA b) {
-    final valid = _validateBinaryOperands(a, b, 'diferença');
+    final valid = _validateBinaryOperands(a, b, 'difference');
     if (valid.isFailure) return ResultFactory.failure(valid.error!);
     return _productConstruction(
       a,
@@ -136,7 +136,7 @@ class DFAOperations {
   /// reach an accepting state as accepting.
   static Result<FSA> prefixClosure(FSA dfa) {
     try {
-      final valid = _validateDfa(dfa, context: 'DFA para fecho por prefixos');
+      final valid = _validateDfa(dfa, context: 'DFA for prefix closure');
       if (valid.isFailure) return ResultFactory.failure(valid.error!);
       final completed = _completeWithAlphabet(dfa, dfa.alphabet);
       final reachable = _statesThatReachAccepting(completed);
@@ -146,7 +146,7 @@ class DFAOperations {
       );
       return ResultFactory.success(updated);
     } catch (e) {
-      return ResultFactory.failure('Erro ao calcular fecho por prefixos: $e');
+      return ResultFactory.failure('Error computing prefix closure: $e');
     }
   }
 
@@ -157,11 +157,11 @@ class DFAOperations {
   /// resulting NFA.
   static Result<FSA> suffixClosure(FSA dfa) {
     try {
-      final valid = _validateDfa(dfa, context: 'DFA para fecho por sufixos');
+      final valid = _validateDfa(dfa, context: 'DFA for suffix closure');
       if (valid.isFailure) return ResultFactory.failure(valid.error!);
       if (dfa.initialState == null) {
         return ResultFactory.failure(
-          'Automato não possui estado inicial definido.',
+          'The automaton does not have a defined initial state.',
         );
       }
 
@@ -236,7 +236,7 @@ class DFAOperations {
 
       return ResultFactory.success(renamed);
     } catch (e) {
-      return ResultFactory.failure('Erro ao calcular fecho por sufixos: $e');
+      return ResultFactory.failure('Error computing suffix closure: $e');
     }
   }
 
@@ -348,7 +348,7 @@ class DFAOperations {
 
       return ResultFactory.success(product);
     } catch (e) {
-      return ResultFactory.failure('Erro ao combinar DFAs ($operation): $e');
+      return ResultFactory.failure('Error combining DFAs ($operation): $e');
     }
   }
 
@@ -535,7 +535,7 @@ class FSAOperations {
 
       return ResultFactory.success(resultingFsa);
     } catch (e) {
-      return ResultFactory.failure('Erro ao remover transições lambda: $e');
+      return ResultFactory.failure('Error removing lambda transitions: $e');
     }
   }
 }

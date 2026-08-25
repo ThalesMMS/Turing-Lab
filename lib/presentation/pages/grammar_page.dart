@@ -51,7 +51,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
       algorithmPanel: const GrammarAlgorithmPanel(),
       tabletAlgorithmPanel: const GrammarAlgorithmPanel(useExpanded: false),
       simulationPanel: const GrammarSimulationPanel(),
-      simulationTabTitle: 'Parser',
+      simulationTabTitle: l10n.parser,
       floatingActionButton: FloatingActionButton(
         heroTag: 'grammar_context_help_fab',
         onPressed: _showContextualHelp,
@@ -90,7 +90,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
 
   Future<void> _openAlgorithmSheet() {
     return _showWorkspaceSheet(
-      title: 'Algorithms',
+      title: jflapLocalizationsOf(context).algorithms,
       helpTopicId: HelpTopicIds.grammarEditorAlgorithms,
       child: const GrammarAlgorithmPanel(useExpanded: false),
     );
@@ -98,7 +98,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
 
   Future<void> _openParserSheet() {
     return _showWorkspaceSheet(
-      title: 'Parser',
+      title: jflapLocalizationsOf(context).parser,
       helpTopicId: HelpTopicIds.grammarEditorParserWorkflow,
       child: const GrammarSimulationPanel(useExpanded: false),
     );
@@ -112,7 +112,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
 
   Future<void> _openEditSheet([Production? production]) {
     return _showWorkspaceSheet(
-      title: 'Edit Grammar',
+      title: jflapLocalizationsOf(context).editGrammar,
       helpTopicId: production == null
           ? HelpTopicIds.grammarEditorOverview
           : HelpTopicIds.grammarEditorProductionRowsAndAlternatives,

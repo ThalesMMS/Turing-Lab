@@ -147,6 +147,9 @@ flutter:
     - LICENSE_JFLAP.txt
     - assets/LICENSE_GRAPHVIEW.txt
     - THIRD_PARTY_NOTICES_APPLE.txt
+    - assets/about/fsa.webp
+    - assets/about/grammar.webp
+    - assets/about/tm.webp
 
 flutter_launcher_icons:
   image_path: "icon.PNG"

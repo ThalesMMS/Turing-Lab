@@ -10,6 +10,8 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/models/fsa.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations_resolver.dart';
 
 /// Information about automaton determinism
 class DeterminismInfo {
@@ -40,13 +42,16 @@ class DeterminismInfo {
   }
 
   /// Help message
-  String get helpMessage {
+  String helpMessage([AppLocalizations? l10n]) {
     if (isDeterministic) {
-      return 'Deterministic Finite Automaton - each state has at most one transition per symbol';
+      return l10n?.dfaHelpMessage ??
+          'Deterministic Finite Automaton - each state has at most one transition per symbol';
     } else if (hasEpsilonTransitions) {
-      return 'Nondeterministic Finite Automaton with ε-transitions';
+      return l10n?.epsilonNfaHelpMessage ??
+          'Nondeterministic Finite Automaton with ε-transitions';
     } else {
-      return 'Nondeterministic Finite Automaton - some states have multiple transitions for the same symbol';
+      return l10n?.nfaHelpMessage ??
+          'Nondeterministic Finite Automaton - some states have multiple transitions for the same symbol';
     }
   }
 
@@ -211,7 +216,7 @@ class NonDeterminismPanel extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Determinism Analysis',
+                    appLocalizationsOf(context).determinismAnalysis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -237,9 +242,9 @@ class NonDeterminismPanel extends StatelessWidget {
                 // Type
                 Row(
                   children: [
-                    const Text(
-                      'Type: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      appLocalizationsOf(context).typeLabel,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(info.type),
                   ],
@@ -248,7 +253,7 @@ class NonDeterminismPanel extends StatelessWidget {
 
                 // Description
                 Text(
-                  info.helpMessage,
+                  info.helpMessage(appLocalizationsOf(context)),
                   style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
@@ -257,7 +262,7 @@ class NonDeterminismPanel extends StatelessWidget {
                 if (info.hasEpsilonTransitions) ...[
                   _buildFeature(
                     icon: Icons.call_split,
-                    label: 'Has ε (epsilon) transitions',
+                    label: appLocalizationsOf(context).hasEpsilonTransitions,
                     color: Colors.purple,
                   ),
                   const SizedBox(height: 8),
@@ -267,7 +272,7 @@ class NonDeterminismPanel extends StatelessWidget {
                     info.nonDeterministicStates.isNotEmpty) ...[
                   _buildFeature(
                     icon: Icons.warning,
-                    label: 'Nondeterministic states:',
+                    label: appLocalizationsOf(context).nondeterministicStates,
                     color: Colors.orange,
                   ),
                   const SizedBox(height: 4),
@@ -294,7 +299,8 @@ class NonDeterminismPanel extends StatelessWidget {
                     info.nonDeterministicSymbols.isNotEmpty) ...[
                   _buildFeature(
                     icon: Icons.content_copy,
-                    label: 'Symbols with multiple transitions:',
+                    label: appLocalizationsOf(context)
+                        .symbolsWithMultipleTransitions,
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 4),
@@ -319,7 +325,8 @@ class NonDeterminismPanel extends StatelessWidget {
                 if (info.isDeterministic) ...[
                   _buildFeature(
                     icon: Icons.check_circle,
-                    label: 'All transitions are deterministic',
+                    label:
+                        appLocalizationsOf(context).allTransitionsDeterministic,
                     color: Colors.green,
                   ),
                 ],

@@ -32,7 +32,12 @@ export 'GraphView.dart'
         OnNodeDragUpdate,
         RenderCycleAware,
         RoutingMode,
+        kSelfLoopBasePadding,
+        kSelfLoopRadiusFactor,
+        kSelfLoopSinkFactor,
         resolveCircularConnectionPoint,
+        resolveSelfLoopArc,
+        SelfLoopArc,
         SharpBendPointShape,
         SugiyamaAlgorithm,
         SugiyamaConfiguration;

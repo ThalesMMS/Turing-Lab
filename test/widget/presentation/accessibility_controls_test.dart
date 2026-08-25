@@ -139,8 +139,8 @@ void main() {
         isTrue,
       );
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pump();
+      // The search action is the only stop before the tree, so the next Tab
+      // lands on its first category.
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
       expect(

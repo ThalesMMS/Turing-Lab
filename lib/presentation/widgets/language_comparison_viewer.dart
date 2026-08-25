@@ -4,28 +4,65 @@
 //
 //  Widget for viewing language-equivalence comparison results between two
 //  finite automata. Shows the comparison outcome, a distinguishing string
-//  (counterexample), side-by-side automata, an optional product automaton,
-//  and algorithm steps for a full educational analysis via product
-//  construction and BFS.
+//  (counterexample), the two automata side by side or stacked, an optional
+//  product automaton, and a navigable algorithm trace. A comparison that could
+//  not decide is rendered as an explicit error or inconclusive surface with no
+//  automaton at all, so a stopped run can never read as a verdict.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import '../../core/constants/monospace_typography.dart';
 import '../../core/models/equivalence_comparison_result.dart';
 import '../../core/models/fsa.dart';
+import '../../core/models/language_comparison_outcome.dart';
+import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
-import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import 'language_comparison_semantics.dart';
+import 'language_comparison_step_view_model.dart';
 import 'read_only_fsa_graphview_canvas.dart';
 
-/// Widget for visualizing language equivalence comparison results
+/// Widget for visualizing language equivalence comparison results.
 ///
-/// Displays comparison outcome, distinguishing string (if not equivalent),
-/// side-by-side automata comparison, optional product automaton visualization,
-/// and algorithm steps for educational analysis of language comparison.
+/// Displays the comparison outcome, the distinguishing string when the
+/// languages differ, both automata, an optional product automaton, and a
+/// navigable algorithm trace.
+///
+/// Exactly one of [comparisonResult] and [failure] must be supplied. Passing a
+/// [failure] renders the explicit stopped-comparison surface: no automaton is
+/// drawn and no verdict is derived, which is what keeps a failed
+/// determinization or an exhausted budget from being presented as an
+/// equivalence answer.
 class LanguageComparisonViewer extends StatefulWidget {
-  /// The comparison result to display
-  final EquivalenceComparisonResult comparisonResult;
+  const LanguageComparisonViewer({
+    super.key,
+    required this.comparisonResult,
+    this.failure,
+    this.automatonATitle,
+    this.automatonBTitle,
+    this.showProductAutomaton = false,
+    this.showSteps = false,
+  }) : assert(
+          (comparisonResult == null) != (failure == null),
+          'Supply exactly one of comparisonResult or failure.',
+        );
+
+  /// Renders the stopped-comparison surface for [failure].
+  const LanguageComparisonViewer.unavailable({
+    Key? key,
+    required LanguageComparisonFailure failure,
+  }) : this(key: key, comparisonResult: null, failure: failure);
+
+  /// The comparison result to display, or null when [failure] is set.
+  final EquivalenceComparisonResult? comparisonResult;
+
+  /// Why the comparison could not decide, or null when it did.
+  final LanguageComparisonFailure? failure;
 
   /// Optional title for the first automaton (defaults to "Automaton A")
   final String? automatonATitle;
@@ -33,20 +70,11 @@ class LanguageComparisonViewer extends StatefulWidget {
   /// Optional title for the second automaton (defaults to "Automaton B")
   final String? automatonBTitle;
 
-  /// Whether to show the product automaton visualization
+  /// Whether the product automaton section starts expanded
   final bool showProductAutomaton;
 
-  /// Whether to show algorithm steps
+  /// Whether the algorithm trace section starts expanded
   final bool showSteps;
-
-  const LanguageComparisonViewer({
-    super.key,
-    required this.comparisonResult,
-    this.automatonATitle,
-    this.automatonBTitle,
-    this.showProductAutomaton = false,
-    this.showSteps = false,
-  });
 
   @override
   State<LanguageComparisonViewer> createState() =>
@@ -54,11 +82,24 @@ class LanguageComparisonViewer extends StatefulWidget {
 }
 
 class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
+  // Canvas identity is owned here rather than by the build method. The slot
+  // keys keep each ReadOnlyFsaGraphViewCanvas - and therefore the private
+  // controller and automaton notifier it creates and disposes - alive when the
+  // layout moves a canvas between the side-by-side row and the stacked column,
+  // so a resize does not reset the viewport. The canvas keys address the inner
+  // GraphView surface.
+  final GlobalKey _automatonASlotKey = GlobalKey(debugLabel: 'comparison-a');
+  final GlobalKey _automatonBSlotKey = GlobalKey(debugLabel: 'comparison-b');
   final GlobalKey _automatonACanvasKey = GlobalKey();
   final GlobalKey _automatonBCanvasKey = GlobalKey();
   final GlobalKey _productCanvasKey = GlobalKey();
+
   bool _showProductAutomatonSection = false;
   bool _showStepsSection = false;
+  int _selectedStepIndex = 0;
+
+  List<Map<String, dynamic>> get _steps =>
+      widget.comparisonResult?.steps ?? const [];
 
   @override
   void initState() {
@@ -68,82 +109,358 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
   }
 
   @override
+  void didUpdateWidget(covariant LanguageComparisonViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A new trace can be shorter than the one that was being browsed.
+    final stepCount = _steps.length;
+    if (_selectedStepIndex >= stepCount) {
+      _selectedStepIndex = stepCount == 0 ? 0 : stepCount - 1;
+    }
+  }
+
+  LanguageComparisonOutcome get _outcome {
+    final failure = widget.failure;
+    if (failure != null) {
+      return failure;
+    }
+    return LanguageComparisonCompleted(widget.comparisonResult!);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = appLocalizationsOf(context);
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.all(12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final metrics = _ComparisonLayoutMetrics.resolve(constraints);
+        final content = Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _buildSections(
+              l10n: l10n,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+              metrics: metrics,
+            ),
+          ),
+        );
+
+        return Card(
+          elevation: 2,
+          margin: const EdgeInsets.all(12),
+          // The surface has to survive both hosts it is mounted in: a bounded
+          // dialog box, where the content scrolls, and a scrolling parent that
+          // hands it an unbounded height, where it must size to its content.
+          child: constraints.hasBoundedHeight
+              ? SingleChildScrollView(child: content)
+              : content,
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildSections({
+    required AppLocalizations l10n,
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
+    required _ComparisonLayoutMetrics metrics,
+  }) {
+    final failure = widget.failure;
+    if (failure != null) {
+      return [
+        _buildStatusHeader(l10n, colorScheme, textTheme),
+        const SizedBox(height: 16),
+        _buildFailureSection(failure, l10n, colorScheme, textTheme),
+      ];
+    }
+
+    final result = widget.comparisonResult!;
+    return [
+      _buildStatusHeader(l10n, colorScheme, textTheme),
+      const SizedBox(height: 16),
+      if (!result.isEquivalent && result.distinguishingString != null) ...[
+        _buildCounterexampleSection(result, l10n, colorScheme, textTheme),
+        const SizedBox(height: 16),
+      ],
+      _buildStatistics(result, l10n, colorScheme, textTheme),
+      const SizedBox(height: 16),
+      _buildAutomataComparison(result, l10n, colorScheme, textTheme, metrics),
+      if (result.productAutomaton != null) ...[
+        const SizedBox(height: 16),
+        _buildProductAutomatonSection(
+          result.productAutomaton!,
+          l10n,
+          colorScheme,
+          textTheme,
+          metrics,
+        ),
+      ],
+      if (result.steps.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        _buildStepsSection(l10n, colorScheme, textTheme),
+      ],
+    ];
+  }
+
+  Widget _buildStatusHeader(
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final outcome = _outcome;
+    final status = outcome.status;
+    final badgeColor = switch (status) {
+      LanguageComparisonStatus.equivalent => colorScheme.primary,
+      LanguageComparisonStatus.notEquivalent => colorScheme.error,
+      LanguageComparisonStatus.inconclusive => colorScheme.tertiary,
+      LanguageComparisonStatus.error => colorScheme.error,
+    };
+    final badgeIcon = switch (status) {
+      LanguageComparisonStatus.equivalent => Icons.check_circle,
+      LanguageComparisonStatus.notEquivalent => Icons.cancel,
+      LanguageComparisonStatus.inconclusive => Icons.help_outline,
+      LanguageComparisonStatus.error => Icons.error_outline,
+    };
+    final badgeText = _statusText(l10n, status);
+    final executionTimeMs = widget.comparisonResult?.executionTimeMs;
+
+    return Semantics(
+      identifier: LanguageComparisonSemantics.status,
+      label: '${l10n.languageComparisonTitle}: $badgeText',
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        key: LanguageComparisonSemantics.statusKey(status),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: badgeColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: badgeColor.withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 16,
+          runSpacing: 8,
           children: [
-            // Header with equivalence result badge
-            _buildHeader(colorScheme, textTheme),
-            const SizedBox(height: 16),
-
-            // Counterexample section (if not equivalent)
-            if (!widget.comparisonResult.isEquivalent) ...[
-              _buildCounterexampleSection(colorScheme, textTheme),
-              const SizedBox(height: 16),
-            ],
-
-            // Statistics comparison
-            _buildStatistics(colorScheme, textTheme),
-            const SizedBox(height: 16),
-
-            // Side-by-side automaton comparison
-            Expanded(
-              child: Column(
-                children: [
-                  // Main comparison section
-                  Expanded(
-                    child: Row(
-                      children: [
-                        // Automaton A
-                        Expanded(
-                          child: _buildAutomatonSection(
-                            context: context,
-                            automaton:
-                                widget.comparisonResult.originalAutomaton,
-                            title: widget.automatonATitle ?? 'Automaton A',
-                            canvasKey: _automatonACanvasKey,
-                            colorScheme: colorScheme,
-                            textTheme: textTheme,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-
-                        // Automaton B
-                        Expanded(
-                          child: _buildAutomatonSection(
-                            context: context,
-                            automaton:
-                                widget.comparisonResult.comparedAutomaton,
-                            title: widget.automatonBTitle ?? 'Automaton B',
-                            canvasKey: _automatonBCanvasKey,
-                            colorScheme: colorScheme,
-                            textTheme: textTheme,
-                          ),
-                        ),
-                      ],
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(badgeIcon, color: badgeColor, size: 24),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    badgeText,
+                    style: textTheme.titleLarge?.copyWith(
+                      color: badgeColor,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  // Product automaton section (collapsible)
-                  if (widget.comparisonResult.productAutomaton != null) ...[
-                    const SizedBox(height: 16),
-                    _buildProductAutomatonSection(colorScheme, textTheme),
-                  ],
-
-                  // Algorithm steps section (collapsible)
-                  if (widget.comparisonResult.steps.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _buildStepsSection(colorScheme, textTheme),
-                  ],
+                ),
+              ],
+            ),
+            if (executionTimeMs != null)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    color: colorScheme.onSurface,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '${executionTimeMs}ms',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
                 ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _statusText(AppLocalizations l10n, LanguageComparisonStatus status) {
+    return switch (status) {
+      LanguageComparisonStatus.equivalent => l10n.equivalent,
+      LanguageComparisonStatus.notEquivalent => l10n.notEquivalent,
+      LanguageComparisonStatus.inconclusive =>
+        l10n.localizeWorkflowText('Inconclusive within limits'),
+      LanguageComparisonStatus.error =>
+        l10n.localizeWorkflowText('Analysis failed'),
+    };
+  }
+
+  Widget _buildFailureSection(
+    LanguageComparisonFailure failure,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final reasonText = _failureReasonText(l10n, failure.reason);
+    final message = failure.message;
+    final accent = failure.reason.isInconclusive
+        ? colorScheme.tertiary
+        : colorScheme.error;
+
+    return Semantics(
+      identifier: LanguageComparisonSemantics.error,
+      label: message == null ? reasonText : '$reasonText. $message',
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        key: LanguageComparisonSemantics.failureKey(failure.reason),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: accent.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.report_problem_outlined, color: accent, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    reasonText,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (message != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.analysisFailedPrefix(message),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _failureReasonText(
+    AppLocalizations l10n,
+    LanguageComparisonFailureReason reason,
+  ) {
+    return switch (reason) {
+      LanguageComparisonFailureReason.malformedInput =>
+        l10n.localizeWorkflowText('Invalid machine or input'),
+      LanguageComparisonFailureReason.determinization ||
+      LanguageComparisonFailureReason.normalization ||
+      LanguageComparisonFailureReason.productConstruction =>
+        l10n.localizeWorkflowText('Conversion failed'),
+      LanguageComparisonFailureReason.timeout => l10n.timeout,
+      LanguageComparisonFailureReason.stateLimit =>
+        l10n.localizeWorkflowText('Limit reached'),
+      LanguageComparisonFailureReason.internalError =>
+        l10n.localizeWorkflowText('Analysis failed'),
+    };
+  }
+
+  Widget _buildCounterexampleSection(
+    EquivalenceComparisonResult result,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final distinguishingString = result.distinguishingString!;
+    final displayString = distinguishingString.isEmpty
+        ? l10n.emptyStringEpsilon
+        : '"$distinguishingString"';
+
+    return Semantics(
+      identifier: LanguageComparisonSemantics.witness,
+      label: '${l10n.distinguishingStringFound}: $displayString',
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.errorContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: colorScheme.error.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.warning_amber, color: colorScheme.error, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.distinguishingStringFound,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onErrorContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.text_fields, color: colorScheme.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      displayString,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontFamilyFallback: kMonospaceFontFamilyFallback,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.distinguishingStringExplanation,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onErrorContainer.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -152,181 +469,54 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     );
   }
 
-  Widget _buildHeader(ColorScheme colorScheme, TextTheme textTheme) {
-    final isEquivalent = widget.comparisonResult.isEquivalent;
-    final badgeColor = isEquivalent ? colorScheme.primary : colorScheme.error;
-    final badgeIcon = isEquivalent ? Icons.check_circle : Icons.cancel;
-    final badgeText = isEquivalent ? 'EQUIVALENT' : 'NOT EQUIVALENT';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: badgeColor.withValues(alpha: 0.3), width: 2),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(badgeIcon, color: badgeColor, size: 24),
-          const SizedBox(width: 8),
-          Text(
-            badgeText,
-            style: textTheme.titleLarge?.copyWith(
-              color: badgeColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          Icon(Icons.access_time, color: colorScheme.onSurface, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            '${widget.comparisonResult.executionTimeMs}ms',
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCounterexampleSection(
+  Widget _buildStatistics(
+    EquivalenceComparisonResult result,
+    AppLocalizations l10n,
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
-    final distinguishingString = widget.comparisonResult.distinguishingString;
-    if (distinguishingString == null) return const SizedBox.shrink();
+    final automatonA = result.originalAutomaton;
+    final automatonB = result.comparedAutomaton;
+    final entries = <(String, int)>[
+      (l10n.statesA, automatonA.states.length),
+      (l10n.statesB, automatonB.states.length),
+      (l10n.transitionsA, automatonA.transitions.length),
+      (l10n.transitionsB, automatonB.transitions.length),
+    ];
 
-    final displayString = distinguishingString.isEmpty
-        ? 'ε (empty string)'
-        : '"$distinguishingString"';
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: colorScheme.error.withValues(alpha: 0.3),
-          width: 1,
+    return Semantics(
+      identifier: LanguageComparisonSemantics.statistics,
+      label: entries.map((entry) => '${entry.$1} ${entry.$2}').join(', '),
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.warning_amber, color: colorScheme.error, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Distinguishing String Found',
-                style: textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onErrorContainer,
-                  fontWeight: FontWeight.bold,
-                ),
+        // A Wrap instead of a Row: four stat columns plus their separators do
+        // not fit a narrow phone, and at large text scales they do not fit a
+        // tablet either.
+        child: Wrap(
+          alignment: WrapAlignment.spaceAround,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 16,
+          runSpacing: 12,
+          children: [
+            for (final entry in entries)
+              _buildStatItem(
+                label: entry.$1,
+                value: entry.$2,
+                colorScheme: colorScheme,
+                textTheme: textTheme,
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.text_fields, color: colorScheme.primary, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  displayString,
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'This string is accepted by one automaton but rejected by the other, '
-            'proving that the two automata recognize different languages.',
-            style: textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onErrorContainer.withValues(alpha: 0.8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatistics(ColorScheme colorScheme, TextTheme textTheme) {
-    final automatonA = widget.comparisonResult.originalAutomaton;
-    final automatonB = widget.comparisonResult.comparedAutomaton;
-    final statesA = automatonA.states.length;
-    final statesB = automatonB.states.length;
-    final transitionsA = automatonA.transitions.length;
-    final transitionsB = automatonB.transitions.length;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
+          ],
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            label: 'States (A)',
-            value: statesA,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          _buildStatItem(
-            label: 'States (B)',
-            value: statesB,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          _buildStatItem(
-            label: 'Transitions (A)',
-            value: transitionsA,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          _buildStatItem(
-            label: 'Transitions (B)',
-            value: transitionsB,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-        ],
       ),
     );
   }
@@ -338,9 +528,11 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     required TextTheme textTheme,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
+          textAlign: TextAlign.center,
           style: textTheme.labelSmall?.copyWith(
             color: colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
@@ -358,18 +550,78 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     );
   }
 
+  Widget _buildAutomataComparison(
+    EquivalenceComparisonResult result,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    _ComparisonLayoutMetrics metrics,
+  ) {
+    final sectionA = KeyedSubtree(
+      key: _automatonASlotKey,
+      child: _buildAutomatonSection(
+        l10n: l10n,
+        automaton: result.originalAutomaton,
+        title: widget.automatonATitle ?? l10n.automatonA,
+        semanticsIdentifier: LanguageComparisonSemantics.canvasA,
+        canvasKey: _automatonACanvasKey,
+        canvasHeight: metrics.canvasHeight,
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      ),
+    );
+    final sectionB = KeyedSubtree(
+      key: _automatonBSlotKey,
+      child: _buildAutomatonSection(
+        l10n: l10n,
+        automaton: result.comparedAutomaton,
+        title: widget.automatonBTitle ?? l10n.automatonB,
+        semanticsIdentifier: LanguageComparisonSemantics.canvasB,
+        canvasKey: _automatonBCanvasKey,
+        canvasHeight: metrics.canvasHeight,
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      ),
+    );
+
+    if (metrics.isStacked) {
+      return Column(
+        key: LanguageComparisonSemantics.layoutKey(isStacked: true),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          sectionA,
+          const SizedBox(height: 16),
+          sectionB,
+        ],
+      );
+    }
+
+    return Row(
+      key: LanguageComparisonSemantics.layoutKey(isStacked: false),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: sectionA),
+        const SizedBox(width: 16),
+        Expanded(child: sectionB),
+      ],
+    );
+  }
+
   Widget _buildAutomatonSection({
-    required BuildContext context,
     required FSA automaton,
+    required AppLocalizations l10n,
     required String title,
+    required String semanticsIdentifier,
     required GlobalKey canvasKey,
+    required double canvasHeight,
     required ColorScheme colorScheme,
     required TextTheme textTheme,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Section title
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
@@ -380,285 +632,287 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.account_tree, color: colorScheme.primary, size: 18),
               const SizedBox(width: 8),
-              Text(
+              Expanded(
+                child: Text(
+                  title,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Semantics(
+          identifier: semanticsIdentifier,
+          label: _canvasDescription(l10n, title, automaton),
+          container: true,
+          explicitChildNodes: true,
+          child: SizedBox(
+            height: canvasHeight,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(8),
+                ),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(8),
+                ),
+                child: ReadOnlyFsaGraphViewCanvas(
+                  automaton: automaton,
+                  canvasKey: canvasKey,
+                  edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _canvasDescription(
+    AppLocalizations l10n,
+    String title,
+    FSA automaton,
+  ) {
+    final states = l10n.localizeWorkflowText('Total states');
+    final transitions = l10n.localizeWorkflowText('Total transitions');
+    return '$title. $states ${automaton.states.length}, '
+        '$transitions ${automaton.transitions.length}';
+  }
+
+  Widget _buildProductAutomatonSection(
+    FSA productAutomaton,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    _ComparisonLayoutMetrics metrics,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionToggle(
+          expanded: _showProductAutomatonSection,
+          onToggle: () => setState(() {
+            _showProductAutomatonSection = !_showProductAutomatonSection;
+          }),
+          icon: Icons.grid_on,
+          iconColor: colorScheme.tertiary,
+          title: l10n.productAutomaton,
+          badgeText: l10n.optional,
+          badgeColor: colorScheme.tertiary,
+          backgroundColor: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+        if (_showProductAutomatonSection) ...[
+          const SizedBox(height: 8),
+          Semantics(
+            identifier: LanguageComparisonSemantics.productCanvas,
+            label: _canvasDescription(
+              l10n,
+              l10n.productAutomaton,
+              productAutomaton,
+            ),
+            container: true,
+            explicitChildNodes: true,
+            child: SizedBox(
+              height: metrics.canvasHeight,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: colorScheme.outline.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: ReadOnlyFsaGraphViewCanvas(
+                    automaton: productAutomaton,
+                    canvasKey: _productCanvasKey,
+                    edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStepsSection(
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final steps = _steps;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionToggle(
+          expanded: _showStepsSection,
+          onToggle: () => setState(() {
+            _showStepsSection = !_showStepsSection;
+          }),
+          icon: Icons.list_alt,
+          iconColor: colorScheme.primary,
+          title: l10n.algorithmSteps,
+          badgeText: l10n.stepsCount(steps.length),
+          badgeColor: colorScheme.primary,
+          backgroundColor: colorScheme.primaryContainer.withValues(alpha: 0.3),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+        if (_showStepsSection) ...[
+          const SizedBox(height: 8),
+          _buildStepNavigation(steps.length, l10n, colorScheme, textTheme),
+          const SizedBox(height: 8),
+          _buildStepCard(
+            LanguageComparisonStepViewModel.fromPayload(
+              steps[_selectedStepIndex],
+              fallbackStepNumber: _selectedStepIndex + 1,
+            ),
+            l10n,
+            colorScheme,
+            textTheme,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStepNavigation(
+    int stepCount,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final position = l10n.stepOf(_selectedStepIndex + 1, stepCount);
+    final canGoBack = _selectedStepIndex > 0;
+    final canGoForward = _selectedStepIndex < stepCount - 1;
+
+    return Semantics(
+      identifier: LanguageComparisonSemantics.stepNavigation,
+      label: position,
+      container: true,
+      explicitChildNodes: true,
+      child: Row(
+        children: [
+          Semantics(
+            identifier: LanguageComparisonSemantics.previousStep,
+            container: true,
+            child: IconButton(
+              key: const ValueKey<String>(
+                LanguageComparisonSemantics.previousStep,
+              ),
+              icon: const Icon(Icons.chevron_left),
+              tooltip: l10n.previousStepLower,
+              onPressed: canGoBack
+                  ? () => setState(() => _selectedStepIndex -= 1)
+                  : null,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              position,
+              textAlign: TextAlign.center,
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Semantics(
+            identifier: LanguageComparisonSemantics.nextStep,
+            container: true,
+            child: IconButton(
+              key: const ValueKey<String>(
+                LanguageComparisonSemantics.nextStep,
+              ),
+              icon: const Icon(Icons.chevron_right),
+              tooltip: l10n.nextStepLower,
+              onPressed: canGoForward
+                  ? () => setState(() => _selectedStepIndex += 1)
+                  : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionToggle({
+    required bool expanded,
+    required VoidCallback onToggle,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String badgeText,
+    required Color badgeColor,
+    required Color backgroundColor,
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
+  }) {
+    return InkWell(
+      onTap: onToggle,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              expanded ? Icons.expand_more : Icons.chevron_right,
+              color: colorScheme.onSurface,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Icon(icon, color: iconColor, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
                 title,
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
                 ),
               ),
-            ],
-          ),
-        ),
-
-        // Canvas
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(8),
-              ),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-              ),
             ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(8),
-              ),
-              child: ReadOnlyFsaGraphViewCanvas(
-                automaton: automaton,
-                canvasKey: canvasKey,
-                edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProductAutomatonSection(
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        InkWell(
-          onTap: () {
-            setState(() {
-              _showProductAutomatonSection = !_showProductAutomatonSection;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _showProductAutomatonSection
-                      ? Icons.expand_more
-                      : Icons.chevron_right,
-                  color: colorScheme.onSurface,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Icon(Icons.grid_on, color: colorScheme.tertiary, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Product Automaton',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.tertiary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Optional',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.tertiary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (_showProductAutomatonSection) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 300,
-            child: Container(
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: colorScheme.outline.withValues(alpha: 0.2),
-                ),
+                color: badgeColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: ReadOnlyFsaGraphViewCanvas(
-                  automaton: widget.comparisonResult.productAutomaton!,
-                  canvasKey: _productCanvasKey,
-                  edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildStepsSection(ColorScheme colorScheme, TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        InkWell(
-          onTap: () {
-            setState(() {
-              _showStepsSection = !_showStepsSection;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _showStepsSection ? Icons.expand_more : Icons.chevron_right,
-                  color: colorScheme.onSurface,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Icon(Icons.list_alt, color: colorScheme.primary, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Algorithm Steps',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${widget.comparisonResult.steps.length} steps',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (_showStepsSection) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 300,
-            child: ListView.builder(
-              itemCount: widget.comparisonResult.steps.length,
-              itemBuilder: (context, index) {
-                final step = _LanguageComparisonStepViewModel.fromMap(
-                  widget.comparisonResult.steps[index],
-                  fallbackStepNumber: index + 1,
-                );
-                return _buildStepCard(step, colorScheme, textTheme);
-              },
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildStepCard(
-    _LanguageComparisonStepViewModel step,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    final accentColor = step.accentColor(colorScheme);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: accentColor,
               child: Text(
-                '${step.stepNumber}',
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w700,
+                badgeText,
+                style: textTheme.labelSmall?.copyWith(
+                  color: badgeColor,
+                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(step.icon, color: accentColor, size: 18),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          appLocalizationsOf(context)
-                              .localizeWorkflowText(step.title),
-                          style: textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (step.description.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      appLocalizationsOf(context)
-                          .localizeWorkflowText(step.description),
-                      style: textTheme.bodySmall,
-                    ),
-                  ],
-                  if (step.details.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final detail in step.details)
-                          _buildStepDetailChip(
-                            detail,
-                            colorScheme,
-                            textTheme,
-                          ),
-                      ],
-                    ),
-                  ],
-                ],
               ),
             ),
           ],
@@ -667,8 +921,96 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     );
   }
 
+  Widget _buildStepCard(
+    LanguageComparisonStepViewModel step,
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final accentColor = step.accentColor(colorScheme);
+    final title = l10n.localizeWorkflowText(step.title);
+    final description = step.description.isEmpty
+        ? ''
+        : l10n.localizeWorkflowText(step.description);
+
+    return Semantics(
+      identifier: LanguageComparisonSemantics.selectedStep,
+      label: '${l10n.stepLabel} ${step.stepNumber}: $title',
+      container: true,
+      explicitChildNodes: true,
+      child: Card(
+        key: LanguageComparisonSemantics.stepKey(_selectedStepIndex),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: accentColor,
+                child: Text(
+                  '${step.stepNumber}',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(step.icon, color: accentColor, size: 18),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(description, style: textTheme.bodySmall),
+                    ],
+                    if (step.details.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final detail in step.details)
+                            _buildStepDetailChip(
+                              detail,
+                              l10n,
+                              colorScheme,
+                              textTheme,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStepDetailChip(
-    _LanguageComparisonStepDetail detail,
+    LanguageComparisonStepDetail detail,
+    AppLocalizations l10n,
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
@@ -687,7 +1029,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            detail.label,
+            l10n.localizeWorkflowText(detail.label),
             style: textTheme.labelSmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
@@ -707,452 +1049,36 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
   }
 }
 
-class _LanguageComparisonStepViewModel {
-  final int stepNumber;
-  final _LanguageComparisonStepKind kind;
-  final String title;
-  final String description;
-  final List<_LanguageComparisonStepDetail> details;
-
-  const _LanguageComparisonStepViewModel({
-    required this.stepNumber,
-    required this.kind,
-    required this.title,
-    required this.description,
-    required this.details,
+/// Layout decisions the comparison surface derives from its incoming box.
+@immutable
+class _ComparisonLayoutMetrics {
+  const _ComparisonLayoutMetrics({
+    required this.isStacked,
+    required this.canvasHeight,
   });
 
-  factory _LanguageComparisonStepViewModel.fromMap(
-    Map<String, dynamic> stepData, {
-    required int fallbackStepNumber,
-  }) {
-    final rawType = stepData['type']?.toString() ?? '';
-    final data = _stepDataMap(stepData['data']);
-    final stepNumber = _stepNumber(stepData['stepNumber'], fallbackStepNumber);
-    final description = stepData['description']?.toString() ?? '';
+  /// Below this content width the two automata are stacked instead of placed
+  /// side by side, which is what keeps the canvases from being clipped on
+  /// phones and in split-view panes.
+  static const double stackBreakpoint = 640;
 
-    switch (rawType) {
-      case 'validation':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.validation,
-          title: 'Validation',
-          description: description,
-          details: [
-            if (data['automatonA'] != null)
-              _LanguageComparisonStepDetail(
-                'Automaton A',
-                _formatStepValue(data['automatonA']),
-              ),
-            if (data['automatonB'] != null)
-              _LanguageComparisonStepDetail(
-                'Automaton B',
-                _formatStepValue(data['automatonB']),
-              ),
-          ],
-        );
-      case 'initialization':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.validation,
-          title: 'Initialization',
-          description: description,
-          details: const [],
-        );
-      case 'alphabet_normalization':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.alphabet,
-          title: 'Alphabet Normalization',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'Automaton A alphabet',
-              _formatStepValue(data['alphabetA']),
-            ),
-            _LanguageComparisonStepDetail(
-              'Automaton B alphabet',
-              _formatStepValue(data['alphabetB']),
-            ),
-            _LanguageComparisonStepDetail(
-              'Shared alphabet',
-              _formatStepValue(data['sharedAlphabet']),
-            ),
-          ],
-        );
-      case 'nfa_to_dfa':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.conversion,
-          title: 'DFA Conversion',
-          description: description,
-          details: [
-            if (data['automaton'] != null)
-              _LanguageComparisonStepDetail(
-                'Automaton',
-                _formatStepValue(data['automaton']),
-              ),
-            _LanguageComparisonStepDetail(
-              'States',
-              _formatBeforeAfter(data['statesBefore'], data['statesAfter']),
-            ),
-          ],
-        );
-      case 'dfa_completion':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.conversion,
-          title: 'DFA Completion',
-          description: description,
-          details: [
-            if (data['automaton'] != null)
-              _LanguageComparisonStepDetail(
-                'Automaton',
-                _formatStepValue(data['automaton']),
-              ),
-            _LanguageComparisonStepDetail(
-              'States',
-              _formatBeforeAfter(data['statesBefore'], data['statesAfter']),
-            ),
-            if (data['wasCompleted'] != null)
-              _LanguageComparisonStepDetail(
-                'Sink state',
-                data['wasCompleted'] == true ? 'added' : 'not needed',
-              ),
-          ],
-        );
-      case 'product_construction_start':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.product,
-          title: 'Product Construction',
-          description: description,
-          details: [
-            if (data['alphabetSize'] != null)
-              _LanguageComparisonStepDetail(
-                'Alphabet size',
-                _formatStepValue(data['alphabetSize']),
-              ),
-          ],
-        );
-      case 'product_state_created':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.product,
-          title: 'Product State Created',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'State pair',
-              _formatStatePair(data['stateA'], data['stateB']),
-            ),
-            if (data['productState'] != null)
-              _LanguageComparisonStepDetail(
-                'Product state',
-                _formatStepValue(data['productState']),
-              ),
-            if (data['isAccepting'] != null)
-              _LanguageComparisonStepDetail(
-                'Accepting',
-                _formatBoolean(data['isAccepting']),
-              ),
-          ],
-        );
-      case 'product_transition_created':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.product,
-          title: 'Product Transition',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'Transition',
-              '${_formatStepValue(data['fromState'])} -> '
-                  '${_formatStepValue(data['toState'])}',
-            ),
-            if (data['symbol'] != null)
-              _LanguageComparisonStepDetail(
-                'Symbol',
-                _formatSymbol(data['symbol']),
-              ),
-            if (data['targetIsNew'] != null)
-              _LanguageComparisonStepDetail(
-                'Target',
-                data['targetIsNew'] == true ? 'new' : 'existing',
-              ),
-          ],
-        );
-      case 'product_construction_complete':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.product,
-          title: 'Product Construction Complete',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'States',
-              _formatStepValue(data['totalStates']),
-            ),
-            _LanguageComparisonStepDetail(
-              'Transitions',
-              _formatStepValue(data['totalTransitions']),
-            ),
-            _LanguageComparisonStepDetail(
-              'Accepting states',
-              _formatStepValue(data['acceptingStates']),
-            ),
-          ],
-        );
-      case 'bfs_search_start':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.search,
-          title: 'BFS Search',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'Initial pair',
-              _formatStatePair(data['initialStateA'], data['initialStateB']),
-            ),
-          ],
-        );
-      case 'bfs_initial_check':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.search,
-          title: 'Initial Pair Check',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'State pair',
-              _formatStatePair(data['stateA'], data['stateB']),
-            ),
-            _LanguageComparisonStepDetail(
-              'Acceptance',
-              _formatAcceptance(data['acceptsA'], data['acceptsB']),
-            ),
-          ],
-        );
-      case 'bfs_explore_pair':
-      case 'bfs_exploration':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.search,
-          title: 'State Pair Visit',
-          description: description,
-          details: [
-            if (data['stateA'] != null || data['stateB'] != null)
-              _LanguageComparisonStepDetail(
-                'State pair',
-                _formatStatePair(data['stateA'], data['stateB']),
-              ),
-            if (data['currentPath'] != null)
-              _LanguageComparisonStepDetail(
-                'Path',
-                _formatPath(data['currentPath']),
-              ),
-            if (data['pathLength'] != null)
-              _LanguageComparisonStepDetail(
-                'Path length',
-                _formatStepValue(data['pathLength']),
-              ),
-          ],
-        );
-      case 'bfs_distinguishing_found':
-      case 'counterexample_found':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.counterexample,
-          title: 'Counterexample Found',
-          description: description,
-          details: [
-            if (data['distinguishingString'] != null)
-              _LanguageComparisonStepDetail(
-                'Distinguishing string',
-                _formatDisplayString(data['distinguishingString']),
-              ),
-            if (data['stateA'] != null || data['stateB'] != null)
-              _LanguageComparisonStepDetail(
-                'State pair',
-                _formatStatePair(data['stateA'], data['stateB']),
-              ),
-            if (data['acceptsA'] != null || data['acceptsB'] != null)
-              _LanguageComparisonStepDetail(
-                'Acceptance',
-                _formatAcceptance(data['acceptsA'], data['acceptsB']),
-              ),
-            if (data['symbol'] != null)
-              _LanguageComparisonStepDetail(
-                'Symbol',
-                _formatSymbol(data['symbol']),
-              ),
-          ],
-        );
-      case 'bfs_complete':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.search,
-          title: 'BFS Complete',
-          description: description,
-          details: [
-            if (data['totalPairsExplored'] != null)
-              _LanguageComparisonStepDetail(
-                'Pairs explored',
-                _formatStepValue(data['totalPairsExplored']),
-              ),
-          ],
-        );
-      case 'result':
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: data['isEquivalent'] == true
-              ? _LanguageComparisonStepKind.result
-              : _LanguageComparisonStepKind.counterexample,
-          title: 'Comparison Result',
-          description: description,
-          details: [
-            if (data['isEquivalent'] != null)
-              _LanguageComparisonStepDetail(
-                'Equivalent',
-                _formatBoolean(data['isEquivalent']),
-              ),
-            if (data['distinguishingString'] != null)
-              _LanguageComparisonStepDetail(
-                'Distinguishing string',
-                _formatDisplayString(data['distinguishingString']),
-              ),
-          ],
-        );
-      default:
-        return _LanguageComparisonStepViewModel(
-          stepNumber: stepNumber,
-          kind: _LanguageComparisonStepKind.unknown,
-          title: 'Unknown Step',
-          description: description,
-          details: [
-            _LanguageComparisonStepDetail(
-              'Raw type',
-              rawType.isEmpty ? 'untyped' : rawType,
-            ),
-            for (final entry in data.entries)
-              _LanguageComparisonStepDetail(
-                entry.key,
-                _formatStepValue(entry.value),
-              ),
-          ],
-        );
-    }
+  /// Height assumed when the host imposes no height of its own.
+  static const double _unboundedHeightBudget = 720;
+
+  final bool isStacked;
+  final double canvasHeight;
+
+  factory _ComparisonLayoutMetrics.resolve(BoxConstraints constraints) {
+    final width =
+        constraints.hasBoundedWidth ? constraints.maxWidth : stackBreakpoint;
+    final isStacked = width < stackBreakpoint;
+    final height = constraints.hasBoundedHeight
+        ? constraints.maxHeight
+        : _unboundedHeightBudget;
+    final preferred = isStacked ? 200.0 : 260.0;
+    return _ComparisonLayoutMetrics(
+      isStacked: isStacked,
+      canvasHeight: math.max(140.0, math.min(preferred, height * 0.45)),
+    );
   }
-
-  IconData get icon {
-    return switch (kind) {
-      _LanguageComparisonStepKind.validation => Icons.rule,
-      _LanguageComparisonStepKind.alphabet => Icons.sort_by_alpha,
-      _LanguageComparisonStepKind.conversion => Icons.transform,
-      _LanguageComparisonStepKind.product => Icons.grid_on,
-      _LanguageComparisonStepKind.search => Icons.manage_search,
-      _LanguageComparisonStepKind.counterexample => Icons.warning_amber,
-      _LanguageComparisonStepKind.result => Icons.check_circle,
-      _LanguageComparisonStepKind.unknown => Icons.help_outline,
-    };
-  }
-
-  Color accentColor(ColorScheme colorScheme) {
-    return switch (kind) {
-      _LanguageComparisonStepKind.validation => colorScheme.primary,
-      _LanguageComparisonStepKind.alphabet => colorScheme.secondary,
-      _LanguageComparisonStepKind.conversion => colorScheme.tertiary,
-      _LanguageComparisonStepKind.product => colorScheme.tertiary,
-      _LanguageComparisonStepKind.search => colorScheme.primary,
-      _LanguageComparisonStepKind.counterexample => colorScheme.error,
-      _LanguageComparisonStepKind.result => colorScheme.primary,
-      _LanguageComparisonStepKind.unknown => colorScheme.outline,
-    };
-  }
-}
-
-class _LanguageComparisonStepDetail {
-  final String label;
-  final String value;
-
-  const _LanguageComparisonStepDetail(this.label, this.value);
-}
-
-enum _LanguageComparisonStepKind {
-  validation,
-  alphabet,
-  conversion,
-  product,
-  search,
-  counterexample,
-  result,
-  unknown,
-}
-
-Map<String, dynamic> _stepDataMap(Object? rawData) {
-  if (rawData is Map) {
-    return rawData.map((key, value) => MapEntry(key.toString(), value));
-  }
-  return const {};
-}
-
-int _stepNumber(Object? rawStepNumber, int fallbackStepNumber) {
-  if (rawStepNumber is int) return rawStepNumber;
-  if (rawStepNumber is num) return rawStepNumber.toInt();
-  if (rawStepNumber is String) {
-    return int.tryParse(rawStepNumber) ?? fallbackStepNumber;
-  }
-  return fallbackStepNumber;
-}
-
-String _formatBeforeAfter(Object? before, Object? after) {
-  if (before == null && after == null) return 'unknown';
-  return '${_formatStepValue(before)} -> ${_formatStepValue(after)}';
-}
-
-String _formatStatePair(Object? stateA, Object? stateB) {
-  if (stateA == null && stateB == null) return 'unknown';
-  return '${_formatStepValue(stateA)} / ${_formatStepValue(stateB)}';
-}
-
-String _formatAcceptance(Object? acceptsA, Object? acceptsB) {
-  if (acceptsA is bool && acceptsB is bool) {
-    final a = acceptsA ? 'accepts' : 'rejects';
-    final b = acceptsB ? 'accepts' : 'rejects';
-    return 'A $a, B $b';
-  }
-  return 'unknown';
-}
-
-String _formatBoolean(Object? value) {
-  if (value is bool) return value ? 'yes' : 'no';
-  return _formatStepValue(value);
-}
-
-String _formatSymbol(Object? value) {
-  final symbol = _formatStepValue(value);
-  return symbol.isEmpty ? 'ε' : symbol;
-}
-
-String _formatPath(Object? value) {
-  final path = _formatStepValue(value);
-  return path.isEmpty ? 'ε' : path;
-}
-
-String _formatDisplayString(Object? value) {
-  final string = _formatStepValue(value);
-  return string.isEmpty ? 'ε (empty string)' : '"$string"';
-}
-
-String _formatStepValue(Object? value) {
-  if (value == null) return 'unknown';
-  if (value is Iterable) {
-    return value.map(_formatStepValue).join(', ');
-  }
-  if (value is Map) {
-    return value.entries
-        .map((entry) => '${entry.key}: ${_formatStepValue(entry.value)}')
-        .join(', ');
-  }
-  return value.toString();
 }

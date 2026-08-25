@@ -231,6 +231,9 @@ void main() {
           balancedParenthesesPDA,
           '()',
           mode: PDAAcceptanceMode.finalState,
+          // Only a step-by-step run keeps the trace; otherwise the result
+          // carries just the accepting configuration.
+          stepByStep: true,
         );
 
         expect(result.isSuccess, true);
@@ -248,7 +251,7 @@ void main() {
             reason: 'PDA should have multiple steps for stack operations',
           );
         }
-      }, tags: 'known-failure');
+      });
 
       test('PDA should handle pop operations correctly', () async {
         final result = PDASimulator.simulateNPDA(
@@ -579,6 +582,7 @@ void main() {
           balancedParenthesesPDA,
           '(()())',
           mode: PDAAcceptanceMode.finalState,
+          stepByStep: true,
         );
 
         expect(result.isSuccess, true);
@@ -596,7 +600,7 @@ void main() {
             reason: 'PDA should take multiple steps for complex operations',
           );
         }
-      }, tags: 'known-failure');
+      });
     });
   });
 }

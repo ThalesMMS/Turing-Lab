@@ -11,6 +11,8 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +32,7 @@ import 'algorithm_step_navigator.dart';
 import 'algorithm_step_renderer_registry.dart';
 import 'algorithm_step_viewer.dart';
 import 'common/algorithm_button.dart';
+import 'conversion_replacement_dialog.dart';
 import 'utils/platform_file_loader.dart';
 import '../../core/algorithms/language_comparator.dart';
 import 'language_comparison_viewer.dart';
@@ -40,7 +43,7 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
   final VoidCallback? onNfaToDfa;
   final VoidCallback? onMinimizeDfa;
   final VoidCallback? onClear;
-  final Function(String)? onRegexToNfa;
+  final FutureOr<void> Function(String)? onRegexToNfa;
   final VoidCallback? onFaToRegex;
   final VoidCallback? onRemoveLambda;
   final VoidCallback? onCompleteDfa;
@@ -139,7 +142,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   @override
   Widget build(BuildContext context) {
     return AlgorithmPanelScaffold(
-      title: 'Algorithms',
+      title: appLocalizationsOf(context).algorithms,
       showHeaderIcon: false,
       paddingInsideScroll: false,
       spacing: 0,
@@ -172,8 +175,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // NFA to DFA conversion
         AlgorithmButton(
-          title: 'NFA to DFA',
-          description: 'Convert non-deterministic to deterministic automaton',
+          title: appLocalizationsOf(context).nfaToDfaTitle,
+          description: appLocalizationsOf(context).nfaToDfaDescription,
           icon: Icons.transform,
           onPressed: widget.onNfaToDfa == null
               ? null
@@ -190,8 +193,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Remove lambda transitions
         AlgorithmButton(
-          title: 'Remove λ-transitions',
-          description: 'Eliminate epsilon transitions from the automaton',
+          title: appLocalizationsOf(context).removeLambdaTitle,
+          description: appLocalizationsOf(context).removeLambdaDescription,
           icon: Icons.highlight_off,
           onPressed: widget.onRemoveLambda == null
               ? null
@@ -214,8 +217,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // DFA minimization
         AlgorithmButton(
-          title: 'Minimize DFA',
-          description: 'Minimize deterministic finite automaton',
+          title: appLocalizationsOf(context).minimizeDfaTitle,
+          description: appLocalizationsOf(context).minimizeDfaDescription,
           icon: Icons.compress,
           onPressed: widget.onMinimizeDfa == null
               ? null
@@ -235,8 +238,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Complete DFA
         AlgorithmButton(
-          title: 'Complete DFA',
-          description: 'Add trap state to make DFA complete',
+          title: appLocalizationsOf(context).completeDfaTitle,
+          description: appLocalizationsOf(context).completeDfaDescription,
           icon: Icons.add_circle_outline,
           onPressed: widget.onCompleteDfa == null
               ? null
@@ -256,8 +259,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Complement DFA
         AlgorithmButton(
-          title: 'Complement DFA',
-          description: 'Flip accepting states after completion',
+          title: appLocalizationsOf(context).complementDfaTitle,
+          description: appLocalizationsOf(context).complementDfaDescription,
           icon: Icons.flip,
           onPressed: widget.onComplementDfa == null
               ? null
@@ -277,16 +280,17 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Union of DFAs
         AlgorithmButton(
-          title: 'Union of DFAs',
-          description: 'Combine this DFA with another automaton from file',
+          title: appLocalizationsOf(context).unionOfDfasTitle,
+          description: appLocalizationsOf(context).unionOfDfasDescription,
           icon: Icons.merge_type,
           onPressed: () => _runBinaryOperation(
             algorithmName: 'Union of DFAs',
             callback: widget.onUnionDfa,
-            dialogTitle: 'Select DFA for union',
-            executingStatus: 'Building union automaton...',
-            successStatus: 'Union complete',
-            missingCallbackMessage: 'Load a DFA before computing the union.',
+            dialogTitle: appLocalizationsOf(context).selectDfaForUnion,
+            executingStatus: appLocalizationsOf(context).buildingUnionAutomaton,
+            successStatus: appLocalizationsOf(context).unionComplete,
+            missingCallbackMessage:
+                appLocalizationsOf(context).loadDfaBeforeUnion,
           ),
           isExecuting: _isExecuting && _currentAlgorithm == 'Union of DFAs',
           isSelected: _currentAlgorithm == 'Union of DFAs',
@@ -300,17 +304,19 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Concatenation of FSAs
         AlgorithmButton(
-          title: 'Concatenation of FSAs',
-          description: 'Append another automaton language using ε-transitions',
+          title: appLocalizationsOf(context).concatenationOfFsasTitle,
+          description:
+              appLocalizationsOf(context).concatenationOfFsasDescription,
           icon: Icons.link,
           onPressed: () => _runBinaryOperation(
             algorithmName: 'Concatenation of FSAs',
             callback: widget.onConcatenateFsa,
-            dialogTitle: 'Select FSA for concatenation',
-            executingStatus: 'Building concatenation NFA...',
-            successStatus: 'Concatenation complete',
+            dialogTitle: appLocalizationsOf(context).selectFsaForConcatenation,
+            executingStatus:
+                appLocalizationsOf(context).buildingConcatenationNfa,
+            successStatus: appLocalizationsOf(context).concatenationComplete,
             missingCallbackMessage:
-                'Load an FSA before computing the concatenation.',
+                appLocalizationsOf(context).loadFsaBeforeConcatenation,
           ),
           isExecuting:
               _isExecuting && _currentAlgorithm == 'Concatenation of FSAs',
@@ -327,8 +333,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Kleene star of an FSA
         AlgorithmButton(
-          title: 'Kleene Star',
-          description: 'Accept zero or more repetitions of this FSA language',
+          title: appLocalizationsOf(context).kleeneStarTitle,
+          description: appLocalizationsOf(context).kleeneStarDescription,
           icon: Icons.all_inclusive,
           onPressed: widget.onKleeneStarFsa == null
               ? null
@@ -348,8 +354,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Reverse an FSA language
         AlgorithmButton(
-          title: 'Reverse FSA',
-          description: 'Accept the reverse of every word in this FSA language',
+          title: appLocalizationsOf(context).reverseFsaTitle,
+          description: appLocalizationsOf(context).reverseFsaDescription,
           icon: Icons.swap_horiz,
           onPressed: widget.onReverseFsa == null
               ? null
@@ -369,17 +375,19 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Intersection of DFAs
         AlgorithmButton(
-          title: 'Intersection of DFAs',
-          description: 'Intersect this DFA with another automaton from file',
+          title: appLocalizationsOf(context).intersectionOfDfasTitle,
+          description:
+              appLocalizationsOf(context).intersectionOfDfasDescription,
           icon: Icons.call_merge,
           onPressed: () => _runBinaryOperation(
             algorithmName: 'Intersection of DFAs',
             callback: widget.onIntersectionDfa,
-            dialogTitle: 'Select DFA for intersection',
-            executingStatus: 'Building intersection automaton...',
-            successStatus: 'Intersection complete',
+            dialogTitle: appLocalizationsOf(context).selectDfaForIntersection,
+            executingStatus:
+                appLocalizationsOf(context).buildingIntersectionAutomaton,
+            successStatus: appLocalizationsOf(context).intersectionComplete,
             missingCallbackMessage:
-                'Load a DFA before computing the intersection.',
+                appLocalizationsOf(context).loadDfaBeforeIntersection,
           ),
           isExecuting:
               _isExecuting && _currentAlgorithm == 'Intersection of DFAs',
@@ -396,18 +404,18 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Difference of DFAs
         AlgorithmButton(
-          title: 'Difference of DFAs',
-          description:
-              'Compute the language difference with another DFA from file',
+          title: appLocalizationsOf(context).differenceOfDfasTitle,
+          description: appLocalizationsOf(context).differenceOfDfasDescription,
           icon: Icons.call_split,
           onPressed: () => _runBinaryOperation(
             algorithmName: 'Difference of DFAs',
             callback: widget.onDifferenceDfa,
-            dialogTitle: 'Select DFA for difference',
-            executingStatus: 'Building difference automaton...',
-            successStatus: 'Difference complete',
+            dialogTitle: appLocalizationsOf(context).selectDfaForDifference,
+            executingStatus:
+                appLocalizationsOf(context).buildingDifferenceAutomaton,
+            successStatus: appLocalizationsOf(context).differenceComplete,
             missingCallbackMessage:
-                'Load a DFA before computing the difference.',
+                appLocalizationsOf(context).loadDfaBeforeDifference,
           ),
           isExecuting:
               _isExecuting && _currentAlgorithm == 'Difference of DFAs',
@@ -424,8 +432,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Prefix closure
         AlgorithmButton(
-          title: 'Prefix Closure',
-          description: 'Accept all prefixes of the DFA language',
+          title: appLocalizationsOf(context).prefixClosureTitle,
+          description: appLocalizationsOf(context).prefixClosureDescription,
           icon: Icons.vertical_align_top,
           onPressed: widget.onPrefixClosure == null
               ? null
@@ -445,8 +453,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Suffix closure
         AlgorithmButton(
-          title: 'Suffix Closure',
-          description: 'Accept all suffixes of the DFA language',
+          title: appLocalizationsOf(context).suffixClosureTitle,
+          description: appLocalizationsOf(context).suffixClosureDescription,
           icon: Icons.vertical_align_bottom,
           onPressed: widget.onSuffixClosure == null
               ? null
@@ -466,8 +474,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // FA to Regex conversion
         AlgorithmButton(
-          title: 'FA to Regex',
-          description: 'Convert finite automaton to regular expression',
+          title: appLocalizationsOf(context).faToRegexTitle,
+          description: appLocalizationsOf(context).faToRegexDescription,
           icon: Icons.text_fields,
           onPressed: widget.onFaToRegex == null
               ? null
@@ -484,8 +492,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // FSA to Grammar conversion
         AlgorithmButton(
-          title: 'FSA to Grammar',
-          description: 'Convert finite automaton to regular grammar',
+          title: appLocalizationsOf(context).fsaToGrammarTitle,
+          description: appLocalizationsOf(context).fsaToGrammarDescription,
           icon: Icons.transform,
           onPressed: widget.onFsaToGrammar == null
               ? null
@@ -505,8 +513,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Auto Layout
         AlgorithmButton(
-          title: 'Auto Layout',
-          description: 'Arrange states in a circle',
+          title: appLocalizationsOf(context).autoLayoutTitle,
+          description: appLocalizationsOf(context).autoLayoutDescription,
           icon: Icons.auto_awesome_motion,
           onPressed: widget.onAutoLayout,
         ),
@@ -515,8 +523,9 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Compare Equivalence
         AlgorithmButton(
-          title: 'Compare Equivalence',
-          description: 'Compare two DFAs for equivalence',
+          title: appLocalizationsOf(context).compareEquivalence,
+          description:
+              appLocalizationsOf(context).compareEquivalenceDescription,
           icon: Icons.compare_arrows,
           onPressed: _onCompareEquivalencePressed,
           isExecuting:
@@ -534,8 +543,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Clear automaton
         AlgorithmButton(
-          title: 'Clear',
-          description: 'Clear current automaton',
+          title: appLocalizationsOf(context).clear,
+          description: appLocalizationsOf(context).clearAutomatonDescription,
           icon: Icons.clear,
           onPressed: widget.onClear,
           isDestructive: true,
@@ -594,7 +603,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Regex to NFA',
+          appLocalizationsOf(context).regexToNfaTitle,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -605,32 +614,38 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
             Expanded(
               child: TextField(
                 controller: _regexController,
-                decoration: const InputDecoration(
-                  labelText: 'Regular Expression',
-                  hintText: 'e.g., (a|b)*',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: appLocalizationsOf(context).regularExpression,
+                  hintText: appLocalizationsOf(context).regexExampleHint,
+                  border: const OutlineInputBorder(),
                 ),
                 onSubmitted: (value) {
-                  if (value.isNotEmpty && widget.onRegexToNfa != null) {
-                    widget.onRegexToNfa!(value);
-                  }
+                  _submitRegexToNfa(value);
                 },
               ),
             ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: () {
-                if (_regexController.text.isNotEmpty &&
-                    widget.onRegexToNfa != null) {
-                  widget.onRegexToNfa!(_regexController.text);
-                }
-              },
+              onPressed: () => _submitRegexToNfa(_regexController.text),
               child: const Icon(Icons.arrow_forward),
             ),
           ],
         ),
       ],
     );
+  }
+
+  Future<void> _submitRegexToNfa(String regex) async {
+    if (regex.isEmpty || widget.onRegexToNfa == null) return;
+
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.automaton,
+    );
+    if (!mounted || !shouldReplace) return;
+
+    await widget.onRegexToNfa!(regex);
   }
 
   Widget _buildStepByStepModeToggle(BuildContext context) {
@@ -751,7 +766,8 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   }) async {
     if (callback == null) {
       _showSnack(
-        missingCallbackMessage ?? 'Load a DFA before executing $algorithmName.',
+        missingCallbackMessage ??
+            appLocalizationsOf(context).loadDfaBeforeExecuting(algorithmName),
         isError: true,
       );
       return;
@@ -772,7 +788,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     setState(() {
       _isExecuting = true;
       _currentAlgorithm = algorithmName;
-      _executionStatus = 'Loading automaton...';
+      _executionStatus = appLocalizationsOf(context).loadingAutomatonEllipsis;
       _executionProgress = 0.0;
     });
 
@@ -783,10 +799,11 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     if (!loadResult.isSuccess) {
       setState(() {
         _isExecuting = false;
-        _executionStatus = 'Failed to load automaton';
+        _executionStatus =
+            appLocalizationsOf(context).failedToLoadAutomatonStatus;
       });
       _showSnack(
-        loadResult.error ?? 'Selected file did not contain readable data.',
+        loadResult.error ?? appLocalizationsOf(context).selectedFileUnreadable,
         isError: true,
       );
       return;
@@ -809,22 +826,29 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
       if (!mounted) return;
       setState(() {
         _isExecuting = false;
-        _executionStatus = '$algorithmName failed';
+        _executionStatus =
+            appLocalizationsOf(context).algorithmFailedStatus(algorithmName);
       });
-      _showSnack('$algorithmName failed: $e', isError: true);
+      _showSnack(
+        appLocalizationsOf(context).algorithmFailedError(algorithmName, '$e'),
+        isError: true,
+      );
     }
   }
 
   Future<void> _onCompareEquivalencePressed() async {
     // Check if current automaton is available
     if (widget.currentAutomaton == null) {
-      _showSnack('Load a DFA before comparing equivalence.', isError: true);
+      _showSnack(
+        appLocalizationsOf(context).loadDfaBeforeComparingEquivalence,
+        isError: true,
+      );
       return;
     }
 
     // Pick a file to load the second automaton
     final selection = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Select DFA to compare',
+      dialogTitle: appLocalizationsOf(context).selectDfaToCompare,
       type: FileType.custom,
       allowedExtensions: const ['jff'],
       withData: true,
@@ -838,7 +862,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     setState(() {
       _isExecuting = true;
       _currentAlgorithm = 'Compare Equivalence';
-      _executionStatus = 'Loading automaton...';
+      _executionStatus = appLocalizationsOf(context).loadingAutomatonEllipsis;
       _executionProgress = 0.0;
     });
 
@@ -850,10 +874,11 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     if (!loadResult.isSuccess) {
       setState(() {
         _isExecuting = false;
-        _executionStatus = 'Failed to load automaton';
+        _executionStatus =
+            appLocalizationsOf(context).failedToLoadAutomatonStatus;
       });
       _showSnack(
-        loadResult.error ?? 'Selected file did not contain readable data.',
+        loadResult.error ?? appLocalizationsOf(context).selectedFileUnreadable,
         isError: true,
       );
       return;
@@ -861,7 +886,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
     setState(() {
       _executionProgress = 0.5;
-      _executionStatus = 'Comparing automata...';
+      _executionStatus = appLocalizationsOf(context).comparingAutomata;
     });
 
     // Compare the automata using LanguageComparator
@@ -875,11 +900,17 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     setState(() {
       _isExecuting = false;
       _executionProgress = 1.0;
-      _executionStatus = 'Comparison complete';
+      _executionStatus = appLocalizationsOf(context)
+          .localizeWorkflowText('Comparison complete');
     });
 
     if (!comparisonResult.isSuccess) {
-      _showSnack(comparisonResult.error ?? 'Comparison failed', isError: true);
+      _showSnack(
+        comparisonResult.error ??
+            appLocalizationsOf(context)
+                .localizeWorkflowText('Comparison failed'),
+        isError: true,
+      );
       return;
     }
 
@@ -904,7 +935,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Language Comparison',
+                      appLocalizationsOf(context).languageComparisonTitle,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const Spacer(),
@@ -921,8 +952,10 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
                 child: SingleChildScrollView(
                   child: LanguageComparisonViewer(
                     comparisonResult: comparisonResult.data!,
-                    automatonATitle: 'Current Automaton',
-                    automatonBTitle: 'Compared Automaton',
+                    automatonATitle:
+                        appLocalizationsOf(context).currentAutomatonTitle,
+                    automatonBTitle:
+                        appLocalizationsOf(context).comparedAutomatonTitle,
                     showProductAutomaton: true,
                     showSteps: _stepByStepMode,
                   ),

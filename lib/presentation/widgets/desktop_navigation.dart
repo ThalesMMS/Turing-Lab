@@ -20,7 +20,11 @@ class DesktopNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    // Derived from the theme's label style so the rail keeps the app's
+    // typography; a bare TextStyle here would drop the typeface.
+    final labelStyle = theme.textTheme.labelMedium ?? const TextStyle();
     final l10n = jflapLocalizationsOf(context);
 
     return NavigationRail(
@@ -35,12 +39,12 @@ class DesktopNavigation extends StatelessWidget {
       unselectedIconTheme: IconThemeData(
         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
       ),
-      selectedLabelTextStyle: TextStyle(
+      selectedLabelTextStyle: labelStyle.copyWith(
         color: colorScheme.primary,
         fontWeight: FontWeight.bold,
         fontSize: 13,
       ),
-      unselectedLabelTextStyle: TextStyle(
+      unselectedLabelTextStyle: labelStyle.copyWith(
         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
         fontSize: 12,
       ),

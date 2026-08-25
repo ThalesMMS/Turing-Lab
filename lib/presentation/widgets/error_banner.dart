@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
 import 'retry_button.dart';
 
 /// Severity levels supported by [ErrorBanner].
@@ -30,10 +31,9 @@ enum ErrorSeverity {
 }
 
 class _SeverityVisuals {
-  const _SeverityVisuals({required this.icon, required this.semanticsLabel});
+  const _SeverityVisuals({required this.icon});
 
   final IconData icon;
-  final String semanticsLabel;
 }
 
 class _SeverityColors {
@@ -49,22 +49,10 @@ class _SeverityColors {
 }
 
 const Map<ErrorSeverity, _SeverityVisuals> _severityVisuals = {
-  ErrorSeverity.success: _SeverityVisuals(
-    icon: Icons.check_circle_outline,
-    semanticsLabel: 'Success banner',
-  ),
-  ErrorSeverity.error: _SeverityVisuals(
-    icon: Icons.error_outline,
-    semanticsLabel: 'Error banner',
-  ),
-  ErrorSeverity.warning: _SeverityVisuals(
-    icon: Icons.warning_amber_rounded,
-    semanticsLabel: 'Warning banner',
-  ),
-  ErrorSeverity.info: _SeverityVisuals(
-    icon: Icons.info_outline,
-    semanticsLabel: 'Info banner',
-  ),
+  ErrorSeverity.success: _SeverityVisuals(icon: Icons.check_circle_outline),
+  ErrorSeverity.error: _SeverityVisuals(icon: Icons.error_outline),
+  ErrorSeverity.warning: _SeverityVisuals(icon: Icons.warning_amber_rounded),
+  ErrorSeverity.info: _SeverityVisuals(icon: Icons.info_outline),
 };
 
 /// Inline banner that communicates recoverable issues without hiding content.
@@ -148,10 +136,17 @@ class ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final visuals = _severityVisuals[severity]!;
     final colors = _getColors(context);
+    final l10n = appLocalizationsOf(context);
+    final bannerLabel = switch (severity) {
+      ErrorSeverity.success => l10n.successBannerSemantics,
+      ErrorSeverity.error => l10n.errorBannerSemantics,
+      ErrorSeverity.warning => l10n.warningBannerSemantics,
+      ErrorSeverity.info => l10n.infoBannerSemantics,
+    };
 
     return Semantics(
       container: true,
-      label: visuals.semanticsLabel,
+      label: bannerLabel,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isCompact = constraints.maxWidth < 600;
@@ -211,7 +206,7 @@ class ErrorBanner extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (showRetryButton && retryCallback != null)
-                  RetryButton(onPressed: retryCallback, label: 'Retry'),
+                  RetryButton(onPressed: retryCallback),
                 if (showDismissButton && dismissCallback != null)
                   _DismissButton(onDismiss: dismissCallback),
               ],
@@ -259,7 +254,7 @@ class ErrorBanner extends StatelessWidget {
               runSpacing: 8,
               children: [
                 if (showRetryButton && retryCallback != null)
-                  RetryButton(onPressed: retryCallback, label: 'Retry'),
+                  RetryButton(onPressed: retryCallback),
                 if (showDismissButton && dismissCallback != null)
                   _DismissButton(onDismiss: dismissCallback),
               ],
@@ -278,8 +273,9 @@ class _DismissButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     return Semantics(
-      label: 'Dismiss message',
+      label: l10n.dismissMessage,
       button: true,
       child: TextButton.icon(
         onPressed: onDismiss,
@@ -287,7 +283,7 @@ class _DismissButton extends StatelessWidget {
           minimumSize: const Size(44, 44),
         ),
         icon: const Icon(Icons.close, size: 18),
-        label: const Text('Dismiss'),
+        label: Text(l10n.dismiss),
       ),
     );
   }

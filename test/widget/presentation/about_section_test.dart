@@ -31,7 +31,7 @@ Future<void> _pumpAbout(
 }
 
 Future<void> _tapRepository(WidgetTester tester) async {
-  final repository = find.text('https://github.com/ThalesMMS/jflutter');
+  final repository = find.text('https://github.com/ThalesMMS/Turing-Lab');
   await tester.ensureVisible(repository);
   await tester.tap(repository);
   await tester.pumpAndSettle();
@@ -44,7 +44,8 @@ void main() {
     await _pumpAbout(tester);
 
     expect(find.text('Thales Matheus Mendonça Santos'), findsOneWidget);
-    expect(find.text('https://github.com/ThalesMMS/jflutter'), findsOneWidget);
+    expect(
+        find.text('https://github.com/ThalesMMS/Turing-Lab'), findsOneWidget);
     expect(find.text('GraphView (MIT License)'), findsOneWidget);
     expect(find.text('Package licenses'), findsOneWidget);
     expect(find.text('JFLAP Acknowledgments'), findsOneWidget);
@@ -65,7 +66,7 @@ void main() {
 
     await _tapRepository(tester);
 
-    expect(openedUri, Uri.parse('https://github.com/ThalesMMS/jflutter'));
+    expect(openedUri, Uri.parse('https://github.com/ThalesMMS/Turing-Lab'));
   });
 
   testWidgets('failed project repository launch shows localized feedback', (

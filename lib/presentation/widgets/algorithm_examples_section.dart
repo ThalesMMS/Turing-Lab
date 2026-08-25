@@ -91,7 +91,7 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.only(bottom: 8),
                       child: AlgorithmExampleButton(
-                        title: example.name,
+                        title: l10n.localizedExampleName(example.name),
                         isLoading: loadingExampleName == example.name,
                         onPressed: loadingExampleName == null
                             ? () => onExampleSelected(example.name)

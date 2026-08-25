@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
 import 'automaton_workspace_scaffold.dart';
+import '../../core/constants/monospace_typography.dart';
 
 bool supportsCanvasSimulationPlayback(BuildContext context) {
   return Theme.of(context).platform == TargetPlatform.iOS &&
@@ -113,8 +114,7 @@ class _CanvasSimulationPlaybackBarState
   Widget _buildWordStrip(BuildContext context, CanvasSimulationWord word) {
     final colorScheme = Theme.of(context).colorScheme;
     final baseStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontFamily: 'monospace',
-          fontFamilyFallback: const ['Menlo', 'Courier New'],
+          fontFamilyFallback: kMonospaceFontFamilyFallback,
           letterSpacing: 2,
         );
     if (word.isEmpty) {

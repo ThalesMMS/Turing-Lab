@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
@@ -130,7 +132,11 @@ void main() {
 
     await tester.tap(algorithms);
     await tester.pumpAndSettle();
-    await pumpUntilFound(tester, find.text('Regex - Repetição de A'));
+    final exampleL10n = AppLocalizationsEn();
+    await pumpUntilFound(
+      tester,
+      find.text(exampleL10n.localizedExampleName('Regex - Repetição de A')),
+    );
     for (final example in const [
       'Regex - Repetição de A',
       'Regex - Termina com AB',
@@ -138,12 +144,17 @@ void main() {
       'Regex - Pares AB ou BA',
       'Regex - Blocos de A e B',
     ]) {
-      expect(find.text(example), findsOneWidget);
+      expect(
+        find.text(exampleL10n.localizedExampleName(example)),
+        findsOneWidget,
+      );
     }
     expect(find.text('Convert to NFA'), findsOneWidget);
     expect(find.text('Compare Regular Expressions:'), findsOneWidget);
 
-    await tester.tap(find.text('Regex - Termina com AB'));
+    await tester.tap(
+      find.text(exampleL10n.localizedExampleName('Regex - Termina com AB')),
+    );
     await pumpUntilFound(tester, find.textContaining('Example loaded:'));
     expect(container.read(regexEditorProvider).currentRegex, '(a|b)*ab');
     expect(container.read(regexEditorProvider).alphabet, 'ab');

@@ -9,6 +9,8 @@ import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
@@ -462,6 +464,185 @@ void main() {
     );
 
     testWidgets(
+      'regex NFA conversion stores the NFA and switches to FSA workspace',
+      (tester) async {
+        final navigationNotifier = _TestHomeNavigationNotifier()
+          ..setIndex(HomeNavigationNotifier.regexIndex);
+        final highlightService = _TestSimulationHighlightService();
+
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await _pumpHomePage(
+          tester,
+          navigationNotifier: navigationNotifier,
+          highlightService: highlightService,
+          size: const Size(1400, 1080),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(HomePage)),
+          listen: false,
+        );
+
+        await tester.enterText(
+          find.byKey(const ValueKey('regex_input_field')),
+          'a',
+        );
+        await tester.pump();
+        final convertToNfaButton = tester.widget<ElevatedButton>(
+          find.ancestor(
+            of: find.text('Convert to NFA'),
+            matching: find.byType(ElevatedButton),
+          ),
+        );
+        convertToNfaButton.onPressed!.call();
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(automatonStateProvider).currentAutomaton,
+          isNotNull,
+        );
+        expect(
+          container.read(homeNavigationProvider),
+          HomeNavigationNotifier.fsaIndex,
+        );
+        expect(find.text('Finite State Automata'), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'regex NFA cancel preserves a loaded automaton with Portuguese copy',
+      (tester) async {
+        final navigationNotifier = _TestHomeNavigationNotifier()
+          ..setIndex(HomeNavigationNotifier.regexIndex);
+        final highlightService = _TestSimulationHighlightService();
+
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await _pumpHomePage(
+          tester,
+          navigationNotifier: navigationNotifier,
+          highlightService: highlightService,
+          size: const Size(1400, 1080),
+          locale: const Locale('pt'),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(HomePage)),
+          listen: false,
+        );
+        container.read(automatonStateProvider.notifier).addState(
+              id: 'loaded-state',
+              label: 'loaded',
+              x: 120,
+              y: 120,
+              isInitial: true,
+            );
+        final loadedAutomaton =
+            container.read(automatonStateProvider).currentAutomaton;
+
+        await tester.enterText(
+          find.byKey(const ValueKey('regex_input_field')),
+          'a',
+        );
+        await tester.pump();
+        final convertToNfaButton = tester.widget<ElevatedButton>(
+          find.ancestor(
+            of: find.text('Converter para AFN'),
+            matching: find.byType(ElevatedButton),
+          ),
+        );
+        convertToNfaButton.onPressed!.call();
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(
+            'Já existe um autômato carregado. Deseja substituí-lo?',
+          ),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Cancelar'));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(automatonStateProvider).currentAutomaton,
+          same(loadedAutomaton),
+        );
+        expect(
+          container.read(homeNavigationProvider),
+          HomeNavigationNotifier.regexIndex,
+        );
+      },
+    );
+
+    testWidgets('regex DFA replace confirms and opens the new automaton', (
+      tester,
+    ) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()
+        ..setIndex(HomeNavigationNotifier.regexIndex);
+      final highlightService = _TestSimulationHighlightService();
+
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+        size: const Size(1400, 1080),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomePage)),
+        listen: false,
+      );
+      container.read(automatonStateProvider.notifier).addState(
+            id: 'loaded-state',
+            label: 'loaded',
+            x: 120,
+            y: 120,
+            isInitial: true,
+          );
+      final loadedAutomaton =
+          container.read(automatonStateProvider).currentAutomaton;
+
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a',
+      );
+      await tester.pump();
+      final convertToDfaButton = tester.widget<ElevatedButton>(
+        find.ancestor(
+          of: find.text('Convert to DFA'),
+          matching: find.byType(ElevatedButton),
+        ),
+      );
+      convertToDfaButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('An automaton is already loaded. Do you want to replace it?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Replace'));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(automatonStateProvider).currentAutomaton,
+        isNot(same(loadedAutomaton)),
+      );
+      expect(
+        container.read(homeNavigationProvider),
+        HomeNavigationNotifier.fsaIndex,
+      );
+    });
+
+    testWidgets(
       'Home and local FSA Help agree and back preserves the automaton',
       (tester) async {
         final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
@@ -672,6 +853,7 @@ void main() {
 
       await tester.tap(algorithms);
       await tester.pumpAndSettle();
+      final exampleL10n = AppLocalizationsEn();
       for (final example in const [
         'Regex - Repetição de A',
         'Regex - Termina com AB',
@@ -679,7 +861,10 @@ void main() {
         'Regex - Pares AB ou BA',
         'Regex - Blocos de A e B',
       ]) {
-        expect(find.text(example), findsOneWidget);
+        expect(
+          find.text(exampleL10n.localizedExampleName(example)),
+          findsOneWidget,
+        );
       }
     });
 

@@ -114,12 +114,18 @@ extension _TuringLabAdaptiveEdgeRendererGroupedRendering
       );
     }
 
+    // Labels stack outwards along the loop's own heading, so they stay clear
+    // of the state wherever the loop settled on its border.
     final bounds = geometry.path.getBounds();
-    final anchor = Offset(bounds.center.dx, bounds.top - _loopLabelOffset);
+    var normal = renderGeometry.labelNormal;
+    if (normal.distanceSquared < 0.0001) {
+      normal = const Offset(0, -1);
+    }
+    final anchor = bounds.center +
+        normal * (_projectedHalfExtent(normal, bounds.size) + _loopLabelOffset);
 
-    var previousTopFromAnchor = 0.0;
-    for (var i = 0; i < group.length; i++) {
-      final loopEdge = group[i];
+    var reach = 0.0;
+    for (final loopEdge in group) {
       if ((loopEdge.label ?? '').isEmpty) {
         continue;
       }
@@ -131,24 +137,25 @@ extension _TuringLabAdaptiveEdgeRendererGroupedRendering
         highlightedOverride: isHighlighted,
       );
       try {
-        double centerFromAnchor;
-        if (i == 0) {
-          centerFromAnchor = 0.0;
-          previousTopFromAnchor = textPainter.height / 2;
-        } else {
-          centerFromAnchor =
-              previousTopFromAnchor + 2.0 + textPainter.height / 2;
-          previousTopFromAnchor = centerFromAnchor + textPainter.height / 2;
-        }
-
-        final drawOffset = Offset(
-          anchor.dx - textPainter.width / 2,
-          anchor.dy - centerFromAnchor - textPainter.height / 2,
+        final halfExtent = _projectedHalfExtent(
+          normal,
+          Size(textPainter.width, textPainter.height),
         );
-        textPainter.paint(canvas, drawOffset);
+        final center = anchor + normal * (reach + halfExtent);
+        reach += (halfExtent * 2) + 2.0;
+        textPainter.paint(
+          canvas,
+          Offset(
+            center.dx - (textPainter.width / 2),
+            center.dy - (textPainter.height / 2),
+          ),
+        );
       } finally {
         _releaseLabelPainter(textPainter);
       }
     }
   }
+
+  double _projectedHalfExtent(Offset normal, Size size) =>
+      ((normal.dx.abs() * size.width) + (normal.dy.abs() * size.height)) / 2;
 }

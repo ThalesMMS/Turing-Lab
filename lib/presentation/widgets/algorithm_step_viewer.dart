@@ -371,7 +371,11 @@ class AlgorithmStepViewer extends StatelessWidget {
           showExpandedDetails ? Icons.expand_less : Icons.expand_more,
           size: 18,
         ),
-        label: Text(showExpandedDetails ? 'Hide Details' : 'Show More Details'),
+        label: Text(
+          showExpandedDetails
+              ? appLocalizationsOf(context).hideDetails
+              : appLocalizationsOf(context).showDetails,
+        ),
         style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
       ),
     );

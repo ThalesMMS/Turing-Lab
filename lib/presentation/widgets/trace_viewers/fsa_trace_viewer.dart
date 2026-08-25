@@ -6,6 +6,7 @@ import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 /// FSA-specific presentation layered on the shared trace viewer behavior.
 class FsaTraceViewer extends StatelessWidget {
@@ -153,7 +154,7 @@ class FsaTraceViewer extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
-                  ?.copyWith(fontFamily: 'monospace'),
+                  ?.copyWith(fontFamilyFallback: kMonospaceFontFamilyFallback),
             ),
           ],
           if (nextState != null) ...[
@@ -163,7 +164,7 @@ class FsaTraceViewer extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
-                  ?.copyWith(fontFamily: 'monospace'),
+                  ?.copyWith(fontFamilyFallback: kMonospaceFontFamilyFallback),
             ),
           ],
           const SizedBox(height: 4),
@@ -174,7 +175,7 @@ class FsaTraceViewer extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
-                ?.copyWith(fontFamily: 'monospace'),
+                ?.copyWith(fontFamilyFallback: kMonospaceFontFamilyFallback),
           ),
         ],
       ),

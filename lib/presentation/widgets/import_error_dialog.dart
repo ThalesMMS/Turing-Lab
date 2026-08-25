@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
 import 'retry_button.dart';
 
 /// Types of import errors surfaced by [ImportErrorDialog].
@@ -14,44 +15,36 @@ enum ImportErrorType {
 
 class _ErrorDialogVisuals {
   const _ErrorDialogVisuals({
-    required this.title,
     required this.icon,
     required this.color,
   });
 
-  final String title;
   final IconData icon;
   final Color color;
 }
 
 const Map<ImportErrorType, _ErrorDialogVisuals> _dialogVisuals = {
   ImportErrorType.malformedJFF: _ErrorDialogVisuals(
-    title: 'Malformed JFLAP File',
     icon: Icons.topic_outlined,
     color: Color(0xFFC62828),
   ),
   ImportErrorType.invalidJSON: _ErrorDialogVisuals(
-    title: 'Invalid JSON Structure',
     icon: Icons.code_off,
     color: Color(0xFFE65100),
   ),
   ImportErrorType.unsupportedVersion: _ErrorDialogVisuals(
-    title: 'Unsupported File Version',
     icon: Icons.update_disabled,
     color: Color(0xFF1565C0),
   ),
   ImportErrorType.inaccessibleFile: _ErrorDialogVisuals(
-    title: 'File Access Unavailable',
     icon: Icons.folder_off_outlined,
     color: Color(0xFF00838F),
   ),
   ImportErrorType.corruptedData: _ErrorDialogVisuals(
-    title: 'Corrupted Data Detected',
     icon: Icons.bug_report_outlined,
     color: Color(0xFFD84315),
   ),
   ImportErrorType.invalidAutomaton: _ErrorDialogVisuals(
-    title: 'Invalid Automaton Definition',
     icon: Icons.device_hub,
     color: Color(0xFF6A1B9A),
   ),
@@ -98,17 +91,26 @@ class ImportErrorDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final visuals = _dialogVisuals[errorType]!;
     final theme = Theme.of(context);
+    final l10n = appLocalizationsOf(context);
+    final title = switch (errorType) {
+      ImportErrorType.malformedJFF => l10n.importErrorMalformedJff,
+      ImportErrorType.invalidJSON => l10n.importErrorInvalidJson,
+      ImportErrorType.unsupportedVersion => l10n.importErrorUnsupportedVersion,
+      ImportErrorType.inaccessibleFile => l10n.importErrorInaccessibleFile,
+      ImportErrorType.corruptedData => l10n.importErrorCorruptedData,
+      ImportErrorType.invalidAutomaton => l10n.importErrorInvalidAutomaton,
+    };
 
     return Semantics(
       namesRoute: true,
-      label: 'Import error dialog',
+      label: l10n.importErrorDialogSemantics,
       child: AlertDialog(
         clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
         contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         actionsPadding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-        title: _DialogTitle(visuals: visuals),
+        title: _DialogTitle(visuals: visuals, title: title),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: Column(
@@ -130,9 +132,9 @@ class ImportErrorDialog extends StatelessWidget {
         ),
         actions: [
           Semantics(
-            label: 'Cancel import',
+            label: l10n.cancelImport,
             button: true,
-            child: TextButton(onPressed: onCancel, child: const Text('Cancel')),
+            child: TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
           ),
           RetryButton(onPressed: onRetry),
         ],
@@ -142,9 +144,10 @@ class ImportErrorDialog extends StatelessWidget {
 }
 
 class _DialogTitle extends StatelessWidget {
-  const _DialogTitle({required this.visuals});
+  const _DialogTitle({required this.visuals, required this.title});
 
   final _ErrorDialogVisuals visuals;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +160,7 @@ class _DialogTitle extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Text(
-            visuals.title,
+            title,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: visuals.color,
               fontWeight: FontWeight.w600,
@@ -223,6 +226,7 @@ class _TechnicalDetailsSectionState extends State<_TechnicalDetailsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     final theme = Theme.of(context);
     final borderColor = theme.colorScheme.outlineVariant;
 
@@ -233,7 +237,7 @@ class _TechnicalDetailsSectionState extends State<_TechnicalDetailsSection> {
           onPressed: () => setState(() => _expanded = !_expanded),
           icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
           label: Text(
-            _expanded ? 'Hide technical details' : 'View technical details',
+            _expanded ? l10n.hideTechnicalDetails : l10n.viewTechnicalDetails,
           ),
         ),
         AnimatedCrossFade(

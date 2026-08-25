@@ -18,13 +18,15 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               children: [
                 Icon(Icons.auto_fix_high, color: colorScheme.primary, size: 24),
                 const SizedBox(width: 8),
-                Text(
-                  l10n.simplificationSteps,
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    l10n.simplificationSteps,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
                 if (regexState.simplificationResult != null)
                   IconButton(
                     onPressed: () => ref
@@ -129,7 +131,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                 child: SelectableText(
                   result.originalRegex,
                   style: textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                     color: colorScheme.onSurface,
                   ),
                 ),
@@ -173,7 +175,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                 child: SelectableText(
                   result.simplifiedRegex,
                   style: textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                     color: result.madeProgress
                         ? colorScheme.primary
                         : colorScheme.onSurface,
@@ -509,7 +511,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                       SelectableText(
                         step.matchedSubexpression ?? step.originalRegex ?? '',
                         style: textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
+                          fontFamilyFallback: kMonospaceFontFamilyFallback,
                           color: colorScheme.onErrorContainer,
                         ),
                       ),
@@ -547,7 +549,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                             step.simplifiedRegex ??
                             '',
                         style: textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
+                          fontFamilyFallback: kMonospaceFontFamilyFallback,
                           color: colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.bold,
                         ),
@@ -574,7 +576,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               child: Text(
                 '${l10n.rule}: ${step.ruleApplied!.formalNotation}',
                 style: textTheme.labelSmall?.copyWith(
-                  fontFamily: 'monospace',
+                  fontFamilyFallback: kMonospaceFontFamilyFallback,
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -739,7 +741,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                   child: Text(
                     step.ruleApplied!.formalNotation,
                     style: textTheme.labelSmall?.copyWith(
-                      fontFamily: 'monospace',
+                      fontFamilyFallback: kMonospaceFontFamilyFallback,
                       fontSize: 10,
                       color: colorScheme.onTertiaryContainer,
                     ),

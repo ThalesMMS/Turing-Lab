@@ -132,8 +132,10 @@ void main() {
 
       expect(find.byIcon(Icons.psychology), findsOneWidget);
       expect(find.text('No simulation results yet'), findsOneWidget);
+      // The placeholder's English default is a lookup key; what renders is
+      // the localized `simulationEmptyHint`.
       expect(
-        find.text('Enter an input string and click Simulate to see results'),
+        find.text('Enter an input string and activate Simulate to see results'),
         findsOneWidget,
       );
     });

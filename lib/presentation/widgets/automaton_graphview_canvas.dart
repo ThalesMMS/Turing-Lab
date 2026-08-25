@@ -262,6 +262,8 @@ class _AutomatonGraphViewCanvasState
   Color? _edgeBaseColor;
   Color? _edgeHighlightColor;
   Color? _edgeLabelSurfaceColor;
+  String? _edgeLabelFontFamily;
+  List<String>? _edgeLabelFontFamilyFallback;
 
   @visibleForTesting
   TuringLabEdgeRenderGeometry? debugGeometryForTransition(String id) {
@@ -623,6 +625,8 @@ class _AutomatonGraphViewCanvasState
       baseColor: baseColor,
       highlightColor: highlightColor,
       labelSurfaceColor: labelSurfaceColor,
+      labelFontFamily: _edgeLabelFontFamily,
+      labelFontFamilyFallback: _edgeLabelFontFamilyFallback,
     );
   }
 
@@ -659,6 +663,7 @@ class _AutomatonGraphViewCanvasState
       _pendingSyncAutomaton = null;
       try {
         _controller.synchronize(target);
+        _syncInitialStateIds();
       } catch (error, stackTrace) {
         if (kDebugMode) {
           debugPrint(
@@ -789,6 +794,18 @@ class _AutomatonGraphViewCanvasState
     if (_hasEdgeRenderer) {
       _edgeRenderer.invalidateEdgeCaches();
     }
+  }
+
+  /// Self-loops keep clear of the initial-state marker, which only the canvas
+  /// knows about: GraphView nodes carry no automaton flags.
+  void _syncInitialStateIds() {
+    if (!_hasEdgeRenderer) {
+      return;
+    }
+    _edgeRenderer.updateInitialStateIds(<String>{
+      for (final node in _controller.nodes)
+        if (node.isInitial) node.id,
+    });
   }
 
   String _computeEdgeStructureSignature() {
@@ -989,6 +1006,11 @@ class _AutomatonGraphViewCanvasState
     _edgeBaseColor = theme.colorScheme.outline;
     _edgeHighlightColor = theme.colorScheme.primary;
     _edgeLabelSurfaceColor = theme.colorScheme.surfaceContainerHighest;
+    // Transition labels are painted with a TextPainter, which inherits no
+    // typography, so the theme's typeface has to be handed over explicitly.
+    final labelStyle = theme.textTheme.labelLarge;
+    _edgeLabelFontFamily = labelStyle?.fontFamily;
+    _edgeLabelFontFamilyFallback = labelStyle?.fontFamilyFallback;
     _updateEdgeAppearance(_controller.highlightNotifier.value);
     final disableAnimations = MediaQuery.maybeOf(context)?.disableAnimations ??
         WidgetsBinding.instance.platformDispatcher.accessibilityFeatures
@@ -1200,7 +1222,10 @@ class _AutomatonGraphViewCanvasState
                             ),
                           if (_activeTool == AutomatonCanvasTool.transition)
                             Positioned(
-                              top: 16,
+                              // Below the band the mobile floating inspector
+                              // occupies by default, so the two never sit on
+                              // top of each other on a phone.
+                              top: _kTransitionModeIndicatorTop,
                               left: 0,
                               right: 0,
                               child: IgnorePointer(

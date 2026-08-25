@@ -30,12 +30,14 @@ import 'algorithm_panel_scaffold.dart';
 import 'base_simulation_panel.dart';
 import 'common/algorithm_button.dart';
 import 'common/algorithm_button_config.dart';
+import 'conversion_replacement_dialog.dart';
 import 'grammar_transformation_history.dart';
 import '../providers/automaton_state_provider.dart';
 import '../providers/grammar_provider.dart';
 import '../providers/home_navigation_provider.dart';
 import '../providers/pda_editor_provider.dart';
 import 'app_snackbar.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Panel for grammar analysis algorithms
 class GrammarAlgorithmPanel extends ConsumerStatefulWidget {
@@ -72,7 +74,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   @override
   Widget build(BuildContext context) {
     return AlgorithmPanelScaffold(
-      title: 'Grammar Analysis',
+      title: appLocalizationsOf(context).grammarAnalysisTitle,
       children: [
         _buildAlgorithmButtons(context),
         _buildResultsSection(context),
@@ -98,8 +100,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 24),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert to CNF',
-            description: 'Convert grammar to Chomsky Normal Form',
+            title: appLocalizationsOf(context).convertToCnfTitle,
+            description: appLocalizationsOf(context).convertToCnfDescription,
             icon: Icons.filter_list,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -109,8 +111,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert to GNF',
-            description: 'Convert grammar to Greibach Normal Form',
+            title: appLocalizationsOf(context).convertToGnfTitle,
+            description: appLocalizationsOf(context).convertToGnfDescription,
             icon: Icons.format_list_numbered,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -120,8 +122,9 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Remove Left Recursion',
-            description: 'Eliminate direct and indirect left recursion',
+            title: appLocalizationsOf(context).removeLeftRecursionTitle,
+            description:
+                appLocalizationsOf(context).removeLeftRecursionDescription,
             icon: Icons.transform,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -131,8 +134,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Left Factor',
-            description: 'Apply left factoring to grammar',
+            title: appLocalizationsOf(context).leftFactorTitle,
+            description: appLocalizationsOf(context).leftFactorDescription,
             icon: Icons.account_tree,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -142,8 +145,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Find First Sets',
-            description: 'Calculate FIRST sets for all variables',
+            title: appLocalizationsOf(context).findFirstSetsTitle,
+            description: appLocalizationsOf(context).findFirstSetsDescription,
             icon: Icons.first_page,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -153,8 +156,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Find Follow Sets',
-            description: 'Calculate FOLLOW sets for all variables',
+            title: appLocalizationsOf(context).findFollowSetsTitle,
+            description: appLocalizationsOf(context).findFollowSetsDescription,
             icon: Icons.last_page,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -164,8 +167,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Build Parse Table',
-            description: 'Generate LL(1) or LR(1) parse table',
+            title: appLocalizationsOf(context).buildParseTableTitle,
+            description: appLocalizationsOf(context).buildParseTableDescription,
             icon: Icons.table_chart,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -175,8 +178,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Check Ambiguity',
-            description: 'Detect if grammar is ambiguous',
+            title: appLocalizationsOf(context).checkAmbiguityTitle,
+            description: appLocalizationsOf(context).checkAmbiguityDescription,
             icon: Icons.rule,
             isEnabled: !_isAnalyzing,
             isExecuting: _isAnalyzing,
@@ -254,52 +257,56 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         const SizedBox(height: 8),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert Right-Linear Grammar to FSA',
-            description: 'Build an FSA from a right-linear grammar',
+            title: appLocalizationsOf(context).convertRightLinearToFsaTitle,
+            description:
+                appLocalizationsOf(context).convertRightLinearToFsaDescription,
             icon: Icons.sync_alt,
             isExecuting: isBusy &&
                 activeConversion == GrammarConversionKind.grammarToFsa,
             isEnabled: !isDisabled,
-            executionStatus: 'Converting to FSA...',
+            executionStatus: appLocalizationsOf(context).convertingToFsa,
             onPressed: _convertToAutomaton,
           ),
         ),
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert Grammar to PDA (General)',
-            description: 'Build an equivalent PDA from the grammar',
+            title: appLocalizationsOf(context).convertGrammarToPdaGeneralTitle,
+            description: appLocalizationsOf(context)
+                .convertGrammarToPdaGeneralDescription,
             icon: Icons.auto_fix_high,
             isExecuting: isBusy &&
                 activeConversion == GrammarConversionKind.grammarToPda,
             isEnabled: !isDisabled,
-            executionStatus: 'Converting to PDA...',
+            executionStatus: appLocalizationsOf(context).convertingToPda,
             onPressed: _convertToPdaGeneral,
           ),
         ),
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert Grammar to PDA (Standard)',
-            description: 'Build a standard-form PDA from the grammar',
+            title: appLocalizationsOf(context).convertGrammarToPdaStandardTitle,
+            description: appLocalizationsOf(context)
+                .convertGrammarToPdaStandardDescription,
             icon: Icons.layers,
             isExecuting: isBusy &&
                 activeConversion == GrammarConversionKind.grammarToPdaStandard,
             isEnabled: !isDisabled,
-            executionStatus: 'Converting (Standard)...',
+            executionStatus: appLocalizationsOf(context).convertingStandard,
             onPressed: _convertToPdaStandard,
           ),
         ),
         const SizedBox(height: 12),
         AlgorithmButton.fromConfig(
           AlgorithmButtonConfig(
-            title: 'Convert Grammar to PDA (Greibach)',
-            description: 'Build a Greibach-form PDA from the grammar',
+            title: appLocalizationsOf(context).convertGrammarToPdaGreibachTitle,
+            description: appLocalizationsOf(context)
+                .convertGrammarToPdaGreibachDescription,
             icon: Icons.stacked_bar_chart,
             isExecuting: isBusy &&
                 activeConversion == GrammarConversionKind.grammarToPdaGreibach,
             isEnabled: !isDisabled,
-            executionStatus: 'Converting (Greibach)...',
+            executionStatus: appLocalizationsOf(context).convertingGreibach,
             onPressed: _convertToPdaGreibach,
           ),
         ),
@@ -307,7 +314,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'Add at least one production rule to enable conversions.',
+              appLocalizationsOf(context).addAtLeastOneProductionRule,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(
                       context,
@@ -330,6 +337,13 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   }
 
   Future<void> _convertToAutomaton() async {
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.automaton,
+    );
+    if (!mounted || !shouldReplace) return;
+
     final result =
         await ref.read(grammarProvider.notifier).convertToAutomaton();
 
@@ -345,13 +359,12 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
       showAppSnackBar(
         context,
-        message: appLocalizationsOf(context).localizeWorkflowText(
-          'Grammar converted to automaton. Switched to FSA workspace.',
-        ),
+        message: appLocalizationsOf(context).grammarConvertedToAutomaton,
         tone: AppSnackBarTone.success,
       );
     } else {
-      final message = result.error ?? 'Failed to convert grammar to automaton.';
+      final message = result.error ??
+          appLocalizationsOf(context).failedToConvertGrammarToAutomaton;
       showAppSnackBar(
         context,
         message: appLocalizationsOf(context).localizeWorkflowText(message),
@@ -363,24 +376,21 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   Future<void> _convertToPdaGeneral() {
     return _handlePdaConversion(
       convert: () => ref.read(grammarProvider.notifier).convertToPda(),
-      successMessage:
-          'Grammar converted to PDA (general). Switched to PDA workspace.',
+      successMessage: appLocalizationsOf(context).grammarConvertedToPdaGeneral,
     );
   }
 
   Future<void> _convertToPdaStandard() {
     return _handlePdaConversion(
       convert: () => ref.read(grammarProvider.notifier).convertToPdaStandard(),
-      successMessage:
-          'Grammar converted to PDA (standard). Switched to PDA workspace.',
+      successMessage: appLocalizationsOf(context).grammarConvertedToPdaStandard,
     );
   }
 
   Future<void> _convertToPdaGreibach() {
     return _handlePdaConversion(
       convert: () => ref.read(grammarProvider.notifier).convertToPdaGreibach(),
-      successMessage:
-          'Grammar converted to PDA (Greibach). Switched to PDA workspace.',
+      successMessage: appLocalizationsOf(context).grammarConvertedToPdaGreibach,
     );
   }
 
@@ -388,6 +398,13 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
     required Future<Result<PDA>> Function() convert,
     required String successMessage,
   }) async {
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.pushdownAutomaton,
+    );
+    if (!mounted || !shouldReplace) return;
+
     final result = await convert();
 
     if (!mounted) return;
@@ -399,12 +416,12 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
       showAppSnackBar(
         context,
-        message:
-            appLocalizationsOf(context).localizeWorkflowText(successMessage),
+        message: successMessage,
         tone: AppSnackBarTone.success,
       );
     } else {
-      final message = result.error ?? 'Failed to convert grammar to PDA.';
+      final message = result.error ??
+          appLocalizationsOf(context).failedToConvertGrammarToPda;
       showAppSnackBar(
         context,
         message: appLocalizationsOf(context).localizeWorkflowText(message),
@@ -445,10 +462,10 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
   }
 
   Widget _buildEmptyResults(BuildContext context) {
-    return const SimulationEmptyResults(
+    return SimulationEmptyResults(
       icon: Icons.analytics_outlined,
-      title: 'No analysis results yet',
-      message: 'Select an algorithm above to analyze your grammar',
+      title: appLocalizationsOf(context).noAnalysisResultsYet,
+      message: appLocalizationsOf(context).selectAlgorithmToAnalyzeGrammar,
     );
   }
 
@@ -459,7 +476,10 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
           appLocalizationsOf(context).localizeWorkflowText(_analysisResult!),
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+          )
+              .textTheme
+              .bodyMedium
+              ?.copyWith(fontFamilyFallback: kMonospaceFontFamilyFallback),
         ),
       ),
     );
@@ -472,7 +492,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       (original, report) {
         _transformationSteps = report.steps;
         return _formatTransformationResult(
-          title: 'Direct and Indirect Left Recursion Removal',
+          title: appLocalizationsOf(context).leftRecursionRemovalResultTitle,
           original: original,
           transformed: report.value,
           notes: report.notes,
@@ -487,7 +507,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       'Left Factoring',
       (grammar) async => GrammarAnalyzer.leftFactor(grammar),
       (original, report) => _formatTransformationResult(
-        title: 'Left Factoring Analysis',
+        title: appLocalizationsOf(context).leftFactoringAnalysisTitle,
         original: original,
         transformed: report.value,
         notes: report.notes,
@@ -501,7 +521,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       'FIRST Sets',
       (grammar) async => GrammarAnalyzer.computeFirstSets(grammar),
       (original, report) => _formatSetResult(
-        title: 'FIRST Sets Analysis',
+        title: appLocalizationsOf(context).firstSetsAnalysisTitle,
         sets: report.value,
         notes: report.notes,
         derivations: report.derivations,
@@ -514,7 +534,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       'FOLLOW Sets',
       (grammar) async => GrammarAnalyzer.computeFollowSets(grammar),
       (original, report) => _formatSetResult(
-        title: 'FOLLOW Sets Analysis',
+        title: appLocalizationsOf(context).followSetsAnalysisTitle,
         sets: report.value,
         notes: report.notes,
         derivations: report.derivations,
@@ -555,16 +575,16 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
           return ResultFactory.success(
             GrammarAnalysisReport<GrammarCnfTransformationReport>(
               value: result.data!,
-              notes: const [
-                'Converted grammar to Chomsky Normal Form (CNF) using a step pipeline.',
-                'CNF rules: A→BC (two nonterminals) or A→a (single terminal).',
+              notes: [
+                appLocalizationsOf(context).cnfConversionNote,
+                appLocalizationsOf(context).cnfRulesNote,
               ],
             ),
           );
         }
 
         return ResultFactory.failure(
-          result.error ?? 'CNF conversion failed.',
+          result.error ?? appLocalizationsOf(context).cnfConversionFailed,
         );
       },
       (original, report) {
@@ -574,10 +594,10 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
         final diagnosticsText = report.value.diagnostics.isEmpty
             ? ''
-            : '\nDiagnostics:\n${report.value.diagnostics.map((d) => '- [${d.severity.name}] ${d.message}').join('\n')}';
+            : '\n${appLocalizationsOf(context).diagnosticsHeading}\n${report.value.diagnostics.map((d) => '- [${d.severity.name}] ${d.message}').join('\n')}';
 
         return _formatTransformationResult(
-          title: 'Chomsky Normal Form (CNF) Conversion',
+          title: appLocalizationsOf(context).cnfConversionTitle,
           original: original,
           transformed: report.value.grammar,
           notes: [...report.notes, diagnosticsText]
@@ -610,9 +630,9 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         return ResultFactory.success(
           GrammarAnalysisReport<GrammarGnfTransformationReport>(
             value: report,
-            notes: const [
-              'Converted grammar to Greibach Normal Form (GNF).',
-              'GNF rules: A→aα (terminal followed by nonterminals).',
+            notes: [
+              appLocalizationsOf(context).gnfConversionNote,
+              appLocalizationsOf(context).gnfRulesNote,
             ],
           ),
         );
@@ -624,10 +644,10 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
         final diagnosticsText = report.value.diagnostics.isEmpty
             ? ''
-            : '\nDiagnostics:\n${report.value.diagnostics.map((d) => '- [${d.severity.name}] ${d.message}').join('\n')}';
+            : '\n${appLocalizationsOf(context).diagnosticsHeading}\n${report.value.diagnostics.map((d) => '- [${d.severity.name}] ${d.message}').join('\n')}';
 
         return _formatTransformationResult(
-          title: 'Greibach Normal Form (GNF) Conversion',
+          title: appLocalizationsOf(context).gnfConversionTitle,
           original: original,
           transformed: report.value.grammar,
           notes: [...report.notes, diagnosticsText]
@@ -660,7 +680,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       setState(() {
         _isAnalyzing = false;
         _analysisResult = _formatError(
-          'Cannot run $algorithmName due to grammar validation errors',
+          appLocalizationsOf(context).cannotRunDueToValidation(algorithmName),
           validationErrors,
         );
       });
@@ -677,7 +697,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         _isAnalyzing = false;
         _analysisResult = result.isSuccess
             ? formatter(grammar, result.data!)
-            : '$algorithmName failed: ${result.error}';
+            : appLocalizationsOf(context)
+                .algorithmFailedError(algorithmName, result.error ?? '');
       });
     } catch (error) {
       if (!mounted) {
@@ -686,7 +707,8 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
       setState(() {
         _isAnalyzing = false;
-        _analysisResult = '$algorithmName failed: $error';
+        _analysisResult = appLocalizationsOf(context)
+            .algorithmFailedError(algorithmName, '$error');
       });
     }
   }
@@ -701,14 +723,18 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
     final buffer = StringBuffer()
       ..writeln(title)
       ..writeln('')
-      ..writeln('Original Grammar:')
+      ..writeln(appLocalizationsOf(context).originalGrammarLabel)
       ..writeln(_formatGrammar(original))
       ..writeln('')
-      ..writeln('Transformed Grammar:')
+      ..writeln(appLocalizationsOf(context).transformedGrammarLabel)
       ..writeln(_formatGrammar(transformed));
 
-    _appendSection(buffer, 'Notes', notes);
-    _appendSection(buffer, 'Derivations', derivations);
+    _appendSection(buffer, appLocalizationsOf(context).notesSection, notes);
+    _appendSection(
+      buffer,
+      appLocalizationsOf(context).derivationsSection,
+      derivations,
+    );
 
     return buffer.toString();
   }
@@ -731,8 +757,12 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       buffer.writeln('$label(${entry.key}) = {${values.join(', ')}}');
     }
 
-    _appendSection(buffer, 'Notes', notes);
-    _appendSection(buffer, 'Derivations', derivations);
+    _appendSection(buffer, appLocalizationsOf(context).notesSection, notes);
+    _appendSection(
+      buffer,
+      appLocalizationsOf(context).derivationsSection,
+      derivations,
+    );
 
     return buffer.toString();
   }
@@ -742,7 +772,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
     final terminals = table.terminals.toList()..sort(_symbolComparator);
     final nonTerminals = table.nonTerminals.toList()..sort(_symbolComparator);
     final buffer = StringBuffer()
-      ..writeln('LL(1) Parse Table Analysis')
+      ..writeln(appLocalizationsOf(context).ll1ParseTableAnalysis)
       ..writeln('');
 
     buffer.writeln(['NT', ...terminals].join('\t'));
@@ -763,24 +793,34 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       buffer.writeln(row.join('\t'));
     }
 
-    _appendSection(buffer, 'Notes', report.notes);
-    _appendSection(buffer, 'Conflicts', report.conflicts);
-    _appendSection(buffer, 'Derivations', report.derivations);
+    _appendSection(
+        buffer, appLocalizationsOf(context).notesSection, report.notes);
+    _appendSection(
+      buffer,
+      appLocalizationsOf(context).conflictsSection,
+      report.conflicts,
+    );
+    _appendSection(
+      buffer,
+      appLocalizationsOf(context).derivationsSection,
+      report.derivations,
+    );
 
     return buffer.toString();
   }
 
   String _formatAmbiguityResult(GrammarAnalysisReport<bool> report) {
+    final strings = appLocalizationsOf(context);
     final status =
-        report.value ? 'LL(1) (no conflicts)' : 'Not LL(1) (conflicts)';
+        report.value ? strings.ll1NoConflicts : strings.notLl1Conflicts;
     final buffer = StringBuffer()
-      ..writeln('LL(1) Classification')
+      ..writeln(strings.ll1Classification)
       ..writeln('')
-      ..writeln('Classification: $status');
+      ..writeln(strings.classificationLabel(status));
 
-    _appendSection(buffer, 'Notes', report.notes);
-    _appendSection(buffer, 'Conflicts', report.conflicts);
-    _appendSection(buffer, 'Derivations', report.derivations);
+    _appendSection(buffer, strings.notesSection, report.notes);
+    _appendSection(buffer, strings.conflictsSection, report.conflicts);
+    _appendSection(buffer, strings.derivationsSection, report.derivations);
 
     return buffer.toString();
   }

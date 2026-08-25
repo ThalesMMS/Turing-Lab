@@ -471,5 +471,18 @@ void main() {
         isFalse,
       );
     });
+
+    testWidgets('about tile opens the product overview page', (tester) async {
+      final repository = _FakeSettingsRepository();
+      await _pumpSettingsPage(tester, repository: repository);
+
+      await _ensureVisibleAndTap(
+        tester,
+        find.byKey(const ValueKey('settings_about_tile')),
+      );
+
+      expect(find.byKey(const ValueKey('about_page')), findsOneWidget);
+      expect(find.byKey(const ValueKey('about_open_licenses')), findsOneWidget);
+    });
   });
 }

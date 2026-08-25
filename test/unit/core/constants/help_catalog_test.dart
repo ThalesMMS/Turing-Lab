@@ -1619,7 +1619,7 @@ void main() {
 
     for (final fact in const [
       'Thales Matheus Mendonça Santos',
-      'https://github.com/ThalesMMS/jflutter',
+      'https://github.com/ThalesMMS/Turing-Lab',
       'Apache License 2.0',
       'JFLAP 7.1 License',
       'GraphView',
@@ -1632,7 +1632,7 @@ void main() {
     }
     for (final fact in const [
       'Thales Matheus Mendonça Santos',
-      'https://github.com/ThalesMMS/jflutter',
+      'https://github.com/ThalesMMS/Turing-Lab',
       'Apache License 2.0',
       'Licença do JFLAP 7.1',
       'GraphView',

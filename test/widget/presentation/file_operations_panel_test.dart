@@ -28,6 +28,7 @@ import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/services/file_operations_service.dart';
 import 'package:turing_lab/presentation/widgets/error_banner.dart';
+import 'package:turing_lab/presentation/widgets/export/svg_exporter.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 import 'package:turing_lab/presentation/widgets/import_error_dialog.dart';
 import 'package:vector_math/vector_math_64.dart';

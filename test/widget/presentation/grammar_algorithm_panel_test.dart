@@ -260,6 +260,50 @@ class _MockHomeNavigationNotifier extends HomeNavigationNotifier {
   }
 }
 
+FSA _loadedFsa() {
+  final state = automaton_state.State(
+    id: 'loaded-fsa-state',
+    label: 'loaded',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  return FSA(
+    id: 'loaded-fsa',
+    name: 'Loaded FSA',
+    states: {state},
+    transitions: const {},
+    alphabet: const {'b'},
+    initialState: state,
+    acceptingStates: const {},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
+}
+
+PDA _loadedPda() {
+  final state = automaton_state.State(
+    id: 'loaded-pda-state',
+    label: 'loaded',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  return PDA(
+    id: 'loaded-pda',
+    name: 'Loaded PDA',
+    states: {state},
+    transitions: const {},
+    alphabet: const {'b'},
+    initialState: state,
+    acceptingStates: const {},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: const {'Z'},
+    initialStackSymbol: 'Z',
+  );
+}
+
 Future<void> _pumpGrammarAlgorithmPanel(
   WidgetTester tester, {
   GrammarState? grammarState,
@@ -605,6 +649,95 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('Grammar to FSA cancel preserves the loaded automaton', (
+      tester,
+    ) async {
+      final navNotifier = _MockHomeNavigationNotifier();
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: GrammarState.initial().copyWith(
+          productions: const [
+            Production(
+              id: 'p1',
+              leftSide: ['S'],
+              rightSide: ['a'],
+            ),
+          ],
+        ),
+        navigationNotifier: navNotifier,
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(GrammarAlgorithmPanel)),
+        listen: false,
+      );
+      final loadedFsa = _loadedFsa();
+      container
+          .read(automatonStateProvider.notifier)
+          .updateAutomaton(loadedFsa);
+      await tester.pump();
+
+      await tester.ensureVisible(
+        find.text('Convert Right-Linear Grammar to FSA'),
+      );
+      await tester.tap(find.text('Convert Right-Linear Grammar to FSA'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('An automaton is already loaded. Do you want to replace it?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(automatonStateProvider).currentAutomaton,
+        same(loadedFsa),
+      );
+      expect(navNotifier.fsaCallCount, 0);
+    });
+
+    testWidgets('Grammar to PDA cancel preserves the loaded PDA', (
+      tester,
+    ) async {
+      final navNotifier = _MockHomeNavigationNotifier();
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: GrammarState.initial().copyWith(
+          productions: const [
+            Production(
+              id: 'p1',
+              leftSide: ['S'],
+              rightSide: ['a'],
+            ),
+          ],
+        ),
+        navigationNotifier: navNotifier,
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(GrammarAlgorithmPanel)),
+        listen: false,
+      );
+      final loadedPda = _loadedPda();
+      container.read(pdaEditorProvider.notifier).setPda(loadedPda);
+      await tester.pump();
+
+      await tester.ensureVisible(find.text('Convert Grammar to PDA (General)'));
+      await tester.tap(find.text('Convert Grammar to PDA (General)'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'A pushdown automaton is already loaded. Do you want to replace it?',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(pdaEditorProvider).pda, same(loadedPda));
+      expect(navNotifier.pdaCallCount, 0);
     });
 
     testWidgets('tapping PDA Standard conversion button triggers conversion', (

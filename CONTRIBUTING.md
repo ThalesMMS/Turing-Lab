@@ -39,35 +39,90 @@ flutter pub get
 
 ## Local Validation
 
-This repository does not run GitHub-hosted CI. Contributors are responsible for
-running the checks relevant to their changes and reporting the exact commands
-and outcomes in the pull request.
+**Root Flutter QA is local and manual.** GitHub-hosted test CI is intentionally
+disabled for this repository because the GitHub Actions limits are too small for
+its Flutter, GraphView, golden, screenshot, integration and Apple surface. The
+root `.github/workflows/ci.yml` workflow was deleted and must not be
+reintroduced, here or on another hosted provider. The one remaining workflow,
+`.github/workflows/deploy-pages.yml`, deploys the website and is separate from
+test CI. The policy and the workflow inventory live in
+[docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
 
-At minimum, run:
+Nothing is verified for you. You run the checks, and you report them.
+
+### The canonical entrypoint
+
+```bash
+tool/qa.sh --help     # every option, category and preset
+tool/qa.sh            # the default `code` preset
+```
+
+`tool/qa.sh` orchestrates the existing suites and scripts and reports each
+category independently:
+
+`prereqs`, `format`, `analyze`, `unit`, `widget`, `integration`, `graphview`,
+`responsive`, `golden`, `screenshots`, `apple`.
+
+Each category ends in exactly one of four states, and only the first is a pass:
+
+| State | Meaning |
+| --- | --- |
+| `passed` | The command exited zero on your machine. |
+| `failed` | The command exited non-zero. |
+| `skipped` | Not executed because you passed an explicit opt-out flag. |
+| `not_run` | Not selected, or a prerequisite was missing. |
+
+If the Flutter or Dart toolchain is unavailable, the entrypoint fails closed
+with exit code 127. Use `--allow-missing-toolchain` only when you intend to
+report the run as skipped; it is never a pass.
+
+### Focused subsets
+
+Match the effort to the change instead of running the whole release matrix:
+
+```bash
+tool/qa.sh --preset quick                  # prereqs, format, analyze, unit
+tool/qa.sh --preset code                   # the default; adds widget + integration
+tool/qa.sh --preset canvas                 # graphview, responsive, goldens, canvas suites
+tool/qa.sh --preset grammar                # grammar/CFG-named unit and widget suites
+tool/qa.sh --preset tm                     # Turing-machine-named unit and widget suites
+tool/qa.sh --preset responsive             # responsive viewport matrix
+tool/qa.sh --preset golden                 # golden comparison
+tool/qa.sh --preset screenshots            # App Store capture and validation
+tool/qa.sh --preset apple --apple-target macos --apple-device macos
+tool/qa.sh --only analyze,unit             # any explicit category list
+tool/qa.sh --dry-run --all                 # print the plan, execute nothing
+```
+
+Every run writes `build/qa/qa-summary.md`, `build/qa/qa-summary.json` and
+per-step logs under `build/qa/logs/`.
+
+The underlying commands remain usable on their own, for example:
 
 ```bash
 dart format .
 flutter analyze --no-fatal-infos
-```
-
-Run focused tests for the code you changed, for example:
-
-```bash
 flutter test test/unit/
-flutter test test/integration/
 flutter test test/widget/path_to_changed_feature_test.dart
 ```
 
-The broad suite can be run with `flutter test`, but it may include work-in-
-progress cases outside the scope of a contribution. Never report a suite as
-passing unless the command completed with zero failures. If a required check
-cannot be run, state that clearly and explain why.
+The broad `flutter test` run includes work-in-progress cases outside the scope
+of most contributions and takes over an hour; `AGENTS.md` records the current
+baseline for every suite.
 
 ## Pull Requests
 
 - Use a focused branch and a descriptive title.
 - Summarize the problem and the chosen solution.
-- List every validation command and its outcome.
+- **List every validation command and its exact outcome.** Paste the category
+  table from `build/qa/qa-summary.md`, or the `QA_STATUS` lines, rather than
+  writing "tests pass".
+- **Disclose everything you did not run.** Name the categories that ended
+  `skipped` or `not_run` and say why. A skipped, unavailable or interrupted
+  check is not a pass, and an untouched category is not evidence.
+- Never state or imply that a result was verified remotely. It was not.
+- If a failure matches a documented baseline in `AGENTS.md`, say so and link the
+  baseline; otherwise treat it as a regression.
 - Include screenshots or recordings for visible UI changes.
 - Call out algorithm reference sources and intentional compatibility
   deviations.

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import '../../../l10n/app_localizations_workflows.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 /// Card widget for displaying simulation results with path visualization.
 ///
@@ -213,7 +214,7 @@ class SimulationResultCard extends StatelessWidget {
           value,
           style: textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.bold,
-            fontFamily: 'monospace',
+            fontFamilyFallback: kMonospaceFontFamilyFallback,
           ),
         ),
       ],
@@ -347,7 +348,7 @@ class SimulationResultCard extends StatelessWidget {
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: color,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                   ),
             ),
           ],
@@ -415,7 +416,7 @@ class SimulationResultCard extends StatelessWidget {
                 child: Text(
                   displayTransition,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontFamily: 'monospace',
+                        fontFamilyFallback: kMonospaceFontFamilyFallback,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSecondaryContainer,
                       ),

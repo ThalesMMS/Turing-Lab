@@ -240,6 +240,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
       return;
     }
     _invalidateEdgeRendererCachesIfNeeded();
+    _syncInitialStateIds();
     _refreshTransitionOverlayFromGraph();
     final selectedNodeId = _selectedNodeId;
     if (selectedNodeId != null &&

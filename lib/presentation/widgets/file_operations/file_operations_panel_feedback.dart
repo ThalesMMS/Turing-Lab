@@ -19,7 +19,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
       );
     } else {
       _showErrorMessage(
-        trimmedMessage,
+        _l10n.localizeWorkflowText(trimmedMessage),
         retryOperation: retryOperation,
         stackTrace: stackTrace,
       );
@@ -111,17 +111,17 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
   String _friendlyMessageFor(ImportErrorType type) {
     switch (type) {
       case ImportErrorType.malformedJFF:
-        return 'The selected JFLAP file could not be parsed. Please verify the file integrity and try again.';
+        return _l10n.importFriendlyMalformedJff;
       case ImportErrorType.invalidJSON:
-        return 'The import contains JSON sections that are invalid. Fix the JSON structure and retry.';
+        return _l10n.importFriendlyInvalidJson;
       case ImportErrorType.unsupportedVersion:
-        return 'This file targets a newer JFLAP schema version. Export it again using a compatible version and retry.';
+        return _l10n.importFriendlyUnsupportedVersion;
       case ImportErrorType.inaccessibleFile:
-        return 'Turing Lab could not access the selected file. Pick it again from the system dialog and keep it available until the import finishes.';
+        return _l10n.importFriendlyInaccessibleFile;
       case ImportErrorType.corruptedData:
-        return 'The file appears to be corrupted or unreadable. Restore a valid backup before importing again.';
+        return _l10n.importFriendlyCorruptedData;
       case ImportErrorType.invalidAutomaton:
-        return 'The automaton definition is inconsistent. Review the transitions and states before retrying the import.';
+        return _l10n.importFriendlyInvalidAutomaton;
     }
   }
 
@@ -148,7 +148,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
 
     _updatePanelState(() {
       _feedback = _PanelFeedback(
-        message: message,
+        message: _l10n.localizeWorkflowText(message),
         severity: ErrorSeverity.info,
       );
     });
@@ -176,7 +176,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
 
     _updatePanelState(() {
       _feedback = _PanelFeedback(
-        message: message,
+        message: _l10n.localizeWorkflowText(message),
         severity: ErrorSeverity.error,
         canRetry: retryOperation != null,
       );

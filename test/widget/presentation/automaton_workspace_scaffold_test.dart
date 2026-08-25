@@ -24,12 +24,18 @@ void main() {
                 child: Text(isMobile ? 'mobile canvas' : 'wide canvas'),
               ),
               if (isMobile)
+                // Mirrors the canvas's transition-mode indicator: centred on
+                // the top edge, below the band the floating panel starts in.
                 const Positioned(
-                  top: 16,
-                  right: 16,
-                  child: SizedBox.square(
-                    key: ValueKey('transition-status'),
-                    dimension: 48,
+                  top: 76,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: SizedBox(
+                      key: ValueKey('transition-status'),
+                      width: 200,
+                      height: 40,
+                    ),
                   ),
                 ),
             ],
@@ -70,6 +76,8 @@ void main() {
     expect(find.text('mobile floating panel'), findsOneWidget);
     expect(find.text('desktop algorithms'), findsNothing);
     expect(find.byType(FloatingActionButton), findsNothing);
+    // The floating panel owns the canvas's top-right corner, so it must not
+    // cover the transition-mode indicator sitting below it.
     expect(
       tester.getRect(find.byKey(const ValueKey('transition-status'))).overlaps(
             tester.getRect(find.byKey(const ValueKey('floating-panel'))),

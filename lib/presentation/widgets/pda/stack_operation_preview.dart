@@ -9,7 +9,10 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:turing_lab/l10n/app_localizations_resolver.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 /// Stack operation preview widget
 ///
@@ -54,7 +57,7 @@ class StackOperationPreview extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Operation Preview',
+            appLocalizationsOf(context).operationPreview,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -62,34 +65,34 @@ class StackOperationPreview extends StatelessWidget {
           const Divider(),
           _buildOperationRow(
             theme,
-            'Input',
+            appLocalizationsOf(context).inputLabel,
             inputSymbol,
             Icons.input,
             theme.colorScheme.primary,
           ),
           _buildOperationRow(
             theme,
-            'Pop',
+            appLocalizationsOf(context).pop,
             popSymbol,
             Icons.arrow_downward,
             theme.colorScheme.error,
           ),
           _buildOperationRow(
             theme,
-            'Push',
+            appLocalizationsOf(context).push,
             pushSymbol,
             Icons.arrow_upward,
             Colors.green,
           ),
           const Divider(),
           Text(
-            'Result',
+            appLocalizationsOf(context).localizeWorkflowText('Result'),
             style: theme.textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          _buildStackPreview(theme),
+          _buildStackPreview(context, theme),
         ],
       ),
     );
@@ -120,7 +123,7 @@ class StackOperationPreview extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: isLambda ? theme.colorScheme.outline : color,
               fontStyle: isLambda ? FontStyle.italic : FontStyle.normal,
-              fontFamily: 'monospace',
+              fontFamilyFallback: kMonospaceFontFamilyFallback,
             ),
           ),
         ],
@@ -128,7 +131,7 @@ class StackOperationPreview extends StatelessWidget {
     );
   }
 
-  Widget _buildStackPreview(ThemeData theme) {
+  Widget _buildStackPreview(BuildContext context, ThemeData theme) {
     // Simulate the operation
     var resultStack = currentStack;
 
@@ -155,7 +158,7 @@ class StackOperationPreview extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            '(empty stack)',
+            appLocalizationsOf(context).emptyStackParen,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.outline,
               fontStyle: FontStyle.italic,
@@ -194,7 +197,7 @@ class StackOperationPreview extends StatelessWidget {
               symbol,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontSize: 12,
-                fontFamily: 'monospace',
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
                 fontWeight: isTop ? FontWeight.bold : FontWeight.normal,
               ),
               textAlign: TextAlign.center,

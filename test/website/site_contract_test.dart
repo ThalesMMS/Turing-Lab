@@ -164,14 +164,23 @@ void main() {
       expect(image, matches(RegExp(r'''\bheight=["']\d+["']''')));
     }
 
-    for (final screenshot in <String>['grammar.webp', 'regex.webp']) {
+    // Every workspace screenshot ships with the site, appears in the gallery,
+    // and loads lazily. Only the hero image above the fold is eager.
+    final screenshots = Directory('${docsDirectory.path}/assets/screenshots')
+        .listSync()
+        .whereType<File>()
+        .map((file) => file.uri.pathSegments.last)
+        .where((name) => name.endsWith('.webp'))
+        .toList()
+      ..sort();
+    expect(screenshots, isNotEmpty);
+    for (final screenshot in screenshots) {
       expect(
         index,
         matches(RegExp('<img[^>]+$screenshot[^>]+loading="lazy"')),
-        reason: '$screenshot must be loaded lazily',
+        reason: '$screenshot must appear in the gallery and load lazily',
       );
     }
-    expect(index, isNot(contains('tm.webp')));
   });
 
   test('keeps runtime resources local and every relative target present', () {

@@ -302,6 +302,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       color: _colorFor(highlighted: highlighted),
       fontSize: labelFontSize,
       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      fontFamily: labelFontFamily,
+      fontFamilyFallback: labelFontFamilyFallback,
     );
     final cacheKey = _LabelPainterCacheKey(text: text, style: style);
     final cached = _labelPainterCache.remove(cacheKey);

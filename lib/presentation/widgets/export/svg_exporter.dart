@@ -12,14 +12,19 @@
 //
 import 'dart:math' as math;
 import 'package:flutter/material.dart' hide Colors;
+import 'package:graphview/graphview_turing_lab.dart'
+    show resolveCircularConnectionPoint, resolveSelfLoopArc;
 import 'package:vector_math/vector_math_64.dart';
 
+import '../../../core/constants/automaton_canvas_constants.dart';
+import '../../../core/constants/svg_export_defaults.dart';
 import '../../../core/entities/grammar_entity.dart';
 import '../../../core/entities/turing_machine_entity.dart';
 import '../../../core/models/fsa.dart';
 import '../../../core/models/pda.dart';
 import '../../../core/models/pda_transition.dart';
 import '../../../core/utils/epsilon_utils.dart';
+import '../../../features/canvas/graphview/automatic_transition_route_planner.dart';
 
 /// Enhanced SVG exporter for automata visualizations
 class SvgExporter {
@@ -27,6 +32,32 @@ class SvgExporter {
   static const double _defaultHeight = 600.0;
   static const double _stateRadius = 25.0;
   static const double _strokeWidth = 2.0;
+
+  /// Stroke used by diagrams that carry no colour scheme.
+  static const String _defaultStrokeHex = '#000000';
+
+  /// Ratio between a canvas state and an exported one. Canvas positions are
+  /// scaled by it so spacing reads the same on the sheet as on screen.
+  static const double _canvasToExportScale =
+      _stateRadius / (kAutomatonStateDiameter / 2);
+
+  /// Free border, in state radii, kept around a layout mapped from the canvas.
+  static const double _layoutMarginFactor = 2.5;
+
+  /// Font size of transition labels, the gap between a self-loop's ring and
+  /// its own label, and the gap between a transition's curve and its label.
+  static const double _transitionFontSize = 12.0;
+  static const double _selfLoopLabelGap = 8.0;
+  static const double _transitionLabelGap = 10.0;
+
+  /// Distance, in state radii, between the two lanes a pair of opposing
+  /// transitions is split into.
+  static const double _laneSpacingFactor = 0.7;
+
+  /// Arrowhead drawn at the end of a self-loop, scaled to the loop's ring
+  /// rather than to a full-length transition.
+  static const double _loopArrowLength = _stateRadius * 0.3;
+  static const double _loopArrowWidth = _stateRadius * 0.22;
   static const String _fontFamily = 'Arial, sans-serif';
 
   static String _formatDimension(num value) {
@@ -158,7 +189,10 @@ class SvgExporter {
     buffer.writeln('  xmlns="http://www.w3.org/2000/svg"');
     buffer.writeln('  xmlns:xlink="http://www.w3.org/1999/xlink">');
 
-    _addSvgStyles(buffer);
+    final tmStroke = _colorToHex(
+      opts.colorScheme?.outline ?? const Color(0xFF424242),
+    );
+    _addSvgStyles(buffer, arrowColors: <String>{_defaultStrokeHex, tmStroke});
 
     buffer.writeln('  <g>');
 
@@ -182,20 +216,51 @@ class SvgExporter {
     return buffer.toString();
   }
 
+  /// Id of the arrowhead marker tinted [hex], so an arrow never contradicts
+  /// the stroke it terminates.
+  static String _arrowMarkerId(String hex) =>
+      'arrowhead-${hex.replaceAll('#', '')}';
+
+  static String _loopArrowMarkerId(String hex) =>
+      'loop-arrowhead-${hex.replaceAll('#', '')}';
+
   static void _addSvgStyles(
     StringBuffer buffer, {
     bool includeAcceptingMask = true,
+    Set<String> arrowColors = const <String>{_defaultStrokeHex},
   }) {
     buffer.writeln('<defs>');
-    // Arrow markers for transitions
-    buffer.writeln(
-      '  <marker id="arrowhead" markerWidth="10" markerHeight="7"',
-    );
-    buffer.writeln('    refX="9" refY="3.5" orient="auto">');
-    buffer.writeln(
-      '    <polygon points="0 0, 10 3.5, 0 7" fill="#000" stroke="#000"/>',
-    );
-    buffer.writeln('  </marker>');
+    for (final hex in arrowColors) {
+      // Arrow markers for transitions
+      buffer.writeln(
+        '  <marker id="${_arrowMarkerId(hex)}" markerWidth="10"'
+        ' markerHeight="7"',
+      );
+      buffer.writeln('    refX="9" refY="3.5" orient="auto">');
+      buffer.writeln(
+        '    <polygon points="0 0, 10 3.5, 0 7" fill="$hex" stroke="$hex"/>',
+      );
+      buffer.writeln('  </marker>');
+
+      // Self-loops are small rings, so they get an arrowhead scaled to them
+      // instead of the one sized for full-length transitions.
+      buffer.writeln(
+        '  <marker id="${_loopArrowMarkerId(hex)}"'
+        ' markerUnits="userSpaceOnUse"'
+        ' markerWidth="${_formatDimension(_loopArrowLength)}"'
+        ' markerHeight="${_formatDimension(_loopArrowWidth)}"',
+      );
+      buffer.writeln(
+        '    refX="${_formatDimension(_loopArrowLength)}"'
+        ' refY="${_formatDimension(_loopArrowWidth / 2)}" orient="auto">',
+      );
+      buffer.writeln(
+        '    <polygon points="0 0, ${_formatDimension(_loopArrowLength)}'
+        ' ${_formatDimension(_loopArrowWidth / 2)},'
+        ' 0 ${_formatDimension(_loopArrowWidth)}" fill="$hex" stroke="$hex"/>',
+      );
+      buffer.writeln('  </marker>');
+    }
 
     // State masks for double circles (accepting states)
     if (includeAcceptingMask) {
@@ -214,7 +279,9 @@ class SvgExporter {
       '  .state { font-family: $_fontFamily; font-size: 14px; text-anchor: middle; }',
     );
     buffer.writeln(
-      '  .transition { font-family: $_fontFamily; font-size: 12px; text-anchor: middle; }',
+      '  .transition { font-family: $_fontFamily; '
+      'font-size: ${_formatDimension(_transitionFontSize)}px; '
+      'text-anchor: middle; }',
     );
     buffer.writeln('  .tape { font-family: monospace; font-size: 16px; }');
     buffer.writeln(
@@ -334,8 +401,16 @@ class SvgExporter {
     final centerY = height * 0.62;
     final centerX = width / 2;
 
+    // Start the ring at the initial state, on the west, so the machine reads
+    // left to right and its marker does not land under an incoming
+    // transition's arrowhead.
+    final initialIndex = math.max(
+      0,
+      states.indexWhere((state) => state.isInitial),
+    );
     for (var i = 0; i < states.length; i++) {
-      final angle = (2 * math.pi * i) / states.length;
+      final step = (i - initialIndex) % states.length;
+      final angle = math.pi + ((2 * math.pi * step) / states.length);
       final x = centerX + radius * math.cos(angle);
       final y = centerY + radius * math.sin(angle);
       positions[states[i].id] = Vector2(x, y);
@@ -412,7 +487,8 @@ class SvgExporter {
       );
 
       if (state.isInitial) {
-        _addInitialArrow(buffer, position);
+        _addInitialArrow(buffer, position,
+            strokeColor: _colorToHex(strokeColor));
       }
 
       buffer.writeln('    </g>');
@@ -429,61 +505,30 @@ class SvgExporter {
     final strokeColor = colorScheme?.outline ?? const Color(0xFF424242);
     final textColor = colorScheme?.onSurface ?? const Color(0xFF000000);
 
-    for (final transition in tm.transitions) {
-      final from = positions[transition.fromStateId];
-      final to = positions[transition.toStateId];
-      if (from == null || to == null) {
-        continue;
-      }
+    final edges = <(String, String, String)>[
+      for (final transition in tm.transitions)
+        if (positions.containsKey(transition.fromStateId) &&
+            positions.containsKey(transition.toStateId))
+          (
+            transition.fromStateId,
+            transition.toStateId,
+            '${transition.readSymbol}/${transition.writeSymbol}, '
+                '${_directionLabel(transition.moveDirection)}',
+          ),
+    ];
 
-      final label = '${transition.readSymbol}/${transition.writeSymbol}, '
-          '${_directionLabel(transition.moveDirection)}';
-
-      if (from == to) {
-        const loopRadius = _stateRadius + 20;
-        final startX = from.x;
-        final startY = from.y - _stateRadius;
-        const controlOffset = loopRadius * 1.2;
-        final formattedStartX = _formatDimension(startX);
-        final formattedStartY = _formatDimension(startY);
-        final formattedControlX1 = _formatDimension(startX + controlOffset);
-        final formattedControlY1 = _formatDimension(startY - controlOffset);
-        final formattedControlX2 = _formatDimension(startX - controlOffset);
-        final formattedControlY2 = _formatDimension(startY - controlOffset);
-        final formattedLoopStartY = _formatDimension(startY - loopRadius);
-
-        buffer.writeln('    <g class="transition">');
-        buffer.writeln(
-          '      <path d="M $formattedStartX $formattedStartY C $formattedControlX1 $formattedControlY1, $formattedControlX2 $formattedControlY2, $formattedStartX $formattedStartY"',
-        );
-        buffer.writeln(
-          '        fill="none" stroke="${_colorToHex(strokeColor)}" stroke-width="${_formatDimension(_strokeWidth)}" marker-end="url(#arrowhead)"/>',
-        );
-        buffer.writeln(
-          '      <text x="$formattedStartX" y="$formattedLoopStartY" class="transition" fill="${_colorToHex(textColor)}">$label</text>',
-        );
-        buffer.writeln('    </g>');
-        continue;
-      }
-
-      final midX = (from.x + to.x) / 2;
-      final midY = (from.y + to.y) / 2;
-      final formattedFromX = _formatDimension(from.x);
-      final formattedFromY = _formatDimension(from.y);
-      final formattedToX = _formatDimension(to.x);
-      final formattedToY = _formatDimension(to.y);
-      final formattedMidX = _formatDimension(midX);
-      final formattedMidY = _formatDimension(midY);
-
-      buffer.writeln('    <g class="transition">');
-      buffer.writeln(
-        '      <line x1="$formattedFromX" y1="$formattedFromY" x2="$formattedToX" y2="$formattedToY" stroke="${_colorToHex(strokeColor)}" stroke-width="${_formatDimension(_strokeWidth)}" marker-end="url(#arrowhead)"/>',
-      );
-      buffer.writeln(
-        '      <text x="$formattedMidX" y="$formattedMidY" class="transition" fill="${_colorToHex(textColor)}">$label</text>',
-      );
-      buffer.writeln('    </g>');
-    }
+    _writeRoutedTransitions(
+      buffer,
+      groups: _groupEdges(edges),
+      positions: positions,
+      initialStateIds: <String>{
+        for (final state in tm.states)
+          if (state.isInitial) state.id,
+      },
+      indent: '    ',
+      strokeColor: _colorToHex(strokeColor),
+      textColor: _colorToHex(textColor),
+    );
   }
 
   static void _drawTuringLegend(
@@ -504,7 +549,9 @@ class SvgExporter {
     buffer.writeln(
       '      <text x="$legendXText" y="$legendYText" text-anchor="middle" fill="${_colorToHex(textColor)}">',
     );
-    buffer.writeln('        δ(q, s) = (q′, w, d) — leitura/escrita/movimento');
+    buffer.writeln(
+      '        ${_escapeXml(options.tmLegendLabel)}',
+    );
     buffer.writeln('      </text>');
     buffer.writeln('    </g>');
   }
@@ -533,7 +580,12 @@ class SvgExporter {
     SvgExportOptions options,
   ) {
     if (automaton.states.isEmpty) {
-      _addEmptyAutomatonPlaceholder(buffer, width, height);
+      _addEmptyAutomatonPlaceholder(
+        buffer,
+        width,
+        height,
+        options.emptyAutomatonLabel,
+      );
       if (options.includeTitle) {
         _addTitle(buffer, automaton.name, width, height);
       }
@@ -571,6 +623,11 @@ class SvgExporter {
       return positions;
     }
 
+    final fromCanvas = _canvasStatePositions(states, width, height);
+    if (fromCanvas != null) {
+      return fromCanvas;
+    }
+
     final cols = math.max(1, math.sqrt(states.length).ceil());
     final rows = math.max(1, (states.length / cols).ceil());
 
@@ -588,6 +645,69 @@ class SvgExporter {
     }
 
     return positions;
+  }
+
+  /// Maps the canvas layout onto the export sheet, so a diagram is exported
+  /// the way it was arranged rather than re-flowed onto a grid.
+  ///
+  /// Returns null when the source carries no usable layout — a grammar
+  /// diagram, or states that all sit on the same spot — leaving the caller to
+  /// fall back to the grid.
+  static Map<String, Vector2>? _canvasStatePositions(
+    List<_SvgState> states,
+    double width,
+    double height,
+  ) {
+    final placed = <String, Vector2>{
+      for (final state in states)
+        if (state.position != null &&
+            state.position!.x.isFinite &&
+            state.position!.y.isFinite)
+          state.id: state.position!,
+    };
+    if (placed.length != states.length) {
+      return null;
+    }
+
+    var minX = double.infinity;
+    var minY = double.infinity;
+    var maxX = double.negativeInfinity;
+    var maxY = double.negativeInfinity;
+    for (final position in placed.values) {
+      minX = math.min(minX, position.x);
+      minY = math.min(minY, position.y);
+      maxX = math.max(maxX, position.x);
+      maxY = math.max(maxY, position.y);
+    }
+    final spanX = maxX - minX;
+    final spanY = maxY - minY;
+    if (states.length > 1 && spanX < 1 && spanY < 1) {
+      return null;
+    }
+
+    // Leave room for the states themselves, their loops and their labels.
+    const margin = _stateRadius * _layoutMarginFactor;
+    final usableWidth = math.max(width - (margin * 2), 1.0);
+    final usableHeight = math.max(height - (margin * 2), 1.0);
+    // Never magnify: at [_canvasToExportScale] a state keeps the same size
+    // relative to its neighbours as it has on the canvas.
+    final scale = math.min(
+      _canvasToExportScale,
+      math.min(
+        spanX < 1 ? double.infinity : usableWidth / spanX,
+        spanY < 1 ? double.infinity : usableHeight / spanY,
+      ),
+    );
+
+    final offsetX = (width - (spanX * scale)) / 2;
+    final offsetY = (height - (spanY * scale)) / 2;
+    return <String, Vector2>{
+      for (final entry in placed.entries)
+        entry.key: Vector2(
+          offsetX + ((entry.value.x - minX) * scale),
+          offsetY + ((entry.value.y - minY) * scale),
+        ),
+    };
   }
 
   static void _addStates(
@@ -647,6 +767,7 @@ class SvgExporter {
       return;
     }
 
+    final edges = <(String, String, String)>[];
     for (final entry in automaton.transitions.entries) {
       final fromStateId = extractStateIdFromTransitionKey(entry.key);
       final fromPos = positions[fromStateId];
@@ -663,105 +784,334 @@ class SvgExporter {
         if (toPos == null) {
           continue;
         }
-
-        if (_pointsAreClose(fromPos, toPos)) {
-          _drawSelfLoop(buffer, fromPos, symbol);
-        } else {
-          _drawTransitionEdge(buffer, fromPos, toPos, symbol);
-        }
+        // Two states landing on the same spot cannot be told apart on the
+        // sheet, so their transition reads as a loop.
+        final isLoop =
+            fromStateId == targetStateId || _pointsAreClose(fromPos, toPos);
+        edges.add((fromStateId, isLoop ? fromStateId : targetStateId, symbol));
       }
     }
+
+    _writeRoutedTransitions(
+      buffer,
+      groups: _groupEdges(edges),
+      positions: positions,
+      initialStateIds: <String>{
+        for (final state in automaton.states)
+          if (state.isInitial) state.id,
+      },
+      indent: '  ',
+      strokeColor: _defaultStrokeHex,
+      textColor: _defaultStrokeHex,
+    );
   }
 
   static bool _pointsAreClose(Vector2 a, Vector2 b) {
     return (a - b).length2 < 1e-6;
   }
 
-  static void _drawTransitionEdge(
-    StringBuffer buffer,
-    Vector2 from,
-    Vector2 to,
-    String label,
+  /// Merges every transition running between the same ordered pair of states
+  /// into one drawn path, the way the canvas does, so parallel symbols share
+  /// a curve instead of stacking identical lines on top of each other.
+  static List<_SvgEdgeGroup> _groupEdges(
+    Iterable<(String, String, String)> edges,
   ) {
-    final delta = to - from;
-    final distance = delta.length;
-    if (distance == 0) {
-      _drawSelfLoop(buffer, from, label);
+    final grouped = <String, _SvgEdgeGroup>{};
+    for (final (fromId, toId, label) in edges) {
+      final group = grouped.putIfAbsent(
+        '$fromId->$toId',
+        () => _SvgEdgeGroup(fromId: fromId, toId: toId),
+      );
+      if (label.isNotEmpty && !group.labels.contains(label)) {
+        group.labels.add(label);
+      }
+    }
+    return grouped.values.toList(growable: false);
+  }
+
+  /// Draws every transition through the planner the canvas routes with, so an
+  /// exported diagram carries the same lanes, curves and loop placements.
+  static void _writeRoutedTransitions(
+    StringBuffer buffer, {
+    required List<_SvgEdgeGroup> groups,
+    required Map<String, Vector2> positions,
+    required Set<String> initialStateIds,
+    required String indent,
+    required String strokeColor,
+    required String textColor,
+  }) {
+    if (groups.isEmpty) {
       return;
     }
 
-    final direction = delta / distance;
-    final start = from + direction * _stateRadius;
-    final end = to - direction * _stateRadius;
+    final directed = <String>{
+      for (final group in groups) '${group.fromId}->${group.toId}',
+    };
+    final borderTraffic = <String, List<double>>{};
+    for (final group in groups) {
+      if (group.isSelfLoop) {
+        continue;
+      }
+      final delta = positions[group.toId]! - positions[group.fromId]!;
+      if (delta.length < 0.001) {
+        continue;
+      }
+      final outgoing = math.atan2(delta.y, delta.x);
+      (borderTraffic[group.fromId] ??= <double>[]).add(outgoing);
+      (borderTraffic[group.toId] ??= <double>[]).add(outgoing + math.pi);
+    }
 
-    buffer.writeln('  <g class="transition">');
-    buffer.writeln(
-      '    <line x1="${_formatDimension(start.x)}" y1="${_formatDimension(start.y)}"',
+    final requests = <AutomaticTransitionRouteRequest>[
+      for (var index = 0; index < groups.length; index++)
+        _routeRequestFor(
+          groups[index],
+          index: index,
+          positions: positions,
+          initialStateIds: initialStateIds,
+          borderTraffic: borderTraffic,
+          directedPairs: directed,
+        ),
+    ];
+    final plans = const AutomaticTransitionRoutePlanner().plan(
+      requests: requests,
+      obstacles: <AutomaticTransitionObstacle>[
+        for (final entry in positions.entries)
+          AutomaticTransitionObstacle(
+            id: entry.key,
+            center: _toOffset(entry.value),
+            radius: _stateRadius,
+          ),
+      ],
     );
-    buffer.writeln(
-      '      x2="${_formatDimension(end.x)}" y2="${_formatDimension(end.y)}"',
-    );
-    buffer.writeln(
-      '      stroke="#000" stroke-width="${_formatDimension(_strokeWidth)}"',
-    );
-    buffer.writeln('      marker-end="url(#arrowhead)"/>');
 
-    final midPoint = (start + end) / 2;
-    buffer.writeln(
-      '    <text x="${_formatDimension(midPoint.x)}" y="${_formatDimension(midPoint.y - 5)}" class="transition">$label</text>',
-    );
-    buffer.writeln('  </g>');
+    for (var index = 0; index < groups.length; index++) {
+      final group = groups[index];
+      final plan = plans[requests[index].stableId];
+      if (plan == null) {
+        continue;
+      }
+      final label = group.labels.join(', ');
+      if (group.isSelfLoop) {
+        _writeSelfLoop(
+          buffer,
+          center: requests[index].sourceCenter,
+          angle: plan.loopAngle ?? -math.pi / 2,
+          padding: plan.loopPadding,
+          label: label,
+          indent: indent,
+          strokeColor: strokeColor,
+          textColor: textColor,
+        );
+      } else {
+        _writeCurvedTransition(
+          buffer,
+          source: requests[index].sourceCenter,
+          destination: requests[index].destinationCenter,
+          plan: plan,
+          label: label,
+          indent: indent,
+          strokeColor: strokeColor,
+          textColor: textColor,
+        );
+      }
+    }
   }
 
-  static void _drawSelfLoop(StringBuffer buffer, Vector2 center, String label) {
-    const loopOffset = 24.0;
-    final startX = center.x;
-    final startY = center.y - _stateRadius;
-    const controlOffset = _stateRadius + loopOffset;
+  static AutomaticTransitionRouteRequest _routeRequestFor(
+    _SvgEdgeGroup group, {
+    required int index,
+    required Map<String, Vector2> positions,
+    required Set<String> initialStateIds,
+    required Map<String, List<double>> borderTraffic,
+    required Set<String> directedPairs,
+  }) {
+    // Opposing traffic takes one lane each side of the straight line, the
+    // same split the canvas applies to a two-way pair.
+    final hasOpposing =
+        directedPairs.contains('${group.toId}->${group.fromId}');
+    final laneOffset = !hasOpposing || group.isSelfLoop
+        ? 0.0
+        : (group.fromId.compareTo(group.toId) <= 0 ? -1 : 1) *
+            (_stateRadius * _laneSpacingFactor / 2);
 
-    final control1 = Vector2(
-      center.x - controlOffset,
-      center.y - controlOffset,
+    return AutomaticTransitionRouteRequest(
+      // Index-keyed so the planner's ordering follows the drawing order.
+      stableId: '${index.toString().padLeft(4, '0')}:'
+          '${group.fromId}->${group.toId}',
+      sourceId: group.fromId,
+      destinationId: group.toId,
+      sourceCenter: _toOffset(positions[group.fromId]!),
+      destinationCenter: _toOffset(positions[group.toId]!),
+      sourceRadius: _stateRadius,
+      destinationRadius: _stateRadius,
+      laneOffset: laneOffset,
+      repulsionOffset: Offset.zero,
+      loopRepulsors: group.isSelfLoop
+          ? buildSelfLoopRepulsors(
+              hasInitialMarker: initialStateIds.contains(group.fromId),
+              borderTrafficDirections:
+                  borderTraffic[group.fromId] ?? const <double>[],
+            )
+          : const <AutomaticTransitionLoopRepulsor>[],
     );
-    final control2 = Vector2(
-      center.x + controlOffset,
-      center.y - controlOffset,
-    );
-    final endPoint = Vector2(startX + 0.01, startY - 0.01);
-
-    buffer.writeln('  <g class="transition">');
-    buffer.writeln(
-      '    <path d="M ${_formatDimension(startX)} ${_formatDimension(startY)} '
-      'C ${_formatDimension(control1.x)} ${_formatDimension(control1.y)} '
-      '${_formatDimension(control2.x)} ${_formatDimension(control2.y)} '
-      '${_formatDimension(endPoint.x)} ${_formatDimension(endPoint.y)}"',
-    );
-    buffer.writeln(
-      '      fill="none" stroke="#000" stroke-width="${_formatDimension(_strokeWidth)}"',
-    );
-    buffer.writeln('      marker-end="url(#arrowhead)"/>');
-
-    final labelPosition = Vector2(center.x, center.y - controlOffset - 6);
-    buffer.writeln(
-      '    <text x="${_formatDimension(labelPosition.x)}" y="${_formatDimension(labelPosition.y)}" class="transition">$label</text>',
-    );
-    buffer.writeln('  </g>');
   }
+
+  /// Emits the quadratic the canvas routes a transition along, trimmed to
+  /// both states' borders.
+  static void _writeCurvedTransition(
+    StringBuffer buffer, {
+    required Offset source,
+    required Offset destination,
+    required AutomaticTransitionRoutePlan plan,
+    required String label,
+    required String indent,
+    required String strokeColor,
+    required String textColor,
+  }) {
+    final start = resolveCircularConnectionPoint(
+      center: source,
+      radius: _stateRadius,
+      toward: plan.controlPoint,
+      fallbackDirection: destination - source,
+    );
+    final end = resolveCircularConnectionPoint(
+      center: destination,
+      radius: _stateRadius,
+      toward: plan.controlPoint,
+      fallbackDirection: source - destination,
+    );
+
+    buffer.writeln('$indent<g class="transition">');
+    buffer.writeln(
+      '$indent  <path d="M ${_formatDimension(start.dx)} '
+      '${_formatDimension(start.dy)} '
+      'Q ${_formatDimension(plan.controlPoint.dx)} '
+      '${_formatDimension(plan.controlPoint.dy)} '
+      '${_formatDimension(end.dx)} ${_formatDimension(end.dy)}"',
+    );
+    buffer.writeln(
+      '$indent    fill="none" stroke="$strokeColor" '
+      'stroke-width="${_formatDimension(_strokeWidth)}"',
+    );
+    buffer.writeln(
+      '$indent    marker-end="url(#${_arrowMarkerId(strokeColor)})"/>',
+    );
+
+    if (label.isEmpty) {
+      buffer.writeln('$indent</g>');
+      return;
+    }
+    // Midpoint of the quadratic, pushed clear of the curve along the same
+    // normal the canvas offsets the label card by.
+    final midpoint = (start * 0.25) + (plan.controlPoint * 0.5) + (end * 0.25);
+    _writeTransitionLabel(
+      buffer,
+      anchor: midpoint + plan.labelNormal * _transitionLabelGap,
+      normal: plan.labelNormal,
+      label: label,
+      indent: indent,
+      textColor: textColor,
+    );
+    buffer.writeln('$indent</g>');
+  }
+
+  /// Emits the compact circular loop the canvas draws, plus its label just
+  /// outside the ring, along the loop's own heading.
+  static void _writeSelfLoop(
+    StringBuffer buffer, {
+    required Offset center,
+    required double angle,
+    required double padding,
+    required String label,
+    required String indent,
+    required String strokeColor,
+    required String textColor,
+  }) {
+    final arc = resolveSelfLoopArc(
+      nodeCenter: center,
+      nodeRadius: _stateRadius,
+      angle: angle,
+      padding: padding,
+    );
+    final outward = Offset(math.cos(angle), math.sin(angle));
+
+    buffer.writeln('$indent<g class="transition">');
+    buffer.writeln(
+      '$indent  <path d="M ${_formatDimension(arc.start.dx)} '
+      '${_formatDimension(arc.start.dy)} '
+      'A ${_formatDimension(arc.radius)} ${_formatDimension(arc.radius)} '
+      '0 ${arc.isLargeArc ? 1 : 0} ${arc.sweep > 0 ? 1 : 0} '
+      '${_formatDimension(arc.end.dx)} ${_formatDimension(arc.end.dy)}"',
+    );
+    buffer.writeln(
+      '$indent    fill="none" stroke="$strokeColor" '
+      'stroke-width="${_formatDimension(_strokeWidth)}"',
+    );
+    buffer.writeln(
+      '$indent    marker-end="url(#${_loopArrowMarkerId(strokeColor)})"/>',
+    );
+    if (label.isNotEmpty) {
+      _writeTransitionLabel(
+        buffer,
+        anchor: arc.center + outward * (arc.radius + _selfLoopLabelGap),
+        normal: outward,
+        label: label,
+        indent: indent,
+        textColor: textColor,
+      );
+    }
+    buffer.writeln('$indent</g>');
+  }
+
+  static void _writeTransitionLabel(
+    StringBuffer buffer, {
+    required Offset anchor,
+    required Offset normal,
+    required String label,
+    required String indent,
+    required String textColor,
+  }) {
+    // SVG text grows upwards from its baseline: centre it on the anchor, and
+    // drop it a full line more when the anchor sits below what it labels, so
+    // the text never prints back over the path.
+    final baselineY = anchor.dy +
+        _transitionFontSize * (0.36 + 0.44 * math.max(0.0, normal.dy));
+    buffer.writeln(
+      '$indent  <text x="${_formatDimension(anchor.dx)}" '
+      'y="${_formatDimension(baselineY)}" class="transition" '
+      'fill="$textColor">$label</text>',
+    );
+  }
+
+  static Offset _toOffset(Vector2 value) => Offset(value.x, value.y);
 
   static void _addEmptyAutomatonPlaceholder(
     StringBuffer buffer,
     double width,
     double height,
+    String label,
   ) {
     buffer.writeln('  <g class="empty-automaton">');
     buffer.writeln(
       '    <text x="${_formatDimension(width / 2)}" y="${_formatDimension(height / 2)}"'
-      ' class="transition" text-anchor="middle">No states defined</text>',
+      ' class="transition" text-anchor="middle">${_escapeXml(label)}</text>',
     );
     buffer.writeln('  </g>');
   }
 
-  static void _addInitialArrow(StringBuffer buffer, Vector2 position) {
+  static String _escapeXml(String value) {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+  }
+
+  static void _addInitialArrow(
+    StringBuffer buffer,
+    Vector2 position, {
+    String strokeColor = _defaultStrokeHex,
+  }) {
     // Draw arrow pointing to initial state
     final arrowStartX = position.x - _stateRadius - 20;
     final arrowStartY = position.y;
@@ -774,9 +1124,11 @@ class SvgExporter {
       '      x2="${_formatDimension(arrowEndX)}" y2="${_formatDimension(arrowStartY)}"',
     );
     buffer.writeln(
-      '      stroke="#000" stroke-width="${_formatDimension(_strokeWidth)}"',
+      '      stroke="$strokeColor" stroke-width="${_formatDimension(_strokeWidth)}"',
     );
-    buffer.writeln('      marker-end="url(#arrowhead)"/>');
+    buffer.writeln(
+      '      marker-end="url(#${_arrowMarkerId(strokeColor)})"/>',
+    );
   }
 
   static void _addTitle(
@@ -819,6 +1171,7 @@ class SvgExporter {
               name: state.label,
               isInitial: state.isInitial,
               isFinal: state.isAccepting,
+              position: state.position,
             ),
           )
           .toList(),
@@ -844,6 +1197,7 @@ class SvgExporter {
               name: state.label,
               isInitial: state.isInitial,
               isFinal: state.isAccepting,
+              position: state.position,
             ),
           )
           .toList(),
@@ -904,6 +1258,18 @@ class SvgExporter {
   }
 }
 
+/// Every transition running between one ordered pair of states, merged into
+/// the single path the canvas draws for them.
+class _SvgEdgeGroup {
+  _SvgEdgeGroup({required this.fromId, required this.toId});
+
+  final String fromId;
+  final String toId;
+  final List<String> labels = <String>[];
+
+  bool get isSelfLoop => fromId == toId;
+}
+
 class _SvgAutomaton {
   final String name;
   final List<_SvgState> states;
@@ -922,11 +1288,16 @@ class _SvgState {
   final bool isInitial;
   final bool isFinal;
 
+  /// Where the state sits on the canvas, when the source has a layout. Null
+  /// for diagrams synthesised from a grammar, which are laid out on a grid.
+  final Vector2? position;
+
   const _SvgState({
     required this.id,
     required this.name,
     required this.isInitial,
     required this.isFinal,
+    this.position,
   });
 }
 
@@ -950,12 +1321,16 @@ class SvgExportOptions {
   final bool includeLegend;
   final double scale;
   final ColorScheme? colorScheme;
+  final String emptyAutomatonLabel;
+  final String tmLegendLabel;
 
   const SvgExportOptions({
     this.includeTitle = true,
     this.includeLegend = false,
     this.scale = 1.0,
     this.colorScheme,
+    this.emptyAutomatonLabel = kDefaultSvgEmptyAutomatonLabel,
+    this.tmLegendLabel = kDefaultSvgTmLegendLabel,
   });
 }
 

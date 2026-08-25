@@ -278,11 +278,18 @@ class FileOperationsService
     FSA automaton,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
       final file = File(filePath);
       await file.writeAsString(
-        exportFsaToSvgString(automaton, options: options),
+        exportFsaToSvgString(
+          automaton,
+          options: options,
+          emptyAutomatonLabel: emptyAutomatonLabel,
+          tmLegendLabel: tmLegendLabel,
+        ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
@@ -321,11 +328,18 @@ class FileOperationsService
     Grammar grammar,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
       final file = File(filePath);
       await file.writeAsString(
-        exportGrammarModelToSvgString(grammar, options: options),
+        exportGrammarModelToSvgString(
+          grammar,
+          options: options,
+          emptyAutomatonLabel: emptyAutomatonLabel,
+          tmLegendLabel: tmLegendLabel,
+        ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
@@ -343,11 +357,18 @@ class FileOperationsService
     PDA pda,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
       final file = File(filePath);
       await file.writeAsString(
-        exportPdaToSvgString(pda, options: options),
+        exportPdaToSvgString(
+          pda,
+          options: options,
+          emptyAutomatonLabel: emptyAutomatonLabel,
+          tmLegendLabel: tmLegendLabel,
+        ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
@@ -365,11 +386,18 @@ class FileOperationsService
     TuringMachineEntity tm,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
       final file = File(filePath);
       await file.writeAsString(
-        exportTuringMachineToSvgString(tm, options: options),
+        exportTuringMachineToSvgString(
+          tm,
+          options: options,
+          emptyAutomatonLabel: emptyAutomatonLabel,
+          tmLegendLabel: tmLegendLabel,
+        ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {

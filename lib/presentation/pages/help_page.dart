@@ -367,7 +367,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
 
   Future<bool> _openProject(AppLocalizations l10n) async {
     final opened = await widget.externalUrlLauncher(
-      Uri.parse('https://github.com/ThalesMMS/jflutter'),
+      Uri.parse('https://github.com/ThalesMMS/Turing-Lab'),
     );
     if (!opened && mounted) {
       showAppSnackBar(

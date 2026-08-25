@@ -115,9 +115,16 @@ class FileOperationsService
     FSA automaton,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
-      final svg = exportFsaToSvgString(automaton, options: options);
+      final svg = exportFsaToSvgString(
+        automaton,
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      );
       return _downloadText(filePath, 'image/svg+xml', svg);
     } catch (e) {
       return Failure('Failed to export automaton: $e');
@@ -142,9 +149,16 @@ class FileOperationsService
     Grammar grammar,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
-      final svg = exportGrammarModelToSvgString(grammar, options: options);
+      final svg = exportGrammarModelToSvgString(
+        grammar,
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      );
       return _downloadText(filePath, 'image/svg+xml', svg);
     } catch (e) {
       return Failure('Failed to export grammar: $e');
@@ -156,9 +170,16 @@ class FileOperationsService
     PDA pda,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
-      final svg = exportPdaToSvgString(pda, options: options);
+      final svg = exportPdaToSvgString(
+        pda,
+        options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
+      );
       return _downloadText(filePath, 'image/svg+xml', svg);
     } catch (e) {
       return Failure('Failed to export PDA: $e');
@@ -170,11 +191,15 @@ class FileOperationsService
     TuringMachineEntity machine,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     try {
       final svg = exportTuringMachineToSvgString(
         machine,
         options: options,
+        emptyAutomatonLabel: emptyAutomatonLabel,
+        tmLegendLabel: tmLegendLabel,
       );
       return _downloadText(filePath, 'image/svg+xml', svg);
     } catch (e) {

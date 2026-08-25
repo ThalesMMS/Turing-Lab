@@ -12,6 +12,9 @@
 //
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations_resolver.dart';
+import '../../core/constants/monospace_typography.dart';
+
 /// Widget for step-by-step navigation controls
 class StepNavigationControls extends StatelessWidget {
   final int currentStepIndex;
@@ -53,7 +56,7 @@ class StepNavigationControls extends StatelessWidget {
             IconButton(
               onPressed: canGoPrevious ? onPrevious : null,
               icon: const Icon(Icons.skip_previous),
-              tooltip: 'Previous Step',
+              tooltip: appLocalizationsOf(context).previousStep,
               iconSize: 32,
             ),
             const SizedBox(width: 8),
@@ -62,7 +65,9 @@ class StepNavigationControls extends StatelessWidget {
             IconButton(
               onPressed: onPlayPause,
               icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-              tooltip: isPlaying ? 'Pause' : 'Play',
+              tooltip: isPlaying
+                  ? appLocalizationsOf(context).pause
+                  : appLocalizationsOf(context).play,
               iconSize: 40,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -72,7 +77,7 @@ class StepNavigationControls extends StatelessWidget {
             IconButton(
               onPressed: canGoNext ? onNext : null,
               icon: const Icon(Icons.skip_next),
-              tooltip: 'Next Step',
+              tooltip: appLocalizationsOf(context).nextStep,
               iconSize: 32,
             ),
             const SizedBox(width: 16),
@@ -110,7 +115,7 @@ class StepNavigationControls extends StatelessWidget {
               IconButton(
                 onPressed: onReset,
                 icon: const Icon(Icons.refresh),
-                tooltip: 'Reset to First Step',
+                tooltip: appLocalizationsOf(context).resetToFirstStep,
                 iconSize: 24,
               ),
           ],
@@ -130,7 +135,7 @@ class StepNavigationControls extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Speed:',
+                appLocalizationsOf(context).speed,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(
                         context,
@@ -153,7 +158,7 @@ class StepNavigationControls extends StatelessWidget {
                   '${playbackSpeed.toStringAsFixed(2)}x',
                   textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontFamily: 'monospace',
+                        fontFamilyFallback: kMonospaceFontFamilyFallback,
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurface.withValues(alpha: 0.7),

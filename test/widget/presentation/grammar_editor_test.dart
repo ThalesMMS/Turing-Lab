@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/widgets/grammar_editor.dart';
 
@@ -145,13 +146,11 @@ void main() {
       expect(find.text('Production Rules (0)'), findsOneWidget);
 
       expect(
-        find.text('Enter exactly one non-terminal (e.g., S).'),
+        find.text(AppLocalizationsEn().leftSideHelper),
         findsOneWidget,
       );
       expect(
-        find.text(
-          'Use λ/ε for empty string. Right side can be multiple symbols (e.g., aA).',
-        ),
+        find.text(AppLocalizationsEn().rightSideHelper),
         findsOneWidget,
       );
     });
@@ -242,13 +241,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       expect(
-        find.text('Enter exactly one non-terminal (e.g., S).'),
+        find.text(AppLocalizationsEn().leftSideHelper),
         findsOneWidget,
       );
       expect(
-        find.text(
-          'Use λ/ε for empty string. Right side can be multiple symbols (e.g., aA).',
-        ),
+        find.text(AppLocalizationsEn().rightSideHelper),
         findsOneWidget,
       );
     });
@@ -423,13 +420,11 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text('Enter exactly one non-terminal (e.g., S).'),
+        find.text(AppLocalizationsEn().leftSideHelper),
         findsOneWidget,
       );
       expect(
-        find.text(
-          'Use λ/ε for empty string. Right side can be multiple symbols (e.g., aA).',
-        ),
+        find.text(AppLocalizationsEn().rightSideHelper),
         findsOneWidget,
       );
     });

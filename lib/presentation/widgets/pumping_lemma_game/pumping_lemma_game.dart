@@ -13,10 +13,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations_pumping_challenges.dart';
+import '../../../l10n/app_localizations_resolver.dart';
 import '../../providers/pumping_lemma_progress_provider.dart';
 import 'challenge_difficulty.dart';
 import 'pumping_lemma_challenge_model.dart';
 import 'pumping_lemma_challenges_data.dart';
+import '../../../core/constants/monospace_typography.dart';
 
 export 'challenge_difficulty.dart';
 export 'pumping_lemma_challenge_model.dart';
@@ -92,7 +95,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Pumping Lemma Game',
+                appLocalizationsOf(context).pumpingLemmaGameTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -112,7 +115,10 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Level ${currentChallenge.level} - ${currentChallenge.difficulty.name.toUpperCase()}',
+                appLocalizationsOf(context).pumpingLevelDifficulty(
+                  currentChallenge.level,
+                  _localizedDifficulty(context, currentChallenge.difficulty),
+                ),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: difficultyColor,
                       fontWeight: FontWeight.w600,
@@ -121,7 +127,10 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             ),
             const SizedBox(width: 16),
             Text(
-              'Challenge ${_currentLevel + 1}/${_challenges.length}',
+              appLocalizationsOf(context).challengeProgress(
+                _currentLevel + 1,
+                _challenges.length,
+              ),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -132,7 +141,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
         Row(
           children: [
             Text(
-              'Score: $_score',
+              appLocalizationsOf(context).scoreLabel(_score),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
@@ -147,7 +156,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
               ),
               const SizedBox(width: 4),
               Text(
-                'Streak: $_streakCount',
+                appLocalizationsOf(context).streakLabel(_streakCount),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.orange,
                       fontWeight: FontWeight.w600,
@@ -174,7 +183,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Welcome to the Pumping Lemma Game!',
+              appLocalizationsOf(context).pumpingWelcome,
               style: Theme.of(
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
@@ -182,7 +191,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Test your understanding of the pumping lemma by determining whether given languages are regular or not.',
+              appLocalizationsOf(context).pumpingWelcomeBody,
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
@@ -190,7 +199,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             ElevatedButton.icon(
               onPressed: _startGame,
               icon: const Icon(Icons.play_arrow),
-              label: const Text('Start Game'),
+              label: Text(appLocalizationsOf(context).startGame),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
@@ -239,27 +248,27 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Challenge ${_currentLevel + 1}',
+            appLocalizationsOf(context).challengeNumber(_currentLevel + 1),
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Language: ${challenge.language}',
+            appLocalizationsOf(context).languageLabelValue(challenge.language),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontFamily: 'monospace',
+                  fontFamilyFallback: kMonospaceFontFamilyFallback,
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            challenge.description,
+            appLocalizationsOf(context).localizedPumpingDescription(challenge),
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 12),
           Text(
-            'Examples:',
+            appLocalizationsOf(context).examplesLabel,
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -269,7 +278,10 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
             challenge.examples.join(', '),
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+            )
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontFamilyFallback: kMonospaceFontFamilyFallback),
           ),
         ],
       ),
@@ -287,7 +299,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Is this language regular?',
+            appLocalizationsOf(context).isLanguageRegular,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -295,7 +307,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
           const SizedBox(height: 16),
           _buildAnswerOption(
             context,
-            label: 'Yes, it is regular',
+            label: appLocalizationsOf(context).yesItIsRegular,
             value: 'regular',
             icon: Icons.check_circle,
             color: Colors.green,
@@ -303,7 +315,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
           const SizedBox(height: 8),
           _buildAnswerOption(
             context,
-            label: 'No, it is not regular',
+            label: appLocalizationsOf(context).noItIsNotRegular,
             value: 'not_regular',
             icon: Icons.cancel,
             color: Colors.red,
@@ -378,7 +390,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
       child: ElevatedButton.icon(
         onPressed: _selectedAnswer != null ? _submitAnswer : null,
         icon: const Icon(Icons.send),
-        label: const Text('Submit Answer'),
+        label: Text(appLocalizationsOf(context).submitAnswer),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
@@ -415,7 +427,9 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isCorrect ? 'Correct!' : 'Incorrect',
+                      isCorrect
+                          ? appLocalizationsOf(context).correct
+                          : appLocalizationsOf(context).incorrect,
                       style: Theme.of(context)
                           .textTheme
                           .headlineSmall
@@ -424,7 +438,9 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                     if (isCorrect && _streakCount > 1) ...[
                       const SizedBox(height: 4),
                       Text(
-                        'Streak bonus! +${(_lastPointsEarned * 0.5).toInt()} points',
+                        appLocalizationsOf(context).streakBonus(
+                          (_lastPointsEarned * 0.5).toInt(),
+                        ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Colors.orange,
                               fontWeight: FontWeight.w600,
@@ -438,42 +454,49 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Explanation:',
+            appLocalizationsOf(context).explanation,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          ...challenge.detailedExplanation.map(
-            (explanation) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                '• $explanation',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
+          Text(
+            appLocalizationsOf(context).localizedPumpingExplanation(challenge),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
+          const SizedBox(height: 8),
+          ...appLocalizationsOf(context)
+              .localizedPumpingProofSteps(challenge)
+              .map(
+                (explanation) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    '• $explanation',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+              ),
           if (!isCorrect && challenge.hints.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Hint for next time:',
+              appLocalizationsOf(context).hintForNextTime,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Colors.blue,
                   ),
             ),
             const SizedBox(height: 8),
-            ...challenge.hints.map(
-              (hint) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  '💡 $hint',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.blue),
+            ...appLocalizationsOf(context).localizedPumpingHints(challenge).map(
+                  (hint) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      '💡 $hint',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.blue),
+                    ),
+                  ),
                 ),
-              ),
-            ),
           ],
           const SizedBox(height: 24),
           Row(
@@ -484,8 +507,8 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                   icon: const Icon(Icons.arrow_forward),
                   label: Text(
                     _currentLevel < _challenges.length - 1
-                        ? 'Next Challenge'
-                        : 'Finish Game',
+                        ? appLocalizationsOf(context).nextChallenge
+                        : appLocalizationsOf(context).finishGame,
                   ),
                 ),
               ),
@@ -495,7 +518,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                   child: ElevatedButton.icon(
                     onPressed: _retryChallenge,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(appLocalizationsOf(context).retry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       foregroundColor: Theme.of(context).colorScheme.onSurface,
@@ -514,13 +537,14 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
     final maxPossibleScore = _maxPossibleScore();
     final percentage = (_score / maxPossibleScore) * 100;
 
+    final strings = appLocalizationsOf(context);
     final performanceLevel = percentage >= 90
-        ? 'Expert'
+        ? strings.performanceExpert
         : percentage >= 75
-            ? 'Advanced'
+            ? strings.performanceAdvanced
             : percentage >= 60
-                ? 'Intermediate'
-                : 'Beginner';
+                ? strings.performanceIntermediate
+                : strings.performanceBeginner;
 
     final performanceColor = percentage >= 90
         ? Colors.green
@@ -563,14 +587,14 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Challenge Complete!',
+            appLocalizationsOf(context).challengeComplete,
             style: Theme.of(
               context,
             ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Level: $performanceLevel',
+            appLocalizationsOf(context).levelLabelValue(performanceLevel),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: performanceColor,
                   fontWeight: FontWeight.w600,
@@ -591,7 +615,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Final Score',
+                      appLocalizationsOf(context).finalScore,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
@@ -645,7 +669,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Learning Progress:',
+                  appLocalizationsOf(context).learningProgress,
                   style: Theme.of(
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -653,22 +677,22 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                 const SizedBox(height: 8),
                 _buildProgressItem(
                   context,
-                  'Regular Languages',
-                  'You understand basic regular language patterns',
+                  appLocalizationsOf(context).regularLanguagesTitle,
+                  appLocalizationsOf(context).regularLanguagesProgressDesc,
                   Icons.check_circle,
                   Colors.green,
                 ),
                 _buildProgressItem(
                   context,
-                  'Pumping Lemma Application',
-                  'You can identify when languages are not regular',
+                  appLocalizationsOf(context).pumpingLemmaApplicationTitle,
+                  appLocalizationsOf(context).pumpingLemmaApplicationDesc,
                   Icons.psychology,
                   percentage >= 60 ? Colors.blue : Colors.grey,
                 ),
                 _buildProgressItem(
                   context,
-                  'Advanced Patterns',
-                  'You recognize complex non-regular languages',
+                  appLocalizationsOf(context).advancedPatternsTitle,
+                  appLocalizationsOf(context).advancedPatternsProgressDesc,
                   Icons.trending_up,
                   percentage >= 80 ? Colors.orange : Colors.grey,
                 ),
@@ -682,7 +706,7 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
                 child: ElevatedButton.icon(
                   onPressed: _restartGame,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Practice Again'),
+                  label: Text(appLocalizationsOf(context).practiceAgain),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
@@ -734,15 +758,28 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
     );
   }
 
+  String _localizedDifficulty(
+    BuildContext context,
+    ChallengeDifficulty difficulty,
+  ) {
+    final strings = appLocalizationsOf(context);
+    return switch (difficulty) {
+      ChallengeDifficulty.easy => strings.pumpingDifficultyEasy,
+      ChallengeDifficulty.medium => strings.pumpingDifficultyMedium,
+      ChallengeDifficulty.hard => strings.pumpingDifficultyHard,
+    };
+  }
+
   String _getPerformanceMessage(double percentage) {
+    final strings = appLocalizationsOf(context);
     if (percentage >= 90) {
-      return 'Outstanding! You have mastered the pumping lemma and can identify regular and non-regular languages with confidence. You understand the theoretical foundations and can apply the lemma correctly to prove non-regularity.';
+      return strings.pumpingPerformanceOutstanding;
     } else if (percentage >= 75) {
-      return 'Excellent work! You have a strong understanding of the pumping lemma. You can correctly identify most regular and non-regular languages, and your application of the lemma is generally sound.';
+      return strings.pumpingPerformanceExcellent;
     } else if (percentage >= 60) {
-      return 'Good progress! You\'re developing a solid foundation in the pumping lemma. You can identify basic patterns and are learning to apply the lemma systematically. Keep practicing to strengthen your skills.';
+      return strings.pumpingPerformanceGood;
     } else {
-      return 'You\'re taking the first steps in understanding the pumping lemma. This is a challenging concept that requires practice. Focus on understanding the basic proof technique and identifying when languages require unbounded memory.';
+      return strings.pumpingPerformanceFirstSteps;
     }
   }
 
@@ -788,7 +825,8 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
 
     ref.read(pumpingLemmaProgressProvider.notifier).recordAnswer(
           challengeId: challenge.id,
-          challengeTitle: 'Challenge ${challenge.id}: ${challenge.description}',
+          challengeTitle:
+              '${appLocalizationsOf(context).challengeNumber(challenge.id)}: ${appLocalizationsOf(context).localizedPumpingDescription(challenge)}',
           language: challenge.language,
           isCorrect: isCorrect,
         );
@@ -840,7 +878,8 @@ class _PumpingLemmaGameState extends ConsumerState<PumpingLemmaGame> {
     final challenge = _challenges[_currentLevel];
     ref.read(pumpingLemmaProgressProvider.notifier).recordRetry(
           challengeId: challenge.id,
-          challengeTitle: 'Challenge ${challenge.id}: ${challenge.description}',
+          challengeTitle:
+              '${appLocalizationsOf(context).challengeNumber(challenge.id)}: ${appLocalizationsOf(context).localizedPumpingDescription(challenge)}',
           language: challenge.language,
         );
 

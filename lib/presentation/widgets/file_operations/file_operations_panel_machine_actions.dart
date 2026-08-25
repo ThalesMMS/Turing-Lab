@@ -10,8 +10,8 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     required Future<StringResult> Function(String path) writeToPath,
     required String cancelMessage,
     required String Function(Result<String> result) successMessageBuilder,
-    required String failureMessagePrefix,
-    required String errorMessagePrefix,
+    required String Function(String error) formatFailure,
+    required String Function(String error) formatException,
     required Future<void> Function() retryOperation,
   }) async {
     _updatePanelState(() => _isLoading = true);
@@ -40,17 +40,14 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
         _showSuccessMessage(successMessageBuilder(result));
       } else {
         final error = result.error?.trim();
-        final failureMessage = error == null || error.isEmpty
-            ? failureMessagePrefix
-            : '$failureMessagePrefix: $error';
         _showErrorMessage(
-          failureMessage,
+          formatFailure(_l10n.localizeWorkflowText(error ?? '')),
           retryOperation: retryOperation,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        '$errorMessagePrefix: $e',
+        formatException(_l10n.localizeWorkflowText('$e')),
         retryOperation: retryOperation,
         stackTrace: stackTrace,
       );
@@ -67,7 +64,7 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     final fileName = '${grammar.name}.cfg';
 
     await _performTextFileAction(
-      dialogTitle: 'Save Grammar as JFLAP',
+      dialogTitle: _l10n.saveGrammarAsJflap,
       fileName: fileName,
       allowedExtensions: const ['cfg'],
       contentsProvider: () => _fileService.serializeGrammarToJFLAPString(
@@ -76,12 +73,12 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
       webSaveCall: (targetName) =>
           _fileService.saveGrammarToJFLAP(grammar, targetName),
       writeToPath: (path) => _fileService.saveGrammarToJFLAP(grammar, path),
-      cancelMessage: 'Save canceled.',
+      cancelMessage: _l10n.saveCanceled,
       successMessageBuilder: (result) => kIsWeb
-          ? 'Download started for ${result.data ?? 'grammar.cfg'}'
-          : 'Grammar saved successfully',
-      failureMessagePrefix: 'Failed to save grammar',
-      errorMessagePrefix: 'Error saving grammar',
+          ? _l10n.downloadStartedFor(result.data ?? 'grammar.cfg')
+          : _l10n.grammarSavedSuccessfully,
+      formatFailure: _l10n.failedToSaveGrammar,
+      formatException: _l10n.errorSavingGrammar,
       retryOperation: _saveGrammarAsJFLAP,
     );
   }
@@ -93,7 +90,7 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['cfg'],
-        dialogTitle: 'Load JFLAP Grammar',
+        dialogTitle: _l10n.loadJflapGrammar,
         withData: true,
       );
 
@@ -106,7 +103,7 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
 
         if (loadResult.isSuccess) {
           widget.onGrammarLoaded?.call(loadResult.data!);
-          _showSuccessMessage('Grammar loaded successfully');
+          _showSuccessMessage(_l10n.grammarLoadedSuccessfully);
         } else {
           await _handleImportFailure(
             fileName: file.name,
@@ -115,7 +112,7 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
           );
         }
       } else {
-        _showOperationCancelledMessage('Import canceled.');
+        _showOperationCancelledMessage(_l10n.importCanceled);
       }
     } catch (e, stackTrace) {
       await _handleImportFailure(
@@ -137,24 +134,32 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     final fileName = '${grammar.name}.svg';
 
     await _performTextFileAction(
-      dialogTitle: 'Export Grammar as SVG',
+      dialogTitle: _l10n.exportGrammarAsSvg,
       fileName: fileName,
       allowedExtensions: const ['svg'],
       contentsProvider: () => _fileService.exportGrammarModelToSvgString(
         grammar,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
-      webSaveCall: (targetName) =>
-          _fileService.exportGrammarModelToSVG(grammar, targetName),
+      webSaveCall: (targetName) => _fileService.exportGrammarModelToSVG(
+        grammar,
+        targetName,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
+      ),
       writeToPath: (path) => _fileService.exportGrammarModelToSVG(
         grammar,
         path,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
-      cancelMessage: 'Export canceled.',
+      cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb
-          ? 'Download started for ${result.data ?? 'grammar.svg'}'
-          : 'Grammar exported successfully',
-      failureMessagePrefix: 'Failed to export grammar',
-      errorMessagePrefix: 'Error exporting grammar',
+          ? _l10n.downloadStartedFor(result.data ?? 'grammar.svg')
+          : _l10n.grammarExportedSuccessfully,
+      formatFailure: _l10n.failedToExportGrammar,
+      formatException: _l10n.errorExportingGrammar,
       retryOperation: _exportGrammarAsSVG,
     );
   }
@@ -165,26 +170,32 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     final fileName = '${pda.name}.svg';
 
     await _performTextFileAction(
-      dialogTitle: 'Export PDA as SVG',
+      dialogTitle: _l10n.exportPdaAsSvg,
       fileName: fileName,
       allowedExtensions: const ['svg'],
       contentsProvider: () => _fileService.exportPdaToSvgString(
         pda,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
       webSaveCall: (targetName) => _fileService.exportPdaToSVG(
         pda,
         targetName,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
       writeToPath: (path) => _fileService.exportPdaToSVG(
         pda,
         path,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
-      cancelMessage: 'Export canceled.',
+      cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb
-          ? 'Download started for ${result.data ?? 'pda.svg'}'
-          : 'PDA exported successfully',
-      failureMessagePrefix: 'Failed to export PDA',
-      errorMessagePrefix: 'Error exporting PDA',
+          ? _l10n.downloadStartedFor(result.data ?? 'pda.svg')
+          : _l10n.pdaExportedSuccessfully,
+      formatFailure: _l10n.failedToExportPda,
+      formatException: _l10n.errorExportingPda,
       retryOperation: _exportPdaAsSVG,
     );
   }
@@ -196,24 +207,32 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     final fileName = '${turingMachine.name}.svg';
 
     await _performTextFileAction(
-      dialogTitle: 'Export Turing Machine as SVG',
+      dialogTitle: _l10n.exportTmAsSvg,
       fileName: fileName,
       allowedExtensions: const ['svg'],
       contentsProvider: () => _fileService.exportTuringMachineToSvgString(
         tmEntity,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
-      webSaveCall: (targetName) =>
-          _fileService.exportTuringMachineToSVG(tmEntity, targetName),
+      webSaveCall: (targetName) => _fileService.exportTuringMachineToSVG(
+        tmEntity,
+        targetName,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
+      ),
       writeToPath: (path) => _fileService.exportTuringMachineToSVG(
         tmEntity,
         path,
+        emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+        tmLegendLabel: _svgTmLegendLabel,
       ),
-      cancelMessage: 'Export canceled.',
+      cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb
-          ? 'Download started for ${result.data ?? 'tm.svg'}'
-          : 'Turing machine exported successfully',
-      failureMessagePrefix: 'Failed to export Turing machine',
-      errorMessagePrefix: 'Error exporting Turing machine',
+          ? _l10n.downloadStartedFor(result.data ?? 'tm.svg')
+          : _l10n.tmExportedSuccessfully,
+      formatFailure: _l10n.failedToExportTm,
+      formatException: _l10n.errorExportingTm,
       retryOperation: _exportTuringMachineAsSVG,
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -85,6 +86,12 @@ bool _pathIntersectsRect(Path path, Rect rect, {double padding = 0}) {
 
 int _pathContourCount(Path path) {
   return path.computeMetrics().length;
+}
+
+double _angularGap(Offset left, Offset right) {
+  final delta =
+      (atan2(left.dy, left.dx) - atan2(right.dy, right.dx)) % (2 * pi);
+  return delta > pi ? (2 * pi) - delta : delta;
 }
 
 class _ThrowingSourceEdge extends Edge {
@@ -368,6 +375,68 @@ void main() {
       final secondGeometry = renderer.geometryForEdge(secondLoop)!.pathGeometry;
 
       expect(firstGeometry.bounds, isNot(equals(secondGeometry.bounds)));
+    });
+
+    test('self-loop keeps clear of the initial marker and of transitions', () {
+      final loop = Edge(
+        source,
+        source,
+        key: const ValueKey('loop-a'),
+        label: 'a',
+      );
+      graph.addEdgeS(loop);
+      renderer
+        ..updateInitialStateIds(const <String>{'source'})
+        ..prepareForRenderCycle();
+
+      // The marker enters from the west and `edge` leaves to the east, so
+      // the loop has to take one of the free sides of the border.
+      final outward = renderer.geometryForEdge(loop)!.labelNormal;
+      expect(_angularGap(outward, const Offset(-1, 0)), greaterThan(pi / 4));
+      expect(_angularGap(outward, const Offset(1, 0)), greaterThan(pi / 4));
+    });
+
+    test('self-loop slides in small steps while a neighbour is dragged', () {
+      final loop = Edge(
+        source,
+        source,
+        key: const ValueKey('loop-a'),
+        label: 'a',
+      );
+      graph.addEdgeS(loop);
+      renderer.prepareForRenderCycle();
+
+      var previous = renderer.geometryForEdge(loop)!.labelNormal;
+      var largestStep = 0.0;
+      for (var step = 1; step <= 24; step++) {
+        destination.position = Offset(-160 + (step * 16), -140);
+        graph.markModified();
+        renderer.prepareForRenderCycle();
+        final outward = renderer.geometryForEdge(loop)!.labelNormal;
+        largestStep = max(largestStep, _angularGap(outward, previous));
+        previous = outward;
+      }
+
+      expect(largestStep, lessThan(pi / 6));
+    });
+
+    test('self-loop geometry is stable when nothing actually moved', () {
+      final loop = Edge(
+        source,
+        source,
+        key: const ValueKey('loop-a'),
+        label: 'a',
+      );
+      graph.addEdgeS(loop);
+      renderer.prepareForRenderCycle();
+      final before = renderer.geometryForEdge(loop)!.pathGeometry.bounds;
+
+      // A replan forced without any node moving must land on the same loop.
+      renderer
+        ..invalidateEdgeCaches()
+        ..prepareForRenderCycle();
+
+      expect(renderer.geometryForEdge(loop)!.pathGeometry.bounds, before);
     });
 
     test('standard PDA/TM label card clears its painted path', () {

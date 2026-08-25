@@ -65,4 +65,6 @@ run_case suite_test_failure 24 \
 run_case suite_success 0 "QA_RESULT passed" \
     TURING_LAB_FLUTTER_BIN="$FAKE_FLUTTER" "$REPO_ROOT/run_full_test_suite.sh"
 
+bash "$REPO_ROOT/test/scripts/local_qa_test.sh"
+
 echo "QA script smoke tests passed"

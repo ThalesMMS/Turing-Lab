@@ -16,6 +16,8 @@ import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
 
 class _FakeTmExamplesDataSource extends ExamplesAssetDataSource {
@@ -95,7 +97,10 @@ Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
   );
 
   await tester.pump();
-  await _pumpUntilFound(tester, find.text('MT - a^n b^n'));
+  await _pumpUntilFound(
+    tester,
+    find.text(AppLocalizationsEn().localizedExampleName('MT - a^n b^n')),
+  );
 
   return _TmPanelHarness(
     notifier: tmNotifier,
@@ -876,9 +881,11 @@ void main() {
   ) async {
     final harness = await _pumpTmAlgorithmPanel(tester);
 
-    expect(find.text('MT - a^n b^n'), findsOneWidget);
+    final exampleLabel =
+        AppLocalizationsEn().localizedExampleName('MT - a^n b^n');
+    expect(find.text(exampleLabel), findsOneWidget);
 
-    await tester.tap(find.text('MT - a^n b^n'));
+    await tester.tap(find.text(exampleLabel));
     await _pumpUntilTmLoaded(tester, harness.notifier);
 
     final tm = harness.notifier.state.tm;

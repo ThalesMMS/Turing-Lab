@@ -32,7 +32,7 @@ class _LicensesHelpContentState extends State<_LicensesHelpContent>
             leading: const Icon(Icons.code),
             title: Text(l10n.aboutProjectRepositoryLabel),
             subtitle: const Text(
-              'https://github.com/ThalesMMS/jflutter',
+              'https://github.com/ThalesMMS/Turing-Lab',
             ),
             trailing: const Icon(Icons.open_in_new),
             onTap: () async {

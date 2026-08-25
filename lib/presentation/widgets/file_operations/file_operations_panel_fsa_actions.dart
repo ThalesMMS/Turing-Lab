@@ -15,7 +15,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         );
       } else {
         saveResult = await _saveTextFileWithPicker(
-          dialogTitle: 'Save Automaton as JFLAP',
+          dialogTitle: _l10n.saveAutomatonAsJflap,
           fileName: '${widget.automaton!.name}.jff',
           allowedExtensions: ['jff'],
           contents: _fileService.serializeAutomatonToJFLAPString(
@@ -32,18 +32,18 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
 
       if (saveResult.isSuccess) {
         final successMessage = kIsWeb
-            ? 'Download started for ${saveResult.data ?? 'automaton.jff'}'
-            : 'Automaton saved successfully';
+            ? _l10n.downloadStartedFor(saveResult.data ?? 'automaton.jff')
+            : _l10n.automatonSavedSuccessfully;
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          'Failed to save automaton: ${saveResult.error}',
+          _l10n.failedToSaveAutomaton('${saveResult.error}'),
           retryOperation: _saveAutomatonAsJFLAP,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        'Error saving automaton: $e',
+        _l10n.errorSavingAutomaton('$e'),
         retryOperation: _saveAutomatonAsJFLAP,
         stackTrace: stackTrace,
       );
@@ -61,7 +61,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jff'],
-        dialogTitle: 'Load JFLAP Automaton',
+        dialogTitle: _l10n.loadJflapAutomaton,
         withData: true,
       );
 
@@ -74,7 +74,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
 
         if (loadResult.isSuccess) {
           widget.onAutomatonLoaded?.call(loadResult.data!);
-          _showSuccessMessage('Automaton loaded successfully');
+          _showSuccessMessage(_l10n.automatonLoadedSuccessfully);
         } else {
           await _handleImportFailure(
             fileName: file.name,
@@ -83,12 +83,12 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
           );
         }
       } else {
-        _showOperationCancelledMessage('Import canceled.');
+        _showOperationCancelledMessage(_l10n.importCanceled);
       }
     } catch (e, stackTrace) {
       await _handleImportFailure(
-        fileName: 'Automaton',
-        errorMessage: 'Error loading automaton: $e',
+        fileName: _l10n.fileSectionFsa,
+        errorMessage: _l10n.errorLoadingAutomaton('$e'),
         retryOperation: _loadAutomatonFromJFLAP,
         stackTrace: stackTrace,
       );
@@ -113,7 +113,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         );
       } else {
         saveResult = await _saveTextFileWithPicker(
-          dialogTitle: 'Save Automaton as JSON',
+          dialogTitle: _l10n.saveAutomatonAsJson,
           fileName: '${widget.automaton!.name}.json',
           allowedExtensions: ['json'],
           contents: _fileService.serializeAutomatonToJsonString(
@@ -130,18 +130,18 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
 
       if (saveResult.isSuccess) {
         final successMessage = kIsWeb
-            ? 'Download started for ${saveResult.data ?? 'automaton.json'}'
-            : 'Automaton saved successfully';
+            ? _l10n.downloadStartedFor(saveResult.data ?? 'automaton.json')
+            : _l10n.automatonSavedSuccessfully;
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          'Failed to save automaton JSON: ${saveResult.error}',
+          _l10n.failedToSaveAutomatonJson('${saveResult.error}'),
           retryOperation: _saveAutomatonAsJson,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        'Error saving automaton JSON: $e',
+        _l10n.errorSavingAutomatonJson('$e'),
         retryOperation: _saveAutomatonAsJson,
         stackTrace: stackTrace,
       );
@@ -159,7 +159,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        dialogTitle: 'Load Automaton JSON',
+        dialogTitle: _l10n.loadAutomatonJson,
         withData: true,
       );
 
@@ -169,7 +169,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
 
         if (loadResult.isSuccess) {
           widget.onAutomatonLoaded?.call(loadResult.data!);
-          _showSuccessMessage('Automaton loaded successfully');
+          _showSuccessMessage(_l10n.automatonLoadedSuccessfully);
         } else {
           await _handleImportFailure(
             fileName: file.name,
@@ -178,12 +178,12 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
           );
         }
       } else {
-        _showOperationCancelledMessage('Import canceled.');
+        _showOperationCancelledMessage(_l10n.importCanceled);
       }
     } catch (e, stackTrace) {
       await _handleImportFailure(
-        fileName: 'Automaton JSON',
-        errorMessage: 'Error loading automaton JSON: $e',
+        fileName: 'JSON',
+        errorMessage: _l10n.errorLoadingAutomatonJson('$e'),
         retryOperation: _loadAutomatonFromJson,
         stackTrace: stackTrace,
       );
@@ -203,18 +203,26 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         exportResult = await _fileService.exportFsaToSVG(
           widget.automaton!,
           '${widget.automaton!.name}.svg',
+          emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+          tmLegendLabel: _svgTmLegendLabel,
         );
       } else {
         exportResult = await _saveTextFileWithPicker(
-          dialogTitle: 'Export Automaton as SVG',
+          dialogTitle: _l10n.exportAutomatonAsSvg,
           fileName: '${widget.automaton!.name}.svg',
           allowedExtensions: ['svg'],
           contents: _fileService.exportFsaToSvgString(
             widget.automaton!,
+            emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+            tmLegendLabel: _svgTmLegendLabel,
           ),
-          writeToPath: (path) =>
-              _fileService.exportFsaToSVG(widget.automaton!, path),
-          cancelMessage: 'Export canceled.',
+          writeToPath: (path) => _fileService.exportFsaToSVG(
+            widget.automaton!,
+            path,
+            emptyAutomatonLabel: _svgEmptyAutomatonLabel,
+            tmLegendLabel: _svgTmLegendLabel,
+          ),
+          cancelMessage: _l10n.exportCanceled,
         );
 
         if (exportResult == null) {
@@ -224,18 +232,22 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
 
       if (exportResult.isSuccess) {
         final successMessage = kIsWeb
-            ? 'Download started for ${exportResult.data ?? 'automaton.svg'}'
-            : 'Automaton exported successfully';
+            ? _l10n.downloadStartedFor(exportResult.data ?? 'automaton.svg')
+            : _l10n.automatonExportedSuccessfully;
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          'Failed to export automaton: ${exportResult.error}',
+          _l10n.failedToExportAutomaton(
+            _l10n.localizeWorkflowText('${exportResult.error}'),
+          ),
           retryOperation: _exportAutomatonAsSVG,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        'Error exporting automaton: $e',
+        _l10n.errorExportingAutomaton(
+          _l10n.localizeWorkflowText('$e'),
+        ),
         retryOperation: _exportAutomatonAsSVG,
         stackTrace: stackTrace,
       );
@@ -257,14 +269,14 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       );
       if (pngBytesResult.isFailure) {
         _showErrorMessage(
-          'Failed to export automaton PNG: ${pngBytesResult.error}',
+          _l10n.failedToExportAutomatonPng('${pngBytesResult.error}'),
           retryOperation: _exportAutomatonAsPNG,
         );
         return;
       }
 
       exportResult = await _saveBinaryFileWithPicker(
-        dialogTitle: 'Export Automaton as PNG',
+        dialogTitle: _l10n.exportAutomatonAsPng,
         fileName: '${widget.automaton!.name}.png',
         allowedExtensions: ['png'],
         bytes: pngBytesResult.data!,
@@ -277,16 +289,16 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       }
 
       if (exportResult.isSuccess) {
-        _showSuccessMessage('Automaton exported successfully');
+        _showSuccessMessage(_l10n.automatonExportedSuccessfully);
       } else {
         _showErrorMessage(
-          'Failed to export automaton PNG: ${exportResult.error}',
+          _l10n.failedToExportAutomatonPng('${exportResult.error}'),
           retryOperation: _exportAutomatonAsPNG,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        'Error exporting automaton PNG: $e',
+        _l10n.errorExportingAutomatonPng('$e'),
         retryOperation: _exportAutomatonAsPNG,
         stackTrace: stackTrace,
       );

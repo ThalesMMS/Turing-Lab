@@ -281,53 +281,42 @@ abstract class EdgeRenderer {
 
   /// Builds a loop path for self-referential edges and returns geometry
   /// data that renderers can use to draw arrows or style the segment.
+  ///
+  /// The loop is the circular arc [resolveSelfLoopArc] describes, so it stays
+  /// round and compact at every heading and matches what other surfaces (the
+  /// SVG exporter) draw. Pass [loopAngle] to place it at an arbitrary outward
+  /// direction; [heading] is only the fallback.
   LoopRenderResult? buildSelfLoopPath(
     Edge edge, {
-    double loopPadding = 16.0,
+    double loopPadding = kSelfLoopBasePadding,
     double arrowLength = 12.0,
     LoopHeading heading = LoopHeading.northEast,
+    double? loopAngle,
   }) {
     if (edge.source != edge.destination) {
       return null;
     }
 
     final node = edge.source;
-    final nodeCenter = getNodeCenter(node);
-
-    final anchorRadius = node.size.shortestSide * 0.5;
-
-    final outward = Offset(cos(heading.angle), sin(heading.angle));
-    final tangent = Offset(-outward.dy, outward.dx);
-    final startVector = outward + tangent;
-    final endVector = outward - tangent;
-    final startDirection = startVector / startVector.distance;
-    final endDirection = endVector / endVector.distance;
-    final start = nodeCenter + startDirection * anchorRadius;
-    final end = nodeCenter + endDirection * anchorRadius;
-
-    final loopRadius = max(
-      loopPadding + anchorRadius,
-      anchorRadius * 1.5,
+    final arc = resolveSelfLoopArc(
+      nodeCenter: getNodeCenter(node),
+      nodeRadius: node.size.shortestSide * 0.5,
+      angle: loopAngle ?? heading.angle,
+      padding: loopPadding,
     );
 
-    final controlPoint1 = start + startDirection * loopRadius;
-    final controlPoint2 = end + endDirection * loopRadius;
-
     final path = Path()
-      ..moveTo(start.dx, start.dy)
-      ..cubicTo(
-        controlPoint1.dx,
-        controlPoint1.dy,
-        controlPoint2.dx,
-        controlPoint2.dy,
-        end.dx,
-        end.dy,
+      ..arcTo(
+        Rect.fromCircle(center: arc.center, radius: arc.radius),
+        arc.startAngle,
+        arc.sweep,
+        true,
       );
 
     final geometry = EdgePathGeometry.fromPath(
       path,
-      fallbackStart: start,
-      fallbackEnd: end,
+      fallbackStart: arc.start,
+      fallbackEnd: arc.end,
       arrowLength: arrowLength,
       kind: EdgePathKind.selfLoop,
     );

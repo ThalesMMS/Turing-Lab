@@ -22,6 +22,7 @@ import 'base_simulation_panel.dart';
 import 'common/simulation_speed_control.dart';
 import 'common/simulation_result_card.dart';
 import 'trace_viewers/fsa_trace_viewer.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Panel for automaton simulation
 class SimulationPanel extends StatefulWidget {
@@ -230,7 +231,7 @@ class _SimulationPanelState extends State<SimulationPanel> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                     fontWeight: FontWeight.bold,
                   ),
             ),

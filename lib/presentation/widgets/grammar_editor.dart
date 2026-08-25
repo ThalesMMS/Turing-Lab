@@ -13,9 +13,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/production.dart';
+import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
+import '../../l10n/app_localizations_resolver.dart';
 import '../providers/grammar_provider.dart';
 import 'grammar_editor_section.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Comprehensive grammar editor widget
 class GrammarEditor extends ConsumerStatefulWidget {
@@ -51,6 +54,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
 
   String? _leftSideErrorText;
   String? _rightSideErrorText;
+
+  AppLocalizations get _l10n => jflapLocalizationsOf(context);
 
   @override
   void initState() {
@@ -136,7 +141,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final clearButton = ElevatedButton.icon(
       onPressed: _clearGrammar,
       icon: const Icon(Icons.clear, size: 16),
-      label: const Text('Clear'),
+      label: Text(_l10n.clear),
       style: ElevatedButton.styleFrom(
         backgroundColor: theme.colorScheme.error,
         foregroundColor: theme.colorScheme.onError,
@@ -159,7 +164,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Grammar Editor',
+                  _l10n.grammarEditorTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -182,7 +187,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Grammar Editor',
+            _l10n.grammarEditorTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -209,7 +214,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Grammar Information',
+            _l10n.grammarInformation,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -227,9 +232,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onChanged: (value) => ref
                           .read(grammarProvider.notifier)
                           .updateName(value.trim()),
-                      decoration: const InputDecoration(
-                        labelText: 'Grammar Name',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _l10n.grammarNameLabel,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -238,9 +243,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onChanged: (value) => ref
                           .read(grammarProvider.notifier)
                           .updateStartSymbol(value.trim()),
-                      decoration: const InputDecoration(
-                        labelText: 'Start Symbol',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _l10n.startSymbolLabel,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ],
@@ -255,9 +260,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onChanged: (value) => ref
                           .read(grammarProvider.notifier)
                           .updateName(value.trim()),
-                      decoration: const InputDecoration(
-                        labelText: 'Grammar Name',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _l10n.grammarNameLabel,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -268,9 +273,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onChanged: (value) => ref
                           .read(grammarProvider.notifier)
                           .updateStartSymbol(value.trim()),
-                      decoration: const InputDecoration(
-                        labelText: 'Start Symbol',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _l10n.startSymbolLabel,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -294,7 +299,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _isEditing ? 'Edit Production Rule' : 'Add Production Rule',
+            _isEditing ? _l10n.editProductionRule : _l10n.addProductionRule,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -311,15 +316,15 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       controller: _leftSideController,
                       onChanged: (_) => _validateProductionEditorInputs(),
                       errorText: _leftSideErrorText,
-                      decoration: const InputDecoration(
-                        labelText: 'Left Side (Variable)',
-                        hintText: 'e.g., S, A, B',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _l10n.leftSideVariable,
+                        hintText: _l10n.leftSideHint,
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Enter exactly one non-terminal (e.g., S).',
+                      _l10n.leftSideHelper,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -336,8 +341,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onChanged: (_) => _validateProductionEditorInputs(),
                       errorText: _rightSideErrorText,
                       decoration: InputDecoration(
-                        labelText: 'Right Side (Production)',
-                        hintText: 'e.g., aA, bB, ε',
+                        labelText: _l10n.rightSideProduction,
+                        hintText: _l10n.rightSideHint,
                         border: const OutlineInputBorder(),
                         suffixIcon: _LambdaShortcutButton(
                           onInsert: () => _insertIntoController(
@@ -355,20 +360,20 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                             controller: _rightSideController,
                             symbol: 'λ',
                           ),
-                          child: const Text('Insert λ'),
+                          child: Text(_l10n.insertLambda),
                         ),
                         TextButton(
                           onPressed: () => _insertIntoController(
                             controller: _rightSideController,
                             symbol: 'ε',
                           ),
-                          child: const Text('Insert ε'),
+                          child: Text(_l10n.insertEpsilon),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Use λ/ε for empty string. Right side can be multiple symbols (e.g., aA).',
+                      _l10n.rightSideHelper,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -388,15 +393,15 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                           controller: _leftSideController,
                           onChanged: (_) => _validateProductionEditorInputs(),
                           errorText: _leftSideErrorText,
-                          decoration: const InputDecoration(
-                            labelText: 'Left Side (Variable)',
-                            hintText: 'e.g., S, A, B',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: _l10n.leftSideVariable,
+                            hintText: _l10n.leftSideHint,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Enter exactly one non-terminal (e.g., S).',
+                          _l10n.leftSideHelper,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
@@ -423,8 +428,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                           onChanged: (_) => _validateProductionEditorInputs(),
                           errorText: _rightSideErrorText,
                           decoration: InputDecoration(
-                            labelText: 'Right Side (Production)',
-                            hintText: 'e.g., aA, bB, ε',
+                            labelText: _l10n.rightSideProduction,
+                            hintText: _l10n.rightSideHint,
                             border: const OutlineInputBorder(),
                             suffixIcon: _LambdaShortcutButton(
                               onInsert: () => _insertIntoController(
@@ -442,20 +447,20 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                                 controller: _rightSideController,
                                 symbol: 'λ',
                               ),
-                              child: const Text('Insert λ'),
+                              child: Text(_l10n.insertLambda),
                             ),
                             TextButton(
                               onPressed: () => _insertIntoController(
                                 controller: _rightSideController,
                                 symbol: 'ε',
                               ),
-                              child: const Text('Insert ε'),
+                              child: Text(_l10n.insertEpsilon),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Use λ/ε for empty string. Right side can be multiple symbols (e.g., aA).',
+                          _l10n.rightSideHelper,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
@@ -483,14 +488,14 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                       onPressed:
                           _isEditing ? _updateProduction : _addProduction,
                       icon: Icon(_isEditing ? Icons.save : Icons.add),
-                      label: Text(_isEditing ? 'Update' : 'Add'),
+                      label: Text(_isEditing ? _l10n.update : _l10n.add),
                     ),
                     if (_isEditing) ...[
                       const SizedBox(height: 8),
                       ElevatedButton.icon(
                         onPressed: _cancelEdit,
                         icon: const Icon(Icons.cancel),
-                        label: const Text('Cancel'),
+                        label: Text(_l10n.cancel),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(
                             context,
@@ -510,14 +515,14 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                   ElevatedButton.icon(
                     onPressed: _isEditing ? _updateProduction : _addProduction,
                     icon: Icon(_isEditing ? Icons.save : Icons.add),
-                    label: Text(_isEditing ? 'Update' : 'Add'),
+                    label: Text(_isEditing ? _l10n.update : _l10n.add),
                   ),
                   if (_isEditing) ...[
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
                       onPressed: _cancelEdit,
                       icon: const Icon(Icons.cancel),
-                      label: const Text('Cancel'),
+                      label: Text(_l10n.cancel),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         foregroundColor: Theme.of(
@@ -544,7 +549,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Production Rules (${productions.length})',
+          _l10n.productionRulesCount(productions.length),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -635,7 +640,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontFamily: 'monospace',
+                  fontFamilyFallback: kMonospaceFontFamilyFallback,
                   fontWeight: FontWeight.w600,
                 ),
           ),
@@ -657,23 +662,23 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit, size: 18),
-                    SizedBox(width: 8),
-                    Text('Edit'),
+                    const Icon(Icons.edit, size: 18),
+                    const SizedBox(width: 8),
+                    Text(_l10n.edit),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete, size: 18),
-                    SizedBox(width: 8),
-                    Text('Delete'),
+                    const Icon(Icons.delete, size: 18),
+                    const SizedBox(width: 8),
+                    Text(_l10n.delete),
                   ],
                 ),
               ),
@@ -789,18 +794,16 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Clear all productions?'),
-          content: const Text(
-            'This will remove every production rule from the current grammar.',
-          ),
+          title: Text(_l10n.clearAllProductionsTitle),
+          content: Text(_l10n.clearAllProductionsMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(_l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Clear'),
+              child: Text(_l10n.clear),
             ),
           ],
         );
@@ -827,9 +830,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: const Text('Productions cleared.'),
+          content: Text(_l10n.productionsCleared),
           action: SnackBarAction(
-            label: 'Undo',
+            label: _l10n.undo,
             onPressed: () {
               ref
                   .read(grammarProvider.notifier)
@@ -975,7 +978,7 @@ class _LambdaShortcutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Insert λ',
+      tooltip: appLocalizationsOf(context).insertLambda,
       onPressed: onInsert,
       icon: const Text(
         'λ',

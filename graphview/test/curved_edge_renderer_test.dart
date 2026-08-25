@@ -73,19 +73,37 @@ void main() {
       expect(metric.length, greaterThan(0));
       expect(result.arrowTip, isNot(equals(const Offset(0, 0))));
 
-      // Verify the loop starts from the right side of the node
-      final tangentStart = metric.getTangentForOffset(0);
-      expect(tangentStart, isNotNull);
-      expect(tangentStart!.vector.dy.abs(),
-          lessThan(tangentStart.vector.dx.abs() * 0.1));
-      expect(tangentStart.vector.dx, greaterThan(0));
+      const center = Offset(120, 120);
+      const radius = 20.0;
 
-      // Verify the loop ends at the top of the node
+      final tangentStart = metric.getTangentForOffset(0);
       final tangentEnd = metric.getTangentForOffset(metric.length);
+      expect(tangentStart, isNotNull);
       expect(tangentEnd, isNotNull);
-      expect(tangentEnd!.vector.dx.abs(),
-          lessThan(tangentEnd.vector.dy.abs() * 0.1));
-      expect(tangentEnd.vector.dy, greaterThan(0));
+
+      // Both ends are anchored on the state's border, on the default
+      // north-east side, and the loop leaves outwards before coming back in.
+      expect((tangentStart!.position - center).distance, closeTo(radius, 0.5));
+      expect((tangentEnd!.position - center).distance, closeTo(radius, 0.5));
+      expect(tangentStart.position.dx, greaterThan(center.dx));
+      expect(tangentEnd.position.dy, lessThan(center.dy));
+      expect(
+        _radialComponent(tangentStart.vector, tangentStart.position - center),
+        greaterThan(0),
+      );
+      expect(
+        _radialComponent(tangentEnd.vector, tangentEnd.position - center),
+        lessThan(0),
+      );
+
+      // The loop is a compact ring perched on the state: it never cuts
+      // through it, and it does not sprawl wider than the state itself.
+      for (var sample = 0; sample <= 40; sample++) {
+        final point =
+            metric.getTangentForOffset(metric.length * sample / 40)!.position;
+        expect((point - center).distance, greaterThan(radius - 0.5));
+      }
+      expect(result.path.getBounds().longestSide, lessThan(radius * 2));
     });
 
     test('CurvedEdgeRenderer handles graph with self-loop edge', () {
@@ -244,3 +262,6 @@ void main() {
     });
   });
 }
+
+double _radialComponent(Offset vector, Offset radial) =>
+    (vector.dx * radial.dx) + (vector.dy * radial.dy);

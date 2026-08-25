@@ -12,6 +12,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations_resolver.dart';
+import '../../../core/constants/monospace_typography.dart';
+
 /// Tape state at a specific moment
 class TapeState {
   final List<String> cells;
@@ -346,7 +349,10 @@ class _TMTapePanelState extends State<TMTapePanel>
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Cell $cellIndex', style: theme.textTheme.titleMedium),
+        title: Text(
+          appLocalizationsOf(context).editCell(cellIndex),
+          style: theme.textTheme.titleMedium,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -354,7 +360,7 @@ class _TMTapePanelState extends State<TMTapePanel>
             // Quick selection buttons for tape alphabet
             if (widget.tapeAlphabet.isNotEmpty) ...[
               Text(
-                'Tape Alphabet:',
+                appLocalizationsOf(context).tapeAlphabetLabel,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -385,8 +391,8 @@ class _TMTapePanelState extends State<TMTapePanel>
               controller: controller,
               focusNode: focusNode,
               decoration: InputDecoration(
-                labelText: 'Symbol',
-                hintText: 'Enter a symbol',
+                labelText: appLocalizationsOf(context).symbolLabel,
+                hintText: appLocalizationsOf(context).enterASymbol,
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
@@ -397,7 +403,9 @@ class _TMTapePanelState extends State<TMTapePanel>
               ),
               maxLength: 1,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, fontFamily: 'monospace'),
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontFamilyFallback: kMonospaceFontFamilyFallback),
             ),
           ],
         ),
@@ -406,7 +414,7 @@ class _TMTapePanelState extends State<TMTapePanel>
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text(appLocalizationsOf(context).cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -415,7 +423,7 @@ class _TMTapePanelState extends State<TMTapePanel>
                   : controller.text;
               Navigator.of(context).pop(value);
             },
-            child: const Text('OK'),
+            child: Text(appLocalizationsOf(context).ok),
           ),
         ],
       ),
@@ -445,7 +453,8 @@ class _TMTapePanelState extends State<TMTapePanel>
         ),
         child: Text(
           symbol,
-          style: const TextStyle(fontSize: 18, fontFamily: 'monospace'),
+          style: const TextStyle(
+              fontSize: 18, fontFamilyFallback: kMonospaceFontFamilyFallback),
         ),
       ),
     );
@@ -478,7 +487,8 @@ class _TMTapePanelState extends State<TMTapePanel>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Tape (Head: ${widget.tapeState.headPosition})',
+                    appLocalizationsOf(context)
+                        .tapeHead(widget.tapeState.headPosition),
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -495,9 +505,9 @@ class _TMTapePanelState extends State<TMTapePanel>
                           foregroundColor: theme.colorScheme.error,
                           visualDensity: VisualDensity.compact,
                         ),
-                        child: const Text(
-                          'Clear',
-                          style: TextStyle(fontSize: 12),
+                        child: Text(
+                          appLocalizationsOf(context).clear,
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     ),
@@ -521,7 +531,7 @@ class _TMTapePanelState extends State<TMTapePanel>
     if (widget.tapeState.isEmpty) {
       return Center(
         child: Text(
-          'Empty (□: ${widget.tapeState.blankSymbol})',
+          appLocalizationsOf(context).emptyTape(widget.tapeState.blankSymbol),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.outline,
           ),
@@ -735,7 +745,7 @@ class _TMTapePanelState extends State<TMTapePanel>
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: isHead ? FontWeight.bold : FontWeight.normal,
-                  fontFamily: 'monospace',
+                  fontFamilyFallback: kMonospaceFontFamilyFallback,
                   color: isHead
                       ? theme.colorScheme.primary
                       : symbol == widget.tapeState.blankSymbol

@@ -22,7 +22,7 @@ extension _RegexPageSampleSections on _RegexPageState {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Sample Strings',
+                  AppLocalizations.of(context).sampleStringsTitle,
                   style: textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -39,8 +39,8 @@ extension _RegexPageSampleSections on _RegexPageState {
                           : Icons.expand_more,
                     ),
                     tooltip: regexState.showSampleStringsDetails
-                        ? 'Hide samples'
-                        : 'Show samples',
+                        ? AppLocalizations.of(context).hideSamples
+                        : AppLocalizations.of(context).showSamples,
                   ),
               ],
             ),
@@ -53,7 +53,8 @@ extension _RegexPageSampleSections on _RegexPageState {
                 child: ElevatedButton.icon(
                   onPressed: _runSampleGeneration,
                   icon: const Icon(Icons.text_snippet_outlined),
-                  label: const Text('Generate Sample Strings'),
+                  label:
+                      Text(AppLocalizations.of(context).generateSampleStrings),
                 ),
               )
             else ...[
@@ -78,13 +79,13 @@ extension _RegexPageSampleSections on _RegexPageState {
                         .read(regexEditorProvider.notifier)
                         .clearSampleStrings(),
                     icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Clear'),
+                    label: Text(AppLocalizations.of(context).clear),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: () => _runSampleGeneration(maxSamples: 15),
                     icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Generate More'),
+                    label: Text(AppLocalizations.of(context).generateMore),
                   ),
                 ],
               ),
@@ -123,7 +124,8 @@ extension _RegexPageSampleSections on _RegexPageState {
               ),
               const SizedBox(width: 8),
               Text(
-                '${samples.count} sample string(s) generated',
+                AppLocalizations.of(context)
+                    .sampleStringsGeneratedCount(samples.count),
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -138,10 +140,15 @@ extension _RegexPageSampleSections on _RegexPageState {
             runSpacing: 8,
             children: [
               if (samples.acceptsEmptyString)
-                _buildInfoChip('Accepts ε', Icons.check, colorScheme.tertiary),
+                _buildInfoChip(
+                  AppLocalizations.of(context).acceptsEpsilon,
+                  Icons.check,
+                  colorScheme.tertiary,
+                ),
               if (samples.shortestString != null)
                 _buildInfoChip(
-                  'Shortest: "${_displayString(samples.shortestString!)}"',
+                  AppLocalizations.of(context)
+                      .shortestSample(_displayString(samples.shortestString!)),
                   Icons.short_text,
                   colorScheme.secondary,
                 ),
@@ -186,7 +193,7 @@ extension _RegexPageSampleSections on _RegexPageState {
     if (samples == null || samples.samples.isEmpty) {
       return Center(
         child: Text(
-          'No sample strings generated',
+          AppLocalizations.of(context).noSampleStringsGenerated,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -202,7 +209,7 @@ extension _RegexPageSampleSections on _RegexPageState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Generated Samples:',
+          AppLocalizations.of(context).generatedSamples,
           style: textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurfaceVariant,
@@ -234,11 +241,11 @@ extension _RegexPageSampleSections on _RegexPageState {
               final allSamples = samples.samples.join('\n');
               await _copyToClipboardExtracted(
                 allSamples,
-                'All samples copied to clipboard',
+                AppLocalizations.of(context).allSamplesCopied,
               );
             },
             icon: const Icon(Icons.copy_all, size: 16),
-            label: const Text('Copy All'),
+            label: Text(AppLocalizations.of(context).copyAll),
           ),
         ),
       ],
@@ -253,7 +260,10 @@ extension _RegexPageSampleSections on _RegexPageState {
 
     return InkWell(
       onTap: () async {
-        await _copyToClipboardExtracted(sample, 'Copied: "$displayText"');
+        await _copyToClipboardExtracted(
+          sample,
+          AppLocalizations.of(context).copiedQuoted(displayText),
+        );
       },
       borderRadius: BorderRadius.circular(6),
       child: Container(
@@ -269,7 +279,7 @@ extension _RegexPageSampleSections on _RegexPageState {
             Text(
               '"$displayText"',
               style: textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
                 fontWeight: FontWeight.w500,
                 color: colorScheme.onSurface,
               ),
@@ -303,7 +313,7 @@ extension _RegexPageSampleSections on _RegexPageState {
       debugPrint('Failed to copy to clipboard: $error');
       if (!mounted) return;
       _showFeedback(
-        'Failed to copy to clipboard.',
+        AppLocalizations.of(context).failedToCopyClipboard,
         tone: AppSnackBarTone.error,
       );
       return;

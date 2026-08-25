@@ -8,6 +8,8 @@ import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
+import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/transition.dart';
@@ -18,7 +20,11 @@ import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
     show PDASimulationNotifier, pdaSimulationProvider;
+import 'package:turing_lab/presentation/providers/grammar_provider.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
 
 class _FakePdaExamplesDataSource extends ExamplesAssetDataSource {
@@ -111,7 +117,12 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
   );
 
   await tester.pump();
-  await _pumpUntilFound(tester, find.text('APD - Palíndromo'));
+  await _pumpUntilFound(
+    tester,
+    find.text(
+      AppLocalizationsEn().localizedExampleName('APD - Palíndromo'),
+    ),
+  );
 
   return _PdaPanelHarness(
     notifier: pdaNotifier,
@@ -419,6 +430,77 @@ void main() {
     );
   });
 
+  testWidgets('PDA to CFG opens the generated grammar in its workspace', (
+    tester,
+  ) async {
+    await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: _buildPdaExample().payload,
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PDAAlgorithmPanel)),
+      listen: false,
+    );
+
+    await tester.ensureVisible(find.text('Convert to CFG'));
+    await tester.tap(find.text('Convert to CFG'));
+    await _pumpUntilFound(tester, find.text('Generated Grammar'));
+
+    expect(container.read(grammarProvider).productions, isNotEmpty);
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.grammarIndex,
+    );
+  });
+
+  testWidgets('PDA to CFG cancel preserves the loaded grammar', (
+    tester,
+  ) async {
+    await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: _buildPdaExample().payload,
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PDAAlgorithmPanel)),
+      listen: false,
+    );
+    const loadedProduction = Production(
+      id: 'loaded-production',
+      leftSide: ['S'],
+      rightSide: ['b'],
+    );
+    final loadedGrammar = Grammar(
+      id: 'loaded-grammar',
+      name: 'Loaded grammar',
+      terminals: const {'b'},
+      nonterminals: const {'S'},
+      startSymbol: 'S',
+      productions: {loadedProduction},
+      type: GrammarType.regular,
+      created: DateTime(2026),
+      modified: DateTime(2026),
+    );
+    container.read(grammarProvider.notifier).applyGrammar(loadedGrammar);
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Convert to CFG'));
+    await tester.tap(find.text('Convert to CFG'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('A grammar is already loaded. Do you want to replace it?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(grammarProvider).productions, [loadedProduction]);
+    expect(
+      container.read(homeNavigationProvider),
+      HomeNavigationNotifier.fsaIndex,
+    );
+  });
+
   testWidgets('previews normalization and applies it only after confirmation', (
     tester,
   ) async {
@@ -524,9 +606,11 @@ void main() {
   ) async {
     final harness = await _pumpPdaAlgorithmPanel(tester);
 
-    expect(find.text('APD - Palíndromo'), findsOneWidget);
+    final exampleLabel =
+        AppLocalizationsEn().localizedExampleName('APD - Palíndromo');
+    expect(find.text(exampleLabel), findsOneWidget);
 
-    await tester.tap(find.text('APD - Palíndromo'));
+    await tester.tap(find.text(exampleLabel));
     await _pumpUntilPdaLoaded(tester, harness.notifier);
 
     final pda = harness.notifier.state.pda;

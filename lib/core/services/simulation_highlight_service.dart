@@ -78,9 +78,11 @@ class SimulationHighlightService {
     final current = steps[stepIndex];
     final stateIds = <String>{};
 
-    void addState(String? id) {
-      if (id == null) return;
-      final trimmed = id.trim();
+    // `currentState` and `nextState` carry a display label, which may be
+    // padded; the canvas matches on the trimmed form.
+    void addLabelledState(String? label) {
+      if (label == null) return;
+      final trimmed = label.trim();
       if (trimmed.isNotEmpty) {
         stateIds.add(trimmed);
       }
@@ -88,13 +90,20 @@ class SimulationHighlightService {
 
     final activeStateIds = current.activeStateIds;
     if (activeStateIds != null) {
-      activeStateIds.forEach(addState);
+      // These are opaque ids straight from the simulator: they have to reach
+      // the canvas byte for byte or they stop matching its nodes, so only
+      // empty entries are dropped.
+      for (final id in activeStateIds) {
+        if (id.isNotEmpty) {
+          stateIds.add(id);
+        }
+      }
     } else {
-      addState(current.currentState);
-      addState(current.nextState);
+      addLabelledState(current.currentState);
+      addLabelledState(current.nextState);
       if ((current.nextState == null || current.nextState!.isEmpty) &&
           stepIndex + 1 < steps.length) {
-        addState(steps[stepIndex + 1].currentState);
+        addLabelledState(steps[stepIndex + 1].currentState);
       }
     }
 

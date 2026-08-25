@@ -15,6 +15,9 @@ Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offer
 - Release notes: `CHANGELOG.md`
 - Roadmap and deferred JFLAP parity work: `ROADMAP.md`
 - Current Apple v1.0 scope and limitations: `V1_SCOPE.md`
+- Quality gate: local and manual, via `tool/qa.sh`. GitHub-hosted test CI is
+  intentionally disabled; see [Testing](#testing) and
+  [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
 
 ## Public Links
 
@@ -175,34 +178,112 @@ depends on documented signing, QA, and distribution evidence.
 
 ## Testing
 
-### Test Suite Overview
+### QA policy: local and manual
 
-Use Flutter 3.27.0+ and Dart 3.6.0+. Run the suites relevant to your change and
-report the exact commands and outcomes in pull requests. GitHub-hosted CI is not
-configured for this repository, so validation is performed locally. Tests are
-organised to mirror the architecture:
+**Root Flutter QA is local and manual.** GitHub-hosted test CI is intentionally
+disabled for this repository: the Actions limits are too small for the combined
+Flutter, GraphView, golden, screenshot, integration and Apple surface. The root
+`.github/workflows/ci.yml` workflow was deleted and must not be reintroduced,
+here or on another hosted provider. The only workflow left,
+`.github/workflows/deploy-pages.yml`, deploys the website and is not test CI.
+See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for the full policy
+and the workflow inventory.
+
+Consequences for contributors:
+
+- Run the checks relevant to your change locally and report the exact commands
+  and outcomes in the pull request.
+- A check that was skipped, could not run, or was interrupted is **not** a pass.
+  Say so explicitly.
+- Never describe a local result as remotely verified. Nothing in this
+  repository is.
+
+### The canonical entrypoint: `tool/qa.sh`
+
+`tool/qa.sh` is the one documented QA command. It orchestrates the existing
+suites and scripts, reports every category independently as `passed`, `failed`,
+`skipped` (by explicit opt-in) or `not_run`, and fails closed with exit code
+127 when the Flutter or Dart toolchain is unavailable.
+
+```bash
+tool/qa.sh --help              # every option, category and preset
+tool/qa.sh --list              # categories and what each preset selects
+tool/qa.sh                     # default `code` preset
+tool/qa.sh --dry-run --all     # print the whole command surface, run nothing
+```
+
+Categories, each reported on its own line:
+
+| Category | What it runs |
+| --- | --- |
+| `prereqs` | Toolchain discovery, `flutter pub get`, generated-localization drift |
+| `format` | Changed-file `dart format` plus `tool/check_comment_docs_english.py` |
+| `analyze` | `flutter analyze --no-fatal-infos` on the root package |
+| `unit` | `test/unit/`, `test/core/`, `test/features/`, `test/app_store/`, `test/website/` |
+| `widget` | `test/widget/` (see `--widget-scope`) |
+| `integration` | `test/integration/`, device-free smoke and IO round-trips |
+| `graphview` | The vendored `graphview/` package: pub get, analyze, tests, benchmarks |
+| `responsive` | `test/responsive/` and `test/tablet_layout_test.dart` |
+| `golden` | `test/goldens/` comparison only; the entrypoint never re-records |
+| `screenshots` | App Store capture into a scratch directory, then validation |
+| `apple` | Apple L1 headless smoke, L2 device journeys, L3 manual matrix |
+
+Focused subsets, so a single change does not need the whole release matrix:
+
+```bash
+tool/qa.sh --preset quick                  # prereqs, format, analyze, unit
+tool/qa.sh --preset code                   # the default; adds widget + integration
+tool/qa.sh --preset canvas                 # graphview, responsive, goldens, canvas suites
+tool/qa.sh --preset grammar                # grammar/CFG-named unit and widget suites
+tool/qa.sh --preset tm                     # Turing-machine-named unit and widget suites
+tool/qa.sh --preset responsive             # the responsive viewport matrix
+tool/qa.sh --preset golden                 # golden comparison
+tool/qa.sh --preset screenshots            # App Store capture and validation
+tool/qa.sh --preset apple --apple-target macos --apple-device macos
+tool/qa.sh --only analyze,unit             # any explicit category list
+```
+
+Exit codes: `0` passed or skipped by opt-in, `1` something failed, `2` nothing
+failed but a selected category could not run, `64` usage error, `127` the
+required toolchain is missing and no opt-in flag was given. The `apple` category
+always ends `not_run` because level L3 is the manual matrix in
+[release/APPLE_QA_MATRIX.md](release/APPLE_QA_MATRIX.md), which no local command
+can close; add `--skip apple` when you want the rest to report a clean `0`.
+
+Each run writes a concise local summary to `build/qa/qa-summary.md`,
+`build/qa/qa-summary.json` and per-step logs under `build/qa/logs/`. Paste the
+category table into the pull request.
+
+### Test suite layout
+
+Use Flutter 3.27.0+ and Dart 3.6.0+. Tests mirror the architecture:
 
 - **Algorithm validation** – `test/unit/` keeps DFA/NFA conversions, grammar analysis, and regex tooling aligned with the references.
 - **Core services** – `test/core/services/` verifies utilities such as the simulation highlight broadcaster.
 - **Canvas features** – `test/features/canvas/graphview/` exercises controllers, mappers, and models for the interactive canvas.
 - **Integration** – `test/integration/io/` performs round-trips across JFLAP XML, JSON, SVG, and the offline example bundle.
+- **Responsive structure** – `test/responsive/` drives the shared viewport matrix and fails on layout overflow.
 - **Widget harnesses** – `test/widget/presentation/` drives UI flows while production widgets are completed.
+- **Goldens** – `test/goldens/` compares rendered pages, dialogs, canvases and simulation panels.
 
-### Placeholder and Pending Work
+`AGENTS.md` records the current baseline for each suite, including the ones that
+still fail. Compare a failing run against it before calling a failure a
+regression.
 
-- `test/widget/presentation/ux_error_handling_test.dart` is an active widget suite covering import-error UX flows.
+#### Running suites directly
 
-#### Running Tests
+`tool/qa.sh` is the documented gate, but the underlying commands stay available:
 
 ```bash
-# Run the broad diagnostic suite
+# Broad diagnostic suite. Slow, and includes documented baseline failures.
 flutter test
 
-# Run specific test suites
+# Specific suites
 flutter test test/unit/                    # Core algorithm suites
 flutter test test/features/                # Feature-level canvas suites
 flutter test test/integration/             # Integration tests
 flutter test test/widget/                  # Widget harnesses
+flutter test test/responsive/              # Responsive structural gate
 
 # Golden visual regression tests
 ./run_golden_tests.sh

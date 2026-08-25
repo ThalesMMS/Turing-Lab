@@ -17,6 +17,113 @@ enum LoopHeading {
   final double angle;
 }
 
+/// Loop radius as a fraction of the state's radius. Keeping it near half the
+/// state makes a self-loop read as a compact ring instead of a long arc.
+const double kSelfLoopRadiusFactor = 0.5;
+
+/// Fraction of the loop's own radius that sits behind the state's border. It
+/// fixes how much of the loop circle stays visible (~255 degrees).
+const double kSelfLoopSinkFactor = 0.55;
+
+/// Padding a loop is built with when nothing asks it to grow. Anything above
+/// it nests the loop outwards for stacked self-transitions.
+const double kSelfLoopBasePadding = 16.0;
+
+/// A self-loop drawn as a circular arc perched on a state's border: a ring of
+/// [radius] around [center], entered at [start], left at [end], and swept the
+/// way that stays outside the state.
+///
+/// Renderers that cannot use [Path] — the SVG exporter, for one — rebuild the
+/// same curve from these fields, so every surface draws the loop alike.
+class SelfLoopArc {
+  const SelfLoopArc({
+    required this.center,
+    required this.radius,
+    required this.start,
+    required this.end,
+    required this.startAngle,
+    required this.sweep,
+  });
+
+  final Offset center;
+  final double radius;
+  final Offset start;
+  final Offset end;
+
+  /// Angle of [start] around [center], in radians.
+  final double startAngle;
+
+  /// Signed sweep from [startAngle] to [end], in radians. Negative sweeps run
+  /// counter-clockwise on screen.
+  final double sweep;
+
+  /// Whether the arc covers more than half of its circle. SVG needs it as the
+  /// `large-arc-flag` of an `A` command.
+  bool get isLargeArc => sweep.abs() > pi;
+}
+
+/// Resolves the arc a self-loop on [nodeCenter] traces when it leaves the
+/// state's border at outward direction [angle].
+///
+/// [padding] above [kSelfLoopBasePadding] nests the loop outwards, growing its
+/// own radius first so stacked loops stay round.
+SelfLoopArc resolveSelfLoopArc({
+  required Offset nodeCenter,
+  required double nodeRadius,
+  required double angle,
+  double padding = kSelfLoopBasePadding,
+}) {
+  final anchorRadius = max(nodeRadius, 1.0);
+  final outward = Offset(cos(angle), sin(angle));
+  final tangent = Offset(-outward.dy, outward.dx);
+
+  final extraPadding = max(0.0, padding - kSelfLoopBasePadding);
+  final loopRadius = anchorRadius * kSelfLoopRadiusFactor + extraPadding * 0.85;
+  final centerDistance = anchorRadius +
+      loopRadius * (1 - kSelfLoopSinkFactor) +
+      extraPadding * 0.15;
+  final loopCenter = nodeCenter + outward * centerDistance;
+
+  // Where the loop circle crosses the state's border. `chordDistance` is
+  // measured from the state's center along `outward`, `chordHalfWidth`
+  // sideways from there.
+  final chordDistance = (centerDistance * centerDistance +
+          anchorRadius * anchorRadius -
+          loopRadius * loopRadius) /
+      (2 * centerDistance);
+  final chordHalfWidthSquared =
+      anchorRadius * anchorRadius - chordDistance * chordDistance;
+  final chordHalfWidth =
+      chordHalfWidthSquared > 0 ? sqrt(chordHalfWidthSquared) : 0.0;
+
+  final chordCenter = nodeCenter + outward * chordDistance;
+  final start = chordCenter + tangent * chordHalfWidth;
+  final end = chordCenter - tangent * chordHalfWidth;
+
+  final startAngle = atan2(start.dy - loopCenter.dy, start.dx - loopCenter.dx);
+  final endAngle = atan2(end.dy - loopCenter.dy, end.dx - loopCenter.dx);
+  // Sweep the way that passes the apex, which is the half of the loop circle
+  // lying outside the state.
+  var sweep = _positiveSweep(endAngle - startAngle);
+  if (_positiveSweep(angle - startAngle) > sweep) {
+    sweep -= 2 * pi;
+  }
+
+  return SelfLoopArc(
+    center: loopCenter,
+    radius: loopRadius,
+    start: start,
+    end: end,
+    startAngle: startAngle,
+    sweep: sweep,
+  );
+}
+
+double _positiveSweep(double value) {
+  final sweep = value % (2 * pi);
+  return sweep <= 0 ? sweep + 2 * pi : sweep;
+}
+
 Offset resolveCircularConnectionPoint({
   required Offset center,
   required double radius,

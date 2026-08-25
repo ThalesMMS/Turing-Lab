@@ -591,38 +591,60 @@ class _TMPageState extends ConsumerState<TMPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Turing Machine Overview',
+            appLocalizationsOf(context).tmOverviewTitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Monitor the structure of your machine and resolve issues before running simulations or algorithms.',
+            appLocalizationsOf(context).tmOverviewBody,
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
-          _buildInfoRow('States', '$_stateCount', theme),
-          _buildInfoRow('Transitions', '$_transitionCount', theme),
-          _buildInfoRow('Tape Symbols', _formatSet(_tapeSymbols), theme),
-          _buildInfoRow('Move Directions', _formatSet(_moveDirections), theme),
           _buildInfoRow(
-            'Initial State',
-            _hasInitialState ? 'Yes' : 'No',
+            appLocalizationsOf(context).states,
+            '$_stateCount',
             theme,
           ),
           _buildInfoRow(
-            'Accepting State',
-            _hasAcceptingState ? 'Yes' : 'No',
+            appLocalizationsOf(context).transitions,
+            '$_transitionCount',
             theme,
           ),
           _buildInfoRow(
-            'Simulation Ready',
-            _isMachineReady ? 'Yes' : 'No',
+            appLocalizationsOf(context).tapeSymbols,
+            _formatSet(_tapeSymbols),
             theme,
           ),
           _buildInfoRow(
-            'Nondeterministic Transitions',
+            appLocalizationsOf(context).moveDirections,
+            _formatSet(_moveDirections),
+            theme,
+          ),
+          _buildInfoRow(
+            appLocalizationsOf(context).initialState,
+            _hasInitialState
+                ? appLocalizationsOf(context).yes
+                : appLocalizationsOf(context).no,
+            theme,
+          ),
+          _buildInfoRow(
+            appLocalizationsOf(context).acceptingState,
+            _hasAcceptingState
+                ? appLocalizationsOf(context).yes
+                : appLocalizationsOf(context).no,
+            theme,
+          ),
+          _buildInfoRow(
+            appLocalizationsOf(context).simulationReady,
+            _isMachineReady
+                ? appLocalizationsOf(context).yes
+                : appLocalizationsOf(context).no,
+            theme,
+          ),
+          _buildInfoRow(
+            appLocalizationsOf(context).nondeterministicTransitions,
             _nondeterministicTransitionIds.isEmpty
                 ? '0'
                 : '${_nondeterministicTransitionIds.length}',
@@ -631,7 +653,7 @@ class _TMPageState extends ConsumerState<TMPage>
           if (_nondeterministicTransitionIds.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              'Resolve nondeterminism before running deterministic algorithms.',
+              appLocalizationsOf(context).resolveNondeterminism,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),

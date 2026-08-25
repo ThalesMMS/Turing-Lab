@@ -98,7 +98,7 @@ void main() {
         home: Scaffold(
           body: AlgorithmResultsSection(
             hasResults: false,
-            emptyBuilder: (_) => Text('No results'),
+            emptyBuilder: (_) => const Text('No results'),
             resultsBuilder: (_) => throw StateError('results should be lazy'),
           ),
         ),
@@ -114,7 +114,7 @@ void main() {
           body: AlgorithmResultsSection(
             hasResults: true,
             emptyBuilder: (_) => throw StateError('empty should be lazy'),
-            resultsBuilder: (_) => Text('Results'),
+            resultsBuilder: (_) => const Text('Results'),
           ),
         ),
       ),
@@ -140,7 +140,7 @@ void main() {
 
   testWidgets('AlgorithmExamplesSection shows loading state', (tester) async {
     final examplesFuture = Future<ListResult<AssetExample<String>>>.value(
-      Success(<AssetExample<String>>[]),
+      const Success(<AssetExample<String>>[]),
     );
 
     await tester.pumpWidget(
@@ -168,7 +168,7 @@ void main() {
         home: Scaffold(
           body: AlgorithmExamplesSection<String>(
             examplesFuture: Future.value(
-              Failure<List<AssetExample<String>>>('Example failure'),
+              const Failure<List<AssetExample<String>>>('Example failure'),
             ),
             loadingExampleName: null,
             onExampleSelected: (_) {},
@@ -188,7 +188,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: AlgorithmExamplesSection<String>(
-            examplesFuture: Future.value(Success(<AssetExample<String>>[])),
+            examplesFuture: Future.value(const Success(<AssetExample<String>>[])),
             loadingExampleName: null,
             onExampleSelected: (_) {},
             failureMessage: 'Could not load examples',

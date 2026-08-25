@@ -32,11 +32,15 @@ import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart' show pdaSimulationProvider;
+import '../providers/grammar_provider.dart';
+import '../providers/home_navigation_provider.dart';
 import 'algorithm_panel_scaffold.dart';
 import 'app_snackbar.dart';
 import 'base_simulation_panel.dart';
 import 'common/algorithm_button_config.dart';
+import 'conversion_replacement_dialog.dart';
 import 'file_operations_panel.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Panel for PDA analysis algorithms
 class PDAAlgorithmPanel extends ConsumerStatefulWidget {
@@ -88,7 +92,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     final pda = ref.watch(pdaEditorProvider).pda;
 
     return AlgorithmPanelScaffold(
-      title: 'PDA Analysis',
+      title: appLocalizationsOf(context).pdaAnalysisTitle,
       children: [
         _buildAlgorithmButtons(context),
         _buildResultsSection(context),
@@ -118,8 +122,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     final strings = appLocalizationsOf(context);
     return [
       AlgorithmButtonConfig(
-        title: 'Convert to CFG',
-        description: 'Convert PDA to equivalent context-free grammar',
+        title: strings.convertToCfgTitle,
+        description: strings.convertToCfgDescription,
         icon: Icons.transform,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
@@ -134,32 +138,32 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         onPressed: _simplifyPDA,
       ),
       AlgorithmButtonConfig(
-        title: 'Check Determinism',
-        description: 'Determine if PDA is deterministic',
+        title: strings.checkDeterminismTitle,
+        description: strings.checkDeterminismDescription,
         icon: Icons.fact_check_outlined,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
         onPressed: _checkDeterminism,
       ),
       AlgorithmButtonConfig(
-        title: 'Find Reachable States',
-        description: 'Identify reachable states from initial state',
+        title: strings.findReachableStatesTitle,
+        description: strings.findReachableStatesDescription,
         icon: Icons.explore,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
         onPressed: _findReachableStates,
       ),
       AlgorithmButtonConfig(
-        title: 'Language Analysis',
-        description: 'Prove emptiness and find a shortest accepted word',
+        title: strings.languageAnalysisTitle,
+        description: strings.languageAnalysisDescription,
         icon: Icons.analytics,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
         onPressed: _analyzeLanguage,
       ),
       AlgorithmButtonConfig(
-        title: 'Stack Operations',
-        description: 'Analyze stack operations and depth',
+        title: strings.stackOperationsTitle,
+        description: strings.stackOperationsDescription,
         icon: Icons.storage,
         isEnabled: !_isAnalyzing,
         isExecuting: _isAnalyzing,
@@ -178,10 +182,10 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   }
 
   Widget _buildEmptyResults(BuildContext context) {
-    return const SimulationEmptyResults(
+    return SimulationEmptyResults(
       icon: Icons.analytics_outlined,
-      title: 'No analysis results yet',
-      message: 'Select an algorithm above to analyze your PDA',
+      title: appLocalizationsOf(context).noAnalysisResultsYet,
+      message: appLocalizationsOf(context).selectAlgorithmToAnalyzePda,
     );
   }
 
@@ -198,7 +202,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
               appLocalizationsOf(context)
                   .localizeWorkflowText(_analysisResult!),
               style: theme.textTheme.bodyMedium?.copyWith(
-                fontFamily: 'monospace',
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
               ),
             ),
             if (grammar != null) ...[
@@ -213,7 +217,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
               FilledButton.tonalIcon(
                 onPressed: _openWitnessTrace,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Open witness in Simulator'),
+                label: Text(appLocalizationsOf(context).openWitnessInSimulator),
               ),
             ],
           ],
@@ -222,23 +226,31 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     );
   }
 
-  void _convertToCFG() {
+  Future<void> _convertToCFG() async {
     final editorState = ref.read(pdaEditorProvider);
     final pda = editorState.pda;
 
     if (pda == null) {
       _showSnackbar(
-        'Draw a PDA before converting to a grammar.',
+        appLocalizationsOf(context).drawPdaBeforeConvertGrammar,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.grammar,
+    );
+    if (!mounted || !shouldReplace) return;
+
     setState(() {
       _latestConvertedGrammar = null;
     });
 
-    _performAnalysis('PDA to CFG Conversion', (_) async {
+    _performAnalysis(appLocalizationsOf(context).pdaToCfgConversionTitle,
+        (_) async {
       var conversionPda = pda;
       var conversionResult = PDAtoCFGConverter.convert(conversionPda);
       String? normalizationSummary;
@@ -281,6 +293,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       if (conversionResult.isSuccess) {
         _latestConvertedGrammar = conversionResult.data!.grammar;
         final grammar = _latestConvertedGrammar!;
+        _openGeneratedGrammar(grammar);
         final extraSummary =
             'Generated grammar has ${grammar.productions.length} productions '
             'and ${grammar.nonterminals.length} non-terminals.';
@@ -296,6 +309,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       _showSnackbar(message, tone: AppSnackBarTone.error);
       return message;
     }, resetConvertedGrammar: false);
+  }
+
+  void _openGeneratedGrammar(Grammar grammar) {
+    ref.read(grammarProvider.notifier).applyGrammar(grammar);
+    ref.read(homeNavigationProvider.notifier).goToGrammar();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   bool _canNormalizeForCfg(PDA pda) {
@@ -556,13 +577,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
     if (pda == null) {
       _showSnackbar(
-        'Create a PDA to analyze determinism.',
+        appLocalizationsOf(context).createPdaToAnalyzeDeterminism,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
-    _performAnalysis('Determinism Check', (setHighlight) async {
+    final strings = appLocalizationsOf(context);
+    _performAnalysis(strings.determinismCheckTitle, (setHighlight) async {
       final nondeterministicTransitions =
           editorState.nondeterministicTransitionIds;
       setHighlight(
@@ -571,17 +593,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         ),
       );
       final buffer = StringBuffer();
-      buffer.writeln('Determinism Analysis');
-      buffer.writeln('Total transitions: ${pda.transitions.length}');
+      buffer.writeln(strings.determinismAnalysis);
+      buffer.writeln(strings.totalTransitionsCount(pda.transitions.length));
       buffer.writeln('');
 
       if (nondeterministicTransitions.isEmpty) {
-        buffer.writeln(
-          'Result: PDA is deterministic (no conflicting transitions).',
-        );
+        buffer.writeln(strings.pdaIsDeterministic);
       } else {
-        buffer.writeln('Result: PDA is NON-deterministic.');
-        buffer.writeln('Conflicting transitions:');
+        buffer.writeln(strings.pdaIsNondeterministic);
+        buffer.writeln(strings.conflictingTransitions);
         for (final transition in pda.pdaTransitions) {
           if (nondeterministicTransitions.contains(transition.id)) {
             final input =
@@ -605,7 +625,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       if (editorState.lambdaTransitionIds.isNotEmpty) {
         buffer.writeln('');
         buffer.writeln(
-          'Lambda transitions present: ${editorState.lambdaTransitionIds.length}',
+          strings.lambdaTransitionsPresent(
+            editorState.lambdaTransitionIds.length,
+          ),
         );
       }
 
@@ -619,16 +641,19 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
     if (pda == null) {
       _showSnackbar(
-        'Create a PDA to analyze reachability.',
+        appLocalizationsOf(context).createPdaToAnalyzeReachability,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
-    _performAnalysis('Reachable States Analysis', (setHighlight) async {
+    final strings = appLocalizationsOf(context);
+    _performAnalysis(strings.reachableStatesAnalysisTitle,
+        (setHighlight) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
-        final message = 'Analysis failed: ${analysisResult.error}';
+        final message =
+            strings.analysisFailedPrefix(analysisResult.error ?? '');
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -651,11 +676,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         ..sort();
 
       final buffer = StringBuffer();
-      buffer.writeln('Initial state: ${pda.initialState?.label ?? '—'}');
-      buffer.writeln('Reachable states (${reachable.length}):');
+      buffer.writeln(
+        strings.initialStateWithLabel(pda.initialState?.label ?? '—'),
+      );
+      buffer.writeln(strings.reachableStatesCount(reachable.length));
       buffer.writeln(reachable.isEmpty ? '  ∅' : '  {${reachable.join(', ')}}');
       buffer.writeln('');
-      buffer.writeln('Unreachable states (${unreachable.length}):');
+      buffer.writeln(strings.unreachableStatesCount(unreachable.length));
       buffer.writeln(
         unreachable.isEmpty ? '  ∅' : '  {${unreachable.join(', ')}}',
       );
@@ -670,13 +697,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
     if (pda == null) {
       _showSnackbar(
-        'Create a PDA to analyze its language.',
+        appLocalizationsOf(context).createPdaToAnalyzeLanguage,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
-    _performAnalysis('Language Analysis', (_) async {
+    final strings = appLocalizationsOf(context);
+    _performAnalysis(strings.languageAnalysisTitle, (_) async {
       final acceptanceMode = ref.read(pdaSimulationProvider).mode;
       final analysis = PDALanguageEmptinessAnalyzer.analyze(
         pda,
@@ -684,8 +712,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         isCancelled: () => !mounted,
       );
       if (analysis is PDALanguageEmptinessFailure) {
-        final message = 'Emptiness proof unavailable: ${analysis.message}\n'
-            'No conclusion about language emptiness was made.';
+        final message = strings.emptinessProofUnavailable(analysis.message);
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -700,29 +727,29 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       final buffer = StringBuffer();
       buffer.writeln(
         proof.isEmpty
-            ? 'Language is empty (proved).'
-            : 'Language is non-empty (proved).',
-      );
-      buffer
-          .writeln('Acceptance mode: ${_acceptanceModeLabel(acceptanceMode)}');
-      buffer.writeln(
-        'Proof: mode-aware PDA normalization → CFG productivity fixed point.',
+            ? strings.languageIsEmptyProved
+            : strings.languageIsNonEmptyProved,
       );
       buffer.writeln(
-        'Productive nonterminals: ${proof.productiveNonterminals.length}',
+        strings.acceptanceModeLabel(
+            _formatAcceptanceMode(strings, acceptanceMode)),
+      );
+      buffer.writeln(strings.pdaEmptinessProofLine);
+      buffer.writeln(
+        strings
+            .productiveNonterminalsCount(proof.productiveNonterminals.length),
       );
 
       if (!proof.isEmpty) {
         final witness = proof.witnessWord!.isEmpty ? 'ε' : proof.witnessWord!;
         buffer.writeln('');
-        buffer.writeln('Shortest witness: $witness');
+        buffer.writeln(strings.shortestWitness(witness));
         buffer.writeln(
-          'Terminal-symbol length: ${proof.terminalSymbolLength} '
-          '(multi-character terminals count as one symbol).',
+          strings.terminalSymbolLength(proof.terminalSymbolLength ?? 0),
         );
-        buffer.writeln('Equal-length ties use deterministic shortlex order.');
+        buffer.writeln(strings.equalLengthShortlex);
         buffer.writeln('');
-        buffer.writeln('Leftmost CFG derivation:');
+        buffer.writeln(strings.leftmostCfgDerivation);
         buffer.writeln('  ${proof.grammar.startSymbol}');
         const displayedStepLimit = 50;
         for (final step in proof.derivation.take(displayedStepLimit)) {
@@ -730,7 +757,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         }
         if (proof.derivation.length > displayedStepLimit) {
           buffer.writeln(
-            '  … ${proof.derivation.length - displayedStepLimit} more step(s)',
+            strings.moreDerivationSteps(
+              proof.derivation.length - displayedStepLimit,
+            ),
           );
         }
       }
@@ -752,14 +781,8 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           mode: proof.acceptanceMode,
           result: trace,
         );
-    _showSnackbar('Shortest-witness trace opened in the Simulator panel.');
+    _showSnackbar(appLocalizationsOf(context).shortestWitnessOpened);
   }
-
-  String _acceptanceModeLabel(PDAAcceptanceMode mode) => switch (mode) {
-        PDAAcceptanceMode.finalState => 'final state',
-        PDAAcceptanceMode.emptyStack => 'empty stack',
-        PDAAcceptanceMode.both => 'final state and empty stack',
-      };
 
   String _formatSententialForm(List<String> symbols) =>
       symbols.isEmpty ? 'ε' : symbols.join(' ');
@@ -770,16 +793,18 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
     if (pda == null) {
       _showSnackbar(
-        'Create a PDA to inspect stack operations.',
+        appLocalizationsOf(context).createPdaToInspectStack,
         tone: AppSnackBarTone.error,
       );
       return;
     }
 
-    _performAnalysis('Stack Operations Analysis', (_) async {
+    final strings = appLocalizationsOf(context);
+    _performAnalysis(strings.stackOperationsAnalysisTitle, (_) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
-        final message = 'Analysis failed: ${analysisResult.error}';
+        final message =
+            strings.analysisFailedPrefix(analysisResult.error ?? '');
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -790,22 +815,34 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       final stackSymbols = analysis.stackAnalysis.stackSymbols.toList()..sort();
 
       final buffer = StringBuffer();
-      buffer.writeln('Initial stack symbol: ${pda.initialStackSymbol}');
-      buffer.writeln('Push operations (${pushOps.length}):');
-      buffer.writeln(pushOps.isEmpty ? '  None' : '  {${pushOps.join(', ')}}');
-      buffer.writeln('Pop operations (${popOps.length}):');
-      buffer.writeln(popOps.isEmpty ? '  None' : '  {${popOps.join(', ')}}');
-      buffer.writeln('Stack symbols touched (${stackSymbols.length}):');
       buffer.writeln(
-        stackSymbols.isEmpty ? '  None' : '  {${stackSymbols.join(', ')}}',
+        strings.initialStackSymbolWithValue(pda.initialStackSymbol),
+      );
+      buffer.writeln(strings.pushOperationsCount(pushOps.length));
+      buffer.writeln(
+        pushOps.isEmpty ? strings.noneValue : '  {${pushOps.join(', ')}}',
+      );
+      buffer.writeln(strings.popOperationsCount(popOps.length));
+      buffer.writeln(
+        popOps.isEmpty ? strings.noneValue : '  {${popOps.join(', ')}}',
+      );
+      buffer.writeln(strings.stackSymbolsTouched(stackSymbols.length));
+      buffer.writeln(
+        stackSymbols.isEmpty
+            ? strings.noneValue
+            : '  {${stackSymbols.join(', ')}}',
       );
       buffer.writeln('');
       buffer.writeln(
-        'Total transitions: ${analysis.transitionAnalysis.totalTransitions}',
+        strings.totalTransitionsCount(
+          analysis.transitionAnalysis.totalTransitions,
+        ),
       );
       buffer.writeln(
-        'PDA transitions: ${analysis.transitionAnalysis.pdaTransitions}, '
-        'FSA transitions: ${analysis.transitionAnalysis.fsaTransitions}',
+        strings.pdaTransitionsCount(
+          analysis.transitionAnalysis.pdaTransitions,
+          analysis.transitionAnalysis.fsaTransitions,
+        ),
       );
 
       return buffer.toString();
@@ -855,13 +892,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         setState(() {
           _isAnalyzing = false;
           _analysisResult =
-              '=== $algorithmName ===\n\nError running analysis: $error';
+              '=== $algorithmName ===\n\n${appLocalizationsOf(context).errorRunningAnalysis('$error')}';
         });
       }
     });
   }
 
   Widget _buildGrammarSummary(BuildContext context, Grammar grammar) {
+    final l10n = appLocalizationsOf(context);
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final terminals = grammar.terminals.toList()..sort();
@@ -886,12 +924,12 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Generated Grammar',
+          l10n.generatedGrammar,
           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Text(
-          'Start symbol: ${grammar.startSymbol}',
+          l10n.startSymbolValue(grammar.startSymbol),
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 8),
@@ -900,13 +938,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           runSpacing: 4,
           children: [
             Text(
-              'Non-terminals: {${nonterminals.join(', ')}}',
+              l10n.nonterminalsValue('{${nonterminals.join(', ')}}'),
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
             Text(
-              'Terminals: {${terminals.join(', ')}}',
+              l10n.terminalsValue('{${terminals.join(', ')}}'),
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.8),
               ),
@@ -915,7 +953,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Productions (${productions.length}):',
+          l10n.productionsCountLabel(productions.length),
           style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
@@ -926,7 +964,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
               '• ${formatSymbols(production.leftSide)} → '
               '${production.isLambda ? 'ε' : formatSymbols(production.rightSide)}',
               style: textTheme.bodyMedium?.copyWith(
-                fontFamily: 'monospace',
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
                 color: colorScheme.onSurface.withValues(alpha: 0.9),
               ),
             ),

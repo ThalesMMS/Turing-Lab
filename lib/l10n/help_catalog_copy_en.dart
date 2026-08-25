@@ -3090,12 +3090,12 @@ final enHelpCatalogCopy = HelpCatalogCopy({
     body: 'Turing Lab is developed by Thales Matheus Mendonça Santos. Use this '
         'topic to identify the project and find its public source repository. '
         'Open Licenses, then use the Project repository control to open '
-        'https://github.com/ThalesMMS/jflutter. The link leaves the app for the '
-        'platform browser when the platform can open it. Network access or a '
-        'missing browser association '
+        'https://github.com/ThalesMMS/Turing-Lab. The link leaves the app for '
+        'the platform browser when the platform can open it. Network access or '
+        'a missing browser association '
         'can prevent the repository from opening without changing local work. '
         'Continue with Licenses or Acknowledgments.',
-    keywords: ['developer', 'Thales', 'repository', 'GitHub', 'jflutter'],
+    keywords: ['developer', 'Thales', 'repository', 'GitHub', 'Turing-Lab'],
   ),
   HelpTopicIds.aboutLicenses: HelpNodeCopy(
     title: 'Licenses',

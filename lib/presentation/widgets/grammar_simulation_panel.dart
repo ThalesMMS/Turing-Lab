@@ -29,6 +29,7 @@ import 'base_simulation_panel.dart';
 import 'derivation_tree_view.dart';
 import 'grammar_sentential_form_card.dart';
 import 'step_explanation_card.dart';
+import '../../core/constants/monospace_typography.dart';
 
 /// Panel for grammar parsing and string testing
 class GrammarSimulationPanel extends ConsumerStatefulWidget {
@@ -212,9 +213,7 @@ class _GrammarSimulationPanelState
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.localizeWorkflowText(
-              'Examples: aabb, abab, aabbb (for S → aSb | ab)',
-            ),
+            l10n.grammarParserExamplesHint,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
@@ -240,9 +239,7 @@ class _GrammarSimulationPanelState
               )
             : const Icon(Icons.play_arrow),
         label: Text(
-          l10n.localizeWorkflowText(
-            _isParsing ? 'Parsing...' : 'Parse String',
-          ),
+          _isParsing ? l10n.parsingEllipsis : l10n.parseString,
         ),
       ),
     );
@@ -269,9 +266,9 @@ class _GrammarSimulationPanelState
   }
 
   Widget _buildEmptyResults(BuildContext context) {
-    return const SimulationEmptyResults(
-      title: 'No parse results yet',
-      message: 'Enter a string and click Parse to see results',
+    return SimulationEmptyResults(
+      title: appLocalizationsOf(context).noParseResultsYet,
+      message: appLocalizationsOf(context).enterAStringAndClickParse,
     );
   }
 
@@ -306,7 +303,9 @@ class _GrammarSimulationPanelState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isAccepted ? 'Accepted' : 'Rejected',
+                  isAccepted
+                      ? appLocalizationsOf(context).accepted
+                      : appLocalizationsOf(context).rejected,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -319,7 +318,9 @@ class _GrammarSimulationPanelState
           ),
           const SizedBox(height: 8),
           Text(
-            'Execution time: ${_formatExecutionTime(report.executionTime)}',
+            appLocalizationsOf(context).executionTimeLabel(
+              _formatExecutionTime(report.executionTime),
+            ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           if (cykSteps != null && cykSteps.isNotEmpty) ...[
@@ -333,13 +334,16 @@ class _GrammarSimulationPanelState
             if (!isAccepted) ...[
               const SizedBox(height: 8),
               Text(
-                'Farthest position: ${report.farthestPosition} / ${report.inputString.length}',
+                appLocalizationsOf(context).farthestPositionLabel(
+                  report.farthestPosition,
+                  report.inputString.length,
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               if (report.expectedSymbols.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Expected:',
+                  appLocalizationsOf(context).expectedColon,
                   style: Theme.of(context)
                       .textTheme
                       .titleSmall
@@ -358,7 +362,9 @@ class _GrammarSimulationPanelState
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(fontFamily: 'monospace'),
+                                ?.copyWith(
+                                    fontFamilyFallback:
+                                        kMonospaceFontFamilyFallback),
                           ),
                         ),
                       )
@@ -382,8 +388,10 @@ class _GrammarSimulationPanelState
                 tilePadding: EdgeInsets.zero,
                 title: Text(
                   report.isAmbiguous
-                      ? 'Derivation Trees (showing first ${report.trees.length}; ambiguous)'
-                      : 'Derivation Tree',
+                      ? appLocalizationsOf(context).derivationTreesAmbiguous(
+                          report.trees.length,
+                        )
+                      : appLocalizationsOf(context).derivationTree,
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
@@ -440,7 +448,9 @@ class _GrammarSimulationPanelState
             _parseReport = null;
             _cykStepsResult = null;
           });
-          _showError(cykOutcome.error ?? 'Failed to parse string');
+          _showError(
+            cykOutcome.error ?? appLocalizationsOf(context).failedToParseString,
+          );
           return;
         }
 
@@ -479,7 +489,9 @@ class _GrammarSimulationPanelState
           _parseReport = null;
           _cykStepsResult = null;
         });
-        _showError(parseOutcome.error ?? 'Failed to parse string');
+        _showError(
+          parseOutcome.error ?? appLocalizationsOf(context).failedToParseString,
+        );
         return;
       }
 
@@ -503,7 +515,9 @@ class _GrammarSimulationPanelState
         _cykStepsResult = null;
       });
 
-      _showError('Failed to parse string: $e');
+      _showError(
+        appLocalizationsOf(context).failedToParseStringError('$e'),
+      );
     }
   }
 
@@ -543,7 +557,7 @@ class _GrammarSimulationPanelState
                 size: 18, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 8),
             Text(
-              'CYK Steps',
+              appLocalizationsOf(context).cykSteps,
               style: Theme.of(context)
                   .textTheme
                   .titleMedium
@@ -760,7 +774,7 @@ class _GrammarSimulationPanelState
             child: Text(
               value,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
                   ),
             ),
           ),
@@ -772,7 +786,9 @@ class _GrammarSimulationPanelState
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          appLocalizationsOf(context).localizeWorkflowText(message),
+        ),
         backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );

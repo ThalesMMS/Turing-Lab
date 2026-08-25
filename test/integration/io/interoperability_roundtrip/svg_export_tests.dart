@@ -115,6 +115,84 @@ void _runSvgExportTests() {
       expect(svg, isNot(contains('NaN')));
     });
 
+    test('SVG export draws self-loops as the canvas ring', () {
+      final loopAutomaton = _automatonData(
+        id: 'loop-shape',
+        name: 'Loop shape',
+        type: 'nfa',
+        alphabet: const ['a', 'b'],
+        states: [
+          _stateData('q0', isInitial: true),
+          _stateData('q1', isFinal: true),
+        ],
+        transitions: const {
+          'q0|a': ['q0'],
+          'q0|b': ['q0'],
+          'q1|a': ['q1'],
+          'q0|': ['q1'],
+        },
+        initialId: 'q0',
+        nextId: 2,
+      );
+
+      final svg = SvgExporter.exportFsaToSvg(_fsaFromData(loopAutomaton));
+      final arcs = RegExp(r'<path d="M [\d.-]+ [\d.-]+ A ([\d.]+) ')
+          .allMatches(svg)
+          .map((match) => double.parse(match.group(1)!))
+          .toList();
+
+      // One ring per looping state: q0's two symbols share a single loop the
+      // way the canvas merges them, and every loop is a circular arc.
+      expect(arcs, hasLength(2));
+      for (final radius in arcs) {
+        expect(radius, closeTo(25 * kSelfLoopRadiusFactor, 0.01));
+      }
+      expect(svg, contains('>a, b<'));
+
+      // The q0 -> q1 transition is routed as a curve too, so the document
+      // holds exactly the two loops plus that transition.
+      expect(RegExp('<path').allMatches(svg), hasLength(3));
+    });
+
+    test('SVG export keeps a self-loop clear of the state\'s traffic', () {
+      // q0 is initial (marker to the west) and its only transition leaves
+      // east, so the loop has to take the top or the bottom of the border.
+      final automaton = _automatonData(
+        id: 'loop-placement',
+        name: 'Loop placement',
+        type: 'nfa',
+        alphabet: const ['a', 'b'],
+        states: [
+          _stateData('q0', isInitial: true),
+          _stateData('q1', isFinal: true),
+        ],
+        transitions: const {
+          'q0|a': ['q0'],
+          'q0|b': ['q1'],
+        },
+        initialId: 'q0',
+        nextId: 2,
+      );
+
+      final svg = SvgExporter.exportFsaToSvg(_fsaFromData(automaton));
+      final loop = RegExp(
+        r'<path d="M ([\d.-]+) ([\d.-]+) A [\d.]+ [\d.]+ 0 \d \d '
+        r'([\d.-]+) ([\d.-]+)"',
+      ).firstMatch(svg)!;
+
+      // The loop's anchors straddle its heading, so the chord between them
+      // turned a quarter turn gives the direction the loop points in.
+      final chordX =
+          double.parse(loop.group(1)!) - double.parse(loop.group(3)!);
+      final chordY =
+          double.parse(loop.group(2)!) - double.parse(loop.group(4)!);
+      final outwardX = chordY;
+      final outwardY = -chordX;
+
+      expect(outwardY, lessThan(0), reason: 'loop should point upwards');
+      expect(outwardY.abs(), greaterThan(outwardX.abs()));
+    });
+
     test('SVG export handles complex automatons', () {
       final complexAutomaton = _createComplexDFA();
 
@@ -126,7 +204,7 @@ void _runSvgExportTests() {
 
       // Should contain multiple states and transitions
       expect(svg, contains('<circle')); // States
-      expect(svg, contains('<line')); // Transitions
+      expect(svg, contains('<path')); // Transitions, routed as curves
       expect(svg, contains('<text')); // Labels
     });
 

@@ -15,23 +15,53 @@ abstract interface class FileOperationsGateway {
   Future<Result<FSA>> loadAutomatonFromJson(String filePath);
   Future<StringResult> saveGrammarToJFLAP(Grammar grammar, String filePath);
   Future<Result<Grammar>> loadGrammarFromJFLAP(String filePath);
-  Future<StringResult> exportFsaToSVG(FSA automaton, String filePath);
+  Future<StringResult> exportFsaToSVG(
+    FSA automaton,
+    String filePath, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
   Future<StringResult> exportGrammarModelToSVG(
     Grammar grammar,
-    String filePath,
-  );
-  Future<StringResult> exportPdaToSVG(PDA pda, String filePath);
+    String filePath, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
+  Future<StringResult> exportPdaToSVG(
+    PDA pda,
+    String filePath, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
   Future<StringResult> exportTuringMachineToSVG(
     TuringMachineEntity machine,
-    String filePath,
-  );
+    String filePath, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
   String serializeAutomatonToJFLAPString(FSA automaton);
   String serializeAutomatonToJsonString(FSA automaton);
   String serializeGrammarToJFLAPString(Grammar grammar);
-  String exportFsaToSvgString(FSA automaton);
-  String exportGrammarModelToSvgString(Grammar grammar);
-  String exportPdaToSvgString(PDA pda);
-  String exportTuringMachineToSvgString(TuringMachineEntity machine);
+  String exportFsaToSvgString(
+    FSA automaton, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
+  String exportGrammarModelToSvgString(
+    Grammar grammar, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
+  String exportPdaToSvgString(
+    PDA pda, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
+  String exportTuringMachineToSvgString(
+    TuringMachineEntity machine, {
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+  });
   Future<Result<FSA>> loadAutomatonFromBytes(Uint8List bytes);
   Future<Result<FSA>> loadAutomatonFromJsonBytes(Uint8List bytes);
   Future<Result<Grammar>> loadGrammarFromBytes(Uint8List bytes);

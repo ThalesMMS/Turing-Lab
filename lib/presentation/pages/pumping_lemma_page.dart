@@ -69,6 +69,7 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
   }
 
   Widget _buildMobileLayout() {
+    final l10n = AppLocalizations.of(context);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -85,7 +86,7 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
                         icon: Icon(
                           _showGame ? Icons.visibility_off : Icons.games,
                         ),
-                        label: Text(_showGame ? 'Hide Game' : 'Show Game'),
+                        label: Text(_showGame ? l10n.hideGame : l10n.showGame),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -93,7 +94,7 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
                       child: ElevatedButton.icon(
                         onPressed: _openHelp,
                         icon: const Icon(Icons.help_outline),
-                        label: const Text('Show Help'),
+                        label: Text(l10n.showHelp),
                       ),
                     ),
                   ],
@@ -108,7 +109,7 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
                       _showProgress ? Icons.visibility_off : Icons.analytics,
                     ),
                     label: Text(
-                      _showProgress ? 'Hide Progress' : 'Show Progress',
+                      _showProgress ? l10n.hideProgress : l10n.showProgress,
                     ),
                   ),
                 ),

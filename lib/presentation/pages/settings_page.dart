@@ -15,6 +15,7 @@ import 'package:turing_lab/core/models/settings_model.dart';
 import 'package:turing_lab/core/repositories/settings_repository.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/pages/about_page.dart';
 import 'package:turing_lab/presentation/providers/settings_provider.dart';
 import 'package:turing_lab/presentation/widgets/app_snackbar.dart';
 import 'package:turing_lab/presentation/widgets/switch_setting_tile.dart';
@@ -232,6 +233,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               const SizedBox(height: 24),
               _buildSectionHeader(l10n.settingsSectionGeneral),
               _buildGeneralSettings(l10n),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.settingsSectionAbout),
+              _buildAboutSettings(l10n),
               const SizedBox(height: 24),
               _buildSectionHeader(l10n.settingsSectionActions),
               _buildActionButtons(l10n),
@@ -469,6 +473,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAboutSettings(AppLocalizations l10n) {
+    return Card(
+      child: ListTile(
+        key: const ValueKey('settings_about_tile'),
+        leading: const Icon(Icons.info_outline),
+        title: Text(l10n.settingsAboutTileTitle),
+        subtitle: Text(l10n.settingsAboutTileSubtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => const AboutPage(),
+            ),
+          );
+        },
       ),
     );
   }

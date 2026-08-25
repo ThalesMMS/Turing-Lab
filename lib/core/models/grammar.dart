@@ -182,7 +182,9 @@ class Grammar {
         if (symbol == 'ε' ||
             symbol == 'λ' ||
             symbol.isEmpty ||
-            symbol == 'epsilon') continue;
+            symbol == 'epsilon') {
+          continue;
+        }
         if (!terminals.contains(symbol) && !nonterminals.contains(symbol)) {
           errors.add(
             'Production ${production.id} references undefined symbol: $symbol',

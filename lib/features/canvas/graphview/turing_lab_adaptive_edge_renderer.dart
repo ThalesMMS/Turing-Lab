@@ -85,6 +85,8 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     this.highlightColor = Colors.blue,
     this.labelSurfaceColor = Colors.white,
     this.labelFontSize = 14.0,
+    this.labelFontFamily,
+    this.labelFontFamilyFallback,
     this.renderMode = TuringLabEdgeRenderMode.standard,
   });
 
@@ -110,9 +112,14 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   final Map<Edge, TuringLabEdgeRenderGeometry> _automaticRouteGeometry =
       <Edge, TuringLabEdgeRenderGeometry>{};
 
-  /// Last chosen self-loop heading per route group, kept across cache clears
-  /// so replans stay sticky instead of flipping between near-tie headings.
-  final Map<String, LoopHeading> _lastLoopHeadings = <String, LoopHeading>{};
+  /// Last outward direction chosen per self-loop route group, kept across
+  /// cache clears so a replan slides the loop from where it already is
+  /// instead of re-deriving it and jumping.
+  final Map<String, double> _lastLoopAngles = <String, double>{};
+
+  /// States that draw the initial-state marker, so their self-loops can keep
+  /// clear of it. The renderer cannot read the flag off a GraphView node.
+  Set<String> _initialStateIds = const <String>{};
   Map<String, _NodeGeometryStamp> _automaticRouteNodeStamps =
       <String, _NodeGeometryStamp>{};
   int _automaticRouteEdgeSignature = 0;
@@ -123,6 +130,13 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   Color highlightColor;
   Color labelSurfaceColor;
   double labelFontSize;
+
+  /// Typeface the transition labels are painted with. Labels go through a
+  /// `TextPainter` rather than a `Text` widget, so they inherit nothing from
+  /// the theme and fall back to the engine's default font unless told
+  /// otherwise.
+  String? labelFontFamily;
+  List<String>? labelFontFamilyFallback;
   TuringLabEdgeRenderMode renderMode;
 
   @override
@@ -185,6 +199,8 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     required Color baseColor,
     required Color highlightColor,
     required Color labelSurfaceColor,
+    String? labelFontFamily,
+    List<String>? labelFontFamilyFallback,
   }) {
     final labelStyleChanged =
         this.baseColor != baseColor || this.highlightColor != highlightColor;
@@ -197,7 +213,11 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     this.baseColor = baseColor;
     this.highlightColor = highlightColor;
     this.labelSurfaceColor = labelSurfaceColor;
-    if (labelStyleChanged) {
+    final fontChanged = this.labelFontFamily != labelFontFamily ||
+        !listEquals(this.labelFontFamilyFallback, labelFontFamilyFallback);
+    this.labelFontFamily = labelFontFamily;
+    this.labelFontFamilyFallback = labelFontFamilyFallback;
+    if (labelStyleChanged || fontChanged) {
       _clearLabelPainterCache();
     }
     if (labelLayoutChanged &&
@@ -215,6 +235,15 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     _ensureGroupedLabelRects();
     _pruneCachedLabelPainters();
     _usedLabelPaintersInRenderCycle.clear();
+  }
+
+  /// Tells the renderer which states show the initial-state marker.
+  void updateInitialStateIds(Set<String> initialStateIds) {
+    if (setEquals(_initialStateIds, initialStateIds)) {
+      return;
+    }
+    _initialStateIds = Set<String>.unmodifiable(initialStateIds);
+    _clearAutomaticRouteGeometry();
   }
 
   void invalidateEdgeCaches() {

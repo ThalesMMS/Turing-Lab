@@ -22,10 +22,11 @@ extension _FSAPageStateBehavior on _FSAPageState {
     String? missingMessage,
     String? invalidMessage,
   }) {
+    final l10n = appLocalizationsOf(context);
     final automaton = ref.read(automatonStateProvider).currentAutomaton;
     if (automaton == null) {
       _showSnack(
-        missingMessage ?? 'Load an automaton before running this operation.',
+        missingMessage ?? l10n.loadAutomatonBeforeOperation,
         isError: true,
       );
       return null;
@@ -34,8 +35,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
     if (requireDfa &&
         !(automaton.isDeterministic && !automaton.hasEpsilonTransitions)) {
       _showSnack(
-        invalidMessage ??
-            'This operation requires a deterministic automaton without ε-transitions.',
+        invalidMessage ?? l10n.operationRequiresDeterministicNoEpsilon,
         isError: true,
       );
       return null;
@@ -43,8 +43,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
 
     if (requireLambda && !automaton.hasEpsilonTransitions) {
       _showSnack(
-        invalidMessage ??
-            'The current automaton does not contain λ-transitions.',
+        invalidMessage ?? l10n.automatonHasNoLambdaTransitions,
         isError: true,
       );
       return null;
@@ -116,103 +115,106 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Future<void> _handleRemoveLambda() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.removeLambdaTransitions(),
-      successMessage: 'λ-transitions removed successfully.',
+      successMessage: l10n.lambdaTransitionsRemoved,
       requireLambda: true,
-      invalidMessage:
-          'The current automaton must contain λ-transitions to remove them.',
+      invalidMessage: l10n.automatonMustContainLambdaToRemove,
     );
   }
 
   Future<void> _handleComplementDfa() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.complementDfa(),
-      successMessage: 'Complement computed successfully.',
+      successMessage: l10n.complementComputed,
       requireDfa: true,
-      invalidMessage:
-          'Complement is only available for deterministic automata without ε-transitions.',
+      invalidMessage: l10n.complementRequiresDeterministic,
     );
   }
 
   Future<void> _handlePrefixClosure() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.prefixClosureDfa(),
-      successMessage: 'Prefix closure computed successfully.',
+      successMessage: l10n.prefixClosureComputed,
       requireDfa: true,
-      invalidMessage:
-          'Prefix closure is only available for deterministic automata without ε-transitions.',
+      invalidMessage: l10n.prefixClosureRequiresDeterministic,
     );
   }
 
   Future<void> _handleSuffixClosure() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.suffixClosureDfa(),
-      successMessage: 'Suffix closure computed successfully.',
+      successMessage: l10n.suffixClosureComputed,
       requireDfa: true,
-      invalidMessage:
-          'Suffix closure is only available for deterministic automata without ε-transitions.',
+      invalidMessage: l10n.suffixClosureRequiresDeterministic,
     );
   }
 
   Future<void> _handleUnionDfa(FSA other) async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.unionDfa(other),
-      successMessage: 'Union computed successfully.',
+      successMessage: l10n.unionComputed,
       requireDfa: true,
-      invalidMessage:
-          'Binary DFA operations require a deterministic automaton without ε-transitions.',
+      invalidMessage: l10n.binaryDfaRequiresDeterministic,
     );
   }
 
   Future<void> _handleConcatenateFsa(FSA other) async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.concatenateFsa(
         other,
         withSteps: _stepByStepMode,
       ),
-      successMessage: 'Concatenation computed successfully.',
-      invalidMessage: 'Load an FSA before computing the concatenation.',
+      successMessage: l10n.concatenationComputed,
+      invalidMessage: l10n.loadFsaBeforeConcatenation,
     );
   }
 
   Future<void> _handleKleeneStarFsa() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.kleeneStarFsa(
         withSteps: _stepByStepMode,
       ),
-      successMessage: 'Kleene star computed successfully.',
-      invalidMessage: 'Load an FSA before applying Kleene star.',
+      successMessage: l10n.kleeneStarComputed,
+      invalidMessage: l10n.loadFsaBeforeKleeneStar,
     );
   }
 
   Future<void> _handleReverseFsa() async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.reverseFsa(
         withSteps: _stepByStepMode,
       ),
-      successMessage: 'FSA language reversed successfully.',
-      invalidMessage: 'Load an FSA before reversing its language.',
+      successMessage: l10n.fsaLanguageReversed,
+      invalidMessage: l10n.loadFsaBeforeReverse,
     );
   }
 
   Future<void> _handleIntersectionDfa(FSA other) async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.intersectionDfa(other),
-      successMessage: 'Intersection computed successfully.',
+      successMessage: l10n.intersectionComputed,
       requireDfa: true,
-      invalidMessage:
-          'Binary DFA operations require a deterministic automaton without ε-transitions.',
+      invalidMessage: l10n.binaryDfaRequiresDeterministic,
     );
   }
 
   Future<void> _handleDifferenceDfa(FSA other) async {
+    final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
       operation: (notifier) => notifier.differenceDfa(other),
-      successMessage: 'Difference computed successfully.',
+      successMessage: l10n.differenceComputed,
       requireDfa: true,
-      invalidMessage:
-          'Binary DFA operations require a deterministic automaton without ε-transitions.',
+      invalidMessage: l10n.binaryDfaRequiresDeterministic,
     );
   }
 
@@ -317,6 +319,13 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Future<void> _handleFaToRegex() async {
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.regex,
+    );
+    if (!mounted || !shouldReplace) return;
+
     if (_stepByStepMode) {
       await _handleFaToRegexWithSteps();
     } else {
@@ -331,7 +340,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
       }
 
       if (!mounted) return;
-      _showRegexResultDialog(regex, isStepByStep: false);
+      _openRegexWorkspace(regex);
     }
   }
 
@@ -350,30 +359,26 @@ extension _FSAPageStateBehavior on _FSAPageState {
     }
 
     if (!mounted) return;
-    _showRegexResultDialog(regex, isStepByStep: true);
+    _openRegexWorkspace(regex);
   }
 
-  void _showRegexResultDialog(String regex, {required bool isStepByStep}) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          isStepByStep
-              ? 'FA to Regex Result (Step-by-Step)'
-              : 'FA to Regex Result',
-        ),
-        content: SelectableText(regex),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+  void _openRegexWorkspace(String regex) {
+    ref.read(regexEditorProvider.notifier).validateRegex(regex);
+    ref.read(homeNavigationProvider.notifier).goToRegex();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    _showSnack(appLocalizationsOf(context).convertedToRegexWorkspace);
   }
 
   Future<void> _handleFsaToGrammar() async {
+    final shouldReplace = await confirmConversionDestinationReplacement(
+      context: context,
+      ref: ref,
+      destination: ConversionDestination.grammar,
+    );
+    if (!mounted || !shouldReplace) return;
+
     final algorithmNotifier = ref.read(automatonAlgorithmProvider.notifier);
     final grammar = await algorithmNotifier.convertFsaToGrammar();
     if (!mounted || grammar == null) {
@@ -385,9 +390,12 @@ extension _FSAPageStateBehavior on _FSAPageState {
     }
 
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const GrammarPage()));
+    ref.read(grammarProvider.notifier).applyGrammar(grammar);
+    ref.read(homeNavigationProvider.notifier).goToGrammar();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    _showSnack(appLocalizationsOf(context).convertedToGrammarWorkspace);
   }
 
   Future<void> _handleCompareEquivalence(FSA other) async {

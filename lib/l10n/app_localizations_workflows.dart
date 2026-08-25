@@ -40,6 +40,37 @@ extension AppLocalizationsWorkflows on AppLocalizations {
       'Accepted' => accepted,
       'Rejected' => rejected,
       'Suggested fixes' => suggestedFixes,
+      'Automaton has no states' => automatonHasNoStates,
+      'Cannot simulate empty automaton' => cannotSimulateEmptyAutomaton,
+      'PDA has no states' => pdaHasNoStates,
+      'TM has no states' => tmHasNoStates,
+      'Automaton must have at least one state' =>
+        automatonMustHaveAtLeastOneState,
+      'Cannot convert empty automaton to regex' =>
+        cannotConvertEmptyAutomatonToRegex,
+      'FA must have at least one state' => faMustHaveAtLeastOneState,
+      'NFA must have at least one state' => nfaMustHaveAtLeastOneState,
+      'DFA must have at least one state' => dfaMustHaveAtLeastOneState,
+      'PDA must have at least one state' => pdaMustHaveAtLeastOneState,
+      'Turing machine must have at least one state' =>
+        tmMustHaveAtLeastOneState,
+      'Turing machine must have at least one state.' =>
+        tmMustHaveAtLeastOneStatePeriod,
+      'Automaton A must have at least one state' =>
+        automatonAMustHaveAtLeastOneState,
+      'Automaton B must have at least one state' =>
+        automatonBMustHaveAtLeastOneState,
+      'Cannot create game with empty automaton' =>
+        cannotCreateGameWithEmptyAutomaton,
+      'Untitled Automaton' => untitledAutomaton,
+      'Canvas PDA' => canvasPda,
+      'Canvas TM' => canvasTm,
+      'Simulation failed' => simulationFailed,
+      'Simulation cancelled' => simulationCancelled,
+      'EQUIVALENT' => equivalent,
+      'NOT EQUIVALENT' => notEquivalent,
+      'Automaton A' => automatonA,
+      'Automaton B' => automatonB,
       _ => null,
     };
     if (common != null) {
@@ -58,6 +89,9 @@ extension AppLocalizationsWorkflows on AppLocalizations {
     var translated = source;
     for (final replacement in _ptWorkflowReplacements) {
       translated = translated.replaceAll(replacement.$1, replacement.$2);
+    }
+    for (final pattern in _ptWorkflowPatterns) {
+      translated = translated.replaceAllMapped(pattern.$1, pattern.$2);
     }
     return workflowLegacyText(translated);
   }
@@ -277,6 +311,159 @@ const _ptWorkflowCopy = <String, String>{
   'Non-accepting states': 'Estados que não são de aceitação',
   'Total transitions': 'Total de transições',
   'Potential Issues': 'Possíveis problemas',
+  'Operand A': 'Operando A',
+  'Operand B': 'Operando B',
+  'DFA for complement': 'AFD para complemento',
+  'DFA for prefix closure': 'AFD para fecho por prefixos',
+  'DFA for suffix closure': 'AFD para fecho por sufixos',
+  'Operand A has labeled transitions, but the alphabet is empty.':
+      'O operando A possui transições rotuladas, mas o alfabeto está vazio.',
+  'Operand B has labeled transitions, but the alphabet is empty.':
+      'O operando B possui transições rotuladas, mas o alfabeto está vazio.',
+  'The automaton does not have a defined initial state.':
+      'O autômato não possui estado inicial definido.',
+  'Examples: aabb (for balanced parentheses), abab (for palindromes)':
+      'Exemplos: aabb (parênteses balanceados), abab (palíndromos)',
+  'Validation': 'Validação',
+  'Initialization': 'Inicialização',
+  'Alphabet Normalization': 'Normalização do alfabeto',
+  'DFA Conversion': 'Conversão para AFD',
+  'DFA Completion': 'Completude do AFD',
+  'Product Construction': 'Construção do produto',
+  'Product State Created': 'Estado produto criado',
+  'Product Transition': 'Transição do produto',
+  'Product Construction Complete': 'Construção do produto concluída',
+  'BFS Search': 'Busca em largura',
+  'Initial Pair Check': 'Verificação do par inicial',
+  'State Pair Visit': 'Visita do par de estados',
+  'Counterexample Found': 'Contraexemplo encontrado',
+  'BFS Complete': 'Busca em largura concluída',
+  'Comparison Result': 'Resultado da comparação',
+  'Unknown Step': 'Passo desconhecido',
+  'Automaton A alphabet': 'Alfabeto do autômato A',
+  'Automaton B alphabet': 'Alfabeto do autômato B',
+  'Automaton': 'Autômato',
+  'Distinguishing string': 'Cadeia distintiva',
+  'Equivalent': 'Equivalente',
+  'Compute initial ε-closure': 'Calcular o ε-fecho inicial',
+  'Initial DFA state is the ε-closure of the NFA start state':
+      'O estado inicial do AFD é o ε-fecho do estado inicial do AFN',
+  'Follow NFA transitions on the current symbol':
+      'Seguir as transições do AFN no símbolo atual',
+  'Compute ε-closure of reachable states':
+      'Calcular o ε-fecho dos estados alcançáveis',
+  'Close under ε-transitions to form the next DFA state':
+      'Fechar sob transições ε para formar o próximo estado do AFD',
+  'One DFA state represents an entire set of NFA states':
+      'Um estado do AFD representa um conjunto inteiro de estados do AFN',
+  'DFA transitions summarize all possible NFA moves on a symbol':
+      'As transições do AFD resumem todos os movimentos possíveis do AFN em um símbolo',
+  'Conversion complete': 'Conversão concluída',
+  'All reachable subsets have been converted to DFA components':
+      'Todos os subconjuntos alcançáveis foram convertidos em componentes do AFD',
+  'Create initial partition': 'Criar a partição inicial',
+  'Remove unreachable states': 'Remover estados inalcançáveis',
+  'Partition stabilized': 'Partição estabilizada',
+  'Minimization complete': 'Minimização concluída',
+  'Begin Thompson\'s construction': 'Iniciar a construção de Thompson',
+  'Apply concatenation': 'Aplicar concatenação',
+  'Apply union (alternation)': 'Aplicar união (alternância)',
+  'Apply Kleene star (*)': 'Aplicar estrela de Kleene (*)',
+  'Apply plus (+)': 'Aplicar mais (+)',
+  'Apply optional (?)': 'Aplicar opcional (?)',
+  'Complete NFA construction': 'Concluir a construção do AFN',
+  'Initialize CYK table': 'Inicializar a tabela CYK',
+  'Check acceptance': 'Verificar aceitação',
+  'Parsing complete': 'Análise concluída',
+  'Validate input automaton': 'Validar o autômato de entrada',
+  'Add new initial state': 'Adicionar novo estado inicial',
+  'Add new final state': 'Adicionar novo estado final',
+  'Extract final regular expression': 'Extrair a expressão regular final',
+  'Begin regex simplification': 'Iniciar a simplificação da expressão regular',
+  'Simplification complete': 'Simplificação concluída',
+  'No further simplification': 'Nenhuma simplificação adicional',
+  'Create NFA for epsilon': 'Criar AFN para épsilon',
+  'Create NFA for wildcard': 'Criar AFN para curinga',
+  'Create NFA for character class': 'Criar AFN para classe de caracteres',
+  'Clone and mirror the states': 'Clonar e espelhar os estados',
+  'Reverse every transition': 'Inverter cada transição',
+  'Add the new entry': 'Adicionar a nova entrada',
+  'Set the reversed accepting state': 'Definir o estado de aceitação invertido',
+  'Clone the operand': 'Clonar o operando',
+  'Add the epsilon entry': 'Adicionar a entrada épsilon',
+  'Add repeat transitions': 'Adicionar transições de repetição',
+  'Add exit transitions': 'Adicionar transições de saída',
+  'Connect the operands': 'Conectar os operandos',
+  'Turing machine transition': 'Transição da máquina de Turing',
+  'Transition applied': 'Transição aplicada',
+  'Computed ε-closure': 'ε-fecho calculado',
+  'Symbol consumed': 'Símbolo consumido',
+  'Expanded via ε-transitions': 'Expandido via transições ε',
+  'Applied PDA transition': 'Transição de AP aplicada',
+  'Failed to encode PNG data': 'Falha ao codificar dados PNG',
+  'Documents directory is not available on web.':
+      'O diretório de documentos não está disponível na web.',
+  'No Turing machine available. Draw states and transitions on the canvas to analyze.':
+      'Nenhuma máquina de Turing disponível. Desenhe estados e transições no canvas para analisar.',
+  'No input-length group was evaluated.':
+      'Nenhum grupo de comprimento de entrada foi avaliado.',
+  'No candidates were evaluated.': 'Nenhuma candidata foi avaliada.',
+  'No trace was recorded for this bounded run.':
+      'Nenhum traço foi registrado para esta execução limitada.',
+  'Exploration cancelled. Evaluated results were kept.':
+      'Exploração cancelada. Os resultados avaliados foram mantidos.',
+  'Space profiling cancelled. Evaluated rows were kept.':
+      'Perfil de espaço cancelado. As linhas avaliadas foram mantidas.',
+  'Estimated candidates: invalid limits':
+      'Candidatas estimadas: limites inválidos',
+  'Words': 'Palavras',
+  'Repeated NTM configurations observed':
+      'Configurações repetidas da MTN observadas',
+  'Reads by symbol': 'Leituras por símbolo',
+  'Writes by old symbol': 'Escritas pelo símbolo antigo',
+  'Writes by new symbol': 'Escritas pelo símbolo novo',
+  'Transition execution counts': 'Contagens de execução das transições',
+  'Defined but not executed transitions':
+      'Transições definidas mas não executadas',
+  'Sparse initial-to-final tape diff':
+      'Diferença esparsa da fita inicial para a final',
+  'First and last step touching each cell':
+      'Primeiro e último passo que tocam cada célula',
+  'Sampled': 'Amostrado',
+  'Exhaustive': 'Exaustivo',
+  'Incomplete': 'Incompleto',
+  'Candidate coverage': 'Cobertura de candidatas',
+  'Visited span maximum': 'Máximo do intervalo visitado',
+  'Maximum nonblank cells': 'Máximo de células não brancas',
+  'Inconclusive executions': 'Execuções inconclusivas',
+  'Read symbol': 'Símbolo lido',
+  'Incoming transition': 'Transição de entrada',
+  'State trace': 'Traço de estados',
+  'Semantic exploration': 'Exploração semântica',
+  'Complete for this input scope': 'Completo neste escopo de entradas',
+  'Introduce new start symbol': 'Introduzir novo símbolo inicial',
+  'Remove ε-productions': 'Remover produções ε',
+  'Remove unit productions': 'Remover produções unitárias',
+  'Remove useless symbols': 'Remover símbolos inúteis',
+  'Replace terminals and binarize': 'Substituir terminais e binarizar',
+  'Convert to Greibach Normal Form (GNF)':
+      'Converter para Forma Normal de Greibach (FNG)',
+  'Not observed': 'Não observado',
+  'The deterministic shortlex prefix was sampled because this length exceeds the candidate cap.':
+      'O prefixo shortlex determinístico foi amostrado porque este comprimento excede o limite de candidatas.',
+  'Sampled • incomplete': 'Amostrado • incompleto',
+  'Input lengths': 'Comprimentos de entrada',
+  'Input scope': 'Escopo de entradas',
+  'Turing Lab could not write to the selected location. The file may be outside the app sandbox or no longer writable. Choose a destination again from the system save dialog and try again.':
+      'O Turing Lab não conseguiu gravar no local selecionado. O arquivo pode estar fora da área restrita do aplicativo ou não ser mais gravável. Escolha o destino novamente no diálogo de salvamento do sistema e tente de novo.',
+  'Turing Lab could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.':
+      'O Turing Lab não conseguiu ler o arquivo selecionado. O arquivo pode estar fora da área restrita do aplicativo ou não ser mais legível. Escolha o arquivo novamente no diálogo do sistema e tente de novo.',
+  'The selected save location is no longer available. Choose a different destination and try again.':
+      'O local de salvamento selecionado não está mais disponível. Escolha outro destino e tente de novo.',
+  'The selected file is no longer available. Pick the file again and try again.':
+      'O arquivo selecionado não está mais disponível. Escolha o arquivo novamente e tente de novo.',
+  'Hide Details': 'Ocultar detalhes',
+  'Show More Details': 'Mostrar mais detalhes',
 };
 
 // Replacements are sequential. Keep longer or more specific source strings
@@ -338,4 +525,195 @@ const _ptWorkflowReplacements = <(String, String)>[
   ('Non-terminals', 'Não terminais'),
   ('Expand ', 'Expandir '),
   ('Match "', 'Corresponder "'),
+  (
+    ' must have a defined initial state.',
+    ' deve possuir estado inicial definido.'
+  ),
+  (
+    ' must be deterministic (no nondeterministic transitions).',
+    ' deve ser determinístico (sem transições não determinísticas).'
+  ),
+  (
+    ' cannot contain ε (epsilon) transitions.',
+    ' não pode conter transições ε (epsilon).'
+  ),
+  (
+    ' has a transition with a symbol outside the alphabet: ',
+    ' possui transição com símbolo fora do alfabeto: '
+  ),
+  (
+    'Error computing DFA complement: ',
+    'Erro ao calcular o complemento do AFD: '
+  ),
+  (
+    'Error computing prefix closure: ',
+    'Erro ao calcular o fecho por prefixos: '
+  ),
+  (
+    'Error computing suffix closure: ',
+    'Erro ao calcular o fecho por sufixos: '
+  ),
+  ('Error combining DFAs (', 'Erro ao combinar AFDs ('),
+  (
+    'Error removing lambda transitions: ',
+    'Erro ao remover transições lambda: '
+  ),
+  (' must have at least one state', ' deve ter pelo menos um estado'),
+  (
+    'Cannot simulate empty automaton',
+    'Não é possível simular um autômato vazio'
+  ),
+  (
+    'Cannot convert empty automaton to regex',
+    'Não é possível converter um autômato vazio em expressão regular'
+  ),
+  ('Process symbol \'', 'Processar símbolo \''),
+  ('Create DFA state ', 'Criar estado AFD '),
+  ('Create transition on \'', 'Criar transição em \''),
+  ('Fill base case for "', 'Preencher caso base para "'),
+  ('Apply production ', 'Aplicar produção '),
+  ('Create NFA for symbol \'', 'Criar AFN para o símbolo \''),
+  ('Create NFA for shortcut ', 'Criar AFN para o atalho '),
+  ('Clone the ', 'Clonar o '),
+  ('Failed to save ', 'Falha ao salvar '),
+  ('Failed to encode PNG data', 'Falha ao codificar dados PNG'),
+  (
+    'Failed to get documents directory',
+    'Falha ao obter o diretório de documentos'
+  ),
+  ('Failed to create unique file', 'Falha ao criar arquivo único'),
+  ('Failed to list files', 'Falha ao listar arquivos'),
+  ('Failed to delete file', 'Falha ao excluir arquivo'),
+  ('Failed to start download', 'Falha ao iniciar o download'),
+  (
+    'Failed to load automaton from provided data',
+    'Falha ao carregar o autômato a partir dos dados fornecidos'
+  ),
+  (
+    'Failed to load automaton from provided JSON data',
+    'Falha ao carregar o autômato a partir dos dados JSON fornecidos'
+  ),
+  (
+    'Failed to load grammar from provided data',
+    'Falha ao carregar a gramática a partir dos dados fornecidos'
+  ),
+  (
+    'Documents directory is not available on web.',
+    'O diretório de documentos não está disponível na web.'
+  ),
+  (' transition(s)', ' transição(ões)'),
+  (' configuration(s) explored', ' configuração(ões) exploradas'),
+  ('Failed to export ', 'Falha ao exportar '),
+  ('Failed to prepare ', 'Falha ao preparar '),
+  ('Example not found: ', 'Exemplo não encontrado: '),
+  (
+    'PNG export is not supported on web.',
+    'A exportação PNG não é suportada na web.'
+  ),
+  ('Read symbol "', 'Leu o símbolo "'),
+  (' from the input.', ' da entrada.'),
+  ('From state ', 'Do estado '),
+  (', the transition on "', ', a transição em "'),
+  (' leads to ', ' leva a '),
+  (
+    'Computing ε-closure of initial state ',
+    'Calculando o ε-fecho do estado inicial '
+  ),
+  (
+    'This gives us the set of states reachable without consuming input: ',
+    'Isso nos dá o conjunto de estados alcançáveis sem consumir entrada: '
+  ),
+  (
+    'This set contains an accepting state, so the initial DFA state will be accepting.',
+    'Este conjunto contém um estado de aceitação, então o estado inicial do AFD será de aceitação.'
+  ),
+  ('Process symbol \'', 'Processar símbolo \''),
+  ('Create DFA state ', 'Criar estado AFD '),
+  ('Create transition on \'', 'Criar transição em \''),
+  (
+    'Subset construction creates a DFA state for each distinct reachable NFA state set.',
+    'A construção por subconjuntos cria um estado de AFD para cada conjunto distinto de estados de AFN alcançáveis.'
+  ),
+  (
+    'CNF conversion requires the start symbol to not appear on the right-hand side of any production. A fresh start symbol is added with a single unit production to the old start symbol.',
+    'A conversão para FNC exige que o símbolo inicial não apareça no lado direito de nenhuma produção. Um novo símbolo inicial é adicionado com uma única produção unitária para o símbolo inicial antigo.'
+  ),
+  (
+    'Eliminates ε-productions by computing nullable non-terminals and adding productions with nullable symbols omitted. If the (new) start symbol is nullable, its ε-production is preserved.',
+    'Elimina produções ε calculando não-terminais anuláveis e adicionando produções com os símbolos anuláveis omitidos. Se o (novo) símbolo inicial for anulável, sua produção ε é preservada.'
+  ),
+  (
+    'Removes productions of the form A → B by computing unit-closure pairs and replacing them with the productions of the target non-terminal.',
+    'Remove produções da forma A → B calculando pares de fecho unitário e substituindo-as pelas produções do não-terminal de destino.'
+  ),
+  (
+    'Removes unreachable and unproductive non-terminals (and productions referencing them), since they cannot contribute to any derivation from the start symbol.',
+    'Remove não-terminais inalcançáveis e improdutivos (e produções que os referenciam), pois eles não contribuem para nenhuma derivação a partir do símbolo inicial.'
+  ),
+  (
+    'For any production with length ≥ 2, terminals are replaced by fresh non-terminals so that binary productions only contain non-terminals. Then productions longer than 2 are broken into a chain of binary productions.',
+    'Em qualquer produção com comprimento ≥ 2, os terminais são substituídos por novos não-terminais para que produções binárias contenham só não-terminais. Depois, produções com mais de 2 símbolos são quebradas em uma cadeia de produções binárias.'
+  ),
+  (
+    'Converted grammar to Greibach Normal Form where each production has the form A → aα (a terminal followed by zero or more nonterminals).',
+    'Gramática convertida para a Forma Normal de Greibach, em que cada produção tem a forma A → aα (um terminal seguido de zero ou mais não-terminais).'
+  ),
+  (' cell(s) • witness ', ' célula(s) • testemunha '),
 ];
+
+final _ptWorkflowPatterns = <(RegExp, String Function(Match))>[
+  (
+    RegExp(r'^Input length (.+)$'),
+    (match) => 'Comprimento da entrada ${match[1]}',
+  ),
+  (
+    RegExp(r'^(\d+) of (\d+)$'),
+    (match) => '${match[1]} de ${match[2]}',
+  ),
+];
+
+extension AppLocalizationsCanvasNames on AppLocalizations {
+  /// Maps stored default canvas names to the current locale.
+  String localizedCanvasName(String storedName) {
+    return switch (storedName) {
+      'Untitled Automaton' => untitledAutomaton,
+      'Canvas PDA' => canvasPda,
+      'Canvas TM' => canvasTm,
+      _ => storedName,
+    };
+  }
+}
+
+extension AppLocalizationsExampleNames on AppLocalizations {
+  /// Maps stored example identifiers to localized button titles.
+  String localizedExampleName(String storedName) {
+    return switch (storedName) {
+      'AFD - Termina com A' => exampleDfaEndsWithA,
+      'AFD - Binário divisível por 3' => exampleDfaBinaryDivBy3,
+      'AFD - Paridade AB' => exampleDfaParityAb,
+      'AFD - Contém AB' => exampleDfaContainsAb,
+      'AFNλ - A ou AB' => exampleNfaLambdaAOrAb,
+      'GLC - Palíndromo' => exampleCfgPalindrome,
+      'GLC - Parênteses balanceados' => exampleCfgBalancedParens,
+      'GLC - a^n b^n' => exampleCfgAnBn,
+      'GLC - Zeros em quantidade par' => exampleCfgEvenZeros,
+      'GLC - Expressões aritméticas' => exampleCfgArithmetic,
+      'APD - Parênteses Balanceados' => examplePdaBalancedParens,
+      'APD - a^n b^n' => examplePdaAnBn,
+      'APD - Palíndromo' => examplePdaPalindrome,
+      'APD - a^n b^2n' => examplePdaAnB2n,
+      'APD - w#reverse(w)' => examplePdaWHashReverseW,
+      'MT - a^n b^n' => exampleTmAnBn,
+      'MT - Binário para unário' => exampleTmBinaryToUnary,
+      'MT - Cópia de string' => exampleTmCopyString,
+      'MT - Incremento binário' => exampleTmBinaryIncrement,
+      'MT - Verificador de palíndromo' => exampleTmPalindromeChecker,
+      'Regex - Repetição de A' => exampleRegexRepeatA,
+      'Regex - Termina com AB' => exampleRegexEndsWithAb,
+      'Regex - Binário iniciado por 0' => exampleRegexBinaryStarts0,
+      'Regex - Pares AB ou BA' => exampleRegexPairsAbOrBa,
+      'Regex - Blocos de A e B' => exampleRegexBlocksAb,
+      _ => storedName,
+    };
+  }
+}

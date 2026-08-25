@@ -1,227 +1,239 @@
+//
+//  apple_release_user_journeys_test.dart
+//  Turing Lab
+//
+//  Level L2 of the Apple release validation matrix: release-visible user
+//  journeys driven through `integration_test` on an explicitly selected local
+//  iOS simulator or on the local macOS target. The journeys share the same
+//  harness as the L1 widget smoke, so the two levels cannot drift apart.
+//
+//  This suite never archives, signs, uploads or drives real hardware. When no
+//  local Apple device has been declared it reports a not-run prerequisite
+//  state instead of passing.
+//
+//  A live binding only makes progress while the host keeps delivering frames.
+//  A macOS session that cannot foreground the app window ("Failed to foreground
+//  app; open returned 1") stops doing that, and the run stalls; see the
+//  "macOS L2 Window Prerequisite" section of release/APPLE_QA_MATRIX.md. Prefer
+//  a booted iOS simulator, and treat a stalled run as not run.
+//
+//  Run with:
+//    flutter test integration_test/apple_release_user_journeys_test.dart \
+//      -d <device-id> \
+//      --dart-define=APPLE_RELEASE_TARGET=<iphone|ipad|macos> \
+//      --dart-define=APPLE_RELEASE_DEVICE=<device-id>
+//
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:turing_lab/injection/dependency_injection.dart';
-import 'package:turing_lab/main.dart' as app;
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
-import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import '../test/support/apple_release_harness.dart';
+import '../test/support/apple_release_module.dart';
+import '../test/support/apple_release_prerequisites.dart';
+import '../test/support/apple_release_test_level.dart';
 
-typedef _NavigationDestination = ({
-  String label,
-  String desktopTooltip,
-  String expectedHeading,
-});
+const AppleReleaseTestLevel _level =
+    AppleReleaseTestLevel.simulatorIntegrationSmoke;
 
-const _navigationDestinations = <_NavigationDestination>[
-  (
-    label: 'Grammar',
-    desktopTooltip: 'Context-Free Grammars',
-    expectedHeading: 'Context-Free Grammars',
-  ),
-  (
-    label: 'PDA',
-    desktopTooltip: 'Pushdown Automata',
-    expectedHeading: 'Pushdown Automata',
-  ),
-  (
-    label: 'TM',
-    desktopTooltip: 'Turing Machines',
-    expectedHeading: 'Turing Machines',
-  ),
-  (
-    label: 'Regex',
-    desktopTooltip: 'Regular Expressions',
-    expectedHeading: 'Regular Expressions',
-  ),
-];
-
-Future<void> _launchApp(
-  WidgetTester tester, {
-  required Size size,
-}) async {
-  await resetDependencies();
-  SharedPreferences.setMockInitialValues(const {});
-
-  await tester.binding.setSurfaceSize(size);
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1.0;
-  addTearDown(() async {
-    await tester.binding.setSurfaceSize(null);
-    tester.view.resetPhysicalSize();
-    tester.view.resetDevicePixelRatio();
-  });
-
-  app.main();
-  await _pumpForTransition(tester);
-}
-
-Future<void> _pumpForTransition(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 400));
-  await tester.pump(const Duration(milliseconds: 400));
-}
-
-void _expectNoException(WidgetTester tester, String context) {
-  expect(
-    tester.takeException(),
-    isNull,
-    reason: 'Unexpected exception while $context.',
-  );
-}
-
-Finder _appBarAction(IconData icon) {
-  return find.descendant(
-    of: find.byType(AppBar),
-    matching: find.widgetWithIcon(IconButton, icon),
-  );
-}
-
-Future<void> _invokeAppBarAction(WidgetTester tester, IconData icon) async {
-  final buttonFinder = _appBarAction(icon);
-  final buttons = tester.widgetList<IconButton>(buttonFinder).toList();
-  final enabledButtonIndex = buttons.indexWhere(
-    (candidate) => candidate.onPressed != null,
-  );
-
-  expect(enabledButtonIndex, isNonNegative);
-
-  await tester.ensureVisible(buttonFinder.at(enabledButtonIndex));
-  await tester.tap(buttonFinder.at(enabledButtonIndex));
-  await tester.pumpAndSettle();
-}
-
-Future<void> _tapNavigationDestination(
-  WidgetTester tester, {
-  required bool isMobile,
-  required _NavigationDestination destination,
-}) async {
-  final finder = isMobile
-      ? find.descendant(
-          of: find.byType(MobileNavigation),
-          matching: find.text(destination.label),
-        )
-      : find.byTooltip(destination.desktopTooltip);
-
-  await tester.ensureVisible(finder.first);
-  await tester.tap(finder.first);
-  await _pumpForTransition(tester);
-}
-
-Future<void> _openSettingsPage(WidgetTester tester) async {
-  await _invokeAppBarAction(tester, Icons.settings);
-}
-
-Future<void> _openHelpPage(WidgetTester tester) async {
-  await _invokeAppBarAction(tester, Icons.help_outline);
-}
-
-Future<void> _tapHelpSection(
-  WidgetTester tester, {
-  required String label,
-}) async {
-  final finder = find.widgetWithText(ListTile, label);
-  await tester.ensureVisible(finder.first);
-  await tester.tap(finder.first);
-  await _pumpForTransition(tester);
-}
+/// Outermost guard for a journey.
+///
+/// Every wait inside the harness is bounded in pumped frames, which assumes
+/// the host keeps delivering frames. A host that never foregrounds the app
+/// window breaks that assumption, so each journey also carries a wall-clock
+/// timeout.
+const Timeout _journeyTimeout = Timeout(Duration(minutes: 4));
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  tearDown(() async {
-    await resetDependencies();
-  });
+  final prerequisites = AppleReleasePrerequisites.resolve(level: _level);
+  // Printed on every invocation so the run records which device was declared,
+  // or why the journeys did not run at all.
+  // ignore: avoid_print
+  print(prerequisites.report);
 
-  testWidgets('mobile smoke: launch app and navigate release-critical pages', (
-    tester,
-  ) async {
-    await _launchApp(tester, size: const Size(430, 932));
+  final hasPointerAndKeyboard =
+      prerequisites.target?.hasPointerAndKeyboard ?? false;
+  final pointerAndKeyboardSkip = hasPointerAndKeyboard
+      ? null
+      : 'Not run: the declared target exposes no pointer or hardware keyboard.';
 
-    expect(find.byType(MobileNavigation), findsOneWidget);
-    expect(find.text('Finite State Automata'), findsWidgets);
-    _expectNoException(tester, 'loading the initial FSA page');
+  group(
+    '${_level.id} Apple release journeys',
+    () {
+      testWidgets(
+        'journey: first launch reaches every release module and returns to FSA',
+        (tester) => AppleReleaseHarness.run(
+          tester,
+          target: prerequisites.requiredTarget,
+          level: _level,
+          overrideViewport: false,
+          body: (harness) async {
+            expect(
+              harness.shellFinder,
+              findsOneWidget,
+              reason: 'The declared device must render exactly one navigation '
+                  'shell.\n${harness.describeState()}',
+            );
+            harness.expectNoUntrackedException('rendering the first launch');
 
-    for (final destination in _navigationDestinations) {
-      await _tapNavigationDestination(
-        tester,
-        isMobile: true,
-        destination: destination,
+            final l10n = harness.localizations;
+            for (final module in AppleReleaseModule.values) {
+              await harness.openModule(module);
+              expect(
+                harness.appBarText(module.description(l10n)),
+                findsOneWidget,
+              );
+              harness.expectNoUntrackedException(
+                'opening the ${module.name} workspace',
+              );
+            }
+
+            await harness.openModule(AppleReleaseModule.fsa);
+          },
+        ),
+        timeout: _journeyTimeout,
       );
 
-      expect(find.text(destination.expectedHeading), findsWidgets);
-      _expectNoException(
-          tester, 'navigating to ${destination.expectedHeading}');
-    }
-  });
+      testWidgets(
+        'journey: settings locale and theme round trip, then help and back',
+        (tester) => AppleReleaseHarness.run(
+          tester,
+          target: prerequisites.requiredTarget,
+          level: _level,
+          overrideViewport: false,
+          body: (harness) async {
+            final english = harness.localizationsFor('en');
+            final portuguese = harness.localizationsFor('pt');
 
-  testWidgets(
-    'desktop smoke: navigate, save settings, open help, and keep using the app',
-    (tester) async {
-      await _launchApp(tester, size: const Size(1440, 900));
+            await harness.openSettings();
+            expect(find.text(english.settingsThemeModeTitle), findsOneWidget);
 
-      expect(find.byType(DesktopNavigation), findsOneWidget);
-      expect(find.text('Finite State Automata'), findsWidgets);
-      _expectNoException(tester, 'loading the desktop home page');
+            await harness.selectLocale('pt');
+            expect(
+              harness.appBarText(portuguese.settingsPageTitle),
+              findsOneWidget,
+            );
+            await harness.selectLocale('en');
 
-      await _tapNavigationDestination(
-        tester,
-        isMobile: false,
-        destination: _navigationDestinations.first,
+            await harness.tap(
+              find.byKey(const ValueKey('settings_theme_dark')),
+              description: 'the dark theme chip',
+            );
+            await harness.tapAndWaitFor(
+              find.byKey(const ValueKey('settings_save_button')),
+              find.text(english.settingsSaveSuccess),
+              description: 'the settings saved confirmation',
+            );
+
+            await harness.back(
+              expected: harness.shellFinder,
+              description: 'the workspace shell',
+            );
+            expect(harness.shellBrightness, Brightness.dark);
+
+            await harness.openHelp();
+            await harness.back(
+              expected: harness.shellFinder,
+              description: 'the workspace shell',
+            );
+            harness.expectNoUntrackedException('closing the help page');
+          },
+        ),
+        timeout: _journeyTimeout,
       );
-      expect(find.text('Context-Free Grammars'), findsWidgets);
-      _expectNoException(tester, 'navigating with the desktop rail');
 
-      await _openSettingsPage(tester);
-      expect(find.text('Settings'), findsWidgets);
-      expect(find.text('Theme Mode'), findsOneWidget);
-      _expectNoException(tester, 'opening the settings page');
-
-      await tester
-          .ensureVisible(find.byKey(const ValueKey('settings_theme_dark')));
-      await tester.tap(find.byKey(const ValueKey('settings_theme_dark')));
-      await _pumpForTransition(tester);
-      expect(
-        tester
-            .widget<FilterChip>(
-                find.byKey(const ValueKey('settings_theme_dark')))
-            .selected,
-        isTrue,
+      testWidgets(
+        'journey: relaunch restores the persisted locale and theme',
+        (tester) => AppleReleaseHarness.run(
+          tester,
+          target: prerequisites.requiredTarget,
+          level: _level,
+          overrideViewport: false,
+          preferences: const <String, Object>{
+            'settings_locale_code': 'pt',
+            'settings_theme_mode': 'dark',
+          },
+          body: (harness) async {
+            final portuguese = harness.localizationsFor('pt');
+            expect(
+              harness.appBarText(
+                AppleReleaseModule.fsa.description(portuguese),
+              ),
+              findsOneWidget,
+              reason: 'A relaunch must restore the persisted locale.',
+            );
+            expect(
+              harness.shellBrightness,
+              Brightness.dark,
+              reason: 'A relaunch must restore the persisted theme.',
+            );
+          },
+        ),
+        timeout: _journeyTimeout,
       );
 
-      await tester
-          .ensureVisible(find.byKey(const ValueKey('settings_save_button')));
-      await tester.tap(find.byKey(const ValueKey('settings_save_button')));
-      await _pumpForTransition(tester);
+      group(
+        'pointer and keyboard',
+        () {
+          testWidgets(
+            'journey: keyboard-driven help search without native system UI',
+            (tester) => AppleReleaseHarness.run(
+              tester,
+              target: prerequisites.requiredTarget,
+              level: _level,
+              overrideViewport: false,
+              body: (harness) async {
+                await harness.openHelp();
+                await harness.tapAndWaitFor(
+                  find.byKey(const ValueKey('help-search-action')),
+                  find.byKey(const ValueKey('help-search-field')),
+                  description: 'the help search field',
+                );
+                await harness.waitUntil(
+                  () =>
+                      tester.binding.focusManager.primaryFocus?.context !=
+                          null &&
+                      find
+                          .descendant(
+                            of: find.byKey(const ValueKey('help-search-field')),
+                            matching: find.byType(EditableText),
+                          )
+                          .evaluate()
+                          .isNotEmpty,
+                  description: 'the help search field to take keyboard focus '
+                      'on the ${harness.shell.name} shell',
+                );
 
-      expect(find.text('Settings saved.'), findsOneWidget);
-      _expectNoException(tester, 'saving settings');
+                await tester.enterText(
+                  find.byKey(const ValueKey('help-search-field')),
+                  'grammar',
+                );
+                await harness.waitFor(
+                  find.byKey(const ValueKey('help-search-status')),
+                  description: 'the help search status region',
+                );
 
-      await tester.pageBack();
-      await _pumpForTransition(tester);
-      expect(find.text('Context-Free Grammars'), findsWidgets);
-      _expectNoException(tester, 'returning from settings');
+                await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+                await harness.waitUntilGone(
+                  find.byKey(const ValueKey('help-search-field')),
+                  description: 'the help search field to close on Escape',
+                );
 
-      await _openHelpPage(tester);
-      expect(find.text('Help & Documentation'), findsOneWidget);
-      expect(find.text('Getting Started'), findsWidgets);
-      _expectNoException(tester, 'opening the help page');
-
-      await _tapHelpSection(tester, label: 'Grammar');
-      expect(find.text('Context-Free Grammars'), findsWidgets);
-      _expectNoException(tester, 'navigating a help section');
-
-      await tester.pageBack();
-      await _pumpForTransition(tester);
-
-      await _tapNavigationDestination(
-        tester,
-        isMobile: false,
-        destination: _navigationDestinations[1],
+                await harness.back(
+                  expected: harness.shellFinder,
+                  description: 'the workspace shell',
+                );
+              },
+            ),
+            timeout: _journeyTimeout,
+          );
+        },
+        skip: pointerAndKeyboardSkip,
       );
-      expect(find.text('Pushdown Automata'), findsWidgets);
-      _expectNoException(tester, 'continuing to use the app after help');
     },
+    skip: prerequisites.notRunReason,
   );
 }

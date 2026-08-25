@@ -53,6 +53,9 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
           _automaticRouteGeometry[group.representative]!.pathGeometry,
     ];
     final laneOffsets = _laneOffsetsForGroups(groups);
+    final borderTraffic = affectedGroups.any((group) => group.isSelfLoop)
+        ? _borderTrafficDirections()
+        : const <String, List<double>>{};
     final requests = <AutomaticTransitionRouteRequest>[
       for (final group in affectedGroups)
         AutomaticTransitionRouteRequest(
@@ -67,7 +70,14 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
           repulsionOffset: renderMode == TuringLabEdgeRenderMode.groupedFsa
               ? Offset.zero
               : _preparedRepulsionOffsetFor(group.representative),
-          previousLoopHeading: _lastLoopHeadings[group.stableId],
+          previousLoopAngle: _lastLoopAngles[group.stableId],
+          loopRepulsors: group.isSelfLoop
+              ? buildSelfLoopRepulsors(
+                  hasInitialMarker: _initialStateIds.contains(group.sourceId),
+                  borderTrafficDirections:
+                      borderTraffic[group.sourceId] ?? const <double>[],
+                )
+              : const <AutomaticTransitionLoopRepulsor>[],
         ),
     ];
     final obstacles = <AutomaticTransitionObstacle>[
@@ -86,8 +96,8 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
 
     for (final group in affectedGroups) {
       final plan = plans[group.stableId];
-      if (plan?.loopHeading case final heading?) {
-        _lastLoopHeadings[group.stableId] = heading;
+      if (plan?.loopAngle case final angle?) {
+        _lastLoopAngles[group.stableId] = angle;
       }
       final geometry = group.isSelfLoop
           ? _buildAutomaticLoopGeometry(group, plan)
@@ -214,6 +224,32 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     return result;
   }
 
+  /// Directions in which each state's border is already busy: one entry per
+  /// directed transition attached to it. Self-loops read it so they settle on
+  /// a free stretch of the border instead of sitting on a transition.
+  Map<String, List<double>> _borderTrafficDirections() {
+    final directions = <String, List<double>>{};
+    for (final edges in _groupedEdgeCache.values) {
+      final edge = edges.first;
+      if (edge.source == edge.destination) {
+        continue;
+      }
+      final delta =
+          getNodeCenter(edge.destination) - getNodeCenter(edge.source);
+      if (delta.distance < 0.001) {
+        continue;
+      }
+      final outgoing = math.atan2(delta.dy, delta.dx);
+      directions
+          .putIfAbsent(_nodeId(edge.source), () => <double>[])
+          .add(outgoing);
+      directions
+          .putIfAbsent(_nodeId(edge.destination), () => <double>[])
+          .add(outgoing + math.pi);
+    }
+    return directions;
+  }
+
   TuringLabEdgeRenderGeometry? _buildAutomaticNormalGeometry(
     _VisibleRouteGroup group,
     AutomaticTransitionRoutePlan? plan,
@@ -260,7 +296,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     _VisibleRouteGroup group,
     AutomaticTransitionRoutePlan? plan,
   ) {
-    if (plan?.loopHeading == null) {
+    if (plan?.loopAngle == null) {
       return null;
     }
     final groupedExtra = renderMode == TuringLabEdgeRenderMode.groupedFsa
@@ -268,7 +304,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
         : 0.0;
     final loop = buildSelfLoopPath(
       group.representative,
-      heading: plan!.loopHeading!,
+      loopAngle: plan!.loopAngle,
       loopPadding: plan.loopPadding + groupedExtra,
       arrowLength: noArrow ? 0 : ARROW_LENGTH,
     );

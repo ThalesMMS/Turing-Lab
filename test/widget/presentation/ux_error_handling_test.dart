@@ -921,6 +921,8 @@ class _StubFileOperationsService extends FileOperationsService {
     FSA automaton,
     String filePath, {
     dynamic options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
   }) async {
     exportCallCount++;
     if (exportResponses.isEmpty) {

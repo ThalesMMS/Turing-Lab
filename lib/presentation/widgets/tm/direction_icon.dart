@@ -10,6 +10,8 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/models/tm_transition.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations_resolver.dart';
 
 /// Helper for direction icons and colors
 class TMDirectionHelper {
@@ -40,14 +42,14 @@ class TMDirectionHelper {
   }
 
   /// Returns the tooltip/label for a direction
-  static String getLabel(TapeDirection direction) {
+  static String getLabel(TapeDirection direction, [AppLocalizations? l10n]) {
     switch (direction) {
       case TapeDirection.left:
-        return 'Left (L)';
+        return l10n?.directionLeft ?? 'Left (L)';
       case TapeDirection.right:
-        return 'Right (R)';
+        return l10n?.directionRight ?? 'Right (R)';
       case TapeDirection.stay:
-        return 'Stay (S)';
+        return l10n?.directionStay ?? 'Stay (S)';
     }
   }
 
@@ -83,7 +85,10 @@ class TMDirectionIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = TMDirectionHelper.getColor(direction);
     final icon = TMDirectionHelper.getIcon(direction);
-    final label = TMDirectionHelper.getLabel(direction);
+    final label = TMDirectionHelper.getLabel(
+      direction,
+      appLocalizationsOf(context),
+    );
 
     if (compact) {
       return Icon(icon, size: size, color: color);
@@ -150,7 +155,10 @@ class TMDirectionIndicator extends StatelessWidget {
         if (showIcon && showText) const SizedBox(width: 4),
         if (showText)
           Text(
-            TMDirectionHelper.getLabel(direction),
+            TMDirectionHelper.getLabel(
+              direction,
+              appLocalizationsOf(context),
+            ),
             style: TextStyle(
               fontSize: fontSize,
               color: color,
@@ -263,6 +271,10 @@ class TMDirectionSelector extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: IconButton(
             icon: Icon(TMDirectionHelper.getIcon(direction)),
+            tooltip: TMDirectionHelper.getLabel(
+              direction,
+              appLocalizationsOf(context),
+            ),
             color: color,
             iconSize: 20,
             style: IconButton.styleFrom(

@@ -425,15 +425,17 @@ extension _RegexPageLayoutSections on _RegexPageState {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  displayedFromSimplified
-                      ? l10n.convertedRegexSimplified
-                      : l10n.convertedRegexRaw,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Text(
+                    displayedFromSimplified
+                        ? l10n.convertedRegexSimplified
+                        : l10n.convertedRegexRaw,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
                 IconButton(
                   onPressed: () async {
                     try {
@@ -471,7 +473,7 @@ extension _RegexPageLayoutSections on _RegexPageState {
               child: SelectableText(
                 displayedRegex,
                 style: TextStyle(
-                  fontFamily: 'monospace',
+                  fontFamilyFallback: kMonospaceFontFamilyFallback,
                   fontSize: 16,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),

@@ -13,6 +13,8 @@
 import 'package:flutter/material.dart';
 import '../../core/models/fsa.dart';
 import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_workflows.dart';
 import 'read_only_fsa_graphview_canvas.dart';
 
 /// Widget for side-by-side comparison of automata before and after algorithm execution
@@ -330,7 +332,7 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
         // Automaton name
         const SizedBox(height: 8),
         Text(
-          automaton.name,
+          appLocalizationsOf(context).localizedCanvasName(automaton.name),
           textAlign: TextAlign.center,
           style: textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,

@@ -53,7 +53,7 @@ extension _FileOperationsPanelPickerHelpers on _FileOperationsPanelState {
     required List<String> allowedExtensions,
     required String contents,
     required Future<StringResult> Function(String path) writeToPath,
-    String cancelMessage = 'Save canceled.',
+    String? cancelMessage,
   }) async {
     final selectedPath = await _selectSaveDestination(
       dialogTitle: dialogTitle,
@@ -63,7 +63,7 @@ extension _FileOperationsPanelPickerHelpers on _FileOperationsPanelState {
     );
 
     if (selectedPath == null) {
-      _showOperationCancelledMessage(cancelMessage);
+      _showOperationCancelledMessage(cancelMessage ?? _l10n.saveCanceled);
       return null;
     }
 
@@ -89,7 +89,7 @@ extension _FileOperationsPanelPickerHelpers on _FileOperationsPanelState {
     );
 
     if (selectedPath == null) {
-      _showOperationCancelledMessage('Export canceled.');
+      _showOperationCancelledMessage(_l10n.exportCanceled);
       return null;
     }
 
