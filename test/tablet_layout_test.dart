@@ -2,9 +2,10 @@
 //  tablet_layout_test.dart
 //  Turing Lab
 //
-//  Checks that every workspace picks its tablet layout on a tablet-band
-//  viewport, and that the shared tablet container can collapse and expand its
-//  sidebar. The viewport itself comes from the canonical responsive matrix.
+//  Checks that every workspace picks the canvas-first dock layout on a
+//  tablet-band viewport, that no side panel is open until the rail is used,
+//  and that a rail button toggles its panel. The viewport itself comes from
+//  the canonical responsive matrix.
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,9 +15,10 @@ import 'package:turing_lab/presentation/pages/pda_page.dart';
 import 'package:turing_lab/presentation/pages/pumping_lemma_page.dart';
 import 'package:turing_lab/presentation/pages/regex_page.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_game/pumping_lemma_game.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
-import 'package:turing_lab/presentation/widgets/tablet_layout_container.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 import 'responsive/responsive_harness.dart';
 import 'responsive/responsive_viewport_matrix.dart';
@@ -45,8 +47,9 @@ void main() {
       'GrammarPage': const GrammarPage(),
       'TMPage': const TMPage(),
       'PDAPage': const PDAPage(),
+      'PumpingLemmaPage': const PumpingLemmaPage(),
     }.entries) {
-      testWidgets('${entry.key} uses TabletLayoutContainer on tablet width', (
+      testWidgets('${entry.key} uses the workspace dock on tablet width', (
         tester,
       ) async {
         final surface = await pumpResponsiveSurface(
@@ -55,25 +58,58 @@ void main() {
           child: entry.value,
         );
 
-        expect(find.byType(TabletLayoutContainer), findsOneWidget);
+        expect(find.byType(WorkspaceDock), findsOneWidget);
         await surface.assertNoLayoutErrors('${entry.key} on tablet width');
       });
     }
 
-    testWidgets('PumpingLemmaPage splits game and progress on tablet width', (
+    testWidgets('workspace panels stay collapsed until the rail is used', (
       tester,
     ) async {
+      final surface = await pumpResponsiveSurface(
+        tester,
+        viewport: _tabletViewport,
+        child: const FSAPage(),
+      );
+
+      final algorithmsRail = find.byKey(
+        WorkspaceDock.railButtonKey(
+          AutomatonWorkspaceScaffold.algorithmPanelId,
+        ),
+      );
+      final algorithmsPanel = find.byKey(
+        WorkspaceDock.panelKey(AutomatonWorkspaceScaffold.algorithmPanelId),
+      );
+
+      expect(algorithmsRail, findsOneWidget);
+      expect(algorithmsPanel, findsNothing);
+
+      await tester.tap(algorithmsRail);
+      await surface.settle();
+      expect(algorithmsPanel, findsOneWidget);
+
+      await tester.tap(algorithmsRail);
+      await surface.settle();
+      expect(algorithmsPanel, findsNothing);
+
+      await surface.assertNoLayoutErrors('fsa dock toggling on tablet width');
+    });
+
+    testWidgets('PumpingLemmaPage keeps the board clear of the progress panel',
+        (tester) async {
       final surface = await pumpResponsiveSurface(
         tester,
         viewport: _tabletViewport,
         child: const PumpingLemmaPage(),
       );
 
-      // The page dropped its tabbed container when the inline help panel was
-      // retired for the shared help route: a tablet now shows the game beside
-      // the progress panel, with help reachable from the workspace actions.
-      expect(find.byType(TabletLayoutContainer), findsNothing);
       expect(find.byType(PumpingLemmaGame), findsOneWidget);
+      expect(find.byType(PumpingLemmaProgress), findsNothing);
+
+      final progressRail = find.byKey(WorkspaceDock.railButtonKey('progress'));
+      await tester.tap(progressRail);
+      await surface.settle();
+
       expect(find.byType(PumpingLemmaProgress), findsOneWidget);
       expect(
         tester.getRect(find.byType(PumpingLemmaGame)).right,
@@ -82,42 +118,6 @@ void main() {
         ),
       );
       await surface.assertNoLayoutErrors('pumping lemma on tablet width');
-    });
-
-    testWidgets('TabletLayoutContainer sidebar can be collapsed and expanded', (
-      tester,
-    ) async {
-      final surface = await pumpResponsiveSurface(
-        tester,
-        viewport: _tabletViewport,
-        child: const Scaffold(
-          body: TabletLayoutContainer(
-            canvas: Text('Canvas Content'),
-            algorithmPanel: Text('Algorithm Panel Content'),
-            simulationPanel: Text('Simulation Panel Content'),
-          ),
-        ),
-      );
-
-      // Initially expanded
-      expect(find.text('Algorithm Panel Content'), findsOneWidget);
-      expect(find.byIcon(Icons.close_fullscreen), findsOneWidget);
-
-      // Collapse
-      await tester.tap(find.byIcon(Icons.close_fullscreen));
-      await surface.settle();
-
-      // Sidebar content should be gone
-      expect(find.text('Algorithm Panel Content'), findsNothing);
-      expect(find.byIcon(Icons.menu_open), findsOneWidget);
-
-      // Expand
-      await tester.tap(find.byIcon(Icons.menu_open));
-      await surface.settle();
-
-      expect(find.text('Algorithm Panel Content'), findsOneWidget);
-      expect(find.byIcon(Icons.close_fullscreen), findsOneWidget);
-      await surface.assertNoLayoutErrors('tablet sidebar toggling');
     });
   });
 }

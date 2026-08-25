@@ -194,24 +194,38 @@ void main() {
       final measuredEdge = controller.graphEdgeById('t0_primary');
       expect(measuredEdge, isNotNull);
 
-      final stopwatch = Stopwatch()..start();
-      for (var index = 0; index < 30; index++) {
+      // The first generations pay one-off JIT compilation (measured at ~435ms
+      // and ~110ms against a ~50ms steady state), so they are warmed up
+      // outside the samples and the median is reported instead of the mean.
+      // That keeps the budget a statement about steady-state routing rather
+      // than about compilation and scheduler noise.
+      const warmupGenerations = 5;
+      const measuredGenerations = 30;
+      final samples = <double>[];
+      for (var index = 0;
+          index < warmupGenerations + measuredGenerations;
+          index++) {
+        final generation = Stopwatch()..start();
         controller.previewStatePosition(
           'q0',
           Offset(100 + index.toDouble(), 100 + index * 0.5),
         );
         renderer.prepareForRenderCycle();
         expect(renderer.geometryForEdge(measuredEdge!), isNotNull);
+        generation.stop();
+        if (index >= warmupGenerations) {
+          samples.add(generation.elapsedMicroseconds / 1000.0);
+        }
       }
-      stopwatch.stop();
 
-      final averageGenerationMs = stopwatch.elapsedMilliseconds / 30;
+      final medianGenerationMs = _median(samples);
       print(
         'Automatic route benchmark (120 states, 240 transitions): '
-        '${averageGenerationMs.toStringAsFixed(2)}ms/generation',
+        '${medianGenerationMs.toStringAsFixed(2)}ms/generation (median of '
+        '$measuredGenerations)',
       );
       expect(
-        averageGenerationMs,
+        medianGenerationMs,
         lessThan(80),
         reason: 'route preparation must remain bounded in widget-test mode',
       );
@@ -248,9 +262,14 @@ void main() {
       );
       await tester.pump();
 
-      const cycleCount = 45;
-      final stopwatch = Stopwatch()..start();
-      for (var index = 0; index < cycleCount; index++) {
+      // Same warm-up rationale as the routing benchmark above: the opening
+      // cycles carry compilation and first-paint costs that say nothing about
+      // playback throughput.
+      const warmupCycles = 5;
+      const measuredCycles = 45;
+      final samples = <double>[];
+      for (var index = 0; index < warmupCycles + measuredCycles; index++) {
+        final cycle = Stopwatch()..start();
         controller.applyHighlight(
           SimulationHighlight(
             stateIds: {states[index].id},
@@ -258,27 +277,39 @@ void main() {
           ),
         );
         await tester.pump();
+        cycle.stop();
+        if (index >= warmupCycles) {
+          samples.add(cycle.elapsedMicroseconds / 1000.0);
+        }
       }
-      stopwatch.stop();
 
       controller.clearHighlight();
       await tester.pump();
 
-      final averageCycleMs =
-          stopwatch.elapsedMicroseconds / cycleCount / 1000.0;
+      final medianCycleMs = _median(samples);
       print(
         'Highlight benchmark (240-state NFA): '
-        '${averageCycleMs.toStringAsFixed(2)}ms/cycle',
+        '${medianCycleMs.toStringAsFixed(2)}ms/cycle (median of '
+        '$measuredCycles)',
       );
 
       expect(
-        averageCycleMs,
+        medianCycleMs,
         lessThan(80.0),
         reason:
             'Highlight playback should stay below 80ms per cycle in widget tests',
       );
     });
   });
+}
+
+double _median(List<double> samples) {
+  final sorted = List<double>.from(samples)..sort();
+  final middle = sorted.length ~/ 2;
+  if (sorted.length.isOdd) {
+    return sorted[middle];
+  }
+  return (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 double _measureMilliseconds(void Function() action) {

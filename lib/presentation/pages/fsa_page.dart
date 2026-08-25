@@ -189,21 +189,8 @@ class _FSAPageState extends ConsumerState<FSAPage>
           state: state,
           isMobile: isMobile,
         ),
-        algorithmPanel: _buildAlgorithmWorkspacePanel(
-          state: state,
-          useExpanded: true,
-        ),
-        tabletAlgorithmPanel: _buildAlgorithmWorkspacePanel(
-          state: state,
-          useExpanded: false,
-        ),
+        algorithmPanel: _buildAlgorithmWorkspacePanel(state: state),
         simulationPanel: _buildSimulationWorkspacePanel(),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'fsa_context_help_fab',
-          onPressed: _showContextualHelp,
-          tooltip: appLocalizationsOf(context).canvasHelpAction,
-          child: const Icon(Icons.help_outline),
-        ),
       ),
     );
   }

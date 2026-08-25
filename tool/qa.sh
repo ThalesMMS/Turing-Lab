@@ -52,7 +52,11 @@ GitHub-hosted test CI; every result below is produced on this machine and is
 never remotely verified.
 
 Categories (reported independently):
-  prereqs      Toolchain discovery, `flutter pub get`, generated-l10n drift
+  prereqs      Toolchain discovery, `flutter pub get`, and a generated-l10n
+               drift check that reruns `flutter gen-l10n` in place and fails if
+               the result differs from the committed sources (--skip-l10n opts
+               out). Every other category depends on it, so it is added to any
+               --only selection automatically.
   format       Changed-file `dart format` plus the English comment/doc check
   analyze      `flutter analyze --no-fatal-infos` on the root package
   unit         test/unit/, test/core/, test/features/, test/app_store/, test/website/

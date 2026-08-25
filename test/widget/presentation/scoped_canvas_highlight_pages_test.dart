@@ -28,6 +28,8 @@ import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
 
+import '../../support/workspace_dock_helpers.dart';
+
 class _RecordingHighlightChannel implements HighlightChannel {
   final List<SimulationHighlight?> events = <SimulationHighlight?>[];
 
@@ -287,6 +289,7 @@ void main() {
       };
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
+      await openWorkspaceSimulationPanel(tester);
       final simulationService = tester
           .widget<PDASimulationPanel>(find.byType(PDASimulationPanel).first)
           .highlightService!;
@@ -318,6 +321,7 @@ void main() {
       await tester.pump();
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
+      await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Find Reachable States'));
       await tester.tap(find.text('Find Reachable States'));
       await _pumpUntilStateHighlights(
@@ -355,6 +359,7 @@ void main() {
       };
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
+      await openWorkspaceSimulationPanel(tester);
       final simulationService = tester
           .widget<TMSimulationPanel>(find.byType(TMSimulationPanel).first)
           .highlightService!;
@@ -367,6 +372,7 @@ void main() {
       simulationService.clear();
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
+      await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Reachability'));
       await tester.tap(find.text('Reachability'));
       await _pumpUntilStateHighlights(

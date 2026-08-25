@@ -24,6 +24,8 @@ import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 
+import '../../support/workspace_dock_helpers.dart';
+
 import 'canvas_toolbar_test_helpers.dart';
 import 'examples_test_helpers.dart';
 
@@ -556,6 +558,7 @@ void main() {
     controller.addStateAt(const Offset(120, 120));
     await tester.pump();
 
+    await openWorkspaceSimulationPanel(tester);
     final simulationPanel = tester.widget<PDASimulationPanel>(
       find.byType(PDASimulationPanel),
     );

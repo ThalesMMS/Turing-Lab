@@ -202,6 +202,26 @@ extension AppHelpLocalizations on AppLocalizations {
     return _isPortuguese ? 'Navegar para $label' : 'Navigate to $label';
   }
 
+  String workspaceSelectorLabel(String label) {
+    return _isPortuguese ? 'Workspace: $label' : 'Workspace: $label';
+  }
+
+  String get workspaceSelectorHint {
+    return _isPortuguese ? 'Trocar de workspace' : 'Switch workspace';
+  }
+
+  String workspaceDockShowPanel(String label) {
+    return _isPortuguese ? 'Mostrar $label' : 'Show $label';
+  }
+
+  String workspaceDockHidePanel(String label) {
+    return _isPortuguese ? 'Ocultar $label' : 'Hide $label';
+  }
+
+  String get workspaceDockResizePanel {
+    return _isPortuguese ? 'Redimensionar painel' : 'Resize panel';
+  }
+
   String unableToLoadHelp(String category) {
     if (_isPortuguese) {
       return 'Não foi possível carregar a ajuda para "$category".';

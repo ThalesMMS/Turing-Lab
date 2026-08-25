@@ -15,7 +15,7 @@ import '../../l10n/app_localizations_help.dart';
 import '../providers/home_navigation_provider.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/mobile_navigation.dart';
-import '../widgets/desktop_navigation.dart';
+import '../widgets/workspace_selector.dart';
 import '../widgets/workspace_quick_actions_bar.dart';
 import '../widgets/common/help_navigation.dart';
 import '../../core/services/simulation_highlight_service.dart';
@@ -243,8 +243,17 @@ class _HomePageState extends ConsumerState<HomePage> {
       policy: ReadingOrderTraversalPolicy(),
       child: Scaffold(
         appBar: AppBar(
-          leading: isMobile ? WorkspaceQuickActionsBar(tab: currentTab) : null,
-          leadingWidth: isMobile ? 144 : null,
+          // Compact viewports keep the workspace shortcuts on the left and
+          // switch tabs from the bottom bar; wide viewports switch tabs from
+          // this selector instead of a permanent side rail.
+          leading: isMobile
+              ? WorkspaceQuickActionsBar(tab: currentTab)
+              : WorkspaceSelector(
+                  items: visibleNavigationItems,
+                  currentIndex: visibleCurrentIndex,
+                  onSelected: _onNavigationTap,
+                ),
+          leadingWidth: isMobile ? 144 : WorkspaceSelector.leadingWidth,
           title: isMobile
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,29 +276,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                   ],
                 )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _getCurrentPageTitle(
-                        visibleCurrentIndex,
-                        visibleNavigationItems,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Flexible(
-                      child: Text(
-                        _getCurrentPageDescription(
-                          visibleCurrentIndex,
-                          visibleNavigationItems,
-                        ),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+              // The selector already names the workspace, so the title only
+              // carries the longer description.
+              : Text(
+                  _getCurrentPageDescription(
+                    visibleCurrentIndex,
+                    visibleNavigationItems,
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
           actions: [
             _buildAppBarAction(
@@ -304,27 +301,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ],
         ),
-        body: isMobile
-            ? pageView
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 12,
-                    ),
-                    child: DesktopNavigation(
-                      currentIndex: visibleCurrentIndex,
-                      onDestinationSelected: _onNavigationTap,
-                      items: visibleNavigationItems,
-                      extended: screenSize.width >= 1440,
-                    ),
-                  ),
-                  const VerticalDivider(width: 1, thickness: 1),
-                  Expanded(child: pageView),
-                ],
-              ),
+        body: pageView,
         bottomNavigationBar: isMobile
             ? MobileNavigation(
                 currentIndex: visibleCurrentIndex,

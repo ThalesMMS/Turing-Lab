@@ -239,9 +239,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
       child: AutomatonWorkspaceScaffold(
         canvasWithToolbar: _buildCanvasWithToolbar,
         algorithmPanel: PDAAlgorithmPanel(
-          onApplyPda: _canvasController.replacePda,
-        ),
-        tabletAlgorithmPanel: PDAAlgorithmPanel(
           useExpanded: false,
           onApplyPda: _canvasController.replacePda,
         ),
@@ -273,12 +270,6 @@ class _PDAPageState extends ConsumerState<PDAPage>
               });
             },
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'pda_context_help_fab',
-          onPressed: _showContextualHelp,
-          tooltip: appLocalizationsOf(context).canvasHelpAction,
-          child: const Icon(Icons.help_outline),
         ),
       ),
     );

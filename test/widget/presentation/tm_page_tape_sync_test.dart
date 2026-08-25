@@ -16,6 +16,8 @@ import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
 
+import '../../support/workspace_dock_helpers.dart';
+
 TMEditorNotifier _readyTmEditor({String blankSymbol = '_'}) {
   final notifier = TMEditorNotifier()
     ..upsertState(
@@ -295,6 +297,8 @@ void main() {
         if (layout.opensSheet) {
           await tester.tap(find.byTooltip('Simulate'));
           await tester.pumpAndSettle();
+        } else {
+          await openWorkspaceSimulationPanel(tester);
         }
 
         final simulationPanel = tester.widget<TMSimulationPanel>(

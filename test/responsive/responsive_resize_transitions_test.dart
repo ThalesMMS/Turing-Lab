@@ -136,17 +136,17 @@ void main() {
       prepare: loadResponsiveFixtures,
     );
 
-    // Land exactly on each side of the rail boundaries so the frame where the
-    // shell swaps its navigation is actually rendered.
+    // Land exactly on each side of the shell boundaries so the frame where the
+    // navigation and the dock swap shape is actually rendered.
     for (final width in [
-      ResponsiveBreakpoints.homeNavigationRail - 1,
-      ResponsiveBreakpoints.homeNavigationRail,
-      ResponsiveBreakpoints.extendedNavigationRail - 1,
-      ResponsiveBreakpoints.extendedNavigationRail,
+      ResponsiveBreakpoints.homeWorkspaceSelector - 1,
+      ResponsiveBreakpoints.homeWorkspaceSelector,
+      ResponsiveBreakpoints.tablet - 1,
+      ResponsiveBreakpoints.tablet,
     ]) {
       await surface.resizeTo(
         Size(width, _sweepHeight),
-        label: 'rail-${width.toInt()}',
+        label: 'shell-${width.toInt()}',
       );
       await surface.assertNoLayoutErrors('home shell at ${width}px');
     }

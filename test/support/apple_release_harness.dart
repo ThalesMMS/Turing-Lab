@@ -20,7 +20,7 @@ import 'package:turing_lab/app.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/injection/dependency_injection.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 
 import 'apple_release_module.dart';
@@ -177,7 +177,7 @@ class AppleReleaseHarness {
   /// Finder for the navigation shell that must be mounted for [shell].
   Finder get shellFinder => shell == AppleReleaseShell.mobile
       ? find.byType(MobileNavigation)
-      : find.byType(DesktopNavigation);
+      : find.byType(WorkspaceSelector);
 
   /// Finder for [text] rendered inside an `AppBar`.
   Finder appBarText(String text) => find.descendant(
@@ -328,21 +328,38 @@ class AppleReleaseHarness {
     final l10n = localizations;
     final label = module.label(l10n);
     final description = module.description(l10n);
-    final destination = shell == AppleReleaseShell.mobile
-        ? find.descendant(
-            of: find.byType(MobileNavigation),
-            matching: find.text(label),
-          )
-        : find.descendant(
-            of: find.byType(DesktopNavigation),
-            matching: find.byTooltip(description),
-          );
-
     _activity = 'opening the $label workspace';
-    await tap(
-      destination.first,
-      description: 'the $label navigation destination',
-    );
+    if (shell == AppleReleaseShell.mobile) {
+      await tap(
+        find
+            .descendant(
+              of: find.byType(MobileNavigation),
+              matching: find.text(label),
+            )
+            .first,
+        description: 'the $label navigation destination',
+      );
+    } else {
+      // The wide shell hides the workspace list behind the app-bar selector.
+      await tap(
+        find
+            .descendant(
+              of: find.byType(WorkspaceSelector),
+              matching: find.byIcon(Icons.arrow_drop_down),
+            )
+            .first,
+        description: 'the workspace selector',
+      );
+      await tap(
+        find
+            .ancestor(
+              of: find.text(label),
+              matching: find.byType(MenuItemButton),
+            )
+            .first,
+        description: 'the $label workspace menu item',
+      );
+    }
     await waitFor(
       appBarText(description),
       description: 'the "$description" app bar heading for $label',
@@ -690,11 +707,11 @@ class AppleReleaseHarness {
 
   String _describeShell() {
     final mobile = find.byType(MobileNavigation).evaluate().length;
-    final desktop = find.byType(DesktopNavigation).evaluate().length;
-    if (mobile == 0 && desktop == 0) {
+    final wide = find.byType(WorkspaceSelector).evaluate().length;
+    if (mobile == 0 && wide == 0) {
       return 'none mounted';
     }
-    return 'MobileNavigation x$mobile, DesktopNavigation x$desktop';
+    return 'MobileNavigation x$mobile, WorkspaceSelector x$wide';
   }
 
   String _describeAppBarText() {

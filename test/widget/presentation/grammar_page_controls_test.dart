@@ -18,6 +18,7 @@ import 'package:turing_lab/presentation/widgets/grammar_editor_section.dart';
 import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
+import '../../support/workspace_dock_helpers.dart';
 import 'examples_test_helpers.dart';
 
 Future<ProviderContainer> _pumpGrammarPage(
@@ -142,7 +143,7 @@ void main() {
       grammar: grammar,
     );
 
-    await tester.tap(find.byTooltip('Context-Aware Help'));
+    await tester.tap(_appBarAction('Help'));
     await tester.pumpAndSettle();
     _expectHelpTopic(tester, HelpTopicIds.grammarTheoryCfg);
 
@@ -161,6 +162,8 @@ void main() {
       size: const Size(1500, 1000),
       grammar: grammar,
     );
+
+    await openWorkspaceAlgorithmsPanel(tester);
 
     final ambiguityButton = find.ancestor(
       of: find.text('Check Ambiguity'),
@@ -221,7 +224,7 @@ void main() {
       find.descendant(of: productionEditor, matching: find.text('Editar')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Ajuda contextual'), findsOneWidget);
+    expect(find.byTooltip('Mostrar Algoritmos'), findsOneWidget);
   });
 
   testWidgets('mobile publishes Algorithms, Parser, and Edit in that order', (
@@ -358,11 +361,15 @@ void main() {
   ) async {
     await _pumpGrammarPage(tester, size: const Size(1200, 800));
 
-    expect(find.widgetWithText(Tab, 'Algorithms'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Parser'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Simulation'), findsNothing);
+    expect(find.byTooltip('Show Algorithms'), findsOneWidget);
+    expect(find.byTooltip('Show Parser'), findsOneWidget);
+    expect(find.byTooltip('Show Simulation'), findsNothing);
     expect(find.text('Production Rules (0)'), findsOneWidget);
     expect(find.text('Grammar Information'), findsNothing);
+
+    await openWorkspaceSimulationPanel(tester);
+    expect(find.byType(GrammarSimulationPanel), findsOneWidget);
+    expect(find.byTooltip('Hide Parser'), findsWidgets);
   });
 
   testWidgets('tablet can open Edit from the production editor header', (

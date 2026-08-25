@@ -14,9 +14,10 @@ import '../../core/constants/help_topic_ids.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/common/help_navigation.dart';
-import '../widgets/help_action_button.dart';
+import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/pumping_lemma_game/pumping_lemma_game.dart';
 import '../widgets/pumping_lemma_progress.dart';
+import '../widgets/workspace_dock.dart';
 
 /// Page for the Pumping Lemma Game
 class PumpingLemmaPage extends ConsumerStatefulWidget {
@@ -36,8 +37,6 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isMobile = screenSize.width < 1024;
     publishWorkspaceQuickActions(
       ref,
       WorkspaceTab.pumping,
@@ -45,27 +44,22 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
     );
 
     return Scaffold(
-      body: isMobile
-          ? _buildMobileLayout()
-          : screenSize.width < 1400
-              ? _buildTabletLayout()
-              : _buildDesktopLayout(),
-      floatingActionButton: isMobile ? null : _buildWideHelpButton(),
+      // Reads the incoming constraints, not the window, so an embedded pane
+      // picks the same band a same-sized window would.
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          if (width < AutomatonWorkspaceScaffold.mobileBreakpoint) {
+            return _buildMobileLayout();
+          }
+          return _buildWideLayout(
+            panelWidth: width < AutomatonWorkspaceScaffold.tabletBreakpoint
+                ? AutomatonWorkspaceScaffold.tabletPanelWidth
+                : AutomatonWorkspaceScaffold.desktopPanelWidth,
+          );
+        },
+      ),
     );
-  }
-
-  Widget _buildWideHelpButton() {
-    final tooltip = AppLocalizations.of(context).contextAwareHelp;
-
-    return HelpActionButton(
-      topicId: HelpTopicIds.pumpingEditorGame,
-      tooltip: tooltip,
-      filled: true,
-    );
-  }
-
-  Widget _buildTabletLayout() {
-    return _buildWideLayout(gap: 8);
   }
 
   Widget _buildMobileLayout() {
@@ -138,27 +132,20 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
     );
   }
 
-  Widget _buildDesktopLayout() {
-    return _buildWideLayout(gap: 16);
-  }
+  /// Wide viewports give the game board the whole pane; progress stays
+  /// collapsed behind the dock rail until the player asks for it.
+  Widget _buildWideLayout({required double panelWidth}) {
+    final l10n = AppLocalizations.of(context);
 
-  Widget _buildWideLayout({required double gap}) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const PumpingLemmaGame(),
-          ),
-        ),
-        SizedBox(width: gap),
-        Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            child: const PumpingLemmaProgress(),
-          ),
+    return WorkspaceDock(
+      initialPanelWidth: panelWidth,
+      content: const PumpingLemmaGame(),
+      panels: [
+        WorkspaceDockPanel(
+          id: 'progress',
+          label: l10n.progressTitle,
+          icon: Icons.analytics,
+          child: const PumpingLemmaProgress(),
         ),
       ],
     );

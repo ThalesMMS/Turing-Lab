@@ -681,7 +681,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
 
   Widget _buildAlgorithmWorkspacePanel({
     required AutomatonStateProviderState state,
-    required bool useExpanded,
   }) {
     return Consumer(
       builder: (context, panelRef, _) {
@@ -703,20 +702,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
           conversionHistory,
           state.currentAutomaton,
         );
-
-        if (useExpanded) {
-          return Column(
-            children: [
-              Expanded(child: algorithmPanel),
-              validationPanel,
-              comparisonPanel,
-              if (stepState.hasSteps) ...[
-                const SizedBox(height: 8),
-                Expanded(child: _buildStepViewerPanel()),
-              ],
-            ],
-          );
-        }
 
         final stepViewerMaxHeight = (MediaQuery.sizeOf(context).height * 0.45)
             .clamp(_kTabletStepViewerMinHeight, _kTabletStepViewerMaxHeight);

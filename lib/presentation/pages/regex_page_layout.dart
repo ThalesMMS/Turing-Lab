@@ -22,94 +22,58 @@ extension _RegexPageLayoutSections on _RegexPageState {
     );
   }
 
-  Widget _buildDesktopLayout(AlgorithmOperationState algorithmState) {
+  /// Wide viewports give the editor the whole pane; the algorithms and
+  /// simulation panels stay collapsed behind the dock rail until asked for.
+  Widget _buildWideLayout(
+    AlgorithmOperationState algorithmState, {
+    required double panelWidth,
+  }) {
     final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return FocusTraversalGroup(
       policy: ReadingOrderTraversalPolicy(),
       child: Scaffold(
-        body: Row(
-          children: [
-            // Left panel - Regex input and testing
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.2),
-                    ),
-                  ),
+        body: WorkspaceDock(
+          initialPanelWidth: panelWidth,
+          content: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            clipBehavior: Clip.antiAlias,
+            // The editor is a form, not a canvas: cap its measure so the
+            // fields stay readable when the pane is very wide.
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: _buildInputArea(),
                 ),
-                child: SingleChildScrollView(child: _buildInputArea()),
               ),
             ),
-
-            // Right panel - Algorithm operations
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildRegexAlgorithmsPanel(algorithmState),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Simulation panel
-                    Expanded(
-                      child: SimulationPanel(
-                        onSimulate: (input) {
-                          _testStringController.text = input;
-                          return _testStringMatch();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+          ),
+          panels: [
+            WorkspaceDockPanel(
+              id: AutomatonWorkspaceScaffold.simulationPanelId,
+              label: l10n.simulation,
+              icon: Icons.play_arrow,
+              child: SimulationPanel(
+                onSimulate: (input) {
+                  _testStringController.text = input;
+                  return _testStringMatch();
+                },
               ),
+            ),
+            WorkspaceDockPanel(
+              id: AutomatonWorkspaceScaffold.algorithmPanelId,
+              label: l10n.algorithms,
+              icon: Icons.auto_awesome,
+              child: _buildRegexAlgorithmsPanel(algorithmState),
             ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'regex_desktop_context_help_fab',
-          onPressed: _showContextualHelp,
-          tooltip: l10n.contextAwareHelp,
-          child: const Icon(Icons.help_outline),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabletLayout(AlgorithmOperationState algorithmState) {
-    final l10n = AppLocalizations.of(context);
-    return FocusTraversalGroup(
-      policy: ReadingOrderTraversalPolicy(),
-      child: Scaffold(
-        body: TabletLayoutContainer(
-          canvas: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: _buildInputArea(),
-          ),
-          algorithmPanel: _buildRegexAlgorithmsPanel(algorithmState),
-          simulationPanel: SimulationPanel(
-            onSimulate: (input) {
-              _testStringController.text = input;
-              return _testStringMatch();
-            },
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'regex_tablet_context_help_fab',
-          onPressed: _showContextualHelp,
-          tooltip: l10n.contextAwareHelp,
-          child: const Icon(Icons.help_outline),
         ),
       ),
     );

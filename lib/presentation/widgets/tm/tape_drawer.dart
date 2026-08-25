@@ -486,14 +486,16 @@ class _TMTapePanelState extends State<TMTapePanel>
                     color: theme.colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    appLocalizationsOf(context)
-                        .tapeHead(widget.tapeState.headPosition),
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      appLocalizationsOf(context)
+                          .tapeHead(widget.tapeState.headPosition),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
                   if (widget.onClear != null)
                     SizedBox(
                       width: 60,

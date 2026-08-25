@@ -8,9 +8,7 @@
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
-import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
-import 'package:turing_lab/presentation/widgets/tablet_layout_container.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 import 'responsive_fixtures.dart';
 import 'responsive_harness.dart';
@@ -78,12 +76,6 @@ void main() {
 
   group('workspace band selection', () {
     for (final workspace in kResponsiveWorkspaces) {
-      if (workspace.tab == WorkspaceTab.regex) {
-        // The regex workspace hosts its own TabletLayoutContainer rather than
-        // going through AutomatonWorkspaceScaffold, so the shared band
-        // invariant below does not describe it.
-        continue;
-      }
       for (final viewport in ResponsiveViewports.all) {
         testWidgets(
             '${workspace.name} matches its measured band on ${viewport.name}',
@@ -95,18 +87,16 @@ void main() {
             prepare: loadResponsiveFixtures,
           );
 
-          final scaffold = find.byType(AutomatonWorkspaceScaffold);
-          expect(scaffold, findsOneWidget);
+          final page = find.byType(workspace.pageType);
+          expect(page, findsOneWidget);
 
-          // The band must follow the width the scaffold is actually given,
-          // which is narrower than the window whenever the home shell also
-          // paints a navigation rail.
-          final width = tester.getSize(scaffold).width;
-          final isTabletBand = width >= ResponsiveBreakpoints.mobile &&
-              width < ResponsiveBreakpoints.tablet;
+          // The band must follow the width the page is actually given, which
+          // is narrower than the window whenever it is mounted in a pane.
+          final width = tester.getSize(page).width;
+          final isWideBand = width >= ResponsiveBreakpoints.mobile;
           expect(
-            find.byType(TabletLayoutContainer),
-            isTabletBand ? findsOneWidget : findsNothing,
+            find.byType(WorkspaceDock),
+            isWideBand ? findsOneWidget : findsNothing,
             reason: '${workspace.name} received ${width}px on '
                 '${viewport.name} and picked the wrong layout band',
           );

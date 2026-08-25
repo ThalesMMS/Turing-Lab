@@ -31,8 +31,10 @@ import 'package:turing_lab/presentation/widgets/fsa/determinism_badge.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
+import '../../support/workspace_dock_helpers.dart';
 import 'canvas_toolbar_test_helpers.dart';
 import 'examples_test_helpers.dart';
 
@@ -555,12 +557,43 @@ void main() {
   ) async {
     await _pumpFsaPage(tester, viewSize: const Size(1600, 900));
 
+    // The canvas owns the pane by default; the panels are one rail tap away
+    // and open beside it, simulation before algorithms.
+    expect(find.byType(SimulationPanel), findsNothing);
+    expect(find.byType(AlgorithmPanel), findsNothing);
+
+    final simulationRailY = tester
+        .getTopLeft(
+          find.byKey(
+            WorkspaceDock.railButtonKey(
+              AutomatonWorkspaceScaffold.simulationPanelId,
+            ),
+          ),
+        )
+        .dy;
+    final algorithmRailY = tester
+        .getTopLeft(
+          find.byKey(
+            WorkspaceDock.railButtonKey(
+              AutomatonWorkspaceScaffold.algorithmPanelId,
+            ),
+          ),
+        )
+        .dy;
+    expect(simulationRailY, lessThan(algorithmRailY));
+
+    await openWorkspaceSimulationPanel(tester);
     final canvasX = tester.getTopLeft(find.byType(AutomatonGraphViewCanvas)).dx;
     final simulationX = tester.getTopLeft(find.byType(SimulationPanel)).dx;
-    final algorithmX = tester.getTopLeft(find.byType(AlgorithmPanel)).dx;
-
     expect(canvasX, lessThan(simulationX));
-    expect(simulationX, lessThan(algorithmX));
+
+    await openWorkspaceAlgorithmsPanel(tester);
+    expect(find.byType(SimulationPanel), findsNothing);
+    expect(
+      tester.getTopLeft(find.byType(AlgorithmPanel)).dx,
+      greaterThan(canvasX),
+    );
+
     expect(find.byType(FSADeterminismOverlay), findsOneWidget);
     expect(find.byType(AlgorithmStepNavigator), findsOneWidget);
   });

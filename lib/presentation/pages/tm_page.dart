@@ -238,8 +238,7 @@ class _TMPageState extends ConsumerState<TMPage>
       overrides: _canvasHighlightOverrides,
       child: AutomatonWorkspaceScaffold(
         canvasWithToolbar: _buildCanvasWithToolbar,
-        algorithmPanel: const TMAlgorithmPanel(),
-        tabletAlgorithmPanel: const TMAlgorithmPanel(useExpanded: false),
+        algorithmPanel: const TMAlgorithmPanel(useExpanded: false),
         simulationPanel: _buildSimulationPanel(),
         infoPanel: _buildInfoPanel(context),
         mobileFloatingPanelBuilder: (
@@ -263,12 +262,6 @@ class _TMPageState extends ConsumerState<TMPage>
               });
             },
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'tm_context_help_fab',
-          onPressed: _showContextualHelp,
-          tooltip: appLocalizationsOf(context).canvasHelpAction,
-          child: const Icon(Icons.help_outline),
         ),
       ),
     );

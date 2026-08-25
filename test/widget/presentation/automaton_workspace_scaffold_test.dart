@@ -1,7 +1,18 @@
+//
+//  automaton_workspace_scaffold_test.dart
+//  Turing Lab
+//
+//  Guards the shared workspace shell: compact viewports keep the movable
+//  floating panel, and wide viewports hand the canvas the whole pane with
+//  every side panel collapsed behind the dock rail.
+//
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
-import 'package:turing_lab/presentation/widgets/tablet_layout_container.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
+
+ValueKey<String> _railKey(String panelId) =>
+    WorkspaceDock.railButtonKey(panelId);
 
 void main() {
   Future<void> pumpWorkspace(
@@ -40,8 +51,7 @@ void main() {
                 ),
             ],
           ),
-          algorithmPanel: const Text('desktop algorithms'),
-          tabletAlgorithmPanel: const Text('tablet algorithms'),
+          algorithmPanel: const Text('algorithms panel'),
           simulationPanel: const Text('simulation panel'),
           infoPanel: const Text('info panel'),
           mobileFloatingPanelBuilder: (
@@ -58,10 +68,6 @@ void main() {
               ),
             );
           },
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {},
-            child: const Icon(Icons.help_outline),
-          ),
         ),
       ),
     );
@@ -74,8 +80,8 @@ void main() {
 
     expect(find.text('mobile canvas'), findsOneWidget);
     expect(find.text('mobile floating panel'), findsOneWidget);
-    expect(find.text('desktop algorithms'), findsNothing);
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(WorkspaceDock), findsNothing);
+    expect(find.text('algorithms panel'), findsNothing);
     // The floating panel owns the canvas's top-right corner, so it must not
     // cover the transition-mode indicator sitting below it.
     expect(
@@ -86,13 +92,71 @@ void main() {
     );
   });
 
-  testWidgets('uses tablet layout between 1024px and 1400px', (tester) async {
-    await pumpWorkspace(tester, size: const Size(1200, 900));
+  for (final size in const [Size(1200, 900), Size(1600, 900)]) {
+    testWidgets('docks every panel out of sight at ${size.width}px', (
+      tester,
+    ) async {
+      await pumpWorkspace(tester, size: size);
 
-    expect(find.byType(TabletLayoutContainer), findsOneWidget);
-    expect(find.text('wide canvas'), findsOneWidget);
-    expect(find.text('tablet algorithms'), findsOneWidget);
-    expect(find.text('desktop algorithms'), findsNothing);
+      expect(find.byType(WorkspaceDock), findsOneWidget);
+      expect(find.text('wide canvas'), findsOneWidget);
+      expect(find.text('algorithms panel'), findsNothing);
+      expect(find.text('simulation panel'), findsNothing);
+      expect(find.text('info panel'), findsNothing);
+
+      // Every panel is still reachable from the rail.
+      for (final id in const [
+        AutomatonWorkspaceScaffold.algorithmPanelId,
+        AutomatonWorkspaceScaffold.simulationPanelId,
+        AutomatonWorkspaceScaffold.infoPanelId,
+      ]) {
+        expect(find.byKey(WorkspaceDock.railButtonKey(id)), findsOneWidget);
+      }
+    });
+  }
+
+  testWidgets('opens one dock panel at a time and closes it again', (
+    tester,
+  ) async {
+    await pumpWorkspace(tester, size: const Size(1600, 900));
+
+    await tester
+        .tap(find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)));
+    await tester.pumpAndSettle();
+    expect(find.text('algorithms panel'), findsOneWidget);
+    expect(find.text('simulation panel'), findsNothing);
+
+    await tester.tap(
+        find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)));
+    await tester.pumpAndSettle();
+    expect(find.text('simulation panel'), findsOneWidget);
+    expect(find.text('algorithms panel'), findsNothing);
+
+    await tester.tap(
+        find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)));
+    await tester.pumpAndSettle();
+    expect(find.text('simulation panel'), findsNothing);
+  });
+
+  testWidgets('the canvas keeps most of the pane while a panel is open', (
+    tester,
+  ) async {
+    await pumpWorkspace(tester, size: const Size(1600, 900));
+
+    final collapsedCanvas = tester.getSize(find.text('wide canvas'));
+    expect(collapsedCanvas.width, greaterThan(0));
+
+    await tester
+        .tap(find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)));
+    await tester.pumpAndSettle();
+
+    final dockRect = tester.getRect(find.byType(WorkspaceDock));
+    final panelRect = tester.getRect(
+      find.byKey(WorkspaceDock.panelKey(
+        AutomatonWorkspaceScaffold.algorithmPanelId,
+      )),
+    );
+    expect(panelRect.width, lessThan(dockRect.width / 2));
   });
 
   testWidgets('preserves the moved panel position across breakpoints', (
@@ -107,21 +171,11 @@ void main() {
 
     tester.view.physicalSize = const Size(1200, 900);
     await tester.pumpAndSettle();
-    expect(find.byType(TabletLayoutContainer), findsOneWidget);
+    expect(find.byType(WorkspaceDock), findsOneWidget);
 
     tester.view.physicalSize = const Size(430, 900);
     await tester.pumpAndSettle();
 
     expect(tester.getTopLeft(panel), movedPosition);
-  });
-
-  testWidgets('uses desktop columns at 1400px and above', (tester) async {
-    await pumpWorkspace(tester, size: const Size(1400, 900));
-
-    expect(find.text('wide canvas'), findsOneWidget);
-    expect(find.text('simulation panel'), findsOneWidget);
-    expect(find.text('desktop algorithms'), findsOneWidget);
-    expect(find.text('info panel'), findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
   });
 }

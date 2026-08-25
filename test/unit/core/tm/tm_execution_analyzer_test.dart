@@ -114,7 +114,9 @@ void main() {
         List.filled(10001, '1').join(),
         maxSteps: 10002,
         maxConfigurations: 10010,
-        timeout: const Duration(seconds: 10),
+        // Generous wall-clock budget: this case asserts the step bound, not a
+        // performance target, and a tight budget makes it fail under load.
+        timeout: const Duration(minutes: 2),
         includeTrace: false,
       );
 

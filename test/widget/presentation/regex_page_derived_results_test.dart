@@ -94,7 +94,12 @@ void main() {
     );
 
     expect(find.text('Regular Expression Help'), findsNothing);
-    await tester.tap(find.byTooltip('Context-Aware Help'));
+    // The wide layout no longer paints its own help button: the shell's app
+    // bar renders the published action instead.
+    final actions =
+        container.read(workspaceQuickActionsProvider(WorkspaceTab.regex));
+    expect(actions?.onHelp, isNotNull);
+    actions!.onHelp!();
     await tester.pumpAndSettle();
     _expectRegexHelpTopic(tester, HelpTopicIds.regexEditorConversions);
 

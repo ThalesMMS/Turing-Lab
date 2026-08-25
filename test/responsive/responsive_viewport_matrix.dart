@@ -25,11 +25,8 @@ class ResponsiveBreakpoints {
   static const double tablet = AutomatonWorkspaceScaffold.tabletBreakpoint;
 
   /// Width at which the home shell switches from the bottom navigation bar to
-  /// the side rail.
-  static const double homeNavigationRail = 1024;
-
-  /// Width at which the desktop navigation rail becomes extended.
-  static const double extendedNavigationRail = 1440;
+  /// the app-bar workspace selector.
+  static const double homeWorkspaceSelector = 1024;
 }
 
 /// How a page is attached to the surface under test.

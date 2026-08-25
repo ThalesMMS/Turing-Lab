@@ -20,7 +20,9 @@ import 'package:turing_lab/presentation/pages/home_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
+
+import '../../support/workspace_dock_helpers.dart';
 
 import 'examples_test_helpers.dart';
 
@@ -160,7 +162,7 @@ void main() {
         );
 
         expect(find.byType(MobileNavigation), findsOneWidget);
-        expect(find.byType(DesktopNavigation), findsNothing);
+        expect(find.byType(WorkspaceSelector), findsNothing);
         expect(find.text('Grammar'), findsWidgets);
         expect(find.text('Context-Free Grammars'), findsOneWidget);
         expect(find.text('Pumping'), findsOneWidget);
@@ -172,7 +174,7 @@ void main() {
     );
 
     testWidgets(
-      'renders desktop navigation rail with tooltips at 1024 width or above',
+      'renders the app-bar workspace selector at 1024 width or above',
       (tester) async {
         final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
         final highlightService = _TestSimulationHighlightService();
@@ -190,16 +192,19 @@ void main() {
         );
 
         expect(find.byType(MobileNavigation), findsNothing);
-        expect(find.byType(DesktopNavigation), findsOneWidget);
-        expect(find.byType(NavigationRail), findsOneWidget);
-        expect(find.text('FSA'), findsWidgets);
-        expect(find.text('Pumping'), findsOneWidget);
-        expect(
-          find.byTooltip('Finite State Automata'),
-          findsWidgets,
-        );
+        expect(find.byType(WorkspaceSelector), findsOneWidget);
+        // The selector names the active workspace and nothing else, leaving
+        // the rest of the window to the canvas.
+        expect(find.text('FSA'), findsOneWidget);
+        expect(find.text('Finite State Automata'), findsOneWidget);
+        expect(find.text('Pumping'), findsNothing);
         expect(find.byIcon(Icons.help_outline), findsWidgets);
         expect(find.byIcon(Icons.settings), findsWidgets);
+
+        // Every workspace is one tap away.
+        await tester.tap(find.byIcon(Icons.arrow_drop_down));
+        await tester.pumpAndSettle();
+        expect(find.text('Pumping'), findsOneWidget);
 
         expect(highlightService.clearCallCount, 0);
       },
@@ -368,9 +373,11 @@ void main() {
         size: const Size(1400, 1080),
       );
 
-      expect(find.byType(DesktopNavigation), findsOneWidget);
+      expect(find.byType(WorkspaceSelector), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Regular Expressions').first);
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Regex').last);
       await tester.pumpAndSettle();
 
       final pageView = tester.widget<PageView>(find.byType(PageView));
@@ -433,6 +440,8 @@ void main() {
         );
         await tester.pump();
 
+        // The conversion actions live in the Algorithms dock panel.
+        await openWorkspaceAlgorithmsPanel(tester);
         final convertToDfaButton = tester.widget<ElevatedButton>(
           find.ancestor(
             of: find.text('Convert to DFA'),
@@ -491,6 +500,8 @@ void main() {
           'a',
         );
         await tester.pump();
+        // The conversion actions live in the Algorithms dock panel.
+        await openWorkspaceAlgorithmsPanel(tester);
         final convertToNfaButton = tester.widget<ElevatedButton>(
           find.ancestor(
             of: find.text('Convert to NFA'),
@@ -550,6 +561,8 @@ void main() {
           'a',
         );
         await tester.pump();
+        // The conversion actions live in the Algorithms dock panel.
+        await openWorkspaceAlgorithmsPanel(tester);
         final convertToNfaButton = tester.widget<ElevatedButton>(
           find.ancestor(
             of: find.text('Converter para AFN'),
@@ -616,6 +629,8 @@ void main() {
         'a',
       );
       await tester.pump();
+      // The conversion actions live in the Algorithms dock panel.
+      await openWorkspaceAlgorithmsPanel(tester);
       final convertToDfaButton = tester.widget<ElevatedButton>(
         find.ancestor(
           of: find.text('Convert to DFA'),

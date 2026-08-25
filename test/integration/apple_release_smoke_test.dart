@@ -15,6 +15,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/l10n/app_localizations_help.dart';
 
 import '../support/apple_release_harness.dart';
 import '../support/apple_release_module.dart';
@@ -222,10 +223,11 @@ void main() {
               );
 
               final l10n = harness.localizations;
-              final railDestination = find
+              final selectorHint = l10n.workspaceSelectorHint;
+              final selector = find
                   .descendant(
                     of: harness.shellFinder,
-                    matching: find.byIcon(Icons.text_fields),
+                    matching: find.byIcon(Icons.arrow_drop_down),
                   )
                   .first;
 
@@ -234,19 +236,17 @@ void main() {
               );
               await pointer.addPointer();
               addTearDown(pointer.removePointer);
-              await pointer.moveTo(tester.getCenter(railDestination));
+              await pointer.moveTo(tester.getCenter(selector));
 
               await harness.waitFor(
-                find.text(
-                  AppleReleaseModule.grammar.description(l10n),
-                ),
-                description: 'the navigation rail tooltip shown on hover',
+                find.text(selectorHint),
+                description: 'the workspace selector tooltip shown on hover',
               );
 
               await pointer.moveTo(Offset.zero);
               await harness.waitUntilGone(
-                find.text(AppleReleaseModule.grammar.description(l10n)),
-                description: 'the navigation rail tooltip to be dismissed',
+                find.text(selectorHint),
+                description: 'the workspace selector tooltip to be dismissed',
               );
 
               await harness.openHelp();

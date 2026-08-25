@@ -48,16 +48,9 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
     final l10n = jflapLocalizationsOf(context);
     return AutomatonWorkspaceScaffold(
       canvasWithToolbar: _buildProductionsEditor,
-      algorithmPanel: const GrammarAlgorithmPanel(),
-      tabletAlgorithmPanel: const GrammarAlgorithmPanel(useExpanded: false),
+      algorithmPanel: const GrammarAlgorithmPanel(useExpanded: false),
       simulationPanel: const GrammarSimulationPanel(),
       simulationTabTitle: l10n.parser,
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'grammar_context_help_fab',
-        onPressed: _showContextualHelp,
-        tooltip: l10n.contextAwareHelp,
-        child: const Icon(Icons.help_outline),
-      ),
     );
   }
 

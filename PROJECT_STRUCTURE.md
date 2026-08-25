@@ -239,7 +239,8 @@ widgets/
 ├── automaton_graphview_canvas.dart  # GraphView-backed canvas implementation
 ├── diagnostics_panel.dart           # Runtime diagnostics and logs
 ├── file_operations_panel.dart       # Import/export actions
-├── desktop_navigation.dart          # Desktop navigation rail
+├── workspace_selector.dart          # App-bar workspace switcher (wide viewports)
+├── workspace_dock.dart              # Canvas-first shell with a collapsible panel rail
 ├── mobile_navigation.dart           # Mobile bottom navigation
 ├── mobile_automaton_controls.dart   # Compact controls for touch devices
 ├── error_banner.dart                # Inline error messaging

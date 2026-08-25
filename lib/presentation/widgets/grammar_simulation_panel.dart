@@ -157,6 +157,7 @@ class _GrammarSimulationPanelState
           const SizedBox(height: 8),
           DropdownButtonFormField<ParsingStrategyHint>(
             initialValue: _selectedAlgorithm,
+            isExpanded: true,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               isDense: true,
@@ -166,7 +167,10 @@ class _GrammarSimulationPanelState
                 .map(
                   (capability) => DropdownMenuItem(
                     value: capability.strategy,
-                    child: Text(l10n.localizeWorkflowText(capability.label)),
+                    child: Text(
+                      l10n.localizeWorkflowText(capability.label),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 )
                 .toList(growable: false),

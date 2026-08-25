@@ -29,12 +29,13 @@ import '../providers/regex_editor_provider.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/algorithm_panel_scaffold.dart';
 import '../widgets/app_snackbar.dart';
+import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/common/help_navigation.dart';
 import '../widgets/conversion_replacement_dialog.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/simulation_panel.dart';
 import '../widgets/switch_setting_tile.dart';
-import '../widgets/tablet_layout_container.dart';
+import '../widgets/workspace_dock.dart';
 import '../../core/constants/monospace_typography.dart';
 
 part 'regex_page_layout.dart';
@@ -339,9 +340,6 @@ class _RegexPageState extends ConsumerState<RegexPage> {
     // Watch algorithm provider to get FA→Regex conversion results
     final algorithmState = ref.watch(automatonAlgorithmProvider);
 
-    final screenSize = MediaQuery.of(context).size;
-    final isMobile = screenSize.width < 768;
-    final isTablet = screenSize.width >= 768 && screenSize.width < 1400;
     publishWorkspaceQuickActions(
       ref,
       WorkspaceTab.regex,
@@ -351,12 +349,21 @@ class _RegexPageState extends ConsumerState<RegexPage> {
       ),
     );
 
-    if (isMobile) {
-      return _buildMobileLayout();
-    } else if (isTablet) {
-      return _buildTabletLayout(algorithmState);
-    } else {
-      return _buildDesktopLayout(algorithmState);
-    }
+    // Reads the incoming constraints, not the window, so an embedded pane
+    // picks the same band a same-sized window would.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        if (width < AutomatonWorkspaceScaffold.mobileBreakpoint) {
+          return _buildMobileLayout();
+        }
+        return _buildWideLayout(
+          algorithmState,
+          panelWidth: width < AutomatonWorkspaceScaffold.tabletBreakpoint
+              ? AutomatonWorkspaceScaffold.tabletPanelWidth
+              : AutomatonWorkspaceScaffold.desktopPanelWidth,
+        );
+      },
+    );
   }
 }

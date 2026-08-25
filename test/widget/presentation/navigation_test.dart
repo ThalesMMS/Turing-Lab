@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 
 const _testItems = [
   NavigationItem(
@@ -295,220 +295,98 @@ void main() {
     });
   });
 
-  group('DesktopNavigation', () {
-    testWidgets('renders NavigationRail with all items', (tester) async {
-      await tester.pumpWidget(
+  group('WorkspaceSelector', () {
+    Future<void> pumpSelector(
+      WidgetTester tester, {
+      int currentIndex = 0,
+      ValueChanged<int>? onSelected,
+    }) {
+      return tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (_) {},
-              items: _testItems,
+            appBar: AppBar(
+              leadingWidth: WorkspaceSelector.leadingWidth,
+              leading: WorkspaceSelector(
+                items: _testItems,
+                currentIndex: currentIndex,
+                onSelected: onSelected ?? (_) {},
+              ),
             ),
           ),
         ),
       );
+    }
 
-      expect(find.byType(NavigationRail), findsOneWidget);
+    testWidgets('shows only the active workspace until it is opened', (
+      tester,
+    ) async {
+      await pumpSelector(tester);
+
       expect(find.text('FSA'), findsOneWidget);
+      expect(find.text('Grammar'), findsNothing);
+      expect(find.text('PDA'), findsNothing);
+      expect(find.byIcon(Icons.arrow_drop_down), findsOneWidget);
+    });
+
+    testWidgets('lists every workspace once opened', (tester) async {
+      await pumpSelector(tester);
+
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
+
+      // The active workspace also stays visible on the closed anchor.
+      expect(find.text('FSA'), findsNWidgets(2));
       expect(find.text('Grammar'), findsOneWidget);
       expect(find.text('PDA'), findsOneWidget);
       expect(find.text('TM'), findsOneWidget);
       expect(find.text('Regex'), findsOneWidget);
+      expect(find.text('Pushdown Automata'), findsOneWidget);
     });
 
-    testWidgets('renders all navigation icons correctly', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-            ),
-          ),
-        ),
-      );
-
-      expect(find.byIcon(Icons.route), findsOneWidget);
-      expect(find.byIcon(Icons.account_tree), findsOneWidget);
-      expect(find.byIcon(Icons.layers), findsOneWidget);
-      expect(find.byIcon(Icons.memory), findsOneWidget);
-      expect(find.byIcon(Icons.text_fields), findsOneWidget);
-    });
-
-    testWidgets('calls onDestinationSelected with correct index when tapped', (
-      tester,
-    ) async {
+    testWidgets('reports the tapped workspace index', (tester) async {
       int? selectedIndex;
+      await pumpSelector(tester, onSelected: (index) => selectedIndex = index);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (index) => selectedIndex = index,
-              items: _testItems,
-            ),
-          ),
-        ),
-      );
-
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('PDA'));
       await tester.pumpAndSettle();
 
       expect(selectedIndex, 2);
+    });
 
-      await tester.tap(find.text('Regex'));
+    testWidgets('marks the active workspace in the menu', (tester) async {
+      await pumpSelector(tester, currentIndex: 3);
+
+      expect(find.text('TM'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
       await tester.pumpAndSettle();
 
-      expect(selectedIndex, 4);
+      expect(find.byIcon(Icons.check), findsOneWidget);
     });
 
-    testWidgets('configures NavigationRail correctly in compact mode', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 1,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-              extended: false,
-            ),
-          ),
-        ),
-      );
-
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-
-      expect(rail.selectedIndex, 1);
-      expect(rail.extended, false);
-      expect(rail.minWidth, 80);
-      expect(rail.labelType, NavigationRailLabelType.all);
-      expect(rail.groupAlignment, -1);
-    });
-
-    testWidgets('configures NavigationRail correctly in extended mode', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 3,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-              extended: true,
-            ),
-          ),
-        ),
-      );
-
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-
-      expect(rail.selectedIndex, 3);
-      expect(rail.extended, true);
-      expect(rail.labelType, NavigationRailLabelType.none);
-    });
-
-    testWidgets('applies correct theme styling', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          ),
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-            ),
-          ),
-        ),
-      );
-
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      final colorScheme = ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ).colorScheme;
-
-      expect(rail.selectedIconTheme?.color, colorScheme.primary);
-      expect(rail.selectedLabelTextStyle?.color, colorScheme.primary);
-      expect(rail.selectedLabelTextStyle?.fontWeight, FontWeight.bold);
-      expect(rail.selectedLabelTextStyle?.fontSize, 13);
-      expect(rail.unselectedLabelTextStyle?.fontSize, 12);
-    });
-
-    testWidgets('updates when currentIndex changes', (tester) async {
-      int currentIndex = 0;
-
-      await tester.pumpWidget(
-        StatefulBuilder(
-          builder: (context, setState) {
-            return MaterialApp(
-              home: Scaffold(
-                body: DesktopNavigation(
-                  currentIndex: currentIndex,
-                  onDestinationSelected: (index) =>
-                      setState(() => currentIndex = index),
-                  items: _testItems,
-                ),
-              ),
-            );
-          },
-        ),
-      );
-
-      var rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.selectedIndex, 0);
-
-      await tester.tap(find.text('Grammar'));
-      await tester.pumpAndSettle();
-
-      rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.selectedIndex, 1);
-    });
-
-    testWidgets('renders correct number of NavigationRailDestination items', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-            ),
-          ),
-        ),
-      );
-
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.destinations.length, _testItems.length);
-    });
-
-    testWidgets('exposes semantic labels for destinations', (tester) async {
+    testWidgets('exposes semantic labels for every workspace', (tester) async {
       final handle = tester.ensureSemantics();
+      await pumpSelector(tester);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DesktopNavigation(
-              currentIndex: 0,
-              onDestinationSelected: (_) {},
-              items: _testItems,
-            ),
-          ),
-        ),
-      );
+      expect(find.bySemanticsLabel('Workspace: FSA'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
 
       expect(find.bySemanticsLabel('Navigate to FSA'), findsOneWidget);
       expect(find.bySemanticsLabel('Navigate to PDA'), findsOneWidget);
 
       handle.dispose();
+    });
+
+    testWidgets('clamps an out-of-range index to the last workspace', (
+      tester,
+    ) async {
+      await pumpSelector(tester, currentIndex: 42);
+
+      expect(find.text('Regex'), findsOneWidget);
     });
   });
 

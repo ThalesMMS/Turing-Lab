@@ -3,10 +3,10 @@
 //  Turing Lab
 //
 //  Visual regression golden tests for Home page components (navigation and
-//  layout), capturing snapshots of critical states: desktop/mobile layouts,
-//  rail/bottom-bar navigation, and different tab selections. Guards visual
-//  consistency of the main navigation UI across changes and catches automatic
-//  regressions.
+//  layout), capturing snapshots of critical states: wide/mobile layouts, the
+//  app-bar workspace selector, the bottom bar, and different tab selections.
+//  Guards visual consistency of the main navigation UI across changes and
+//  catches automatic regressions.
 //
 //  Thales Matheus Mendonça Santos - January 2026
 //
@@ -15,19 +15,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 
 // Widget that composes navigation + content area like Home page does
 class _HomePageTestWidget extends StatefulWidget {
   final bool isMobile;
   final int selectedIndex;
-  final bool extendedNav;
 
   const _HomePageTestWidget({
     this.isMobile = false,
     this.selectedIndex = 0,
-    this.extendedNav = false,
   });
 
   @override
@@ -108,6 +106,18 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: widget.isMobile ? null : WorkspaceSelector.leadingWidth,
+        leading: widget.isMobile
+            ? null
+            : WorkspaceSelector(
+                items: _navigationItems,
+                currentIndex: _currentIndex,
+                onSelected: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+              ),
         title: widget.isMobile
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,21 +131,14 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
                   ),
                 ],
               )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_getCurrentPageTitle()),
-                  const SizedBox(width: 16),
-                  Flexible(
-                    child: Text(
-                      _getCurrentPageDescription(),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+            // The selector already names the workspace, so the title only
+            // carries the longer description.
+            : Text(
+                _getCurrentPageDescription(),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
         actions: [
           IconButton(
@@ -150,31 +153,7 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
           ),
         ],
       ),
-      body: widget.isMobile
-          ? contentArea
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 12,
-                  ),
-                  child: DesktopNavigation(
-                    currentIndex: _currentIndex,
-                    onDestinationSelected: (index) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
-                    items: _navigationItems,
-                    extended: widget.extendedNav,
-                  ),
-                ),
-                const VerticalDivider(width: 1, thickness: 1),
-                Expanded(child: contentArea),
-              ],
-            ),
+      body: contentArea,
       bottomNavigationBar: widget.isMobile
           ? MobileNavigation(
               currentIndex: _currentIndex,
@@ -195,7 +174,6 @@ Future<void> _pumpHomePageComponents(
   Size size = const Size(1400, 900),
   bool isMobile = false,
   int selectedIndex = 0,
-  bool extendedNav = false,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -205,7 +183,6 @@ Future<void> _pumpHomePageComponents(
       home: _HomePageTestWidget(
         isMobile: isMobile,
         selectedIndex: selectedIndex,
-        extendedNav: extendedNav,
       ),
     ),
   );
@@ -217,7 +194,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Home Page Components golden tests', () {
-    testGoldens('renders desktop layout with navigation rail - FSA selected', (
+    testGoldens('renders wide layout with workspace selector - FSA selected', (
       tester,
     ) async {
       addTearDown(() {
@@ -230,14 +207,13 @@ void main() {
         size: const Size(1400, 900),
         isMobile: false,
         selectedIndex: 0,
-        extendedNav: false,
       );
 
       await screenMatchesGolden(tester, 'home_page_desktop_fsa');
     });
 
     testGoldens(
-      'renders desktop layout with navigation rail - Grammar selected',
+      'renders wide layout with workspace selector - Grammar selected',
       (tester) async {
         addTearDown(() {
           tester.view.resetPhysicalSize();
@@ -249,14 +225,13 @@ void main() {
           size: const Size(1400, 900),
           isMobile: false,
           selectedIndex: 1,
-          extendedNav: false,
         );
 
         await screenMatchesGolden(tester, 'home_page_desktop_grammar');
       },
     );
 
-    testGoldens('renders desktop layout with navigation rail - PDA selected', (
+    testGoldens('renders wide layout with workspace selector - PDA selected', (
       tester,
     ) async {
       addTearDown(() {
@@ -269,13 +244,12 @@ void main() {
         size: const Size(1400, 900),
         isMobile: false,
         selectedIndex: 2,
-        extendedNav: false,
       );
 
       await screenMatchesGolden(tester, 'home_page_desktop_pda');
     });
 
-    testGoldens('renders desktop layout with extended navigation rail', (
+    testGoldens('renders wide layout on a large desktop window', (
       tester,
     ) async {
       addTearDown(() {
@@ -288,13 +262,14 @@ void main() {
         size: const Size(1600, 900),
         isMobile: false,
         selectedIndex: 0,
-        extendedNav: true,
       );
 
-      await screenMatchesGolden(tester, 'home_page_desktop_extended_nav');
+      await screenMatchesGolden(tester, 'home_page_desktop_wide');
     });
 
-    testGoldens('renders tablet layout with navigation rail', (tester) async {
+    testGoldens('renders tablet layout with workspace selector', (
+      tester,
+    ) async {
       addTearDown(() {
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
@@ -305,7 +280,6 @@ void main() {
         size: const Size(1024, 768),
         isMobile: false,
         selectedIndex: 0,
-        extendedNav: false,
       );
 
       await screenMatchesGolden(tester, 'home_page_tablet');

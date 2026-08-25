@@ -12,7 +12,7 @@ import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/presentation/pages/about_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
-import 'package:turing_lab/presentation/widgets/desktop_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
 import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 
@@ -123,10 +123,10 @@ void main() {
           prepare: loadResponsiveFixtures,
         );
 
-        final usesRail =
+        final usesSelector =
             viewport.logicalSize.width >= ResponsiveBreakpoints.mobile;
         expect(
-          find.byType(usesRail ? DesktopNavigation : MobileNavigation),
+          find.byType(usesSelector ? WorkspaceSelector : MobileNavigation),
           findsOneWidget,
           reason: 'the home shell picked the wrong navigation for '
               '${viewport.name}',

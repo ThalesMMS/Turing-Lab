@@ -72,8 +72,12 @@ Future<void> _pumpRegexPage(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
 
+  // `pumpWidgetBuilder` defaults to an 800x600 surface, which would render
+  // every case in the compact band regardless of the requested size. The page
+  // picks its band from the incoming constraints, so the surface has to match.
   await tester.pumpWidgetBuilder(
     _RegexPageTestWidget(screenSize: size, algorithmState: algorithmState),
+    surfaceSize: size,
   );
 
   await tester.pumpAndSettle();
