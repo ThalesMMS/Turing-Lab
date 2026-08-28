@@ -2,6 +2,6 @@
 * text=auto
 
 # Vendored dependencies
-graphview/ linguist-vendored
+graphview/** linguist-vendored
 
 # Exclude generated platform scaffolding and build artifacts
