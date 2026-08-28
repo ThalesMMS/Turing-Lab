@@ -3,5 +3,6 @@
 
 # Vendored dependencies
 graphview/** linguist-vendored
+test/** linguist-vendored
 
 # Exclude generated platform scaffolding and build artifacts
