@@ -1,16 +1,26 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/language_comparison_outcome.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/services/file_operations_service.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison_controller.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
 
 class _TestCallbacks {
   int autoLayoutCallCount = 0;
@@ -41,8 +51,83 @@ class _TestCallbacks {
 }
 
 class _MockFileOperationsService extends FileOperationsService {
+  final Queue<Result<FSA>> automatonLoadResults = Queue<Result<FSA>>();
+  Uint8List? lastWrittenBytes;
+
   Future<FSA?> loadAutomatonFromFile(String path) async {
     return null;
+  }
+
+  @override
+  Future<Result<FSA>> loadAutomatonFromBytes(Uint8List bytes) async {
+    if (automatonLoadResults.isEmpty) {
+      return const Failure<FSA>('No automaton load response configured');
+    }
+    return automatonLoadResults.removeFirst();
+  }
+
+  @override
+  Future<StringResult> writeBytes(
+    Uint8List bytes,
+    String filePath, {
+    String mimeType = 'application/octet-stream',
+  }) async {
+    lastWrittenBytes = bytes;
+    return Success<String>(filePath);
+  }
+}
+
+class _FakeFilePicker extends FilePicker {
+  final Queue<FilePickerResult?> pickResults = Queue<FilePickerResult?>();
+  final Queue<String?> saveResults = Queue<String?>();
+  Uint8List? lastSaveBytes;
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    bool allowCompression = true,
+    int compressionQuality = 30,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async {
+    if (pickResults.isEmpty) return null;
+    return pickResults.removeFirst();
+  }
+
+  @override
+  Future<String?> saveFile({
+    String? dialogTitle,
+    String? fileName,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Uint8List? bytes,
+    bool lockParentWindow = false,
+  }) async {
+    lastSaveBytes = bytes;
+    if (saveResults.isEmpty) return null;
+    return saveResults.removeFirst();
+  }
+}
+
+class _AlgorithmPanelProviderHarness extends ConsumerWidget {
+  const _AlgorithmPanelProviderHarness({required this.fileService});
+
+  final FileOperationsService fileService;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AlgorithmPanel(
+      currentAutomaton: ref.watch(automatonStateProvider).currentAutomaton,
+      fileService: fileService,
+    );
   }
 }
 
@@ -70,6 +155,7 @@ Future<void> _pumpAlgorithmPanel(
   Future<void> Function(FSA)? onCompareEquivalence,
   bool? equivalenceResult,
   String? equivalenceDetails,
+  LanguageComparisonRunner? languageComparisonRunner,
   FileOperationsService? fileService,
 }) async {
   final automatonNotifier = AutomatonStateNotifier();
@@ -106,6 +192,7 @@ Future<void> _pumpAlgorithmPanel(
             onCompareEquivalence: onCompareEquivalence,
             equivalenceResult: equivalenceResult,
             equivalenceDetails: equivalenceDetails,
+            languageComparisonRunner: languageComparisonRunner,
             fileService: fileService,
           ),
         ),
@@ -137,8 +224,46 @@ FSA _loadedAutomaton() {
   );
 }
 
+FilePickerResult _pickedComparisonFile(String name) {
+  return FilePickerResult([
+    PlatformFile(
+      name: '$name.jff',
+      size: 1,
+      bytes: Uint8List.fromList(const [1]),
+    ),
+  ]);
+}
+
+EquivalenceComparisonResult _comparisonResultFor(
+  LanguageComparisonRequest request, {
+  required bool isEquivalent,
+  String? distinguishingString,
+}) {
+  return EquivalenceComparisonResult(
+    originalAutomaton: request.automatonA,
+    comparedAutomaton: request.automatonB,
+    isEquivalent: isEquivalent,
+    distinguishingString: distinguishingString,
+    executionTimeMs: 1,
+  );
+}
+
+Future<void> _tapCompareEquivalence(WidgetTester tester) async {
+  await tester.ensureVisible(find.text('Compare Equivalence'));
+  await tester.tap(find.text('Compare Equivalence'));
+  await tester.pump();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    FilePicker.platform = _FakeFilePicker();
+  });
+
+  tearDown(() {
+    FilePicker.platform = _FakeFilePicker();
+  });
 
   group('AlgorithmPanel', () {
     testWidgets('renders all algorithm buttons and regex input', (
@@ -146,10 +271,10 @@ void main() {
     ) async {
       await _pumpAlgorithmPanel(tester);
 
-      expect(find.text('Algorithms'), findsOneWidget);
+      expect(find.text('Algorithms & Examples'), findsOneWidget);
       expect(find.text('Regex to NFA'), findsOneWidget);
       expect(find.text('NFA to DFA'), findsOneWidget);
-      expect(find.text('Remove λ-transitions'), findsOneWidget);
+      expect(find.text('Remove ε-transitions'), findsOneWidget);
       expect(find.text('Minimize DFA'), findsOneWidget);
       expect(find.text('Complete DFA'), findsOneWidget);
       expect(find.text('Complement DFA'), findsOneWidget);
@@ -162,7 +287,9 @@ void main() {
       expect(find.text('Prefix Closure'), findsOneWidget);
       expect(find.text('Suffix Closure'), findsOneWidget);
       expect(find.text('FA to Regex'), findsOneWidget);
+      expect(find.text('Practice FA to Regex'), findsOneWidget);
       expect(find.text('FSA to Grammar'), findsOneWidget);
+      expect(find.text('Practice FA to Regular Grammar'), findsOneWidget);
       expect(find.text('Auto Layout'), findsOneWidget);
       expect(find.text('Compare Equivalence'), findsOneWidget);
       expect(find.text('Clear'), findsOneWidget);
@@ -232,10 +359,7 @@ void main() {
     ) async {
       final callbacks = _TestCallbacks();
 
-      await _pumpAlgorithmPanel(
-        tester,
-        onReverseFsa: callbacks.onReverseFsa,
-      );
+      await _pumpAlgorithmPanel(tester, onReverseFsa: callbacks.onReverseFsa);
 
       await tester.ensureVisible(find.text('Reverse FSA'));
       await tester.tap(find.text('Reverse FSA'));
@@ -375,6 +499,138 @@ void main() {
       expect(find.text('Equivalence comparison'), findsNothing);
     });
 
+    testWidgets('production comparison renders typed failures in the viewer', (
+      tester,
+    ) async {
+      final picker = _FakeFilePicker()
+        ..pickResults.add(_pickedComparisonFile('invalid-nfa'));
+      FilePicker.platform = picker;
+
+      final fileService = _MockFileOperationsService()
+        ..automatonLoadResults.add(Success<FSA>(_loadedAutomaton()));
+
+      await _pumpAlgorithmPanel(
+        tester,
+        currentAutomaton: _loadedAutomaton().copyWith(id: 'source'),
+        fileService: fileService,
+        languageComparisonRunner: (_) async => const LanguageComparisonFailure(
+          reason: LanguageComparisonFailureReason.determinization,
+          message: 'Determinization failed for automaton B',
+        ),
+      );
+
+      await _tapCompareEquivalence(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LanguageComparisonViewer), findsOneWidget);
+      expect(
+        find.byKey(
+          LanguageComparisonSemantics.failureKey(
+            LanguageComparisonFailureReason.determinization,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          LanguageComparisonSemantics.statusKey(LanguageComparisonStatus.error),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'production comparison ignores an old revision after a newer request',
+      (tester) async {
+        final picker = _FakeFilePicker()
+          ..pickResults.addAll([
+            _pickedComparisonFile('old-target'),
+            _pickedComparisonFile('new-target'),
+          ]);
+        FilePicker.platform = picker;
+
+        final oldTarget = _loadedAutomaton().copyWith(id: 'old-target');
+        final newTarget = _loadedAutomaton().copyWith(id: 'new-target');
+        final fileService = _MockFileOperationsService()
+          ..automatonLoadResults.addAll([
+            Success<FSA>(oldTarget),
+            Success<FSA>(newTarget),
+          ]);
+        final oldCompletion = Completer<LanguageComparisonOutcome>();
+        final requests = <LanguageComparisonRequest>[];
+        Future<LanguageComparisonOutcome> runner(
+          LanguageComparisonRequest request,
+        ) {
+          requests.add(request);
+          if (request.automatonB.id == 'old-target') {
+            return oldCompletion.future;
+          }
+          return Future.value(
+            LanguageComparisonCompleted(
+              _comparisonResultFor(
+                request,
+                isEquivalent: false,
+                distinguishingString: 'new',
+              ),
+            ),
+          );
+        }
+
+        final oldSource = _loadedAutomaton().copyWith(
+          id: 'source',
+          modified: DateTime.utc(2026, 1, 1),
+        );
+        final newSource = oldSource.copyWith(
+          modified: DateTime.utc(2026, 2, 1),
+        );
+
+        await _pumpAlgorithmPanel(
+          tester,
+          currentAutomaton: oldSource,
+          fileService: fileService,
+          languageComparisonRunner: runner,
+        );
+        await _tapCompareEquivalence(tester);
+        expect(requests, hasLength(1));
+
+        await _pumpAlgorithmPanel(
+          tester,
+          currentAutomaton: newSource,
+          fileService: fileService,
+          languageComparisonRunner: runner,
+        );
+        await _tapCompareEquivalence(tester);
+        await tester.pumpAndSettle();
+
+        expect(requests, hasLength(2));
+        expect(requests.last.automatonA.modified, newSource.modified);
+        var viewer = tester.widget<LanguageComparisonViewer>(
+          find.byType(LanguageComparisonViewer),
+        );
+        expect(viewer.comparisonResult?.distinguishingString, 'new');
+
+        oldCompletion.complete(
+          LanguageComparisonCompleted(
+            _comparisonResultFor(requests.first, isEquivalent: true),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        viewer = tester.widget<LanguageComparisonViewer>(
+          find.byType(LanguageComparisonViewer),
+        );
+        expect(viewer.comparisonResult?.distinguishingString, 'new');
+        expect(
+          find.byKey(
+            LanguageComparisonSemantics.statusKey(
+              LanguageComparisonStatus.notEquivalent,
+            ),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
     testWidgets('displays correct icons for each algorithm button', (
       tester,
     ) async {
@@ -403,8 +659,14 @@ void main() {
     testWidgets('renders within a scrollable card', (tester) async {
       await _pumpAlgorithmPanel(tester);
 
-      expect(find.byType(Card), findsOneWidget);
       expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(SingleChildScrollView),
+          matching: find.byType(Card),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('uses mock file service when provided', (tester) async {
@@ -413,6 +675,223 @@ void main() {
       await _pumpAlgorithmPanel(tester, fileService: mockFileService);
 
       expect(find.byType(AlgorithmPanel), findsOneWidget);
+    });
+
+    testWidgets('exposes FSA file operations for a loaded automaton', (
+      tester,
+    ) async {
+      final fileService = _MockFileOperationsService();
+      await _pumpAlgorithmPanel(
+        tester,
+        currentAutomaton: _loadedAutomaton(),
+        fileService: fileService,
+      );
+
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_import_document')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_export_jflap-xml')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('interoperability_export_turing-lab-json'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_json_import_button')),
+        findsNothing,
+      );
+      final filePanel = tester.widget<FileOperationsPanel>(
+        find.byType(FileOperationsPanel),
+      );
+      expect(filePanel.fileService, same(fileService));
+
+      final replacement = _loadedAutomaton().copyWith(id: 'replacement');
+      filePanel.onAutomatonLoaded!(replacement);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AlgorithmPanel)),
+      );
+      expect(
+        container.read(automatonStateProvider).currentAutomaton?.id,
+        'replacement',
+      );
+    });
+
+    testWidgets('empty FSA workspace imports through generic preview', (
+      tester,
+    ) async {
+      const jflap = '''<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>fa</type>
+  <automaton>
+    <state id="0" name="q0">
+      <x>80</x><y>80</y><initial/>
+    </state>
+  </automaton>
+</structure>''';
+      final picker = _FakeFilePicker()
+        ..pickResults.add(
+          FilePickerResult([
+            PlatformFile(
+              name: 'automaton-without-extension',
+              size: jflap.length,
+              bytes: Uint8List.fromList(jflap.codeUnits),
+            ),
+          ]),
+        );
+      FilePicker.platform = picker;
+
+      await _pumpAlgorithmPanel(
+        tester,
+        fileService: _MockFileOperationsService(),
+      );
+
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_import_document')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_export_jflap-xml')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_json_import_button')),
+        findsNothing,
+      );
+
+      final importButton = find.byKey(
+        const ValueKey<String>('interoperability_import_document'),
+      );
+      await tester.ensureVisible(importButton);
+      await tester.tap(importButton);
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AlgorithmPanel)),
+      );
+      expect(container.read(automatonStateProvider).currentAutomaton, isNull);
+      expect(find.text('Review import'), findsOneWidget);
+
+      await tester.tap(find.text('Replace document'));
+      await tester.pumpAndSettle();
+      expect(
+        container.read(automatonStateProvider).currentAutomaton,
+        isNotNull,
+      );
+    });
+
+    testWidgets('host preserves imported extensions after edit and export', (
+      tester,
+    ) async {
+      const jflapWithExtension = '''
+<structure>
+  <type>fa</type>
+  <automaton>
+    <state id="0" name="q0">
+      <x>100</x><y>100</y><initial/><final/>
+      <future-metadata enabled="true" />
+    </state>
+  </automaton>
+</structure>
+''';
+      final picker = _FakeFilePicker()
+        ..pickResults.add(
+          FilePickerResult([
+            PlatformFile(
+              name: 'future.jff',
+              size: jflapWithExtension.length,
+              bytes: Uint8List.fromList(jflapWithExtension.codeUnits),
+            ),
+          ]),
+        )
+        ..saveResults.add(r'C:\exports\future.jff');
+      FilePicker.platform = picker;
+      final fileService = _MockFileOperationsService();
+      final notifier = AutomatonStateNotifier();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [automatonStateProvider.overrideWith((ref) => notifier)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: _AlgorithmPanelProviderHarness(fileService: fileService),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final importButton = find.byKey(
+        const ValueKey<String>('interoperability_import_document'),
+      );
+      await tester.ensureVisible(importButton);
+      await tester.tap(importButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Replace document'));
+      await tester.pumpAndSettle();
+
+      final imported = notifier.currentAutomaton!;
+      notifier.updateAutomaton(imported.copyWith(name: 'Edited in Turing Lab'));
+      await tester.pumpAndSettle();
+
+      final exportButton = find.byKey(
+        const ValueKey<String>('interoperability_export_jflap-xml'),
+      );
+      await tester.ensureVisible(exportButton);
+      await tester.tap(exportButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Export file'));
+      await tester.pumpAndSettle();
+
+      final exported = picker.lastSaveBytes ?? fileService.lastWrittenBytes;
+      expect(exported, isNotNull);
+      expect(
+        String.fromCharCodes(exported!),
+        contains('<future-metadata enabled="true"'),
+      );
+    });
+
+    testWidgets('exposes FSA imports before an automaton is loaded', (
+      tester,
+    ) async {
+      final fileService = _MockFileOperationsService();
+      await _pumpAlgorithmPanel(tester, fileService: fileService);
+
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_import_document')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_export_jflap-xml')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_jflap_export_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_jflap_import_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_json_import_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fsa_json_export_button')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('fsa_svg_export_button')), findsNothing);
+      expect(find.byKey(const ValueKey('fsa_png_export_button')), findsNothing);
+
+      final filePanel = tester.widget<FileOperationsPanel>(
+        find.byType(FileOperationsPanel),
+      );
+      expect(filePanel.fileService, same(fileService));
+      expect(filePanel.onAutomatonLoaded, isNotNull);
     });
 
     testWidgets('displays descriptions for each algorithm button', (
@@ -489,7 +968,7 @@ void main() {
     testWidgets('displays title text with correct styling', (tester) async {
       await _pumpAlgorithmPanel(tester);
 
-      final titleText = find.text('Algorithms');
+      final titleText = find.text('Algorithms & Examples');
       expect(titleText, findsOneWidget);
 
       final textWidget = tester.widget<Text>(titleText);

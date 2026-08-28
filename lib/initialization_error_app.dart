@@ -7,34 +7,50 @@ class _InitializationErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  child: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(Icons.error_outline, size: 56),
-                      SizedBox(height: 16),
-                      Text(
-                        'Turing Lab could not finish startup.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
+      locale: AppLocalePolicy.resolve(
+        persistedLocaleCode: null,
+        platformLocales: View.of(context).platformDispatcher.locales,
+      ),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalePolicy.supportedLocales,
+      home: const _InitializationErrorBody(),
+    );
+  }
+}
+
+class _InitializationErrorBody extends StatelessWidget {
+  const _InitializationErrorBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(Icons.error_outline, size: 56),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.initializationErrorTitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Restart the app. Local settings and trace persistence may be unavailable until initialization succeeds.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.initializationErrorMessage,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             ),

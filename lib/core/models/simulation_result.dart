@@ -9,26 +9,38 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'package:collection/collection.dart';
+
+import '../messages/structured_message.dart';
 import 'nfa_computation_tree.dart';
 import 'simulation_step.dart';
 
 class SimulationResult {
+  static const schemaVersion = 2;
+  static const ListEquality<SimulationStep> _stepEquality =
+      ListEquality<SimulationStep>();
+
   final String inputString;
   final bool accepted;
   bool get isAccepted => accepted;
   final List<SimulationStep> steps;
   final String errorMessage;
+  final StructuredMessage? message;
   final Duration executionTime;
   final NFAComputationTree? computationTree;
+  final bool _usesLegacyMessagePayload;
 
   SimulationResult._({
     required this.inputString,
     required this.accepted,
     required List<SimulationStep> steps,
     this.errorMessage = '',
+    this.message,
     required this.executionTime,
     this.computationTree,
-  }) : steps = List<SimulationStep>.unmodifiable(steps);
+    bool usesLegacyMessagePayload = false,
+  }) : steps = List<SimulationStep>.unmodifiable(steps),
+       _usesLegacyMessagePayload = usesLegacyMessagePayload;
 
   factory SimulationResult.success({
     required String inputString,
@@ -40,6 +52,7 @@ class SimulationResult {
       inputString: inputString,
       accepted: true,
       steps: steps,
+      message: null,
       executionTime: executionTime,
       computationTree: computationTree,
     );
@@ -57,6 +70,28 @@ class SimulationResult {
       accepted: false,
       steps: steps,
       errorMessage: errorMessage,
+      message: _legacyFailureMessage,
+      executionTime: executionTime,
+      computationTree: computationTree,
+      usesLegacyMessagePayload: true,
+    );
+  }
+
+  /// Creates a failure whose persisted form contains only semantic data.
+  factory SimulationResult.structuredFailure({
+    required String inputString,
+    required List<SimulationStep> steps,
+    required StructuredMessage message,
+    required Duration executionTime,
+    String? compatibilityErrorMessage,
+    NFAComputationTree? computationTree,
+  }) {
+    return SimulationResult._(
+      inputString: inputString,
+      accepted: false,
+      steps: steps,
+      errorMessage: compatibilityErrorMessage ?? message.stableCode,
+      message: message,
       executionTime: executionTime,
       computationTree: computationTree,
     );
@@ -74,6 +109,7 @@ class SimulationResult {
       steps: steps,
       errorMessage:
           'Simulation timed out after ${executionTime.inSeconds} seconds',
+      message: _timeoutMessage(executionTime),
       executionTime: executionTime,
       computationTree: computationTree,
     );
@@ -90,6 +126,7 @@ class SimulationResult {
       accepted: false,
       steps: steps,
       errorMessage: 'Infinite loop detected after ${steps.length} steps',
+      message: _provenCycleMessage(steps.length),
       executionTime: executionTime,
       computationTree: computationTree,
     );
@@ -101,6 +138,7 @@ class SimulationResult {
     bool? accepted,
     List<SimulationStep>? steps,
     String? errorMessage,
+    StructuredMessage? message,
     Duration? executionTime,
     NFAComputationTree? computationTree,
   }) {
@@ -109,43 +147,88 @@ class SimulationResult {
       accepted: accepted ?? this.accepted,
       steps: steps ?? this.steps,
       errorMessage: errorMessage ?? this.errorMessage,
+      message: message ?? this.message,
       executionTime: executionTime ?? this.executionTime,
       computationTree: computationTree ?? this.computationTree,
+      usesLegacyMessagePayload: _usesLegacyMessagePayload && message == null,
     );
   }
 
   /// Converts the simulation result to a JSON representation
   Map<String, dynamic> toJson() {
-    final json = {
+    final shared = <String, dynamic>{
       'inputString': inputString,
       'accepted': accepted,
       'steps': steps.map((s) => s.toJson()).toList(),
-      'errorMessage': errorMessage,
       'executionTime': executionTime.inMilliseconds,
     };
     if (computationTree != null) {
-      json['computationTree'] = computationTree!.toJson();
+      shared['computationTree'] = computationTree!.toJson();
     }
-    return json;
+    if (_usesLegacyMessagePayload) {
+      return {...shared, 'errorMessage': errorMessage};
+    }
+    return {
+      'schemaVersion': schemaVersion,
+      ...shared,
+      'message': message?.toJson(),
+    };
   }
+
+  /// Persistence boundary used by trace history and current-trace restore.
+  ///
+  /// Legacy instances intentionally retain their legacy JSON until their
+  /// producer has been migrated to structured messages.
+  Map<String, dynamic> toPersistedJson() => toJson();
+
+  bool get usesLegacyText =>
+      _usesLegacyMessagePayload ||
+      steps.any((step) => step.usesLegacyText) ||
+      (computationTree?.errorMessage.isNotEmpty ?? false) &&
+          computationTree?.structuredMessage == null;
 
   /// Creates a simulation result from a JSON representation
   factory SimulationResult.fromJson(Map<String, dynamic> json) {
+    final version = json['schemaVersion'];
+    if (version != null && version != schemaVersion) {
+      throw FormatException('Unsupported simulation-result version: $version.');
+    }
+    final steps = (json['steps'] as List)
+        .map((s) => SimulationStep.fromJson(s as Map<String, dynamic>))
+        .toList();
+    final executionTime = Duration(milliseconds: json['executionTime'] as int);
+    final legacyError = version == null
+        ? json['errorMessage'] as String? ?? ''
+        : '';
+    final message = json['message'] is Map
+        ? StructuredMessage.fromJson(
+            Map<String, Object?>.from(json['message'] as Map),
+          )
+        : _migrateLegacyError(
+            legacyError,
+            executionTime: executionTime,
+            stepCount: steps.length,
+          );
     return SimulationResult._(
       inputString: json['inputString'] as String,
       accepted: json['accepted'] as bool,
-      steps: (json['steps'] as List)
-          .map((s) => SimulationStep.fromJson(s as Map<String, dynamic>))
-          .toList(),
-      errorMessage: json['errorMessage'] as String? ?? '',
-      executionTime: Duration(milliseconds: json['executionTime'] as int),
+      steps: steps,
+      errorMessage: version == null
+          ? legacyError
+          : _compatibilityTextFor(message),
+      message: message,
+      executionTime: executionTime,
       computationTree: json['computationTree'] != null
           ? NFAComputationTree.fromJson(
               json['computationTree'] as Map<String, dynamic>,
             )
           : null,
+      usesLegacyMessagePayload: version == null && legacyError.isNotEmpty,
     );
   }
+
+  factory SimulationResult.fromPersistedJson(Map<String, dynamic> json) =>
+      SimulationResult.fromJson(json);
 
   @override
   bool operator ==(Object other) {
@@ -153,8 +236,10 @@ class SimulationResult {
     return other is SimulationResult &&
         other.inputString == inputString &&
         other.accepted == accepted &&
-        other.steps == steps &&
-        other.errorMessage == errorMessage &&
+        _stepEquality.equals(other.steps, steps) &&
+        other._usesLegacyMessagePayload == _usesLegacyMessagePayload &&
+        (!_usesLegacyMessagePayload || other.errorMessage == errorMessage) &&
+        other.message == message &&
         other.executionTime == executionTime &&
         other.computationTree == computationTree;
   }
@@ -164,8 +249,10 @@ class SimulationResult {
     return Object.hash(
       inputString,
       accepted,
-      steps,
-      errorMessage,
+      _stepEquality.hash(steps),
+      _usesLegacyMessagePayload,
+      _usesLegacyMessagePayload ? errorMessage : null,
+      message,
       executionTime,
       computationTree,
     );
@@ -198,11 +285,16 @@ class SimulationResult {
   bool get isFailed => !accepted || errorMessage.isNotEmpty;
 
   /// Checks if the simulation timed out
-  bool get isTimeout =>
-      errorMessage.contains('timeout') || errorMessage.contains('Timeout');
+  bool get isTimeout {
+    if (message?.stableCode == 'simulation.timeout') return true;
+    final normalizedError = errorMessage.toLowerCase();
+    return normalizedError.contains('timeout') ||
+        normalizedError.contains('timed out');
+  }
 
   /// Checks if the simulation had an infinite loop
   bool get isInfiniteLoop =>
+      message?.stableCode == 'simulation.proven-cycle' ||
       errorMessage.contains('infinite loop') ||
       errorMessage.contains('Infinite loop');
 
@@ -236,8 +328,9 @@ class SimulationResult {
 
     // Case 1: Got stuck with remaining input (no valid transition)
     if (hasRemainingInput) {
-      final nextSymbol =
-          lastStep.remainingInput.isNotEmpty ? lastStep.remainingInput[0] : '';
+      final nextSymbol = lastStep.remainingInput.isNotEmpty
+          ? lastStep.remainingInput[0]
+          : '';
 
       if (nextSymbol.isNotEmpty) {
         return 'No valid transition from state $currentState on symbol \'$nextSymbol\'. '
@@ -339,8 +432,59 @@ class SimulationResult {
       accepted: false,
       steps: [],
       errorMessage: errorMessage,
+      message: _legacyFailureMessage,
       executionTime: executionTime,
       computationTree: computationTree,
+      usesLegacyMessagePayload: true,
     );
   }
+}
+
+final StructuredMessage _legacyFailureMessage = StructuredMessage.legacyAdapter(
+  namespace: 'simulation',
+  code: 'legacy-failure',
+  category: StructuredMessageCategory.simulation,
+);
+
+StructuredMessage _timeoutMessage(Duration executionTime) => StructuredMessage(
+  namespace: 'simulation',
+  code: 'timeout',
+  category: StructuredMessageCategory.simulation,
+  severity: StructuredMessageSeverity.warning,
+  arguments: {'elapsed': StructuredMessageArgument.duration(executionTime)},
+);
+
+StructuredMessage _provenCycleMessage(int stepCount) => StructuredMessage(
+  namespace: 'simulation',
+  code: 'proven-cycle',
+  category: StructuredMessageCategory.simulation,
+  severity: StructuredMessageSeverity.warning,
+  arguments: {'steps': StructuredMessageArgument.count(stepCount)},
+);
+
+StructuredMessage? _migrateLegacyError(
+  String legacyError, {
+  required Duration executionTime,
+  required int stepCount,
+}) {
+  if (legacyError.isEmpty) return null;
+  final normalized = legacyError.toLowerCase();
+  if (normalized.contains('timeout') || normalized.contains('timed out')) {
+    return _timeoutMessage(executionTime);
+  }
+  if (normalized.contains('infinite loop')) {
+    return _provenCycleMessage(stepCount);
+  }
+  return _legacyFailureMessage;
+}
+
+String _compatibilityTextFor(StructuredMessage? message) {
+  if (message == null) return '';
+  return switch (message.stableCode) {
+    'simulation.timeout' =>
+      'Simulation timed out after ${((message.arguments['elapsed']?.value as int? ?? 0) / 1000).floor()} seconds',
+    'simulation.proven-cycle' =>
+      'Infinite loop detected after ${message.arguments['steps']?.value ?? 0} steps',
+    _ => message.stableCode,
+  };
 }

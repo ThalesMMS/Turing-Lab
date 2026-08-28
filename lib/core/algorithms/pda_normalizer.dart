@@ -7,8 +7,10 @@ import '../models/pda_acceptance_mode.dart';
 import '../models/pda_transition.dart';
 import '../models/state.dart';
 import '../models/transition.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'pda_normalization_messages.dart';
 
 /// Single-pop normal forms supported by [PDANormalizer].
 enum PDANormalForm {
@@ -26,12 +28,18 @@ class PDANormalizationProvenance {
   const PDANormalizationProvenance({
     required this.generatedId,
     required this.description,
+    this.descriptionMessage,
     this.sourceStateId,
     this.sourceTransitionId,
   });
 
   final String generatedId;
+
+  /// Stable message code kept for callers that still consume a string.
   final String description;
+
+  /// Locale-neutral explanation of why this element was generated.
+  final StructuredMessage? descriptionMessage;
   final String? sourceStateId;
   final String? sourceTransitionId;
 }
@@ -50,16 +58,18 @@ class PDANormalizationReport {
     required this.sourceWasDeterministic,
     required this.normalizedIsDeterministic,
     required List<String> warnings,
-  })  : addedStates = Set<State>.unmodifiable(addedStates),
-        addedStackSymbols = Set<String>.unmodifiable(addedStackSymbols),
-        addedTransitions = Set<PDATransition>.unmodifiable(addedTransitions),
-        replacedTransitionIds = Set<String>.unmodifiable(
-          replacedTransitionIds,
-        ),
-        provenance = Map<String, PDANormalizationProvenance>.unmodifiable(
-          provenance,
-        ),
-        warnings = List<String>.unmodifiable(warnings);
+    Iterable<StructuredMessage> structuredWarnings = const [],
+  }) : addedStates = Set<State>.unmodifiable(addedStates),
+       addedStackSymbols = Set<String>.unmodifiable(addedStackSymbols),
+       addedTransitions = Set<PDATransition>.unmodifiable(addedTransitions),
+       replacedTransitionIds = Set<String>.unmodifiable(replacedTransitionIds),
+       provenance = Map<String, PDANormalizationProvenance>.unmodifiable(
+         provenance,
+       ),
+       warnings = List<String>.unmodifiable(warnings),
+       structuredWarnings = List<StructuredMessage>.unmodifiable(
+         structuredWarnings,
+       );
 
   final PDA normalizedPda;
   final PDAAcceptanceMode sourceMode;
@@ -71,7 +81,12 @@ class PDANormalizationReport {
   final Map<String, PDANormalizationProvenance> provenance;
   final bool sourceWasDeterministic;
   final bool normalizedIsDeterministic;
+
+  /// Stable message codes kept for compatibility with existing callers.
   final List<String> warnings;
+
+  /// Locale-neutral warning payloads for localized presentation.
+  final List<StructuredMessage> structuredWarnings;
 
   PDAAcceptanceMode get targetMode => targetForm.acceptanceMode;
 
@@ -91,54 +106,85 @@ class PDANormalizer {
   }) {
     final validationError = _validateSource(pda, sourceMode);
     if (validationError != null) {
-      return Failure(validationError);
+      return Failure(
+        validationError.message.stableCode,
+        structuredMessage: validationError.message,
+      );
     }
 
-    final builder = _PDANormalizationBuilder(
-      pda,
-      sourceMode,
-      targetForm,
-    );
+    final builder = _PDANormalizationBuilder(pda, sourceMode, targetForm);
     return Success(builder.build());
   }
 
-  static String? _validateSource(PDA pda, PDAAcceptanceMode sourceMode) {
+  static _PdaNormalizationValidation? _validateSource(
+    PDA pda,
+    PDAAcceptanceMode sourceMode,
+  ) {
     if (pda.states.isEmpty) {
-      return 'Cannot normalize an empty PDA.';
+      return _PdaNormalizationValidation(PdaNormalizationMessages.emptyPda());
     }
     final initialState = pda.initialState;
     if (initialState == null || !pda.states.contains(initialState)) {
-      return 'PDA must define an initial state before normalization.';
+      return _PdaNormalizationValidation(
+        initialState == null
+            ? PdaNormalizationMessages.missingInitialState()
+            : PdaNormalizationMessages.initialStateOutsideSet(),
+      );
     }
     if (pda.initialStackSymbol.isEmpty ||
         !pda.stackAlphabet.contains(pda.initialStackSymbol)) {
-      return 'The initial stack symbol must belong to the stack alphabet.';
+      return _PdaNormalizationValidation(
+        PdaNormalizationMessages.invalidInitialStackSymbol(
+          pda.initialStackSymbol,
+        ),
+      );
     }
     if (sourceMode != PDAAcceptanceMode.emptyStack &&
         pda.acceptingStates.isEmpty) {
-      return 'The selected source mode requires at least one accepting state.';
+      return _PdaNormalizationValidation(
+        PdaNormalizationMessages.missingAcceptingState(),
+      );
     }
     if (pda.acceptingStates.any((state) => !pda.states.contains(state))) {
-      return 'Every accepting state must belong to the PDA.';
+      return _PdaNormalizationValidation(
+        PdaNormalizationMessages.acceptingStateOutsideSet(),
+      );
     }
 
     for (final transition in pda.transitions) {
       if (transition is! PDATransition) {
-        return 'PDA normalization only supports PDA transitions.';
+        return _PdaNormalizationValidation(
+          PdaNormalizationMessages.nonPdaTransition(),
+        );
       }
       if (!pda.states.contains(transition.fromState) ||
           !pda.states.contains(transition.toState)) {
-        return 'Transition ${transition.id} references a state outside the PDA.';
+        return _PdaNormalizationValidation(
+          PdaNormalizationMessages.transitionEndpointOutsideSet(transition.id),
+        );
       }
       if (!_hasLambdaPop(transition) &&
           !pda.stackAlphabet.contains(transition.popSymbol)) {
-        return 'Transition ${transition.id} pops a symbol outside the stack alphabet.';
+        return _PdaNormalizationValidation(
+          PdaNormalizationMessages.transitionPopSymbolOutsideAlphabet(
+            transition.id,
+            transition.popSymbol,
+          ),
+        );
       }
       if (!_hasLambdaPush(transition) &&
           transition.pushSymbols.any(
             (symbol) => !pda.stackAlphabet.contains(symbol),
           )) {
-        return 'Transition ${transition.id} pushes a symbol outside the stack alphabet.';
+        final symbol = transition.pushSymbols.firstWhere(
+          (symbol) => !pda.stackAlphabet.contains(symbol),
+        );
+        return _PdaNormalizationValidation(
+          PdaNormalizationMessages.transitionPushSymbolOutsideAlphabet(
+            transition.id,
+            symbol,
+          ),
+        );
       }
     }
     return null;
@@ -147,12 +193,13 @@ class PDANormalizer {
 
 class _PDANormalizationBuilder {
   _PDANormalizationBuilder(this.source, this.sourceMode, this.targetForm)
-      : targetMode = targetForm.acceptanceMode,
-        _usedStateIds = source.states.map((state) => state.id).toSet(),
-        _usedStateLabels = source.states.map((state) => state.label).toSet(),
-        _usedTransitionIds =
-            source.transitions.map((transition) => transition.id).toSet(),
-        _sourceWasDeterministic = _isDeterministic(source);
+    : targetMode = targetForm.acceptanceMode,
+      _usedStateIds = source.states.map((state) => state.id).toSet(),
+      _usedStateLabels = source.states.map((state) => state.label).toSet(),
+      _usedTransitionIds = source.transitions
+          .map((transition) => transition.id)
+          .toSet(),
+      _sourceWasDeterministic = _isDeterministic(source);
 
   final PDA source;
   final PDAAcceptanceMode sourceMode;
@@ -176,14 +223,16 @@ class _PDANormalizationBuilder {
       '${source.initialStackSymbol}_bottom',
     );
     final stackAlphabet = <String>{...source.stackAlphabet, bottomMarker};
-    final sourceAcceptingIds =
-        source.acceptingStates.map((state) => state.id).toSet();
+    final sourceAcceptingIds = source.acceptingStates
+        .map((state) => state.id)
+        .toSet();
 
     final statesBySourceId = <String, State>{};
     final sourceStates = source.states.toList()
       ..sort((left, right) => left.id.compareTo(right.id));
     for (final state in sourceStates) {
-      final remainsAccepting = sourceMode == PDAAcceptanceMode.finalState &&
+      final remainsAccepting =
+          sourceMode == PDAAcceptanceMode.finalState &&
           targetMode == PDAAcceptanceMode.finalState &&
           sourceAcceptingIds.contains(state.id);
       statesBySourceId[state.id] = state.copyWith(
@@ -198,7 +247,9 @@ class _PDANormalizationBuilder {
       label: 'norm_init',
       position: nextGeneratedPosition(),
       isInitial: true,
-      description: 'Fresh initial state that installs the bottom marker.',
+      descriptionMessage: PdaNormalizationMessages.initialStateDescription(
+        source.initialState!.id,
+      ),
       sourceStateId: source.initialState!.id,
     );
 
@@ -209,7 +260,8 @@ class _PDANormalizationBuilder {
         label: 'norm_accept',
         position: nextGeneratedPosition(),
         isAccepting: targetMode != PDAAcceptanceMode.emptyStack,
-        description: 'State reached after the simulated source stack empties.',
+        descriptionMessage:
+            PdaNormalizationMessages.acceptanceStateDescription(),
       );
     } else if (_usesDrainState) {
       acceptanceState = _addState(
@@ -217,8 +269,7 @@ class _PDANormalizationBuilder {
         label: 'norm_drain',
         position: nextGeneratedPosition(),
         isAccepting: targetMode == PDAAcceptanceMode.both,
-        description:
-            'State that drains residual stack content after acceptance.',
+        descriptionMessage: PdaNormalizationMessages.drainStateDescription(),
       );
     }
 
@@ -230,8 +281,10 @@ class _PDANormalizationBuilder {
         toState: statesBySourceId[source.initialState!.id]!,
         popSymbol: bottomMarker,
         pushSymbols: [source.initialStackSymbol, bottomMarker],
-        description:
-            'Installs the source initial stack above the bottom marker.',
+        descriptionMessage:
+            PdaNormalizationMessages.initializeTransitionDescription(
+              source.initialState!.id,
+            ),
         sourceStateId: source.initialState!.id,
       ),
     );
@@ -266,8 +319,10 @@ class _PDANormalizationBuilder {
             pushSymbols: pushSymbols,
             type: transition.type,
             controlPoint: transition.controlPoint,
-            description:
-                'Single-pop expansion of source transition ${transition.id}.',
+            descriptionMessage:
+                PdaNormalizationMessages.singlePopTransitionDescription(
+                  transition.id,
+                ),
             sourceTransitionId: transition.id,
           ),
         );
@@ -277,8 +332,9 @@ class _PDANormalizationBuilder {
     if (_usesBottomExit) {
       final exitSources = sourceMode == PDAAcceptanceMode.emptyStack
           ? sourceStates
-          : sourceStates
-              .where((state) => sourceAcceptingIds.contains(state.id));
+          : sourceStates.where(
+              (state) => sourceAcceptingIds.contains(state.id),
+            );
       for (final sourceState in exitSources) {
         transitions.add(
           _addTransition(
@@ -287,8 +343,11 @@ class _PDANormalizationBuilder {
             toState: acceptanceState!,
             popSymbol: bottomMarker,
             pushSymbols: const [],
-            description:
-                'Converts an empty source stack to ${targetMode.name} acceptance.',
+            descriptionMessage:
+                PdaNormalizationMessages.acceptEmptyTransitionDescription(
+                  sourceStateId: sourceState.id,
+                  targetMode: targetMode,
+                ),
             sourceStateId: sourceState.id,
           ),
         );
@@ -306,8 +365,10 @@ class _PDANormalizationBuilder {
               toState: acceptanceState!,
               popSymbol: stackTop,
               pushSymbols: const [],
-              description:
-                  'Starts draining the stack from accepting state ${sourceState.id}.',
+              descriptionMessage:
+                  PdaNormalizationMessages.enterDrainTransitionDescription(
+                    sourceState.id,
+                  ),
               sourceStateId: sourceState.id,
             ),
           );
@@ -322,24 +383,24 @@ class _PDANormalizationBuilder {
             popSymbol: stackTop,
             pushSymbols: const [],
             controlPoint: Vector2(30, -30),
-            description: 'Pops one residual stack symbol in the drain state.',
+            descriptionMessage:
+                PdaNormalizationMessages.drainTransitionDescription(),
           ),
         );
       }
     }
 
-    final allStates = <State>{
-      ...statesBySourceId.values,
-      ..._addedStates,
-    };
-    final acceptingStates =
-        allStates.where((state) => state.isAccepting).toSet();
+    final allStates = <State>{...statesBySourceId.values, ..._addedStates};
+    final acceptingStates = allStates
+        .where((state) => state.isAccepting)
+        .toSet();
     final normalizedPda = PDA(
       id: source.id,
       name: source.name,
       states: allStates,
-      transitions:
-          transitions.map<Transition>((transition) => transition).toSet(),
+      transitions: transitions
+          .map<Transition>((transition) => transition)
+          .toSet(),
       alphabet: source.alphabet,
       initialState: normalizedInitial,
       acceptingStates: acceptingStates,
@@ -350,13 +411,17 @@ class _PDANormalizationBuilder {
       panOffset: source.panOffset,
       stackAlphabet: stackAlphabet,
       initialStackSymbol: bottomMarker,
+      acceptanceMode: targetMode,
     );
 
     final normalizedIsDeterministic = _isDeterministic(normalizedPda);
-    final warnings = <String>[
-      'Normalization may increase the state and transition count: ${_addedStates.length} states and ${_addedTransitions.length} transitions were generated.',
+    final structuredWarnings = <StructuredMessage>[
+      PdaNormalizationMessages.growthWarning(
+        addedStates: _addedStates.length,
+        addedTransitions: _addedTransitions.length,
+      ),
       if (_sourceWasDeterministic && !normalizedIsDeterministic)
-        'The selected conversion changed a deterministic source into a non-deterministic PDA.',
+        PdaNormalizationMessages.introducedNondeterminismWarning(),
     ];
 
     return PDANormalizationReport(
@@ -370,7 +435,8 @@ class _PDANormalizationBuilder {
       provenance: _provenance,
       sourceWasDeterministic: _sourceWasDeterministic,
       normalizedIsDeterministic: normalizedIsDeterministic,
-      warnings: warnings,
+      warnings: [for (final warning in structuredWarnings) warning.stableCode],
+      structuredWarnings: structuredWarnings,
     );
   }
 
@@ -384,7 +450,7 @@ class _PDANormalizationBuilder {
     required String role,
     required String label,
     required Vector2 position,
-    required String description,
+    required StructuredMessage descriptionMessage,
     bool isInitial = false,
     bool isAccepting = false,
     String? sourceStateId,
@@ -398,13 +464,14 @@ class _PDANormalizationBuilder {
       type: isInitial
           ? StateType.initial
           : isAccepting
-              ? StateType.accepting
-              : StateType.normal,
+          ? StateType.accepting
+          : StateType.normal,
     );
     _addedStates.add(state);
     _provenance[state.id] = PDANormalizationProvenance(
       generatedId: state.id,
-      description: description,
+      description: descriptionMessage.stableCode,
+      descriptionMessage: descriptionMessage,
       sourceStateId: sourceStateId,
     );
     return state;
@@ -416,7 +483,7 @@ class _PDANormalizationBuilder {
     required State toState,
     required String popSymbol,
     required List<String> pushSymbols,
-    required String description,
+    required StructuredMessage descriptionMessage,
     String inputSymbol = '',
     bool isLambdaInput = true,
     TransitionType type = TransitionType.epsilon,
@@ -450,7 +517,8 @@ class _PDANormalizationBuilder {
     _addedTransitions.add(transition);
     _provenance[transition.id] = PDANormalizationProvenance(
       generatedId: transition.id,
-      description: description,
+      description: descriptionMessage.stableCode,
+      descriptionMessage: descriptionMessage,
       sourceStateId: sourceStateId,
       sourceTransitionId: sourceTransitionId,
     );
@@ -499,9 +567,11 @@ String _freshStackSymbol(Set<String> existing, String base) {
 int _compareTransitions(PDATransition left, PDATransition right) {
   final byId = left.id.compareTo(right.id);
   if (byId != 0) return byId;
-  final leftKey = '${left.fromState.id}\u0000${left.toState.id}\u0000'
+  final leftKey =
+      '${left.fromState.id}\u0000${left.toState.id}\u0000'
       '${left.inputSymbol}\u0000${left.popSymbol}\u0000${left.pushSymbol}';
-  final rightKey = '${right.fromState.id}\u0000${right.toState.id}\u0000'
+  final rightKey =
+      '${right.fromState.id}\u0000${right.toState.id}\u0000'
       '${right.inputSymbol}\u0000${right.popSymbol}\u0000${right.pushSymbol}';
   return leftKey.compareTo(rightKey);
 }
@@ -550,14 +620,18 @@ bool _isDeterministic(PDA pda) {
   for (final transitions in transitionsByState.values) {
     for (var leftIndex = 0; leftIndex < transitions.length; leftIndex++) {
       final left = transitions[leftIndex];
-      for (var rightIndex = leftIndex + 1;
-          rightIndex < transitions.length;
-          rightIndex++) {
+      for (
+        var rightIndex = leftIndex + 1;
+        rightIndex < transitions.length;
+        rightIndex++
+      ) {
         final right = transitions[rightIndex];
-        final inputOverlaps = left.isLambdaInput ||
+        final inputOverlaps =
+            left.isLambdaInput ||
             right.isLambdaInput ||
             left.inputSymbol == right.inputSymbol;
-        final stackOverlaps = _hasLambdaPop(left) ||
+        final stackOverlaps =
+            _hasLambdaPop(left) ||
             _hasLambdaPop(right) ||
             left.popSymbol == right.popSymbol;
         if (inputOverlaps && stackOverlaps) return false;
@@ -572,3 +646,9 @@ bool _hasLambdaPop(PDATransition transition) =>
 
 bool _hasLambdaPush(PDATransition transition) =>
     transition.isLambdaPush || isEpsilonSymbol(transition.pushSymbol);
+
+final class _PdaNormalizationValidation {
+  const _PdaNormalizationValidation(this.message);
+
+  final StructuredMessage message;
+}

@@ -1,0 +1,14 @@
+{
+  "family": "tm",
+  "scenario": "mutations",
+  "seed": 338,
+  "cases": 1,
+  "expectedStatus": "passed",
+  "minimumScore": 1.0,
+  "operators": [
+    "clamp-left-head-at-zero",
+    "partial-multi-tape-read-match",
+    "reject-on-first-halted-ntm-branch",
+    "skip-building-block-return"
+  ]
+}

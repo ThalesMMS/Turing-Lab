@@ -8,6 +8,7 @@ import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/error_banner.dart';
 
 class _TestSimulationHighlightService extends SimulationHighlightService {
   int clearCallCount = 0;
@@ -50,27 +51,24 @@ class _SimulationCallback {
 }
 
 SimulationResult _traceResult(String state) => SimulationResult.success(
-      inputString: 'a',
-      steps: [
-        SimulationStep(
-          currentState: state,
-          remainingInput: 'a',
-          stepNumber: 0,
-        ),
-      ],
-      executionTime: Duration.zero,
-    );
+  inputString: 'a',
+  steps: [
+    SimulationStep(currentState: state, remainingInput: 'a', stepNumber: 0),
+  ],
+  executionTime: Duration.zero,
+);
 
 SimulationResult _emptyTraceResult() => SimulationResult.success(
-      inputString: '',
-      steps: const [],
-      executionTime: Duration.zero,
-    );
+  inputString: '',
+  steps: const [],
+  executionTime: Duration.zero,
+);
 
 Future<void> _pumpSimulationPanel(
   WidgetTester tester, {
   required _SimulationCallback onSimulate,
   SimulationResult? simulationResult,
+  String? errorMessage,
   String? regexResult,
   _TestSimulationHighlightService? highlightService,
   double animationSpeed = 1.0,
@@ -83,6 +81,7 @@ Future<void> _pumpSimulationPanel(
         body: SimulationPanel(
           onSimulate: onSimulate.call,
           simulationResult: simulationResult,
+          errorMessage: errorMessage,
           regexResult: regexResult,
           highlightService:
               highlightService ?? _TestSimulationHighlightService(),
@@ -98,10 +97,7 @@ Future<void> _pumpSimulationPanel(
 }
 
 /// Scrolls the element found by [finder] into view and taps it.
-Future<void> _ensureVisibleAndTap(
-  WidgetTester tester,
-  Finder finder,
-) async {
+Future<void> _ensureVisibleAndTap(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
@@ -129,11 +125,7 @@ void main() {
             remainingInput: 'b',
             stepNumber: 1,
           ),
-          SimulationStep(
-            currentState: 'q2',
-            remainingInput: '',
-            stepNumber: 2,
-          ),
+          SimulationStep(currentState: 'q2', remainingInput: '', stepNumber: 2),
         ],
         executionTime: Duration.zero,
       );
@@ -304,8 +296,9 @@ void main() {
       await tester.pump();
     });
 
-    testWidgets('an older run cannot end a newer run loading state',
-        (tester) async {
+    testWidgets('an older run cannot end a newer run loading state', (
+      tester,
+    ) async {
       final callback = _SimulationCallback(completeImmediately: false);
 
       await _pumpSimulationPanel(tester, onSimulate: callback);
@@ -396,8 +389,23 @@ void main() {
       // "Steps: " and the count are in separate Text widgets.
       expect(find.textContaining('Steps'), findsAtLeastNWidgets(1));
       // The error message is displayed without an "Error: " prefix.
+      expect(find.textContaining('No valid transition found'), findsOneWidget);
+    });
+
+    testWidgets('displays a simulation workflow error without a result', (
+      tester,
+    ) async {
+      final callback = _SimulationCallback();
+
+      await _pumpSimulationPanel(
+        tester,
+        onSimulate: callback,
+        errorMessage: 'The automaton must have an initial state.',
+      );
+
+      expect(find.byType(ErrorBanner), findsOneWidget);
       expect(
-        find.textContaining('No valid transition found'),
+        find.text('The automaton must have an initial state.'),
         findsOneWidget,
       );
     });
@@ -417,8 +425,9 @@ void main() {
       expect(find.byIcon(Icons.text_fields), findsOneWidget);
     });
 
-    testWidgets('publishes step zero on mount while detailed mode is off',
-        (tester) async {
+    testWidgets('publishes step zero on mount while detailed mode is off', (
+      tester,
+    ) async {
       final callback = _SimulationCallback();
       final highlightService = _TestSimulationHighlightService();
       final result = _traceResult('q0');
@@ -435,8 +444,9 @@ void main() {
       expect(highlightService.clearCallCount, 0);
     });
 
-    testWidgets('publishes step zero when the result changes in detailed off',
-        (tester) async {
+    testWidgets('publishes step zero when the result changes in detailed off', (
+      tester,
+    ) async {
       final callback = _SimulationCallback();
       final highlightService = _TestSimulationHighlightService();
       final firstResult = _traceResult('q0');
@@ -461,62 +471,64 @@ void main() {
     });
 
     testWidgets(
-        'publishes step zero to a replacement service without clearing the old service',
-        (tester) async {
-      final callback = _SimulationCallback();
-      final oldService = _TestSimulationHighlightService();
-      final newService = _TestSimulationHighlightService();
-      final result = _traceResult('q0');
+      'publishes step zero to a replacement service without clearing the old service',
+      (tester) async {
+        final callback = _SimulationCallback();
+        final oldService = _TestSimulationHighlightService();
+        final newService = _TestSimulationHighlightService();
+        final result = _traceResult('q0');
 
-      await _pumpSimulationPanel(
-        tester,
-        onSimulate: callback,
-        simulationResult: result,
-        highlightService: oldService,
-      );
-      await _pumpSimulationPanel(
-        tester,
-        onSimulate: callback,
-        simulationResult: result,
-        highlightService: newService,
-      );
+        await _pumpSimulationPanel(
+          tester,
+          onSimulate: callback,
+          simulationResult: result,
+          highlightService: oldService,
+        );
+        await _pumpSimulationPanel(
+          tester,
+          onSimulate: callback,
+          simulationResult: result,
+          highlightService: newService,
+        );
 
-      expect(oldService.emittedIndices, [0]);
-      expect(oldService.clearCallCount, 0);
-      expect(newService.emittedIndices, [0]);
-      expect(newService.clearCallCount, 0);
-    });
+        expect(oldService.emittedIndices, [0]);
+        expect(oldService.clearCallCount, 0);
+        expect(newService.emittedIndices, [0]);
+        expect(newService.clearCallCount, 0);
+      },
+    );
 
     testWidgets(
-        'clears the current service when the result becomes null or empty',
-        (tester) async {
-      final callback = _SimulationCallback();
-      final highlightService = _TestSimulationHighlightService();
-      final result = _traceResult('q0');
+      'clears the current service when the result becomes null or empty',
+      (tester) async {
+        final callback = _SimulationCallback();
+        final highlightService = _TestSimulationHighlightService();
+        final result = _traceResult('q0');
 
-      await _pumpSimulationPanel(
-        tester,
-        onSimulate: callback,
-        simulationResult: result,
-        highlightService: highlightService,
-      );
-      await _pumpSimulationPanel(
-        tester,
-        onSimulate: callback,
-        highlightService: highlightService,
-      );
-      expect(highlightService.clearCallCount, 1);
+        await _pumpSimulationPanel(
+          tester,
+          onSimulate: callback,
+          simulationResult: result,
+          highlightService: highlightService,
+        );
+        await _pumpSimulationPanel(
+          tester,
+          onSimulate: callback,
+          highlightService: highlightService,
+        );
+        expect(highlightService.clearCallCount, 1);
 
-      await _pumpSimulationPanel(
-        tester,
-        onSimulate: callback,
-        simulationResult: _emptyTraceResult(),
-        highlightService: highlightService,
-      );
+        await _pumpSimulationPanel(
+          tester,
+          onSimulate: callback,
+          simulationResult: _emptyTraceResult(),
+          highlightService: highlightService,
+        );
 
-      expect(highlightService.clearCallCount, 2);
-      expect(highlightService.emittedIndices, [0]);
-    });
+        expect(highlightService.clearCallCount, 2);
+        expect(highlightService.emittedIndices, [0]);
+      },
+    );
 
     testWidgets('toggles step-by-step mode on', (tester) async {
       final callback = _SimulationCallback();
@@ -1048,8 +1060,9 @@ void main() {
       expect(find.text('Step 2 of 4'), findsOneWidget);
     });
 
-    testWidgets('does not clear an injected highlight service on dispose',
-        (tester) async {
+    testWidgets('does not clear an injected highlight service on dispose', (
+      tester,
+    ) async {
       final callback = _SimulationCallback();
       final highlightService = _TestSimulationHighlightService();
 

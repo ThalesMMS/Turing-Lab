@@ -150,7 +150,10 @@ void _runPdaAnalysisTests() {
       );
       final result = PDASimulator.analyzePDA(emptyPda);
       expect(result.isSuccess, false);
-      expect(result.error, contains('at least one state'));
+      expect(
+        result.structuredError?.stableCode,
+        'pda.simulation.empty-state-set',
+      );
     });
 
     test('analyzes a^n b^n PDA correctly', () {
@@ -210,7 +213,7 @@ void _runPdaAnalysisTests() {
 
       expect(result.isSuccess, false);
       expect(result.error, contains('PDA acceptance failed'));
-      expect(result.error, contains('PDA must have at least one state'));
+      expect(result.error, contains('pda.simulation.empty-state-set'));
     });
   });
 
@@ -254,7 +257,7 @@ void _runPdaAnalysisTests() {
 
       expect(result.isSuccess, false);
       expect(result.error, contains('PDA acceptance failed'));
-      expect(result.error, contains('PDA must have at least one state'));
+      expect(result.error, contains('pda.simulation.empty-state-set'));
     });
   });
 }

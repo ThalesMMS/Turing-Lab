@@ -195,5 +195,51 @@ void main() {
       expect(cleared.isLambdaPop, isNull);
       expect(cleared.isLambdaPush, isNull);
     });
+
+    test('TM vector payload snapshots input and rejects malformed JSON', () {
+      final reads = <String>['a', 'B'];
+      final writes = <String>['B', 'a'];
+      final directions = <TapeDirection>[
+        TapeDirection.right,
+        TapeDirection.stay,
+      ];
+      final edge = GraphViewCanvasEdge(
+        id: 'multi-tape',
+        fromStateId: 'q0',
+        toStateId: 'q1',
+        symbols: const [],
+        tmOperations: TmGraphViewOperationVectors(
+          readSymbols: reads,
+          writeSymbols: writes,
+          directions: directions,
+        ),
+      );
+
+      reads[0] = 'mutated';
+      writes.clear();
+      directions[1] = TapeDirection.left;
+
+      expect(edge.tmReadSymbols, ['a', 'B']);
+      expect(edge.tmWriteSymbols, ['B', 'a']);
+      expect(edge.tmDirections, [TapeDirection.right, TapeDirection.stay]);
+      expect(() => edge.tmReadSymbols!.add('x'), throwsUnsupportedError);
+
+      final restored = GraphViewCanvasEdge.fromJson(edge.toJson());
+      expect(restored, edge);
+      expect(
+        () => GraphViewCanvasEdge.fromJson({
+          ...edge.toJson(),
+          'tmWriteSymbols': ['B'],
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => GraphViewCanvasEdge.fromJson({
+          ...edge.toJson(),
+          'tmDirections': null,
+        }),
+        throwsFormatException,
+      );
+    });
   });
 }

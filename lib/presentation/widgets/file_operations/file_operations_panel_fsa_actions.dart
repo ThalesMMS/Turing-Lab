@@ -37,13 +37,18 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          _l10n.failedToSaveAutomaton('${saveResult.error}'),
+          _l10n.failedToSaveAutomaton(_localizedFailure(saveResult)),
           retryOperation: _saveAutomatonAsJFLAP,
         );
       }
+    } on CodecOperationException catch (e) {
+      _showErrorMessage(
+        _l10n.errorSavingAutomaton(_localizedException(e)),
+        retryOperation: _saveAutomatonAsJFLAP,
+      );
     } catch (e, stackTrace) {
       _showErrorMessage(
-        _l10n.errorSavingAutomaton('$e'),
+        _l10n.errorSavingAutomaton(_localizedException(e)),
         retryOperation: _saveAutomatonAsJFLAP,
         stackTrace: stackTrace,
       );
@@ -78,7 +83,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         } else {
           await _handleImportFailure(
             fileName: file.name,
-            errorMessage: loadResult.error ?? 'Unknown error',
+            errorMessage: _localizedFailure(loadResult),
             retryOperation: _loadAutomatonFromJFLAP,
           );
         }
@@ -135,13 +140,18 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          _l10n.failedToSaveAutomatonJson('${saveResult.error}'),
+          _l10n.failedToSaveAutomatonJson(_localizedFailure(saveResult)),
           retryOperation: _saveAutomatonAsJson,
         );
       }
+    } on CodecOperationException catch (e) {
+      _showErrorMessage(
+        _l10n.errorSavingAutomatonJson(_localizedException(e)),
+        retryOperation: _saveAutomatonAsJson,
+      );
     } catch (e, stackTrace) {
       _showErrorMessage(
-        _l10n.errorSavingAutomatonJson('$e'),
+        _l10n.errorSavingAutomatonJson(_localizedException(e)),
         retryOperation: _saveAutomatonAsJson,
         stackTrace: stackTrace,
       );
@@ -173,7 +183,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         } else {
           await _handleImportFailure(
             fileName: file.name,
-            errorMessage: loadResult.error ?? 'Unknown error',
+            errorMessage: _localizedFailure(loadResult),
             retryOperation: _loadAutomatonFromJson,
           );
         }
@@ -205,6 +215,8 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
           '${widget.automaton!.name}.svg',
           emptyAutomatonLabel: _svgEmptyAutomatonLabel,
           tmLegendLabel: _svgTmLegendLabel,
+          includeAnnotations: _includeAnnotationsInVisualExports,
+          annotations: widget.annotations,
         );
       } else {
         exportResult = await _saveTextFileWithPicker(
@@ -215,12 +227,16 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
             widget.automaton!,
             emptyAutomatonLabel: _svgEmptyAutomatonLabel,
             tmLegendLabel: _svgTmLegendLabel,
+            includeAnnotations: _includeAnnotationsInVisualExports,
+            annotations: widget.annotations,
           ),
           writeToPath: (path) => _fileService.exportFsaToSVG(
             widget.automaton!,
             path,
             emptyAutomatonLabel: _svgEmptyAutomatonLabel,
             tmLegendLabel: _svgTmLegendLabel,
+            includeAnnotations: _includeAnnotationsInVisualExports,
+            annotations: widget.annotations,
           ),
           cancelMessage: _l10n.exportCanceled,
         );
@@ -245,9 +261,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        _l10n.errorExportingAutomaton(
-          _l10n.localizeWorkflowText('$e'),
-        ),
+        _l10n.errorExportingAutomaton(_l10n.localizeWorkflowText('$e')),
         retryOperation: _exportAutomatonAsSVG,
         stackTrace: stackTrace,
       );
@@ -266,6 +280,8 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       Result<String>? exportResult;
       final pngBytesResult = await _fileService.exportAutomatonToPngBytes(
         widget.automaton!,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       );
       if (pngBytesResult.isFailure) {
         _showErrorMessage(

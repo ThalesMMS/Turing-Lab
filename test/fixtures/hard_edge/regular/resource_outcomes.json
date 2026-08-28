@@ -1,0 +1,6 @@
+{
+  "family": "regular",
+  "expectedStatus": "passed",
+  "outcomes": ["bounded", "timeout", "cancelled", "stale"],
+  "property": "regular.resource-outcomes"
+}

@@ -21,7 +21,7 @@ Turing Lab restores the active editor session on cold start when the user's Auto
 | Unified trace history | `SharedPreferences` | Yes | Yes | Stored by the data-layer `TracePersistenceService`, which also reads legacy core trace keys when unified keys are absent. |
 | Current unified trace position | `SharedPreferences` | Yes | Yes | Restored by `UnifiedTraceNotifier` on construction. |
 | Offline examples | Bundled assets | Yes | Yes | Loaded lazily from `assets/examples/`; no network dependency. |
-| Active editor automaton/session | `SharedPreferences` | Yes, when Auto Save is enabled | Yes, when Auto Save is enabled | Stores FSA, Grammar, PDA, TM, Regex input state, and the active workspace index. |
+| Active editor automaton/session | `SharedPreferences` | Yes, when Auto Save is enabled | Yes, when Auto Save is enabled | Stores FSA, Grammar, PDA, TM, and Regex input state in typed schema envelopes, plus the active workspace's stable formal-system key. |
 
 ## SharedPreferences Keys
 
@@ -119,9 +119,20 @@ flowchart LR
 
 ### Active Editor Session
 
-- The active FSA, Grammar, PDA, TM, Regex input state, and current workspace index live in Riverpod state during a run.
+- The active FSA, Grammar, PDA, TM, and Regex input state plus the current
+  `FormalSystemKey` live in Riverpod state during a run. Navigation positions
+  are derived from registry order and are not the persisted identity.
 - `activeSessionPersistenceProvider` restores one saved snapshot during app startup and then listens to editor providers for changes.
-- `ActiveSessionPersistenceService` stores a versioned `active_editor_session` JSON payload in `SharedPreferences`.
+- `ActiveSessionPersistenceService` stores a versioned
+  `active_editor_session` JSON payload in `SharedPreferences`. Version 2 stores
+  each document with its formal-system key, schema ID, schema version, and
+  typed payload. Version 0 and 1 snapshots are migrated from the historical
+  workspace index and rewritten in the current envelope.
+- A future envelope or document-schema version is preserved under a recovery
+  backup key and surfaced as unsupported. Malformed data or a corrupt schema
+  identity remains fail-open: it is cleared and startup continues.
+- Pumping Lemma explicitly declares session persistence unavailable, so the
+  active workspace can be restored without fabricating a Pumping document.
 - Saves are debounced during active editing and serialized through one write at a time. Pending snapshots are flushed when the app becomes inactive, hidden, paused, or detached and when the provider is disposed. Platform termination can still end the process before an asynchronous `SharedPreferences` write finishes, so lifecycle flushes are bounded best-effort durability rather than a synchronous shutdown guarantee. Malformed persisted session data is cleared and ignored so startup remains fail-open.
 - If `settings_auto_save` is false, startup restore is skipped and the stored session snapshot is cleared.
 
@@ -147,7 +158,8 @@ Severity: Critical (resolved when Auto Save is enabled)
 What happens:
 
 - The current editor state lives in Riverpod memory and is mirrored into `active_editor_session` while Auto Save is enabled.
-- Restarting the app restores the saved FSA, Grammar, PDA, TM, Regex input state, and active workspace.
+- Restarting the app restores the saved FSA, Grammar, PDA, TM, Regex input
+  state, and active workspace by stable formal-system key.
 - Disabling Auto Save clears the session snapshot and intentionally prevents cold-start restore.
 
 Recommendation:

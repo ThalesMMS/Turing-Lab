@@ -20,6 +20,7 @@ import '../../tool/app_store/app_store_capture_manifest.dart';
 import '../../tool/app_store/app_store_capture_manifest_entry.dart';
 import '../../tool/app_store/app_store_capture_matrix.dart';
 import '../../tool/app_store/app_store_capture_options.dart';
+import '../../tool/app_store/app_store_capture_path.dart';
 import '../../tool/app_store/app_store_capture_validation_issue.dart';
 import '../../tool/app_store/app_store_capture_validator.dart';
 import '../../tool/app_store/app_store_png_size.dart';
@@ -565,6 +566,28 @@ void main() {
           .writeAsStringSync('# mapping');
 
       expect(validate(), isEmpty);
+    });
+  });
+
+  group('capture path normalization', () {
+    test('normalizes a POSIX capture path', () {
+      expect(
+        appStoreCaptureRelativePath(
+          '/tmp/candidate',
+          '/tmp/candidate/iphone-6.9/01-fsa.png',
+        ),
+        'iphone-6.9/01-fsa.png',
+      );
+    });
+
+    test('normalizes a Windows capture path', () {
+      expect(
+        appStoreCaptureRelativePath(
+          r'C:\candidate',
+          r'C:\candidate\iphone-6.9\01-fsa.png',
+        ),
+        'iphone-6.9/01-fsa.png',
+      );
     });
   });
 

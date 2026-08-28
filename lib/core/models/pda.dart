@@ -16,6 +16,7 @@ import 'package:vector_math/vector_math_64.dart';
 import 'state.dart';
 import 'transition.dart';
 import 'pda_transition.dart';
+import 'pda_acceptance_mode.dart';
 import 'automaton.dart';
 
 const Object _unset = Object();
@@ -27,6 +28,9 @@ class PDA extends Automaton {
 
   /// Initial stack symbol
   final String initialStackSymbol;
+
+  /// Acceptance semantics stored with the document.
+  final PDAAcceptanceMode acceptanceMode;
 
   PDA({
     required super.id,
@@ -43,6 +47,7 @@ class PDA extends Automaton {
     super.panOffset,
     required Set<String> stackAlphabet,
     this.initialStackSymbol = 'Z',
+    this.acceptanceMode = PDAAcceptanceMode.finalState,
   })  : stackAlphabet = Set<String>.unmodifiable(stackAlphabet),
         super(type: AutomatonType.pda);
 
@@ -64,6 +69,7 @@ class PDA extends Automaton {
     Vector2? panOffset,
     Set<String>? stackAlphabet,
     String? initialStackSymbol,
+    PDAAcceptanceMode? acceptanceMode,
   }) {
     return PDA(
       id: id ?? this.id,
@@ -83,6 +89,7 @@ class PDA extends Automaton {
           ? Set<String>.unmodifiable(stackAlphabet)
           : this.stackAlphabet,
       initialStackSymbol: initialStackSymbol ?? this.initialStackSymbol,
+      acceptanceMode: acceptanceMode ?? this.acceptanceMode,
     );
   }
 
@@ -110,6 +117,7 @@ class PDA extends Automaton {
       'panOffset': {'x': panOffset.x, 'y': panOffset.y},
       'stackAlphabet': stackAlphabet.toList(),
       'initialStackSymbol': initialStackSymbol,
+      'acceptanceMode': acceptanceMode.name,
     };
   }
 
@@ -156,6 +164,10 @@ class PDA extends Automaton {
       ),
       stackAlphabet: Set<String>.from(json['stackAlphabet'] as List),
       initialStackSymbol: json['initialStackSymbol'] as String? ?? 'Z',
+      acceptanceMode: PDAAcceptanceMode.values.firstWhere(
+        (mode) => mode.name == json['acceptanceMode'],
+        orElse: () => PDAAcceptanceMode.finalState,
+      ),
     );
   }
 

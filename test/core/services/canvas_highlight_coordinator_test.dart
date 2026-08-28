@@ -40,6 +40,7 @@ void main() {
         output: output,
       );
       final validation = coordinator.source(CanvasHighlightSource.validation);
+      final diagnostic = coordinator.source(CanvasHighlightSource.diagnostic);
       final analysis = coordinator.source(CanvasHighlightSource.analysis);
       final simulation = coordinator.source(CanvasHighlightSource.simulation);
       final warning = SimulationHighlight(
@@ -48,22 +49,29 @@ void main() {
       final result = SimulationHighlight(
         stateIds: const {'reachable-state'},
       );
+      final diagnosticResult = SimulationHighlight(
+        transitionIds: const {'conflicting-edge'},
+      );
       final runtime = SimulationHighlight(
         stateIds: const {'active-state'},
       );
 
       validation.send(warning);
+      diagnostic.send(diagnosticResult);
       analysis.send(result);
       simulation.send(runtime);
       simulation.clear();
       analysis.clear();
+      diagnostic.clear();
       validation.clear();
 
       expect(output.events, <SimulationHighlight?>[
         warning,
+        diagnosticResult,
         result,
         runtime,
         result,
+        diagnosticResult,
         warning,
         null,
       ]);

@@ -3,7 +3,7 @@
 //  Turing Lab
 //
 //  Lightweight structure representing persisted application preferences,
-//  controlling special symbols, interface preferences, and element sizes.
+//  controlling interface preferences and element sizes.
 //  Ensures cohesive defaults, allows immutable copies, and facilitates
 //  comparisons when updating configuration providers.
 //
@@ -17,13 +17,12 @@ part 'settings_model.freezed.dart';
 @freezed
 abstract class SettingsModel with _$SettingsModel {
   const factory SettingsModel({
-    /// Symbol used to represent the empty string.
-    @Default('λ') String emptyStringSymbol,
-
     /// Theme mode preference (system, light, dark).
-    @Default('system') String themeMode,
+    @Default('light') String themeMode,
 
-    /// Explicit app locale (en or pt), or null to follow the platform locale.
+    /// Explicit app language (en or pt), or null to use automatic resolution.
+    ///
+    /// These language-only values are kept for persisted-data compatibility.
     String? localeCode,
 
     /// Whether to display the grid on the canvas.

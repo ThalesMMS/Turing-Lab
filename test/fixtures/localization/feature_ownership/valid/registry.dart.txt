@@ -1,0 +1,3 @@
+const type = FormalSystemTypeId('fixture');
+const variant = FormalSystemVariantId('standard');
+const namespace = CapabilityNamespaceId('formal.fixture');

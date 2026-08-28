@@ -3,7 +3,7 @@
 //  Turing Lab
 //
 //  Provides a PDA-focused transition editor with read, pop, and push
-//  fields plus λ toggles. Clears and validates input, firing structured
+//  fields plus ε toggles. Clears and validates input, firing structured
 //  callbacks so the host screen can apply changes safely.
 //
 //  Thales Matheus Mendonça Santos - October 2025
@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 
+import '../../../core/utils/epsilon_utils.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'transition_editor_actions.dart';
 import 'transition_editor_shell.dart';
@@ -264,9 +265,12 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                 const SizedBox(height: 16),
                 if (widget.currentStack != null) ...[
                   StackOperationPreview(
-                    inputSymbol: _lambdaInput ? 'λ' : _readController.text,
-                    popSymbol: _lambdaPop ? 'λ' : _popController.text,
-                    pushSymbol: _lambdaPush ? 'λ' : _pushController.text,
+                    inputSymbol:
+                        _lambdaInput ? kEpsilonSymbol : _readController.text,
+                    popSymbol:
+                        _lambdaPop ? kEpsilonSymbol : _popController.text,
+                    pushSymbol:
+                        _lambdaPush ? kEpsilonSymbol : _pushController.text,
                     currentStack: widget.currentStack!,
                   ),
                   const SizedBox(height: 16),

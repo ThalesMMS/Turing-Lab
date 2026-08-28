@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../localization/locale_value_formatter.dart';
 
 /// Control widget for adjusting simulation animation speed.
 ///
@@ -43,11 +44,11 @@ class SimulationSpeedControl extends StatelessWidget {
     super.key,
     required this.currentSpeed,
     required this.onSpeedChanged,
-  })  : assert(currentSpeed > 0, 'currentSpeed must be positive'),
-        assert(
-          currentSpeed >= 0.25 && currentSpeed <= 4.0,
-          'currentSpeed should be between 0.25 and 4.0',
-        );
+  }) : assert(currentSpeed > 0, 'currentSpeed must be positive'),
+       assert(
+         currentSpeed >= 0.25 && currentSpeed <= 4.0,
+         'currentSpeed should be between 0.25 and 4.0',
+       );
 
   /// Current animation speed multiplier.
   ///
@@ -65,21 +66,30 @@ class SimulationSpeedControl extends StatelessWidget {
   static const List<double> _speedOptions = [0.25, 0.5, 1.0, 2.0, 4.0];
 
   /// Format speed value for display (e.g., "1.0x", "0.5x", "2.0x").
-  static String _formatSpeed(double speed) {
+  static String _formatSpeed(BuildContext context, double speed) {
+    final formatter = LocaleValueFormatter.of(context);
+    final l10n = appLocalizationsOf(context);
     if (speed == speed.toInt()) {
-      return '${speed.toInt()}x';
+      return l10n.playbackSpeedMultiplier(formatter.integer(speed.toInt()));
     }
-    return '${speed}x';
+    final decimalDigits = speed * 10 == (speed * 10).roundToDouble() ? 1 : 2;
+    return l10n.playbackSpeedMultiplier(
+      formatter.decimal(speed, decimalDigits: decimalDigits),
+    );
   }
 
   /// Get semantic label for a speed value.
-  static String _getSpeedLabel(AppLocalizations l10n, double speed) {
+  static String _getSpeedLabel(
+    BuildContext context,
+    AppLocalizations l10n,
+    double speed,
+  ) {
     if (speed < 1.0) {
-      return l10n.slowSpeed(_formatSpeed(speed));
+      return l10n.slowSpeed(_formatSpeed(context, speed));
     } else if (speed == 1.0) {
       return l10n.normalSpeed;
     } else {
-      return l10n.fastSpeed(_formatSpeed(speed));
+      return l10n.fastSpeed(_formatSpeed(context, speed));
     }
   }
 
@@ -90,7 +100,7 @@ class SimulationSpeedControl extends StatelessWidget {
 
     return Semantics(
       label: l10n.animationSpeed,
-      value: _getSpeedLabel(l10n, currentSpeed),
+      value: _getSpeedLabel(context, l10n, currentSpeed),
       hint: l10n.selectPlaybackSpeed,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -100,8 +110,8 @@ class SimulationSpeedControl extends StatelessWidget {
           Text(
             l10n.speed,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(width: 8),
           ..._speedOptions.map(
@@ -123,7 +133,7 @@ class SimulationSpeedControl extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Semantics(
-        label: _getSpeedLabel(appLocalizationsOf(context), speed),
+        label: _getSpeedLabel(context, appLocalizationsOf(context), speed),
         selected: isSelected,
         button: true,
         child: InkWell(
@@ -144,14 +154,13 @@ class SimulationSpeedControl extends StatelessWidget {
               ),
             ),
             child: Text(
-              _formatSpeed(speed),
+              _formatSpeed(context, speed),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: isSelected
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
+                color: isSelected
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
         ),

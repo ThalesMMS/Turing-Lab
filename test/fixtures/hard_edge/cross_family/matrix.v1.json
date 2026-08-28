@@ -1,0 +1,19 @@
+{
+  "issue": 342,
+  "schemaVersion": 1,
+  "checks": [
+    {"id":"regular-conversion-metamorphism","equivalence":"bounded","expectedOutcome":"verified"},
+    {"id":"cfg-parser-differential","equivalence":"exact","expectedOutcome":"verified"},
+    {"id":"cfg-parser-bounded-oracle","equivalence":"bounded","expectedOutcome":"boundedUnknown"},
+    {"id":"cfg-pda-conversion-chain","equivalence":"bounded","expectedOutcome":"verified"},
+    {"id":"tm-unrestricted-grammar-chain","equivalence":"bounded","expectedOutcome":"verified"},
+    {"id":"tm-native-sync-web-parity","equivalence":"exact","expectedOutcome":"verified"},
+    {"id":"transducer-differential-metamorphism","equivalence":"exact","expectedOutcome":"verified"},
+    {"id":"transducer-finite-evidence","equivalence":"bounded","expectedOutcome":"boundedUnknown"},
+    {"id":"codec-jflap-json-normalized","equivalence":"normalized","expectedOutcome":"verified"},
+    {"id":"codec-jflap-json-isomorphic","equivalence":"isomorphic","expectedOutcome":"verified"},
+    {"id":"codec-jflap-json-visual","equivalence":"visual","expectedOutcome":"verified"},
+    {"id":"codec-pumping-session-roundtrip","equivalence":"normalized","expectedOutcome":"verified"},
+    {"id":"snapshot-history-replay","equivalence":"exact","expectedOutcome":"verified"}
+  ]
+}

@@ -250,7 +250,8 @@ void main() {
       );
     });
 
-    testWidgets('lambda shortcut inserts symbol into right side field', (
+    testWidgets(
+        'epsilon shortcut inserts canonical symbol into right side field', (
       tester,
     ) async {
       final provider = _RecordingGrammarProvider();
@@ -260,14 +261,15 @@ void main() {
       await tester.tap(rightSideField);
       await tester.pump();
 
-      await tester.tap(find.text('Insert λ'));
+      expect(find.text('Insert λ'), findsNothing);
+      await tester.tap(find.text('Insert ε'));
       await tester.pump();
 
       final rightSideTextField = tester.widget<TextField>(rightSideField);
-      expect(rightSideTextField.controller?.text, equals('λ'));
+      expect(rightSideTextField.controller?.text, equals('ε'));
     });
 
-    testWidgets('can add a production after inserting λ shortcut', (
+    testWidgets('can add a production after inserting ε shortcut', (
       tester,
     ) async {
       final provider = _RecordingGrammarProvider();
@@ -277,7 +279,7 @@ void main() {
         find.widgetWithText(TextField, 'e.g., S, A, B'),
         'S',
       );
-      await tester.tap(find.text('Insert λ'));
+      await tester.tap(find.text('Insert ε'));
       await tester.pump();
 
       await tester.tap(_findButtonWithText('Add'));
@@ -362,11 +364,11 @@ void main() {
 
       expect(provider.addProductionCalls, isEmpty);
       expect(
-        find.text('Right side can contain only one λ/ε symbol'),
+        find.text('Right side can contain only one ε symbol'),
         findsOneWidget,
       );
       expect(
-        find.text('λ/ε must be the only symbol on the right side'),
+        find.text('ε must be the only symbol on the right side'),
         findsNothing,
       );
     });
@@ -393,7 +395,7 @@ void main() {
 
       expect(provider.addProductionCalls, isEmpty);
       expect(
-        find.text('λ/ε must be the only symbol on the right side'),
+        find.text('ε must be the only symbol on the right side'),
         findsOneWidget,
       );
     });

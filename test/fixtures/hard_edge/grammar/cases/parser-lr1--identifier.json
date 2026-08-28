@@ -1,0 +1,7 @@
+{
+  "caseId": "parser-lr1--identifier",
+  "expectedInternalOutcome": "rejected",
+  "maximumWordLength": 3,
+  "schema": "turing-lab.hard-edge.grammar-property.v1",
+  "seed": 336
+}

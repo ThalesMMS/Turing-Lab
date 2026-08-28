@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser.dart';
 import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/ll1_parse_step.dart';
 import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/parsers/grammar_xml_codec.dart';
 
 void main() {
   final now = DateTime(2026);
@@ -398,6 +403,156 @@ void main() {
       expect(report.data!.farthestPosition, 1);
       expect(report.data!.expectedSymbols, {r'$'});
       expect(report.data!.ll1Steps, isNotEmpty);
+    });
+
+    test('preserves production ids and consulted table cells in the trace', () {
+      final simpleGrammar = grammar(
+        terminals: {'a'},
+        nonterminals: {'S'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'stable-p1', leftSide: ['S'], rightSide: ['a']),
+        },
+      );
+
+      final result = GrammarParser.parseLL1(simpleGrammar, 'a').data!;
+      final expansion = result.ll1Steps.first;
+
+      expect(result.outcome, GrammarParseOutcome.accepted);
+      expect(expansion.productionId, 'stable-p1');
+      expect(expansion.tableNonTerminal, 'S');
+      expect(expansion.tableLookahead, 'a');
+    });
+
+    test('returns typed conflict, cancellation, and work-limit outcomes', () {
+      final conflictingGrammar = grammar(
+        terminals: {'a'},
+        nonterminals: {'S'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+          const Production(id: 'p2', leftSide: ['S'], rightSide: ['a', 'a']),
+        },
+      );
+      final simpleGrammar = grammar(
+        terminals: {'a'},
+        nonterminals: {'S'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+        },
+      );
+
+      final conflict = GrammarParser.parseLL1(conflictingGrammar, 'a').data!;
+      final cancelled = GrammarParser.parseLL1(
+        simpleGrammar,
+        'a',
+        isCancelled: () => true,
+      ).data!;
+      final bounded = GrammarParser.parseLL1(
+        simpleGrammar,
+        'a',
+        maxSteps: 1,
+      ).data!;
+
+      expect(conflict.outcome, GrammarParseOutcome.conflict);
+      expect(
+        conflict.ll1Steps.single.diagnostic,
+        LL1ParseDiagnostic.conflict,
+      );
+      expect(cancelled.outcome, GrammarParseOutcome.cancelled);
+      expect(
+        cancelled.ll1Steps.single.diagnostic,
+        LL1ParseDiagnostic.cancelled,
+      );
+      expect(bounded.outcome, GrammarParseOutcome.stepLimit);
+      expect(bounded.ll1Steps.last.diagnostic, LL1ParseDiagnostic.stepLimit);
+    });
+
+    test('classifies typed conflicts and deduplicates dual provenance', () {
+      final dualProvenanceGrammar = grammar(
+        terminals: {'a'},
+        nonterminals: {'S', 'A', 'B'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['A', 'a']),
+          const Production(id: 'p2', leftSide: ['A'], rightSide: ['B']),
+          const Production(id: 'p3', leftSide: ['B'], rightSide: ['a']),
+          const Production(
+            id: 'p4',
+            leftSide: ['B'],
+            rightSide: [],
+            isLambda: true,
+          ),
+        },
+      );
+
+      final table =
+          GrammarAnalyzer.buildLL1ParseTable(dualProvenanceGrammar).data!.value;
+      final aEntry = table.entriesAt('A', 'a').single;
+      final conflict = table.typedConflicts.single;
+
+      expect(aEntry.productionId, 'p2');
+      expect(
+        aEntry.placements,
+        {LL1TablePlacement.first, LL1TablePlacement.follow},
+      );
+      expect(conflict.kind, LL1ConflictKind.firstFollow);
+      expect(conflict.nonTerminal, 'B');
+      expect(conflict.entries.map((entry) => entry.productionId), ['p3', 'p4']);
+    });
+
+    test('reproduces the canonical JFLAP grammar fixture', () {
+      final xml = File(
+        'test/fixtures/interoperability/grammar_canonical.jff',
+      ).readAsStringSync();
+      final imported = const GrammarXmlCodec().decodeGrammarXml(xml).data!;
+
+      final table = GrammarAnalyzer.buildLL1ParseTable(imported).data!.value;
+      final accepted = GrammarParser.parseLL1(imported, 'a').data!;
+      final rejected = GrammarParser.parseLL1(imported, 'aa').data!;
+
+      expect(table.entriesAt('S', 'a').single.rightSide, ['a']);
+      expect(accepted.outcome, GrammarParseOutcome.accepted);
+      expect(rejected.outcome, GrammarParseOutcome.rejected);
+    });
+
+    test('reports Unicode tokens and malformed grammars without throwing', () {
+      final unicodeGrammar = grammar(
+        terminals: {'🙂'},
+        nonterminals: {'S'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['🙂']),
+        },
+      );
+      final malformedGrammar = grammar(
+        terminals: const {},
+        nonterminals: {'S'},
+        startSymbol: 'S',
+        productions: const {},
+      );
+
+      expect(
+        GrammarParser.parseLL1(unicodeGrammar, '🙂').data!.outcome,
+        GrammarParseOutcome.accepted,
+      );
+      expect(
+        GrammarParser.parseLL1(malformedGrammar, '').data!.outcome,
+        GrammarParseOutcome.invalidInput,
+      );
+      expect(
+        GrammarParser.parseLL1(unicodeGrammar, 'a').data!.outcome,
+        GrammarParseOutcome.tokenizationFailure,
+      );
+      expect(
+        GrammarParser.parseWithReport(
+          unicodeGrammar,
+          'a',
+          strategyHint: ParsingStrategyHint.ll,
+        ).data!.outcome,
+        GrammarParseOutcome.tokenizationFailure,
+      );
     });
   });
 }

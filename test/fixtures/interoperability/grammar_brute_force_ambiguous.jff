@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure type="grammar">
+  <type>grammar</type>
+  <grammar type="contextFree">
+    <start>S</start>
+    <production><left>S</left><right>S S</right></production>
+    <production><left>S</left><right>id</right></production>
+  </grammar>
+</structure>

@@ -1,0 +1,855 @@
+{
+  "schemaVersion": 1,
+  "corpusVersion": "2026.08.25.1",
+  "defaults": {
+    "provenance": {
+      "origin": "Independently authored for the Turing Lab interoperability test suite",
+      "license": "Apache-2.0",
+      "independentlyAuthored": true,
+      "jflapVersion": "7.1",
+      "generator": "Turing Lab project fixtures"
+    },
+    "dimensions": {
+      "structural": "equivalent",
+      "semantic": "equivalent",
+      "visual": "different",
+      "metadata": "lossy"
+    }
+  },
+  "codecCapabilities": {
+    "fsa.jflap-xml.v1": [
+      "Mealy/Moore outputs",
+      "building-block references",
+      "multiple initial states"
+    ],
+    "fsa.turing-lab-json.v1": [],
+    "grammar.jflap-xml.v1": [
+      "explicit grammar classification",
+      "explicit start symbol outside production ordering",
+      "multi-character token boundaries"
+    ],
+    "grammar.turing-lab-json.v1": [],
+    "l-system.jflap-xml.v1": [
+      "native command mappings",
+      "native document IDs and revisions",
+      "native production IDs",
+      "portable token boundaries after JFLAP open/save"
+    ],
+    "l-system.turing-lab-json.v1": [],
+    "mealy.jflap-xml.v1": [
+      "declared alphabets",
+      "source revision",
+      "token boundaries inside multi-token output words",
+      "transition IDs"
+    ],
+    "mealy.turing-lab-json.v1": [],
+    "moore.jflap-xml.v1": [
+      "accepting/final states",
+      "declared input/output alphabets",
+      "document/machine ID",
+      "epsilon transitions",
+      "portable multi-token output boundaries after JFLAP 7.1 open/save",
+      "source revision",
+      "transition IDs",
+      "transition-owned outputs"
+    ],
+    "moore.turing-lab-json.v1": [],
+    "pda.jflap-xml.v1": [
+      "standard JFLAP document metadata and viewport",
+      "standard JFLAP initial stack symbols other than Z",
+      "standard JFLAP persisted acceptance mode",
+      "standard JFLAP transition IDs and tokenized push words"
+    ],
+    "pda.turing-lab-json.v1": [],
+    "pumping-lemma.context-free.jflap.v1": [
+      "free-form language predicates",
+      "full local progress history",
+      "portable token boundaries after JFLAP open/save"
+    ],
+    "pumping-lemma.context-free.turing-lab-json.v1": [],
+    "pumping-lemma.regular.jflap.v1": [
+      "free-form language predicates",
+      "full local progress history",
+      "portable token boundaries after JFLAP open/save"
+    ],
+    "pumping-lemma.regular.turing-lab-json.v1": [],
+    "regex.jflap.v1": [
+      "JFLAP empty-set conversion is not behaviorally consistent",
+      "JFLAP has no escaping for its operators",
+      "JFLAP has no portable alphabet or tokenization metadata",
+      "non-BMP symbols are split by the JFLAP Java char model"
+    ],
+    "regex.turing-lab-json.v1": [],
+    "tm.jflap-xml.v1": [
+      "JFLAP wildcard, negated, and variable read predicates",
+      "standard JFLAP declared alphabets and custom blank symbols",
+      "standard JFLAP document and transition IDs",
+      "standard JFLAP viewport and revision timestamps"
+    ],
+    "tm.turing-lab-json.v1": [],
+    "unrestricted-grammar.jflap-xml.v1": [
+      "standard JFLAP declared alphabets and start symbol",
+      "standard JFLAP document metadata and revision",
+      "standard JFLAP production IDs and ordering",
+      "standard JFLAP token boundaries"
+    ],
+    "unrestricted-grammar.turing-lab-json.v1": []
+  },
+  "cases": [
+    {
+      "id": "fsa-jflap-canonical",
+      "family": "fsa",
+      "codecId": "fsa.jflap-xml.v1",
+      "roles": ["minimal", "representative", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/fsa_canonical.jff",
+      "sha256": "739f8bd6757686bed995e37dc5d8ee01cdb4fd36396dac1da96dfe9f852a02fd",
+      "equivalent": {"codecId": "fsa.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/fsa_canonical.json", "sha256": "92fc7f3f13f2b6c6c8ed11fa9f2a5cf72ab8eee538390099f9e731bca0f1b3ce"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.canonical-order"]
+      },
+      "oracle": {
+        "kind": "fsaAcceptance",
+        "accepted": ["a"],
+        "rejected": ["", "aa"],
+        "unknown": []
+      }
+    },
+    {
+      "id": "fsa-jflap-nfa-complex",
+      "family": "fsa",
+      "codecId": "fsa.jflap-xml.v1",
+      "roles": ["complex"],
+      "fixture": "test/fixtures/compatibility/fsa_nfa_complex.jff",
+      "sha256": "7729be7a49ce0d1c6a54bc0c93cee48203c0c9398795da4dac5056e9ffb49621",
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.canonical-order"]
+      },
+      "oracle": {"kind": "fsaAcceptance", "accepted": ["a", "ab"], "rejected": ["", "b", "aa"], "unknown": []}
+    },
+    {
+      "id": "fsa-jflap-epsilon-edge",
+      "family": "fsa",
+      "codecId": "fsa.jflap-xml.v1",
+      "roles": ["edgeValid"],
+      "fixture": "test/fixtures/compatibility/fsa_epsilon_edge.jff",
+      "sha256": "5a21f73665c0bab5e86a540562e9f458a0fa7eeda8a62b6bece28db8db82c393",
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.canonical-order"]
+      },
+      "oracle": {"kind": "fsaAcceptance", "accepted": [""], "rejected": ["a"], "unknown": []}
+    },
+    {
+      "id": "fsa-jflap-malformed",
+      "family": "fsa",
+      "codecId": "fsa.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "fsa-json-canonical",
+      "family": "fsa",
+      "codecId": "fsa.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/fsa_canonical.json",
+      "sha256": "92fc7f3f13f2b6c6c8ed11fa9f2a5cf72ab8eee538390099f9e731bca0f1b3ce",
+      "equivalent": {"codecId": "fsa.jflap-xml.v1", "fixture": "test/fixtures/interoperability/fsa_canonical.jff", "sha256": "739f8bd6757686bed995e37dc5d8ee01cdb4fd36396dac1da96dfe9f852a02fd"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {
+        "kind": "fsaAcceptance",
+        "accepted": ["a"],
+        "rejected": ["", "aa"],
+        "unknown": []
+      }
+    },
+    {
+      "id": "fsa-json-malformed",
+      "family": "fsa",
+      "codecId": "fsa.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "grammar-jflap-canonical",
+      "family": "grammar",
+      "codecId": "grammar.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/grammar_canonical.jff",
+      "sha256": "efa2611b8cc631575385fbd8cde7d95e3e1781862877ae9231fe4e52ac9ead57",
+      "equivalent": {"codecId": "grammar.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/grammar_canonical.json", "sha256": "51b07b58ee735d36a7b1850272231ed3858470f823d15d03c8e33aadf0fbb938"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.grammar-tokenization-normalized"]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/startSymbol": "S", "/productions/#": 1}}
+    },
+    {
+      "id": "grammar-jflap-malformed",
+      "family": "grammar",
+      "codecId": "grammar.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "grammar-json-canonical",
+      "family": "grammar",
+      "codecId": "grammar.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/grammar_canonical.json",
+      "sha256": "51b07b58ee735d36a7b1850272231ed3858470f823d15d03c8e33aadf0fbb938",
+      "equivalent": {"codecId": "grammar.jflap-xml.v1", "fixture": "test/fixtures/interoperability/grammar_canonical.jff", "sha256": "efa2611b8cc631575385fbd8cde7d95e3e1781862877ae9231fe4e52ac9ead57"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "notApplicable", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/startSymbol": "S", "/productions/#": 1}}
+    },
+    {
+      "id": "grammar-json-malformed",
+      "family": "grammar",
+      "codecId": "grammar.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pda-jflap-canonical",
+      "family": "pda",
+      "codecId": "pda.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pda_canonical.jff",
+      "sha256": "8720966addf5619a471aa79f4b0f02316b7024ccc6f8b36c5399eea36e08ab18",
+      "equivalent": {"codecId": "pda.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/pda_canonical.json", "sha256": "4b085b890df392cdb3dd61a070d5292adf62bad147dbd6711cae1b95ed692987"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {
+          "structural": "equivalent",
+          "semantic": "exact",
+          "visual": "equivalent",
+          "metadata": "lossy"
+        },
+        "diagnosticCodes": ["jflap.pda-acceptance-mode-assumed-final-state", "jflap.pda-turing-lab-extension-portability", "jflap.pda.canonical-order"],
+        "approvedLosses": [{"code": "jflap.pda-turing-lab-extension-portability", "issue": 324}]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/initialStackSymbol": "Z", "/states/#": 2, "/transitions/#": 1}}
+    },
+    {
+      "id": "pda-jflap-malformed",
+      "family": "pda",
+      "codecId": "pda.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pda-json-canonical",
+      "family": "pda",
+      "codecId": "pda.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/pda_canonical.json",
+      "sha256": "4b085b890df392cdb3dd61a070d5292adf62bad147dbd6711cae1b95ed692987",
+      "equivalent": {"codecId": "pda.jflap-xml.v1", "fixture": "test/fixtures/interoperability/pda_canonical.jff", "sha256": "8720966addf5619a471aa79f4b0f02316b7024ccc6f8b36c5399eea36e08ab18"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.legacy-envelope-migrated", "json.source-metadata-normalized"],
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/initialStackSymbol": "Z", "/states/#": 2, "/transitions/#": 1}}
+    },
+    {
+      "id": "pda-json-malformed",
+      "family": "pda",
+      "codecId": "pda.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "tm-jflap-canonical",
+      "family": "tm",
+      "codecId": "tm.jflap-xml.v1",
+      "roles": ["representative", "complex", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/tm_multi_canonical.jff",
+      "sha256": "bf29ad3519abc08db0f9c60023e5c63dac92a8e7f46f274baf1f9a82b7405414",
+      "equivalent": {"codecId": "tm.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/tm_multi_canonical.json", "sha256": "b892bb69e657155fffc31a411b8312b03255b305bb723a6b9ba8f5e8203f4f23"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "equivalent", "metadata": "lossy"},
+        "diagnosticCodes": ["jflap.tm-transition-identities-reconstructed", "jflap.tm-turing-lab-extension-portability", "jflap.tm.canonical-order"],
+        "approvedLosses": [{"code": "jflap.tm-turing-lab-extension-portability", "issue": 325}]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/tapeCount": 2, "/states/#": 2, "/transitions/#": 1}}
+    },
+    {
+      "id": "tm-jflap-single-tape-minimal",
+      "family": "tm",
+      "codecId": "tm.jflap-xml.v1",
+      "roles": ["minimal"],
+      "fixture": "test/fixtures/compatibility/tm_single_tape.jff",
+      "sha256": "644ce4026dce2be06f426ff9a5531a6213ded4372dab94dcd4f8ba8727486fc1",
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "equivalent", "metadata": "lossy"},
+        "diagnosticCodes": ["jflap.tm-transition-identities-reconstructed", "jflap.tm-turing-lab-extension-portability", "jflap.tm.canonical-order"],
+        "approvedLosses": [{"code": "jflap.tm-turing-lab-extension-portability", "issue": 325}]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/tapeCount": 1, "/states/#": 2, "/transitions/#": 1}}
+    },
+    {
+      "id": "tm-jflap-building-block-edge",
+      "family": "tm",
+      "codecId": "tm.jflap-xml.v1",
+      "roles": ["edgeValid"],
+      "fixture": "test/fixtures/compatibility/tm_building_block.jff",
+      "sha256": "57563a9d2cb6c48f972c8fa534967e58495e9d6c6af612178a9eea18c0272b75",
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "equivalent", "metadata": "lossy"},
+        "diagnosticCodes": ["jflap.tm.building-blocks", "jflap.tm.extension-identities", "jflap.tm.shared-tapes", "jflap.tm-turing-lab-extension-portability"],
+        "approvedLosses": [
+          {"code": "jflap.tm.extension-identities", "issue": 312},
+          {"code": "jflap.tm-turing-lab-extension-portability", "issue": 325}
+        ]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/blockDefinitions/#": 1, "/blockInvocations/#": 1}}
+    },
+    {
+      "id": "tm-jflap-malformed",
+      "family": "tm",
+      "codecId": "tm.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "tm-json-canonical",
+      "family": "tm",
+      "codecId": "tm.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/tm_multi_canonical.json",
+      "sha256": "b892bb69e657155fffc31a411b8312b03255b305bb723a6b9ba8f5e8203f4f23",
+      "equivalent": {"codecId": "tm.jflap-xml.v1", "fixture": "test/fixtures/interoperability/tm_multi_canonical.jff", "sha256": "bf29ad3519abc08db0f9c60023e5c63dac92a8e7f46f274baf1f9a82b7405414"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/tapeCount": 2, "/states/#": 2, "/transitions/#": 1}}
+    },
+    {
+      "id": "tm-json-malformed",
+      "family": "tm",
+      "codecId": "tm.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "regex-jflap-canonical",
+      "family": "regex",
+      "codecId": "regex.jflap.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/regex_canonical.jff",
+      "sha256": "adae77ef20d013fe7a137e80346d8fe99103cadb73812fa07f7d4cfce2b2734b",
+      "equivalent": {"codecId": "regex.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/regex_canonical.json", "sha256": "3a18d1e329df4cc36e1d927d7e383a22a0996ef182783f95c0eae795c61f922f"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "notApplicable", "metadata": "lossy"},
+        "diagnosticCodes": ["jflap.regex-dialect-normalized", "jflap.regex-turing-lab-extension-portability"],
+        "approvedLosses": [{"code": "jflap.regex-turing-lab-extension-portability", "issue": 327}]
+      },
+      "oracle": {"kind": "regexAcceptance", "accepted": ["", "a", "abba"], "rejected": ["c"], "unknown": []}
+    },
+    {
+      "id": "regex-jflap-malformed",
+      "family": "regex",
+      "codecId": "regex.jflap.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "regex-json-canonical",
+      "family": "regex",
+      "codecId": "regex.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/regex_canonical.json",
+      "sha256": "3a18d1e329df4cc36e1d927d7e383a22a0996ef182783f95c0eae795c61f922f",
+      "equivalent": {"codecId": "regex.jflap.v1", "fixture": "test/fixtures/interoperability/regex_canonical.jff", "sha256": "adae77ef20d013fe7a137e80346d8fe99103cadb73812fa07f7d4cfce2b2734b"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "notApplicable", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "regexAcceptance", "accepted": ["", "a", "abba"], "rejected": ["c"], "unknown": []}
+    },
+    {
+      "id": "regex-json-malformed",
+      "family": "regex",
+      "codecId": "regex.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "mealy-jflap-canonical",
+      "family": "mealy",
+      "codecId": "mealy.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/mealy_canonical.jff",
+      "sha256": "3a1effae9afc3783bd0e0accfc299d55e54a09597474b572a64cc7a06e61be32",
+      "equivalent": {"codecId": "mealy.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/mealy_canonical.json", "sha256": "b2c86efa55d787b4ed502b5eec031bb1f4d7535415a421eaff3b46f736ca6c24"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.mealy.canonical-order", "jflap.mealy.machine-identity-not-portable", "jflap.mealy.transition-identities-not-portable", "jflap.mealy.transition-ids-derived"]
+      },
+      "oracle": {"kind": "mealyOutput", "samples": [{"input": "", "output": [], "status": "success"}, {"input": "ab", "output": ["x"], "status": "success"}]}
+    },
+    {
+      "id": "mealy-jflap-malformed",
+      "family": "mealy",
+      "codecId": "mealy.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "mealy-json-canonical",
+      "family": "mealy",
+      "codecId": "mealy.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/mealy_canonical.json",
+      "sha256": "b2c86efa55d787b4ed502b5eec031bb1f4d7535415a421eaff3b46f736ca6c24",
+      "equivalent": {"codecId": "mealy.jflap-xml.v1", "fixture": "test/fixtures/interoperability/mealy_canonical.jff", "sha256": "3a1effae9afc3783bd0e0accfc299d55e54a09597474b572a64cc7a06e61be32"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "mealyOutput", "samples": [{"input": "", "output": [], "status": "success"}, {"input": "ab", "output": ["x"], "status": "success"}]}
+    },
+    {
+      "id": "mealy-json-malformed",
+      "family": "mealy",
+      "codecId": "mealy.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "moore-jflap-canonical",
+      "family": "moore",
+      "codecId": "moore.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/moore_canonical.jff",
+      "sha256": "371669fae4db52381d2c1daba129170c3620da176a5708409eb7dbfc89c493ac",
+      "equivalent": {"codecId": "moore.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/moore_canonical.json", "sha256": "47e79d7e27919050da60fb423bb02d9a5f6bb5b92746be0fd2fea60e8c58d95d"},
+      "expected": {"outcome": "success", "fidelity": "normalized"},
+      "oracle": {"kind": "mooreOutput", "samples": [{"input": "", "output": ["even"], "status": "success"}, {"input": "10", "output": ["even", "odd", "odd"], "status": "success"}]}
+    },
+    {
+      "id": "moore-jflap-malformed",
+      "family": "moore",
+      "codecId": "moore.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "moore-json-canonical",
+      "family": "moore",
+      "codecId": "moore.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/moore_canonical.json",
+      "sha256": "47e79d7e27919050da60fb423bb02d9a5f6bb5b92746be0fd2fea60e8c58d95d",
+      "equivalent": {"codecId": "moore.jflap-xml.v1", "fixture": "test/fixtures/interoperability/moore_canonical.jff", "sha256": "371669fae4db52381d2c1daba129170c3620da176a5708409eb7dbfc89c493ac"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "mooreOutput", "samples": [{"input": "", "output": ["even"], "status": "success"}, {"input": "10", "output": ["even", "odd", "odd"], "status": "success"}]}
+    },
+    {
+      "id": "moore-json-malformed",
+      "family": "moore",
+      "codecId": "moore.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "l-system-jflap-canonical",
+      "family": "l-system",
+      "codecId": "l-system.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/l_system_canonical.jff",
+      "sha256": "43ae4167ae65f68da90110aaaa7dfdf2e95b231ce59f8d346a2e93bcf79aa241",
+      "equivalent": {"codecId": "l-system.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/l_system_canonical.json", "sha256": "f249948c1815711c9d90e11a56a68f425ef9206417eddd5e30c5d41f3f09c827"},
+      "expected": {"outcome": "success", "fidelity": "normalized"},
+      "oracle": {"kind": "modelFacts", "facts": {"/axiom/#": 1, "/iterations": 2, "/productions/#": 1}}
+    },
+    {
+      "id": "l-system-jflap-malformed",
+      "family": "l-system",
+      "codecId": "l-system.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "l-system-json-canonical",
+      "family": "l-system",
+      "codecId": "l-system.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/l_system_canonical.json",
+      "sha256": "f249948c1815711c9d90e11a56a68f425ef9206417eddd5e30c5d41f3f09c827",
+      "equivalent": {"codecId": "l-system.jflap-xml.v1", "fixture": "test/fixtures/interoperability/l_system_canonical.jff", "sha256": "43ae4167ae65f68da90110aaaa7dfdf2e95b231ce59f8d346a2e93bcf79aa241"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["json.source-metadata-normalized"],
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "exact", "metadata": "equivalent"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/axiom/#": 1, "/iterations": 2, "/productions/#": 1}}
+    },
+    {
+      "id": "l-system-json-malformed",
+      "family": "l-system",
+      "codecId": "l-system.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "unrestricted-grammar-jflap-canonical",
+      "family": "unrestricted-grammar",
+      "codecId": "unrestricted-grammar.jflap-xml.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/unrestricted_grammar_canonical.jff",
+      "sha256": "b3b3c0f1f27daf85c0e4387f20e6d60deea422ecbfb6ff5b83f1b548c53bd504",
+      "equivalent": {"codecId": "unrestricted-grammar.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/unrestricted_grammar_canonical.json", "sha256": "d237774dd6e5d1eba2d0464bb0fdd476a033a590272f3ef7c3fdfb39ea1d4d21"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "lossy",
+        "dimensions": {"structural": "equivalent", "semantic": "exact", "visual": "notApplicable", "metadata": "lossy"},
+        "diagnosticCodes": ["jflap.unrestricted-tokenization-inferred", "jflap.unrestricted-turing-lab-extension-portability"],
+        "approvedLosses": [{"code": "jflap.unrestricted-turing-lab-extension-portability", "issue": 314}]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/startSymbol": "S", "/productions/#": 2}}
+    },
+    {
+      "id": "unrestricted-grammar-jflap-malformed",
+      "family": "unrestricted-grammar",
+      "codecId": "unrestricted-grammar.jflap-xml.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "unrestricted-grammar-json-canonical",
+      "family": "unrestricted-grammar",
+      "codecId": "unrestricted-grammar.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/unrestricted_grammar_canonical.json",
+      "sha256": "d237774dd6e5d1eba2d0464bb0fdd476a033a590272f3ef7c3fdfb39ea1d4d21",
+      "equivalent": {"codecId": "unrestricted-grammar.jflap-xml.v1", "fixture": "test/fixtures/interoperability/unrestricted_grammar_canonical.jff", "sha256": "b3b3c0f1f27daf85c0e4387f20e6d60deea422ecbfb6ff5b83f1b548c53bd504"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "exact",
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "notApplicable", "metadata": "exact"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/startSymbol": "S", "/productions/#": 2}}
+    },
+    {
+      "id": "unrestricted-grammar-json-malformed",
+      "family": "unrestricted-grammar",
+      "codecId": "unrestricted-grammar.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-regular-jflap-canonical",
+      "family": "pumping-regular",
+      "codecId": "pumping-lemma.regular.jflap.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_regular_canonical.jff",
+      "sha256": "1703b7c956e11fe9ce0233419f9119c6ce29d8bbb05a469dda7b475d204cba1b",
+      "equivalent": {"codecId": "pumping-lemma.regular.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/pumping_lemma_regular_canonical.json", "sha256": "47c8da962e117c57cc7c0eb5ba19e8ef8441ecfce05f3eccd357a0ba39d5eb26"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.pumping-lemma.character-tokenization", "jflap.pumping-lemma.local-extension"]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/problem/theorem": "regular", "/problem/customTitle": "Equal a and b blocks"}}
+    },
+    {
+      "id": "pumping-regular-jflap-malformed",
+      "family": "pumping-regular",
+      "codecId": "pumping-lemma.regular.jflap.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-regular-json-canonical",
+      "family": "pumping-regular",
+      "codecId": "pumping-lemma.regular.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_regular_canonical.json",
+      "sha256": "47c8da962e117c57cc7c0eb5ba19e8ef8441ecfce05f3eccd357a0ba39d5eb26",
+      "equivalent": {"codecId": "pumping-lemma.regular.jflap.v1", "fixture": "test/fixtures/interoperability/pumping_lemma_regular_canonical.jff", "sha256": "1703b7c956e11fe9ce0233419f9119c6ce29d8bbb05a469dda7b475d204cba1b"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "exact",
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "notApplicable", "metadata": "exact"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/problem/theorem": "regular", "/problem/customTitle": "Equal a and b blocks"}}
+    },
+    {
+      "id": "pumping-regular-json-malformed",
+      "family": "pumping-regular",
+      "codecId": "pumping-lemma.regular.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-context-free-jflap-canonical",
+      "family": "pumping-context-free",
+      "codecId": "pumping-lemma.context-free.jflap.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid", "unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_context_free_canonical.jff",
+      "sha256": "a1b163045a7406d8a2b15c340723258d05108e6d850a748898b7c828350719e1",
+      "equivalent": {"codecId": "pumping-lemma.context-free.turing-lab-json.v1", "fixture": "test/fixtures/interoperability/pumping_lemma_context_free_canonical.json", "sha256": "10452ef06c464740042c8b20729fb8cc5ad054e6506ae33b358d46e6df1a9b43"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "normalized",
+        "diagnosticCodes": ["jflap.pumping-lemma.character-tokenization", "jflap.pumping-lemma.local-extension"]
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/problem/theorem": "contextFree", "/problem/customTitle": "Equal a, b, and c blocks"}}
+    },
+    {
+      "id": "pumping-context-free-jflap-malformed",
+      "family": "pumping-context-free",
+      "codecId": "pumping-lemma.context-free.jflap.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.jff",
+      "sha256": "5fedd94048d74b0e01781ad7558b02b863db5a11f29c13ee337cad062148186b",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-context-free-json-canonical",
+      "family": "pumping-context-free",
+      "codecId": "pumping-lemma.context-free.turing-lab-json.v1",
+      "roles": ["minimal", "representative", "complex", "edgeValid"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_context_free_canonical.json",
+      "sha256": "10452ef06c464740042c8b20729fb8cc5ad054e6506ae33b358d46e6df1a9b43",
+      "equivalent": {"codecId": "pumping-lemma.context-free.jflap.v1", "fixture": "test/fixtures/interoperability/pumping_lemma_context_free_canonical.jff", "sha256": "a1b163045a7406d8a2b15c340723258d05108e6d850a748898b7c828350719e1"},
+      "expected": {
+        "outcome": "success",
+        "fidelity": "exact",
+        "dimensions": {"structural": "exact", "semantic": "exact", "visual": "notApplicable", "metadata": "exact"}
+      },
+      "oracle": {"kind": "modelFacts", "facts": {"/problem/theorem": "contextFree", "/problem/customTitle": "Equal a, b, and c blocks"}}
+    },
+    {
+      "id": "pumping-context-free-json-malformed",
+      "family": "pumping-context-free",
+      "codecId": "pumping-lemma.context-free.turing-lab-json.v1",
+      "roles": ["malformed"],
+      "fixture": "test/fixtures/compatibility/malformed.json",
+      "sha256": "56f645df4814d15663c134a4b83fd6d40711272ffcbe36c43fb4ef15593724c6",
+      "expected": {"outcome": "malformed"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "fsa-json-future-schema",
+      "family": "fsa",
+      "codecId": "fsa.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/fsa_canonical.json",
+      "sha256": "92fc7f3f13f2b6c6c8ed11fa9f2a5cf72ab8eee538390099f9e731bca0f1b3ce",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "grammar-json-future-schema",
+      "family": "grammar",
+      "codecId": "grammar.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/grammar_canonical.json",
+      "sha256": "51b07b58ee735d36a7b1850272231ed3858470f823d15d03c8e33aadf0fbb938",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pda-json-future-schema",
+      "family": "pda",
+      "codecId": "pda.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pda_canonical.json",
+      "sha256": "4b085b890df392cdb3dd61a070d5292adf62bad147dbd6711cae1b95ed692987",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "tm-json-future-schema",
+      "family": "tm",
+      "codecId": "tm.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/tm_multi_canonical.json",
+      "sha256": "b892bb69e657155fffc31a411b8312b03255b305bb723a6b9ba8f5e8203f4f23",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "regex-json-future-schema",
+      "family": "regex",
+      "codecId": "regex.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/regex_canonical.json",
+      "sha256": "3a18d1e329df4cc36e1d927d7e383a22a0996ef182783f95c0eae795c61f922f",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "mealy-json-future-schema",
+      "family": "mealy",
+      "codecId": "mealy.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/mealy_canonical.json",
+      "sha256": "b2c86efa55d787b4ed502b5eec031bb1f4d7535415a421eaff3b46f736ca6c24",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "moore-json-future-schema",
+      "family": "moore",
+      "codecId": "moore.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/moore_canonical.json",
+      "sha256": "47e79d7e27919050da60fb423bb02d9a5f6bb5b92746be0fd2fea60e8c58d95d",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "l-system-json-future-schema",
+      "family": "l-system",
+      "codecId": "l-system.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/l_system_canonical.json",
+      "sha256": "f249948c1815711c9d90e11a56a68f425ef9206417eddd5e30c5d41f3f09c827",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "unrestricted-grammar-json-future-schema",
+      "family": "unrestricted-grammar",
+      "codecId": "unrestricted-grammar.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/unrestricted_grammar_canonical.json",
+      "sha256": "d237774dd6e5d1eba2d0464bb0fdd476a033a590272f3ef7c3fdfb39ea1d4d21",
+      "mutation": "futureSchema",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-regular-json-wrong-theorem",
+      "family": "pumping-regular",
+      "codecId": "pumping-lemma.regular.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_context_free_canonical.json",
+      "sha256": "10452ef06c464740042c8b20729fb8cc5ad054e6506ae33b358d46e6df1a9b43",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    },
+    {
+      "id": "pumping-context-free-json-wrong-theorem",
+      "family": "pumping-context-free",
+      "codecId": "pumping-lemma.context-free.turing-lab-json.v1",
+      "roles": ["unsupportedFeature"],
+      "fixture": "test/fixtures/interoperability/pumping_lemma_regular_canonical.json",
+      "sha256": "47c8da962e117c57cc7c0eb5ba19e8ef8441ecfce05f3eccd357a0ba39d5eb26",
+      "expected": {"outcome": "unsupported"},
+      "oracle": {"kind": "outcome"}
+    }
+  ]
+}

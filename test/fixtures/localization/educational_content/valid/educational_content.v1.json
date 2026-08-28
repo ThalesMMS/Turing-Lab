@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "formalPayloadDigestContracts": {
+    "assetBacked": "canonicalJsonWithoutLocalizedMetadataV1",
+    "codeBacked": "canonicalRuntimeJsonV1",
+    "pumpingExercise": "pumpingLanguageConstraintsAnswersV1",
+    "instructionReference": "localeNeutralContentReferenceV1"
+  },
+  "sources": {
+    "terminology": {
+      "catalog": "terminology.v1.json",
+      "styleGuide": "TERMINOLOGY.md",
+      "maintainerGuide": "EDUCATIONAL_CONTENT.md"
+    },
+    "help": {
+      "ids": "help_topic_ids.dart.txt",
+      "catalog": "help_catalog.dart.txt",
+      "copies": {
+        "en": "help_copy_en.dart.txt",
+        "pt": "help_copy_pt.dart.txt"
+      }
+    },
+    "assetExamplesRoot": "assets/examples",
+    "exampleCatalogs": [
+      {
+        "strategy": "assetMetadata",
+        "path": "example_catalog.dart.txt"
+      }
+    ],
+    "exampleSuggestedSimulations": {
+      "path": "example_suggested_simulations.dart.txt",
+      "excludedCatalogStrategies": [
+        "lSystemValues"
+      ]
+    },
+    "pumpingExercises": {
+      "path": "pumping_problem.dart.txt",
+      "copyPath": "pumping_problem_copy.dart.txt"
+    },
+    "pendingGapSources": []
+  },
+  "evidenceContracts": [
+    {
+      "id": "fixture-catalog-ids-v1",
+      "testPath": "test/evidence_test.dart.txt",
+      "coverage": "allManifestEntries"
+    }
+  ],
+  "pendingSourceGaps": [],
+  "profiles": {
+    "pending": {
+      "shippingStatus": "shipped",
+      "ownerIssue": 344,
+      "contentVersion": 1,
+      "localeStatus": {
+        "en": "presentUnreviewed",
+        "pt": "presentUnreviewed"
+      },
+      "technicalReviewStatus": "pending",
+      "editorialReviewStatus": "pending",
+      "provenance": {
+        "sourceKind": "fixture",
+        "license": "Apache-2.0",
+        "reviewStatus": "pending"
+      },
+      "accessibilityAlternativeStatus": "pending",
+      "reviewEvidence": []
+    }
+  },
+  "entries": [
+    {
+      "manifestId": "example/asset/fixture",
+      "contentId": "asset/fixture",
+      "kind": "example",
+      "profile": "pending",
+      "sourcePaths": [
+        "example_catalog.dart.txt",
+        "assets/examples/fixture.json"
+      ],
+      "evidenceTests": [
+        "test/evidence_test.dart.txt"
+      ],
+      "legacyLookupKey": "Fixture example",
+      "formalPayloadSha256": "0bf8a510a6f9ed28172176c7043e994709419cdb77789be660278fdd35c71e45"
+    },
+    {
+      "manifestId": "exercise/fixture.exercise",
+      "contentId": "fixture.exercise",
+      "kind": "exercise",
+      "profile": "pending",
+      "sourcePaths": [
+        "pumping_problem.dart.txt",
+        "pumping_problem_copy.dart.txt"
+      ],
+      "evidenceTests": [
+        "test/evidence_test.dart.txt"
+      ],
+      "formalPayloadSha256": "8f8100ce6e85dfaae5fc5e9808e9ee2a13d40daecba34260caa051c51b677548"
+    },
+    {
+      "manifestId": "helpTopic/fixture.help",
+      "contentId": "fixture.help",
+      "kind": "helpTopic",
+      "profile": "pending",
+      "sourcePaths": [
+        "help_catalog.dart.txt",
+        "help_topic_ids.dart.txt"
+      ],
+      "evidenceTests": [
+        "test/evidence_test.dart.txt"
+      ]
+    }
+  ],
+  "nonShippingEntries": []
+}

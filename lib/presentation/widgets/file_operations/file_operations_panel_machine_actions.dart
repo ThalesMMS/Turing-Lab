@@ -39,15 +39,19 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
       if (result.isSuccess) {
         _showSuccessMessage(successMessageBuilder(result));
       } else {
-        final error = result.error?.trim();
         _showErrorMessage(
-          formatFailure(_l10n.localizeWorkflowText(error ?? '')),
+          formatFailure(_localizedFailure(result)),
           retryOperation: retryOperation,
         );
       }
+    } on CodecOperationException catch (e) {
+      _showErrorMessage(
+        formatException(_localizedException(e)),
+        retryOperation: retryOperation,
+      );
     } catch (e, stackTrace) {
       _showErrorMessage(
-        formatException(_l10n.localizeWorkflowText('$e')),
+        formatException(_localizedException(e)),
         retryOperation: retryOperation,
         stackTrace: stackTrace,
       );
@@ -67,9 +71,8 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
       dialogTitle: _l10n.saveGrammarAsJflap,
       fileName: fileName,
       allowedExtensions: const ['cfg'],
-      contentsProvider: () => _fileService.serializeGrammarToJFLAPString(
-        grammar,
-      ),
+      contentsProvider: () =>
+          _fileService.serializeGrammarToJFLAPString(grammar),
       webSaveCall: (targetName) =>
           _fileService.saveGrammarToJFLAP(grammar, targetName),
       writeToPath: (path) => _fileService.saveGrammarToJFLAP(grammar, path),
@@ -107,7 +110,7 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
         } else {
           await _handleImportFailure(
             fileName: file.name,
-            errorMessage: loadResult.error ?? 'Unknown error',
+            errorMessage: _localizedFailure(loadResult),
             retryOperation: _loadGrammarFromJFLAP,
           );
         }
@@ -116,8 +119,8 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
       }
     } catch (e, stackTrace) {
       await _handleImportFailure(
-        fileName: 'Grammar',
-        errorMessage: 'Error loading grammar: $e',
+        fileName: _l10n.fileSectionGrammar,
+        errorMessage: _l10n.errorLoadingGrammar('$e'),
         retryOperation: _loadGrammarFromJFLAP,
         stackTrace: stackTrace,
       );
@@ -141,18 +144,24 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
         grammar,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       webSaveCall: (targetName) => _fileService.exportGrammarModelToSVG(
         grammar,
         targetName,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       writeToPath: (path) => _fileService.exportGrammarModelToSVG(
         grammar,
         path,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb
@@ -177,18 +186,24 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
         pda,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       webSaveCall: (targetName) => _fileService.exportPdaToSVG(
         pda,
         targetName,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       writeToPath: (path) => _fileService.exportPdaToSVG(
         pda,
         path,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb
@@ -214,18 +229,24 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
         tmEntity,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       webSaveCall: (targetName) => _fileService.exportTuringMachineToSVG(
         tmEntity,
         targetName,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       writeToPath: (path) => _fileService.exportTuringMachineToSVG(
         tmEntity,
         path,
         emptyAutomatonLabel: _svgEmptyAutomatonLabel,
         tmLegendLabel: _svgTmLegendLabel,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
       ),
       cancelMessage: _l10n.exportCanceled,
       successMessageBuilder: (result) => kIsWeb

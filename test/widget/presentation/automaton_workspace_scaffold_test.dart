@@ -18,6 +18,7 @@ void main() {
   Future<void> pumpWorkspace(
     WidgetTester tester, {
     required Size size,
+    WorkspaceDockController? dockController,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -29,11 +30,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: AutomatonWorkspaceScaffold(
+          dockController: dockController,
           canvasWithToolbar: ({required isMobile}) => Stack(
             children: [
-              Center(
-                child: Text(isMobile ? 'mobile canvas' : 'wide canvas'),
-              ),
+              Center(child: Text(isMobile ? 'mobile canvas' : 'wide canvas')),
               if (isMobile)
                 // Mirrors the canvas's transition-mode indicator: centred on
                 // the top edge, below the band the floating panel starts in.
@@ -54,20 +54,17 @@ void main() {
           algorithmPanel: const Text('algorithms panel'),
           simulationPanel: const Text('simulation panel'),
           infoPanel: const Text('info panel'),
-          mobileFloatingPanelBuilder: (
-            context, {
-            required onDragDelta,
-            required onPanelSizeChanged,
-          }) {
-            return GestureDetector(
-              onPanUpdate: (details) => onDragDelta(details.delta),
-              child: const SizedBox.square(
-                key: ValueKey('floating-panel'),
-                dimension: 48,
-                child: Text('mobile floating panel'),
-              ),
-            );
-          },
+          mobileFloatingPanelBuilder:
+              (context, {required onDragDelta, required onPanelSizeChanged}) {
+                return GestureDetector(
+                  onPanUpdate: (details) => onDragDelta(details.delta),
+                  child: const SizedBox.square(
+                    key: ValueKey('floating-panel'),
+                    dimension: 48,
+                    child: Text('mobile floating panel'),
+                  ),
+                );
+              },
         ),
       ),
     );
@@ -85,7 +82,9 @@ void main() {
     // The floating panel owns the canvas's top-right corner, so it must not
     // cover the transition-mode indicator sitting below it.
     expect(
-      tester.getRect(find.byKey(const ValueKey('transition-status'))).overlaps(
+      tester
+          .getRect(find.byKey(const ValueKey('transition-status')))
+          .overlaps(
             tester.getRect(find.byKey(const ValueKey('floating-panel'))),
           ),
       isFalse,
@@ -120,22 +119,52 @@ void main() {
   ) async {
     await pumpWorkspace(tester, size: const Size(1600, 900));
 
-    await tester
-        .tap(find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)));
+    await tester.tap(
+      find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('algorithms panel'), findsOneWidget);
     expect(find.text('simulation panel'), findsNothing);
 
     await tester.tap(
-        find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)));
+      find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('simulation panel'), findsOneWidget);
     expect(find.text('algorithms panel'), findsNothing);
 
     await tester.tap(
-        find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)));
+      find.byKey(_railKey(AutomatonWorkspaceScaffold.simulationPanelId)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('simulation panel'), findsNothing);
+  });
+
+  testWidgets('external dock controller opens the existing simulation panel', (
+    tester,
+  ) async {
+    final controller = WorkspaceDockController();
+    addTearDown(controller.dispose);
+    await pumpWorkspace(
+      tester,
+      size: const Size(1200, 900),
+      dockController: controller,
+    );
+
+    controller.openPanel(AutomatonWorkspaceScaffold.simulationPanelId);
+    await tester.pump();
+
+    expect(
+      controller.openPanelId,
+      AutomatonWorkspaceScaffold.simulationPanelId,
+    );
+    expect(find.text('simulation panel'), findsOneWidget);
+    expect(
+      find.byKey(
+        WorkspaceDock.panelKey(AutomatonWorkspaceScaffold.simulationPanelId),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the canvas keeps most of the pane while a panel is open', (
@@ -146,15 +175,16 @@ void main() {
     final collapsedCanvas = tester.getSize(find.text('wide canvas'));
     expect(collapsedCanvas.width, greaterThan(0));
 
-    await tester
-        .tap(find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)));
+    await tester.tap(
+      find.byKey(_railKey(AutomatonWorkspaceScaffold.algorithmPanelId)),
+    );
     await tester.pumpAndSettle();
 
     final dockRect = tester.getRect(find.byType(WorkspaceDock));
     final panelRect = tester.getRect(
-      find.byKey(WorkspaceDock.panelKey(
-        AutomatonWorkspaceScaffold.algorithmPanelId,
-      )),
+      find.byKey(
+        WorkspaceDock.panelKey(AutomatonWorkspaceScaffold.algorithmPanelId),
+      ),
     );
     expect(panelRect.width, lessThan(dockRect.width / 2));
   });

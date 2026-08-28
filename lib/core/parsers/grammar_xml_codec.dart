@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:xml/xml.dart';
 
 import '../models/grammar.dart';
+import '../messages/structured_message.dart';
 import '../models/production.dart';
 import '../result.dart';
 
@@ -48,8 +49,8 @@ class GrammarXmlCodec {
     try {
       final document = XmlDocument.parse(xmlString);
       return decodeGrammarDocument(document);
-    } catch (e) {
-      return Failure(e.toString());
+    } catch (_) {
+      return _failure('malformed-document');
     }
   }
 
@@ -58,26 +59,23 @@ class GrammarXmlCodec {
     try {
       final grammarElement = document.findAllElements('grammar').firstOrNull;
       if (grammarElement == null) {
-        throw const FormatException(
-          'JFLAP grammar import is missing the <grammar> element.',
-        );
+        return _failure('missing-grammar-element');
       }
 
       final startElement = grammarElement.findElements('start').firstOrNull;
       if (startElement == null) {
-        throw const FormatException(
-          'JFLAP grammar import is missing the <start> element.',
-        );
+        return _failure('missing-start-element');
       }
       final startSymbols = _splitGrammarSymbols(startElement.innerText);
       if (startSymbols.isEmpty) {
-        throw const FormatException(
-          'JFLAP grammar import has an empty <start> element.',
-        );
+        return _failure('empty-start-element');
       }
       if (startSymbols.length != 1) {
-        throw const FormatException(
-          'JFLAP grammar import must declare exactly one start symbol.',
+        return _failure(
+          'invalid-start-count',
+          arguments: {
+            'count': StructuredMessageArgument.count(startSymbols.length),
+          },
         );
       }
 
@@ -85,15 +83,23 @@ class GrammarXmlCodec {
         grammarElement.getAttribute('type'),
       );
       final productions = <Production>{};
+      var productionIndex = 0;
       for (final productionElement in grammarElement.findAllElements(
         'production',
       )) {
         final leftElement = productionElement.findElements('left').firstOrNull;
-        final rightElement =
-            productionElement.findElements('right').firstOrNull;
+        final rightElement = productionElement
+            .findElements('right')
+            .firstOrNull;
         if (leftElement == null || rightElement == null) {
-          throw const FormatException(
-            'JFLAP grammar import has a <production> without <left> or <right>.',
+          return _failure(
+            'incomplete-production',
+            arguments: {
+              'index': StructuredMessageArgument.index(
+                productionIndex,
+                role: 'production-index',
+              ),
+            },
           );
         }
 
@@ -109,6 +115,7 @@ class GrammarXmlCodec {
             order: productions.length,
           ),
         );
+        productionIndex++;
       }
 
       final nonterminals = <String>{
@@ -121,10 +128,11 @@ class GrammarXmlCodec {
           .toSet();
 
       final now = DateTime.now();
+      final importedId = 'imported_grammar_${now.millisecondsSinceEpoch}';
       return Success(
         Grammar(
-          id: 'imported_grammar_${now.millisecondsSinceEpoch}',
-          name: 'Imported Grammar',
+          id: importedId,
+          name: importedId,
           terminals: terminals,
           nonterminals: nonterminals,
           startSymbol: startSymbols.single,
@@ -134,9 +142,23 @@ class GrammarXmlCodec {
           modified: now,
         ),
       );
-    } catch (e) {
-      return Failure(e.toString());
+    } catch (_) {
+      return _failure('malformed-document');
     }
+  }
+
+  Failure<T> _failure<T>(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) {
+    final message = StructuredMessage(
+      namespace: 'parser.grammar-xml',
+      code: code,
+      category: StructuredMessageCategory.interoperability,
+      severity: StructuredMessageSeverity.error,
+      arguments: arguments,
+    );
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   List<String> _splitGrammarSymbols(String value) {

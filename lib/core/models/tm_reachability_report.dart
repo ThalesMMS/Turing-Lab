@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import '../messages/structured_message.dart';
 import 'tm_execution_analysis.dart';
 
 enum TMReachabilityStatus {
@@ -20,8 +21,8 @@ class TMReachabilityWitness {
     required this.incomingTransitionId,
     required List<String> stateIds,
     required List<String> transitionIds,
-  })  : stateIds = List<String>.unmodifiable(stateIds),
-        transitionIds = List<String>.unmodifiable(transitionIds);
+  }) : stateIds = List<String>.unmodifiable(stateIds),
+       transitionIds = List<String>.unmodifiable(transitionIds);
 
   final String stateId;
   final String input;
@@ -49,16 +50,17 @@ class TMReachabilityReport {
     required this.timeout,
     required this.executionTime,
     this.limit,
-  })  : inputs = List<String>.unmodifiable(inputs),
-        structurallyReachableStateIds = Set<String>.unmodifiable(
-          structurallyReachableStateIds,
-        ),
-        structurallyUnreachableStateIds = Set<String>.unmodifiable(
-          structurallyUnreachableStateIds,
-        ),
-        witnessesByStateId = UnmodifiableMapView(
-          Map<String, TMReachabilityWitness>.from(witnessesByStateId),
-        );
+    this.structuredMessage,
+  }) : inputs = List<String>.unmodifiable(inputs),
+       structurallyReachableStateIds = Set<String>.unmodifiable(
+         structurallyReachableStateIds,
+       ),
+       structurallyUnreachableStateIds = Set<String>.unmodifiable(
+         structurallyUnreachableStateIds,
+       ),
+       witnessesByStateId = UnmodifiableMapView(
+         Map<String, TMReachabilityWitness>.from(witnessesByStateId),
+       );
 
   final List<String> inputs;
   final TMReachabilityStatus status;
@@ -74,12 +76,15 @@ class TMReachabilityReport {
   final Duration executionTime;
   final TMExecutionLimit? limit;
 
+  /// Locale-neutral semantic payload for [message], when available.
+  final StructuredMessage? structuredMessage;
+
   Set<String> get reachedWithinBoundsStateIds =>
       Set<String>.unmodifiable(witnessesByStateId.keys);
 
   Set<String> get notObservedWithinBoundsStateIds => Set<String>.unmodifiable(
-        structurallyReachableStateIds.difference(reachedWithinBoundsStateIds),
-      );
+    structurallyReachableStateIds.difference(reachedWithinBoundsStateIds),
+  );
 
   bool get isComplete => status == TMReachabilityStatus.complete;
 }

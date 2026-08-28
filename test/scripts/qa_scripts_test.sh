@@ -67,4 +67,15 @@ run_case suite_success 0 "QA_RESULT passed" \
 
 bash "$REPO_ROOT/test/scripts/local_qa_test.sh"
 
+if command -v python3 >/dev/null 2>&1; then
+    run_case branding_clean 0 "Stale branding check passed." \
+        python3 "$REPO_ROOT/tool/check_stale_branding.py"
+
+    BRANDING_PROBE="$(mktemp "$REPO_ROOT/stale-branding-probe.XXXXXX.md")"
+    printf 'J%s\n' 'Flutter' >"$BRANDING_PROBE"
+    run_case branding_stale 1 "Stale branding check failed:" \
+        python3 "$REPO_ROOT/tool/check_stale_branding.py"
+    rm -f -- "$BRANDING_PROBE"
+fi
+
 echo "QA script smoke tests passed"

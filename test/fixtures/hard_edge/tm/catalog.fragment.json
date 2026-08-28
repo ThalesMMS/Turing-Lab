@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "tm-338-v1",
+  "cases": [
+    {
+      "id": "tm-path-tm-model", "family": "tm", "algorithm": "tm-model", "sourceKind": "independent", "seed": 338, "property": "tm.model-serialization",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-transition", "family": "tm", "algorithm": "tm-transition", "sourceKind": "independent", "seed": 338, "property": "tm.model-serialization",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-acceptance-policy", "family": "tm", "algorithm": "tm-acceptance-policy", "sourceKind": "independent", "seed": 338, "property": "tm.outcome-lattice",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-execution-kernel", "family": "tm", "algorithm": "tm-execution-kernel", "sourceKind": "generated", "seed": 338, "property": "tm.oracle-parity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-execution-analyzer", "family": "tm", "algorithm": "tm-execution-analyzer", "sourceKind": "generated", "seed": 338, "property": "tm.oracle-parity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-multi-tape-analyzer", "family": "tm", "algorithm": "tm-multi-tape-analyzer", "sourceKind": "independent", "seed": 338, "property": "tm.multi-tape-atomicity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "9a141b101f8450485b118502e37c1507674745d3cad9042951e8d21306f63f5d", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/multi_tape.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-simulator", "family": "tm", "algorithm": "tm-simulator", "sourceKind": "independent", "seed": 338, "property": "tm.runner-parity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["windows", "macos", "linux", "web"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-native-runner", "family": "tm", "algorithm": "tm-native-runner", "sourceKind": "independent", "seed": 338, "property": "tm.runner-parity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["windows", "macos", "linux"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-web-cooperative-runner", "family": "tm", "algorithm": "tm-web-cooperative-runner", "sourceKind": "independent", "seed": 338, "property": "tm.runner-parity",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["web"], "sha256": "2d3c0efcc4db5d35d3e0d0996d43cf5c43807d21af826ad6779326b24c68ed0e", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/core_oracle.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-reachability", "family": "tm", "algorithm": "tm-reachability", "sourceKind": "independent", "seed": 338, "property": "tm.reachability-language",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "a066184f3ca7210277b5b9a1fce2090f6f01dd055f0610c1bb3490cce2fa1f37", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/analysis.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-language-explorer", "family": "tm", "algorithm": "tm-language-explorer", "sourceKind": "independent", "seed": 338, "property": "tm.reachability-language",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "a066184f3ca7210277b5b9a1fce2090f6f01dd055f0610c1bb3490cce2fa1f37", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/analysis.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-space-profiler", "family": "tm", "algorithm": "tm-space-profiler", "sourceKind": "independent", "seed": 338, "property": "tm.metrics-trace",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "a066184f3ca7210277b5b9a1fce2090f6f01dd055f0610c1bb3490cce2fa1f37", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/analysis.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-time-profiler", "family": "tm", "algorithm": "tm-time-profiler", "sourceKind": "independent", "seed": 338, "property": "tm.metrics-trace",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "a066184f3ca7210277b5b9a1fce2090f6f01dd055f0610c1bb3490cce2fa1f37", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/analysis.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-block-dependency", "family": "tm", "algorithm": "tm-block-dependency", "sourceKind": "independent", "seed": 338, "property": "tm.building-blocks",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "b32f3aaf2411dc29e4782cb74fd559026216e84508de6c98a4012e356d38e2f3", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/building_blocks.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-block-execution", "family": "tm", "algorithm": "tm-block-execution", "sourceKind": "independent", "seed": 338, "property": "tm.building-blocks",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "b32f3aaf2411dc29e4782cb74fd559026216e84508de6c98a4012e356d38e2f3", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/building_blocks.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-block-inline", "family": "tm", "algorithm": "tm-block-inline", "sourceKind": "independent", "seed": 338, "property": "tm.building-blocks",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "b32f3aaf2411dc29e4782cb74fd559026216e84508de6c98a4012e356d38e2f3", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/building_blocks.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-block-project-editor", "family": "tm", "algorithm": "tm-block-project-editor", "sourceKind": "independent", "seed": 338, "property": "tm.building-blocks",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "b32f3aaf2411dc29e4782cb74fd559026216e84508de6c98a4012e356d38e2f3", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/building_blocks.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-to-unrestricted-grammar", "family": "tm", "algorithm": "tm-to-unrestricted-grammar", "sourceKind": "independent", "seed": 338, "property": "tm.grammar-conversion",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "fd6f379f7593b86c7cd7197db2f485aa2da1ed45d5d19e8a07e81b2403d029a8", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/grammar_conversion.json", "expectedOutcome": "pass", "requiredTool": null
+    },
+    {
+      "id": "tm-path-tm-grammar-differential", "family": "tm", "algorithm": "tm-grammar-differential", "sourceKind": "independent", "seed": 338, "property": "tm.grammar-conversion",
+      "provenance": {"origin": "Independently authored for Turing Lab issue 338", "independentlyAuthored": true, "generator": "tm-v1", "jflapVersion": null, "licenseBasis": "LICENSE.txt", "sourceRevision": null, "sourceSha256": null},
+      "license": "Apache-2.0", "regressionIssue": 338, "platforms": ["all"], "sha256": "fd6f379f7593b86c7cd7197db2f485aa2da1ed45d5d19e8a07e81b2403d029a8", "generatorVersion": "tm-v1", "oracleVersion": "tm-independent-v1", "budget": {"maxIterations": 16, "maxProductions": 256, "maxRegexNodes": 8, "maxStackDepth": 8, "maxStates": 8, "maxSymbols": 6, "maxTapeCells": 64, "maxTransitions": 16, "maxWordLength": 8}, "fixture": "test/fixtures/hard_edge/tm/grammar_conversion.json", "expectedOutcome": "pass", "requiredTool": null
+    }
+  ],
+  "mutations": [
+    {"id": "tm-clamp-left-head-at-zero", "family": "tm", "property": "tm.mutations", "operatorId": "clamp-left-head-at-zero", "fixture": "test/fixtures/hard_edge/tm/mutation_probes.json", "sha256": "167e9f0d7ae7c343ab3f5b49db71a8fe6c803adc6837f4431bad54368ddd7d14", "requiredTool": null},
+    {"id": "tm-partial-multi-tape-read-match", "family": "tm", "property": "tm.mutations", "operatorId": "partial-multi-tape-read-match", "fixture": "test/fixtures/hard_edge/tm/mutation_probes.json", "sha256": "167e9f0d7ae7c343ab3f5b49db71a8fe6c803adc6837f4431bad54368ddd7d14", "requiredTool": null},
+    {"id": "tm-reject-on-first-halted-ntm-branch", "family": "tm", "property": "tm.mutations", "operatorId": "reject-on-first-halted-ntm-branch", "fixture": "test/fixtures/hard_edge/tm/mutation_probes.json", "sha256": "167e9f0d7ae7c343ab3f5b49db71a8fe6c803adc6837f4431bad54368ddd7d14", "requiredTool": null},
+    {"id": "tm-skip-building-block-return", "family": "tm", "property": "tm.mutations", "operatorId": "skip-building-block-return", "fixture": "test/fixtures/hard_edge/tm/mutation_probes.json", "sha256": "167e9f0d7ae7c343ab3f5b49db71a8fe6c803adc6837f4431bad54368ddd7d14", "requiredTool": null}
+  ]
+}

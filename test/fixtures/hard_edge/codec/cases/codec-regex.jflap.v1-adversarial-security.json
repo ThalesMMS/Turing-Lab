@@ -1,0 +1,16 @@
+{
+  "codecId": "regex.jflap.v1",
+  "id": "codec-regex.jflap.v1-adversarial-security-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "collectionExcess": 1,
+    "depthExcess": 1,
+    "malformedMarker": "β",
+    "wrongFilename": "wrong-β.extension",
+    "sourceFilename": "regex_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT5yZTwvdHlwZT4KICA8IS0tVGhlIHJlZ3VsYXIgZXhwcmVzc2lvbi4tLT4KICA8ZXhwcmVzc2lvbj4oYStiKSo8L2V4cHJlc3Npb24+Cjwvc3RydWN0dXJlPgo="
+  },
+  "property": "adversarial-security",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

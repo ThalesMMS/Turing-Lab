@@ -146,6 +146,7 @@ class ErrorBanner extends StatelessWidget {
 
     return Semantics(
       container: true,
+      liveRegion: true,
       label: bannerLabel,
       child: LayoutBuilder(
         builder: (context, constraints) {

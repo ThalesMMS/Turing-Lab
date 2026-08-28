@@ -40,6 +40,49 @@ void _runFileOperationsPanelBasicRenderingTests() {
       }
     });
 
+    testWidgets('localizes visual export controls in Portuguese', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: FileOperationsPanel(
+              automaton: _buildSampleAutomaton(),
+              annotations: DocumentAnnotationCollection(
+                documentId: 'sample',
+                documentRevision: '1',
+                annotations: [
+                  DocumentAnnotation(
+                    id: 'note-1',
+                    documentId: 'sample',
+                    documentRevision: '1',
+                    text: 'Nota formal',
+                    x: 10,
+                    y: 20,
+                    createdAt: DateTime.utc(2026),
+                    updatedAt: DateTime.utc(2026),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Operações de arquivo'), findsOneWidget);
+      expect(find.text('Exportar SVG'), findsOneWidget);
+      if (!kIsWeb) expect(find.text('Exportar PNG'), findsOneWidget);
+      expect(
+        find.text('Incluir notas nas exportações visuais'),
+        findsOneWidget,
+      );
+      expect(find.text('Include notes in visual exports'), findsNothing);
+    });
+
     testWidgets('displays grammar section when grammar is provided', (
       tester,
     ) async {
@@ -61,6 +104,48 @@ void _runFileOperationsPanelBasicRenderingTests() {
       } else {
         expect(find.text('Save as JFLAP'), findsOneWidget);
       }
+    });
+
+    testWidgets('visual annotation export is an explicit opt-in', (
+      tester,
+    ) async {
+      final timestamp = DateTime.utc(2026);
+      final annotations = DocumentAnnotationCollection(
+        documentId: 'sample',
+        documentRevision: '1',
+        annotations: [
+          DocumentAnnotation(
+            id: 'note-1',
+            documentId: 'sample',
+            documentRevision: '1',
+            text: 'Export me',
+            x: 10,
+            y: 20,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FileOperationsPanel(
+              automaton: _buildSampleAutomaton(),
+              annotations: annotations,
+            ),
+          ),
+        ),
+      );
+
+      final switchFinder = find.widgetWithText(
+        SwitchListTile,
+        'Include notes in visual exports',
+      );
+      expect(switchFinder, findsOneWidget);
+      expect(tester.widget<SwitchListTile>(switchFinder).value, isFalse);
+      await tester.tap(switchFinder);
+      await tester.pump();
+      expect(tester.widget<SwitchListTile>(switchFinder).value, isTrue);
     });
 
     testWidgets(

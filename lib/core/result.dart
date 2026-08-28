@@ -11,6 +11,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'entities/grammar_entity.dart';
+import 'messages/structured_message.dart';
 
 /// Standardized Result type for consistent error handling across the application
 sealed class Result<T> {
@@ -28,11 +29,19 @@ sealed class Result<T> {
   /// Returns the error message if failure, null otherwise
   String? get error => isFailure ? (this as Failure<T>).message : null;
 
+  /// Returns locale-neutral failure details when the producer supplies them.
+  StructuredMessage? get structuredError =>
+      isFailure ? (this as Failure<T>).structuredMessage : null;
+
   /// Maps the result to another type
   Result<R> map<R>(R Function(T) mapper) {
     return switch (this) {
       Success<T>(data: final data) => Success(mapper(data)),
-      Failure<T>(message: final message) => Failure(message),
+      Failure<T>(
+        message: final message,
+        structuredMessage: final structuredMessage,
+      ) =>
+        Failure(message, structuredMessage: structuredMessage),
     };
   }
 
@@ -43,7 +52,11 @@ sealed class Result<T> {
   ) {
     return switch (this) {
       Success<T>(data: final data) => Success(onSuccess(data)),
-      Failure<T>(message: final message) => Failure(onFailure(message)),
+      Failure<T>(
+        message: final message,
+        structuredMessage: final structuredMessage,
+      ) =>
+        Failure(onFailure(message), structuredMessage: structuredMessage),
     };
   }
 
@@ -88,18 +101,20 @@ class Success<T> extends Result<T> {
 /// Failure result containing an error message
 class Failure<T> extends Result<T> {
   final String message;
+  final StructuredMessage? structuredMessage;
 
-  const Failure(this.message);
+  const Failure(this.message, {this.structuredMessage});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Failure<T> &&
           runtimeType == other.runtimeType &&
-          message == other.message;
+          message == other.message &&
+          structuredMessage == other.structuredMessage;
 
   @override
-  int get hashCode => message.hashCode;
+  int get hashCode => Object.hash(message, structuredMessage);
 
   @override
   String toString() => 'Failure($message)';
@@ -126,19 +141,23 @@ extension ResultListExtension<T> on List<Result<T>> {
 
   /// Collects all successful data
   List<T> get successfulData => where(
-        (result) => result.isSuccess,
-      ).map((result) => result.data!).toList();
+    (result) => result.isSuccess,
+  ).map((result) => result.data!).toList();
 
   /// Collects all error messages
   List<String> get errorMessages => where(
-        (result) => result.isFailure,
-      ).map((result) => result.error!).toList();
+    (result) => result.isFailure,
+  ).map((result) => result.error!).toList();
 
   /// Returns the first failure, or success if all are successful
   Result<List<T>> collect() {
     final failures = where((result) => result.isFailure).toList();
     if (failures.isNotEmpty) {
-      return Failure(failures.first.error!);
+      final failure = failures.first as Failure<T>;
+      return Failure(
+        failure.message,
+        structuredMessage: failure.structuredMessage,
+      );
     }
     return Success(successfulData);
   }

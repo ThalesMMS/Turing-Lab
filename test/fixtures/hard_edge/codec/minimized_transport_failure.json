@@ -1,0 +1,14 @@
+{
+  "codecId": "fsa.turing-lab-json.v1",
+  "id": "codec-fsa.turing-lab-json.v1-transport-parity-340-minimized",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 1,
+    "failureSignature": "fsa.turing-lab-json.v1::transport-parity::Base64 transport changed decode semantics.",
+    "sourceFilename": "minimal.json",
+    "sourcePayloadBase64": ""
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

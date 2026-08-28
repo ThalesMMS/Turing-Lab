@@ -1,6 +1,6 @@
 part of 'graphview_canvas_toolbar.dart';
 
-/// Shared canvas toolbar for FSA, PDA, and TM editors.
+/// Shared canvas toolbar for FSA, PDA, TM, Mealy, and Moore editors.
 class GraphViewCanvasToolbar extends StatefulWidget {
   const GraphViewCanvasToolbar({
     super.key,
@@ -13,17 +13,22 @@ class GraphViewCanvasToolbar extends StatefulWidget {
     this.onSelectTool,
     required this.onAddState,
     this.onAddTransition,
+    this.onManageBlocks,
+    this.onArrangeAutomaton,
+    this.onImportAutomaton,
+    this.onDocumentNotes,
+    this.documentActionsEnabled = true,
     this.onHelp,
     this.onClear,
     this.statusMessage,
-  })  : assert(
-          !(enableToolSelection && showSelectionTool) || onSelectTool != null,
-          'onSelectTool must be provided when the selection tool is visible.',
-        ),
-        assert(
-          !enableToolSelection || onAddTransition != null,
-          'onAddTransition must be provided when tool selection is enabled.',
-        );
+  }) : assert(
+         !(enableToolSelection && showSelectionTool) || onSelectTool != null,
+         'onSelectTool must be provided when the selection tool is visible.',
+       ),
+       assert(
+         !enableToolSelection || onAddTransition != null,
+         'onAddTransition must be provided when tool selection is enabled.',
+       );
 
   final BaseGraphViewCanvasController<dynamic, dynamic> controller;
   final CanvasToolbarPlacement placement;
@@ -34,6 +39,11 @@ class GraphViewCanvasToolbar extends StatefulWidget {
   final VoidCallback? onSelectTool;
   final VoidCallback onAddState;
   final VoidCallback? onAddTransition;
+  final VoidCallback? onManageBlocks;
+  final VoidCallback? onArrangeAutomaton;
+  final VoidCallback? onImportAutomaton;
+  final VoidCallback? onDocumentNotes;
+  final bool documentActionsEnabled;
   final VoidCallback? onHelp;
   final VoidCallback? onClear;
   final String? statusMessage;

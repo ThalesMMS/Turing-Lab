@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/help_topic_ids.dart';
+import '../../core/formal_systems/formal_systems.dart';
 import '../../core/models/production.dart';
 import '../../l10n/app_localizations_help.dart';
 import '../providers/grammar_provider.dart';
@@ -37,8 +38,8 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
     final topicId = grammarState.isConverting
         ? HelpTopicIds.grammarEditorAlgorithms
         : grammarState.productions.isEmpty
-            ? HelpTopicIds.grammarEditorOverview
-            : HelpTopicIds.grammarTheoryCfg;
+        ? HelpTopicIds.grammarEditorOverview
+        : HelpTopicIds.grammarTheoryCfg;
 
     openHelp(context, topicId: topicId);
   }
@@ -49,6 +50,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
     return AutomatonWorkspaceScaffold(
       canvasWithToolbar: _buildProductionsEditor,
       algorithmPanel: const GrammarAlgorithmPanel(useExpanded: false),
+      algorithmTabTitle: l10n.algorithmsAndExamples,
       simulationPanel: const GrammarSimulationPanel(),
       simulationTabTitle: l10n.parser,
     );
@@ -59,17 +61,17 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
     final l10n = jflapLocalizationsOf(context);
     final hasProductions = grammarState.productions.isNotEmpty;
 
-    publishWorkspaceQuickActions(
+    publishWorkspaceQuickActionsForKey(
       ref,
-      WorkspaceTab.grammar,
+      DefaultFormalSystemIds.grammar,
       WorkspaceQuickActions(
         onHelp: _showContextualHelp,
         onSimulate: _openParserSheet,
         onAlgorithms: _openAlgorithmSheet,
         onEdit: _openGrammarEditorSheet,
         simulateTooltip: l10n.workspaceParserTooltip,
+        algorithmsTooltip: l10n.workspaceAlgorithmsAndExamplesTooltip,
         editTooltip: l10n.workspaceEditTooltip,
-        algorithmsBeforeSimulation: true,
         simulateEnabled: hasProductions,
       ),
     );
@@ -83,7 +85,7 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
 
   Future<void> _openAlgorithmSheet() {
     return _showWorkspaceSheet(
-      title: jflapLocalizationsOf(context).algorithms,
+      title: jflapLocalizationsOf(context).algorithmsAndExamples,
       helpTopicId: HelpTopicIds.grammarEditorAlgorithms,
       child: const GrammarAlgorithmPanel(useExpanded: false),
     );
@@ -148,10 +150,8 @@ class _GrammarPageState extends ConsumerState<GrammarPage> {
                       ),
                       IconButton(
                         tooltip: jflapLocalizationsOf(context).homeHelpTooltip,
-                        onPressed: () => openHelp(
-                          sheetContext,
-                          topicId: helpTopicId,
-                        ),
+                        onPressed: () =>
+                            openHelp(sheetContext, topicId: helpTopicId),
                         icon: const Icon(Icons.help_outline),
                       ),
                       IconButton(

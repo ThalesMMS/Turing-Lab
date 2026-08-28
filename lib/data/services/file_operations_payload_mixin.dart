@@ -2,21 +2,29 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import '../../core/entities/grammar_entity.dart';
+import '../../core/annotations/document_annotation_collection.dart';
 import '../../core/entities/turing_machine_entity.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
-import '../../core/parsers/grammar_xml_codec.dart';
-import '../../core/parsers/jflap_xml_codec.dart';
+import '../../core/formal_systems/formal_systems.dart';
+import '../../core/interoperability/interoperability.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/result.dart';
+import '../codecs/default_document_interoperability_registry.dart';
 import '../../presentation/widgets/export/svg_exporter.dart';
 
 /// Shared platform-independent payload helpers for file operations.
 mixin FileOperationsPayloadMixin {
+  static final _documentCodecs =
+      DefaultDocumentInteroperabilityRegistry.create();
+
   SvgExportOptions _svgOptionsWithLabels({
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     final base = options ?? const SvgExportOptions();
     return SvgExportOptions(
@@ -26,22 +34,33 @@ mixin FileOperationsPayloadMixin {
       colorScheme: base.colorScheme,
       emptyAutomatonLabel: emptyAutomatonLabel ?? base.emptyAutomatonLabel,
       tmLegendLabel: tmLegendLabel ?? base.tmLegendLabel,
+      includeAnnotations: includeAnnotations || base.includeAnnotations,
+      annotations: annotations ?? base.annotations,
     );
   }
 
   /// Creates the JFLAP XML payload without writing it to disk.
   String serializeAutomatonToJFLAPString(FSA automaton) {
-    return const JflapXmlCodec().encodeFsa(automaton);
+    return _encodeDocument(
+      _interoperable(automaton, DefaultFormalSystemIds.fsa),
+      DefaultFormalSystemIds.jflapXmlFormat,
+    );
   }
 
   /// Creates the JSON payload without writing it to disk.
   String serializeAutomatonToJsonString(FSA automaton) {
-    return jsonEncode(automaton.toJson());
+    return _encodeDocument(
+      _interoperable(automaton, DefaultFormalSystemIds.fsa),
+      DefaultFormalSystemIds.turingLabJsonFormat,
+    );
   }
 
   /// Creates the grammar JFLAP payload without writing it to disk.
   String serializeGrammarToJFLAPString(Grammar grammar) {
-    return const GrammarXmlCodec().encodeGrammar(grammar);
+    return _encodeDocument(
+      _interoperable(grammar, DefaultFormalSystemIds.grammar),
+      DefaultFormalSystemIds.jflapXmlFormat,
+    );
   }
 
   /// Creates an FSA SVG payload from the current model.
@@ -50,6 +69,8 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     return SvgExporter.exportFsaToSvg(
       automaton,
@@ -57,6 +78,8 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       ),
     );
   }
@@ -67,6 +90,8 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     return SvgExporter.exportGrammarToSvg(
       grammar,
@@ -74,6 +99,8 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       ),
     );
   }
@@ -84,12 +111,16 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     return exportGrammarToSvgString(
       _grammarToGrammarEntity(grammar),
       options: options,
       emptyAutomatonLabel: emptyAutomatonLabel,
       tmLegendLabel: tmLegendLabel,
+      includeAnnotations: includeAnnotations,
+      annotations: annotations,
     );
   }
 
@@ -99,6 +130,8 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     return SvgExporter.exportPdaToSvg(
       pda,
@@ -106,6 +139,8 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       ),
     );
   }
@@ -116,6 +151,8 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) {
     return SvgExporter.exportTuringMachineToSvg(
       tm,
@@ -123,47 +160,215 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       ),
     );
   }
 
   /// Loads automaton from in-memory bytes (JFLAP XML format).
   Future<Result<FSA>> loadAutomatonFromBytes(Uint8List bytes) async {
-    try {
-      final xmlString = utf8.decode(bytes);
-      return const JflapXmlCodec().decodeFsaXml(xmlString);
-    } catch (e) {
-      return Failure('Failed to load automaton from provided data: $e');
-    }
+    return _decodeModel<FSA>(
+      bytes,
+      DefaultFormalSystemIds.fsa,
+      DefaultFormalSystemIds.jflapXmlFormat,
+    );
   }
 
   /// Loads automaton from in-memory bytes (JSON format).
   Future<Result<FSA>> loadAutomatonFromJsonBytes(Uint8List bytes) async {
-    try {
-      final jsonString = utf8.decode(bytes);
-      final decoded = jsonDecode(jsonString);
-      if (decoded is! Map<String, dynamic>) {
-        return const Failure('Invalid automaton JSON format');
-      }
-      return Success(FSA.fromJson(decoded));
-    } catch (e) {
-      return Failure('Failed to load automaton from provided JSON data: $e');
-    }
+    return _decodeModel<FSA>(
+      bytes,
+      DefaultFormalSystemIds.fsa,
+      DefaultFormalSystemIds.turingLabJsonFormat,
+    );
   }
 
   /// Loads grammar from in-memory bytes (JFLAP XML format).
   Future<Result<Grammar>> loadGrammarFromBytes(Uint8List bytes) async {
-    try {
-      final xmlString = utf8.decode(bytes);
-      final result = const GrammarXmlCodec().decodeGrammarXml(xmlString);
-      if (result.isFailure) {
-        return Failure(
-            'Failed to load grammar from provided data: ${result.error}');
-      }
-      return result;
-    } catch (e) {
-      return Failure('Failed to load grammar from provided data: $e');
+    return _decodeModel<Grammar>(
+      bytes,
+      DefaultFormalSystemIds.grammar,
+      DefaultFormalSystemIds.jflapXmlFormat,
+    );
+  }
+
+  InteroperableDocument<Object> _interoperable(
+    Object document,
+    FormalSystemKey key,
+  ) {
+    final descriptor = _documentCodecs.formalSystems.descriptorFor(key)!;
+    return InteroperableDocument<Object>(
+      document: document,
+      systemKey: key,
+      schema: descriptor.schema,
+    );
+  }
+
+  String _encodeDocument(
+    InteroperableDocument<Object> document,
+    DocumentFormatId format,
+  ) {
+    final outcome = _documentCodecs.encode(document, format: format);
+    if (outcome is! CodecSuccess<EncodedDocument>) {
+      throw CodecOperationException(
+        compatibilityCode: _outcomeCode(outcome),
+        structuredMessage: _outcomeMessage(outcome),
+      );
     }
+    if (outcome.fidelity == DocumentFidelity.lossy) {
+      throw CodecOperationException(
+        compatibilityCode: 'codec.lossy-export-requires-confirmation',
+        structuredMessage: fileOperationMessage(
+          'lossy-export-requires-confirmation',
+        ),
+      );
+    }
+    return utf8.decode(outcome.value.bytes);
+  }
+
+  Future<Result<T>> _decodeModel<T extends Object>(
+    Uint8List bytes,
+    FormalSystemKey system,
+    DocumentFormatId format,
+  ) async {
+    final outcome = _documentCodecs.decode(
+      DocumentPayload(bytes: bytes),
+      expectedSystem: system,
+      expectedFormat: format,
+    );
+    if (outcome is! CodecSuccess<InteroperableDocument<Object>>) {
+      return Failure(
+        _outcomeCode(outcome),
+        structuredMessage: _decodeOutcomeMessage(outcome),
+      );
+    }
+    if (outcome.fidelity == DocumentFidelity.lossy ||
+        !outcome.value.extensions.isEmpty) {
+      return Failure(
+        'codec.requires-interoperability-review',
+        structuredMessage: fileOperationMessage(
+          'interoperability-review-required',
+        ),
+      );
+    }
+    final model = outcome.value.document;
+    if (model is! T) {
+      return Failure(
+        'codec.invalid-model-type',
+        structuredMessage: fileOperationMessage('invalid-model-type'),
+      );
+    }
+    return Success(model);
+  }
+
+  String _outcomeCode(CodecOutcome<Object?> outcome) => switch (outcome) {
+    CodecUnsupported(:final reason) => 'codec.unsupported.${reason.name}',
+    CodecAmbiguous() => 'codec.ambiguous',
+    CodecMalformed(:final reason) => 'codec.malformed.${reason.name}',
+    CodecResourceLimit(:final limit) => 'codec.resource-limit.${limit.name}',
+    CodecInternalFailure(:final stage) => 'codec.internal.${stage.name}',
+    CodecSuccess() => 'codec.success',
+  };
+
+  StructuredMessage _outcomeMessage(CodecOutcome<Object?> outcome) =>
+      switch (outcome) {
+        // File operations expose their stable service-level contract even
+        // when a codec also supplies a more specific diagnostic. The codec
+        // payload remains available on the codec outcome itself.
+        CodecUnsupported(:final reason) => fileOperationMessage(
+          'codec-unsupported',
+          arguments: {
+            'reason': StructuredMessageArgument.outcome(
+              reason.name,
+              role: 'codec-unsupported-reason',
+            ),
+          },
+        ),
+        CodecAmbiguous(:final codecIds) => fileOperationMessage(
+          'codec-ambiguous',
+          arguments: {
+            'count': StructuredMessageArgument.count(
+              codecIds.length,
+              role: 'codec-count',
+            ),
+          },
+        ),
+        CodecMalformed(:final reason) => fileOperationMessage(
+          'codec-malformed',
+          arguments: {
+            'reason': StructuredMessageArgument.outcome(
+              reason.name,
+              role: 'codec-malformed-reason',
+            ),
+          },
+        ),
+        CodecResourceLimit(:final limit, :final maximum, :final actual) =>
+          fileOperationMessage(
+            'codec-resource-limit',
+            arguments: {
+              'limit': StructuredMessageArgument.outcome(
+                limit.name,
+                role: 'codec-resource-limit',
+              ),
+              'maximum': StructuredMessageArgument.bound(maximum),
+              'actual': StructuredMessageArgument.count(actual),
+            },
+          ),
+        CodecInternalFailure(:final stage) => fileOperationMessage(
+          'codec-internal-failure',
+          arguments: {
+            'stage': StructuredMessageArgument.outcome(
+              stage.name,
+              role: 'codec-stage',
+            ),
+          },
+        ),
+        CodecSuccess() => throw StateError('codec.success'),
+      };
+
+  StructuredMessage _decodeOutcomeMessage(CodecOutcome<Object?> outcome) {
+    final codecMessage = switch (outcome) {
+      CodecUnsupported(:final structuredMessage) => structuredMessage,
+      CodecMalformed(:final structuredMessage) => structuredMessage,
+      CodecInternalFailure(:final structuredMessage) => structuredMessage,
+      _ => null,
+    };
+    return codecMessage ?? _outcomeMessage(outcome);
+  }
+
+  StructuredMessage fileOperationMessage(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'service.file-operations',
+    code: code,
+    category: StructuredMessageCategory.interoperability,
+    severity: StructuredMessageSeverity.error,
+    arguments: arguments,
+  );
+
+  Failure<T> fileOperationFailure<T>(
+    String code, {
+    String? operation,
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) {
+    final messageArguments = <String, StructuredMessageArgument>{
+      if (operation != null)
+        'operation': StructuredMessageArgument.outcome(
+          operation,
+          role: 'file-operation',
+        ),
+      ...arguments,
+    };
+    final structuredMessage = fileOperationMessage(
+      code,
+      arguments: messageArguments,
+    );
+    return Failure<T>(
+      structuredMessage.stableCode,
+      structuredMessage: structuredMessage,
+    );
   }
 
   GrammarEntity _grammarToGrammarEntity(Grammar grammar) {

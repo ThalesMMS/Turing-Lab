@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
@@ -15,7 +16,12 @@ import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/providers/formal_extension_editor_providers.dart';
+import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/providers/tm_to_grammar_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
@@ -61,7 +67,17 @@ class _TmPanelHarness {
 Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
   WidgetTester tester, {
   TM? initialTm,
+  Size? viewport,
+  Locale locale = const Locale('en'),
+  double textScale = 1,
 }) async {
+  if (viewport != null) {
+    tester.view
+      ..physicalSize = viewport
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
   final tmNotifier = TMEditorNotifier();
   if (initialTm != null) {
     tmNotifier.setTm(initialTm);
@@ -86,6 +102,15 @@ Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
         canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
       child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(textScale),
+          ),
+          child: child!,
+        ),
         home: Scaffold(
           body: TMAlgorithmPanel(
             useExpanded: false,
@@ -99,7 +124,9 @@ Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
   await tester.pump();
   await _pumpUntilFound(
     tester,
-    find.text(AppLocalizationsEn().localizedExampleName('MT - a^n b^n')),
+    find.text(
+      lookupAppLocalizations(locale).localizedExampleName('MT - a^n b^n'),
+    ),
   );
 
   return _TmPanelHarness(
@@ -163,6 +190,9 @@ Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
     if (finder.evaluate().isNotEmpty) {
       return;
     }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 2)),
+    );
     await tester.pump(const Duration(milliseconds: 50));
   }
   final visibleText = tester
@@ -189,7 +219,59 @@ Future<void> _pumpUntilTmLoaded(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('editing the TM clears completed analysis state and highlights', (
+  testWidgets('hosts generic TM interoperability operations', (tester) async {
+    final tm = _buildTmExample().payload;
+    await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+
+    final panel = tester.widget<FileOperationsPanel>(
+      find.byType(FileOperationsPanel),
+    );
+    expect(panel.interoperability?.systemKey, DefaultFormalSystemIds.tm);
+    expect(panel.interoperability?.currentDocument?.document, same(tm));
+    final facts = panel
+        .interoperability!
+        .previewFacts!(
+      tester.element(find.byType(FileOperationsPanel)),
+      panel.interoperability!.currentDocument!,
+    )
+        .toList();
+    expect(facts.map((fact) => fact.label),
+        containsAll(['Variant', 'Tape count']));
+    expect(facts.map((fact) => fact.value), containsAll(['Single tape', '1']));
+    expect(
+      find.byKey(
+        const ValueKey<String>('interoperability_import_document'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Load JFLAP'), findsNothing);
+  });
+
+  testWidgets('offers TM import before a machine exists', (tester) async {
+    await _pumpTmAlgorithmPanel(tester);
+
+    final panel = tester.widget<FileOperationsPanel>(
+      find.byType(FileOperationsPanel),
+    );
+    expect(panel.turingMachine, isNull);
+    expect(panel.interoperability?.currentDocument, isNull);
+    expect(
+      find.byKey(
+        const ValueKey<String>('interoperability_import_document'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey<String>(
+          'interoperability_export_turing-lab.json',
+        ),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('semantic TM edits clear completed analysis and highlights', (
     tester,
   ) async {
     final tm = _buildTmExample().payload;
@@ -204,7 +286,7 @@ void main() {
     await _pumpUntilFound(tester, find.text('Deterministic execution'));
     expect(harness.output.events.last, isNotNull);
 
-    harness.notifier.setTm(tm.copyWith(name: 'Edited TM'));
+    harness.notifier.setTm(tm.copyWith(alphabet: {...tm.alphabet, 'b'}));
     await tester.pump();
 
     expect(find.text('No analysis results yet'), findsOneWidget);
@@ -217,6 +299,33 @@ void main() {
       isTrue,
     );
     expect(find.byKey(const Key('tm-analysis-cancel')), findsNothing);
+  });
+
+  testWidgets('cosmetic TM edits preserve the focused report', (tester) async {
+    final tm = _buildTmExample().payload;
+    final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+    await tester.enterText(
+      find.byKey(const Key('tm-termination-input')),
+      'a',
+    );
+    await tester.ensureVisible(find.text('Tape Trace'));
+    await tester.tap(find.text('Tape Trace'));
+    await _pumpUntilFound(tester, find.text('Deterministic execution'));
+    final highlightCount = harness.output.events.length;
+
+    harness.notifier.setTm(tm.copyWith(name: 'Renamed TM'));
+    await tester.pump();
+
+    expect(find.text('Deterministic execution'), findsOneWidget);
+    expect(harness.output.events, hasLength(highlightCount));
+    expect(
+      tester
+          .widgetList<AlgorithmButton>(find.byType(AlgorithmButton))
+          .where((button) => button.isSelected)
+          .single
+          .title,
+      'Tape Trace',
+    );
   });
 
   testWidgets(
@@ -268,7 +377,7 @@ void main() {
   testWidgets('renders TM actions through AlgorithmButton', (tester) async {
     await _pumpTmAlgorithmPanel(tester);
 
-    expect(find.byType(AlgorithmButton), findsNWidgets(6));
+    expect(find.byType(AlgorithmButton), findsNWidgets(7));
     expect(find.text('Termination and Cycles'), findsOneWidget);
     expect(find.text('Reachability'), findsOneWidget);
     expect(find.text('Language Explorer'), findsOneWidget);
@@ -277,10 +386,103 @@ void main() {
     expect(find.text('Time Characteristics'), findsNothing);
     expect(find.text('Space Profile'), findsOneWidget);
     expect(find.text('Space Characteristics'), findsNothing);
+    expect(
+      find.text('TM to unrestricted grammar construction'),
+      findsOneWidget,
+    );
+  });
+
+  for (final viewport in const <String, Size>{
+    'phone': Size(390, 844),
+    'tablet': Size(820, 1180),
+    'desktop': Size(1440, 900),
+  }.entries) {
+    testWidgets('keeps every TM analysis family available on ${viewport.key}',
+        (tester) async {
+      await _pumpTmAlgorithmPanel(
+        tester,
+        initialTm: _buildTmExample().payload,
+        viewport: viewport.value,
+      );
+
+      expect(find.byType(AlgorithmButton), findsNWidgets(7));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('phone controls tolerate 200 percent text scaling',
+      (tester) async {
+    await _pumpTmAlgorithmPanel(
+      tester,
+      initialTm: _buildTmExample().payload,
+      viewport: const Size(390, 844),
+      textScale: 2,
+    );
+
+    expect(find.byType(AlgorithmButton), findsNWidgets(7));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Portuguese keeps all typed analysis actions available',
+      (tester) async {
+    await _pumpTmAlgorithmPanel(
+      tester,
+      initialTm: _buildTmExample().payload,
+      locale: const Locale('pt'),
+    );
+
+    expect(find.byType(AlgorithmButton), findsNWidgets(7));
+    expect(find.text('Término e ciclos'), findsOneWidget);
+    expect(find.text('Explorador de linguagem'), findsOneWidget);
+    expect(
+      find.text('Construção de MT para gramática irrestrita'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('opens TM construction in the grammar editor and undoes it', (
+    tester,
+  ) async {
+    final tm = _buildTmExample().payload;
+    final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TMAlgorithmPanel)),
+    );
+    final grammarController = container.read(
+      unrestrictedGrammarEditorProvider,
+    );
+    final previousNavigation = container.read(homeNavigationProvider);
+
+    final action = find.text('TM to unrestricted grammar construction');
+    await tester.ensureVisible(action);
+    await tester.tap(action);
+    await tester.pump();
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tm-grammar-production-list')),
+    );
+
+    final open = find.byKey(const ValueKey('tm-grammar-open'));
+    await tester.ensureVisible(open);
+    await tester.tap(open);
+    await tester.pumpAndSettle();
+
+    expect(grammarController.grammar.productions, isNotEmpty);
+    expect(container.read(tmToGrammarOpenedReportProvider), isNotNull);
+    expect(harness.notifier.state.tm, same(tm));
+    expect(container.read(homeNavigationProvider), isNot(previousNavigation));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(grammarController.grammar.productions, isEmpty);
+    expect(container.read(tmToGrammarOpenedReportProvider), isNull);
+    expect(container.read(homeNavigationProvider), previousNavigation);
   });
 
   testWidgets(
-    'six TM actions render distinct bounded contracts without structural aliases',
+    'seven TM actions render distinct bounded contracts without structural aliases',
     (tester) async {
       final tm = _buildTmExample().payload.copyWith(
         alphabet: const {'a', 'b'},

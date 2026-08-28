@@ -66,6 +66,11 @@ The repository bundles ready-to-use examples covering DFAs, NFAs, CFGs, PDAs, an
 └─────────────────────────────────────┘
 ```
 
+Formal-system workspaces are registered through the typed extension boundary
+described in [docs/FORMAL_SYSTEM_MODULES.md](docs/FORMAL_SYSTEM_MODULES.md).
+Use it when adding a model, workspace, codec, example catalog, help entry, or
+session adapter.
+
 ### Project Structure
 ```
 lib/
@@ -106,8 +111,8 @@ lib/
 ## Getting Started
 
 ### Prerequisites
-- Flutter SDK 3.27.0+
-- Dart SDK 3.6.0+
+- Flutter SDK 3.32.0+
+- Dart SDK 3.8.0+
 - Android Studio / VS Code (recommended)
 
 ### Installation
@@ -217,10 +222,10 @@ Categories, each reported on its own line:
 | Category | What it runs |
 | --- | --- |
 | `prereqs` | Toolchain discovery, `flutter pub get`, generated-localization drift |
-| `format` | Changed-file `dart format` plus `tool/check_comment_docs_english.py` |
+| `format` | Changed-file `dart format` plus English prose, branding, and issue-roadmap checks |
 | `analyze` | `flutter analyze --no-fatal-infos` on the root package |
 | `unit` | `test/unit/`, `test/core/`, `test/features/`, `test/app_store/`, `test/website/` |
-| `widget` | `test/widget/` (see `--widget-scope`) |
+| `widget` | `test/widget/` by default; `--widget-scope stable` selects the legacy focused subset |
 | `integration` | `test/integration/`, device-free smoke and IO round-trips |
 | `graphview` | The vendored `graphview/` package: pub get, analyze, tests, benchmarks |
 | `responsive` | `test/responsive/` and `test/tablet_layout_test.dart` |
@@ -256,7 +261,7 @@ category table into the pull request.
 
 ### Test suite layout
 
-Use Flutter 3.27.0+ and Dart 3.6.0+. Tests mirror the architecture:
+Use Flutter 3.32.0+ and Dart 3.8.0+. Tests mirror the architecture:
 
 - **Algorithm validation** – `test/unit/` keeps DFA/NFA conversions, grammar analysis, and regex tooling aligned with the references.
 - **Core services** – `test/core/services/` verifies utilities such as the simulation highlight broadcaster.
@@ -266,16 +271,51 @@ Use Flutter 3.27.0+ and Dart 3.6.0+. Tests mirror the architecture:
 - **Widget harnesses** – `test/widget/presentation/` drives UI flows while production widgets are completed.
 - **Goldens** – `test/goldens/` compares rendered pages, dialogs, canvases and simulation panels.
 
-`AGENTS.md` records the current baseline for each suite, including the ones that
-still fail. Compare a failing run against it before calling a failure a
-regression.
+### JFLAP compatibility corpus
+
+The versioned offline corpus exercises every registered document codec, checks
+fixture provenance and SHA-256 digests, performs deterministic export/reimport,
+runs cross-format semantic oracles, and rejects unapproved fidelity changes:
+
+```bash
+dart run tool/compatibility_corpus.dart
+dart run tool/compatibility_corpus.dart --type regex --jobs 2
+dart run tool/compatibility_corpus.dart --fixture tm-jflap-canonical
+```
+
+Reports are written to `build/compatibility/compatibility-report.json` and
+`build/compatibility/compatibility-report.md`. The tracked
+[`docs/JFLAP_COMPATIBILITY.md`](docs/JFLAP_COMPATIBILITY.md) matrix is generated
+from the same manifest with `--update-public`; do not edit it by hand. A case
+that cannot run is reported as `notRun`, never as a pass. All results are local
+and are not remotely verified.
+
+### Deterministic hard-edge testing
+
+Algorithm certification uses the shared pure-Dart generator, oracle, shrinking,
+fixture, and mutation framework. Run one reproducible case or a bounded local
+campaign with:
+
+```bash
+dart run tool/hard_edge_cases.dart run \
+  --family framework --property framework.reproducibility --seed 334
+tool/qa.sh --only properties
+```
+
+See [Deterministic algorithm testing](docs/ALGORITHM_TESTING.md) for seed-range,
+replay, shrinking, promotion, catalog provenance, and mutation commands. These
+results are local only; bounded or inapplicable oracle results are incomplete,
+so they are neither passes nor rejections.
+
+`AGENTS.md` records the current baseline for each suite. No suite in that
+baseline has a known failure, so investigate any new failure as a regression.
 
 #### Running suites directly
 
 `tool/qa.sh` is the documented gate, but the underlying commands stay available:
 
 ```bash
-# Broad diagnostic suite. Slow, and includes documented baseline failures.
+# Complete test tree. The recorded baseline and elapsed time are in AGENTS.md.
 flutter test
 
 # Specific suites

@@ -1,0 +1,8 @@
+{
+  "featureLabel": "Recurso {count}",
+  "@featureLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
+}

@@ -1,0 +1,4 @@
+The codec hard-edge fixtures in this directory are independently authored for
+Turing Lab and are distributed under the repository license. They do not copy
+JFLAP fixture contents. JFLAP source locations are cited only as behavioral
+reference anchors in docs/CODEC_HARD_EDGE_CERTIFICATION.md.

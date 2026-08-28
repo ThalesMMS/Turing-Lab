@@ -1,0 +1,13 @@
+{
+  "codecId": "regex.turing-lab-json.v1",
+  "id": "codec-regex.turing-lab-json.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "regex_canonical.json",
+    "sourcePayloadBase64": "eyJkb2N1bWVudCI6eyJwYXlsb2FkIjp7ImFscGhhYmV0IjpbImEiLCJiIl0sImNhbm9uaWNhbEFzdCI6eyJjaGlsZCI6eyJsZWZ0Ijp7InN5bWJvbCI6ImEiLCJ0eXBlIjoic3ltYm9sIn0sInJpZ2h0Ijp7InN5bWJvbCI6ImIiLCJ0eXBlIjoic3ltYm9sIn0sInR5cGUiOiJ1bmlvbiJ9LCJ0eXBlIjoic3RhciJ9LCJkaWFsZWN0IjoidHVyaW5nTGFiVjEiLCJlbXB0eUxhbmd1YWdlU3ltYm9sIjoi4oiFIiwiZXBzaWxvblN5bWJvbCI6Is61IiwiaWQiOiJyZWdleC1jYW5vbmljYWwiLCJuYW1lIjoiQ2Fub25pY2FsIHJlZ2V4Iiwic291cmNlIjoiKGF8YikqIiwic291cmNlT2ZUcnV0aCI6InNvdXJjZSIsInRva2VuaXphdGlvbiI6InVuaWNvZGVTY2FsYXIifSwic2NoZW1hIjp7ImlkIjoidHVyaW5nLWxhYi5yZWdleCIsInZlcnNpb24iOjF9LCJ0eXBlIjoicmVnZXgiLCJ2YXJpYW50Ijoic3RhbmRhcmQifSwiZW52ZWxvcGVWZXJzaW9uIjoxLCJleHRlbnNpb25zIjp7fSwiZm9ybWF0IjoidHVyaW5nLWxhYi5kb2N1bWVudCIsInNvdXJjZSI6eyJhcHBsaWNhdGlvbiI6IlR1cmluZyBMYWIifX0K"
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

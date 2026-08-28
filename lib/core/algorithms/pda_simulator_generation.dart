@@ -50,16 +50,15 @@ void _generateStrings(
   int remainingLength,
   Set<String> acceptedStrings,
   int maxResults,
-) =>
-    _generateStringsByPredicate(
-      pda,
-      alphabet,
-      currentString,
-      remainingLength,
-      acceptedStrings,
-      maxResults,
-      (accepted) => accepted,
-    );
+) => _generateStringsByPredicate(
+  pda,
+  alphabet,
+  currentString,
+  remainingLength,
+  acceptedStrings,
+  maxResults,
+  (accepted) => accepted,
+);
 
 /// Recursively generates strings rejected by the PDA.
 void _generateRejectedStrings(
@@ -69,13 +68,12 @@ void _generateRejectedStrings(
   int remainingLength,
   Set<String> rejectedStrings,
   int maxResults,
-) =>
-    _generateStringsByPredicate(
-      pda,
-      alphabet,
-      currentString,
-      remainingLength,
-      rejectedStrings,
-      maxResults,
-      (accepted) => !accepted,
-    );
+) => _generateStringsByPredicate(
+  pda,
+  alphabet,
+  currentString,
+  remainingLength,
+  rejectedStrings,
+  maxResults,
+  (accepted) => !accepted,
+);

@@ -3,7 +3,7 @@
 //  Turing Lab
 //
 //  Generates the settings page loading persisted preferences,
-//  displaying appearance, symbols and general controls forms while
+//  displaying appearance and general controls while
 //  saving changes via shared repository with responsive user feedback.
 //
 //  Thales Matheus Mendonça Santos - October 2025
@@ -219,9 +219,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader(l10n.settingsSectionSymbols),
-              _buildSymbolSettings(l10n),
-              const SizedBox(height: 24),
               _buildSectionHeader(l10n.settingsSectionTheme),
               _buildThemeSettings(l10n),
               const SizedBox(height: 24),
@@ -254,41 +251,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         style: Theme.of(
           context,
         ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildSymbolSettings(AppLocalizations l10n) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSimpleSetting(
-              l10n.settingsEmptyStringTitle,
-              l10n.settingsEmptyStringDescription,
-              _settings.emptyStringSymbol,
-              [
-                (
-                  value: 'λ',
-                  label: l10n.settingsLambdaOption,
-                  key: const ValueKey('settings_empty_string_lambda'),
-                ),
-                (
-                  value: 'ε',
-                  label: l10n.settingsEpsilonOption,
-                  key: const ValueKey('settings_empty_string_epsilon'),
-                ),
-              ],
-              (value) {
-                setState(() {
-                  _settings = _settings.copyWith(emptyStringSymbol: value);
-                });
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,0 +1,20 @@
+final problems = [
+  _problem(
+    id: 'fixture.exercise',
+    theorem: PumpingLemmaTheorem.regular,
+    title: 'Fixture exercise',
+    language: 'L = {a^n}',
+    representation: 'fixture-language',
+    pumpingLength: 2,
+    witness: const ['a', 'a'],
+    rejectedExample: const ['b'],
+    objective: 'Track the quantifiers.',
+    explanation: 'Fixture explanation.',
+    expectedOutcome: PumpingChallengeOutcome.noCounterexampleExpected,
+  ),
+];
+
+const source = ExerciseSource(
+  sourceRevision: 'fixture-v1',
+  contentVersion: 1,
+);

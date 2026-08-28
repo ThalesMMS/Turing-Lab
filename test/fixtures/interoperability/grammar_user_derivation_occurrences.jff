@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure type="grammar">
+  <type>grammar</type>
+  <grammar type="contextFree">
+    <start>S</start>
+    <production><left>S</left><right>A A</right></production>
+    <production><left>A</left><right>token🙂</right></production>
+  </grammar>
+</structure>

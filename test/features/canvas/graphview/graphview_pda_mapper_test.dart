@@ -189,7 +189,7 @@ void main() {
       expect(rebuiltTransition.popSymbol, equals(''));
       expect(rebuiltTransition.pushSymbol, equals('X'));
       expect(rebuiltTransition.isLambdaPop, isTrue);
-      expect(rebuiltTransition.label, equals('b, λ/X'));
+      expect(rebuiltTransition.label, equals('b, ε/X'));
 
       expect(rebuilt.alphabet, containsAll({'a', 'b'}));
       expect(rebuilt.stackAlphabet, containsAll({'Z', 'X'}));

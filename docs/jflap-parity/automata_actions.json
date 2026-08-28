@@ -1,0 +1,826 @@
+{
+  "fragment": "automata_actions",
+  "rows": [
+    {
+      "id": "automata.editors.family",
+      "area": "automata editors",
+      "capability": "Create and edit finite automata, PDA variants, single/multi-tape and building-block TMs, and Mealy/Moore transducers",
+      "groups": ["document"],
+      "jflapNewTypes": [
+        "finite-automaton",
+        "mealy-machine",
+        "moore-machine",
+        "pda-multiple-character-input",
+        "pda-single-character-input",
+        "tm-single-tape",
+        "tm-multi-tape",
+        "tm-building-blocks"
+      ],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "The New action exposes dedicated constructors for the automata family, including both PDA input modes and TM multi-tape/building-block variants.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:191",
+          "../JFLAP/gui/action/NewAction.java:199",
+          "../JFLAP/gui/action/NewAction.java:208",
+          "../JFLAP/gui/action/NewAction.java:218",
+          "../JFLAP/gui/action/NewAction.java:235",
+          "../JFLAP/gui/action/NewAction.java:243",
+          "../JFLAP/gui/action/NewAction.java:264"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/pages/fsa_page.dart:79",
+          "lib/presentation/pages/pda_page.dart:44",
+          "lib/presentation/pages/tm_page.dart:43",
+          "lib/presentation/pages/mealy_page.dart:9",
+          "lib/presentation/pages/moore_page.dart:7",
+          "lib/presentation/transducers/transducer_workspace.dart:260"
+        ],
+        "tests": [
+          "test/widget/presentation/pda_canvas_graphview_test.dart:89",
+        "test/widget/presentation/tm_page_mobile_controls_test.dart:421",
+          "test/widget/presentation/mealy_workspace_test.dart:14",
+          "test/widget/presentation/moore_workspace_test.dart:16"
+        ],
+        "issues": [],
+        "decision": "Use unified touch-first editors while preserving the family-specific transition and output rules."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "partial",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab intentionally unifies JFLAP's separate PDA and TM creation choices inside richer document models."
+    },
+    {
+      "id": "simulation.single-step",
+      "area": "simulation",
+      "capability": "Run one input with navigable step traces across FSA, PDA, TM, Mealy, and Moore machines",
+      "groups": ["simulation"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "Input > Step opens a SimulatorPane and changes to Step with Closure where closure simulation applies.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:235",
+          "../JFLAP/gui/action/SimulateAction.java:76",
+          "../JFLAP/gui/action/SimulateAction.java:125",
+          "../JFLAP/gui/action/SimulateAction.java:129"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/simulation_panel.dart:199",
+          "lib/presentation/widgets/pda_simulation_panel.dart:137",
+          "lib/presentation/widgets/tm_simulation_panel.dart:150",
+          "lib/presentation/transducers/transducer_simulation_panel.dart:25"
+        ],
+        "tests": [
+          "test/widget/presentation/simulation_panel_test.dart:521",
+          "test/widget/presentation/pda_tm_simulation_panel_scaffold_test.dart:348",
+          "test/widget/presentation/pda_tm_simulation_panel_scaffold_test.dart:377",
+          "test/widget/presentation/transducer_simulation_panel_test.dart:29"
+        ],
+        "issues": [],
+        "decision": "Keep a common simulation shell with family-specific tape, stack, and output projections."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "partial",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Trace playback is projected directly onto each GraphView canvas."
+    },
+    {
+      "id": "simulation.multiple-run",
+      "area": "simulation",
+      "capability": "Run, import, generate, filter, export, and retrace batches of inputs",
+      "groups": ["simulation"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "Multiple Run provides a table with input loading, execution, trace viewing, clearing, and result saving; transducers use the output-aware variant.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:246",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:129",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:331",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:386",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:537",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:731",
+          "../JFLAP/gui/action/MultipleOutputSimulateAction.java:63"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/batch_execution/batch_execution_panel.dart:12",
+          "lib/presentation/widgets/simulation_panel.dart:199",
+          "lib/presentation/widgets/pda_simulation_panel.dart:137",
+          "lib/presentation/widgets/tm_simulation_panel.dart:150",
+          "lib/presentation/transducers/transducer_workspace.dart:517"
+        ],
+        "tests": [
+          "test/widget/presentation/batch_execution_panel_test.dart:9",
+          "test/widget/presentation/batch_execution_panel_test.dart:37",
+          "test/widget/presentation/batch_execution_panel_test.dart:132",
+          "test/widget/presentation/batch_execution_panel_test.dart:202",
+          "test/widget/presentation/transducer_batch_comparison_panel_test.dart:11"
+        ],
+        "issues": [],
+        "decision": "Provide one virtualized batch runner with CSV/JSON reports and per-row trace reruns."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "partial",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab adds bounded generation, cancellation, virtualization, and stable JSON/CSV reports."
+    },
+    {
+      "id": "simulation.computation-tree",
+      "area": "simulation",
+      "capability": "Inspect nondeterministic branches as a computation tree",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["finite-automaton", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape"],
+      "jflapXmlFamilies": ["fsa", "pda", "tm"],
+      "jflap": {
+        "summary": "Step simulation exposes live configuration branches and Multiple Run can open an individual trace.",
+        "evidence": [
+          "../JFLAP/gui/action/SimulateAction.java:125",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:537",
+          "../JFLAP/gui/action/MultipleSimulateAction.java:894"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/computation_branch.dart:106",
+          "lib/core/models/fsa_computation_branch_adapter.dart:66",
+          "lib/presentation/widgets/computation_branch_inspector.dart:6",
+          "lib/presentation/widgets/simulation_panel.dart:281",
+          "lib/presentation/widgets/pda_simulation_panel.dart:459",
+          "lib/presentation/widgets/tm_simulation_panel.dart:367"
+        ],
+        "tests": [
+          "test/unit/core/models/computation_branch_test.dart:6",
+          "test/unit/core/models/fsa_computation_branch_adapter_test.dart:18",
+          "test/unit/core/models/fsa_computation_branch_adapter_test.dart:307",
+          "test/unit/core/fsa/automaton_simulator_test.dart:392",
+          "test/unit/core/fsa/automaton_simulator_test.dart:407",
+          "test/unit/core/fsa/automaton_simulator_test.dart:439",
+          "test/widget/presentation/computation_branch_inspector_test.dart:10",
+          "test/widget/presentation/computation_branch_inspector_test.dart:127",
+          "test/widget/presentation/computation_branch_inspector_test.dart:203",
+          "test/widget/presentation/fsa_computation_branch_inspector_test.dart:21",
+          "test/widget/presentation/pda_tm_simulation_panel_scaffold_test.dart:606"
+        ],
+        "issues": [],
+        "decision": "Expose the bounded FSA computation tree through one family-neutral inspector; PDA and TM use the same typed availability contract and explicitly report that their current traces do not record every explored branch."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "FSA records bounded symbol and epsilon paths with stable node, branch, state, and transition identities; parallel and convergent paths remain distinguishable, cycles terminate explicitly, and truncation remains unknown only at the incomplete frontier. Step-by-step provenance is bounded by the global node limit and 256 epsilon edges per path, while long consuming inputs remain finite. The inspector pages both large branch sets and branches with more than 500 configurations without fabricating terminal outcomes. PDA/TM report typed unavailability instead of fabricating full trees. English teaching copy is present; final bilingual localization remains owned by #343/#210."
+    },
+    {
+      "id": "simulation.nondeterminism-highlight",
+      "area": "automata utilities",
+      "capability": "Highlight nondeterministic states or conflicting transitions",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm"],
+      "jflap": {
+        "summary": "Highlight Nondeterminism opens a pane whose drawer marks every state returned by the family-specific detector.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:403",
+          "../JFLAP/gui/action/NondeterminismAction.java:61",
+          "../JFLAP/gui/action/NondeterminismAction.java:76",
+          "../JFLAP/gui/action/NondeterminismAction.java:108"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/services/automaton_diagnostic_highlight_service.dart:5",
+          "lib/presentation/widgets/automaton_diagnostic_highlight_bar.dart:6",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:1243",
+          "lib/presentation/pages/pda_page.dart:345",
+          "lib/presentation/pages/tm_page.dart:347"
+        ],
+        "tests": [
+          "test/unit/core/services/automaton_diagnostic_highlight_service_test.dart:15",
+          "test/widget/presentation/automaton_diagnostic_highlight_bar_test.dart:21",
+          "test/widget/presentation/scoped_canvas_highlight_pages_test.dart:282",
+          "test/widget/presentation/scoped_canvas_highlight_pages_test.dart:358",
+          "test/widget/presentation/scoped_canvas_highlight_pages_test.dart:416"
+        ],
+        "issues": [],
+        "decision": "Use explicit, scoped conflict actions on the FSA, PDA, and TM canvases; Mealy and Moore retain their typed nondeterminism reports because they do not use the automaton canvas workspace."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "FSA, PDA, and TM expose keyboard-reachable conflict actions with exact transition IDs, counts, toggle semantics, and scoped clearing after edits, history changes, replacement, or simulation. Mealy/Moore retain typed reports without a canvas highlight action. Final bilingual localization remains owned by #343/#210."
+    },
+    {
+      "id": "simulation.epsilon-highlight",
+      "area": "automata utilities",
+      "capability": "Highlight epsilon/lambda transitions independently of running a simulation",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["finite-automaton", "pda-multiple-character-input", "pda-single-character-input"],
+      "jflapXmlFamilies": ["fsa", "pda"],
+      "jflap": {
+        "summary": "The Input menu exposes a dedicated Highlight Lambda Transitions action when applicable.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:411",
+          "../JFLAP/gui/action/LambdaHighlightAction.java:58",
+          "../JFLAP/gui/action/LambdaHighlightAction.java:74"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/services/automaton_diagnostic_highlight_service.dart:24",
+          "lib/presentation/widgets/automaton_diagnostic_highlight_bar.dart:6",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:1243",
+          "lib/presentation/pages/pda_page.dart:345"
+        ],
+        "tests": [
+          "test/unit/core/services/automaton_diagnostic_highlight_service_test.dart:24",
+          "test/widget/presentation/automaton_diagnostic_highlight_bar_test.dart:21",
+          "test/widget/presentation/scoped_canvas_highlight_pages_test.dart:282",
+          "test/widget/presentation/scoped_canvas_highlight_pages_test.dart:358"
+        ],
+        "issues": [],
+        "decision": "Keep epsilon awareness in analysis and trace playback, and add direct, scoped canvas actions for FSA and PDA inspection."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "FSA and PDA expose keyboard-reachable epsilon actions with counts, toggle semantics, exact transition IDs, and scoped clearing after edits, history changes, replacement, or simulation. Final bilingual localization remains owned by #343/#210."
+    },
+    {
+      "id": "analysis.dfa-equivalence",
+      "area": "DFA utilities",
+      "capability": "Compare two finite automata for language equivalence and inspect a distinguishing witness",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["finite-automaton"],
+      "jflapXmlFamilies": ["fsa"],
+      "jflap": {
+        "summary": "The Test menu offers Compare Equivalence, selects another open finite automaton, and reports whether their languages are equal.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:394",
+          "../JFLAP/gui/action/DFAEqualityAction.java:56",
+          "../JFLAP/gui/action/DFAEqualityAction.java:72",
+          "../JFLAP/gui/action/DFAEqualityAction.java:117"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/algorithm_panel.dart:608",
+          "lib/presentation/widgets/algorithm_panel.dart:1020",
+          "lib/presentation/widgets/algorithm_panel.dart:1080",
+          "lib/presentation/widgets/algorithm_panel.dart:1086"
+        ],
+        "tests": [
+          "test/unit/core/algorithms/language_comparator_test.dart:52",
+          "test/unit/core/algorithms/language_comparator_test.dart:71",
+          "test/widget/presentation/algorithm_panel_test.dart:505",
+          "test/widget/presentation/algorithm_panel_test.dart:547"
+        ],
+        "issues": [343],
+        "decision": "Load the comparison automaton from a document instead of requiring a second open window, and present typed failures, a shortest distinguishing witness, and synchronized graph evidence."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab accepts DFA and NFA inputs, reports typed determinization failures, and ignores stale asynchronous results. Remaining feature-copy localization is owned by #343."
+    },
+    {
+      "id": "conversion.dfa-completion-trap",
+      "area": "DFA utilities",
+      "capability": "Complete a DFA by adding a collision-safe trap state and missing transitions",
+      "groups": ["conversion"],
+      "jflapNewTypes": ["finite-automaton"],
+      "jflapXmlFamilies": ["fsa"],
+      "jflap": {
+        "summary": "Add Trap State to DFA opens a user-controlled pane for creating the state and transitions.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:485",
+          "../JFLAP/gui/action/AddTrapStateToDFAAction.java:70",
+          "../JFLAP/gui/action/AddTrapStateToDFAAction.java:104"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/algorithm_panel.dart:297",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:298",
+          "lib/presentation/providers/automaton_algorithm_provider.dart:700"
+        ],
+        "tests": [
+          "test/widget/presentation/algorithm_panel_test.dart:279",
+          "test/unit/core/algorithms/dfa_completer_test.dart:15"
+        ],
+        "issues": [343],
+        "decision": "Complete the DFA atomically instead of requiring the learner to place every trap transition."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "partial",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The automatic action is an intentional interaction deviation from JFLAP's trap-state pane."
+    },
+    {
+      "id": "conversion.nfa-dfa-minimize",
+      "area": "DFA/NFA conversion",
+      "capability": "Convert NFA to DFA and minimize DFA with visible step reports",
+      "groups": ["conversion", "teaching"],
+      "jflapNewTypes": ["finite-automaton"],
+      "jflapXmlFamilies": ["fsa"],
+      "jflap": {
+        "summary": "Convert to DFA opens ConversionPane, while Minimize DFA opens the minimization tree workflow.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:442",
+          "../JFLAP/gui/menu/MenuBarCreator.java:445",
+          "../JFLAP/gui/action/NFAToDFAAction.java:86",
+          "../JFLAP/gui/action/NFAToDFAAction.java:88",
+        "../JFLAP/gui/action/MinimizeTreeAction.java:90"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/algorithm_panel.dart:234",
+          "lib/presentation/widgets/algorithm_panel.dart:281",
+          "lib/presentation/providers/automaton_algorithm_provider.dart:165",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:101",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:113"
+        ],
+        "tests": [
+          "test/unit/nfa_validation_test.dart:343",
+          "test/unit/dfa_minimization_validation_test.dart:452",
+        "test/widget/presentation/algorithm_step_viewer_test.dart:116"
+        ],
+        "issues": [],
+        "decision": "Use immutable conversion reports and synchronized canvas step playback rather than editing the result inside the conversion pane."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Conversion results can replace the editor document after the destination replacement check."
+    },
+    {
+      "id": "conversion.fa-regex-grammar",
+      "area": "FA conversions",
+      "capability": "Convert FA to regular expression or regular grammar and build both directions manually",
+      "groups": ["conversion", "teaching"],
+      "jflapNewTypes": ["finite-automaton", "regular-expression", "context-free-grammar"],
+      "jflapXmlFamilies": ["fsa", "regular-expression", "grammar"],
+      "jflap": {
+        "summary": "FA-to-RE and automaton-to-grammar actions open conversion panes/controllers rather than returning only a final artifact.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:448",
+          "../JFLAP/gui/menu/MenuBarCreator.java:455",
+          "../JFLAP/gui/action/ConvertFSAToREAction.java:79",
+          "../JFLAP/gui/action/ConvertAutomatonToGrammarAction.java:93",
+          "../JFLAP/gui/action/ConvertAutomatonToGrammarAction.java:114"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:351",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:394",
+          "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:467",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:576",
+          "lib/core/manual_conversions/manual_conversion_factories.dart:13",
+          "lib/core/manual_conversions/fa_grammar_session_factory.dart:1"
+        ],
+        "tests": [
+          "test/widget/presentation/fsa_page_controls_test.dart:129",
+          "test/widget/presentation/fsa_page_controls_test.dart:156",
+          "test/widget/presentation/fa_to_regex_requirement_editor_test.dart:7",
+          "test/unit/core/manual_conversions/fa_grammar_session_factory_test.dart:16"
+        ],
+        "issues": [],
+        "decision": "Offer both automatic conversion and persistent learner-authored manual construction with provenance, hints, reveal, comparison, undo, and source invalidation."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The manual workspaces accept valid equivalent learner artifacts rather than requiring canonical text or IDs."
+    },
+    {
+      "id": "conversion.pda-cfg",
+      "area": "PDA/CFG conversion",
+      "capability": "Convert PDA to CFG and construct CFG-to-PDA variants with preview and evidence",
+      "groups": ["conversion", "teaching"],
+      "jflapNewTypes": ["pda-multiple-character-input", "pda-single-character-input", "context-free-grammar"],
+      "jflapXmlFamilies": ["pda", "grammar"],
+      "jflap": {
+        "summary": "PDA to Grammar uses a ConvertPane and PDAConvertController; CFG conversion offers LL and LR PDA choices.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:451",
+          "../JFLAP/gui/menu/MenuBarCreator.java:459",
+          "../JFLAP/gui/menu/MenuBarCreator.java:462",
+          "../JFLAP/gui/action/ConvertPDAToGrammarAction.java:163",
+          "../JFLAP/gui/action/ConvertAutomatonToGrammarAction.java:114"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/pda_algorithm_panel.dart:398",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:589",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:632",
+          "lib/presentation/widgets/cfg_to_pda_construction_workspace.dart:15"
+        ],
+        "tests": [
+          "test/widget/presentation/pda_algorithm_panel_test.dart:475",
+          "test/widget/presentation/grammar_algorithm_panel_test.dart:915",
+          "test/widget/presentation/cfg_to_pda_construction_workspace_test.dart:11",
+          "test/unit/grammar_to_pda_validation_test.dart:37"
+        ],
+        "issues": [],
+        "decision": "Keep automatic general/standard/Greibach conversions and add explicit LL/LR construction previews with differential evidence."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab exposes more CFG-to-PDA variants than the two JFLAP construction paths."
+    },
+    {
+      "id": "conversion.tm-unrestricted-grammar",
+      "area": "TM conversion",
+      "capability": "Convert a supported TM to an unrestricted grammar with provenance and bounded differential evidence",
+      "groups": ["conversion", "teaching"],
+      "jflapNewTypes": ["tm-single-tape", "tm-multi-tape", "tm-building-blocks", "context-free-grammar"],
+      "jflapXmlFamilies": ["tm", "tm-building-blocks", "grammar"],
+      "jflap": {
+        "summary": "Convert to Unrestricted Grammar is registered for Turing machines and opens the generated grammar environment.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:480",
+          "../JFLAP/gui/action/TuringToUnrestrictGrammarAction.java:45",
+          "../JFLAP/gui/action/TuringToUnrestrictGrammarAction.java:66"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/tm_algorithm_panel.dart:428",
+          "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart:75",
+          "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_converter.dart:488"
+        ],
+        "tests": [
+          "test/widget/presentation/tm_algorithm_panel_test.dart:444",
+          "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart:13",
+          "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart:44",
+          "test/unit/core/tm/tm_to_unrestricted_grammar_test.dart:13"
+        ],
+        "issues": [],
+        "decision": "Fail closed with visible diagnostics for unsupported multi-tape/building-block documents instead of emitting an unsound grammar."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "partial",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Multi-tape and building-block conversion remains an explicit unsupported case, with tests preventing silent degradation."
+    },
+    {
+      "id": "conversion.transducer",
+      "area": "transducer conversion",
+      "capability": "Convert between Mealy/Moore transducers or between transducers and other automata",
+      "groups": ["conversion"],
+      "jflapNewTypes": ["mealy-machine", "moore-machine"],
+      "jflapXmlFamilies": ["mealy", "moore"],
+      "jflap": {
+        "summary": "JFLAP 7.1 creates and simulates Mealy/Moore machines but its Convert menu registers no transducer conversion action.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:199",
+          "../JFLAP/gui/action/NewAction.java:208",
+          "../JFLAP/gui/menu/MenuBarCreator.java:432",
+          "../JFLAP/gui/menu/MenuBarCreator.java:486"
+        ]
+      },
+      "turingLab": {
+        "status": "outOfScope",
+        "production": [
+          "lib/core/transducers/transducer_formal_system_module.dart:22"
+        ],
+        "tests": [
+          "test/unit/core/transducers/transducer_integration_contract_test.dart:33"
+        ],
+        "issues": [],
+        "decision": "Do not add a conversion edge solely for nominal parity because JFLAP exposes none; require a separate product requirement and semantic contract."
+      },
+      "dimensions": {
+        "domain": "notApplicable",
+        "userReachable": "notApplicable",
+        "teaching": "notApplicable",
+        "interoperability": "notApplicable",
+        "examplesHelp": "notApplicable",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "notApplicable",
+        "platform": "notApplicable"
+      },
+      "notes": "The absence is shared with the audited JFLAP baseline, so it is not a parity gap."
+    },
+    {
+      "id": "conversion.combine-import-fragment",
+      "area": "automata combination",
+      "capability": "Import one automaton as a fragment of another with deterministic ID remapping and semantic conflict choices",
+      "groups": ["conversion", "document"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "Combine Automata loads another compatible automaton and copies its states/transitions into a new document.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:476",
+          "../JFLAP/gui/action/CombineAutomaton.java:54",
+          "../JFLAP/gui/action/CombineAutomaton.java:114",
+          "../JFLAP/gui/action/CombineAutomaton.java:124"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/automaton_fragment_import.dart:47",
+          "lib/presentation/widgets/automaton_fragment_import.dart:330",
+          "lib/core/automaton_fragments/automaton_fragment_combiner.dart:188",
+          "lib/presentation/widgets/automaton_graphview_canvas.dart:642"
+        ],
+        "tests": [
+          "test/widget/presentation/automaton_fragment_import_test.dart:17",
+          "test/widget/presentation/automaton_fragment_import_test.dart:66",
+          "test/widget/presentation/automaton_fragment_import_test.dart:121"
+        ],
+        "issues": [],
+        "decision": "Use a reviewable import plan with provenance, collision-safe IDs, explicit initial-state and PDA semantic policies, and one undoable commit."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "partial",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+    "notes": "The fragment review is more robust than JFLAP's copy operation. Widget coverage exercises its localized review, diagnostics, number parsing, semantics, and compact layout in English and Portuguese."
+    },
+    {
+      "id": "layout.constructive",
+      "area": "graph layout",
+      "capability": "Preview and apply deterministic circle, two-circle, spiral, hierarchical, layered, component, force, and seeded-random layouts",
+      "groups": ["layout"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "The View menu offers random selection plus Circle, GEM, Random, Spiral, Degree/Hierarchy tree, and Two Circle layouts.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:357",
+          "../JFLAP/gui/menu/MenuBarCreator.java:360",
+          "../JFLAP/gui/menu/MenuBarCreator.java:362",
+          "../JFLAP/gui/menu/MenuBarCreator.java:366",
+          "../JFLAP/gui/menu/MenuBarCreator.java:369",
+          "../JFLAP/gui/menu/MenuBarCreator.java:374"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/automaton_layout.dart:406",
+          "lib/presentation/widgets/automaton_layout.dart:430",
+          "lib/presentation/widgets/automaton_layout.dart:699",
+          "lib/core/graph_layout/graph_layout_engine.dart:167"
+        ],
+        "tests": [
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:19",
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:91",
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:405",
+          "test/widget/presentation/automaton_graphview_canvas_test.dart:294"
+        ],
+        "issues": [343],
+        "decision": "Preview deterministic, cancellable layouts with explicit scope, seed, spacing, pinning, and one undoable application."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The layout dialog, algorithms, settings, progress, diagnostics, confirmation, and semantics have executable EN/PT coverage at the compact accessibility profile."
+    },
+    {
+      "id": "layout.transforms",
+      "area": "graph layout",
+      "capability": "Reflect, rotate, fit, and fill an automaton graph while optionally transforming free annotations",
+      "groups": ["layout"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "The View menu exposes four reflection axes, arbitrary graph rotation, and Fill Screen With Graph.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:341",
+          "../JFLAP/gui/menu/MenuBarCreator.java:342",
+          "../JFLAP/gui/menu/MenuBarCreator.java:348",
+          "../JFLAP/gui/menu/MenuBarCreator.java:351",
+          "../JFLAP/gui/menu/MenuBarCreator.java:353"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/graph_layout/graph_layout_models.dart:12",
+          "lib/core/graph_layout/graph_layout_engine.dart:193",
+          "lib/core/graph_layout/graph_layout_engine.dart:201",
+          "lib/core/graph_layout/graph_layout_engine.dart:207",
+          "lib/presentation/widgets/automaton_layout.dart:686"
+        ],
+        "tests": [
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:180",
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:216",
+          "test/widget/presentation/automaton_graphview_canvas_test.dart:411"
+        ],
+        "issues": [343],
+        "decision": "Use fixed 90-degree rotation choices for predictable touch UI and apply the same affine transform to annotations only after explicit consent."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Transform labels, annotation consent, preview state, formal content, and undo/redo have executable EN/PT coverage."
+    },
+    {
+      "id": "layout.restore",
+      "area": "graph layout",
+      "capability": "Save the prior manual layout, restore it later, and undo/redo applied layouts",
+      "groups": ["layout"],
+      "jflapNewTypes": ["finite-automaton", "mealy-machine", "moore-machine", "pda-multiple-character-input", "pda-single-character-input", "tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflapXmlFamilies": ["fsa", "mealy", "moore", "pda", "tm", "tm-building-blocks"],
+      "jflap": {
+        "summary": "Save Current Graph Layout captures positions and enables Restore Saved Graph Layout for the open environment.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:333",
+          "../JFLAP/gui/action/LayoutStorageAction.java:30",
+          "../JFLAP/gui/action/LayoutStorageAction.java:66",
+          "../JFLAP/gui/action/LayoutStorageAction.java:88"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/automaton_graphview_canvas.dart:123",
+          "lib/presentation/widgets/automaton_graphview_canvas.dart:632",
+          "lib/presentation/widgets/automaton_graphview_canvas.dart:664",
+          "lib/presentation/widgets/automaton_layout.dart:244",
+          "lib/core/graph_layout/graph_layout_engine.dart:779"
+        ],
+        "tests": [
+          "test/unit/core/graph_layout/graph_layout_engine_test.dart:122",
+          "test/widget/presentation/automaton_graphview_canvas_test.dart:294"
+        ],
+        "issues": [343],
+        "decision": "Capture the first pre-layout snapshot per open document, expose Restore saved layout, and also record every applied layout in canvas undo/redo."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Restoration matches JFLAP's open-environment lifetime and adds localized EN/PT restore plus undo/redo evidence. Persisting this transient snapshot after restart is out of the parity scope."
+    }
+  ]
+}

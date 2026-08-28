@@ -2,10 +2,9 @@ part of '../fsa_page.dart';
 
 extension _FSAPageStateBehavior on _FSAPageState {
   void _handleAddStatePressed() {
-    if (_toolController.activeTool != AutomatonCanvasTool.addState) {
-      _toolController.setActiveTool(AutomatonCanvasTool.addState);
-    }
-    _canvasController.addStateAtCenter();
+    // Pure placement toggle: states are added by tapping the canvas while
+    // the tool is active, never as a side effect of pressing the button.
+    _toolController.toggleTool(AutomatonCanvasTool.addState);
   }
 
   void _showSnack(String message, {bool isError = false}) {
@@ -14,6 +13,26 @@ extension _FSAPageStateBehavior on _FSAPageState {
       message: message,
       tone: isError ? AppSnackBarTone.error : AppSnackBarTone.success,
     );
+  }
+
+  String? _localizedSimulationError(SimulationState state) {
+    final structured = state.structuredError;
+    if (structured != null) {
+      return appLocalizationsOf(context).resolveStructuredMessage(structured);
+    }
+    final error = state.error;
+    return error == null
+        ? null
+        : appLocalizationsOf(context).localizeWorkflowText(error);
+  }
+
+  String _localizedAlgorithmError(AlgorithmOperationState state) {
+    final error = state.error;
+    if (error == null) return '';
+    final structured = state.structuredError;
+    return structured == null
+        ? appLocalizationsOf(context).localizeWorkflowText(error)
+        : appLocalizationsOf(context).resolveStructuredMessage(structured);
   }
 
   FSA? _requireAutomaton({
@@ -54,7 +73,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
 
   Future<void> _runCurrentAutomatonOperation({
     required Future<void> Function(AutomatonAlgorithmNotifier notifier)
-        operation,
+    operation,
     required String successMessage,
     bool requireDfa = false,
     bool requireLambda = false,
@@ -73,7 +92,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
 
     final algorithmState = ref.read(automatonAlgorithmProvider);
     if (algorithmState.error != null) {
-      _showSnack(algorithmState.error!, isError: true);
+      _showSnack(_localizedAlgorithmError(algorithmState), isError: true);
       notifier.clearError();
       return;
     }
@@ -167,10 +186,8 @@ extension _FSAPageStateBehavior on _FSAPageState {
   Future<void> _handleConcatenateFsa(FSA other) async {
     final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
-      operation: (notifier) => notifier.concatenateFsa(
-        other,
-        withSteps: _stepByStepMode,
-      ),
+      operation: (notifier) =>
+          notifier.concatenateFsa(other, withSteps: _stepByStepMode),
       successMessage: l10n.concatenationComputed,
       invalidMessage: l10n.loadFsaBeforeConcatenation,
     );
@@ -179,9 +196,8 @@ extension _FSAPageStateBehavior on _FSAPageState {
   Future<void> _handleKleeneStarFsa() async {
     final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
-      operation: (notifier) => notifier.kleeneStarFsa(
-        withSteps: _stepByStepMode,
-      ),
+      operation: (notifier) =>
+          notifier.kleeneStarFsa(withSteps: _stepByStepMode),
       successMessage: l10n.kleeneStarComputed,
       invalidMessage: l10n.loadFsaBeforeKleeneStar,
     );
@@ -190,9 +206,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
   Future<void> _handleReverseFsa() async {
     final l10n = appLocalizationsOf(context);
     await _runCurrentAutomatonOperation(
-      operation: (notifier) => notifier.reverseFsa(
-        withSteps: _stepByStepMode,
-      ),
+      operation: (notifier) => notifier.reverseFsa(withSteps: _stepByStepMode),
       successMessage: l10n.fsaLanguageReversed,
       invalidMessage: l10n.loadFsaBeforeReverse,
     );
@@ -231,7 +245,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
         builder: (context, constraints) {
           final viewerMaxHeight = constraints.maxHeight.isFinite
               ? (constraints.maxHeight - _kStepViewerNavigationControlsHeight)
-                  .clamp(_kStepViewerMinHeight, _kStepViewerMaxHeight)
+                    .clamp(_kStepViewerMinHeight, _kStepViewerMaxHeight)
               : _kStepViewerDefaultHeight;
 
           return Column(
@@ -253,15 +267,15 @@ extension _FSAPageStateBehavior on _FSAPageState {
                   isPlaying: stepState.isPlaying,
                   onPrevious: stepState.hasPreviousStep
                       ? () => ref
-                          .read(algorithmStepProvider.notifier)
-                          .previousStep()
+                            .read(algorithmStepProvider.notifier)
+                            .previousStep()
                       : null,
                   onPlayPause: () => ref
                       .read(algorithmStepProvider.notifier)
                       .togglePlayPause(),
                   onNext: stepState.hasNextStep
                       ? () =>
-                          ref.read(algorithmStepProvider.notifier).nextStep()
+                            ref.read(algorithmStepProvider.notifier).nextStep()
                       : null,
                   onReset: () => ref
                       .read(algorithmStepProvider.notifier)
@@ -285,7 +299,8 @@ extension _FSAPageStateBehavior on _FSAPageState {
     final automaton = state.currentAutomaton;
     final hasAutomaton = automaton != null;
     final hasLambda = automaton?.hasEpsilonTransitions ?? false;
-    final isDfa = automaton != null &&
+    final isDfa =
+        automaton != null &&
         automaton.isDeterministic &&
         !automaton.hasEpsilonTransitions;
 
@@ -306,11 +321,18 @@ extension _FSAPageStateBehavior on _FSAPageState {
       onPrefixClosure: isDfa ? _handlePrefixClosure : null,
       onSuffixClosure: isDfa ? _handleSuffixClosure : null,
       onFsaToGrammar: hasAutomaton ? _handleFsaToGrammar : null,
-      onAutoLayout:
-          hasAutomaton ? () => layoutNotifier.applyAutoLayout() : null,
+      onPracticeFsaToGrammar: hasAutomaton
+          ? _openManualFsaToGrammarConstruction
+          : null,
+      onAutoLayout: hasAutomaton
+          ? () => layoutNotifier.applyAutoLayout()
+          : null,
       onClear: () => automatonNotifier.clearAutomaton(),
       onRegexToNfa: (regex) => algorithmNotifier.convertRegexToNfa(regex),
       onFaToRegex: hasAutomaton ? _handleFaToRegex : null,
+      onPracticeFaToRegex: hasAutomaton
+          ? _openManualFaToRegexConstruction
+          : null,
       onCompareEquivalence: isDfa ? _handleCompareEquivalence : null,
       equivalenceResult: algorithmState.equivalenceResult,
       equivalenceDetails: algorithmState.equivalenceDetails,
@@ -334,7 +356,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
       if (!mounted || regex == null) {
         final algorithmState = ref.read(automatonAlgorithmProvider);
         if (mounted && algorithmState.error != null) {
-          _showSnack(algorithmState.error!, isError: true);
+          _showSnack(_localizedAlgorithmError(algorithmState), isError: true);
         }
         return;
       }
@@ -342,6 +364,239 @@ extension _FSAPageStateBehavior on _FSAPageState {
       if (!mounted) return;
       _openRegexWorkspace(regex);
     }
+  }
+
+  Future<void> _openManualFaToRegexConstruction() async {
+    final state = ref.read(automatonStateProvider);
+    final source = state.currentAutomaton;
+    if (source == null) return;
+    late final ManualConversionSession manualSession;
+    try {
+      manualSession = ManualConversionFactories.faToRegex(
+        source: source,
+        sourceRevision: state.documentGeneration,
+      );
+    } on FaToRegexManualException catch (error) {
+      _showSnack(error.message, isError: true);
+      return;
+    } on StateError catch (error) {
+      _showSnack(error.message, isError: true);
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => Consumer(
+        builder: (context, dialogRef, _) {
+          final liveState = dialogRef.watch(automatonStateProvider);
+          final liveSource = liveState.currentAutomaton;
+          final checkedSession = manualSession.checkSource(
+            documentId: liveSource?.id ?? '',
+            revision: liveState.documentGeneration,
+          );
+          return Dialog.fullscreen(
+            child: ManualConversionWorkspace(
+              title: appLocalizationsOf(
+                context,
+              ).localizeWorkflowText('Manual FA to Regex construction'),
+              workspaceKey:
+                  'fa-to-regex.${source.id}.${state.documentGeneration}',
+              initialSession: checkedSession,
+              currentSourceDocumentId: liveSource?.id ?? '',
+              currentSourceRevision: liveState.documentGeneration,
+              sourcePreview: ManualConversionDocumentPreview.fsa(
+                liveSource ?? source,
+              ),
+              resultPreviewBuilder: ManualConversionDocumentPreview.artifact,
+              onApplyPayload: (session, payload) =>
+                  ManualConversionFactories.applyFaToRegexLearnerStep(
+                    source: liveSource ?? source,
+                    session: session,
+                    payload: payload,
+                  ),
+              requirementEditorBuilder: (context, requirement, onSubmit) =>
+                  FaToRegexRequirementEditor(
+                    key: ValueKey(requirement.id),
+                    requirement: requirement,
+                    onSubmit: onSubmit,
+                  ),
+              onClose: () => Navigator.of(dialogContext).pop(),
+              onStepAccepted: (acceptedSession) =>
+                  ManualConversionFactories.rebaseFaToRegexSelection(
+                    source: liveSource ?? source,
+                    sourceRevision: liveState.documentGeneration,
+                    acceptedSession: acceptedSession,
+                  ),
+              onRestartFromSource: (invalidated) {
+                if (liveSource == null) {
+                  throw StateError('The edited FA is empty.');
+                }
+                final fresh = ManualConversionFactories.faToRegex(
+                  source: liveSource,
+                  sourceRevision: liveState.documentGeneration,
+                );
+                return invalidated.restartFromNewSource(freshSession: fresh);
+              },
+              onBranchFromSource: (invalidated, branchId) {
+                if (liveSource == null) {
+                  throw StateError('The edited FA is empty.');
+                }
+                final fresh = ManualConversionFactories.faToRegex(
+                  source: liveSource,
+                  sourceRevision: liveState.documentGeneration,
+                );
+                return invalidated.branchFromNewSource(
+                  branchId: branchId,
+                  freshSession: fresh,
+                );
+              },
+              onOpenResult: (artifact) async {
+                final regex = artifact['regex'];
+                if (regex is! String || !dialogContext.mounted) return;
+                final shouldReplace =
+                    await confirmConversionDestinationReplacement(
+                      context: dialogContext,
+                      ref: ref,
+                      destination: ConversionDestination.regex,
+                    );
+                if (!shouldReplace || !mounted || !dialogContext.mounted) {
+                  return;
+                }
+                ref.read(regexEditorProvider.notifier).validateRegex(regex);
+                ref.read(homeNavigationProvider.notifier).goToRegex();
+                Navigator.of(dialogContext).pop();
+                _showSnack(
+                  appLocalizationsOf(context).localizeWorkflowText(
+                    'Manual construction opened in the Regex editor.',
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _openManualFsaToGrammarConstruction() async {
+    final state = ref.read(automatonStateProvider);
+    final source = state.currentAutomaton;
+    if (source == null) return;
+    final sessionResult = FaGrammarSessionFactory.fromFa(
+      sessionId:
+          'manual.fa-to-grammar.${source.id}.${state.documentGeneration}',
+      source: source,
+      sourceRevision: state.documentGeneration,
+    );
+    if (!sessionResult.isSuccess || sessionResult.data == null) {
+      _showSnack(
+        sessionResult.error ?? 'Could not start the construction.',
+        isError: true,
+      );
+      return;
+    }
+    final manualSession = sessionResult.data!;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => Consumer(
+        builder: (context, dialogRef, _) {
+          final liveState = dialogRef.watch(automatonStateProvider);
+          final liveSource = liveState.currentAutomaton;
+          final checkedSession = manualSession.checkSource(
+            documentId: liveSource?.id ?? '',
+            revision: liveState.documentGeneration,
+          );
+          return Dialog.fullscreen(
+            child: ManualConversionWorkspace(
+              title: appLocalizationsOf(context).localizeWorkflowText(
+                'Manual FA to Regular Grammar construction',
+              ),
+              workspaceKey:
+                  'fa-to-grammar.${source.id}.${state.documentGeneration}',
+              initialSession: checkedSession,
+              currentSourceDocumentId: liveSource?.id ?? '',
+              currentSourceRevision: liveState.documentGeneration,
+              sourcePreview: ManualConversionDocumentPreview.fsa(
+                liveSource ?? source,
+              ),
+              resultPreviewBuilder: ManualConversionDocumentPreview.artifact,
+              onApplyPayload: (session, payload) =>
+                  FaGrammarSessionFactory.applyLearnerAction(
+                    session: session,
+                    payload: payload,
+                  ),
+              requirementEditorBuilder: (context, requirement, onSubmit) =>
+                  FaGrammarRequirementEditor(
+                    key: ValueKey(requirement.id),
+                    requirement: requirement,
+                    onSubmit: onSubmit,
+                  ),
+              onRestartFromSource: (invalidated) {
+                if (liveSource == null) {
+                  throw StateError('The edited FA is empty.');
+                }
+                final result = FaGrammarSessionFactory.fromFa(
+                  sessionId: invalidated.id,
+                  source: liveSource,
+                  sourceRevision: liveState.documentGeneration,
+                );
+                if (!result.isSuccess || result.data == null) {
+                  throw StateError(result.error ?? 'Invalid edited FA.');
+                }
+                return invalidated.restartFromNewSource(
+                  freshSession: result.data!,
+                );
+              },
+              onBranchFromSource: (invalidated, branchId) {
+                if (liveSource == null) {
+                  throw StateError('The edited FA is empty.');
+                }
+                final result = FaGrammarSessionFactory.fromFa(
+                  sessionId: branchId,
+                  source: liveSource,
+                  sourceRevision: liveState.documentGeneration,
+                );
+                if (!result.isSuccess || result.data == null) {
+                  throw StateError(result.error ?? 'Invalid edited FA.');
+                }
+                return invalidated.branchFromNewSource(
+                  branchId: branchId,
+                  freshSession: result.data!,
+                );
+              },
+              onClose: () => Navigator.of(dialogContext).pop(),
+              onOpenResult: (artifact) async {
+                final encodedGrammar = artifact['document'];
+                if (encodedGrammar is! Map || !dialogContext.mounted) return;
+                final shouldReplace =
+                    await confirmConversionDestinationReplacement(
+                      context: dialogContext,
+                      ref: ref,
+                      destination: ConversionDestination.grammar,
+                    );
+                if (!shouldReplace || !mounted || !dialogContext.mounted) {
+                  return;
+                }
+                final grammar = Grammar.fromJson(
+                  Map<String, dynamic>.from(encodedGrammar),
+                );
+                ref.read(grammarProvider.notifier).applyGrammar(grammar);
+                ref.read(homeNavigationProvider.notifier).goToGrammar();
+                Navigator.of(dialogContext).pop();
+                _showSnack(
+                  appLocalizationsOf(context).localizeWorkflowText(
+                    'Manual construction opened in the Grammar editor.',
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _handleFaToRegexWithSteps() async {
@@ -353,7 +608,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
     if (!mounted || regex == null) {
       final algorithmState = ref.read(automatonAlgorithmProvider);
       if (mounted && algorithmState.error != null) {
-        _showSnack(algorithmState.error!, isError: true);
+        _showSnack(_localizedAlgorithmError(algorithmState), isError: true);
       }
       return;
     }
@@ -384,7 +639,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
     if (!mounted || grammar == null) {
       final algorithmState = ref.read(automatonAlgorithmProvider);
       if (mounted && algorithmState.error != null) {
-        _showSnack(algorithmState.error!, isError: true);
+        _showSnack(_localizedAlgorithmError(algorithmState), isError: true);
       }
       return;
     }
@@ -423,10 +678,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
       topicId = HelpTopicIds.fsaTheoryNfa;
     }
 
-    showWorkspaceHelp(
-      context: context,
-      topicId: topicId,
-    );
+    showWorkspaceHelp(context: context, topicId: topicId);
   }
 
   Widget _buildCanvasArea({
@@ -439,21 +691,33 @@ extension _FSAPageStateBehavior on _FSAPageState {
         canvasKey: _canvasKey,
         controller: _canvasController,
         toolController: _toolController,
+        documentActionsController: _documentActions,
+        annotationConfig: state.currentAutomaton == null
+            ? null
+            : AutomatonCanvasAnnotationConfig(
+                systemKey: DefaultFormalSystemIds.fsa,
+                documentId: state.currentAutomaton!.id,
+                documentRevision: '${state.documentGeneration}',
+              ),
       );
     }
 
     final statusMessage = _buildToolbarStatusMessage(state);
 
     Widget buildCanvasWithToolbar(Widget child) {
-      final hasAutomaton = state.currentAutomaton != null &&
+      final hasAutomaton =
+          state.currentAutomaton != null &&
           state.currentAutomaton!.states.isNotEmpty;
-      publishWorkspaceQuickActions(
+      publishWorkspaceQuickActionsForKey(
         ref,
-        WorkspaceTab.fsa,
+        DefaultFormalSystemIds.fsa,
         WorkspaceQuickActions(
           onHelp: _showContextualHelp,
           onSimulate: _openSimulationSheet,
           onAlgorithms: _openAlgorithmSheet,
+          algorithmsTooltip: appLocalizationsOf(
+            context,
+          ).workspaceAlgorithmsAndExamplesTooltip,
           simulateEnabled: hasAutomaton,
         ),
       );
@@ -467,10 +731,28 @@ extension _FSAPageStateBehavior on _FSAPageState {
         return Stack(
           children: [
             Positioned.fill(child: child),
-            // Badge DFA/NFA/ε-NFA
-            FSADeterminismOverlay(
-              automaton: state.currentAutomaton,
-              isMobile: isMobile,
+            // Diagnostics bar and DFA/NFA/ε-NFA badge share one top-anchored
+            // column, mirroring the PDA/TM top inset without overlapping.
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: SafeArea(
+                minimum: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(child: _buildDiagnosticHighlightBarContent(state)),
+                    const SizedBox(height: 8),
+                    FSADeterminismOverlay(
+                      automaton: state.currentAutomaton,
+                      isMobile: isMobile,
+                      inline: true,
+                    ),
+                  ],
+                ),
+              ),
             ),
             if (_canvasSimulationSteps case final steps?)
               Positioned(
@@ -502,6 +784,10 @@ extension _FSAPageStateBehavior on _FSAPageState {
                   onAddTransition: () => _toolController.toggleTool(
                     AutomatonCanvasTool.transition,
                   ),
+                  onArrangeAutomaton: _documentActions.arrange,
+                  onImportAutomaton: _documentActions.importAutomaton,
+                  onDocumentNotes: _documentActions.showDocumentNotes,
+                  documentActionsEnabled: state.currentAutomaton != null,
                   onHelp: _showContextualHelp,
                   onClear: _clearCanvasAutomaton,
                   statusMessage: statusMessage,
@@ -515,12 +801,14 @@ extension _FSAPageStateBehavior on _FSAPageState {
       return Stack(
         children: [
           Positioned.fill(child: child),
+          _buildDiagnosticHighlightBar(state),
           // Badge DFA/NFA/ε-NFA (desktop)
           FSADeterminismOverlay(
             automaton: state.currentAutomaton,
             isMobile: isMobile,
-            desktopTop:
-                _canvasToolbarInsets.top > 0 ? _canvasToolbarInsets.top : 88,
+            desktopTop: _canvasToolbarInsets.top > 0
+                ? _canvasToolbarInsets.top + 8
+                : 88,
           ),
           AnimatedBuilder(
             animation: combinedListenable,
@@ -538,6 +826,10 @@ extension _FSAPageStateBehavior on _FSAPageState {
                 onHelp: _showContextualHelp,
                 onAddTransition: () =>
                     _toolController.toggleTool(AutomatonCanvasTool.transition),
+                onArrangeAutomaton: _documentActions.arrange,
+                onImportAutomaton: _documentActions.importAutomaton,
+                onDocumentNotes: _documentActions.showDocumentNotes,
+                documentActionsEnabled: state.currentAutomaton != null,
                 onClear: _clearCanvasAutomaton,
                 statusMessage: statusMessage,
               );
@@ -593,8 +885,9 @@ extension _FSAPageStateBehavior on _FSAPageState {
                         automatonAlgorithmProvider,
                       );
                       final stepState = sheetRef.watch(algorithmStepProvider);
-                      final conversionHistory =
-                          sheetRef.watch(conversionHistoryProvider).history;
+                      final conversionHistory = sheetRef
+                          .watch(conversionHistoryProvider)
+                          .history;
                       final validationDiagnostics = _validationDiagnosticsFor(
                         sheetState.currentAutomaton,
                       );
@@ -632,6 +925,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Future<void> _openSimulationSheet() async {
+    _clearDiagnosticHighlight();
     _stopCanvasSimulation();
     final onViewOnCanvas = supportsCanvasSimulationPlayback(context)
         ? _startCanvasSimulation
@@ -659,14 +953,29 @@ extension _FSAPageStateBehavior on _FSAPageState {
                       final algorithmState = sheetRef.watch(
                         automatonAlgorithmProvider,
                       );
+                      final automaton = sheetRef
+                          .watch(automatonStateProvider)
+                          .currentAutomaton;
                       return SimulationPanel(
                         onSimulate: (inputString) => sheetRef
                             .read(automatonSimulationProvider.notifier)
                             .simulateAutomaton(inputString),
                         simulationResult: simulationState.simulationResult,
+                        errorMessage: _localizedSimulationError(
+                          simulationState,
+                        ),
                         regexResult: algorithmState.regexResult,
                         highlightService: _highlightService,
+                        isDeterministic: automaton?.isDeterministic ?? true,
+                        computationStateLabels: {
+                          for (final state in automaton?.states ?? const {})
+                            state.id: state.label,
+                        },
                         onViewOnCanvas: onViewOnCanvas,
+                        batchExecutor: automaton == null
+                            ? null
+                            : FsaBatchExecutor(automaton),
+                        batchAlphabet: automaton?.alphabet ?? const {},
                       );
                     },
                   ),
@@ -686,8 +995,9 @@ extension _FSAPageStateBehavior on _FSAPageState {
       builder: (context, panelRef, _) {
         final algorithmState = panelRef.watch(automatonAlgorithmProvider);
         final stepState = panelRef.watch(algorithmStepProvider);
-        final conversionHistory =
-            panelRef.watch(conversionHistoryProvider).history;
+        final conversionHistory = panelRef
+            .watch(conversionHistoryProvider)
+            .history;
         final validationDiagnostics = _validationDiagnosticsFor(
           state.currentAutomaton,
         );
@@ -732,13 +1042,24 @@ extension _FSAPageStateBehavior on _FSAPageState {
       builder: (context, panelRef, _) {
         final simulationState = panelRef.watch(automatonSimulationProvider);
         final algorithmState = panelRef.watch(automatonAlgorithmProvider);
+        final automaton = panelRef
+            .watch(automatonStateProvider)
+            .currentAutomaton;
         return SimulationPanel(
           onSimulate: (inputString) => panelRef
               .read(automatonSimulationProvider.notifier)
               .simulateAutomaton(inputString),
           simulationResult: simulationState.simulationResult,
+          errorMessage: _localizedSimulationError(simulationState),
           regexResult: algorithmState.regexResult,
           highlightService: _highlightService,
+          isDeterministic: automaton?.isDeterministic ?? true,
+          computationStateLabels: {
+            for (final state in automaton?.states ?? const {})
+              state.id: state.label,
+          },
+          batchExecutor: automaton == null ? null : FsaBatchExecutor(automaton),
+          batchAlphabet: automaton?.alphabet ?? const {},
         );
       },
     );
@@ -775,8 +1096,9 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   List<ValidationDiagnostic> _validationDiagnosticsFor(FSA? automaton) {
-    final cacheKey =
-        automaton == null ? null : _validationAutomatonKey(automaton);
+    final cacheKey = automaton == null
+        ? null
+        : _validationAutomatonKey(automaton);
     if (cacheKey == _cachedValidationAutomatonKey) {
       return _cachedValidationDiagnostics;
     }
@@ -795,17 +1117,19 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   String _validationAutomatonKey(FSA automaton) {
-    final stateKeys = automaton.states
-        .map(
-          (state) =>
-              '${state.id}|${state.label}|${state.isInitial}|${state.isAccepting}|${state.type.name}',
-        )
-        .toList()
-      ..sort();
-    final transitionKeys = automaton.transitions
-        .map((transition) => transition.toJson().toString())
-        .toList()
-      ..sort();
+    final stateKeys =
+        automaton.states
+            .map(
+              (state) =>
+                  '${state.id}|${state.label}|${state.isInitial}|${state.isAccepting}|${state.type.name}',
+            )
+            .toList()
+          ..sort();
+    final transitionKeys =
+        automaton.transitions
+            .map((transition) => transition.toJson().toString())
+            .toList()
+          ..sort();
     final alphabet = automaton.alphabet.toList()..sort();
     final accepting = automaton.acceptingStates.map((s) => s.id).toList()
       ..sort();
@@ -830,9 +1154,8 @@ extension _FSAPageStateBehavior on _FSAPageState {
       height: 220,
       child: ListView.builder(
         itemCount: diagnostics.length,
-        itemBuilder: (context, index) => ValidationDiagnosticCard(
-          diagnostic: diagnostics[index],
-        ),
+        itemBuilder: (context, index) =>
+            ValidationDiagnosticCard(diagnostic: diagnostics[index]),
       ),
     );
   }
@@ -902,18 +1225,117 @@ extension _FSAPageStateBehavior on _FSAPageState {
     }
     _lastValidationHighlightKey = key;
     _lastValidationHighlight = highlight;
+    final target = _highlightCoordinator.target;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted ||
           _lastValidationHighlightKey != key ||
-          _lastValidationHighlight != highlight) {
+          _lastValidationHighlight != highlight ||
+          target != _highlightCoordinator.target) {
         return;
       }
       if (highlight.isEmpty) {
-        _highlightService.clear();
+        _validationHighlights.clearFor(target);
       } else {
-        _highlightService.dispatch(highlight);
+        _validationHighlights.sendFor(target, highlight);
       }
     });
+  }
+
+  CanvasHighlightTarget _highlightTarget(FSA? automaton) {
+    return CanvasHighlightTarget(
+      kind: AutomatonSurfaceKind.fsa,
+      surface: _canvasController,
+      documentId: automaton?.id,
+      revision: _highlightRevision,
+    );
+  }
+
+  void _setDiagnosticHighlight(
+    AutomatonDiagnosticHighlightKind kind,
+    bool selected,
+    AutomatonStateProviderState state,
+  ) {
+    if (!selected) {
+      _clearDiagnosticHighlight();
+      return;
+    }
+
+    _stopCanvasSimulation();
+    final transitionIds = switch (kind) {
+      AutomatonDiagnosticHighlightKind.conflicts =>
+        _diagnosticHighlightService.conflictingFsaTransitionIds(
+          state.currentAutomaton,
+        ),
+      AutomatonDiagnosticHighlightKind.epsilon =>
+        _diagnosticHighlightService.epsilonFsaTransitionIds(
+          state.currentAutomaton,
+        ),
+    };
+    _updatePageState(() {
+      _activeDiagnosticHighlight = kind;
+    });
+    _diagnosticHighlights.send(
+      _diagnosticHighlightService.transitionHighlight(transitionIds),
+    );
+  }
+
+  void _clearDiagnosticHighlight() {
+    if (_activeDiagnosticHighlight != null && mounted) {
+      _updatePageState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+    _diagnosticHighlights.clear();
+  }
+
+  void _handleSimulationHighlightActivity() {
+    _diagnosticHighlights.clear();
+    if (_activeDiagnosticHighlight != null && mounted) {
+      _updatePageState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+  }
+
+  Widget _buildDiagnosticHighlightBarContent(
+    AutomatonStateProviderState state,
+  ) {
+    final conflicts = _diagnosticHighlightService.conflictingFsaTransitionIds(
+      state.currentAutomaton,
+    );
+    final epsilon = _diagnosticHighlightService.epsilonFsaTransitionIds(
+      state.currentAutomaton,
+    );
+    return AutomatonDiagnosticHighlightBar(
+      activeKind: _activeDiagnosticHighlight,
+      conflictCount: conflicts.length,
+      epsilonCount: epsilon.length,
+      onConflictSelected: (selected) => _setDiagnosticHighlight(
+        AutomatonDiagnosticHighlightKind.conflicts,
+        selected,
+        state,
+      ),
+      onEpsilonSelected: (selected) => _setDiagnosticHighlight(
+        AutomatonDiagnosticHighlightKind.epsilon,
+        selected,
+        state,
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticHighlightBar(AutomatonStateProviderState state) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SafeArea(
+        minimum: EdgeInsets.fromLTRB(
+          12,
+          _canvasToolbarInsets.top > 0 ? _canvasToolbarInsets.top + 8 : 88,
+          12,
+          12,
+        ),
+        child: _buildDiagnosticHighlightBarContent(state),
+      ),
+    );
   }
 }

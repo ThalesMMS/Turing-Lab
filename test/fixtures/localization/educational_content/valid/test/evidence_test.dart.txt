@@ -1,0 +1,2 @@
+// educational-content-contract: fixture-catalog-ids-v1
+const manifestPath = 'educational_content.v1.json';

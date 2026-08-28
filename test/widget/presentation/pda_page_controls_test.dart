@@ -67,13 +67,13 @@ Future<void> _pumpPdaPage(
 }
 
 void main() {
-  testWidgets('PDA iOS canvas playback updates stack and highlights', (
+  testWidgets('PDA Android canvas playback updates stack and highlights', (
     tester,
   ) async {
     await _pumpPdaPage(
       tester,
       size: const Size(800, 900),
-      platform: TargetPlatform.iOS,
+      platform: TargetPlatform.android,
     );
     final canvas = tester.widget<PDACanvasGraphView>(
       find.byType(PDACanvasGraphView),
@@ -90,24 +90,22 @@ void main() {
     );
     expect(panel.onViewOnCanvas, isNotNull);
     final stateIds = controller.nodes.map((node) => node.id).toList();
-    panel.onViewOnCanvas!(
-      [
-        SimulationStep(
-          currentState: stateIds[0],
-          activeStateIds: {stateIds[0]},
-          remainingInput: 'a',
-          stackContents: 'Z',
-          stepNumber: 0,
-        ),
-        SimulationStep(
-          currentState: stateIds[1],
-          activeStateIds: {stateIds[1]},
-          remainingInput: '',
-          stackContents: 'AZ',
-          stepNumber: 1,
-        ),
-      ],
-    );
+    panel.onViewOnCanvas!([
+      SimulationStep(
+        currentState: stateIds[0],
+        activeStateIds: {stateIds[0]},
+        remainingInput: 'a',
+        stackContents: 'Z',
+        stepNumber: 0,
+      ),
+      SimulationStep(
+        currentState: stateIds[1],
+        activeStateIds: {stateIds[1]},
+        remainingInput: '',
+        stackContents: 'AZ',
+        stepNumber: 1,
+      ),
+    ]);
     await tester.pumpAndSettle();
 
     expect(find.byType(PDASimulationPanel), findsNothing);
@@ -165,6 +163,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('canvas-toolbar-overflow')),
+        findsOneWidget,
+      );
       final toolbar = tester.widget<GraphViewCanvasToolbar>(
         find.byType(GraphViewCanvasToolbar),
       );
@@ -185,7 +187,7 @@ void main() {
     await _pumpPdaPage(
       tester,
       size: const Size(800, 900),
-      platform: TargetPlatform.iOS,
+      platform: TargetPlatform.android,
     );
     final canvas = tester.widget<PDACanvasGraphView>(
       find.byType(PDACanvasGraphView),
@@ -224,9 +226,9 @@ void main() {
         ),
       );
 
-    container.read(pdaEditorProvider.notifier).setPda(
-          pda.copyWith(id: 'replacement-pda'),
-        );
+    container
+        .read(pdaEditorProvider.notifier)
+        .setPda(pda.copyWith(id: 'replacement-pda'));
     await tester.pumpAndSettle();
 
     expect(find.byType(CanvasSimulationPlaybackBar), findsNothing);
@@ -266,7 +268,7 @@ void main() {
       tester.getSize(find.byType(CollapsibleCanvasPanel)),
       const Size.square(48),
     );
-    await expandCanvasToolbar(tester);
+    await expectCanvasToolbarMore(tester);
     await tapSecondaryCanvasAction(
       tester,
       semanticLabel: 'Canvas action: Fit to content',
@@ -320,79 +322,76 @@ void main() {
   }
 
   testWidgets(
-      'empty PDA keeps Algorithms presets reachable and other actions disabled',
-      (
-    tester,
-  ) async {
-    await _pumpPdaPage(tester, size: const Size(800, 900));
+    'empty PDA keeps Algorithms presets reachable and other actions disabled',
+    (tester) async {
+      await _pumpPdaPage(tester, size: const Size(800, 900));
 
-    await expandCanvasToolbar(tester);
-    final simulateButton = tester.widget<IconButton>(
-      find.ancestor(
-        of: find.byTooltip('Simulate'),
-        matching: find.byType(IconButton),
-      ),
-    );
-    expect(simulateButton.onPressed, isNull);
-    final algorithms = find.byTooltip('Algorithms');
-    expect(
-      tester
-          .widget<IconButton>(
-            find.ancestor(
-              of: algorithms,
-              matching: find.byType(IconButton),
-            ),
-          )
-          .onPressed,
-      isNotNull,
-    );
-    expect(find.byType(PDAStackPanel), findsOneWidget);
-
-    await tester.tap(algorithms);
-    await tester.pumpAndSettle();
-    // The examples keep their canonical names; the sheet shows them through
-    // the active locale, which is English here.
-    final exampleL10n = AppLocalizationsEn();
-    await pumpUntilFound(
-      tester,
-      find.text(
-          exampleL10n.localizedExampleName('APD - Parênteses Balanceados')),
-    );
-    for (final example in const [
-      'APD - Parênteses Balanceados',
-      'APD - a^n b^n',
-      'APD - Palíndromo',
-      'APD - a^n b^2n',
-      'APD - w#reverse(w)',
-    ]) {
+      await expectCanvasToolbarMore(tester);
+      final simulateButton = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip('Simulate'),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(simulateButton.onPressed, isNull);
+      final algorithms = find.byTooltip('Algorithms');
       expect(
-        find.text(exampleL10n.localizedExampleName(example)),
+        tester
+            .widget<IconButton>(
+              find.ancestor(of: algorithms, matching: find.byType(IconButton)),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      expect(find.byType(PDAStackPanel), findsOneWidget);
+
+      await tester.tap(algorithms);
+      await tester.pumpAndSettle();
+      // The examples keep their canonical names; the sheet shows them through
+      // the active locale, which is English here.
+      final exampleL10n = AppLocalizationsEn();
+      await pumpUntilFound(
+        tester,
+        find.text(
+          exampleL10n.localizedExampleName('APD - Parênteses Balanceados'),
+        ),
+      );
+      for (final example in const [
+        'APD - Parênteses Balanceados',
+        'APD - a^n b^n',
+        'APD - Palíndromo',
+        'APD - a^n b^2n',
+        'APD - w#reverse(w)',
+      ]) {
+        expect(
+          find.text(exampleL10n.localizedExampleName(example)),
+          findsOneWidget,
+        );
+      }
+      Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+      await tester.pumpAndSettle();
+
+      await tapSecondaryCanvasAction(
+        tester,
+        semanticLabel: 'Canvas action: Help & Shortcuts',
+        menuLabel: 'Help & Shortcuts',
+        opensRoute: true,
+      );
+
+      final page = tester.widget<HelpPage>(find.byType(HelpPage));
+      final node = find.byKey(
+        const ValueKey('help-node-${HelpTopicIds.pdaEditorOverview}'),
+      );
+      expect(page.initialTopicId, HelpTopicIds.pdaEditorOverview);
+      expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+      expect(
+        find.byKey(
+          const ValueKey('help-body-${HelpTopicIds.pdaEditorOverview}'),
+        ),
         findsOneWidget,
       );
-    }
-    Navigator.of(tester.element(find.byType(BottomSheet))).pop();
-    await tester.pumpAndSettle();
-
-    await tapSecondaryCanvasAction(
-      tester,
-      semanticLabel: 'Canvas action: Help & Shortcuts',
-      menuLabel: 'Help & Shortcuts',
-      opensRoute: true,
-    );
-
-    final page = tester.widget<HelpPage>(find.byType(HelpPage));
-    final node = find.byKey(
-      const ValueKey('help-node-${HelpTopicIds.pdaEditorOverview}'),
-    );
-    expect(page.initialTopicId, HelpTopicIds.pdaEditorOverview);
-    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
-    expect(
-      find.byKey(
-        const ValueKey('help-body-${HelpTopicIds.pdaEditorOverview}'),
-      ),
-      findsOneWidget,
-    );
-  });
+    },
+  );
 
   testWidgets('populated PDA Help maps theory and active stack workflow', (
     tester,
@@ -404,7 +403,7 @@ void main() {
     canvas.controller!.addStateAt(const Offset(140, 180));
     await tester.pumpAndSettle();
 
-    await expandCanvasToolbar(tester);
+    await expectCanvasToolbarMore(tester);
     await tapSecondaryCanvasAction(
       tester,
       semanticLabel: 'Canvas action: Help & Shortcuts',
@@ -417,9 +416,7 @@ void main() {
       HelpTopicIds.pdaTheoryPda,
     );
     expect(
-      find.byKey(
-        const ValueKey('help-body-${HelpTopicIds.pdaTheoryPda}'),
-      ),
+      find.byKey(const ValueKey('help-body-${HelpTopicIds.pdaTheoryPda}')),
       findsOneWidget,
     );
 
@@ -449,10 +446,7 @@ void main() {
       tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
       HelpTopicIds.pdaEditorSimulation,
     );
-    expect(
-      tester.widget<InkWell>(workflowNode).focusNode?.hasFocus,
-      isTrue,
-    );
+    expect(tester.widget<InkWell>(workflowNode).focusNode?.hasFocus, isTrue);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -489,9 +483,7 @@ void main() {
 
     expect(
       tester
-          .widget<GraphViewCanvasToolbar>(
-            find.byType(GraphViewCanvasToolbar),
-          )
+          .widget<GraphViewCanvasToolbar>(find.byType(GraphViewCanvasToolbar))
           .activeTool,
       AutomatonCanvasTool.transition,
     );
@@ -501,9 +493,7 @@ void main() {
 
     expect(
       tester
-          .widget<GraphViewCanvasToolbar>(
-            find.byType(GraphViewCanvasToolbar),
-          )
+          .widget<GraphViewCanvasToolbar>(find.byType(GraphViewCanvasToolbar))
           .activeTool,
       AutomatonCanvasTool.selection,
     );
@@ -527,9 +517,7 @@ void main() {
 
     expect(
       tester
-          .widget<GraphViewCanvasToolbar>(
-            find.byType(GraphViewCanvasToolbar),
-          )
+          .widget<GraphViewCanvasToolbar>(find.byType(GraphViewCanvasToolbar))
           .activeTool,
       AutomatonCanvasTool.transition,
     );
@@ -539,9 +527,7 @@ void main() {
 
     expect(
       tester
-          .widget<GraphViewCanvasToolbar>(
-            find.byType(GraphViewCanvasToolbar),
-          )
+          .widget<GraphViewCanvasToolbar>(find.byType(GraphViewCanvasToolbar))
           .activeTool,
       AutomatonCanvasTool.selection,
     );
@@ -562,16 +548,12 @@ void main() {
     final simulationPanel = tester.widget<PDASimulationPanel>(
       find.byType(PDASimulationPanel),
     );
-    simulationPanel.onStackChanged!(
-      const StackState(symbols: ['Z', 'A']),
-    );
+    simulationPanel.onStackChanged!(const StackState(symbols: ['Z', 'A']));
     await tester.pump();
-    canvas = tester.widget<PDACanvasGraphView>(
-      find.byType(PDACanvasGraphView),
-    );
+    canvas = tester.widget<PDACanvasGraphView>(find.byType(PDACanvasGraphView));
     expect(canvas.currentStack!.symbols, ['Z', 'A']);
 
-    await expandCanvasToolbar(tester);
+    await expectCanvasToolbarMore(tester);
     await tapSecondaryCanvasAction(
       tester,
       semanticLabel: 'Canvas action: Clear canvas',
@@ -579,9 +561,7 @@ void main() {
       opensRoute: false,
     );
 
-    canvas = tester.widget<PDACanvasGraphView>(
-      find.byType(PDACanvasGraphView),
-    );
+    canvas = tester.widget<PDACanvasGraphView>(find.byType(PDACanvasGraphView));
     expect(canvas.currentStack!.symbols, isEmpty);
     expect(controller.nodes, isEmpty);
     expect(controller.canUndo, isTrue);

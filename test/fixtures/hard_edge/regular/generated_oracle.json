@@ -1,0 +1,9 @@
+{
+  "family": "regular",
+  "cases": 2,
+  "expectedStatus": "passed",
+  "generatorVersion": "regular-v1",
+  "mode": "boundaryValid",
+  "oracleVersion": "regular-independent-v1",
+  "seed": 335
+}

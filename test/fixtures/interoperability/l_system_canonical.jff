@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>lsystem</type>
+  <axiom>F</axiom>
+  <production>
+    <left>F</left>
+    <right>F + F - F - F + F</right>
+  </production>
+  <parameter><name>angle</name><value>90</value></parameter>
+  <parameter><name>distance</name><value>5</value></parameter>
+  <parameter><name>lineWidth</name><value>1</value></parameter>
+  <parameter><name>turingLabIterations</name><value>2</value></parameter>
+</structure>

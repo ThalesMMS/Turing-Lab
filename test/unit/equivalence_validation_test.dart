@@ -99,17 +99,15 @@ void main() {
           alphabet: dfa1.alphabet,
         );
 
-        final result = EquivalenceChecker.areEquivalentResult(
-          invalidNfa,
-          dfa1,
-        );
+        final result = EquivalenceChecker.areEquivalentResult(invalidNfa, dfa1);
 
         expect(result.isFailure, true);
-        expect(result.error, contains('Failed to determinize automaton A'));
+        expect(result.error, 'algorithm.fsa-determinizer.failed');
         expect(
-          result.error,
-          contains('Accepting state must be in the states set'),
+          result.structuredError?.stableCode,
+          'algorithm.fsa-determinizer.failed',
         );
+        expect(result.structuredError?.arguments['automaton']?.value, 'A');
       });
     });
 
@@ -184,6 +182,21 @@ void main() {
           false,
           reason: 'Automata with no initial state should not be equivalent',
         );
+      });
+
+      test('state-pair identity is not ambiguous when ids contain commas', () {
+        final left = _createCommaIdDfa(
+          initialId: 'x,y',
+          nextId: 'x',
+          acceptsNext: true,
+        );
+        final right = _createCommaIdDfa(
+          initialId: 'z',
+          nextId: 'y,z',
+          acceptsNext: false,
+        );
+
+        expect(EquivalenceChecker.areEquivalent(left, right), isFalse);
       });
     });
 
@@ -585,6 +598,47 @@ FSA _createNoInitialDFA() {
     created: DateTime.now(),
     modified: DateTime.now(),
     bounds: const math.Rectangle(0, 0, 100, 100),
+    zoomLevel: 1.0,
+    panOffset: Vector2.zero(),
+  );
+}
+
+FSA _createCommaIdDfa({
+  required String initialId,
+  required String nextId,
+  required bool acceptsNext,
+}) {
+  final initial = State(
+    id: initialId,
+    label: initialId,
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  final next = State(
+    id: nextId,
+    label: nextId,
+    position: Vector2(100, 0),
+    isAccepting: acceptsNext,
+  );
+  return FSA(
+    id: 'comma-$initialId',
+    name: 'Comma ID DFA',
+    states: {initial, next},
+    transitions: {
+      FSATransition(
+        id: 'advance',
+        fromState: initial,
+        toState: next,
+        symbol: 'a',
+      ),
+      FSATransition(id: 'loop', fromState: next, toState: next, symbol: 'a'),
+    },
+    alphabet: {'a'},
+    initialState: initial,
+    acceptingStates: acceptsNext ? {next} : {},
+    created: DateTime.now(),
+    modified: DateTime.now(),
+    bounds: const math.Rectangle(0, 0, 200, 100),
     zoomLevel: 1.0,
     panOffset: Vector2.zero(),
   );

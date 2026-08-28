@@ -12,7 +12,8 @@ import 'package:turing_lab/presentation/widgets/help_tree_view.dart';
 
 class _LicenseAssetFixture {
   static const texts = <String, String>{
-    'LICENSE.txt': 'Apache License\nVersion 2.0, January 2004\n'
+    'LICENSE.txt':
+        'Apache License\nVersion 2.0, January 2004\n'
         'Licensed under the Apache License, Version 2.0.',
     'LICENSE_JFLAP.txt':
         'JFLAP 7.1 LICENSE\nFor students and educators\njflap@cs.duke.edu',
@@ -30,14 +31,14 @@ class _LicenseAssetFixture {
   void install() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
-      if (message == null) return null;
-      final key = utf8.decode(message.buffer.asUint8List());
-      loadCounts.update(key, (count) => count + 1, ifAbsent: () => 1);
-      final pending = pendingAssets[key];
-      if (pending != null) return pending.future;
-      final text = unavailableAssets.contains(key) ? null : texts[key];
-      return _byteData(text);
-    });
+          if (message == null) return null;
+          final key = utf8.decode(message.buffer.asUint8List());
+          loadCounts.update(key, (count) => count + 1, ifAbsent: () => 1);
+          final pending = pendingAssets[key];
+          if (pending != null) return pending.future;
+          final text = unavailableAssets.contains(key) ? null : texts[key];
+          return _byteData(text);
+        });
   }
 
   ByteData? _byteData(String? text) {
@@ -193,6 +194,10 @@ void main() {
     expect(
       find.textContaining('Failed to load license', skipOffstage: false),
       findsOneWidget,
+    );
+    expect(
+      find.textContaining('LICENSE_JFLAP.txt', skipOffstage: false),
+      findsNothing,
     );
   });
 

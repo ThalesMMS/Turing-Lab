@@ -21,11 +21,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+8
+version: 1.0.0+10
 
 environment:
-  sdk: ^3.6.0
-  flutter: ">=3.27.0"
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -73,15 +73,20 @@ dependencies:
   # Collection utilities
   collection: ^1.18.0
 
+  # Stable model revisions for batch reports
+  crypto: ^3.0.6
+
   # Annotations usable from lib/core, which must stay Flutter-free
   meta: ^1.15.0
   freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
   test: ^1.24.0
+  analyzer: ^8.4.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -136,12 +141,26 @@ flutter:
     - assets/examples/tm_copy_string.json
     - assets/examples/tm_increment.json
     - assets/examples/tm_palindrome.json
+    - assets/examples/tm_multitape_copy.json
+    - assets/examples/tm_multitape_comparison.json
+    - assets/examples/tm_multitape_palindrome.json
+    - assets/examples/tm_multitape_work_tape.json
     # Regular expression examples
     - assets/examples/regex_a_star.json
     - assets/examples/regex_ends_with_ab.json
     - assets/examples/regex_binary_starts_zero.json
     - assets/examples/regex_ab_or_ba_pairs.json
     - assets/examples/regex_a_then_b.json
+    # Mealy machine examples
+    - assets/examples/mealy_identity.json
+    - assets/examples/mealy_parity.json
+    - assets/examples/mealy_sequence_detector.json
+    - assets/examples/mealy_partial.json
+    # Moore machine examples
+    - assets/examples/moore_parity.json
+    - assets/examples/moore_vending_control.json
+    - assets/examples/moore_sequence_detector.json
+    - assets/examples/moore_partial.json
     # License texts bundled for in-app access and binary distribution
     - LICENSE.txt
     - LICENSE_JFLAP.txt

@@ -13,6 +13,9 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_help.dart';
+import 'navigation_item.dart';
+
+export 'navigation_item.dart';
 
 /// Mobile-optimized bottom navigation widget
 class MobileNavigation extends StatelessWidget {
@@ -42,29 +45,43 @@ class MobileNavigation extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: IntrinsicHeight(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 80),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: items.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  final isSelected = currentIndex == index;
-
-                  return Expanded(
-                    child: _buildNavigationItem(
-                      context,
-                      item,
-                      isSelected,
-                      () => onTap(index),
-                    ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 80),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (items.isEmpty) return const SizedBox.shrink();
+                final entries = items.asMap().entries;
+                final width = constraints.maxWidth.isFinite
+                    ? constraints.maxWidth
+                    : items.length * 44;
+                final availableColumns = (width / 44).floor().clamp(
+                  1,
+                  items.length,
+                );
+                if (items.length <= 5 && availableColumns == items.length) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final entry in entries)
+                        Expanded(child: _buildItem(context, entry)),
+                    ],
                   );
-                }).toList(),
-              ),
+                }
+
+                final columns = availableColumns.clamp(1, 4);
+                final itemWidth = width / columns;
+                return Wrap(
+                  children: [
+                    for (final entry in entries)
+                      SizedBox(
+                        width: itemWidth,
+                        child: _buildItem(context, entry),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -72,12 +89,24 @@ class MobileNavigation extends StatelessWidget {
     );
   }
 
+  Widget _buildItem(BuildContext context, MapEntry<int, NavigationItem> entry) {
+    final index = entry.key;
+    return _buildNavigationItem(
+      context,
+      entry.value,
+      currentIndex == index,
+      () => onTap(index),
+      key: ValueKey('mobile_navigation_item_$index'),
+    );
+  }
+
   Widget _buildNavigationItem(
     BuildContext context,
     NavigationItem item,
     bool isSelected,
-    VoidCallback onTap,
-  ) {
+    VoidCallback onTap, {
+    required Key key,
+  }) {
     final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = jflapLocalizationsOf(context);
@@ -93,6 +122,7 @@ class MobileNavigation extends StatelessWidget {
       selected: isSelected,
       excludeSemantics: true,
       child: InkWell(
+        key: key,
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: ConstrainedBox(
@@ -103,17 +133,15 @@ class MobileNavigation extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                Icon(
-                  item.icon,
-                  color: color,
-                ),
+                Icon(item.icon, color: color),
                 const SizedBox(height: 4),
                 Text(
                   item.label,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: color,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -126,17 +154,4 @@ class MobileNavigation extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Navigation item data class
-class NavigationItem {
-  final String label;
-  final IconData icon;
-  final String description;
-
-  const NavigationItem({
-    required this.label,
-    required this.icon,
-    required this.description,
-  });
 }

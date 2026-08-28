@@ -16,8 +16,10 @@ import '../models/fsa.dart';
 import '../models/state.dart';
 import '../models/fsa_transition.dart';
 import '../models/nfa_to_dfa_step.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'nfa_to_dfa_messages.dart';
 import 'state_renamer.dart';
 
 /// Converts Non-deterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA)
@@ -28,17 +30,26 @@ class NFAToDFAConverter {
       // Validate input
       final validationResult = _validateInput(nfa);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty NFA
       if (nfa.states.isEmpty) {
-        return ResultFactory.failure('Cannot convert empty NFA to DFA');
+        return _failure(
+          'Cannot convert empty NFA to DFA',
+          NfaToDfaMessages.emptyAutomaton(),
+        );
       }
 
       // Handle NFA with no initial state
       if (nfa.initialState == null) {
-        return ResultFactory.failure('NFA must have an initial state');
+        return _failure(
+          'NFA must have an initial state',
+          NfaToDfaMessages.missingInitialState(),
+        );
       }
 
       // Build DFA directly from NFA using epsilon-closures in subset construction
@@ -49,28 +60,38 @@ class NFAToDFAConverter {
 
       return ResultFactory.success(dfa);
     } catch (e) {
-      return ResultFactory.failure('Error converting NFA to DFA: $e');
+      return _conversionFailure(e, withSteps: false);
     }
   }
 
   /// Validates the input NFA
   static Result<void> _validateInput(FSA nfa) {
     if (nfa.states.isEmpty) {
-      return ResultFactory.failure('NFA must have at least one state');
+      return Failure(
+        'NFA must have at least one state',
+        structuredMessage: NfaToDfaMessages.emptyAutomaton(),
+      );
     }
 
     if (nfa.initialState == null) {
-      return ResultFactory.failure('NFA must have an initial state');
+      return Failure(
+        'NFA must have an initial state',
+        structuredMessage: NfaToDfaMessages.missingInitialState(),
+      );
     }
 
     if (!nfa.states.contains(nfa.initialState)) {
-      return ResultFactory.failure('Initial state must be in the states set');
+      return Failure(
+        'Initial state must be in the states set',
+        structuredMessage: NfaToDfaMessages.initialStateOutsideSet(),
+      );
     }
 
     for (final acceptingState in nfa.acceptingStates) {
       if (!nfa.states.contains(acceptingState)) {
-        return ResultFactory.failure(
+        return Failure(
           'Accepting state must be in the states set',
+          structuredMessage: NfaToDfaMessages.acceptingStateOutsideSet(),
         );
       }
     }
@@ -80,10 +101,7 @@ class NFAToDFAConverter {
 
   /// Builds DFA using subset construction with epsilon-closures over the original NFA.
   /// Optionally records the educational steps produced by the same construction.
-  static FSA _buildDFAWithEpsilon(
-    FSA nfa, {
-    List<NFAToDFAStep>? steps,
-  }) {
+  static FSA _buildDFAWithEpsilon(FSA nfa, {List<NFAToDFAStep>? steps}) {
     final dfaStates = <String, State>{};
     final dfaTransitions = <FSATransition>{};
     final dfaAcceptingStates = <State>{};
@@ -107,8 +125,9 @@ class NFAToDFAConverter {
           stepNumber: stepCounter++,
           initialState: nfa.initialState!,
           epsilonClosure: initialStateSet,
-          containsAcceptingState:
-              initialStateSet.intersection(nfa.acceptingStates).isNotEmpty,
+          containsAcceptingState: initialStateSet
+              .intersection(nfa.acceptingStates)
+              .isNotEmpty,
         ),
       );
     }
@@ -134,15 +153,17 @@ class NFAToDFAConverter {
       }
 
       // For each symbol in the alphabet (excluding epsilon-like markers)
-      final workingAlphabet =
-          nfa.alphabet.where((s) => !isEpsilonSymbol(s)).toSet();
+      final workingAlphabet = nfa.alphabet
+          .where((s) => !isEpsilonSymbol(s))
+          .toSet();
       for (final symbol in workingAlphabet) {
         final reachableBeforeEpsilon = <State>{};
 
         // Move on symbol.
         for (final state in currentStateSet) {
-          final transitions =
-              nfa.getTransitionsFromStateOnSymbol(state, symbol).toList();
+          final transitions = nfa
+              .getTransitionsFromStateOnSymbol(state, symbol)
+              .toList();
           for (final transition in transitions) {
             reachableBeforeEpsilon.add(transition.toState);
           }
@@ -168,8 +189,9 @@ class NFAToDFAConverter {
         if (nextStateSet.isNotEmpty) {
           final nextStateKey = _getStateSetKey(nextStateSet);
           final isNewState = !dfaStates.containsKey(nextStateKey);
-          final containsAcceptingState =
-              nextStateSet.intersection(nfa.acceptingStates).isNotEmpty;
+          final containsAcceptingState = nextStateSet
+              .intersection(nfa.acceptingStates)
+              .isNotEmpty;
 
           if (steps != null) {
             steps.add(
@@ -259,15 +281,17 @@ class NFAToDFAConverter {
     final fixedStates = <String, State>{};
     for (final entry in dfaStates.entries) {
       final s = entry.value;
-      fixedStates[entry.key] =
-          acceptingIds.contains(s.id) ? s.copyWith(isAccepting: true) : s;
+      fixedStates[entry.key] = acceptingIds.contains(s.id)
+          ? s.copyWith(isAccepting: true)
+          : s;
     }
     final fixedInitialState = fixedStates.values.firstWhere(
       (s) => s.isInitial,
       orElse: () => initialState,
     );
-    final fixedAcceptingStates =
-        fixedStates.values.where((s) => s.isAccepting).toSet();
+    final fixedAcceptingStates = fixedStates.values
+        .where((s) => s.isAccepting)
+        .toSet();
     final statesById = <String, State>{
       for (final s in fixedStates.values) s.id: s,
     };
@@ -334,17 +358,26 @@ class NFAToDFAConverter {
       // Validate input
       final validationResult = _validateInput(nfa);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty NFA
       if (nfa.states.isEmpty) {
-        return ResultFactory.failure('Cannot convert empty NFA to DFA');
+        return _failure(
+          'Cannot convert empty NFA to DFA',
+          NfaToDfaMessages.emptyAutomaton(),
+        );
       }
 
       // Handle NFA with no initial state
       if (nfa.initialState == null) {
-        return ResultFactory.failure('NFA must have an initial state');
+        return _failure(
+          'NFA must have an initial state',
+          NfaToDfaMessages.missingInitialState(),
+        );
       }
 
       // Build DFA with detailed step capture
@@ -364,10 +397,39 @@ class NFAToDFAConverter {
 
       return ResultFactory.success(result);
     } catch (e) {
-      return ResultFactory.failure(
-        'Error converting NFA to DFA with steps: $e',
+      return _conversionFailure(e, withSteps: true);
+    }
+  }
+
+  static Result<T> _failure<T>(
+    String legacyMessage,
+    StructuredMessage message,
+  ) => Failure(legacyMessage, structuredMessage: message);
+
+  static Result<T> _conversionFailure<T>(
+    Object error, {
+    required bool withSteps,
+  }) {
+    final errorText = error.toString();
+    final stateLimit = RegExp(
+      r'Exceeded maximum number of DFA states \((\d+)\)',
+    ).firstMatch(errorText);
+    final limit = stateLimit == null
+        ? null
+        : int.tryParse(stateLimit.group(1)!);
+    final legacyMessage = withSteps
+        ? 'Error converting NFA to DFA with steps: $error'
+        : 'Error converting NFA to DFA: $error';
+    if (limit != null) {
+      return _failure(
+        legacyMessage,
+        NfaToDfaMessages.stateLimitExceeded(limit),
       );
     }
+    return _failure(
+      legacyMessage,
+      NfaToDfaMessages.conversionFailed(error: error, withSteps: withSteps),
+    );
   }
 }
 

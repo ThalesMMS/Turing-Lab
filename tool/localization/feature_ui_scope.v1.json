@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "description": "Production presentation and feature sources outside and alongside the shared chrome. New Dart files below either root are discovered automatically.",
+  "roots": [
+    "lib/presentation",
+    "lib/features"
+  ]
+}

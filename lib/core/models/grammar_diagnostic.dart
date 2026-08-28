@@ -8,11 +8,16 @@
 //
 
 import 'grammar_diagnostic_severity.dart';
+import '../messages/structured_message.dart';
 
 class GrammarDiagnostic {
   final String code;
   final GrammarDiagnosticSeverity severity;
   final String message;
+
+  /// Locale-neutral payload for resolving this diagnostic at the presentation
+  /// boundary. [message] remains a stable-code fallback for older callers.
+  final StructuredMessage? structuredMessage;
 
   /// Affected symbol names (terminals or non-terminals).
   final List<String> symbols;
@@ -24,6 +29,7 @@ class GrammarDiagnostic {
     required this.code,
     required this.severity,
     required this.message,
+    this.structuredMessage,
     this.symbols = const [],
     this.productionIds = const [],
   });
@@ -32,6 +38,7 @@ class GrammarDiagnostic {
     String? code,
     GrammarDiagnosticSeverity? severity,
     String? message,
+    StructuredMessage? structuredMessage,
     List<String>? symbols,
     List<String>? productionIds,
   }) {
@@ -39,6 +46,7 @@ class GrammarDiagnostic {
       code: code ?? this.code,
       severity: severity ?? this.severity,
       message: message ?? this.message,
+      structuredMessage: structuredMessage ?? this.structuredMessage,
       symbols: symbols ?? this.symbols,
       productionIds: productionIds ?? this.productionIds,
     );
@@ -56,6 +64,7 @@ class GrammarDiagnostic {
         other.code == code &&
         other.severity == severity &&
         other.message == message &&
+        other.structuredMessage == structuredMessage &&
         _listEquals(other.symbols, symbols) &&
         _listEquals(other.productionIds, productionIds);
   }
@@ -66,6 +75,7 @@ class GrammarDiagnostic {
       code,
       severity,
       message,
+      structuredMessage,
       Object.hashAll(symbols),
       Object.hashAll(productionIds),
     );

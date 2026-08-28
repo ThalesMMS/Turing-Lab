@@ -11,6 +11,8 @@
 //
 
 import 'algorithm_step.dart';
+import '../messages/structured_message.dart';
+import 'nfa_to_dfa_step_messages.dart';
 import 'state.dart';
 import 'step_explanation.dart';
 
@@ -84,12 +86,15 @@ class NFAToDFAStep {
       stepType: stepType,
       currentStateSet: Set.unmodifiable(currentStateSet),
       processedSymbol: processedSymbol,
-      epsilonClosure:
-          epsilonClosure != null ? Set.unmodifiable(epsilonClosure) : null,
-      reachableStates:
-          reachableStates != null ? Set.unmodifiable(reachableStates) : null,
-      nextStateSet:
-          nextStateSet != null ? Set.unmodifiable(nextStateSet) : null,
+      epsilonClosure: epsilonClosure != null
+          ? Set.unmodifiable(epsilonClosure)
+          : null,
+      reachableStates: reachableStates != null
+          ? Set.unmodifiable(reachableStates)
+          : null,
+      nextStateSet: nextStateSet != null
+          ? Set.unmodifiable(nextStateSet)
+          : null,
       isAcceptingState: isAcceptingState,
       isNewState: isNewState,
       dfaStateId: dfaStateId,
@@ -106,8 +111,15 @@ class NFAToDFAStep {
     required bool containsAcceptingState,
   }) {
     final stateLabels = epsilonClosure.map((s) => s.label).join(', ');
+    final titleMessage = NfaToDfaStepMessages.initialEpsilonClosureTitle();
+    final explanationMessage =
+        NfaToDfaStepMessages.initialEpsilonClosureExplanation(
+          initialState: initialState.label,
+          epsilonClosure: stateLabels,
+          containsAcceptingState: containsAcceptingState,
+        );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Compute initial ε-closure',
@@ -115,15 +127,16 @@ class NFAToDFAStep {
             'Computing ε-closure of initial state ${initialState.label}. '
             'This gives us the set of states reachable without consuming input: {$stateLabels}. '
             '${containsAcceptingState ? "This set contains an accepting state, so the initial DFA state will be accepting." : ""}',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'Initial DFA state is the ε-closure of the NFA start state',
+          titleMessage: NfaToDfaStepMessages.initialEpsilonClosureStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.initialEpsilonClosureBullets(
+            initialState: initialState.label,
+            epsilonClosure: stateLabels,
+            containsAcceptingState: containsAcceptingState,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'Start from NFA start state ${initialState.label}.',
-            'Take ε-transitions without consuming input to reach {$stateLabels}.',
-            if (containsAcceptingState)
-              'Because this set includes an accepting NFA state, the corresponding DFA state will be accepting.',
-          ],
           highlights: [
             HighlightTarget(
               type: HighlightTargetType.state,
@@ -131,7 +144,6 @@ class NFAToDFAStep {
             ),
           ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.epsilonClosure,
       currentStateSet: {initialState},
@@ -153,22 +165,30 @@ class NFAToDFAStep {
   }) {
     final currentLabels = currentStateSet.map((s) => s.label).join(', ');
     final reachableLabels = reachableStates.map((s) => s.label).join(', ');
+    final titleMessage = NfaToDfaStepMessages.processSymbolTitle(symbol);
+    final explanationMessage = NfaToDfaStepMessages.processSymbolExplanation(
+      currentStates: currentLabels,
+      symbol: symbol,
+      reachableStates: reachableLabels,
+    );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Process symbol \'$symbol\'',
         explanation:
             'From state set {$currentLabels}, processing symbol \'$symbol\'. '
             'Following NFA transitions on \'$symbol\' leads to states: {$reachableLabels}.',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'Follow NFA transitions on the current symbol',
+          titleMessage: NfaToDfaStepMessages.processSymbolStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.processSymbolBullets(
+            currentStates: currentLabels,
+            symbol: symbol,
+            reachableStates: reachableLabels,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'Current DFA state represents NFA set {$currentLabels}.',
-            'On input symbol \'$symbol\', collect all NFA destinations reachable from any state in the set.',
-            'Reachable before ε-closure: {$reachableLabels}.',
-          ],
           highlights: [
             HighlightTarget(
               type: HighlightTargetType.state,
@@ -176,7 +196,6 @@ class NFAToDFAStep {
             ),
           ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.processSymbol,
       currentStateSet: currentStateSet,
@@ -197,28 +216,36 @@ class NFAToDFAStep {
   }) {
     final reachableLabels = reachableStates.map((s) => s.label).join(', ');
     final closureLabels = epsilonClosure.map((s) => s.label).join(', ');
+    final titleMessage = NfaToDfaStepMessages.epsilonClosureOfReachableTitle();
+    final explanationMessage =
+        NfaToDfaStepMessages.epsilonClosureOfReachableExplanation(
+          reachableStates: reachableLabels,
+          epsilonClosure: closureLabels,
+          isNewState: isNewState,
+          containsAcceptingState: containsAcceptingState,
+        );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Compute ε-closure of reachable states',
-        explanation: 'Computing ε-closure of {$reachableLabels}. '
+        explanation:
+            'Computing ε-closure of {$reachableLabels}. '
             'Following ε-transitions gives us the complete state set: {$closureLabels}. '
             '${isNewState ? "This is a new DFA state that needs to be processed." : "This state set has already been processed."} '
             '${containsAcceptingState ? "This set contains an accepting state." : ""}',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'Close under ε-transitions to form the next DFA state',
+          titleMessage:
+              NfaToDfaStepMessages.epsilonClosureOfReachableStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.epsilonClosureOfReachableBullets(
+            reachableStates: reachableLabels,
+            epsilonClosure: closureLabels,
+            isNewState: isNewState,
+            containsAcceptingState: containsAcceptingState,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'ε-transitions do not consume input, so they must be included in the DFA state definition.',
-            'Starting from reachable states {$reachableLabels}, follow ε-transitions to get {$closureLabels}.',
-            if (isNewState)
-              'This set has not appeared before, so we will create (and later process) a new DFA state for it.'
-            else
-              'This set already has a corresponding DFA state, so we can reuse it.',
-            if (containsAcceptingState)
-              'Because this set includes an accepting NFA state, the DFA state will be accepting.',
-          ],
           highlights: [
             HighlightTarget(
               type: HighlightTargetType.state,
@@ -226,7 +253,6 @@ class NFAToDFAStep {
             ),
           ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.epsilonClosure,
       currentStateSet: reachableStates,
@@ -247,25 +273,29 @@ class NFAToDFAStep {
     required bool isAccepting,
   }) {
     final stateLabels = nfaStateSet.map((s) => s.label).join(', ');
+    final titleMessage = NfaToDfaStepMessages.createDfaStateTitle(dfaStateId);
+    final explanationMessage = NfaToDfaStepMessages.createDfaStateExplanation(
+      dfaStateId: dfaStateId,
+      stateSet: stateLabels,
+      isAccepting: isAccepting,
+    );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Create DFA state $dfaStateId',
         explanation:
             'Creating new DFA state $dfaStateId to represent NFA state set {$stateLabels}. '
             '${isAccepting ? "This is an accepting state because the NFA state set contains at least one accepting state." : "This is a non-accepting state."}',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'One DFA state represents an entire set of NFA states',
+          titleMessage: NfaToDfaStepMessages.createDfaStateStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.createDfaStateBullets(
+            stateSet: stateLabels,
+            isAccepting: isAccepting,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'Subset construction creates a DFA state for each distinct reachable NFA state set.',
-            'This DFA state represents {$stateLabels}.',
-            if (isAccepting)
-              'It is accepting because at least one state in the set is accepting in the NFA.'
-            else
-              'It is non-accepting because none of the states in the set are accepting in the NFA.',
-          ],
           highlights: [
             HighlightTarget(type: HighlightTargetType.state, id: dfaStateId),
             HighlightTarget(
@@ -274,7 +304,6 @@ class NFAToDFAStep {
             ),
           ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.createState,
       currentStateSet: nfaStateSet,
@@ -297,21 +326,33 @@ class NFAToDFAStep {
   }) {
     final fromLabels = fromStateSet.map((s) => s.label).join(', ');
     final toLabels = toStateSet.map((s) => s.label).join(', ');
+    final titleMessage = NfaToDfaStepMessages.createDfaTransitionTitle(symbol);
+    final explanationMessage =
+        NfaToDfaStepMessages.createDfaTransitionExplanation(
+          fromDfaStateId: fromDfaStateId,
+          symbol: symbol,
+          toDfaStateId: toDfaStateId,
+          fromStates: fromLabels,
+          toStates: toLabels,
+        );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Create transition on \'$symbol\'',
         explanation:
             'Adding DFA transition: $fromDfaStateId --($symbol)--> $toDfaStateId. '
             'This represents moving from NFA state set {$fromLabels} to {$toLabels} on symbol \'$symbol\'.',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'DFA transitions summarize all possible NFA moves on a symbol',
+          titleMessage: NfaToDfaStepMessages.createDfaTransitionStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.createDfaTransitionBullets(
+            fromStates: fromLabels,
+            symbol: symbol,
+            toStates: toLabels,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'From NFA set {$fromLabels}, on \'$symbol\' you can reach {$toLabels} (after ε-closure).',
-            'In the DFA, this becomes a single deterministic transition.',
-          ],
           highlights: [
             HighlightTarget(
               type: HighlightTargetType.state,
@@ -328,7 +369,6 @@ class NFAToDFAStep {
             ),
           ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.createTransition,
       currentStateSet: fromStateSet,
@@ -347,25 +387,33 @@ class NFAToDFAStep {
     required int totalTransitions,
     required int totalAcceptingStates,
   }) {
+    final titleMessage = NfaToDfaStepMessages.completionTitle();
+    final explanationMessage = NfaToDfaStepMessages.completionExplanation(
+      totalStates: totalStates,
+      totalTransitions: totalTransitions,
+      totalAcceptingStates: totalAcceptingStates,
+    );
     return NFAToDFAStep(
-      baseStep: AlgorithmStep(
+      baseStep: _nfaToDfaBaseStep(
         id: id,
         stepNumber: stepNumber,
         title: 'Conversion complete',
-        explanation: 'NFA to DFA conversion completed successfully. '
+        explanation:
+            'NFA to DFA conversion completed successfully. '
             'The resulting DFA has $totalStates states, $totalTransitions transitions, '
             'and $totalAcceptingStates accepting state(s). '
             'All reachable state sets have been processed.',
+        titleMessage: titleMessage,
+        explanationMessage: explanationMessage,
         stepExplanation: StepExplanation(
-          title: 'All reachable subsets have been converted to DFA components',
+          titleMessage: NfaToDfaStepMessages.completionStepTitle(),
+          bulletMessages: NfaToDfaStepMessages.completionBullets(
+            totalStates: totalStates,
+            totalTransitions: totalTransitions,
+            totalAcceptingStates: totalAcceptingStates,
+          ),
           categories: const [ExplanationCategory.conversion],
-          bullets: [
-            'Created $totalStates DFA state(s).',
-            'Created $totalTransitions transition(s).',
-            'Marked $totalAcceptingStates accepting state(s).',
-          ],
         ),
-        type: AlgorithmType.nfaToDfa,
       ),
       stepType: NFAToDFAStepType.completion,
       currentStateSet: {},
@@ -411,6 +459,16 @@ class NFAToDFAStep {
       'isNewState': isNewState,
     };
 
+    final titleMessage = this.titleMessage;
+    if (titleMessage != null) {
+      properties[nfaToDfaTitleMessageProperty] = titleMessage.toJson();
+    }
+    final explanationMessage = this.explanationMessage;
+    if (explanationMessage != null) {
+      properties[nfaToDfaExplanationMessageProperty] = explanationMessage
+          .toJson();
+    }
+
     _putStateIds(properties, 'currentStateIds', currentStateSet);
     _putStateIds(properties, 'epsilonClosureIds', epsilonClosure);
     _putStateIds(properties, 'reachableStateIds', reachableStates);
@@ -449,7 +507,8 @@ class NFAToDFAStep {
         (e) => e.name == json['stepType'],
         orElse: () => NFAToDFAStepType.epsilonClosure,
       ),
-      currentStateSet: (json['currentStateSet'] as List?)
+      currentStateSet:
+          (json['currentStateSet'] as List?)
               ?.map((s) => State.fromJson(s as Map<String, dynamic>))
               .toSet() ??
           {},
@@ -510,6 +569,15 @@ class NFAToDFAStep {
 
   /// Gets the step explanation
   String get explanation => baseStep.explanation;
+
+  /// Locale-neutral title contract resolved at the presentation boundary.
+  StructuredMessage? get titleMessage =>
+      _nfaToDfaMessageProperty(baseStep, nfaToDfaTitleMessageProperty);
+
+  /// Locale-neutral explanation contract resolved at the presentation
+  /// boundary.
+  StructuredMessage? get explanationMessage =>
+      _nfaToDfaMessageProperty(baseStep, nfaToDfaExplanationMessageProperty);
 
   /// Gets a summary of state sets involved
   String get stateSetsSummary {
@@ -575,6 +643,39 @@ class NFAToDFAStep {
     if (value != null) {
       properties[key] = value;
     }
+  }
+}
+
+AlgorithmStep _nfaToDfaBaseStep({
+  required String id,
+  required int stepNumber,
+  required String title,
+  required String explanation,
+  required StructuredMessage titleMessage,
+  required StructuredMessage explanationMessage,
+  required StepExplanation stepExplanation,
+}) => AlgorithmStep(
+  id: id,
+  stepNumber: stepNumber,
+  title: title,
+  explanation: explanation,
+  stepExplanation: stepExplanation,
+  type: AlgorithmType.nfaToDfa,
+  properties: {
+    nfaToDfaTitleMessageProperty: titleMessage.toJson(),
+    nfaToDfaExplanationMessageProperty: explanationMessage.toJson(),
+  },
+);
+
+StructuredMessage? _nfaToDfaMessageProperty(AlgorithmStep step, String key) {
+  final raw = step.properties[key];
+  if (raw is! Map) return null;
+  try {
+    return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
+  } on FormatException {
+    return null;
+  } on ArgumentError {
+    return null;
   }
 }
 

@@ -46,6 +46,8 @@ class GraphViewTmCanvasController
 
   TMEditorNotifier get _notifier => notifier;
 
+  TM? get currentTm => _notifier.currentTm;
+
   @override
   late final GraphViewStateNotifierAdapter<TM> stateNotifierAdapter =
       GraphViewStateNotifierAdapter<TM>(
@@ -122,6 +124,39 @@ class GraphViewTmCanvasController
     });
   }
 
+  /// Adds or updates one atomic transition whose operation vectors address
+  /// every tape in the current machine.
+  void addOrUpdateTransitionVectors({
+    required String fromStateId,
+    required String toStateId,
+    required List<String> readSymbols,
+    required List<String> writeSymbols,
+    required List<TapeDirection> directions,
+    String? transitionId,
+    double? controlPointX,
+    double? controlPointY,
+  }) {
+    final edgeId = transitionId ?? generateEdgeId();
+    final controlPoint = (controlPointX != null && controlPointY != null)
+        ? Vector2(controlPointX, controlPointY)
+        : null;
+    _logTmCanvas(
+      'addOrUpdateTransitionVectors -> id=$edgeId from=$fromStateId '
+      'to=$toStateId tapes=${readSymbols.length}',
+    );
+    performMutation(() {
+      _notifier.addOrUpdateTransitionVectors(
+        id: edgeId,
+        fromStateId: fromStateId,
+        toStateId: toStateId,
+        readSymbols: readSymbols,
+        writeSymbols: writeSymbols,
+        directions: directions,
+        controlPoint: controlPoint,
+      );
+    });
+  }
+
   /// Removes the transition identified by [id] from the machine.
   @override
   void removeTransition(String id) {
@@ -171,5 +206,10 @@ class GraphViewTmCanvasController
     );
     _notifier.setTm(merged);
     synchronize(merged);
+  }
+
+  @override
+  void replaceDomainDocument(TM document) {
+    _notifier.setTm(document);
   }
 }

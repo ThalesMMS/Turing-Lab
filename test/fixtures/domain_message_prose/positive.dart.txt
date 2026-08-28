@@ -1,0 +1,25 @@
+void buildResult(Object l10n) {
+  final localizedElsewhere = l10n;
+  consume(localizedElsewhere);
+
+  final result = DomainResult(
+    message: 'Still hardcoded despite distant localization context.',
+  );
+  debugPrint('Developer trace detail for support.');
+  consume(result);
+}
+
+String switchTitle(Object kind) => switch (kind) {
+  'symbol' => 'Create a symbol fragment',
+  _ => 'Create a fallback fragment',
+};
+
+void buildTrace() {
+  final bullets = <String>[
+    'Read the current tape symbol.',
+    'Move the head one position.',
+  ];
+  final pendingMessage = 'Intermediate user-facing explanation.';
+  consume(bullets);
+  consume(DomainResult(message: pendingMessage));
+}

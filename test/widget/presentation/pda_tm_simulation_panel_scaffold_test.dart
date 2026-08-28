@@ -10,10 +10,14 @@ import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/algorithms/pda_simulator.dart';
 import 'package:turing_lab/core/algorithms/tm_simulator.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/core/services/simulation_runner.dart';
+import 'package:turing_lab/core/services/simulation_runner_messages.dart';
+import 'package:turing_lab/data/tm/tm_block_example_catalog.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
     show pdaSimulationProvider;
@@ -28,18 +32,23 @@ Future<void> _pumpPanel(
   WidgetTester tester,
   Widget panel, {
   List<Override> overrides = const [],
+  double width = 480,
+  TargetPlatform platform = TargetPlatform.android,
+  Locale locale = const Locale('en'),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides,
       child: MaterialApp(
-        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: ThemeData(
+          platform: platform,
+          splashFactory: NoSplash.splashFactory,
+        ),
         home: Scaffold(
-          body: SizedBox(
-            width: 480,
-            height: 720,
-            child: panel,
-          ),
+          body: SizedBox(width: width, height: 720, child: panel),
         ),
       ),
     ),
@@ -75,6 +84,7 @@ class _FakeSimulationBackend implements SimulationRunnerBackend {
   final pdaTasks = <_PendingTask<PDASimulationResult>>[];
   final tmTasks = <_PendingTask<TMSimulationResult>>[];
   final pdaStepByStepValues = <bool>[];
+  final pdaValues = <PDA>[];
 
   @override
   SimulationTask<PDASimulationResult> runPda(
@@ -84,6 +94,7 @@ class _FakeSimulationBackend implements SimulationRunnerBackend {
     required Duration timeout,
   }) {
     pdaStepByStepValues.add(stepByStep);
+    pdaValues.add(pda);
     final task = _PendingTask<PDASimulationResult>();
     pdaTasks.add(task);
     return task;
@@ -139,6 +150,38 @@ PDAEditorNotifier _pdaEditorWithInitialState() {
   return notifier;
 }
 
+PDAEditorNotifier _epsilonInputNondeterministicPdaEditor() {
+  final notifier = PDAEditorNotifier()
+    ..addOrUpdateState(id: 'q0', label: 'q0', x: 0, y: 0)
+    ..addOrUpdateState(id: 'q1', label: 'q1', x: 100, y: 0)
+    ..addOrUpdateState(id: 'q2', label: 'q2', x: 100, y: 100)
+    ..upsertTransition(
+      id: 'epsilon',
+      fromStateId: 'q0',
+      toStateId: 'q1',
+      readSymbol: '',
+      popSymbol: 'Z',
+      pushSymbol: 'Z',
+      isLambdaInput: true,
+      isLambdaPop: false,
+      isLambdaPush: false,
+    )
+    ..upsertTransition(
+      id: 'read-a',
+      fromStateId: 'q0',
+      toStateId: 'q2',
+      readSymbol: 'a',
+      popSymbol: 'Z',
+      pushSymbol: 'Z',
+      isLambdaInput: false,
+      isLambdaPop: false,
+      isLambdaPush: false,
+    );
+  notifier.updateStateFlags(id: 'q0', isInitial: true);
+  notifier.updateStateFlags(id: 'q1', isAccepting: true);
+  return notifier;
+}
+
 TMEditorNotifier _tmEditorWithInitialState() {
   final notifier = TMEditorNotifier();
   notifier.upsertState(
@@ -152,60 +195,100 @@ TMEditorNotifier _tmEditorWithInitialState() {
   return notifier;
 }
 
-PDASimulationResult _pdaTraceResult() => PDASimulationResult.success(
-      inputString: 'ab',
-      steps: const [
-        SimulationStep(
-          currentState: 'q0',
-          remainingInput: 'ab',
-          stackContents: 'Z',
-          stepNumber: 0,
-        ),
-        SimulationStep(
-          currentState: 'q1',
-          remainingInput: 'b',
-          stackContents: 'AZ',
-          usedTransition: 'a,Z -> AZ',
-          stepNumber: 1,
-        ),
-        SimulationStep(
-          currentState: 'q2',
-          remainingInput: '',
-          stackContents: 'Z',
-          usedTransition: 'b,A -> epsilon',
-          stepNumber: 2,
-        ),
-      ],
-      executionTime: Duration.zero,
+TMEditorNotifier _nondeterministicTmEditor() {
+  final notifier = TMEditorNotifier()
+    ..upsertState(id: 'q0', label: 'q0', x: 0, y: 0, isInitial: true)
+    ..upsertState(id: 'q1', label: 'q1', x: 100, y: 0, isAccepting: true)
+    ..upsertState(id: 'q2', label: 'q2', x: 100, y: 100)
+    ..addOrUpdateTransition(
+      id: 't0',
+      fromStateId: 'q0',
+      toStateId: 'q1',
+      readSymbol: 'B',
+      writeSymbol: 'B',
+      direction: TapeDirection.stay,
+    )
+    ..addOrUpdateTransition(
+      id: 't1',
+      fromStateId: 'q0',
+      toStateId: 'q2',
+      readSymbol: 'B',
+      writeSymbol: 'B',
+      direction: TapeDirection.stay,
     );
+  return notifier;
+}
+
+TMEditorNotifier _twoTapeEditor() {
+  final notifier = TMEditorNotifier()
+    ..upsertState(id: 'q0', label: 'q0', x: 0, y: 0, isInitial: true)
+    ..upsertState(id: 'q1', label: 'q1', x: 100, y: 0, isAccepting: true);
+  notifier.setTapeCount(2);
+  notifier.addOrUpdateTransitionVectors(
+    id: 't0',
+    fromStateId: 'q0',
+    toStateId: 'q1',
+    readSymbols: const ['B', 'B'],
+    writeSymbols: const ['B', 'B'],
+    directions: const [TapeDirection.stay, TapeDirection.stay],
+  );
+  return notifier;
+}
+
+PDASimulationResult _pdaTraceResult() => PDASimulationResult.success(
+  inputString: 'ab',
+  steps: const [
+    SimulationStep(
+      currentState: 'q0',
+      remainingInput: 'ab',
+      stackContents: 'Z',
+      stepNumber: 0,
+    ),
+    SimulationStep(
+      currentState: 'q1',
+      remainingInput: 'b',
+      stackContents: 'AZ',
+      usedTransition: 'a,Z -> AZ',
+      stepNumber: 1,
+    ),
+    SimulationStep(
+      currentState: 'q2',
+      remainingInput: '',
+      stackContents: 'Z',
+      usedTransition: 'b,A -> epsilon',
+      stepNumber: 2,
+    ),
+  ],
+  executionTime: Duration.zero,
+);
 
 TMSimulationResult _tmTraceResult() => TMSimulationResult.success(
-      inputString: 'ab',
-      steps: const [
-        SimulationStep(
-          currentState: 'q0',
-          remainingInput: '',
-          tapeContents: 'ab',
-          headPosition: 0,
-          stepNumber: 0,
-        ),
-        SimulationStep(
-          currentState: 'q1',
-          remainingInput: '',
-          tapeContents: 'Xb',
-          headPosition: 1,
-          stepNumber: 1,
-        ),
-        SimulationStep(
-          currentState: 'q2',
-          remainingInput: '',
-          tapeContents: 'XY',
-          headPosition: 2,
-          stepNumber: 2,
-        ),
-      ],
-      executionTime: Duration.zero,
-    );
+  inputString: 'ab',
+  steps: const [
+    SimulationStep(
+      currentState: 'q0',
+      remainingInput: '',
+      tapeContents: 'ab',
+      headPosition: 0,
+      stepNumber: 0,
+    ),
+    SimulationStep(
+      currentState: 'q1',
+      remainingInput: '',
+      tapeContents: 'Xb',
+      headPosition: 1,
+      stepNumber: 1,
+    ),
+    SimulationStep(
+      currentState: 'q2',
+      remainingInput: '',
+      tapeContents: 'XY',
+      headPosition: 2,
+      stepNumber: 2,
+    ),
+  ],
+  executionTime: Duration.zero,
+);
 
 Future<void> _completeLatestPdaSimulation(
   WidgetTester tester,
@@ -235,6 +318,75 @@ Future<void> _completeLatestTmSimulation(
 
 void main() {
   group('PDA/TM simulation panel shared scaffolding', () {
+    testWidgets('PDA accepted result fits an iPhone bottom sheet', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      await _pumpPanel(
+        tester,
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        width: 398,
+        platform: TargetPlatform.iOS,
+        overrides: [
+          pdaEditorProvider.overrideWith((ref) => _pdaEditorWithInitialState()),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate PDA'));
+      await tester.pump();
+      await _completeLatestPdaSimulation(tester, backend);
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('PDA accepted result fits an iPad workspace dock', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      await _pumpPanel(
+        tester,
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        width: 308,
+        platform: TargetPlatform.iOS,
+        overrides: [
+          pdaEditorProvider.overrideWith((ref) => _pdaEditorWithInitialState()),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate PDA'));
+      await tester.pump();
+      await _completeLatestPdaSimulation(tester, backend);
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('TM accepted result fits a macOS workspace dock', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      await _pumpPanel(
+        tester,
+        TMSimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        width: 348,
+        platform: TargetPlatform.macOS,
+        overrides: [
+          tmEditorProvider.overrideWith((ref) => _tmEditorWithInitialState()),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate TM'));
+      await tester.pump();
+      await _completeLatestTmSimulation(tester, backend);
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('View on Canvas hands the exact PDA trace to its callback', (
       tester,
     ) async {
@@ -247,9 +399,7 @@ void main() {
           onViewOnCanvas: (steps) => received = steps,
         ),
         overrides: [
-          pdaEditorProvider.overrideWith(
-            (ref) => _pdaEditorWithInitialState(),
-          ),
+          pdaEditorProvider.overrideWith((ref) => _pdaEditorWithInitialState()),
         ],
       );
 
@@ -363,6 +513,131 @@ void main() {
 
       expect(find.text('Accepted'), findsOneWidget);
       expect(find.text('Please enter an input string'), findsNothing);
+      expect(
+        find.text('This execution followed one deterministic path.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'PDA document edits invalidate result, notice, trace, and highlight',
+      (tester) async {
+        final notifier = _pdaEditorWithInitialState();
+        final backend = _FakeSimulationBackend();
+        final service = _SpyHighlightService();
+        final stackStates = <StackState>[];
+        await _pumpPanel(
+          tester,
+          PDASimulationPanel(
+            simulationRunner: SimulationRunner(backendOverride: backend),
+            highlightService: service,
+            onStackChanged: stackStates.add,
+          ),
+          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PDASimulationPanel)),
+        );
+
+        await tester.tap(find.text('Simulate PDA'));
+        await tester.pump();
+        await _completeLatestPdaSimulation(tester, backend);
+        expect(find.text('Accepted'), findsOneWidget);
+        expect(find.text('1 / 3'), findsOneWidget);
+        expect(container.read(pdaSimulationProvider).result, isNotNull);
+        expect(service.lastHighlight?.isEmpty, isFalse);
+        final clearCountBeforeEdit = service.clearCount;
+
+        notifier.setPda(
+          notifier.currentPda!.copyWith(
+            stackAlphabet: const {'BOTTOM'},
+            initialStackSymbol: 'BOTTOM',
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('No simulation results yet'), findsOneWidget);
+        expect(find.text('Accepted'), findsNothing);
+        expect(find.text('1 / 3'), findsNothing);
+        expect(
+          find.byKey(const ValueKey('pda-computation-branches-unavailable')),
+          findsNothing,
+        );
+        expect(container.read(pdaSimulationProvider).result, isNull);
+        expect(service.clearCount, greaterThan(clearCountBeforeEdit));
+        expect(service.lastHighlight?.isEmpty ?? true, isTrue);
+        expect(stackStates.last.symbols, isEmpty);
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).at(1))
+              .controller!
+              .text,
+          'BOTTOM',
+        );
+      },
+    );
+
+    testWidgets(
+      'PDA epsilon and consuming choices report unrecorded branches',
+      (tester) async {
+        final backend = _FakeSimulationBackend();
+        await _pumpPanel(
+          tester,
+          PDASimulationPanel(
+            simulationRunner: SimulationRunner(backendOverride: backend),
+          ),
+          overrides: [
+            pdaEditorProvider.overrideWith(
+              (ref) => _epsilonInputNondeterministicPdaEditor(),
+            ),
+          ],
+        );
+
+        await tester.tap(find.text('Simulate PDA'));
+        await tester.pump();
+        await _completeLatestPdaSimulation(tester, backend);
+
+        expect(
+          find.text(
+            'This simulation records a trace but not every explored branch.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.text('This execution followed one deterministic path.'),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets('PDA panel uses imported stack and acceptance settings', (
+      tester,
+    ) async {
+      final notifier = _pdaEditorWithInitialState();
+      notifier.setPda(
+        notifier.currentPda!.copyWith(
+          stackAlphabet: const {'BOTTOM'},
+          initialStackSymbol: 'BOTTOM',
+          acceptanceMode: PDAAcceptanceMode.emptyStack,
+        ),
+      );
+      final backend = _FakeSimulationBackend();
+
+      await _pumpPanel(
+        tester,
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
+      );
+      await tester.tap(find.text('Simulate PDA'));
+      await tester.pump();
+
+      expect(backend.pdaValues.single.initialStackSymbol, 'BOTTOM');
+      expect(
+        backend.pdaValues.single.acceptanceMode,
+        PDAAcceptanceMode.emptyStack,
+      );
     });
 
     testWidgets('TM panel simulates blank input as epsilon', (tester) async {
@@ -385,47 +660,131 @@ void main() {
       await _pumpUntilText(tester, 'Accepted');
 
       expect(find.text('Accepted'), findsOneWidget);
+      expect(
+        find.text('This execution followed one deterministic path.'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('PDA simulation can be cancelled and ignores its stale result',
-        (tester) async {
-      final notifier = PDAEditorNotifier();
-      notifier.updateFromCanvas(
-        states: [
-          automaton_state.State(
-            id: 'q0',
-            label: 'q0',
-            position: Vector2.zero(),
-            isInitial: true,
-            isAccepting: true,
-          ),
-        ],
-        transitions: const [],
-      );
-      final backend = _FakeSimulationBackend();
-      final runner = SimulationRunner(backendOverride: backend);
+    testWidgets(
+      'PDA simulation can be cancelled and ignores its stale result',
+      (tester) async {
+        final notifier = PDAEditorNotifier();
+        notifier.updateFromCanvas(
+          states: [
+            automaton_state.State(
+              id: 'q0',
+              label: 'q0',
+              position: Vector2.zero(),
+              isInitial: true,
+              isAccepting: true,
+            ),
+          ],
+          transitions: const [],
+        );
+        final backend = _FakeSimulationBackend();
+        final runner = SimulationRunner(backendOverride: backend);
 
+        await _pumpPanel(
+          tester,
+          PDASimulationPanel(simulationRunner: runner),
+          overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
+        );
+        await tester.tap(find.text('Simulate PDA'));
+        await tester.pump();
+        expect(find.text('Cancel simulation'), findsOneWidget);
+
+        await tester.tap(find.text('Cancel simulation'));
+        await tester.pump();
+        expect(backend.pdaTasks.single.cancelled, isTrue);
+        expect(find.text('Simulation cancelled'), findsOneWidget);
+
+        await tester.tap(find.text('Simulate PDA'));
+        await tester.pump();
+        final latestTask = backend.pdaTasks.last;
+        latestTask.completer.complete(
+          SimulationOutcome(
+            kind: SimulationOutcomeKind.accepted,
+            result: PDASimulationResult.success(
+              inputString: '',
+              steps: const [],
+              executionTime: Duration.zero,
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.text('Accepted'), findsOneWidget);
+
+        backend.pdaTasks.first.completer.complete(
+          SimulationOutcome(
+            kind: SimulationOutcomeKind.rejected,
+            result: PDASimulationResult.failure(
+              inputString: '',
+              steps: const [],
+              errorMessage: 'stale rejection',
+              executionTime: Duration.zero,
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.text('Accepted'), findsOneWidget);
+        expect(find.text('stale rejection'), findsNothing);
+      },
+    );
+
+    testWidgets('PDA resolves runner infrastructure failures in Portuguese', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
       await _pumpPanel(
         tester,
-        PDASimulationPanel(simulationRunner: runner),
-        overrides: [pdaEditorProvider.overrideWith((ref) => notifier)],
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        locale: const Locale('pt'),
+        overrides: [
+          pdaEditorProvider.overrideWith((ref) => _pdaEditorWithInitialState()),
+        ],
       );
-      await tester.tap(find.text('Simulate PDA'));
-      await tester.pump();
-      expect(find.text('Cancel simulation'), findsOneWidget);
 
-      await tester.tap(find.text('Cancel simulation'));
+      await tester.tap(find.text('Simular AP'));
       await tester.pump();
-      expect(backend.pdaTasks.single.cancelled, isTrue);
-      expect(find.text('Simulation cancelled'), findsOneWidget);
-
-      await tester.tap(find.text('Simulate PDA'));
-      await tester.pump();
-      final latestTask = backend.pdaTasks.last;
-      latestTask.completer.complete(
+      backend.pdaTasks.single.completer.complete(
         SimulationOutcome(
-          kind: SimulationOutcomeKind.accepted,
-          result: PDASimulationResult.success(
+          kind: SimulationOutcomeKind.failed,
+          message: 'internal worker detail',
+          structuredMessage: SimulationRunnerMessages.executionFailed(),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.text('Não foi possível concluir a simulação.'),
+        findsOneWidget,
+      );
+      expect(find.text('internal worker detail'), findsNothing);
+    });
+
+    testWidgets('PDA bounded search remains inconclusive in the result card', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      await _pumpPanel(
+        tester,
+        PDASimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+        ),
+        overrides: [
+          pdaEditorProvider.overrideWith((ref) => _pdaEditorWithInitialState()),
+        ],
+      );
+
+      await tester.tap(find.text('Simulate PDA'));
+      await tester.pump();
+      backend.pdaTasks.single.completer.complete(
+        SimulationOutcome(
+          kind: SimulationOutcomeKind.configurationLimit,
+          result: PDASimulationResult.limitReached(
             inputString: '',
             steps: const [],
             executionTime: Duration.zero,
@@ -433,22 +792,10 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('Accepted'), findsOneWidget);
 
-      backend.pdaTasks.first.completer.complete(
-        SimulationOutcome(
-          kind: SimulationOutcomeKind.rejected,
-          result: PDASimulationResult.failure(
-            inputString: '',
-            steps: const [],
-            errorMessage: 'stale rejection',
-            executionTime: Duration.zero,
-          ),
-        ),
-      );
-      await tester.pump();
-      expect(find.text('Accepted'), findsOneWidget);
-      expect(find.text('stale rejection'), findsNothing);
+      expect(find.text('Inconclusive'), findsOneWidget);
+      expect(find.text('Rejected'), findsNothing);
+      expect(find.text(PDA_SIMULATION_LIMIT_REACHED_ERROR), findsOneWidget);
     });
 
     testWidgets('TM simulation exposes cancellation', (tester) async {
@@ -478,6 +825,39 @@ void main() {
       expect(backend.tmTasks.single.cancelled, isTrue);
       expect(find.text('Simulation cancelled'), findsOneWidget);
     });
+
+    testWidgets(
+      'TM explains when nondeterministic branches were not recorded',
+      (tester) async {
+        final backend = _FakeSimulationBackend();
+        await _pumpPanel(
+          tester,
+          TMSimulationPanel(
+            simulationRunner: SimulationRunner(backendOverride: backend),
+          ),
+          overrides: [
+            tmEditorProvider.overrideWith((ref) => _nondeterministicTmEditor()),
+          ],
+        );
+
+        await tester.tap(find.text('Simulate TM'));
+        await tester.pump();
+        backend.tmTasks.single.completer.complete(
+          SimulationOutcome(
+            kind: SimulationOutcomeKind.accepted,
+            result: _tmTraceResult(),
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          find.text(
+            'This simulation records a trace but not every explored branch.',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets(
       'PDA trace is the sole cursor and keeps provider, stack, and highlight synchronized',
@@ -612,48 +992,107 @@ void main() {
       },
     );
 
+    testWidgets('TM panel emits reset and selected trace tape states', (
+      tester,
+    ) async {
+      final backend = _FakeSimulationBackend();
+      final tapeStates = <TapeState>[];
+      final notifier = _tmEditorWithInitialState();
+      notifier.setTm(
+        notifier.state.tm!.copyWith(
+          tapeAlphabet: {'a', 'b', '_'},
+          blankSymbol: '_',
+        ),
+      );
+      await _pumpPanel(
+        tester,
+        TMSimulationPanel(
+          simulationRunner: SimulationRunner(backendOverride: backend),
+          onTapeChanged: tapeStates.add,
+        ),
+        overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
+      );
+
+      await tester.tap(find.text('Simulate TM'));
+      await tester.pump();
+
+      expect(tapeStates.last.cells, isEmpty);
+      expect(tapeStates.last.headPosition, 0);
+      expect(tapeStates.last.blankSymbol, '_');
+
+      await _completeLatestTmSimulation(tester, backend);
+
+      expect(tapeStates.last.cells, ['a', 'b']);
+      expect(tapeStates.last.headPosition, 0);
+      expect(tapeStates.last.blankSymbol, '_');
+
+      await tester.tap(find.byTooltip('Next Step'));
+      await tester.pumpAndSettle();
+
+      expect(tapeStates.last.cells, ['X', 'b']);
+      expect(tapeStates.last.headPosition, 1);
+      expect(tapeStates.last.blankSymbol, '_');
+    });
+
     testWidgets(
-      'TM panel emits reset and selected trace tape states',
+      'TM panel executes and presents the synchronized multi-tape path',
       (tester) async {
         final backend = _FakeSimulationBackend();
-        final tapeStates = <TapeState>[];
-        final notifier = _tmEditorWithInitialState();
-        notifier.setTm(
-          notifier.state.tm!.copyWith(
-            tapeAlphabet: {'a', 'b', '_'},
-            blankSymbol: '_',
-          ),
-        );
         await _pumpPanel(
           tester,
           TMSimulationPanel(
             simulationRunner: SimulationRunner(backendOverride: backend),
-            onTapeChanged: tapeStates.add,
           ),
-          overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
+          width: 320,
+          overrides: [tmEditorProvider.overrideWith((ref) => _twoTapeEditor())],
         );
 
         await tester.tap(find.text('Simulate TM'));
         await tester.pump();
+        await _pumpUntilText(tester, 'Synchronized multi-tape trace');
 
-        expect(tapeStates.last.cells, isEmpty);
-        expect(tapeStates.last.headPosition, 0);
-        expect(tapeStates.last.blankSymbol, '_');
-
-        await _completeLatestTmSimulation(tester, backend);
-
-        expect(tapeStates.last.cells, ['a', 'b']);
-        expect(tapeStates.last.headPosition, 0);
-        expect(tapeStates.last.blankSymbol, '_');
-
-        await tester.tap(find.byTooltip('Next Step'));
-        await tester.pumpAndSettle();
-
-        expect(tapeStates.last.cells, ['X', 'b']);
-        expect(tapeStates.last.headPosition, 1);
-        expect(tapeStates.last.blankSymbol, '_');
+        expect(
+          backend.tmTasks,
+          isEmpty,
+          reason: 'Multi-tape execution uses the canonical shared kernel.',
+        );
+        expect(find.text('Synchronized multi-tape trace'), findsOneWidget);
+        expect(find.text('Tape 1'), findsOneWidget);
+        expect(find.text('Tape 2'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets('TM panel exposes nested execution and its call stack', (
+      tester,
+    ) async {
+      final machine =
+          (await const TMBlockExampleCatalog().loadExamples()).single.payload;
+      final notifier = TMEditorNotifier()..setTm(machine);
+      await _pumpPanel(
+        tester,
+        const TMSimulationPanel(),
+        width: 320,
+        overrides: [tmEditorProvider.overrideWith((ref) => notifier)],
+      );
+
+      await tester.enterText(find.byType(TextField), '010');
+      await tester.tap(find.text('Simulate TM'));
+      await _pumpUntilText(
+        tester,
+        'The root machine reached an accepting state.',
+      );
+
+      expect(find.text('Nested call trace'), findsOneWidget);
+      expect(find.textContaining('maximum depth 2'), findsOneWidget);
+      await tester.ensureVisible(find.text('Nested call trace'));
+      await tester.tap(find.text('Nested call trace'));
+      await tester.pumpAndSettle();
+      expect(find.text('Enter composition'), findsOneWidget);
+      expect(find.text('Enter scan'), findsOneWidget);
+      expect(find.textContaining('Call stack:'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets(
       'TM panel clears its trace and tape when the editor machine changes',
@@ -706,9 +1145,7 @@ void main() {
             highlightService: service,
           ),
           overrides: [
-            tmEditorProvider.overrideWith(
-              (ref) => _tmEditorWithInitialState(),
-            ),
+            tmEditorProvider.overrideWith((ref) => _tmEditorWithInitialState()),
           ],
         );
 

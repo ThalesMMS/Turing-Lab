@@ -9,8 +9,8 @@ class HelpNodeCopy {
     this.body = '',
     List<String> keywords = const [],
     List<HelpContentBlock> blocks = const [],
-  })  : keywords = List.unmodifiable(keywords),
-        blocks = _freezeBlocks(body, blocks);
+  }) : keywords = List.unmodifiable(keywords),
+       blocks = _freezeBlocks(body, blocks);
 
   final String title;
   final String body;
@@ -42,7 +42,7 @@ class HelpNodeCopy {
 
 class HelpCatalogCopy {
   HelpCatalogCopy(Map<String, HelpNodeCopy> entries)
-      : entries = Map.unmodifiable(entries);
+    : entries = Map.unmodifiable(entries);
 
   final Map<String, HelpNodeCopy> entries;
 
@@ -95,9 +95,7 @@ extension HelpCatalogCopyValidation on HelpCatalog {
             localized.title.trim().isNotEmpty &&
             localized.body.trim().isNotEmpty &&
             localized.keywords.isNotEmpty &&
-            localized.keywords.every(
-              (keyword) => keyword.trim().isNotEmpty,
-            ) &&
+            localized.keywords.every((keyword) => keyword.trim().isNotEmpty) &&
             _blocksAreValid(localized.blocks)) {
           messages.add('incomplete structured copy: ${node.id}');
         } else {

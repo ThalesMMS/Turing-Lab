@@ -137,6 +137,7 @@ class _AutomatonGraphNode extends StatefulWidget {
   const _AutomatonGraphNode({
     required this.nodeId,
     required this.label,
+    required this.secondaryLabel,
     required this.isInitial,
     required this.isAccepting,
     required this.highlightListenable,
@@ -147,6 +148,7 @@ class _AutomatonGraphNode extends StatefulWidget {
 
   final String nodeId;
   final String label;
+  final String? secondaryLabel;
   final bool isInitial;
   final bool isAccepting;
   final ValueListenable<SimulationHighlight> highlightListenable;
@@ -266,10 +268,22 @@ class _AutomatonGraphNodeState extends State<_AutomatonGraphNode> {
                     padding: const EdgeInsets.all(4),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.label,
-                        style: theme.textTheme.titleMedium,
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.label,
+                            style: theme.textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          if (widget.secondaryLabel case final secondary?
+                              when secondary.isNotEmpty)
+                            Text(
+                              secondary,
+                              style: theme.textTheme.labelSmall,
+                              textAlign: TextAlign.center,
+                            ),
+                        ],
                       ),
                     ),
                   ),
@@ -363,12 +377,6 @@ class _NodePanGestureRecognizer extends PanGestureRecognizer {
     );
     if (_activePointer != null) {
       _debugNodePan('[NodePanRecognizer] pointer already active -> ignore');
-      return;
-    }
-    final tool = toolResolver();
-    if (tool == AutomatonCanvasTool.transition ||
-        tool == AutomatonCanvasTool.addState) {
-      _debugNodePan('[NodePanRecognizer] tool ${tool.name} -> ignore');
       return;
     }
     final node = hitTester(event.position);

@@ -1,0 +1,13 @@
+{
+  "fragment": "fixture",
+  "rows": [
+    {
+      "id": "registry-fixture",
+      "dimensions": {"localization": "covered"}
+    },
+    {
+      "id": "workflow-fixture",
+      "dimensions": {"localization": "partial"}
+    }
+  ]
+}

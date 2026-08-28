@@ -311,13 +311,19 @@ void _registerRegexSimplifierStepTests() {
       test('returns error for unbalanced parentheses - missing close', () {
         final result = RegexSimplifier.simplifyWithSteps('(a');
         expect(result.isSuccess, false);
-        expect(result.error, contains('Unbalanced'));
+        expect(
+          result.structuredError,
+          RegexSimplificationMessages.unclosedOpeningParentheses(1),
+        );
       });
 
       test('returns error for unbalanced parentheses - missing open', () {
         final result = RegexSimplifier.simplifyWithSteps('a)');
         expect(result.isSuccess, false);
-        expect(result.error, contains('Unbalanced'));
+        expect(
+          result.structuredError,
+          RegexSimplificationMessages.unmatchedClosingParenthesis(1),
+        );
       });
     });
 
@@ -369,8 +375,7 @@ void _registerRegexSimplifierStepTests() {
     });
 
     group('consistency with simplify()', () {
-      test('produces same simplified result as simplify() for common cases',
-          () {
+      test('produces same simplified result as simplify() for common cases', () {
         // Test cases where both methods are expected to produce the same result
         // Note: Some complex expressions may produce different results due to
         // different rule application strategies in the two implementations

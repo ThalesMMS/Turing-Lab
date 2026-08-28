@@ -103,6 +103,18 @@ void main() {
   });
 
   group('native simulation runner', () {
+    test('uses the acceptance mode stored by the PDA document', () async {
+      final outcome = await SimulationRunner()
+          .runPda(
+            _emptyStackAcceptingPda(),
+            '',
+            stepByStep: false,
+          )
+          .outcome;
+
+      expect(outcome.kind, SimulationOutcomeKind.accepted);
+    });
+
     test('returns a successful worker result before the exit signal', () async {
       final outcome = await SimulationRunner()
           .runTm(
@@ -138,6 +150,19 @@ void main() {
   });
 
   group('web cooperative simulation runner', () {
+    test('uses the acceptance mode stored by the PDA document', () async {
+      final outcome = await createWebSimulationRunnerBackend()
+          .runPda(
+            _emptyStackAcceptingPda(),
+            '',
+            stepByStep: false,
+            timeout: const Duration(seconds: 5),
+          )
+          .outcome;
+
+      expect(outcome.kind, SimulationOutcomeKind.accepted);
+    });
+
     test('yields and cancels a branching PDA near its search limit', () async {
       final task = createWebSimulationRunnerBackend().runPda(
         _branchingPda(),
@@ -245,6 +270,43 @@ PDA _branchingPda() {
     initialStackSymbol: 'Z',
     created: DateTime(2026),
     modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+  );
+}
+
+PDA _emptyStackAcceptingPda() {
+  final state = State(
+    id: 'q0',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+  );
+  return PDA(
+    id: 'empty-stack-pda',
+    name: 'Empty-stack PDA',
+    states: {state},
+    transitions: {
+      PDATransition(
+        id: 'pop-bottom',
+        fromState: state,
+        toState: state,
+        label: 'ε,Z/ε',
+        inputSymbol: '',
+        popSymbol: 'Z',
+        pushSymbol: '',
+        pushSymbols: const [],
+        isLambdaInput: true,
+        isLambdaPush: true,
+      ),
+    },
+    alphabet: const {},
+    initialState: state,
+    acceptingStates: const {},
+    stackAlphabet: const {'Z'},
+    initialStackSymbol: 'Z',
+    acceptanceMode: PDAAcceptanceMode.emptyStack,
+    created: DateTime.utc(2026),
+    modified: DateTime.utc(2026),
     bounds: const math.Rectangle(0, 0, 400, 300),
   );
 }

@@ -1,0 +1,16 @@
+{
+  "codecId": "pda.jflap-xml.v1",
+  "id": "codec-pda.jflap-xml.v1-adversarial-security-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "collectionExcess": 1,
+    "depthExcess": 1,
+    "malformedMarker": "β",
+    "wrongFilename": "wrong-β.extension",
+    "sourceFilename": "pda_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT5wZGE8L3R5cGU+CiAgPGF1dG9tYXRvbj4KICAgIDxzdGF0ZSBpZD0icTAiIG5hbWU9InEwIj4KICAgICAgPHg+MDwveD4KICAgICAgPHk+MDwveT4KICAgICAgPGluaXRpYWwvPgogICAgPC9zdGF0ZT4KICAgIDxzdGF0ZSBpZD0icTEiIG5hbWU9InExIj4KICAgICAgPHg+MTAwPC94PgogICAgICA8eT4wPC95PgogICAgICA8ZmluYWwvPgogICAgPC9zdGF0ZT4KICAgIDx0cmFuc2l0aW9uPgogICAgICA8ZnJvbT5xMDwvZnJvbT4KICAgICAgPHRvPnExPC90bz4KICAgICAgPHJlYWQ+YTwvcmVhZD4KICAgICAgPHBvcD5aPC9wb3A+CiAgICAgIDxwdXNoPkFaPC9wdXNoPgogICAgPC90cmFuc2l0aW9uPgogIDwvYXV0b21hdG9uPgo8L3N0cnVjdHVyZT4K"
+  },
+  "property": "adversarial-security",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

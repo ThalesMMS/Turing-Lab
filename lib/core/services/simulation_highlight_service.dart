@@ -33,14 +33,50 @@ class SimulationHighlightService {
           channel: channel,
           dispatcher: dispatcher,
           channelFromDispatcher: FunctionHighlightChannel.new,
-        );
+        ) {
+    _fallbackChannel = _highlightDispatch.channel;
+  }
 
   final HighlightDispatchController<HighlightChannel> _highlightDispatch;
+  final List<_HighlightChannelRegistrationEntry> _channelRegistrations = [];
+  HighlightChannel? _fallbackChannel;
 
   HighlightChannel? get channel => _highlightDispatch.channel;
 
   set channel(HighlightChannel? value) {
-    _highlightDispatch.channel = value;
+    _fallbackChannel = value;
+    if (_channelRegistrations.isEmpty) {
+      _highlightDispatch.channel = value;
+    }
+  }
+
+  /// Installs [channel] until the returned registration is disposed.
+  ///
+  /// Registrations form an ownership stack. Removing an older registration
+  /// leaves the newest live channel active, so teardown order cannot restore a
+  /// channel backed by an already disposed canvas controller.
+  SimulationHighlightChannelRegistration registerChannel(
+    HighlightChannel channel,
+  ) {
+    final token = Object();
+    _channelRegistrations.add(
+      _HighlightChannelRegistrationEntry(token: token, channel: channel),
+    );
+    _highlightDispatch.channel = channel;
+    return SimulationHighlightChannelRegistration._(this, token);
+  }
+
+  void _unregisterChannel(Object token) {
+    final index = _channelRegistrations.indexWhere(
+      (registration) => identical(registration.token, token),
+    );
+    if (index == -1) {
+      return;
+    }
+    _channelRegistrations.removeAt(index);
+    _highlightDispatch.channel = _channelRegistrations.isEmpty
+        ? _fallbackChannel
+        : _channelRegistrations.last.channel;
   }
 
   /// Number of highlight payloads dispatched since the service was created.
@@ -152,4 +188,31 @@ class SimulationHighlightService {
   void clear() {
     _highlightDispatch.clear();
   }
+}
+
+/// Ownership token returned by [SimulationHighlightService.registerChannel].
+class SimulationHighlightChannelRegistration {
+  SimulationHighlightChannelRegistration._(this._service, this._token);
+
+  SimulationHighlightService? _service;
+  final Object _token;
+
+  void dispose() {
+    final service = _service;
+    if (service == null) {
+      return;
+    }
+    _service = null;
+    service._unregisterChannel(_token);
+  }
+}
+
+class _HighlightChannelRegistrationEntry {
+  const _HighlightChannelRegistrationEntry({
+    required this.token,
+    required this.channel,
+  });
+
+  final Object token;
+  final HighlightChannel channel;
 }

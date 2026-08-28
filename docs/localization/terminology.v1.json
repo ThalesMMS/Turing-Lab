@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "reviewStatus": "technical-reviewed",
+  "reviewProvenance": {
+    "scope": "Independent engineering review for issue #163",
+    "reviewedOn": "2026-08-26",
+    "editorialReview": "pending"
+  },
+  "sourceLocale": "en-US",
+  "targetLocale": "pt-BR",
+  "terms": [
+    {
+      "id": "automaton",
+      "en-US": "automaton",
+      "pt-BR": "autômato",
+      "definition": "A mathematical machine with states and transitions.",
+      "usage": "Use the singular form for one machine; use automata/autômatos for the plural."
+    },
+    {
+      "id": "state",
+      "en-US": "state",
+      "pt-BR": "estado",
+      "definition": "A node representing one configuration of an automaton.",
+      "usage": "Do not translate as status."
+    },
+    {
+      "id": "transition",
+      "en-US": "transition",
+      "pt-BR": "transição",
+      "definition": "A rule that moves a machine between states.",
+      "usage": "Use consistently in editors, simulations, and errors."
+    },
+    {
+      "id": "grammar",
+      "en-US": "grammar",
+      "pt-BR": "gramática",
+      "definition": "A formal system of variables, terminals, and productions.",
+      "usage": "Reserve rule for an individual production rule."
+    },
+    {
+      "id": "parsing",
+      "en-US": "parsing",
+      "pt-BR": "análise sintática",
+      "definition": "Determine how an input is derived by a grammar.",
+      "usage": "The established Parser tool name may remain Parser; explanatory copy uses análise sintática."
+    },
+    {
+      "id": "tape",
+      "en-US": "tape",
+      "pt-BR": "fita",
+      "definition": "The readable and writable storage used by a Turing machine.",
+      "usage": "Use fita for both single-tape and multi-tape machines."
+    },
+    {
+      "id": "stack",
+      "en-US": "stack",
+      "pt-BR": "pilha",
+      "definition": "Last-in, first-out storage used by a pushdown automaton.",
+      "usage": "Do not use the untranslated English term in Portuguese interface copy."
+    },
+    {
+      "id": "output",
+      "en-US": "output",
+      "pt-BR": "saída",
+      "definition": "Symbols or values produced by a computation.",
+      "usage": "Use for both a transducer result and a produced token sequence."
+    },
+    {
+      "id": "accept",
+      "en-US": "accept",
+      "pt-BR": "aceitar",
+      "definition": "Conclude that an input belongs to the recognized language.",
+      "usage": "Use accepted/aceita for the completed outcome; do not substitute halt."
+    },
+    {
+      "id": "reject",
+      "en-US": "reject",
+      "pt-BR": "rejeitar",
+      "definition": "Conclude that an input does not belong to the recognized language.",
+      "usage": "Use rejected/rejeitada for the completed outcome; do not use for an unknown bounded result."
+    },
+    {
+      "id": "halt",
+      "en-US": "halt",
+      "pt-BR": "parar",
+      "definition": "Stop executing because no further computation step is taken.",
+      "usage": "Halting alone does not imply acceptance or rejection unless the machine policy says so."
+    },
+    {
+      "id": "unknown_outcome",
+      "en-US": "unknown",
+      "pt-BR": "desconhecido",
+      "definition": "A bounded computation outcome that cannot establish acceptance or rejection.",
+      "usage": "Do not translate as rejected; explain the reached limit when space allows."
+    },
+    {
+      "id": "empty_string",
+      "en-US": "empty string",
+      "pt-BR": "cadeia vazia",
+      "definition": "The unique string containing no symbols, commonly written ε.",
+      "usage": "Keep ε as notation; localize its explanatory label."
+    },
+    {
+      "id": "pumping_lemma",
+      "en-US": "Pumping Lemma",
+      "pt-BR": "lema do bombeamento",
+      "definition": "A necessary property used to reason about classes of formal languages.",
+      "usage": "Use title capitalization according to locale: Pumping Lemma in English headings and Lema do bombeamento in Portuguese headings; use lowercase in running prose unless sentence-initial."
+    },
+    {
+      "id": "workspace",
+      "en-US": "workspace",
+      "pt-BR": "espaço de trabalho",
+      "definition": "The application area dedicated to one formal-system family.",
+      "usage": "Use the translated term in prose and accessibility labels."
+    }
+  ]
+}

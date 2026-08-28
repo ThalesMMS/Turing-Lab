@@ -1,0 +1,7 @@
+{
+  "caseId": "conversion-tm-unrestricted-grammar",
+  "expectedInternalOutcome": "boundedUnknown",
+  "maximumWordLength": 3,
+  "schema": "turing-lab.hard-edge.grammar-property.v1",
+  "seed": 336
+}

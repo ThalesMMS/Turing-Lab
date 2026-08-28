@@ -17,6 +17,8 @@ import '../../core/algorithms/pda_language_emptiness_analyzer.dart';
 import '../../core/algorithms/pda_normalizer.dart';
 import '../../core/algorithms/pda_simplifier.dart';
 import '../../core/algorithms/pda_simulator.dart';
+import '../../core/formal_systems/formal_systems.dart';
+import '../../core/annotations/annotations.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
 import '../../core/models/pda_simplification.dart';
@@ -29,17 +31,23 @@ import '../../core/utils/epsilon_utils.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart' show pdaSimulationProvider;
 import '../providers/grammar_provider.dart';
 import '../providers/home_navigation_provider.dart';
+import '../providers/interoperable_document_sidecar_provider.dart';
+import '../providers/document_annotations_provider.dart';
 import 'algorithm_panel_scaffold.dart';
 import 'app_snackbar.dart';
+import 'asset_example_content_button.dart';
 import 'base_simulation_panel.dart';
 import 'common/algorithm_button_config.dart';
 import 'conversion_replacement_dialog.dart';
+import 'document_interoperability_binding.dart';
 import 'file_operations_panel.dart';
+import 'interoperability_presentation_labels.dart';
 import '../../core/constants/monospace_typography.dart';
 
 /// Panel for PDA analysis algorithms
@@ -57,6 +65,18 @@ class PDAAlgorithmPanel extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<PDAAlgorithmPanel> createState() => _PDAAlgorithmPanelState();
+}
+
+final class _PdaImportCheckpoint {
+  const _PdaImportCheckpoint({
+    required this.pda,
+    required this.sidecar,
+    required this.annotations,
+  });
+
+  final PDA? pda;
+  final InteroperableDocumentSidecarEntry? sidecar;
+  final DocumentAnnotationCollection? annotations;
 }
 
 class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
@@ -96,11 +116,99 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       children: [
         _buildAlgorithmButtons(context),
         _buildResultsSection(context),
-        if (pda != null) ...[
-          const Divider(),
-          FileOperationsPanel(pda: pda),
-        ],
+        const Divider(),
+        FileOperationsPanel(
+          pda: pda,
+          annotations: pda == null
+              ? null
+              : annotationsForDocument(
+                  ref.watch(documentAnnotationsProvider),
+                  DefaultFormalSystemIds.pda,
+                  pda.id,
+                ),
+          interoperability: _interoperabilityBinding(pda),
+        ),
       ],
+    );
+  }
+
+  DocumentInteroperabilityBinding _interoperabilityBinding(PDA? pda) {
+    final registry = ref.read(documentInteroperabilityRegistryProvider);
+    final descriptor = registry.formalSystems.descriptorFor(
+      DefaultFormalSystemIds.pda,
+    )!;
+    final sidecar = ref.watch(
+      interoperableDocumentSidecarProvider,
+    )[DefaultFormalSystemIds.pda];
+    final currentDocument = pda == null
+        ? null
+        : resolveInteroperableDocument(
+            sidecar: sidecar,
+            currentDocument: pda,
+            documentIdentity: (pda.id, identityHashCode(pda)),
+            systemKey: DefaultFormalSystemIds.pda,
+            schema: descriptor.schema,
+            annotations: annotationsForDocument(
+              ref.watch(documentAnnotationsProvider),
+              DefaultFormalSystemIds.pda,
+              pda.id,
+            ),
+          );
+    return DocumentInteroperabilityBinding(
+      registry: registry,
+      systemKey: DefaultFormalSystemIds.pda,
+      currentDocument: currentDocument,
+      captureCheckpoint: () => _PdaImportCheckpoint(
+        pda: ref.read(pdaEditorProvider).pda,
+        sidecar: ref.read(
+          interoperableDocumentSidecarProvider,
+        )[DefaultFormalSystemIds.pda],
+        annotations: ref.read(
+          documentAnnotationsProvider,
+        )[DefaultFormalSystemIds.pda],
+      ),
+      restoreCheckpoint: (checkpoint) {
+        final snapshot = checkpoint! as _PdaImportCheckpoint;
+        if (snapshot.pda case final previous?) {
+          ref.read(pdaEditorProvider.notifier).setPda(previous);
+          ref.read(pdaSimulationProvider.notifier).setPda(previous);
+        } else {
+          ref.read(pdaEditorProvider.notifier).clear();
+          ref.read(pdaSimulationProvider.notifier).clear();
+        }
+        ref
+            .read(interoperableDocumentSidecarProvider.notifier)
+            .restore(DefaultFormalSystemIds.pda, snapshot.sidecar);
+        ref
+            .read(documentAnnotationsProvider.notifier)
+            .restore(DefaultFormalSystemIds.pda, snapshot.annotations);
+      },
+      systemLabel: (context, _) => appLocalizationsOf(context).fileSectionPda,
+      formatLabel: defaultDocumentFormatLabel,
+      replace: (document) async {
+        final loaded = document.document;
+        if (loaded is! PDA) {
+          throw StateError('The PDA workspace received a non-PDA document.');
+        }
+        ref.read(pdaEditorProvider.notifier).setPda(loaded);
+        ref.read(pdaSimulationProvider.notifier).setPda(loaded);
+        ref
+            .read(interoperableDocumentSidecarProvider.notifier)
+            .store(
+              document,
+              documentIdentity: (loaded.id, identityHashCode(loaded)),
+            );
+        ref
+            .read(documentAnnotationsProvider.notifier)
+            .restore(
+              DefaultFormalSystemIds.pda,
+              annotationsFromImportedDocument(
+                document,
+                documentId: loaded.id,
+                documentRevision: '${identityHashCode(loaded)}',
+              ),
+            );
+      },
     );
   }
 
@@ -199,8 +307,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SelectableText(
-              appLocalizationsOf(context)
-                  .localizeWorkflowText(_analysisResult!),
+              appLocalizationsOf(
+                context,
+              ).localizeWorkflowText(_analysisResult!),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontFamilyFallback: kMonospaceFontFamilyFallback,
               ),
@@ -227,12 +336,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   }
 
   Future<void> _convertToCFG() async {
+    final strings = appLocalizationsOf(context);
     final editorState = ref.read(pdaEditorProvider);
     final pda = editorState.pda;
 
     if (pda == null) {
       _showSnackbar(
-        appLocalizationsOf(context).drawPdaBeforeConvertGrammar,
+        strings.drawPdaBeforeConvertGrammar,
         tone: AppSnackBarTone.error,
       );
       return;
@@ -249,8 +359,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       _latestConvertedGrammar = null;
     });
 
-    _performAnalysis(appLocalizationsOf(context).pdaToCfgConversionTitle,
-        (_) async {
+    _performAnalysis(strings.pdaToCfgConversionTitle, (_) async {
       var conversionPda = pda;
       var conversionResult = PDAtoCFGConverter.convert(conversionPda);
       String? normalizationSummary;
@@ -263,8 +372,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           targetForm: PDANormalForm.finalStateAndSinglePop,
         );
         if (normalizationResult.isFailure) {
-          final message =
-              'Conversion failed: ${normalizationResult.error ?? conversionResult.error}';
+          final message = strings.pdaConversionFailure(
+            normalizationResult.error ?? conversionResult.error ?? '',
+          );
           _latestConvertedGrammar = null;
           _showSnackbar(message, tone: AppSnackBarTone.error);
           return message;
@@ -273,30 +383,34 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         final report = normalizationResult.data!;
         final shouldApply = await _showNormalizationPreview(pda, report);
         if (!shouldApply) {
-          return 'Conversion canceled. The editor PDA was not changed.';
+          return strings.pdaConversionCanceledDocumentUnchanged;
         }
         if (!mounted) {
-          return 'Conversion canceled because the panel was closed.';
+          return strings.pdaConversionCanceledPanelClosed;
         }
         if (!identical(ref.read(pdaEditorProvider).pda, pda)) {
-          return 'Conversion canceled because the editor PDA changed during review.';
+          return strings.pdaConversionCanceledEditorChanged;
         }
 
         conversionPda = report.normalizedPda;
         ref.read(pdaEditorProvider.notifier).setPda(conversionPda);
         conversionResult = PDAtoCFGConverter.convert(conversionPda);
-        normalizationSummary =
-            'Applied normalization: ${pda.states.length} → ${conversionPda.states.length} states, '
-            '${pda.pdaTransitions.length} → ${conversionPda.pdaTransitions.length} transitions.';
+        normalizationSummary = strings.pdaNormalizationAppliedSummary(
+          pda.states.length,
+          conversionPda.states.length,
+          pda.pdaTransitions.length,
+          conversionPda.pdaTransitions.length,
+        );
       }
 
       if (conversionResult.isSuccess) {
         _latestConvertedGrammar = conversionResult.data!.grammar;
         final grammar = _latestConvertedGrammar!;
         _openGeneratedGrammar(grammar);
-        final extraSummary =
-            'Generated grammar has ${grammar.productions.length} productions '
-            'and ${grammar.nonterminals.length} non-terminals.';
+        final extraSummary = strings.pdaGeneratedGrammarSummary(
+          grammar.productions.length,
+          grammar.nonterminals.length,
+        );
         return [
           if (normalizationSummary != null) normalizationSummary,
           conversionResult.data!.description,
@@ -304,7 +418,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         ].join('\n');
       }
 
-      final message = 'Conversion failed: ${conversionResult.error}';
+      final message = _localizedPdaToCfgFailure(strings, conversionResult);
       _latestConvertedGrammar = null;
       _showSnackbar(message, tone: AppSnackBarTone.error);
       return message;
@@ -383,7 +497,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(strings.pdaNormalizationGrowthWarning),
+                  if (report.structuredWarnings.isNotEmpty) ...[
+                    ...report.structuredWarnings.map(
+                      (warning) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(strings.resolveStructuredMessage(warning)),
+                      ),
+                    ),
+                  ] else
+                    Text(strings.pdaNormalizationGrowthWarning),
                   const SizedBox(height: 8),
                   Text(strings.pdaNormalizationCancelHint),
                 ],
@@ -426,9 +548,12 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         acceptanceMode: acceptanceMode,
       );
       if (!simplificationResult.isSuccess) {
-        final message = strings.pdaSimplificationFailed(
-          simplificationResult.error!,
-        );
+        final detail = simplificationResult.structuredError == null
+            ? simplificationResult.error!
+            : strings.resolveStructuredMessage(
+                simplificationResult.structuredError!,
+              );
+        final message = strings.pdaSimplificationFailed(detail);
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -495,7 +620,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
                   Text(strings.pdaSimplificationChangesHeading),
                   ..._simplificationChangeLines(strings, report).map(Text.new),
                   const SizedBox(height: 12),
-                  Text(strings.pdaSimplificationSkippedSemantic),
+                  ..._simplificationWarningLines(strings, report).map(Text.new),
                   const SizedBox(height: 8),
                   Text(strings.pdaSimplificationCancelHint),
                 ],
@@ -537,8 +662,20 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         report.counts.transitionsAfter,
       ),
       ..._simplificationChangeLines(strings, report),
-      strings.pdaSimplificationSkippedSemantic,
+      ..._simplificationWarningLines(strings, report),
     ].join('\n');
+  }
+
+  List<String> _simplificationWarningLines(
+    AppLocalizations strings,
+    PDASimplificationResult report,
+  ) {
+    if (report.structuredWarnings.isEmpty) {
+      return [strings.pdaSimplificationSkippedSemantic];
+    }
+    return report.structuredWarnings
+        .map(strings.resolveStructuredMessage)
+        .toList(growable: false);
   }
 
   List<String> _simplificationChangeLines(
@@ -564,12 +701,22 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   String _formatAcceptanceMode(
     AppLocalizations strings,
     PDAAcceptanceMode mode,
-  ) =>
-      switch (mode) {
-        PDAAcceptanceMode.finalState => strings.pdaAcceptanceFinalState,
-        PDAAcceptanceMode.emptyStack => strings.pdaAcceptanceEmptyStack,
-        PDAAcceptanceMode.both => strings.pdaAcceptanceBoth,
-      };
+  ) => switch (mode) {
+    PDAAcceptanceMode.finalState => strings.pdaAcceptanceFinalState,
+    PDAAcceptanceMode.emptyStack => strings.pdaAcceptanceEmptyStack,
+    PDAAcceptanceMode.both => strings.pdaAcceptanceBoth,
+  };
+
+  String _localizedPdaToCfgFailure<T>(
+    AppLocalizations strings,
+    Result<T> result,
+  ) {
+    final structured = result.structuredError;
+    final detail = structured == null
+        ? result.error ?? ''
+        : strings.resolveStructuredMessage(structured);
+    return strings.pdaConversionFailure(detail);
+  }
 
   void _checkDeterminism() {
     final editorState = ref.read(pdaEditorProvider);
@@ -588,9 +735,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       final nondeterministicTransitions =
           editorState.nondeterministicTransitionIds;
       setHighlight(
-        SimulationHighlight(
-          transitionIds: nondeterministicTransitions,
-        ),
+        SimulationHighlight(transitionIds: nondeterministicTransitions),
       );
       final buffer = StringBuffer();
       buffer.writeln(strings.determinismAnalysis);
@@ -606,15 +751,15 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           if (nondeterministicTransitions.contains(transition.id)) {
             final input =
                 transition.isLambdaInput || transition.inputSymbol.isEmpty
-                    ? 'λ'
-                    : transition.inputSymbol;
+                ? kEpsilonSymbol
+                : transition.inputSymbol;
             final pop = transition.isLambdaPop || transition.popSymbol.isEmpty
-                ? 'λ'
+                ? kEpsilonSymbol
                 : transition.popSymbol;
             final push =
                 transition.isLambdaPush || transition.pushSymbol.isEmpty
-                    ? 'λ'
-                    : transition.pushSymbol;
+                ? kEpsilonSymbol
+                : transition.pushSymbol;
             buffer.writeln(
               '  ${transition.fromState.label} -- $input, pop $pop / push $push → ${transition.toState.label}',
             );
@@ -648,12 +793,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     }
 
     final strings = appLocalizationsOf(context);
-    _performAnalysis(strings.reachableStatesAnalysisTitle,
-        (setHighlight) async {
+    _performAnalysis(strings.reachableStatesAnalysisTitle, (
+      setHighlight,
+    ) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
-        final message =
-            strings.analysisFailedPrefix(analysisResult.error ?? '');
+        final message = strings.analysisFailedPrefix(
+          analysisResult.error ?? '',
+        );
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -666,14 +813,16 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
               .toSet(),
         ),
       );
-      final reachable = analysis.reachabilityAnalysis.reachableStates
-          .map((state) => state.label)
-          .toList()
-        ..sort();
-      final unreachable = analysis.reachabilityAnalysis.unreachableStates
-          .map((state) => state.label)
-          .toList()
-        ..sort();
+      final reachable =
+          analysis.reachabilityAnalysis.reachableStates
+              .map((state) => state.label)
+              .toList()
+            ..sort();
+      final unreachable =
+          analysis.reachabilityAnalysis.unreachableStates
+              .map((state) => state.label)
+              .toList()
+            ..sort();
 
       final buffer = StringBuffer();
       buffer.writeln(
@@ -712,7 +861,10 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         isCancelled: () => !mounted,
       );
       if (analysis is PDALanguageEmptinessFailure) {
-        final message = strings.emptinessProofUnavailable(analysis.message);
+        final detail = analysis.structuredMessage == null
+            ? analysis.message
+            : strings.resolveStructuredMessage(analysis.structuredMessage!);
+        final message = strings.emptinessProofUnavailable(detail);
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -732,12 +884,14 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       );
       buffer.writeln(
         strings.acceptanceModeLabel(
-            _formatAcceptanceMode(strings, acceptanceMode)),
+          _formatAcceptanceMode(strings, acceptanceMode),
+        ),
       );
       buffer.writeln(strings.pdaEmptinessProofLine);
       buffer.writeln(
-        strings
-            .productiveNonterminalsCount(proof.productiveNonterminals.length),
+        strings.productiveNonterminalsCount(
+          proof.productiveNonterminals.length,
+        ),
       );
 
       if (!proof.isEmpty) {
@@ -775,7 +929,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     final input = proof?.witnessWord;
     if (proof == null || pda == null || trace == null || input == null) return;
 
-    ref.read(pdaSimulationProvider.notifier).loadTrace(
+    ref
+        .read(pdaSimulationProvider.notifier)
+        .loadTrace(
           pda: pda,
           input: input,
           mode: proof.acceptanceMode,
@@ -803,8 +959,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     _performAnalysis(strings.stackOperationsAnalysisTitle, (_) async {
       final analysisResult = PDASimulator.analyzePDA(pda);
       if (!analysisResult.isSuccess) {
-        final message =
-            strings.analysisFailedPrefix(analysisResult.error ?? '');
+        final message = strings.analysisFailedPrefix(
+          analysisResult.error ?? '',
+        );
         _showSnackbar(message, tone: AppSnackBarTone.error);
         return message;
       }
@@ -852,7 +1009,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   void _performAnalysis(
     String algorithmName,
     Future<String> Function(ValueChanged<SimulationHighlight> setHighlight)
-        analysisFunction, {
+    analysisFunction, {
     bool resetConvertedGrammar = true,
   }) {
     final highlights = _analysisHighlights;
@@ -992,6 +1149,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       onExampleSelected: (name) => _loadSelectedExample(name),
       failureMessage: 'Failed to load PDA examples.',
       emptyMessage: 'No PDA examples available.',
+      exampleBuilder: (context, example, isLoading, onPressed) =>
+          AssetExampleContentButton.maybeBuild(
+            context: context,
+            example: example,
+            isLoading: isLoading,
+            onPressed: onPressed,
+          ),
     );
   }
 

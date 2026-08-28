@@ -22,13 +22,36 @@ FSA _buildEpsilonNFA() {
     toState: q1,
   );
   return FSA(
-    id: 'eps_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('epsilon'),
     name: 'Epsilon',
     states: {q0, q1},
     transitions: {t},
     alphabet: {},
     initialState: q0,
     acceptingStates: {q1},
+    created: now,
+    modified: now,
+    bounds: const math.Rectangle(0, 0, 800, 600),
+  );
+}
+
+FSA _buildEmptyLanguageNFA() {
+  final now = DateTime.now();
+  final q0 = State(
+    id: _newStateId('q'),
+    label: 'q0',
+    position: Vector2(100, 100),
+    isInitial: true,
+    isAccepting: false,
+  );
+  return FSA(
+    id: _newAutomatonId('empty'),
+    name: 'Empty language',
+    states: {q0},
+    transitions: const {},
+    alphabet: const {},
+    initialState: q0,
+    acceptingStates: const {},
     created: now,
     modified: now,
     bounds: const math.Rectangle(0, 0, 800, 600),
@@ -61,7 +84,9 @@ FSA _buildSymbolNFA(String symbol) {
   );
 
   return FSA(
-    id: 'symbol_${symbol}_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId(
+      'symbol_${symbol.runes.map((rune) => rune.toRadixString(16)).join('_')}',
+    ),
     name: 'Symbol $symbol',
     states: {q0, q1},
     transitions: {transition},
@@ -104,7 +129,7 @@ FSA _buildDotNFA({Set<String>? contextAlphabet}) {
   );
 
   return FSA(
-    id: 'dot_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('dot'),
     name: 'Dot (Any Symbol)',
     states: {q0, q1},
     transitions: {transition},
@@ -130,6 +155,11 @@ FSA _buildUnionNFA(
 }
 
 FSA _buildUnionFromFragments(FSA leftNFA, FSA rightNFA) {
+  // Structural helpers such as concatenation intentionally use local clone
+  // identifiers. Re-identify both operands before combining them so repeated
+  // subexpressions cannot publish duplicate state or transition IDs.
+  leftNFA = _reidentifyFragment(leftNFA, _newAutomatonId('union_left'));
+  rightNFA = _reidentifyFragment(rightNFA, _newAutomatonId('union_right'));
   // Create new initial and final states
   final now = DateTime.now();
   final newInitial = State(
@@ -193,7 +223,7 @@ FSA _buildUnionFromFragments(FSA leftNFA, FSA rightNFA) {
   }
 
   return FSA(
-    id: 'union_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('union'),
     name: 'Union',
     states: allStates,
     transitions: allTransitions,
@@ -203,6 +233,40 @@ FSA _buildUnionFromFragments(FSA leftNFA, FSA rightNFA) {
     created: now,
     modified: now,
     bounds: const math.Rectangle(0, 0, 800, 600),
+  );
+}
+
+FSA _reidentifyFragment(FSA source, String namespace) {
+  final sortedStates = [...source.states]
+    ..sort((left, right) => left.id.compareTo(right.id));
+  final statesById = <String, State>{
+    for (var index = 0; index < sortedStates.length; index++)
+      sortedStates[index].id: sortedStates[index].copyWith(
+        id: '${namespace}_s$index',
+      ),
+  };
+  final sortedTransitions = [...source.fsaTransitions]
+    ..sort((left, right) => left.id.compareTo(right.id));
+  final transitions = <FSATransition>{
+    for (var index = 0; index < sortedTransitions.length; index++)
+      sortedTransitions[index].copyWith(
+        id: '${namespace}_t$index',
+        fromState: statesById[sortedTransitions[index].fromState.id],
+        toState: statesById[sortedTransitions[index].toState.id],
+      ),
+  };
+  return FSA(
+    id: namespace,
+    name: source.name,
+    states: statesById.values.toSet(),
+    transitions: transitions,
+    alphabet: source.alphabet,
+    initialState: statesById[source.initialState!.id],
+    acceptingStates:
+        source.acceptingStates.map((state) => statesById[state.id]!).toSet(),
+    created: source.created,
+    modified: source.modified,
+    bounds: source.bounds,
   );
 }
 
@@ -286,7 +350,7 @@ FSA _buildPlusFromFragment(FSA childNFA) {
   }
 
   return FSA(
-    id: 'plus_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('plus'),
     name: 'Plus',
     states: allStates,
     transitions: allTransitions,
@@ -366,7 +430,7 @@ FSA _buildQuestionFromFragment(FSA childNFA) {
   }
 
   return FSA(
-    id: 'question_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('question'),
     name: 'Question',
     states: allStates,
     transitions: allTransitions,
@@ -410,7 +474,7 @@ FSA _buildSetNFA(Set<String> symbols) {
   }
 
   return FSA(
-    id: 'set_${now.millisecondsSinceEpoch}',
+    id: _newAutomatonId('set'),
     name: 'Class',
     states: {q0, q1},
     transitions: transitions,
@@ -425,19 +489,23 @@ FSA _buildSetNFA(Set<String> symbols) {
 
 Set<String> _parseCharClass(String content) {
   final symbols = <String>{};
+  final scalars = _regexCharacterClassScalars(content);
   int i = 0;
-  while (i < content.length) {
-    final c = content[i];
-    if (i + 2 < content.length && content[i + 1] == '-') {
-      final start = content[i].codeUnitAt(0);
-      final end = content[i + 2].codeUnitAt(0);
-      for (int u = start; u <= end; u++) {
-        symbols.add(String.fromCharCode(u));
+  while (i < scalars.length) {
+    if (i + 2 < scalars.length &&
+        scalars[i + 1].value == 0x2d &&
+        !scalars[i + 1].escaped) {
+      final start = scalars[i].value;
+      final end = scalars[i + 2].value;
+      for (var scalar = start; scalar <= end; scalar++) {
+        if (scalar < 0xd800 || scalar > 0xdfff) {
+          symbols.add(String.fromCharCode(scalar));
+        }
       }
       i += 3;
       continue;
     }
-    symbols.add(c);
+    symbols.add(String.fromCharCode(scalars[i].value));
     i++;
   }
   return symbols;

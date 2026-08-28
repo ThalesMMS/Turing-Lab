@@ -1,0 +1,6 @@
+{
+  "caseId": "lsystem-async-retention-stochastic",
+  "expectedInternalOutcome": "verified",
+  "schema": "turing-lab.hard-edge.formal-systems-property.v1",
+  "seed": 339
+}

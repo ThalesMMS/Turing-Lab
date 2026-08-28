@@ -1,0 +1,13 @@
+{
+  "codecId": "mealy.jflap-xml.v1",
+  "id": "codec-mealy.jflap-xml.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "mealy_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT5tZWFseTwvdHlwZT4KICA8YXV0b21hdG9uPgogICAgPHN0YXRlIGlkPSJxMCIgbmFtZT0ic3RhcnQiPjx4PjA8L3g+PHk+MDwveT48bGFiZWw+c3RhcnQ8L2xhYmVsPjxpbml0aWFsLz48L3N0YXRlPgogICAgPHN0YXRlIGlkPSJxMSIgbmFtZT0ic2VlbiI+PHg+MTYwPC94Pjx5PjA8L3k+PGxhYmVsPnNlZW48L2xhYmVsPjwvc3RhdGU+CiAgICA8dHJhbnNpdGlvbj48ZnJvbT5xMDwvZnJvbT48dG8+cTE8L3RvPjxyZWFkPmE8L3JlYWQ+PHRyYW5zb3V0Png8L3RyYW5zb3V0PjwvdHJhbnNpdGlvbj4KICAgIDx0cmFuc2l0aW9uPjxmcm9tPnExPC9mcm9tPjx0bz5xMDwvdG8+PHJlYWQ+YjwvcmVhZD48dHJhbnNvdXQvPjwvdHJhbnNpdGlvbj4KICA8L2F1dG9tYXRvbj4KPC9zdHJ1Y3R1cmU+Cg=="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

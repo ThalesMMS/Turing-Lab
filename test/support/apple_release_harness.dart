@@ -17,11 +17,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:turing_lab/app.dart';
+import 'package:turing_lab/core/repositories/examples_repository.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/injection/dependency_injection.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
-import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 import 'apple_release_module.dart';
 import 'apple_release_shell.dart';
@@ -65,22 +67,9 @@ class AppleReleaseHarness {
   /// is high volume and would bury the framework's own failure output.
   static const List<String> _mutedLogPrefixes = <String>['[GraphView'];
 
-  /// Framework exceptions this harness records instead of failing on.
-  ///
-  /// The smoke levels own launch, navigation, locale and lifecycle; they do
-  /// not own the responsive layout of individual panels. Matching errors are
-  /// intercepted before the binding turns them into a test failure, collected
-  /// into [trackedExceptions], printed at the end of the case, and tracked as
-  /// separate defects in `release/APPLE_QA_MATRIX.md`. Every other framework
-  /// exception still fails the run.
-  static const List<String> _trackedExceptionPrefixes = <String>[
-    'A RenderFlex overflowed',
-  ];
-
   /// Every persisted setting is pinned so a default change in
   /// `SettingsModel` cannot silently alter what the smoke suites render.
   static const Map<String, Object> _pinnedPreferences = <String, Object>{
-    'settings_empty_string_symbol': 'λ',
     'settings_theme_mode': 'light',
     'settings_locale_code': 'en',
     'settings_show_grid': true,
@@ -103,16 +92,10 @@ class AppleReleaseHarness {
   final bool _overrideViewport;
   final Queue<String> _log = Queue<String>();
 
-  /// Tracked layout defects observed during this case, in the order seen.
-  final List<String> trackedExceptions = <String>[];
-
   ProviderContainer? _container;
   SemanticsHandle? _semanticsHandle;
   DebugPrintCallback? _originalDebugPrint;
-  FlutterExceptionHandler? _originalOnError;
-  bool _errorInterceptorInstalled = false;
   String _activeLocaleCode = 'en';
-  String _activity = 'launching the app';
   String? _lastConditionError;
   bool _resetCompleted = false;
 
@@ -127,6 +110,7 @@ class AppleReleaseHarness {
     required AppleReleaseTestLevel level,
     required Future<void> Function(AppleReleaseHarness harness) body,
     Map<String, Object> preferences = const <String, Object>{},
+    ExamplesRepository? examplesRepository,
     bool overrideViewport = true,
     bool enableSemantics = false,
   }) async {
@@ -148,6 +132,7 @@ class AppleReleaseHarness {
     try {
       await harness._launch(
         preferences: preferences,
+        examplesRepository: examplesRepository,
         enableSemantics: enableSemantics,
       );
       await body(harness);
@@ -160,6 +145,15 @@ class AppleReleaseHarness {
 
   /// Localizations for the locale the app is currently expected to render.
   AppLocalizations get localizations => localizationsFor(_activeLocaleCode);
+
+  /// Provider container owned by the current run.
+  ProviderContainer get container {
+    final container = _container;
+    if (container == null) {
+      throw StateError('The Apple release harness is not running.');
+    }
+    return container;
+  }
 
   /// Localizations for an explicit locale code.
   AppLocalizations localizationsFor(String localeCode) =>
@@ -175,21 +169,17 @@ class AppleReleaseHarness {
   AppleReleaseShell get shell => AppleReleaseShell.forWidth(logicalSize.width);
 
   /// Finder for the navigation shell that must be mounted for [shell].
-  Finder get shellFinder => shell == AppleReleaseShell.mobile
-      ? find.byType(MobileNavigation)
-      : find.byType(WorkspaceSelector);
+  Finder get shellFinder => find.byType(WorkspaceSelector);
 
   /// Finder for [text] rendered inside an `AppBar`.
-  Finder appBarText(String text) => find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text(text),
-      );
+  Finder appBarText(String text) =>
+      find.descendant(of: find.byType(AppBar), matching: find.text(text));
 
   /// Finder for the `AppBar` action carrying [icon].
   Finder appBarAction(IconData icon) => find.descendant(
-        of: find.byType(AppBar),
-        matching: find.widgetWithIcon(IconButton, icon),
-      );
+    of: find.byType(AppBar),
+    matching: find.widgetWithIcon(IconButton, icon),
+  );
 
   // ---------------------------------------------------------------------
   // Bounded waits
@@ -217,6 +207,40 @@ class AppleReleaseHarness {
       if (_evaluate(condition)) {
         return;
       }
+    }
+
+    throw TestFailure(
+      _diagnostics(
+        'Timed out after ${timeout.inMilliseconds}ms waiting for '
+        '$description.',
+        pending: description,
+        takePendingException: true,
+      ),
+    );
+  }
+
+  /// Pumps until [condition] holds while allowing isolate-backed work to run.
+  ///
+  /// `compute` and platform-adjacent futures cannot finish while a headless
+  /// widget test advances only its fake clock. Each poll therefore yields a
+  /// short, bounded slice of real time before pumping the resulting frame.
+  Future<void> waitUntilAsync(
+    bool Function() condition, {
+    required String description,
+    Duration timeout = defaultTimeout,
+  }) async {
+    _lastConditionError = null;
+    const interval = Duration(milliseconds: 20);
+    final steps = (timeout.inMicroseconds / interval.inMicroseconds).ceil();
+    for (var step = 0; step <= steps; step++) {
+      await _tester.pump();
+      if (_evaluate(condition)) {
+        return;
+      }
+      if (step == steps) {
+        break;
+      }
+      await _tester.runAsync(() => Future<void>.delayed(interval));
     }
 
     throw TestFailure(
@@ -307,19 +331,104 @@ class AppleReleaseHarness {
     await waitUntilIdle(description: description, timeout: timeout);
   }
 
+  /// Enters [text] in [finder] after waiting for the editable control.
+  Future<void> enterText(
+    Finder finder,
+    String text, {
+    required String description,
+    Duration timeout = defaultTimeout,
+  }) async {
+    await waitFor(finder, description: description, timeout: timeout);
+    await _scrollIntoView(finder);
+    await _tester.enterText(finder, text);
+    await _tester.pump();
+  }
+
+  /// Opens a workspace panel through the mobile action or wide-screen dock.
+  Future<void> openWorkspacePanel({
+    required WorkspaceTab workspaceTab,
+    required String panelId,
+    required String mobileTooltip,
+    required Finder panel,
+    required String description,
+  }) async {
+    if (panel.evaluate().isNotEmpty) {
+      return;
+    }
+    final mobileAction = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byTooltip(mobileTooltip),
+    );
+    if (mobileAction.evaluate().isNotEmpty) {
+      await tapAndWaitFor(mobileAction.first, panel, description: description);
+      return;
+    }
+
+    // Wide layouts host panels in the dock. The published quick-action
+    // callback opens the mobile bottom sheet, so use the visible dock control.
+    await tapAndWaitFor(
+      find.byKey(WorkspaceDock.railButtonKey(panelId)).hitTestable(),
+      panel,
+      description: description,
+    );
+  }
+
+  /// Closes a workspace panel regardless of its mobile or wide presentation.
+  Future<void> closeWorkspacePanel({
+    required String panelId,
+    required Finder panel,
+    required String description,
+  }) async {
+    if (panel.evaluate().isEmpty) {
+      return;
+    }
+    final sheet = find.byType(BottomSheet);
+    if (sheet.evaluate().isNotEmpty) {
+      Navigator.of(_tester.element(sheet.first)).pop();
+    } else {
+      await tap(
+        find.byKey(WorkspaceDock.railButtonKey(panelId)).hitTestable(),
+        description: description,
+      );
+    }
+    await waitUntilGone(panel, description: description);
+    await waitUntilIdle(description: description);
+  }
+
+  /// Dismisses the route containing [routeContent].
+  Future<void> dismissRoute(
+    Finder routeContent, {
+    required String description,
+  }) async {
+    await waitFor(routeContent, description: description);
+    Navigator.of(_tester.element(routeContent.first)).pop();
+    await waitUntilGone(routeContent, description: description);
+    await waitUntilIdle(description: description);
+  }
+
   /// Scrolls [finder] into view when it sits inside a scrollable.
   ///
   /// Targets outside a scrollable are left alone instead of failing, so the
-  /// same call site works for the bottom bar and for the settings list.
+  /// same call site works for the workspace menu and for the settings list.
   Future<void> _scrollIntoView(Finder finder) async {
+    if (finder.hitTestable().evaluate().isNotEmpty) {
+      return;
+    }
     final elements = finder.evaluate();
     if (elements.length != 1) {
       return;
     }
-    if (Scrollable.maybeOf(elements.single) == null) {
+    final renderObject = elements.single.findRenderObject();
+    if (renderObject == null) {
       return;
     }
-    await _tester.ensureVisible(finder);
+    var scrollable = Scrollable.maybeOf(elements.single);
+    while (scrollable != null) {
+      if (scrollable.position.axis == Axis.vertical) {
+        await scrollable.position.ensureVisible(renderObject);
+      }
+      scrollable = Scrollable.maybeOf(scrollable.context);
+    }
     await _tester.pump();
   }
 
@@ -328,48 +437,34 @@ class AppleReleaseHarness {
     final l10n = localizations;
     final label = module.label(l10n);
     final description = module.description(l10n);
-    _activity = 'opening the $label workspace';
-    if (shell == AppleReleaseShell.mobile) {
-      await tap(
-        find
-            .descendant(
-              of: find.byType(MobileNavigation),
-              matching: find.text(label),
-            )
-            .first,
-        description: 'the $label navigation destination',
-      );
-    } else {
-      // The wide shell hides the workspace list behind the app-bar selector.
-      await tap(
-        find
-            .descendant(
-              of: find.byType(WorkspaceSelector),
-              matching: find.byIcon(Icons.arrow_drop_down),
-            )
-            .first,
-        description: 'the workspace selector',
-      );
-      await tap(
-        find
-            .ancestor(
-              of: find.text(label),
-              matching: find.byType(MenuItemButton),
-            )
-            .first,
-        description: 'the $label workspace menu item',
-      );
-    }
+    await tap(
+      find
+          .descendant(
+            of: find.byType(WorkspaceSelector),
+            matching: find.byIcon(Icons.arrow_drop_down),
+          )
+          .first,
+      description: 'the workspace selector',
+    );
+    final menuItem = find
+        .ancestor(of: find.text(label), matching: find.byType(MenuItemButton))
+        .first;
+    await waitFor(menuItem, description: 'the $label workspace menu item');
+    final menuItemContext = _tester.element(menuItem);
+    MenuController.maybeOf(menuItemContext)?.close();
+    _tester.widget<MenuItemButton>(menuItem).onPressed?.call();
+    await _tester.pump();
     await waitFor(
-      appBarText(description),
-      description: 'the "$description" app bar heading for $label',
+      shell == AppleReleaseShell.mobile
+          ? appBarText(label)
+          : appBarText(description),
+      description: 'the app bar heading for $label',
     );
     await waitUntilIdle(description: 'opening the $label workspace');
   }
 
   /// Opens the settings page from the workspace app bar.
   Future<void> openSettings() async {
-    _activity = 'opening the settings page';
     await tapAndWaitFor(
       appBarAction(Icons.settings),
       find.byKey(const ValueKey('settings_save_button')),
@@ -379,7 +474,6 @@ class AppleReleaseHarness {
 
   /// Opens the help catalog from the workspace app bar.
   Future<void> openHelp() async {
-    _activity = 'opening the help page';
     await tapAndWaitFor(
       appBarAction(Icons.help_outline),
       appBarText(localizations.helpPageTitle),
@@ -389,7 +483,6 @@ class AppleReleaseHarness {
 
   /// Selects [localeCode] on the settings page and waits for the new copy.
   Future<void> selectLocale(String localeCode) async {
-    _activity = 'switching the locale to "$localeCode"';
     final chipKey = ValueKey<String>('settings_language_$localeCode');
     await tap(
       find.byKey(chipKey),
@@ -408,7 +501,6 @@ class AppleReleaseHarness {
     required Finder expected,
     required String description,
   }) async {
-    _activity = 'returning to $description';
     await _tester.pageBack();
     await waitFor(expected, description: 'returning to $description');
     await waitUntilIdle(description: 'returning to $description');
@@ -435,9 +527,7 @@ class AppleReleaseHarness {
   /// [context].
   ///
   /// Taking the exception here instead of letting it surface at the end of the
-  /// test keeps the report attached to the step that produced it. Errors
-  /// matching [_trackedExceptionPrefixes] never reach this point: they are
-  /// intercepted at report time and recorded in [trackedExceptions].
+  /// test keeps the report attached to the step that produced it.
   void expectNoUntrackedException(String context) {
     final exception = _tester.takeException();
     if (exception == null) {
@@ -458,11 +548,10 @@ class AppleReleaseHarness {
 
   Future<void> _launch({
     required Map<String, Object> preferences,
+    required ExamplesRepository? examplesRepository,
     required bool enableSemantics,
   }) async {
     _installLogCapture();
-    _installErrorInterceptor();
-
     await resetDependencies();
     SharedPreferences.setMockInitialValues(<String, Object>{
       ..._pinnedPreferences,
@@ -497,6 +586,8 @@ class AppleReleaseHarness {
     final container = ProviderContainer(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
+        if (examplesRepository != null)
+          examplesRepositoryProvider.overrideWithValue(examplesRepository),
       ],
     );
     _container = container;
@@ -513,7 +604,9 @@ class AppleReleaseHarness {
       description: 'the ${shell.name} navigation shell on ${target.label}',
     );
     await waitFor(
-      appBarText(AppleReleaseModule.fsa.description(localizations)),
+      shell == AppleReleaseShell.mobile
+          ? appBarText(AppleReleaseModule.fsa.label(localizations))
+          : appBarText(AppleReleaseModule.fsa.description(localizations)),
       description: 'the first-launch FSA workspace heading',
     );
     await waitUntilIdle(description: 'the first launch of ${target.label}');
@@ -533,8 +626,8 @@ class AppleReleaseHarness {
 
   Duration get _pollInterval =>
       _tester.binding is AutomatedTestWidgetsFlutterBinding
-          ? _fakeClockPollInterval
-          : _livePollInterval;
+      ? _fakeClockPollInterval
+      : _livePollInterval;
 
   Future<void> _reset() async {
     if (_resetCompleted) {
@@ -545,8 +638,13 @@ class AppleReleaseHarness {
     _semanticsHandle?.dispose();
     _semanticsHandle = null;
 
-    // Disposed before the framework unmounts the tree at the end of the test.
-    // The scope is uncontrolled, so nothing else would ever dispose it.
+    // Unmount before disposing the uncontrolled container. Pumping another
+    // `TuringLabApp` with the same type and key can otherwise reuse the route
+    // and workspace state from the previous parameterized case.
+    await _tester.pumpWidget(const SizedBox.shrink());
+    await _tester.pump();
+
+    // The scope is uncontrolled, so nothing else disposes this container.
     _container?.dispose();
     _container = null;
 
@@ -557,26 +655,8 @@ class AppleReleaseHarness {
     }
     _tester.platformDispatcher.clearAllTestValues();
 
-    _restoreErrorInterceptor();
     _restoreLogCapture();
-    _reportTrackedExceptions();
     await resetDependencies();
-  }
-
-  void _reportTrackedExceptions() {
-    if (trackedExceptions.isEmpty) {
-      return;
-    }
-    final buffer = StringBuffer()
-      ..writeln(
-        'Tracked layout defects observed on ${target.label} '
-        '(${level.id} ${level.title}); see release/APPLE_QA_MATRIX.md:',
-      );
-    for (final entry in trackedExceptions) {
-      buffer.writeln('  - $entry');
-    }
-    // ignore: avoid_print
-    print(buffer.toString().trimRight());
   }
 
   // ---------------------------------------------------------------------
@@ -590,32 +670,6 @@ class AppleReleaseHarness {
       _lastConditionError = error.toString();
       return false;
     }
-  }
-
-  void _installErrorInterceptor() {
-    if (_errorInterceptorInstalled) {
-      return;
-    }
-    _errorInterceptorInstalled = true;
-    final previous = FlutterError.onError;
-    _originalOnError = previous;
-    FlutterError.onError = (details) {
-      final message = details.exception.toString().trim();
-      if (_trackedExceptionPrefixes.any(message.startsWith)) {
-        trackedExceptions.add('while $_activity: ${message.split('\n').first}');
-        return;
-      }
-      previous?.call(details);
-    };
-  }
-
-  void _restoreErrorInterceptor() {
-    if (!_errorInterceptorInstalled) {
-      return;
-    }
-    _errorInterceptorInstalled = false;
-    FlutterError.onError = _originalOnError;
-    _originalOnError = null;
   }
 
   void _installLogCapture() {
@@ -706,12 +760,14 @@ class AppleReleaseHarness {
   }
 
   String _describeShell() {
-    final mobile = find.byType(MobileNavigation).evaluate().length;
-    final wide = find.byType(WorkspaceSelector).evaluate().length;
-    if (mobile == 0 && wide == 0) {
+    final selectors = find.byType(WorkspaceSelector).evaluate();
+    if (selectors.isEmpty) {
       return 'none mounted';
     }
-    return 'MobileNavigation x$mobile, WorkspaceSelector x$wide';
+    final compact = selectors
+        .where((element) => (element.widget as WorkspaceSelector).compact)
+        .length;
+    return 'WorkspaceSelector x${selectors.length} (compact x$compact)';
   }
 
   String _describeAppBarText() {

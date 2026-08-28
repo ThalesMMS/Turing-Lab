@@ -14,6 +14,7 @@ void _runFileOperationsPanelAutomatonOperationTests(
     FSA? automaton,
     FileOperationsService? fileService,
     ValueChanged<FSA>? onAutomatonLoaded,
+    DocumentAnnotationCollection? annotations,
   }) {
     return tester.pumpWidget(
       MaterialApp(
@@ -22,6 +23,7 @@ void _runFileOperationsPanelAutomatonOperationTests(
             automaton: automaton,
             fileService: fileService,
             onAutomatonLoaded: onAutomatonLoaded,
+            annotations: annotations,
           ),
         ),
       ),
@@ -71,6 +73,78 @@ void _runFileOperationsPanelAutomatonOperationTests(
       expect(service.saveAutomatonCallCount, equals(1));
       expect(find.textContaining('Download started'), findsOneWidget);
     }, skip: !kIsWeb);
+
+    testWidgets(
+      'save automaton renders a structured codec failure',
+      (tester) async {
+        final automaton = _buildSampleAutomaton();
+        final service = _StubFileOperationsService(
+          saveAutomatonResponses: Queue.of([
+            Failure<String>(
+              'codec.lossy-export-requires-confirmation',
+              structuredMessage: _parserFailureMessage(
+                'service.file-operations',
+                'lossy-export-requires-confirmation',
+              ),
+            ),
+          ]),
+        );
+        fakeFilePicker().enqueueSaveResult('/tmp/automaton.jff');
+
+        await pumpFileOperationsPanel(
+          tester,
+          automaton: automaton,
+          fileService: service,
+        );
+        await tapAndSettle(tester, find.byKey(_fsaJflapExportButtonKey));
+
+        expect(
+          find.textContaining(
+            'Review and confirm the compatibility changes before exporting '
+            'this document.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('codec.lossy-export-requires-confirmation'),
+          findsNothing,
+        );
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.windows,
+      }),
+      skip: kIsWeb,
+    );
+
+    testWidgets('save automaton localizes a synchronous codec exception', (
+      tester,
+    ) async {
+      final service = _StubFileOperationsService(
+        serializeAutomatonException: CodecOperationException(
+          compatibilityCode: 'codec.malformed.invalidValue',
+          structuredMessage: _parserFailureMessage(
+            'service.file-operations',
+            'invalid-model-type',
+          ),
+        ),
+      );
+
+      await pumpFileOperationsPanel(
+        tester,
+        automaton: _buildSampleAutomaton(),
+        fileService: service,
+      );
+      await tapAndSettle(tester, find.byKey(_fsaJflapExportButtonKey));
+
+      expect(
+        find.textContaining(
+          'The document contains a different formal-system model than '
+          'expected.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('codec.malformed.invalidValue'), findsNothing);
+    }, skip: kIsWeb);
 
     testWidgets(
       'iOS save automaton passes bytes to the picker',
@@ -163,6 +237,51 @@ void _runFileOperationsPanelAutomatonOperationTests(
       expect(find.byType(ImportErrorDialog), findsOneWidget);
       expect(find.text('Invalid JSON Structure'), findsOneWidget);
       expect(find.textContaining('Failed to parse JSON'), findsOneWidget);
+    });
+
+    testWidgets('JSON import renders structured failures at the UI boundary', (
+      tester,
+    ) async {
+      final automaton = _buildSampleAutomaton();
+      final service = _StubFileOperationsService(
+        loadAutomatonResponses: Queue.of([
+          Failure<FSA>(
+            'codec.requires-interoperability-review',
+            structuredMessage: _parserFailureMessage(
+              'service.file-operations',
+              'interoperability-review-required',
+            ),
+          ),
+        ]),
+      );
+      final picker = fakeFilePicker();
+      picker.enqueuePickResult(
+        FilePickerResult([
+          PlatformFile(
+            name: 'review.json',
+            size: 2,
+            bytes: Uint8List.fromList([123, 125]),
+          ),
+        ]),
+      );
+
+      await pumpFileOperationsPanel(
+        tester,
+        automaton: automaton,
+        fileService: service,
+      );
+      await tapAndSettle(tester, find.byKey(_fsaJsonImportButtonKey));
+
+      expect(
+        find.textContaining(
+          'Review the compatibility changes before importing this document.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('codec.requires-interoperability-review'),
+        findsNothing,
+      );
     });
 
     testWidgets(
@@ -272,6 +391,23 @@ void _runFileOperationsPanelAutomatonOperationTests(
       'desktop PNG export writes pre-rendered bytes without rerendering',
       (tester) async {
         final automaton = _buildSampleAutomaton();
+        final timestamp = DateTime.utc(2026);
+        final annotations = DocumentAnnotationCollection(
+          documentId: automaton.id,
+          documentRevision: '1',
+          annotations: [
+            DocumentAnnotation(
+              id: 'note-1',
+              documentId: automaton.id,
+              documentRevision: '1',
+              text: 'PNG note',
+              x: 10,
+              y: 20,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            ),
+          ],
+        );
         final service = _StubFileOperationsService(
           exportResponses: Queue.of([
             const Success<String>('/tmp/automaton.png'),
@@ -284,11 +420,21 @@ void _runFileOperationsPanelAutomatonOperationTests(
           tester,
           automaton: automaton,
           fileService: service,
+          annotations: annotations,
         );
 
+        final annotationSwitch = find.widgetWithText(
+          SwitchListTile,
+          'Include notes in visual exports',
+        );
+        await tester.ensureVisible(annotationSwitch);
+        await tapAndSettle(tester, annotationSwitch);
+        await tester.ensureVisible(find.byKey(_fsaPngExportButtonKey));
         await tapAndSettle(tester, find.byKey(_fsaPngExportButtonKey));
 
         expect(service.exportPngBytesCallCount, equals(1));
+        expect(service.lastPngIncludeAnnotations, isTrue);
+        expect(service.lastPngAnnotations, same(annotations));
         expect(service.writePngBytesCallCount, equals(1));
         expect(service.exportAutomatonPngCallCount, equals(0));
       },

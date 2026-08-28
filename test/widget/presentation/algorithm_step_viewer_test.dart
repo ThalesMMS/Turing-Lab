@@ -408,6 +408,47 @@ void main() {
       expect(find.text('Cyk Step'), findsNothing);
     });
 
+    testWidgets(
+      'fits the CYK typed header in the iPad dock column',
+      (tester) async {
+        final cykStep = CYKStep.fillBaseCase(
+          id: 'cyk-step',
+          stepNumber: 0,
+          position: 0,
+          terminal: 'a',
+          derivingVariables: {'A'},
+        );
+        final step = cykStep.baseStep.copyWith(
+          properties: {kCykStepKey: cykStep},
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: 290,
+                  child: SingleChildScrollView(
+                    child: AlgorithmStepViewer(
+                      step: step,
+                      rendererRegistry:
+                          AlgorithmStepRendererRegistry.withDefaults(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('CYK Step Data'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+
     testWidgets('shows details button when callback is provided', (
       tester,
     ) async {

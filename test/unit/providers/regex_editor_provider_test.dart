@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/models/regex_document.dart';
 import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 
 void main() {
@@ -198,6 +199,35 @@ void main() {
         container.read(regexEditorProvider).resolvedAlphabet,
         {'a', '🧪'},
       );
+    });
+
+    test('document replacement preserves identity and invalidates derived data',
+        () {
+      notifier.validateRegex('a*');
+      notifier.runComplexityAnalysis();
+      final generation = container.read(regexEditorProvider).documentGeneration;
+
+      notifier.replaceDocument(
+        RegexDocument(
+          id: 'imported-regex',
+          name: 'Imported regex',
+          source: '(β|a)*',
+          alphabet: const ['β', 'a'],
+        ),
+      );
+
+      final state = container.read(regexEditorProvider);
+      expect(state.documentId, 'imported-regex');
+      expect(state.documentName, 'Imported regex');
+      expect(state.documentGeneration, greaterThan(generation));
+      expect(state.currentRegex, '(β|a)*');
+      expect(state.alphabet, 'βa');
+      expect(state.isValid, isTrue);
+      expect(state.regexAnalysis, isNull);
+      final rebuilt = notifier.buildDocument();
+      expect(rebuilt.id, 'imported-regex');
+      expect(rebuilt.source, '(β|a)*');
+      expect(rebuilt.alphabet, ['β', 'a']);
     });
 
     test('changing the source regex invalidates every derived result',

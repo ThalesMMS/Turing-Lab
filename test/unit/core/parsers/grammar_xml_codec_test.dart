@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/parsers/grammar_xml_codec.dart';
@@ -90,6 +91,56 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(result.data!.nonterminals, equals({'S', 'A'}));
       expect(result.data!.terminals, equals({'a'}));
+    });
+
+    test('returns stable structured failures with typed grammar evidence', () {
+      final invalidStart = codec.decodeGrammarXml('''
+<structure type="grammar">
+  <grammar><start>S T</start></grammar>
+</structure>''');
+      final incompleteProduction = codec.decodeGrammarXml('''
+<structure type="grammar">
+  <grammar>
+    <start>S</start>
+    <production><left>S</left></production>
+  </grammar>
+</structure>''');
+
+      expect(invalidStart.error, 'parser.grammar-xml.invalid-start-count');
+      expect(
+        invalidStart.structuredError?.arguments['count'],
+        StructuredMessageArgument.count(2),
+      );
+      expect(
+        incompleteProduction.error,
+        'parser.grammar-xml.incomplete-production',
+      );
+      expect(
+        incompleteProduction.structuredError?.arguments['index'],
+        StructuredMessageArgument.index(0, role: 'production-index'),
+      );
+    });
+
+    test('structured failures survive persistence without localized prose', () {
+      final failure = codec.decodeGrammarXml('<not-xml');
+      final message = failure.structuredError!;
+      final restored = StructuredMessage.fromJson(message.toJson());
+
+      expect(failure.error, 'parser.grammar-xml.malformed-document');
+      expect(restored, message);
+      expect(restored.toJson().toString(), isNot(contains('malformed XML')));
+    });
+
+    test('uses generated document identity as the imported name', () {
+      const xml = '''
+<structure type="grammar">
+  <grammar><start>S</start></grammar>
+</structure>''';
+
+      final grammar = codec.decodeGrammarXml(xml).data!;
+
+      expect(grammar.name, grammar.id);
+      expect(grammar.name, startsWith('imported_grammar_'));
     });
   });
 }

@@ -31,6 +31,29 @@ class FunctionHighlightChannel implements HighlightChannel {
   }
 }
 
+/// Runs [beforeActivity] before forwarding highlight activity to [delegate].
+class InterceptingHighlightChannel implements HighlightChannel {
+  InterceptingHighlightChannel({
+    required this.delegate,
+    required this.beforeActivity,
+  });
+
+  final HighlightChannel delegate;
+  final void Function() beforeActivity;
+
+  @override
+  void clear() {
+    beforeActivity();
+    delegate.clear();
+  }
+
+  @override
+  void send(SimulationHighlight highlight) {
+    beforeActivity();
+    delegate.send(highlight);
+  }
+}
+
 /// Shared channel, counter, last-highlight, and logging plumbing.
 class HighlightDispatchController<TChannel extends HighlightChannel> {
   HighlightDispatchController({

@@ -1,0 +1,93 @@
+{
+  "family": "graph",
+  "generatorVersion": "graph-fixture-v2",
+  "oracleVersion": "graph-invariants-v2",
+  "property": "graph.rotate-90",
+  "seed": 341,
+  "nodes": [
+    {
+      "id": "n0",
+      "label": "start",
+      "x": -100000.0,
+      "y": -40.0
+    },
+    {
+      "id": "n1",
+      "label": "duplicate",
+      "x": 0.0,
+      "y": 0.0
+    },
+    {
+      "id": "n2",
+      "label": "duplicate",
+      "x": 120.0,
+      "y": 80.0
+    },
+    {
+      "id": "n3",
+      "label": "loop",
+      "x": 240.0,
+      "y": -20.0
+    },
+    {
+      "id": "n4",
+      "label": "island",
+      "x": 100000.0,
+      "y": 300.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "from": "n0",
+      "to": "n1"
+    },
+    {
+      "id": "e1",
+      "from": "n0",
+      "to": "n1"
+    },
+    {
+      "id": "e2",
+      "from": "n1",
+      "to": "n0"
+    },
+    {
+      "id": "e3",
+      "from": "n1",
+      "to": "n2"
+    },
+    {
+      "id": "e4",
+      "from": "n2",
+      "to": "n3"
+    },
+    {
+      "id": "e5",
+      "from": "n3",
+      "to": "n3"
+    }
+  ],
+  "restorePositions": {
+    "n0": {
+      "x": 10.0,
+      "y": 20.0
+    },
+    "n1": {
+      "x": 30.0,
+      "y": 40.0
+    },
+    "n2": {
+      "x": 50.0,
+      "y": 60.0
+    },
+    "n3": {
+      "x": 70.0,
+      "y": 80.0
+    },
+    "n4": {
+      "x": 90.0,
+      "y": 100.0
+    }
+  }
+}

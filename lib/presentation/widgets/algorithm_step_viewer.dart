@@ -10,8 +10,18 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter/material.dart';
+import '../../core/algorithms/fsa_concatenation_messages.dart';
+import '../../core/algorithms/fsa_kleene_star_messages.dart';
+import '../../core/algorithms/fsa_reverser_messages.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/models/algorithm_step.dart';
+import '../../core/models/cyk_step_messages.dart';
+import '../../core/models/dfa_minimization_step_messages.dart';
+import '../../core/models/fa_to_regex_step.dart';
+import '../../core/models/nfa_to_dfa_step_messages.dart';
+import '../../core/models/regex_to_nfa_step.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import 'algorithm_step_renderer_registry.dart';
 
@@ -87,61 +97,112 @@ class AlgorithmStepViewer extends StatelessWidget {
     TextTheme textTheme,
   ) {
     final l10n = appLocalizationsOf(context);
-    return Row(
-      children: [
-        // Step number badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: colorScheme.primary,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            '${l10n.stepLabel} ${step.displayNumber}',
-            style: textTheme.labelMedium?.copyWith(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+    final titleMessage =
+        _structuredMessageProperty(step, faToRegexTitleMessageProperty) ??
+        _structuredMessageProperty(step, regexToNfaTitleMessageProperty) ??
+        _structuredMessageProperty(step, fsaKleeneStarTitleMessageProperty) ??
+        _structuredMessageProperty(step, fsaReversalTitleMessageProperty) ??
+        _structuredMessageProperty(
+          step,
+          fsaConcatenationTitleMessageProperty,
+        ) ??
+        _structuredMessageProperty(step, dfaMinimizationTitleMessageProperty) ??
+        _structuredMessageProperty(step, nfaToDfaTitleMessageProperty) ??
+        _structuredMessageProperty(step, cykStepTitleMessageProperty);
+    final stepBadge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        '${l10n.stepLabel} ${step.displayNumber}',
+        style: textTheme.labelMedium?.copyWith(
+          color: colorScheme.onPrimary,
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(width: 12),
+      ),
+    );
+    final title = Text(
+      titleMessage == null
+          ? l10n.localizeWorkflowText(step.title)
+          : l10n.resolveStructuredMessage(titleMessage),
+      style: textTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: colorScheme.onSurface,
+      ),
+    );
+    final algorithmBadge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        l10n.localizeWorkflowText(_getAlgorithmTypeLabel(step.type)),
+        style: textTheme.labelSmall?.copyWith(
+          color: colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
 
-        // Step title
-        Expanded(
-          child: Text(
-            l10n.localizeWorkflowText(step.title),
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
-          ),
-        ),
-
-        // Algorithm type badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colorScheme.secondary.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Text(
-            l10n.localizeWorkflowText(_getAlgorithmTypeLabel(step.type)),
-            style: textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSecondaryContainer,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 480) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [stepBadge, algorithmBadge],
+              ),
+              const SizedBox(height: 8),
+              title,
+            ],
+          );
+        }
+        return Row(
+          children: [
+            stepBadge,
+            const SizedBox(width: 12),
+            Expanded(child: title),
+            algorithmBadge,
+          ],
+        );
+      },
     );
   }
 
   /// Builds the explanation section
   Widget _buildExplanationSection(BuildContext context, TextTheme textTheme) {
     final l10n = appLocalizationsOf(context);
+    final explanationMessage =
+        _structuredMessageProperty(step, faToRegexExplanationMessageProperty) ??
+        _structuredMessageProperty(
+          step,
+          regexToNfaExplanationMessageProperty,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          fsaKleeneStarExplanationMessageProperty,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          fsaReversalExplanationMessageProperty,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          fsaConcatenationExplanationMessageProperty,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          dfaMinimizationExplanationMessageProperty,
+        ) ??
+        _structuredMessageProperty(step, nfaToDfaExplanationMessageProperty) ??
+        _structuredMessageProperty(step, cykStepExplanationMessageProperty);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -175,7 +236,9 @@ class AlgorithmStepViewer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.localizeWorkflowText(step.explanation),
+            explanationMessage == null
+                ? l10n.localizeWorkflowText(step.explanation)
+                : l10n.resolveStructuredMessage(explanationMessage),
             style: textTheme.bodyMedium?.copyWith(
               height: 1.5,
               color: Theme.of(context).colorScheme.onSurface,
@@ -192,6 +255,7 @@ class AlgorithmStepViewer extends StatelessWidget {
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
+    final l10n = appLocalizationsOf(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -207,7 +271,7 @@ class AlgorithmStepViewer extends StatelessWidget {
               Icon(Icons.data_object, size: 18, color: colorScheme.tertiary),
               const SizedBox(width: 8),
               Text(
-                'Step Data',
+                l10n.localizeWorkflowText('Step Data'),
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.tertiary,
@@ -239,6 +303,7 @@ class AlgorithmStepViewer extends StatelessWidget {
     dynamic value,
     TextTheme textTheme,
   ) {
+    final l10n = appLocalizationsOf(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -246,7 +311,7 @@ class AlgorithmStepViewer extends StatelessWidget {
         SizedBox(
           width: 140,
           child: Text(
-            _formatPropertyKey(key),
+            l10n.localizeWorkflowText(_formatPropertyKey(key)),
             style: textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -268,6 +333,7 @@ class AlgorithmStepViewer extends StatelessWidget {
     TextTheme textTheme,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = appLocalizationsOf(context);
 
     // Handle different value types
     if (value is List) {
@@ -346,7 +412,7 @@ class AlgorithmStepViewer extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            value ? 'Yes' : 'No',
+            value ? l10n.yes : l10n.no,
             style: textTheme.bodySmall?.copyWith(
               color: value ? colorScheme.tertiary : colorScheme.error,
               fontWeight: FontWeight.w600,
@@ -424,5 +490,17 @@ class AlgorithmStepViewer extends StatelessWidget {
       case AlgorithmType.fsaReversal:
         return 'Reverse';
     }
+  }
+}
+
+StructuredMessage? _structuredMessageProperty(AlgorithmStep step, String key) {
+  final raw = step.properties[key];
+  if (raw is! Map) return null;
+  try {
+    return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
+  } on FormatException {
+    return null;
+  } on ArgumentError {
+    return null;
   }
 }

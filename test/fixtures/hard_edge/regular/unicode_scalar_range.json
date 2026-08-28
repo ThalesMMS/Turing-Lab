@@ -1,0 +1,8 @@
+{
+  "accepted": ["😀", "😁"],
+  "expectedStatus": "passed",
+  "family": "regular",
+  "property": "regular.regex-oracle",
+  "regex": "[😀-😁]",
+  "rejected": ["a", "😂", ""]
+}

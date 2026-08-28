@@ -6,7 +6,7 @@
 //  generic SimulationResult so BaseTraceViewer can be reused, highlighting
 //  remaining input, stack contents, and used transitions.
 //  Harmonizes accept/reject messages, integrates with the canvas
-//  highlight service, and reinforces theoretical conventions such as λ
+//  highlight service, and reinforces theoretical conventions such as ε
 //  for the empty string and emptied stacks.
 //
 //  Thales Matheus Mendonça Santos - October 2025
@@ -17,6 +17,7 @@ import '../../../core/algorithms/pda_simulator.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
+import '../../../core/utils/epsilon_utils.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import 'base_trace_viewer.dart';
 import '../../../core/constants/monospace_typography.dart';
@@ -64,8 +65,9 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
       onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
         final remaining =
-            step.remainingInput.isEmpty ? 'λ' : step.remainingInput;
-        final stack = step.stackContents.isEmpty ? 'λ' : step.stackContents;
+            step.remainingInput.isEmpty ? kEpsilonSymbol : step.remainingInput;
+        final stack =
+            step.stackContents.isEmpty ? kEpsilonSymbol : step.stackContents;
         final transition =
             step.usedTransition != null ? ' | ${step.usedTransition}' : '';
         return Container(

@@ -119,6 +119,87 @@ void main() {
       expect(transition.inputSymbol, 'a');
       expect(transition.label, 'a, Z/AZ');
     });
+
+    test('detects overlapping epsilon, prefix input, and stack guards', () {
+      final notifier = PDAEditorNotifier()
+        ..addOrUpdateState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..addOrUpdateState(id: 'state_1', label: 'q1', x: 100, y: 0)
+        ..addOrUpdateState(id: 'state_2', label: 'q2', x: 100, y: 100)
+        ..addOrUpdateState(id: 'state_3', label: 'q3', x: 100, y: 200)
+        ..upsertTransition(
+          id: 'epsilon',
+          fromStateId: 'state_0',
+          toStateId: 'state_1',
+          readSymbol: '',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          isLambdaInput: true,
+          isLambdaPop: false,
+          isLambdaPush: false,
+        )
+        ..upsertTransition(
+          id: 'read-a',
+          fromStateId: 'state_0',
+          toStateId: 'state_2',
+          readSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          isLambdaInput: false,
+          isLambdaPop: false,
+          isLambdaPush: false,
+        )
+        ..upsertTransition(
+          id: 'different-stack',
+          fromStateId: 'state_0',
+          toStateId: 'state_3',
+          readSymbol: 'ab',
+          popSymbol: 'A',
+          pushSymbol: 'A',
+          isLambdaInput: false,
+          isLambdaPop: false,
+          isLambdaPush: false,
+        );
+
+      expect(
+        notifier.state.nondeterministicTransitionIds,
+        {'epsilon', 'read-a'},
+      );
+    });
+
+    test('classifies only fully empty PDA operations as lambda transitions',
+        () {
+      final notifier = PDAEditorNotifier()
+        ..addOrUpdateState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..addOrUpdateState(id: 'state_1', label: 'q1', x: 100, y: 0)
+        ..upsertTransition(
+          id: 'empty-input-only',
+          fromStateId: 'state_0',
+          toStateId: 'state_1',
+          readSymbol: '',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          isLambdaInput: true,
+          isLambdaPop: false,
+          isLambdaPush: false,
+        )
+        ..upsertTransition(
+          id: 'fully-empty',
+          fromStateId: 'state_1',
+          toStateId: 'state_0',
+          readSymbol: '',
+          popSymbol: '',
+          pushSymbol: '',
+          isLambdaInput: true,
+          isLambdaPop: true,
+          isLambdaPush: true,
+        );
+
+      expect(
+        notifier.state.lambdaTransitionIds,
+        {'empty-input-only', 'fully-empty'},
+      );
+      expect(notifier.state.standaloneLambdaTransitionIds, {'fully-empty'});
+    });
   });
 
   group('TMEditorNotifier state mutations', () {
@@ -213,6 +294,48 @@ void main() {
       final transition = notifier.state.tm!.tmTransitions.single;
       expect(transition.fromState.position.x, closeTo(40, 0.0001));
       expect(transition.fromState.position.y, closeTo(80, 0.0001));
+    });
+
+    test('tape-count migration pads safely and refuses destructive shrink', () {
+      final notifier = TMEditorNotifier()
+        ..upsertState(id: 'state_0', label: 'q0', x: 0, y: 0)
+        ..upsertState(id: 'state_1', label: 'q1', x: 100, y: 0)
+        ..addOrUpdateTransition(
+          id: 'transition_0',
+          fromStateId: 'state_0',
+          toStateId: 'state_1',
+          readSymbol: 'a',
+          writeSymbol: 'a',
+          direction: TapeDirection.right,
+        );
+
+      expect(notifier.setTapeCount(3), isTrue);
+      var transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.readSymbols, ['a', 'B', 'B']);
+      expect(transition.writeSymbols, ['a', 'B', 'B']);
+      expect(transition.directions, [
+        TapeDirection.right,
+        TapeDirection.stay,
+        TapeDirection.stay,
+      ]);
+
+      notifier.addOrUpdateTransitionVectors(
+        id: transition.id,
+        fromStateId: transition.fromState.id,
+        toStateId: transition.toState.id,
+        readSymbols: const ['a', 'B', 'B'],
+        writeSymbols: const ['a', 'B', 'X'],
+        directions: const [
+          TapeDirection.right,
+          TapeDirection.stay,
+          TapeDirection.left,
+        ],
+      );
+      expect(notifier.setTapeCount(2), isFalse);
+      expect(notifier.state.tm!.tapeCount, 3);
+      transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.writeSymbols.last, 'X');
+      expect(transition.directions.last, TapeDirection.left);
     });
 
     test('rejects invalid transition insertions', () {

@@ -20,28 +20,37 @@ void main() {
   );
 
   group('LR parser capability', () {
-    test('legacy parse reports LR as unavailable instead of accepting epsilon',
-        () {
-      final result = GrammarParser.parse(
+    test('legacy parse accepts the language and rejects epsilon', () {
+      final accepted = GrammarParser.parse(
+        grammar,
+        'a',
+        strategyHint: ParsingStrategyHint.lr,
+      );
+      final rejected = GrammarParser.parse(
         grammar,
         '',
         strategyHint: ParsingStrategyHint.lr,
       );
 
-      expect(result.isFailure, isTrue);
-      expect(result.error, contains('LR parsing is not available'));
+      expect(accepted.isSuccess, isTrue);
+      expect(accepted.data!.accepted, isTrue);
+      expect(accepted.data!.lr1Steps, isNotEmpty);
+      expect(accepted.data!.tree, isNotNull);
+      expect(rejected.isSuccess, isTrue);
+      expect(rejected.data!.accepted, isFalse);
     });
 
-    test('structured parse reports capability failure, not language rejection',
-        () {
+    test('structured parse returns the canonical LR trace and tree', () {
       final result = GrammarParser.parseWithReport(
         grammar,
         'a',
         strategyHint: ParsingStrategyHint.lr,
       );
 
-      expect(result.isFailure, isTrue);
-      expect(result.error, contains('LR parsing is not available'));
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isTrue);
+      expect(result.data!.lr1Steps, isNotEmpty);
+      expect(result.data!.trees, hasLength(1));
     });
   });
 
@@ -59,11 +68,16 @@ void main() {
           ParsingStrategyHint.bruteForce,
           ParsingStrategyHint.cyk,
           ParsingStrategyHint.ll,
+          ParsingStrategyHint.lr,
         },
       );
       expect(
         GrammarParser.capabilityFor(ParsingStrategyHint.ll).unavailableReason,
         isNull,
+      );
+      expect(
+        GrammarParser.capabilityFor(ParsingStrategyHint.lr).label,
+        'Canonical LR(1)',
       );
     });
 

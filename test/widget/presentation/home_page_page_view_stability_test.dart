@@ -19,6 +19,7 @@ import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/home_page.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
+import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -72,11 +73,36 @@ void main() {
       expect(
         identical(elementBefore, elementAfterForward),
         isTrue,
-        reason: 'switching to a non-canvas tab must not recreate the PageView '
+        reason:
+            'switching to a non-canvas tab must not recreate the PageView '
             '(a recreated PageView transiently double-attaches the shared '
             'PageController)',
       );
       expect(controller.positions, hasLength(1));
+
+      // Crossing the shell breakpoint moves the selector but not the PageView.
+      tester.view.physicalSize = const Size(1280, 900);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<WorkspaceSelector>(find.byType(WorkspaceSelector))
+            .compact,
+        isFalse,
+      );
+      expect(identical(elementBefore, tester.element(pageViewFinder)), isTrue);
+      expect(controller.page, closeTo(1, 0.001));
+      expect(controller.positions, hasLength(1));
+
+      tester.view.physicalSize = const Size(430, 932);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<WorkspaceSelector>(find.byType(WorkspaceSelector))
+            .compact,
+        isTrue,
+      );
+      expect(identical(elementBefore, tester.element(pageViewFinder)), isTrue);
+      expect(controller.page, closeTo(1, 0.001));
 
       // And back: Grammar (non-canvas) -> FSA (canvas).
       navigationNotifier.setIndex(0);

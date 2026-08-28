@@ -17,6 +17,7 @@ import 'package:graphview/graphview_turing_lab.dart'
 import 'package:vector_math/vector_math_64.dart';
 
 import '../../../core/constants/automaton_canvas_constants.dart';
+import '../../../core/annotations/annotations.dart';
 import '../../../core/constants/svg_export_defaults.dart';
 import '../../../core/entities/grammar_entity.dart';
 import '../../../core/entities/turing_machine_entity.dart';
@@ -202,6 +203,7 @@ class SvgExporter {
     final statePositions = _layoutStatesForTm(tm.states, width, height);
     _drawTuringTransitions(buffer, tm, statePositions, opts);
     _drawTuringStates(buffer, tm, statePositions, opts);
+    _addAnnotations(buffer, opts, width, height, statePositions);
 
     if (opts.includeLegend) {
       _drawTuringLegend(buffer, width, height, opts);
@@ -293,6 +295,9 @@ class SvgExporter {
     buffer.writeln('  .head { fill: #d32f2f; }');
     buffer.writeln(
       '  .legend { font-family: $_fontFamily; font-size: 12px; fill: #424242; }',
+    );
+    buffer.writeln(
+      '  .annotation { font-family: $_fontFamily; font-size: 12px; }',
     );
     buffer.writeln('</style>');
   }
@@ -589,6 +594,7 @@ class SvgExporter {
       if (options.includeTitle) {
         _addTitle(buffer, automaton.name, width, height);
       }
+      _addAnnotations(buffer, options, width, height, const {});
       return;
     }
 
@@ -604,6 +610,7 @@ class SvgExporter {
 
     // Draw states
     _addStates(buffer, automaton, statePositions, options);
+    _addAnnotations(buffer, options, width, height, statePositions);
 
     // Add title if requested
     if (options.includeTitle) {
@@ -1107,6 +1114,74 @@ class SvgExporter {
         .replaceAll('"', '&quot;');
   }
 
+  static void _addAnnotations(
+    StringBuffer buffer,
+    SvgExportOptions options,
+    double width,
+    double height,
+    Map<String, Vector2> statePositions,
+  ) {
+    final collection = options.annotations;
+    if (!options.includeAnnotations || collection == null) return;
+    buffer.writeln('  <g class="annotations">');
+    for (final annotation in collection.annotations) {
+      final attached = annotation.attachment;
+      final statePosition = attached?.type == AnnotationTargetType.state
+          ? statePositions[attached!.targetId]
+          : null;
+      final rawX = statePosition?.x ?? annotation.x;
+      final rawY = statePosition?.y ?? annotation.y;
+      final x = (rawX + (statePosition == null ? 0 : attached!.offsetX))
+          .clamp(0, math.max(0, width - DocumentAnnotation.minimumWidth))
+          .toDouble();
+      final y = (rawY + (statePosition == null ? 0 : attached!.offsetY))
+          .clamp(0, math.max(0, height - DocumentAnnotation.minimumHeight))
+          .toDouble();
+      final noteWidth = annotation.width
+          .clamp(
+            DocumentAnnotation.minimumWidth,
+            math.max(DocumentAnnotation.minimumWidth, width - x),
+          )
+          .toDouble();
+      final noteHeight = (annotation.collapsed
+              ? DocumentAnnotation.minimumHeight
+              : annotation.height)
+          .clamp(
+            DocumentAnnotation.minimumHeight,
+            math.max(DocumentAnnotation.minimumHeight, height - y),
+          )
+          .toDouble();
+      final (fill, stroke) = switch (annotation.styleRole) {
+        AnnotationStyleRole.note => ('#fff3b0', '#8a6d00'),
+        AnnotationStyleRole.information => ('#dbeafe', '#1d4ed8'),
+        AnnotationStyleRole.warning => ('#fee2e2', '#b91c1c'),
+        AnnotationStyleRole.question => ('#ede9fe', '#6d28d9'),
+        AnnotationStyleRole.todo => ('#e5e7eb', '#374151'),
+      };
+      buffer.writeln(
+          '    <g class="annotation" data-id="${_escapeXml(annotation.id)}">');
+      buffer.writeln(
+        '      <rect x="${_formatDimension(x)}" y="${_formatDimension(y)}" '
+        'width="${_formatDimension(noteWidth)}" height="${_formatDimension(noteHeight)}" '
+        'rx="8" fill="$fill" stroke="$stroke"/>',
+      );
+      if (!annotation.collapsed) {
+        final lines = annotation.text.split('\n').take(8);
+        var line = 0;
+        for (final value in lines) {
+          buffer.writeln(
+            '      <text x="${_formatDimension(x + 10)}" '
+            'y="${_formatDimension(y + 22 + line * 16)}" fill="$stroke">'
+            '${_escapeXml(value)}</text>',
+          );
+          line++;
+        }
+      }
+      buffer.writeln('    </g>');
+    }
+    buffer.writeln('  </g>');
+  }
+
   static void _addInitialArrow(
     StringBuffer buffer,
     Vector2 position, {
@@ -1323,6 +1398,8 @@ class SvgExportOptions {
   final ColorScheme? colorScheme;
   final String emptyAutomatonLabel;
   final String tmLegendLabel;
+  final bool includeAnnotations;
+  final DocumentAnnotationCollection? annotations;
 
   const SvgExportOptions({
     this.includeTitle = true,
@@ -1331,6 +1408,8 @@ class SvgExportOptions {
     this.colorScheme,
     this.emptyAutomatonLabel = kDefaultSvgEmptyAutomatonLabel,
     this.tmLegendLabel = kDefaultSvgTmLegendLabel,
+    this.includeAnnotations = false,
+    this.annotations,
   });
 }
 

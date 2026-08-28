@@ -1,26 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// coverage:ignore-file
 
 part of 'derivation_tree_node.dart';
 
-DerivationTreeNode _$DerivationTreeNodeFromJson(Map<String, dynamic> json) =>
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_DerivationTreeNode _$DerivationTreeNodeFromJson(Map json) =>
     _DerivationTreeNode(
       symbol: json['symbol'] as String,
-      children: (json['children'] as List<dynamic>? ?? const <dynamic>[])
-          .map((e) => DerivationTreeNode.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      children:
+          (json['children'] as List<dynamic>?)
+              ?.map(
+                (e) => DerivationTreeNode.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList() ??
+          const <DerivationTreeNode>[],
       lexeme: json['lexeme'] as String?,
-      start: json['start'] as int?,
-      end: json['end'] as int?,
+      start: (json['start'] as num?)?.toInt(),
+      end: (json['end'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$DerivationTreeNodeToJson(
-  _DerivationTreeNode instance,
-) =>
+Map<String, dynamic> _$DerivationTreeNodeToJson(_DerivationTreeNode instance) =>
     <String, dynamic>{
       'symbol': instance.symbol,
       'children': instance.children.map((e) => e.toJson()).toList(),
-      'lexeme': instance.lexeme,
-      'start': instance.start,
-      'end': instance.end,
+      'lexeme': ?instance.lexeme,
+      'start': ?instance.start,
+      'end': ?instance.end,
     };

@@ -1,10 +1,12 @@
 import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/production.dart';
+import '../messages/structured_message.dart';
 import '../utils/epsilon_utils.dart';
 import 'pda_normalizer.dart';
 import 'pda_simulator.dart';
 import 'pda_to_cfg_converter.dart';
+import 'pda_language_emptiness_messages.dart';
 
 /// Resource bounds for the PDA-to-CFG construction and witness proof.
 class PDALanguageEmptinessLimits {
@@ -38,10 +40,12 @@ class PDALanguageEmptinessFailure extends PDALanguageEmptinessAnalysis {
   const PDALanguageEmptinessFailure({
     required this.kind,
     required this.message,
+    this.structuredMessage,
   });
 
   final PDALanguageEmptinessFailureKind kind;
   final String message;
+  final StructuredMessage? structuredMessage;
 }
 
 /// One production application in a leftmost CFG derivation.
@@ -52,10 +56,10 @@ class CFGDerivationStep {
     required List<String> productionRight,
     required List<String> before,
     required List<String> after,
-  })  : productionLeft = List<String>.unmodifiable(productionLeft),
-        productionRight = List<String>.unmodifiable(productionRight),
-        before = List<String>.unmodifiable(before),
-        after = List<String>.unmodifiable(after);
+  }) : productionLeft = List<String>.unmodifiable(productionLeft),
+       productionRight = List<String>.unmodifiable(productionRight),
+       before = List<String>.unmodifiable(before),
+       after = List<String>.unmodifiable(after);
 
   final String productionId;
   final List<String> productionLeft;
@@ -75,13 +79,13 @@ class PDALanguageEmptinessProof extends PDALanguageEmptinessAnalysis {
     required this.witnessWord,
     required List<CFGDerivationStep> derivation,
     required this.witnessTrace,
-  })  : productiveNonterminals = Set<String>.unmodifiable(
-          productiveNonterminals,
-        ),
-        witnessSymbols = witnessSymbols == null
-            ? null
-            : List<String>.unmodifiable(witnessSymbols),
-        derivation = List<CFGDerivationStep>.unmodifiable(derivation);
+  }) : productiveNonterminals = Set<String>.unmodifiable(
+         productiveNonterminals,
+       ),
+       witnessSymbols = witnessSymbols == null
+           ? null
+           : List<String>.unmodifiable(witnessSymbols),
+       derivation = List<CFGDerivationStep>.unmodifiable(derivation);
 
   final bool isEmpty;
   final PDAAcceptanceMode acceptanceMode;
@@ -120,10 +124,12 @@ class CFGShortestWitnessFailure extends CFGShortestWitnessAnalysis {
   const CFGShortestWitnessFailure({
     required this.kind,
     required this.message,
+    this.structuredMessage,
   });
 
   final CFGShortestWitnessFailureKind kind;
   final String message;
+  final StructuredMessage? structuredMessage;
 }
 
 class CFGShortestWitnessProof extends CFGShortestWitnessAnalysis {
@@ -132,13 +138,13 @@ class CFGShortestWitnessProof extends CFGShortestWitnessAnalysis {
     required Set<String> productiveNonterminals,
     required List<String>? witnessSymbols,
     required List<CFGDerivationStep> derivation,
-  })  : productiveNonterminals = Set<String>.unmodifiable(
-          productiveNonterminals,
-        ),
-        witnessSymbols = witnessSymbols == null
-            ? null
-            : List<String>.unmodifiable(witnessSymbols),
-        derivation = List<CFGDerivationStep>.unmodifiable(derivation);
+  }) : productiveNonterminals = Set<String>.unmodifiable(
+         productiveNonterminals,
+       ),
+       witnessSymbols = witnessSymbols == null
+           ? null
+           : List<String>.unmodifiable(witnessSymbols),
+       derivation = List<CFGDerivationStep>.unmodifiable(derivation);
 
   final bool isEmpty;
   final Set<String> productiveNonterminals;
@@ -157,15 +163,17 @@ class CFGShortestWitnessAnalyzer {
     bool Function()? isCancelled,
   }) {
     if (maxFixedPointUpdates <= 0 || maxDerivationSteps <= 0) {
-      return const CFGShortestWitnessFailure(
+      return CFGShortestWitnessFailure(
         kind: CFGShortestWitnessFailureKind.invalidGrammar,
         message: 'CFG analysis limits must be greater than zero.',
+        structuredMessage: CfgShortestWitnessMessages.invalidLimits(),
       );
     }
     if (isCancelled?.call() == true) {
-      return const CFGShortestWitnessFailure(
+      return CFGShortestWitnessFailure(
         kind: CFGShortestWitnessFailureKind.cancelled,
         message: 'CFG shortest-witness analysis was cancelled.',
+        structuredMessage: CfgShortestWitnessMessages.cancelled(),
       );
     }
 
@@ -173,7 +181,8 @@ class CFGShortestWitnessAnalyzer {
     if (validationError != null) {
       return CFGShortestWitnessFailure(
         kind: CFGShortestWitnessFailureKind.invalidGrammar,
-        message: validationError,
+        message: validationError.message,
+        structuredMessage: validationError.structuredMessage,
       );
     }
 
@@ -186,9 +195,10 @@ class CFGShortestWitnessAnalyzer {
       changed = false;
       for (final production in productions) {
         if (isCancelled?.call() == true) {
-          return const CFGShortestWitnessFailure(
+          return CFGShortestWitnessFailure(
             kind: CFGShortestWitnessFailureKind.cancelled,
             message: 'CFG shortest-witness analysis was cancelled.',
+            structuredMessage: CfgShortestWitnessMessages.cancelled(),
           );
         }
 
@@ -201,8 +211,12 @@ class CFGShortestWitnessAnalyzer {
           if (updateCount >= maxFixedPointUpdates) {
             return CFGShortestWitnessFailure(
               kind: CFGShortestWitnessFailureKind.resourceLimit,
-              message: 'CFG productivity update limit exceeded '
+              message:
+                  'CFG productivity update limit exceeded '
                   '($maxFixedPointUpdates).',
+              structuredMessage: CfgShortestWitnessMessages.productivityLimit(
+                maxFixedPointUpdates,
+              ),
             );
           }
           best[nonterminal] = candidate;
@@ -230,12 +244,14 @@ class CFGShortestWitnessAnalyzer {
     );
     if (derivation is CFGShortestWitnessFailure) return derivation;
     final steps = derivation as List<CFGDerivationStep>;
-    final derivedSymbols =
-        steps.isEmpty ? <String>[grammar.startSymbol] : steps.last.after;
+    final derivedSymbols = steps.isEmpty
+        ? <String>[grammar.startSymbol]
+        : steps.last.after;
     if (!_listEquals(derivedSymbols, startChoice.symbols)) {
-      return const CFGShortestWitnessFailure(
+      return CFGShortestWitnessFailure(
         kind: CFGShortestWitnessFailureKind.internalConsistency,
         message: 'The reconstructed CFG derivation does not match its witness.',
+        structuredMessage: CfgShortestWitnessMessages.witnessMismatch(),
       );
     }
 
@@ -247,35 +263,68 @@ class CFGShortestWitnessAnalyzer {
     );
   }
 
-  static String? _validateGrammar(Grammar grammar) {
+  static _CfgValidationIssue? _validateGrammar(Grammar grammar) {
     if (!grammar.nonterminals.contains(grammar.startSymbol)) {
-      return 'The CFG start symbol must be a declared nonterminal.';
+      return _CfgValidationIssue(
+        message: 'The CFG start symbol must be a declared nonterminal.',
+        structuredMessage: CfgShortestWitnessMessages.missingStartSymbol(),
+      );
     }
     final ambiguousSymbols = grammar.terminals.intersection(
       grammar.nonterminals,
     );
     if (ambiguousSymbols.isNotEmpty) {
-      return 'CFG terminals and nonterminals must be disjoint.';
+      return _CfgValidationIssue(
+        message: 'CFG terminals and nonterminals must be disjoint.',
+        structuredMessage: CfgShortestWitnessMessages.overlappingSymbolSets(),
+      );
     }
     for (final production in grammar.productions) {
       if (production.leftSide.length != 1 ||
           !grammar.nonterminals.contains(production.leftSide.single)) {
-        return 'Production ${production.id} must have one declared '
-            'nonterminal on its left side.';
+        return _CfgValidationIssue(
+          message:
+              'Production ${production.id} must have one declared '
+              'nonterminal on its left side.',
+          structuredMessage: CfgShortestWitnessMessages.invalidProductionLeft(
+            production.id,
+          ),
+        );
       }
       if ((production.isLambda && production.rightSide.isNotEmpty) ||
           (!production.isLambda && production.rightSide.isEmpty)) {
-        return 'Production ${production.id} has inconsistent lambda metadata.';
+        return _CfgValidationIssue(
+          message:
+              'Production ${production.id} has inconsistent lambda metadata.',
+          structuredMessage:
+              CfgShortestWitnessMessages.inconsistentLambdaMetadata(
+                production.id,
+              ),
+        );
       }
       final epsilonCount = production.rightSide.where(isEpsilonSymbol).length;
       if (epsilonCount > 0 && production.rightSide.length != 1) {
-        return 'Production ${production.id} mixes epsilon with other symbols.';
+        final message =
+            'Production ${production.id} mixes epsilon with other symbols.';
+        return _CfgValidationIssue(
+          message: message,
+          structuredMessage: CfgShortestWitnessMessages.epsilonMixed(
+            production.id,
+          ),
+        );
       }
       for (final symbol in production.rightSide) {
         if (!grammar.nonterminals.contains(symbol) &&
             !grammar.terminals.contains(symbol) &&
             !isEpsilonSymbol(symbol)) {
-          return 'Production ${production.id} uses undeclared symbol $symbol.';
+          return _CfgValidationIssue(
+            message:
+                'Production ${production.id} uses undeclared symbol $symbol.',
+            structuredMessage: CfgShortestWitnessMessages.undeclaredSymbol(
+              productionId: production.id,
+              symbol: symbol,
+            ),
+          );
         }
       }
     }
@@ -322,9 +371,10 @@ class CFGShortestWitnessAnalyzer {
 
     while (true) {
       if (isCancelled?.call() == true) {
-        return const CFGShortestWitnessFailure(
+        return CFGShortestWitnessFailure(
           kind: CFGShortestWitnessFailureKind.cancelled,
           message: 'CFG derivation reconstruction was cancelled.',
+          structuredMessage: CfgShortestWitnessMessages.cancelled(),
         );
       }
       final index = sententialForm.indexWhere(grammar.nonterminals.contains);
@@ -332,8 +382,12 @@ class CFGShortestWitnessAnalyzer {
       if (steps.length >= maxDerivationSteps) {
         return CFGShortestWitnessFailure(
           kind: CFGShortestWitnessFailureKind.resourceLimit,
-          message: 'CFG derivation step limit exceeded '
+          message:
+              'CFG derivation step limit exceeded '
               '($maxDerivationSteps).',
+          structuredMessage: CfgShortestWitnessMessages.derivationLimit(
+            maxDerivationSteps,
+          ),
         );
       }
 
@@ -342,8 +396,12 @@ class CFGShortestWitnessAnalyzer {
       if (choice == null) {
         return CFGShortestWitnessFailure(
           kind: CFGShortestWitnessFailureKind.internalConsistency,
-          message: 'No productive choice exists for $nonterminal during '
+          message:
+              'No productive choice exists for $nonterminal during '
               'derivation reconstruction.',
+          structuredMessage: CfgShortestWitnessMessages.missingProductiveChoice(
+            nonterminal,
+          ),
         );
       }
       final production = choice.production;
@@ -356,8 +414,9 @@ class CFGShortestWitnessAnalyzer {
         CFGDerivationStep(
           productionId: production.id,
           productionLeft: production.leftSide,
-          productionRight:
-              production.isLambda ? const <String>[] : production.rightSide,
+          productionRight: production.isLambda
+              ? const <String>[]
+              : production.rightSide,
           before: before,
           after: sententialForm,
         ),
@@ -380,15 +439,17 @@ class PDALanguageEmptinessAnalyzer {
     if (limits.maxGeneratedProductions <= 0 ||
         limits.maxFixedPointUpdates <= 0 ||
         limits.maxDerivationSteps <= 0) {
-      return const PDALanguageEmptinessFailure(
+      return PDALanguageEmptinessFailure(
         kind: PDALanguageEmptinessFailureKind.invalidInput,
         message: 'PDA language-analysis limits must be greater than zero.',
+        structuredMessage: PdaLanguageEmptinessMessages.invalidLimits(),
       );
     }
     if (isCancelled?.call() == true) {
-      return const PDALanguageEmptinessFailure(
+      return PDALanguageEmptinessFailure(
         kind: PDALanguageEmptinessFailureKind.cancelled,
         message: 'PDA language-emptiness analysis was cancelled.',
+        structuredMessage: PdaLanguageEmptinessMessages.cancelled(),
       );
     }
 
@@ -404,6 +465,7 @@ class PDALanguageEmptinessAnalyzer {
       return PDALanguageEmptinessFailure(
         kind: PDALanguageEmptinessFailureKind.normalizationFailed,
         message: normalization.error!,
+        structuredMessage: normalization.structuredError,
       );
     }
 
@@ -419,17 +481,20 @@ class PDALanguageEmptinessAnalyzer {
         return PDALanguageEmptinessFailure(
           kind: PDALanguageEmptinessFailureKind.cancelled,
           message: error,
+          structuredMessage: conversion.structuredError,
         );
       }
       if (error.startsWith(PDAtoCFGConverter.productionLimitErrorPrefix)) {
         return PDALanguageEmptinessFailure(
           kind: PDALanguageEmptinessFailureKind.resourceLimit,
           message: error,
+          structuredMessage: conversion.structuredError,
         );
       }
       return PDALanguageEmptinessFailure(
         kind: PDALanguageEmptinessFailureKind.conversionFailed,
         message: error,
+        structuredMessage: conversion.structuredError,
       );
     }
 
@@ -453,6 +518,7 @@ class PDALanguageEmptinessAnalyzer {
             PDALanguageEmptinessFailureKind.internalConsistency,
         },
         message: cfgAnalysis.message,
+        structuredMessage: cfgAnalysis.structuredMessage,
       );
     }
 
@@ -485,8 +551,13 @@ class PDALanguageEmptinessAnalyzer {
         final detail = replay.error ?? replay.data?.errorMessage ?? 'rejected';
         return PDALanguageEmptinessFailure(
           kind: PDALanguageEmptinessFailureKind.internalConsistency,
-          message: 'The CFG witness could not be replayed by the source PDA: '
+          message:
+              'The CFG witness could not be replayed by the source PDA: '
               '$detail.',
+          structuredMessage:
+              replay.structuredError ??
+              replay.data?.structuredMessage ??
+              PdaLanguageEmptinessMessages.witnessReplayFailed(),
         );
       }
       trace = replay.data;
@@ -535,13 +606,23 @@ int _compareProductions(Production left, Production right) {
   if (byOrder != 0) return byOrder;
   final byId = left.id.compareTo(right.id);
   if (byId != 0) return byId;
-  final byLeft = left.leftSide.join('\u0000').compareTo(
-        right.leftSide.join('\u0000'),
-      );
+  final byLeft = left.leftSide
+      .join('\u0000')
+      .compareTo(right.leftSide.join('\u0000'));
   if (byLeft != 0) return byLeft;
-  return left.rightSide.join('\u0000').compareTo(
-        right.rightSide.join('\u0000'),
-      );
+  return left.rightSide
+      .join('\u0000')
+      .compareTo(right.rightSide.join('\u0000'));
+}
+
+class _CfgValidationIssue {
+  const _CfgValidationIssue({
+    required this.message,
+    required this.structuredMessage,
+  });
+
+  final String message;
+  final StructuredMessage structuredMessage;
 }
 
 bool _listEquals(List<String> left, List<String> right) {

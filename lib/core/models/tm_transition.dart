@@ -29,14 +29,41 @@ class TMTransition extends Transition {
     return '$read/$write$suffix';
   }
 
-  /// Symbol to read from the tape
-  final String readSymbol;
+  static String formatVectorLabel({
+    required List<String> readSymbols,
+    required List<String> writeSymbols,
+    required List<TapeDirection> directions,
+  }) {
+    if (readSymbols.length != writeSymbols.length ||
+        readSymbols.length != directions.length) {
+      throw ArgumentError('TM operation vectors must have equal lengths.');
+    }
+    if (readSymbols.length == 1) {
+      return formatLabel(
+        readSymbol: readSymbols.single,
+        writeSymbol: writeSymbols.single,
+        direction: directions.single,
+      );
+    }
+    return List<String>.generate(
+      readSymbols.length,
+      (tape) => 'T${tape + 1}: ${formatLabel(
+        readSymbol: readSymbols[tape],
+        writeSymbol: writeSymbols[tape],
+        direction: directions[tape],
+      )}',
+      growable: false,
+    ).join(' | ');
+  }
 
-  /// Symbol to write to the tape
-  final String writeSymbol;
+  /// Ordered symbols read atomically, one for each tape.
+  final List<String> readSymbols;
 
-  /// Direction to move the tape head
-  final TapeDirection direction;
+  /// Ordered symbols written atomically, one for each tape.
+  final List<String> writeSymbols;
+
+  /// Ordered head movements applied atomically, one for each tape.
+  final List<TapeDirection> directions;
 
   /// Tape number (always 0 for single-tape TM)
   final int tapeNumber;
@@ -51,11 +78,79 @@ class TMTransition extends Transition {
     required super.label,
     super.controlPoint,
     super.type,
-    required this.readSymbol,
-    required this.writeSymbol,
-    required this.direction,
+    String? readSymbol,
+    String? writeSymbol,
+    TapeDirection? direction,
+    Iterable<String>? readSymbols,
+    Iterable<String>? writeSymbols,
+    Iterable<TapeDirection>? directions,
     this.tapeNumber = 0, // Always 0 for single-tape TM
-  });
+  })  : readSymbols = List<String>.unmodifiable(
+          readSymbols ?? <String>[readSymbol ?? ''],
+        ),
+        writeSymbols = List<String>.unmodifiable(
+          writeSymbols ?? <String>[writeSymbol ?? ''],
+        ),
+        directions = List<TapeDirection>.unmodifiable(
+          directions ?? <TapeDirection>[direction ?? TapeDirection.stay],
+        ) {
+    if (this.readSymbols.length != this.writeSymbols.length ||
+        this.readSymbols.length != this.directions.length) {
+      throw ArgumentError(
+        'TM transition read, write, and direction vectors must have equal lengths.',
+      );
+    }
+    if (this.readSymbols.isEmpty) {
+      throw ArgumentError('TM transition vectors must not be empty.');
+    }
+  }
+
+  /// Legacy scalar view for the selected tape operation.
+  String get readSymbol => readSymbols[_legacyIndex];
+
+  /// Legacy scalar view for the selected tape operation.
+  String get writeSymbol => writeSymbols[_legacyIndex];
+
+  /// Legacy scalar view for the selected tape operation.
+  TapeDirection get direction => directions[_legacyIndex];
+
+  int get _legacyIndex =>
+      tapeNumber >= 0 && tapeNumber < readSymbols.length ? tapeNumber : 0;
+
+  int get operationCount => readSymbols.length;
+
+  /// Resolves the pre-vector legacy representation into one operation per
+  /// tape. Legacy transitions addressed one tape by [tapeNumber]; all other
+  /// tapes now explicitly read/write blank and stay in place.
+  ({
+    List<String> readSymbols,
+    List<String> writeSymbols,
+    List<TapeDirection> directions,
+  }) operationsForTapeCount(int tapeCount, String blankSymbol) {
+    if (operationCount == tapeCount) {
+      return (
+        readSymbols: readSymbols,
+        writeSymbols: writeSymbols,
+        directions: directions,
+      );
+    }
+    if (operationCount != 1 || tapeNumber < 0 || tapeNumber >= tapeCount) {
+      throw ArgumentError(
+        'TM transition vectors must match the machine tape count.',
+      );
+    }
+    final reads = List<String>.filled(tapeCount, blankSymbol);
+    final writes = List<String>.filled(tapeCount, blankSymbol);
+    final moves = List<TapeDirection>.filled(tapeCount, TapeDirection.stay);
+    reads[tapeNumber] = readSymbols.single;
+    writes[tapeNumber] = writeSymbols.single;
+    moves[tapeNumber] = directions.single;
+    return (
+      readSymbols: List<String>.unmodifiable(reads),
+      writeSymbols: List<String>.unmodifiable(writes),
+      directions: List<TapeDirection>.unmodifiable(moves),
+    );
+  }
 
   /// Creates a copy of this TM transition with updated properties
   @override
@@ -69,6 +164,9 @@ class TMTransition extends Transition {
     String? readSymbol,
     String? writeSymbol,
     TapeDirection? direction,
+    Iterable<String>? readSymbols,
+    Iterable<String>? writeSymbols,
+    Iterable<TapeDirection>? directions,
     int? tapeNumber,
   }) {
     return TMTransition(
@@ -81,6 +179,18 @@ class TMTransition extends Transition {
       readSymbol: readSymbol ?? this.readSymbol,
       writeSymbol: writeSymbol ?? this.writeSymbol,
       direction: direction ?? this.direction,
+      readSymbols: readSymbols ??
+          (readSymbol == null
+              ? this.readSymbols
+              : _replaceAt(this.readSymbols, _legacyIndex, readSymbol)),
+      writeSymbols: writeSymbols ??
+          (writeSymbol == null
+              ? this.writeSymbols
+              : _replaceAt(this.writeSymbols, _legacyIndex, writeSymbol)),
+      directions: directions ??
+          (direction == null
+              ? this.directions
+              : _replaceAt(this.directions, _legacyIndex, direction)),
       tapeNumber: tapeNumber ?? this.tapeNumber,
     );
   }
@@ -100,6 +210,9 @@ class TMTransition extends Transition {
       'writeSymbol': writeSymbol,
       'direction': direction.name,
       'tapeNumber': tapeNumber,
+      'readSymbols': readSymbols,
+      'writeSymbols': writeSymbols,
+      'directions': directions.map((value) => value.name).toList(),
     };
   }
 
@@ -133,12 +246,13 @@ class TMTransition extends Transition {
         (e) => e.name == json['type'],
         orElse: () => TransitionType.deterministic,
       ),
-      readSymbol: json['readSymbol'] as String,
-      writeSymbol: json['writeSymbol'] as String,
-      direction: TapeDirection.values.firstWhere(
-        (e) => e.name == json['direction'],
-        orElse: () => TapeDirection.right,
-      ),
+      readSymbol: json['readSymbol'] as String?,
+      writeSymbol: json['writeSymbol'] as String?,
+      direction: _directionFromName(json['direction'] as String?),
+      readSymbols: (json['readSymbols'] as List?)?.cast<String>(),
+      writeSymbols: (json['writeSymbols'] as List?)?.cast<String>(),
+      directions:
+          (json['directions'] as List?)?.cast<String>().map(_directionFromName),
       tapeNumber: json['tapeNumber'] as int? ?? 0,
     );
   }
@@ -148,9 +262,9 @@ class TMTransition extends Transition {
     if (identical(this, other)) return true;
     return other is TMTransition &&
         super == other &&
-        other.readSymbol == readSymbol &&
-        other.writeSymbol == writeSymbol &&
-        other.direction == direction &&
+        _listEquals(other.readSymbols, readSymbols) &&
+        _listEquals(other.writeSymbols, writeSymbols) &&
+        _listEquals(other.directions, directions) &&
         other.tapeNumber == tapeNumber;
   }
 
@@ -158,9 +272,9 @@ class TMTransition extends Transition {
   int get hashCode {
     return Object.hash(
       super.hashCode,
-      readSymbol,
-      writeSymbol,
-      direction,
+      Object.hashAll(readSymbols),
+      Object.hashAll(writeSymbols),
+      Object.hashAll(directions),
       tapeNumber,
     );
   }
@@ -168,7 +282,7 @@ class TMTransition extends Transition {
   @override
   String toString() {
     return 'TMTransition(id: $id, fromState: ${fromState.id}, toState: ${toState.id}, '
-        'read: $readSymbol, write: $writeSymbol, direction: $direction, tape: $tapeNumber)';
+        'read: $readSymbols, write: $writeSymbols, directions: $directions)';
   }
 
   /// Validates the TM transition properties
@@ -176,11 +290,11 @@ class TMTransition extends Transition {
   List<String> validate() {
     final errors = super.validate();
 
-    if (readSymbol.isEmpty) {
+    if (readSymbols.any((symbol) => symbol.isEmpty)) {
       errors.add('TM transition must have read symbol');
     }
 
-    if (writeSymbol.isEmpty) {
+    if (writeSymbols.any((symbol) => symbol.isEmpty)) {
       errors.add('TM transition must have write symbol');
     }
 
@@ -195,6 +309,8 @@ class TMTransition extends Transition {
   bool canRead(String symbol) {
     return readSymbol == symbol;
   }
+
+  bool canReadVector(List<String> symbols) => _listEquals(readSymbols, symbols);
 
   /// Gets the symbol to write to the tape
   String get symbolToWrite => writeSymbol;
@@ -286,6 +402,26 @@ class TMTransition extends Transition {
       tapeNumber: tapeNumber,
     );
   }
+}
+
+List<T> _replaceAt<T>(List<T> values, int index, T value) {
+  final result = List<T>.of(values);
+  result[index] = value;
+  return result;
+}
+
+TapeDirection _directionFromName(String? name) =>
+    TapeDirection.values.firstWhere(
+      (value) => value.name == name,
+      orElse: () => TapeDirection.right,
+    );
+
+bool _listEquals<T>(List<T> left, List<T> right) {
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) return false;
+  }
+  return true;
 }
 
 /// Direction for tape head movement in Turing machines

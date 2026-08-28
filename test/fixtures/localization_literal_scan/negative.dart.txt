@@ -1,0 +1,8 @@
+import 'package:flutter/material.dart';
+
+const key = ValueKey<String>('save_button');
+const formalSymbol = 'ε';
+
+Widget buildExport(String documentName) => ExportRequest(
+  fileName: '${documentName}.jff',
+);

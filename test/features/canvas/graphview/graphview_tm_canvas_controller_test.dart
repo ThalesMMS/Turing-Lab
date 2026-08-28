@@ -17,6 +17,7 @@ import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_building_blocks.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
@@ -104,7 +105,7 @@ void main() {
       transformation.dispose();
     });
 
-    test('fitToContent uses the shared 1.75 scale cap', () {
+    test('fitToContent uses the shared natural-size cap', () {
       controller.dispose();
       final transformation = TransformationController();
       addTearDown(transformation.dispose);
@@ -123,7 +124,7 @@ void main() {
       expect(viewController.lastTarget, isNotNull);
       expect(
         viewController.lastTarget!.getMaxScaleOnAxis(),
-        closeTo(1.75, 0.0001),
+        closeTo(1.0, 0.0001),
       );
     });
 
@@ -172,6 +173,44 @@ void main() {
       expect(controller.redo(), isTrue);
       expect(notifier.state.tm!.states, isEmpty);
       expect(notifier.state.tm!.transitions, isEmpty);
+    });
+
+    test('complete replacement preserves TM blocks across undo and redo', () {
+      final destination = buildSampleTm();
+      notifier.setTm(destination);
+      controller.synchronize(destination);
+      final replacement = destination.copyWith(
+        blockDefinitions: {
+          'scan': TMBlockDefinition(
+            id: 'scan',
+            name: 'Scan',
+            revision: 3,
+            machine: buildSampleTm().copyWith(id: 'scan-machine'),
+          ),
+        },
+        blockInvocations: const [
+          TMBlockInvocationNode(
+            id: 'invoke-scan',
+            stateId: 'q1',
+            reference: TMBlockReference(blockId: 'scan', revision: 3),
+          ),
+        ],
+      );
+
+      controller.replaceDocumentAsMutation(replacement);
+
+      expect(notifier.state.tm!.blockDefinitions, contains('scan'));
+      expect(notifier.state.tm!.blockInvocations, hasLength(1));
+      expect(controller.undo(), isTrue);
+      expect(notifier.state.tm!.blockDefinitions, isEmpty);
+      expect(notifier.state.tm!.blockInvocations, isEmpty);
+
+      expect(controller.redo(), isTrue);
+      expect(notifier.state.tm!.blockDefinitions, contains('scan'));
+      expect(
+        notifier.state.tm!.blockInvocations.single.reference.blockId,
+        'scan',
+      );
     });
 
     test('addStateAt inserts state into notifier', () {
@@ -280,6 +319,44 @@ void main() {
       expect(transition.readSymbol, equals('1'));
       expect(transition.writeSymbol, equals('0'));
       expect(transition.direction, equals(TapeDirection.left));
+    });
+
+    test('vector transition survives canvas undo and redo atomically', () {
+      controller.addStateAt(const Offset(0, 0));
+      controller.addStateAt(const Offset(160, 100));
+      notifier.setTapeCount(2);
+      controller.synchronize(notifier.state.tm);
+      final stateIds =
+          notifier.state.tm!.states.map((state) => state.id).toList();
+
+      controller.addOrUpdateTransitionVectors(
+        fromStateId: stateIds.first,
+        toStateId: stateIds.last,
+        readSymbols: const ['1', 'B'],
+        writeSymbols: const ['B', '1'],
+        directions: const [TapeDirection.right, TapeDirection.stay],
+      );
+
+      var transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.readSymbols, ['1', 'B']);
+      expect(transition.writeSymbols, ['B', '1']);
+      expect(
+        transition.directions,
+        [TapeDirection.right, TapeDirection.stay],
+      );
+      expect(controller.edgeById(transition.id)!.tmReadSymbols, ['1', 'B']);
+
+      expect(controller.undo(), isTrue);
+      expect(notifier.state.tm!.tmTransitions, isEmpty);
+
+      expect(controller.redo(), isTrue);
+      transition = notifier.state.tm!.tmTransitions.single;
+      expect(transition.readSymbols, ['1', 'B']);
+      expect(transition.writeSymbols, ['B', '1']);
+      expect(
+        transition.directions,
+        [TapeDirection.right, TapeDirection.stay],
+      );
     });
 
     test('partial transition update preserves operation and moves its label',

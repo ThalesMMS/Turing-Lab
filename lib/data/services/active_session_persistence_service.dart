@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/repositories/active_session_repository.dart';
+import '../../core/formal_systems/formal_systems.dart';
+import 'active_session_snapshot_codec.dart';
 
 export '../../core/repositories/active_session_repository.dart'
     show
@@ -10,10 +12,14 @@ export '../../core/repositories/active_session_repository.dart'
         ActiveSessionRepository,
         ActiveSessionSnapshot,
         RegexSessionSnapshot,
+        UnsupportedActiveSessionSchemaVersionException,
         UnsupportedActiveSessionVersionException;
 
 class ActiveSessionPersistenceService implements ActiveSessionRepository {
-  const ActiveSessionPersistenceService(this._prefs);
+  ActiveSessionPersistenceService(
+    this._prefs, {
+    FormalSystemRegistry? registry,
+  }) : _codec = ActiveSessionSnapshotCodec(registry: registry);
 
   static const String sessionKey = 'active_editor_session';
   static const String autoSaveKey = 'settings_auto_save';
@@ -21,7 +27,14 @@ class ActiveSessionPersistenceService implements ActiveSessionRepository {
   static String unsupportedSessionBackupKey(int version) =>
       '${sessionKey}_unsupported_v$version';
 
+  static String unsupportedSchemaBackupKey(
+    FormalSystemKey key,
+    int version,
+  ) =>
+      '${sessionKey}_unsupported_${key.type.value}_${key.variant.value}_v$version';
+
   final SharedPreferences _prefs;
+  final ActiveSessionSnapshotCodec _codec;
 
   @override
   bool get autoSaveEnabled => _prefs.getBool(autoSaveKey) ?? true;
@@ -29,7 +42,7 @@ class ActiveSessionPersistenceService implements ActiveSessionRepository {
   @override
   Future<void> saveSession(ActiveSessionSnapshot session) async {
     final succeeded =
-        await _prefs.setString(sessionKey, jsonEncode(session.toJson()));
+        await _prefs.setString(sessionKey, jsonEncode(_codec.encode(session)));
     if (!succeeded) {
       throw const ActiveSessionPersistenceException('save');
     }
@@ -50,7 +63,7 @@ class ActiveSessionPersistenceService implements ActiveSessionRepository {
       }
       final sessionJson = decoded.cast<String, dynamic>();
       final storedVersion = sessionJson['version'] as int? ?? 0;
-      final session = ActiveSessionSnapshot.fromJson(sessionJson);
+      final session = _codec.decode(sessionJson);
       if (storedVersion != ActiveSessionSnapshot.currentVersion) {
         await saveSession(session);
       }
@@ -63,6 +76,17 @@ class ActiveSessionPersistenceService implements ActiveSessionRepository {
       if (!succeeded) {
         throw const ActiveSessionPersistenceException(
           'backup_unsupported_version',
+        );
+      }
+      rethrow;
+    } on UnsupportedActiveSessionSchemaVersionException catch (error) {
+      final succeeded = await _prefs.setString(
+        unsupportedSchemaBackupKey(error.systemKey, error.version),
+        payload,
+      );
+      if (!succeeded) {
+        throw const ActiveSessionPersistenceException(
+          'backup_unsupported_schema',
         );
       }
       rethrow;

@@ -14,11 +14,15 @@
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
 import '../models/pda.dart';
+import '../models/pda_acceptance_mode.dart';
 import '../models/pda_transition.dart';
 import '../models/tm.dart';
+import '../models/tm_acceptance.dart';
 import '../models/tm_transition.dart';
 import '../models/grammar.dart';
 import '../models/validation_diagnostic.dart';
+import '../messages/structured_message.dart';
+import 'validation_messages.dart';
 
 class ValidationIssue {
   final String code;
@@ -29,13 +33,29 @@ class ValidationIssue {
   /// actionable suggestions/highlights without parsing [message].
   final ValidationDiagnostic? diagnostic;
 
+  /// Optional locale-neutral semantic message for presentation resolvers.
+  final StructuredMessage? structuredMessage;
+
   const ValidationIssue(
     this.code,
     this.message, {
     this.location,
     this.diagnostic,
+    this.structuredMessage,
   });
 }
+
+ValidationIssue _structuredIssue(
+  String code,
+  String message, {
+  String? location,
+  Map<String, StructuredMessageArgument> arguments = const {},
+}) => ValidationIssue(
+  code,
+  message,
+  location: location,
+  structuredMessage: ValidationMessages.forCode(code, arguments: arguments),
+);
 
 class InputValidators {
   static List<ValidationIssue> validateFSA(FSA fsa) {
@@ -43,20 +63,23 @@ class InputValidators {
 
     // Basic structure validation
     if (fsa.states.isEmpty) {
-      issues.add(const ValidationIssue('FSA_EMPTY', 'Automaton has no states'));
+      issues.add(_structuredIssue('FSA_EMPTY', 'Automaton has no states'));
     }
     if (fsa.initialState == null) {
       issues.add(
-        const ValidationIssue(
-          'FSA_NO_INITIAL',
-          'Automaton has no initial state',
-        ),
+        _structuredIssue('FSA_NO_INITIAL', 'Automaton has no initial state'),
       );
     } else if (!fsa.states.contains(fsa.initialState)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'FSA_INVALID_INITIAL',
           'Initial state ${fsa.initialState!.id} is not in states set',
+          arguments: {
+            'state': StructuredMessageArgument.identifier(
+              fsa.initialState!.id,
+              role: 'state-id',
+            ),
+          },
         ),
       );
     }
@@ -64,10 +87,7 @@ class InputValidators {
     // Alphabet validation
     if (fsa.alphabet.isEmpty) {
       issues.add(
-        const ValidationIssue(
-          'FSA_EMPTY_ALPHABET',
-          'Automaton has no alphabet',
-        ),
+        _structuredIssue('FSA_EMPTY_ALPHABET', 'Automaton has no alphabet'),
       );
     }
 
@@ -75,9 +95,15 @@ class InputValidators {
     for (final state in fsa.acceptingStates) {
       if (!fsa.states.contains(state)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'FSA_INVALID_ACCEPTING',
             'Accepting state ${state.id} is not in states set',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                state.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
@@ -88,25 +114,43 @@ class InputValidators {
       if (t is! FSATransition) continue;
       if (!fsa.states.contains(t.fromState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'FSA_BAD_FROM',
             'Transition from unknown state ${t.fromState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.fromState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!fsa.states.contains(t.toState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'FSA_BAD_TO',
             'Transition to unknown state ${t.toState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.toState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!fsa.alphabet.contains(t.symbol)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'FSA_BAD_SYMBOL',
             'Transition uses symbol "${t.symbol}" not in alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                t.symbol,
+                role: 'input-symbol',
+              ),
+            },
           ),
         );
       }
@@ -126,9 +170,23 @@ class InputValidators {
         final transitions = transitionMap[stateId]![symbol]!;
         if (transitions.length > 1) {
           issues.add(
-            ValidationIssue(
+            _structuredIssue(
               'FSA_NONDETERMINISTIC',
               'State $stateId has ${transitions.length} transitions on symbol "$symbol"',
+              arguments: {
+                'state': StructuredMessageArgument.identifier(
+                  stateId,
+                  role: 'state-id',
+                ),
+                'count': StructuredMessageArgument.count(
+                  transitions.length,
+                  role: 'transition-count',
+                ),
+                'symbol': StructuredMessageArgument.symbol(
+                  symbol,
+                  role: 'input-symbol',
+                ),
+              },
             ),
           );
         }
@@ -143,33 +201,37 @@ class InputValidators {
 
     // Basic structure validation
     if (pda.states.isEmpty) {
-      issues.add(const ValidationIssue('PDA_EMPTY', 'PDA has no states'));
+      issues.add(_structuredIssue('PDA_EMPTY', 'PDA has no states'));
     }
     if (pda.initialState == null) {
       issues.add(
-        const ValidationIssue('PDA_NO_INITIAL', 'PDA has no initial state'),
+        _structuredIssue('PDA_NO_INITIAL', 'PDA has no initial state'),
       );
     } else if (!pda.states.contains(pda.initialState)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'PDA_INVALID_INITIAL',
           'Initial state ${pda.initialState!.id} is not in states set',
+          arguments: {
+            'state': StructuredMessageArgument.identifier(
+              pda.initialState!.id,
+              role: 'state-id',
+            ),
+          },
         ),
       );
     }
-    if (pda.acceptingStates.isEmpty) {
+    if (pda.acceptanceMode != PDAAcceptanceMode.emptyStack &&
+        pda.acceptingStates.isEmpty) {
       issues.add(
-        const ValidationIssue(
-          'PDA_NO_ACCEPTING',
-          'PDA has no accepting states',
-        ),
+        _structuredIssue('PDA_NO_ACCEPTING', 'PDA has no accepting states'),
       );
     }
 
     // Alphabet validation
     if (pda.alphabet.isEmpty) {
       issues.add(
-        const ValidationIssue(
+        _structuredIssue(
           'PDA_EMPTY_INPUT_ALPHABET',
           'PDA has no input alphabet',
         ),
@@ -177,7 +239,7 @@ class InputValidators {
     }
     if (pda.stackAlphabet.isEmpty) {
       issues.add(
-        const ValidationIssue(
+        _structuredIssue(
           'PDA_EMPTY_STACK_ALPHABET',
           'PDA has no stack alphabet',
         ),
@@ -185,9 +247,15 @@ class InputValidators {
     }
     if (!pda.stackAlphabet.contains(pda.initialStackSymbol)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'PDA_INVALID_INITIAL_STACK',
           'Initial stack symbol "${pda.initialStackSymbol}" is not in stack alphabet',
+          arguments: {
+            'symbol': StructuredMessageArgument.symbol(
+              pda.initialStackSymbol,
+              role: 'stack-symbol',
+            ),
+          },
         ),
       );
     }
@@ -196,9 +264,15 @@ class InputValidators {
     for (final state in pda.acceptingStates) {
       if (!pda.states.contains(state)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'PDA_INVALID_ACCEPTING',
             'Accepting state ${state.id} is not in states set',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                state.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
@@ -209,42 +283,72 @@ class InputValidators {
       if (t is! PDATransition) continue;
       if (!pda.states.contains(t.fromState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'PDA_BAD_FROM',
             'Transition from unknown state ${t.fromState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.fromState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!pda.states.contains(t.toState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'PDA_BAD_TO',
             'Transition to unknown state ${t.toState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.toState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!pda.alphabet.contains(t.inputSymbol) && t.inputSymbol != 'ε') {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'PDA_BAD_INPUT_SYMBOL',
             'Transition uses input symbol "${t.inputSymbol}" not in input alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                t.inputSymbol,
+                role: 'input-symbol',
+              ),
+            },
           ),
         );
       }
       if (!pda.stackAlphabet.contains(t.popSymbol) && t.popSymbol != 'ε') {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'PDA_BAD_STACK_SYMBOL',
             'Transition uses stack symbol "${t.popSymbol}" not in stack alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                t.popSymbol,
+                role: 'stack-symbol',
+              ),
+            },
           ),
         );
       }
       for (final pushSymbol in t.pushSymbols) {
         if (!pda.stackAlphabet.contains(pushSymbol) && pushSymbol != 'ε') {
           issues.add(
-            ValidationIssue(
+            _structuredIssue(
               'PDA_BAD_PUSH_SYMBOL',
               'Transition pushes symbol "$pushSymbol" not in stack alphabet',
+              arguments: {
+                'symbol': StructuredMessageArgument.symbol(
+                  pushSymbol,
+                  role: 'stack-symbol',
+                ),
+              },
             ),
           );
         }
@@ -259,34 +363,33 @@ class InputValidators {
 
     // Basic structure validation
     if (grammar.productions.isEmpty) {
-      issues.add(
-        const ValidationIssue('CFG_EMPTY', 'Grammar has no productions'),
-      );
+      issues.add(_structuredIssue('CFG_EMPTY', 'Grammar has no productions'));
     }
     if (grammar.nonTerminals.isEmpty) {
       issues.add(
-        const ValidationIssue(
-          'CFG_NO_NONTERMINALS',
-          'Grammar has no non-terminals',
-        ),
+        _structuredIssue('CFG_NO_NONTERMINALS', 'Grammar has no non-terminals'),
       );
     }
     if (grammar.terminals.isEmpty) {
       issues.add(
-        const ValidationIssue('CFG_NO_TERMINALS', 'Grammar has no terminals'),
+        _structuredIssue('CFG_NO_TERMINALS', 'Grammar has no terminals'),
       );
     }
 
     // Start symbol validation
     if (grammar.startSymbol.isEmpty) {
-      issues.add(
-        const ValidationIssue('CFG_EMPTY_START', 'Start symbol is empty'),
-      );
+      issues.add(_structuredIssue('CFG_EMPTY_START', 'Start symbol is empty'));
     } else if (!grammar.nonTerminals.contains(grammar.startSymbol)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'CFG_BAD_START',
           'Start symbol "${grammar.startSymbol}" must be a non-terminal',
+          arguments: {
+            'symbol': StructuredMessageArgument.symbol(
+              grammar.startSymbol,
+              role: 'start-symbol',
+            ),
+          },
         ),
       );
     }
@@ -298,28 +401,50 @@ class InputValidators {
 
       if (production.leftSide.isEmpty) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'CFG_EMPTY_LEFT',
             'Production $i has empty left side',
             location: 'production[$i]',
+            arguments: {
+              'production': StructuredMessageArgument.index(
+                i,
+                role: 'production-index',
+              ),
+            },
           ),
         );
       } else if (!grammar.nonTerminals.contains(production.leftSide.first)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'CFG_BAD_LEFT',
             'Production $i left side "${production.leftSide.first}" is not a non-terminal',
             location: 'production[$i]',
+            arguments: {
+              'production': StructuredMessageArgument.index(
+                i,
+                role: 'production-index',
+              ),
+              'symbol': StructuredMessageArgument.symbol(
+                production.leftSide.first,
+                role: 'grammar-symbol',
+              ),
+            },
           ),
         );
       }
 
       if (production.rightSide.isEmpty) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'CFG_EMPTY_RIGHT',
             'Production $i has empty right side',
             location: 'production[$i]',
+            arguments: {
+              'production': StructuredMessageArgument.index(
+                i,
+                role: 'production-index',
+              ),
+            },
           ),
         );
       } else {
@@ -328,10 +453,20 @@ class InputValidators {
               !grammar.nonTerminals.contains(symbol) &&
               !grammar.terminals.contains(symbol)) {
             issues.add(
-              ValidationIssue(
+              _structuredIssue(
                 'CFG_BAD_SYMBOL',
                 'Production $i contains unknown symbol "$symbol"',
                 location: 'production[$i]',
+                arguments: {
+                  'production': StructuredMessageArgument.index(
+                    i,
+                    role: 'production-index',
+                  ),
+                  'symbol': StructuredMessageArgument.symbol(
+                    symbol,
+                    role: 'grammar-symbol',
+                  ),
+                },
               ),
             );
           }
@@ -347,52 +482,55 @@ class InputValidators {
 
     // Basic structure validation
     if (tm.states.isEmpty) {
-      issues.add(const ValidationIssue('TM_EMPTY', 'TM has no states'));
+      issues.add(_structuredIssue('TM_EMPTY', 'TM has no states'));
     }
     if (tm.initialState == null) {
-      issues.add(
-        const ValidationIssue('TM_NO_INITIAL', 'TM has no initial state'),
-      );
+      issues.add(_structuredIssue('TM_NO_INITIAL', 'TM has no initial state'));
     } else if (!tm.states.contains(tm.initialState)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'TM_INVALID_INITIAL',
           'Initial state ${tm.initialState!.id} is not in states set',
+          arguments: {
+            'state': StructuredMessageArgument.identifier(
+              tm.initialState!.id,
+              role: 'state-id',
+            ),
+          },
         ),
       );
     }
-    if (tm.acceptingStates.isEmpty) {
+    if (tm.acceptancePolicy == TMAcceptancePolicy.finalState &&
+        tm.acceptingStates.isEmpty) {
       issues.add(
-        const ValidationIssue('TM_NO_ACCEPTING', 'TM has no accepting states'),
+        _structuredIssue('TM_NO_ACCEPTING', 'TM has no accepting states'),
       );
     }
 
     // Alphabet validation
     if (tm.alphabet.isEmpty) {
       issues.add(
-        const ValidationIssue(
-          'TM_EMPTY_INPUT_ALPHABET',
-          'TM has no input alphabet',
-        ),
+        _structuredIssue('TM_EMPTY_INPUT_ALPHABET', 'TM has no input alphabet'),
       );
     }
     if (tm.tapeAlphabet.isEmpty) {
       issues.add(
-        const ValidationIssue(
-          'TM_EMPTY_TAPE_ALPHABET',
-          'TM has no tape alphabet',
-        ),
+        _structuredIssue('TM_EMPTY_TAPE_ALPHABET', 'TM has no tape alphabet'),
       );
     }
     if (tm.blankSymbol.isEmpty) {
-      issues.add(
-        const ValidationIssue('TM_EMPTY_BLANK', 'Blank symbol is empty'),
-      );
+      issues.add(_structuredIssue('TM_EMPTY_BLANK', 'Blank symbol is empty'));
     } else if (!tm.tapeAlphabet.contains(tm.blankSymbol)) {
       issues.add(
-        ValidationIssue(
+        _structuredIssue(
           'TM_BLANK_NOT_IN_TAPE',
           'Blank symbol "${tm.blankSymbol}" is not in tape alphabet',
+          arguments: {
+            'symbol': StructuredMessageArgument.symbol(
+              tm.blankSymbol,
+              role: 'blank-symbol',
+            ),
+          },
         ),
       );
     }
@@ -401,9 +539,15 @@ class InputValidators {
     for (final symbol in tm.alphabet) {
       if (!tm.tapeAlphabet.contains(symbol)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_INPUT_NOT_IN_TAPE',
             'Input symbol "$symbol" is not in tape alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                symbol,
+                role: 'input-symbol',
+              ),
+            },
           ),
         );
       }
@@ -413,9 +557,15 @@ class InputValidators {
     for (final state in tm.acceptingStates) {
       if (!tm.states.contains(state)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_INVALID_ACCEPTING',
             'Accepting state ${state.id} is not in states set',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                state.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
@@ -426,33 +576,57 @@ class InputValidators {
       if (t is! TMTransition) continue;
       if (!tm.states.contains(t.fromState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_BAD_FROM',
             'Transition from unknown state ${t.fromState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.fromState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!tm.states.contains(t.toState)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_BAD_TO',
             'Transition to unknown state ${t.toState.id}',
+            arguments: {
+              'state': StructuredMessageArgument.identifier(
+                t.toState.id,
+                role: 'state-id',
+              ),
+            },
           ),
         );
       }
       if (!tm.tapeAlphabet.contains(t.readSymbol)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_BAD_READ_SYMBOL',
             'Transition reads symbol "${t.readSymbol}" not in tape alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                t.readSymbol,
+                role: 'tape-symbol',
+              ),
+            },
           ),
         );
       }
       if (!tm.tapeAlphabet.contains(t.writeSymbol)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_BAD_WRITE_SYMBOL',
             'Transition writes symbol "${t.writeSymbol}" not in tape alphabet',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                t.writeSymbol,
+                role: 'tape-symbol',
+              ),
+            },
           ),
         );
       }
@@ -461,9 +635,15 @@ class InputValidators {
           direction != 'TapeDirection.right' &&
           direction != 'TapeDirection.stay') {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'TM_BAD_MOVE',
             'Transition has invalid move direction "$direction"',
+            arguments: {
+              'direction': StructuredMessageArgument.literal(
+                direction,
+                role: 'move-direction',
+              ),
+            },
           ),
         );
       }
@@ -480,17 +660,27 @@ class InputValidators {
     final issues = <ValidationIssue>[];
 
     if (input.isEmpty) {
-      issues.add(const ValidationIssue('INPUT_EMPTY', 'Input string is empty'));
+      issues.add(_structuredIssue('INPUT_EMPTY', 'Input string is empty'));
     }
 
     for (int i = 0; i < input.length; i++) {
       final symbol = input[i];
       if (!alphabet.contains(symbol)) {
         issues.add(
-          ValidationIssue(
+          _structuredIssue(
             'INPUT_INVALID_SYMBOL',
             'Input contains invalid symbol "$symbol" at position $i',
             location: 'position[$i]',
+            arguments: {
+              'symbol': StructuredMessageArgument.symbol(
+                symbol,
+                role: 'input-symbol',
+              ),
+              'position': StructuredMessageArgument.index(
+                i,
+                role: 'input-position',
+              ),
+            },
           ),
         );
       }

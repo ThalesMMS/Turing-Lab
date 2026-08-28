@@ -76,7 +76,8 @@ void main() {
           print('  Before: ${step.originalRegex}');
           print('  After: ${step.simplifiedRegex}');
           print(
-              '  Match: "${step.matchedSubexpression}" → "${step.replacementSubexpression}"');
+            '  Match: "${step.matchedSubexpression}" → "${step.replacementSubexpression}"',
+          );
           print('  Explanation: ${step.ruleExplanation}');
         } else {
           print('  ${step.explanation}');
@@ -136,8 +137,10 @@ void main() {
         expect(step.simplifiedRegex, isNotNull);
         // The simplified regex should be different from or equal to original
         // (when no change is made, they might be equal)
-        expect(step.simplifiedRegex!.length,
-            lessThanOrEqualTo(step.originalRegex!.length));
+        expect(
+          step.simplifiedRegex!.length,
+          lessThanOrEqualTo(step.originalRegex!.length),
+        );
       }
     });
 
@@ -150,13 +153,11 @@ void main() {
 
       final step = ruleSteps.first;
       expect(step.ruleExplanation, isNotEmpty);
-      // The explanation should be descriptive
       expect(
-        step.ruleExplanation!.contains('union') ||
-            step.ruleExplanation!.contains('empty'),
-        true,
-        reason: 'Explanation should describe the empty union rule',
+        step.ruleExplanation,
+        step.ruleApplied!.descriptionMessage.stableCode,
       );
+      expect(step.ruleExplanationMessage, step.ruleApplied!.descriptionMessage);
     });
 
     test('complex expression shows multiple rule applications', () {
@@ -170,8 +171,11 @@ void main() {
       final ruleSteps = result.data!.ruleApplicationSteps;
 
       // Should have at least 2 rules applied (empty set and epsilon removal)
-      expect(ruleSteps.length, greaterThanOrEqualTo(2),
-          reason: 'Multiple rules should be applied for "(a|∅)ε"');
+      expect(
+        ruleSteps.length,
+        greaterThanOrEqualTo(2),
+        reason: 'Multiple rules should be applied for "(a|∅)ε"',
+      );
 
       // Collect the rules applied
       final rulesApplied = ruleSteps.map((s) => s.ruleApplied!).toSet();
@@ -179,14 +183,18 @@ void main() {
       // Check that we see the expected rules (at least some of them)
       final hasEmptySetRule =
           rulesApplied.contains(SimplificationRule.emptyUnion) ||
-              rulesApplied.contains(SimplificationRule.emptyUnionLeft);
+          rulesApplied.contains(SimplificationRule.emptyUnionLeft);
       final hasEpsilonRule =
           rulesApplied.contains(SimplificationRule.emptyStringConcatenation) ||
-              rulesApplied
-                  .contains(SimplificationRule.emptyStringConcatenationLeft);
+          rulesApplied.contains(
+            SimplificationRule.emptyStringConcatenationLeft,
+          );
 
-      expect(hasEmptySetRule || hasEpsilonRule, true,
-          reason: 'Should apply empty set and/or epsilon removal rules');
+      expect(
+        hasEmptySetRule || hasEpsilonRule,
+        true,
+        reason: 'Should apply empty set and/or epsilon removal rules',
+      );
     });
   });
 }

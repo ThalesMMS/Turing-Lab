@@ -13,10 +13,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'app_store_capture_fonts.dart';
 import 'app_store_capture_request.dart';
 import 'app_store_capture_session.dart';
 
-void main() {
+Future<void> main() async {
   AppStoreCaptureRequest? request;
   String? requestError;
   try {
@@ -37,6 +38,8 @@ void main() {
     });
     return;
   }
+
+  await loadAppStoreCaptureFonts();
 
   testWidgets('captures ${resolved.captureCase.id}', (tester) async {
     await AppStoreCaptureSession(resolved).capture(tester);

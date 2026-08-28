@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'tm_execution_analysis.dart';
+import '../messages/structured_message.dart';
 
 /// Explicit resource and input-scope bounds for one empirical TM profile.
 class TMTimeProfileBounds {
@@ -50,14 +51,18 @@ class TMTimeProfilePlan {
     required List<TMTimeProfilePlannedRow> rows,
     required this.plannedCandidateCount,
     this.validationError,
-  })  : alphabet = List<String>.unmodifiable(alphabet),
-        rows = List<TMTimeProfilePlannedRow>.unmodifiable(rows);
+    this.validationMessage,
+  }) : alphabet = List<String>.unmodifiable(alphabet),
+       rows = List<TMTimeProfilePlannedRow>.unmodifiable(rows);
 
   final TMTimeProfileBounds bounds;
   final List<String> alphabet;
   final List<TMTimeProfilePlannedRow> rows;
   final int plannedCandidateCount;
   final String? validationError;
+
+  /// Locale-neutral semantic payload for [validationError], when available.
+  final StructuredMessage? validationMessage;
 
   bool get hasSampledRows => rows.any((row) => row.isSampled);
   bool get isValid => validationError == null;
@@ -151,6 +156,7 @@ class TMTimeProfileReport {
     required this.plan,
     required List<TMTimeProfileRow> rows,
     required this.profilingWallClockTime,
+    this.structuredMessage,
   }) : rows = UnmodifiableListView<TMTimeProfileRow>(rows);
 
   final TMTimeProfileKind kind;
@@ -161,6 +167,9 @@ class TMTimeProfileReport {
 
   /// Device/runtime diagnostic only; never a TM time-complexity measurement.
   final Duration profilingWallClockTime;
+
+  /// Locale-neutral semantic payload for [message], when available.
+  final StructuredMessage? structuredMessage;
 
   bool get isComplete => status == TMTimeProfileStatus.complete;
 }

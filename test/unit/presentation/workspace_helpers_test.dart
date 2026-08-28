@@ -49,7 +49,7 @@ void main() {
           hasLambdaTransitions: true,
         ),
         '⚠ Missing start state · No accepting states · '
-        'Nondeterministic transitions · λ-transitions present · '
+        'Nondeterministic transitions · ε-transitions present · '
         '2 states · 1 transition',
       );
     });

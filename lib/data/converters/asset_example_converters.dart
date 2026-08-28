@@ -79,8 +79,9 @@ Result<FSA> convertAssetJsonToFsa(
       transitions: transitionsResult.data!,
       alphabet: alphabetResult.data!,
       initialState: states[_stringOr(json['initialId'], '')],
-      acceptingStates:
-          states.values.where((state) => state.isAccepting).toSet(),
+      acceptingStates: states.values
+          .where((state) => state.isAccepting)
+          .toSet(),
       created: now,
       modified: now,
       bounds: _boundsFor(states.values),
@@ -178,10 +179,7 @@ Result<PDA> convertAssetJsonToPda(
   );
 }
 
-Result<TM> convertAssetJsonToTm(
-  Map<String, dynamic> json,
-  String exampleName,
-) {
+Result<TM> convertAssetJsonToTm(Map<String, dynamic> json, String exampleName) {
   final finalStatesResult = _parseStringSet(
     json['finalStates'],
     'finalStates',
@@ -211,11 +209,17 @@ Result<TM> convertAssetJsonToTm(
   );
   if (tapeAlphabetResult.isFailure) return Failure(tapeAlphabetResult.error!);
 
-  final transitionsResult = _parseTmTransitions(
-    json['transitions'],
-    statesResult.data!,
-    exampleName,
-  );
+  final transitionsResult = json['transitions'] is List
+      ? _parseTmTransitionVectors(
+          json['transitions'],
+          statesResult.data!,
+          exampleName,
+        )
+      : _parseTmTransitions(
+          json['transitions'],
+          statesResult.data!,
+          exampleName,
+        );
   if (transitionsResult.isFailure) return Failure(transitionsResult.error!);
 
   final states = statesResult.data!;
@@ -225,7 +229,7 @@ Result<TM> convertAssetJsonToTm(
   return Success(
     TM(
       id: _stringOr(json['id'], 'example_${_slug(exampleName)}'),
-      name: _stringOr(json['name'], exampleName),
+      name: _stringOr(json['id'], exampleName),
       states: states.values.toSet(),
       transitions: transitionsResult.data!,
       alphabet: alphabetResult.data!,
@@ -240,9 +244,43 @@ Result<TM> convertAssetJsonToTm(
       zoomLevel: 1.0,
       panOffset: Vector2.zero(),
       tapeAlphabet: tapeAlphabet,
-      blankSymbol: _blankSymbolFor(tapeAlphabet),
+      blankSymbol: _stringOr(
+        json['blankSymbol'],
+        _blankSymbolFor(tapeAlphabet),
+      ),
+      tapeCount: json['tapeCount'] as int? ?? 1,
     ),
   );
+}
+
+Result<Set<TMTransition>> _parseTmTransitionVectors(
+  dynamic transitionsRaw,
+  Map<String, State> states,
+  String exampleName,
+) {
+  if (transitionsRaw is! List) {
+    return Failure('Example "$exampleName" must define transitions as a list.');
+  }
+  final transitions = <TMTransition>{};
+  for (var index = 0; index < transitionsRaw.length; index++) {
+    final raw = transitionsRaw[index];
+    if (raw is! Map) {
+      return Failure('Example "$exampleName" has an invalid transition.');
+    }
+    try {
+      transitions.add(
+        TMTransition.fromJson(
+          Map<String, dynamic>.from(raw),
+          statesById: states,
+        ),
+      );
+    } on Object catch (error) {
+      return Failure(
+        'Example "$exampleName" transition ${index + 1} is invalid: $error',
+      );
+    }
+  }
+  return Success(transitions);
 }
 
 Result<Grammar> convertAssetJsonToGrammar(
@@ -317,7 +355,8 @@ Result<Map<String, State>> _parseStates(
       return Failure('Example "$exampleName" contains a state without id.');
     }
 
-    final isAccepting = stateJson['isFinal'] == true ||
+    final isAccepting =
+        stateJson['isFinal'] == true ||
         stateJson['isAccepting'] == true ||
         acceptingStateIds.contains(id);
     final isInitial = stateJson['isInitial'] == true || id == initialId;
@@ -334,8 +373,8 @@ Result<Map<String, State>> _parseStates(
       type: isAccepting
           ? StateType.accepting
           : isInitial
-              ? StateType.initial
-              : StateType.normal,
+          ? StateType.initial
+          : StateType.normal,
     );
   }
 
@@ -379,8 +418,9 @@ Result<Set<FSATransition>> _parseFsaTransitions(
           toState: toState,
           label: label,
           controlPoint: _controlPointFor(fromState, toState),
-          type:
-              isLambda ? TransitionType.epsilon : TransitionType.deterministic,
+          type: isLambda
+              ? TransitionType.epsilon
+              : TransitionType.deterministic,
           inputSymbols: isLambda ? const {} : {symbol},
           lambdaSymbol: isLambda ? label : null,
         ),

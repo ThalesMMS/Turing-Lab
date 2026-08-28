@@ -6,6 +6,22 @@ typedef AutomatonTransitionOverlayBuilder = Widget Function(
   AutomatonTransitionOverlayController controller,
 );
 
+typedef AutomatonStateOptionsHandler = Future<void> Function(
+  BuildContext context,
+  GraphViewCanvasNode node,
+  BaseGraphViewCanvasController<dynamic, dynamic> controller,
+);
+
+typedef AutomatonNodeSemanticsDetails = String? Function(
+  AppLocalizations localizations,
+  GraphViewCanvasNode node,
+);
+
+typedef AutomatonEdgeSemanticsDetails = String? Function(
+  AppLocalizations localizations,
+  GraphViewCanvasEdge edge,
+);
+
 /// Payload used by the transition overlay to communicate user edits back to
 /// the canvas.
 sealed class AutomatonTransitionPayload {
@@ -17,6 +33,17 @@ class AutomatonLabelTransitionPayload extends AutomatonTransitionPayload {
   const AutomatonLabelTransitionPayload(this.label);
 
   final String label;
+}
+
+/// Separate input and output fields for finite-state transducers.
+class AutomatonTransducerTransitionPayload extends AutomatonTransitionPayload {
+  AutomatonTransducerTransitionPayload({
+    required this.input,
+    required Iterable<String> outputTokens,
+  }) : outputTokens = List<String>.unmodifiable(outputTokens);
+
+  final String input;
+  final List<String> outputTokens;
 }
 
 /// Payload used by read-only canvases, which never open or persist edits.
@@ -31,18 +58,39 @@ class AutomatonDeleteTransitionPayload extends AutomatonTransitionPayload {
 
 /// Payload describing TM tape operations (read/write/direction).
 class AutomatonTmTransitionPayload extends AutomatonTransitionPayload {
-  const AutomatonTmTransitionPayload({
-    required this.readSymbol,
-    required this.writeSymbol,
-    required this.direction,
-  });
+  AutomatonTmTransitionPayload({
+    String? readSymbol,
+    String? writeSymbol,
+    TapeDirection? direction,
+    Iterable<String>? readSymbols,
+    Iterable<String>? writeSymbols,
+    Iterable<TapeDirection>? directions,
+  })  : readSymbols = List<String>.unmodifiable(
+          readSymbols ?? [readSymbol ?? ''],
+        ),
+        writeSymbols = List<String>.unmodifiable(
+          writeSymbols ?? [writeSymbol ?? ''],
+        ),
+        directions = List<TapeDirection>.unmodifiable(
+          directions ?? [direction ?? TapeDirection.stay],
+        ) {
+    if (this.readSymbols.isEmpty ||
+        this.readSymbols.length != this.writeSymbols.length ||
+        this.readSymbols.length != this.directions.length) {
+      throw ArgumentError('TM operation vectors must have equal lengths.');
+    }
+  }
 
-  final String readSymbol;
-  final String writeSymbol;
-  final TapeDirection direction;
+  final List<String> readSymbols;
+  final List<String> writeSymbols;
+  final List<TapeDirection> directions;
+
+  String get readSymbol => readSymbols.first;
+  String get writeSymbol => writeSymbols.first;
+  TapeDirection get direction => directions.first;
 }
 
-/// Payload describing PDA stack operations (read/pop/push and λ flags).
+/// Payload describing PDA stack operations (read/pop/push and epsilon flags).
 class AutomatonPdaTransitionPayload extends AutomatonTransitionPayload {
   const AutomatonPdaTransitionPayload({
     required this.readSymbol,
@@ -169,6 +217,10 @@ class AutomatonGraphViewCanvasCustomization {
     this.enableStateDrag = true,
     this.enableToolSelection = true,
     this.edgeRenderMode = TuringLabEdgeRenderMode.standard,
+    this.supportsAcceptingStates = true,
+    this.stateOptionsHandler,
+    this.nodeSemanticsDetails,
+    this.edgeSemanticsDetails,
   });
 
   final AutomatonGraphViewTransitionConfig Function(
@@ -178,6 +230,10 @@ class AutomatonGraphViewCanvasCustomization {
   final bool enableStateDrag;
   final bool enableToolSelection;
   final TuringLabEdgeRenderMode edgeRenderMode;
+  final bool supportsAcceptingStates;
+  final AutomatonStateOptionsHandler? stateOptionsHandler;
+  final AutomatonNodeSemanticsDetails? nodeSemanticsDetails;
+  final AutomatonEdgeSemanticsDetails? edgeSemanticsDetails;
 
   factory AutomatonGraphViewCanvasCustomization.readOnly({
     TuringLabEdgeRenderMode edgeRenderMode = TuringLabEdgeRenderMode.standard,
@@ -325,28 +381,42 @@ class AutomatonGraphViewCanvasCustomization {
     return AutomatonGraphViewCanvasCustomization(
       edgeRenderMode: TuringLabEdgeRenderMode.groupedFsa,
       transitionConfigBuilder: (controller) {
+        final tmController = controller as GraphViewTmCanvasController;
         return AutomatonGraphViewTransitionConfig(
-          initialPayloadBuilder: (edge) => AutomatonTmTransitionPayload(
-            readSymbol: edge?.readSymbol ?? '',
-            writeSymbol: edge?.writeSymbol ?? '',
-            direction: edge?.direction ?? TapeDirection.right,
-          ),
+          initialPayloadBuilder: (edge) {
+            final tapeCount = tmController.currentTm?.tapeCount ??
+                edge?.tmReadSymbols?.length ??
+                1;
+            final blank = tmController.currentTm?.blankSymbol ?? 'B';
+            return AutomatonTmTransitionPayload(
+              readSymbols:
+                  edge?.tmReadSymbols ?? List<String>.filled(tapeCount, blank),
+              writeSymbols:
+                  edge?.tmWriteSymbols ?? List<String>.filled(tapeCount, blank),
+              directions: edge?.tmDirections ??
+                  List<TapeDirection>.filled(
+                    tapeCount,
+                    TapeDirection.stay,
+                  ),
+            );
+          },
           overlayBuilder: (context, data, overlayController) {
             final payload = data.payload as AutomatonTmTransitionPayload;
             return TmTransitionOperationsEditor(
-              initialRead: payload.readSymbol,
-              initialWrite: payload.writeSymbol,
-              initialDirection: payload.direction,
-              onSubmit: ({
-                required String readSymbol,
-                required String writeSymbol,
-                required TapeDirection direction,
+              tapeCount: payload.readSymbols.length,
+              initialReads: payload.readSymbols,
+              initialWrites: payload.writeSymbols,
+              initialDirections: payload.directions,
+              onSubmitVectors: ({
+                required List<String> readSymbols,
+                required List<String> writeSymbols,
+                required List<TapeDirection> directions,
               }) {
                 overlayController.submit(
                   AutomatonTmTransitionPayload(
-                    readSymbol: readSymbol,
-                    writeSymbol: writeSymbol,
-                    direction: direction,
+                    readSymbols: readSymbols,
+                    writeSymbols: writeSymbols,
+                    directions: directions,
                   ),
                 );
               },
@@ -365,12 +435,12 @@ class AutomatonGraphViewCanvasCustomization {
             final tmController =
                 request.controller as GraphViewTmCanvasController;
             final payload = request.payload as AutomatonTmTransitionPayload;
-            tmController.addOrUpdateTransition(
+            tmController.addOrUpdateTransitionVectors(
               fromStateId: request.fromStateId,
               toStateId: request.toStateId,
-              readSymbol: payload.readSymbol,
-              writeSymbol: payload.writeSymbol,
-              direction: payload.direction,
+              readSymbols: payload.readSymbols,
+              writeSymbols: payload.writeSymbols,
+              directions: payload.directions,
               transitionId: request.transitionId,
               controlPointX: request.worldAnchor.dx,
               controlPointY: request.worldAnchor.dy,
@@ -404,10 +474,6 @@ AutomatonGraphViewTransitionConfig _buildReadOnlyTransitionConfig(
     persistTransition: (request) {},
   );
 }
-
-/// Top inset of the transition-mode indicator. It clears the band the mobile
-/// floating inspector occupies, which starts in the canvas's top-right corner.
-const double _kTransitionModeIndicatorTop = 76.0;
 
 const double _kNodeDiameter = kAutomatonStateDiameter;
 const double _kNodeRadius = _kNodeDiameter / 2;

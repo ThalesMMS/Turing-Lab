@@ -14,6 +14,7 @@ import 'package:collection/collection.dart';
 import '../models/regex_simplification_step.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'regex_simplification_messages.dart';
 
 part 'regex_simplifier_steps.dart';
 part 'regex_simplifier_parentheses.dart';
@@ -36,12 +37,16 @@ class RegexSimplifier {
       // Validate input
       final validationResult = _validateInput(regex);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty regex
       if (regex.trim().isEmpty) {
-        return ResultFactory.failure('Cannot simplify empty regex');
+        final message = RegexSimplificationMessages.emptyInput();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       // Apply simplification rules iteratively
@@ -79,12 +84,16 @@ class RegexSimplifier {
       // Validate input
       final validationResult = _validateInput(regex);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty regex
       if (regex.trim().isEmpty) {
-        return ResultFactory.failure('Cannot simplify empty regex');
+        final message = RegexSimplificationMessages.emptyInput();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       // Compute initial complexity metrics

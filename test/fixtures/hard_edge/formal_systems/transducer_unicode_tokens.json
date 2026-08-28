@@ -1,0 +1,42 @@
+{
+  "caseId": "transducer-mealy-oracle",
+  "expectedInternalOutcome": "verified",
+  "payload": {
+    "input": ["aa", "🙂"],
+    "kind": "transducer",
+    "machine": {
+      "id": "reviewed-unicode-mealy",
+      "inputAlphabet": ["aa", "🙂"],
+      "name": "Reviewed Unicode Mealy",
+      "outputAlphabet": ["x"],
+      "revision": 1,
+      "schema": {"id": "turing-lab.mealy", "version": 1},
+      "states": [
+        {
+          "id": "q0",
+          "isInitial": true,
+          "label": "initial",
+          "position": {"x": 0, "y": 0}
+        }
+      ],
+      "transitions": [
+        {
+          "from": "q0",
+          "id": "long",
+          "input": "aa",
+          "output": ["x"],
+          "to": "q0"
+        },
+        {
+          "from": "q0",
+          "id": "unicode",
+          "input": "🙂",
+          "output": [],
+          "to": "q0"
+        }
+      ]
+    }
+  },
+  "schema": "turing-lab.hard-edge.formal-systems-property.v1",
+  "seed": 339
+}

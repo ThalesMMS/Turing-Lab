@@ -27,6 +27,27 @@ enum LanguageComparisonStepKind {
   String get semanticsValue => name;
 }
 
+/// Stable step identity used to select typed localized copy.
+enum LanguageComparisonStepType {
+  validation,
+  initialization,
+  alphabetNormalization,
+  nfaToDfa,
+  dfaCompletion,
+  productConstructionStart,
+  productStateCreated,
+  productTransitionCreated,
+  productConstructionComplete,
+  bfsSearchStart,
+  bfsInitialCheck,
+  bfsExplorePair,
+  bfsDistinguishingFound,
+  bfsComplete,
+  result,
+  error,
+  unknown,
+}
+
 /// A single labelled fact attached to a comparison step.
 @immutable
 class LanguageComparisonStepDetail {
@@ -44,13 +65,16 @@ class LanguageComparisonStepDetail {
 class LanguageComparisonStepViewModel {
   const LanguageComparisonStepViewModel({
     required this.stepNumber,
+    required this.type,
     required this.kind,
     required this.title,
     required this.description,
     required this.details,
+    required this.data,
   });
 
   final int stepNumber;
+  final LanguageComparisonStepType type;
   final LanguageComparisonStepKind kind;
 
   /// English source title, localized through the workflow prose bridge.
@@ -60,6 +84,9 @@ class LanguageComparisonStepViewModel {
   final String description;
 
   final List<LanguageComparisonStepDetail> details;
+
+  /// Structured trace values used by typed localization adapters.
+  final Map<String, dynamic> data;
 
   /// Adapts one raw trace entry.
   ///
@@ -78,6 +105,7 @@ class LanguageComparisonStepViewModel {
       case 'validation':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.validation,
           kind: LanguageComparisonStepKind.validation,
           title: 'Validation',
           description: description,
@@ -93,18 +121,22 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(data['automatonB']),
               ),
           ],
+          data: data,
         );
       case 'initialization':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.initialization,
           kind: LanguageComparisonStepKind.validation,
           title: 'Initialization',
           description: description,
           details: const [],
+          data: data,
         );
       case 'alphabet_normalization':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.alphabetNormalization,
           kind: LanguageComparisonStepKind.alphabet,
           title: 'Alphabet Normalization',
           description: description,
@@ -122,10 +154,12 @@ class LanguageComparisonStepViewModel {
               _formatStepValue(data['sharedAlphabet']),
             ),
           ],
+          data: data,
         );
       case 'nfa_to_dfa':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.nfaToDfa,
           kind: LanguageComparisonStepKind.conversion,
           title: 'DFA Conversion',
           description: description,
@@ -140,10 +174,12 @@ class LanguageComparisonStepViewModel {
               _formatBeforeAfter(data['statesBefore'], data['statesAfter']),
             ),
           ],
+          data: data,
         );
       case 'dfa_completion':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.dfaCompletion,
           kind: LanguageComparisonStepKind.conversion,
           title: 'DFA Completion',
           description: description,
@@ -163,10 +199,12 @@ class LanguageComparisonStepViewModel {
                 data['wasCompleted'] == true ? 'added' : 'not needed',
               ),
           ],
+          data: data,
         );
       case 'product_construction_start':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.productConstructionStart,
           kind: LanguageComparisonStepKind.product,
           title: 'Product Construction',
           description: description,
@@ -177,10 +215,12 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(data['alphabetSize']),
               ),
           ],
+          data: data,
         );
       case 'product_state_created':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.productStateCreated,
           kind: LanguageComparisonStepKind.product,
           title: 'Product State Created',
           description: description,
@@ -200,10 +240,12 @@ class LanguageComparisonStepViewModel {
                 _formatBoolean(data['isAccepting']),
               ),
           ],
+          data: data,
         );
       case 'product_transition_created':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.productTransitionCreated,
           kind: LanguageComparisonStepKind.product,
           title: 'Product Transition',
           description: description,
@@ -224,10 +266,12 @@ class LanguageComparisonStepViewModel {
                 data['targetIsNew'] == true ? 'new' : 'existing',
               ),
           ],
+          data: data,
         );
       case 'product_construction_complete':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.productConstructionComplete,
           kind: LanguageComparisonStepKind.product,
           title: 'Product Construction Complete',
           description: description,
@@ -245,10 +289,12 @@ class LanguageComparisonStepViewModel {
               _formatStepValue(data['acceptingStates']),
             ),
           ],
+          data: data,
         );
       case 'bfs_search_start':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.bfsSearchStart,
           kind: LanguageComparisonStepKind.search,
           title: 'BFS Search',
           description: description,
@@ -258,10 +304,12 @@ class LanguageComparisonStepViewModel {
               _formatStatePair(data['initialStateA'], data['initialStateB']),
             ),
           ],
+          data: data,
         );
       case 'bfs_initial_check':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.bfsInitialCheck,
           kind: LanguageComparisonStepKind.search,
           title: 'Initial Pair Check',
           description: description,
@@ -275,11 +323,13 @@ class LanguageComparisonStepViewModel {
               _formatAcceptance(data['acceptsA'], data['acceptsB']),
             ),
           ],
+          data: data,
         );
       case 'bfs_explore_pair':
       case 'bfs_exploration':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.bfsExplorePair,
           kind: LanguageComparisonStepKind.search,
           title: 'State Pair Visit',
           description: description,
@@ -300,11 +350,13 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(data['pathLength']),
               ),
           ],
+          data: data,
         );
       case 'bfs_distinguishing_found':
       case 'counterexample_found':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.bfsDistinguishingFound,
           kind: LanguageComparisonStepKind.counterexample,
           title: 'Counterexample Found',
           description: description,
@@ -330,10 +382,12 @@ class LanguageComparisonStepViewModel {
                 _formatSymbol(data['symbol']),
               ),
           ],
+          data: data,
         );
       case 'bfs_complete':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.bfsComplete,
           kind: LanguageComparisonStepKind.search,
           title: 'BFS Complete',
           description: description,
@@ -344,10 +398,12 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(data['totalPairsExplored']),
               ),
           ],
+          data: data,
         );
       case 'result':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.result,
           kind: data['isEquivalent'] == true
               ? LanguageComparisonStepKind.result
               : LanguageComparisonStepKind.counterexample,
@@ -365,11 +421,13 @@ class LanguageComparisonStepViewModel {
                 _formatDisplayString(data['distinguishingString']),
               ),
           ],
+          data: data,
         );
       case 'error':
       case 'comparison_error':
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.error,
           kind: LanguageComparisonStepKind.error,
           title: 'Comparison Error',
           description: description,
@@ -390,10 +448,12 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(data['message']),
               ),
           ],
+          data: data,
         );
       default:
         return LanguageComparisonStepViewModel(
           stepNumber: stepNumber,
+          type: LanguageComparisonStepType.unknown,
           kind: LanguageComparisonStepKind.unknown,
           title: 'Unknown Step',
           description: description,
@@ -408,6 +468,7 @@ class LanguageComparisonStepViewModel {
                 _formatStepValue(entry.value),
               ),
           ],
+          data: {...data, '_rawType': rawType},
         );
     }
   }

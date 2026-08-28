@@ -15,11 +15,13 @@ import '../models/grammar_parse_report.dart';
 import '../result.dart' as turing_lab_result;
 import 'grammar_input_tokenizer.dart';
 import 'grammar_parser.dart';
+import 'grammar_parser_simple_recursive_messages.dart';
 
 /// Simple recursive descent parser for CFG
 class SimpleRecursiveDescentParser {
   final Grammar grammar;
   int _farthestPosition = 0;
+  bool _timedOut = false;
 
   SimpleRecursiveDescentParser(this.grammar);
 
@@ -33,7 +35,10 @@ class SimpleRecursiveDescentParser {
       // Validate input
       final validationResult = _validateInput(inputString);
       if (!validationResult.isSuccess) {
-        return turing_lab_result.Failure(validationResult.error!);
+        return turing_lab_result.Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       final result = _parseString(inputString, timeout);
@@ -48,16 +53,36 @@ class SimpleRecursiveDescentParser {
         );
       }
 
+      if (_timedOut) {
+        final message = SimpleRecursiveDescentMessages.timedOut();
+        return turing_lab_result.Success(
+          GrammarParseReport.rejected(
+            inputString: inputString,
+            farthestPosition: _farthestPosition,
+            message: 'Recursive-descent parsing timed out.',
+            executionTime: elapsed,
+            structuredMessage: message,
+            outcome: GrammarParseOutcome.timedOut,
+          ),
+        );
+      }
+
+      final message = SimpleRecursiveDescentMessages.inputRejected(inputString);
       return turing_lab_result.Success(
         GrammarParseReport.rejected(
           inputString: inputString,
           farthestPosition: _farthestPosition,
           message: 'String "$inputString" cannot be derived from grammar',
           executionTime: elapsed,
+          structuredMessage: message,
         ),
       );
     } catch (e) {
-      return turing_lab_result.Failure('Error parsing string: $e');
+      final message = SimpleRecursiveDescentMessages.failed();
+      return turing_lab_result.Failure(
+        'Error parsing string: $e',
+        structuredMessage: message,
+      );
     }
   }
 
@@ -72,7 +97,10 @@ class SimpleRecursiveDescentParser {
       // Validate input
       final validationResult = _validateInput(inputString);
       if (!validationResult.isSuccess) {
-        return turing_lab_result.Failure(validationResult.error!);
+        return turing_lab_result.Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Parse the string
@@ -87,13 +115,33 @@ class SimpleRecursiveDescentParser {
             executionTime: stopwatch.elapsed,
           ),
         );
+      } else if (_timedOut) {
+        final message = SimpleRecursiveDescentMessages.timedOut();
+        return turing_lab_result.Success(
+          ParseResult.failure(
+            inputString: inputString,
+            errorMessage: 'Recursive-descent parsing timed out.',
+            executionTime: stopwatch.elapsed,
+            farthestPosition: _farthestPosition,
+            structuredMessage: message,
+            outcome: GrammarParseOutcome.timedOut,
+          ),
+        );
       } else {
+        final message = SimpleRecursiveDescentMessages.inputRejected(
+          inputString,
+        );
         return turing_lab_result.Failure(
           'String "$inputString" cannot be derived from grammar',
+          structuredMessage: message,
         );
       }
     } catch (e) {
-      return turing_lab_result.Failure('Error parsing string: $e');
+      final message = SimpleRecursiveDescentMessages.failed();
+      return turing_lab_result.Failure(
+        'Error parsing string: $e',
+        structuredMessage: message,
+      );
     }
   }
 
@@ -101,7 +149,10 @@ class SimpleRecursiveDescentParser {
   turing_lab_result.Result<void> _validateInput(String inputString) {
     final result = GrammarInputTokenizer.tokenize(grammar, inputString);
     if (result.isFailure) {
-      return turing_lab_result.Failure(result.error!);
+      return turing_lab_result.Failure(
+        result.error!,
+        structuredMessage: result.structuredError,
+      );
     }
 
     return const turing_lab_result.Success(null);
@@ -111,176 +162,132 @@ class SimpleRecursiveDescentParser {
   List<String>? _parseString(String inputString, Duration timeout) {
     final startTime = DateTime.now();
     _farthestPosition = 0;
-
-    // Handle empty string case
-    if (inputString.isEmpty) {
-      if (_canDeriveEmptyString(grammar.startSymbol)) {
-        return [grammar.startSymbol];
-      }
+    _timedOut = false;
+    if (timeout <= Duration.zero) {
+      _timedOut = true;
       return null;
     }
-
-    // Try to parse the string
-    return _parseNonTerminal(
+    final tokenResult = GrammarInputTokenizer.tokenize(grammar, inputString);
+    if (tokenResult.isFailure) return null;
+    final tokens = tokenResult.data!;
+    final matches = _parseNonTerminal(
       grammar.startSymbol,
-      inputString,
+      tokens,
+      0,
       startTime,
       timeout,
+      inputString.length,
+      const <String>{},
       0,
     );
+    for (final match in matches) {
+      if (match.nextToken == tokens.length) return match.derivation;
+    }
+    return null;
   }
 
-  /// Parses a non-terminal against a string
-  List<String>? _parseNonTerminal(
+  /// Parses a non-terminal at a token boundary.
+  ///
+  /// Returning every reachable token boundary lets a caller backtrack across
+  /// mixed terminal/non-terminal right-hand sides. The previous implementation
+  /// special-cased RHS lengths and treated both symbols of `S -> id Tail` as
+  /// non-terminals, rejecting valid grammars with multi-character terminals.
+  List<_RecursiveMatch> _parseNonTerminal(
     String nonTerminal,
-    String inputString,
+    List<GrammarInputToken> tokens,
+    int tokenIndex,
     DateTime startTime,
     Duration timeout, [
-    int offset = 0,
+    int inputLength = 0,
+    Set<String> active = const <String>{},
     int depth = 0,
   ]) {
+    final offset = tokenIndex < tokens.length
+        ? tokens[tokenIndex].start
+        : inputLength;
     _recordFarthest(offset);
-
-    // Check timeout
     if (DateTime.now().difference(startTime) > timeout) {
-      return null;
+      _timedOut = true;
+      return const [];
     }
+    final maximumDepth =
+        (tokens.length + 1) * (grammar.nonterminals.length + 1) +
+        grammar.productions.length;
+    if (depth > maximumDepth) return const [];
+    final state = '$nonTerminal@$tokenIndex';
+    if (active.contains(state)) return const [];
+    final nextActive = {...active, state};
+    final productions =
+        grammar.productions
+            .where(
+              (production) =>
+                  production.leftSide.length == 1 &&
+                  production.leftSide.single == nonTerminal,
+            )
+            .toList()
+          ..sort((left, right) {
+            final byOrder = left.order.compareTo(right.order);
+            return byOrder != 0 ? byOrder : left.id.compareTo(right.id);
+          });
+    final matches = <_RecursiveMatch>[];
 
-    // Prevent infinite recursion (max depth of 10)
-    if (depth > 10) {
-      return null;
-    }
-
-    // If input is empty, check if non-terminal can derive empty string
-    if (inputString.isEmpty) {
-      if (_canDeriveEmptyString(nonTerminal)) {
-        return [nonTerminal];
+    void parseSequence(
+      List<String> symbols,
+      int symbolIndex,
+      int nextToken,
+      List<String> derivation,
+    ) {
+      if (DateTime.now().difference(startTime) > timeout) {
+        _timedOut = true;
+        return;
       }
-      return null;
-    }
-
-    // Try all productions for this non-terminal
-    for (final production in grammar.productions) {
-      if (production.leftSide.isNotEmpty &&
-          production.leftSide.first == nonTerminal) {
-        // Handle epsilon productions
-        if (production.rightSide.isEmpty || production.isLambda) {
-          if (inputString.isEmpty) {
-            return [nonTerminal]; // ok: ε "consumes" nothing at the right point
-          } else {
-            continue; // there's input to consume, try another production
-          }
+      if (symbolIndex == symbols.length) {
+        matches.add(
+          _RecursiveMatch(
+            nextToken: nextToken,
+            derivation: [nonTerminal, ...derivation],
+          ),
+        );
+        return;
+      }
+      final symbol = symbols[symbolIndex];
+      if (grammar.terminals.contains(symbol)) {
+        if (nextToken < tokens.length && tokens[nextToken].lexeme == symbol) {
+          _recordFarthest(tokens[nextToken].end);
+          parseSequence(symbols, symbolIndex + 1, nextToken + 1, [
+            ...derivation,
+            symbol,
+          ]);
         }
-
-        // Handle terminal productions
-        if (production.rightSide.length == 1 &&
-            grammar.terminals.contains(production.rightSide.first)) {
-          final terminal = production.rightSide.first;
-          if (inputString.startsWith(terminal)) {
-            _recordFarthest(offset + terminal.length);
-            if (inputString == terminal) {
-              return [nonTerminal, terminal];
-            }
-          }
-          continue;
-        }
-
-        // Handle non-terminal productions
-        if (production.rightSide.length == 1 &&
-            grammar.nonTerminals.contains(production.rightSide.first)) {
-          final result = _parseNonTerminal(
-            production.rightSide.first,
-            inputString,
-            startTime,
-            timeout,
-            offset,
-            depth + 1,
-          );
-          if (result != null) {
-            return [nonTerminal, ...result];
-          }
-        }
-
-        // Handle productions with multiple symbols
-        if (production.rightSide.length > 1) {
-          final splitResult = GrammarInputTokenizer.splitOffsets(
-            grammar,
-            inputString,
-          );
-          if (splitResult.isFailure) {
-            continue;
-          }
-
-          // Only split at maximal-munch token boundaries.
-          for (final split in splitResult.data!) {
-            final leftPart = inputString.substring(0, split);
-            final rightPart = inputString.substring(split);
-
-            if (production.rightSide.length == 2) {
-              final leftResult = _parseNonTerminal(
-                production.rightSide[0],
-                leftPart,
-                startTime,
-                timeout,
-                offset,
-                depth + 1,
-              );
-              final rightResult = _parseNonTerminal(
-                production.rightSide[1],
-                rightPart,
-                startTime,
-                timeout,
-                offset + split,
-                depth + 1,
-              );
-
-              if (leftResult != null && rightResult != null) {
-                return [nonTerminal, ...leftResult, ...rightResult];
-              }
-            } else if (production.rightSide.length == 3) {
-              // Handle productions like S -> (S) or S -> aSa
-              final firstSymbol = production.rightSide[0];
-              final middleSymbol = production.rightSide[1];
-              final lastSymbol = production.rightSide[2];
-              final tokenResult = GrammarInputTokenizer.tokenize(
-                grammar,
-                inputString,
-              );
-              final tokens = tokenResult.data ?? const <GrammarInputToken>[];
-
-              if (tokens.length >= 2 &&
-                  tokens.first.lexeme == firstSymbol &&
-                  tokens.last.lexeme == lastSymbol) {
-                final innerStart = tokens.first.end;
-                final innerEnd = tokens.last.start;
-                _recordFarthest(offset + innerStart);
-                final innerString = inputString.substring(
-                  innerStart,
-                  innerEnd,
-                );
-                final innerResult = _parseNonTerminal(
-                  middleSymbol,
-                  innerString,
-                  startTime,
-                  timeout,
-                  offset + innerStart,
-                  depth + 1,
-                );
-                if (innerResult != null) {
-                  _recordFarthest(offset + inputString.length);
-                  return [nonTerminal, firstSymbol, ...innerResult, lastSymbol];
-                }
-              }
-
-              // If failed, just try the next production
-              continue;
-            }
-          }
-        }
+        return;
+      }
+      if (!grammar.nonterminals.contains(symbol)) return;
+      for (final child in _parseNonTerminal(
+        symbol,
+        tokens,
+        nextToken,
+        startTime,
+        timeout,
+        inputLength,
+        nextActive,
+        depth + 1,
+      )) {
+        parseSequence(symbols, symbolIndex + 1, child.nextToken, [
+          ...derivation,
+          ...child.derivation,
+        ]);
       }
     }
 
-    return null;
+    for (final production in productions) {
+      parseSequence(
+        production.isLambda ? const [] : production.rightSide,
+        0,
+        tokenIndex,
+        const [],
+      );
+    }
+    return matches;
   }
 
   void _recordFarthest(int position) {
@@ -288,47 +295,11 @@ class SimpleRecursiveDescentParser {
       _farthestPosition = position;
     }
   }
+}
 
-  /// Checks if a non-terminal can derive the empty string
-  bool _canDeriveEmptyString(String nonTerminal) {
-    return _canDeriveEmptyStringFromSymbol(nonTerminal, <String>{});
-  }
+final class _RecursiveMatch {
+  const _RecursiveMatch({required this.nextToken, required this.derivation});
 
-  /// Recursively checks if a symbol can derive empty string
-  bool _canDeriveEmptyStringFromSymbol(String symbol, Set<String> visited) {
-    if (visited.contains(symbol)) {
-      return false; // Avoid infinite recursion
-    }
-    visited.add(symbol);
-
-    for (final production in grammar.productions) {
-      if (production.leftSide.isNotEmpty &&
-          production.leftSide.first == symbol) {
-        if (production.rightSide.isEmpty || production.isLambda) {
-          return true; // Direct epsilon production
-        }
-
-        // Check if all symbols in right side can derive empty string
-        bool allCanDeriveEmpty = true;
-        for (final rightSymbol in production.rightSide) {
-          if (grammar.terminals.contains(rightSymbol)) {
-            allCanDeriveEmpty = false;
-            break;
-          }
-          if (!_canDeriveEmptyStringFromSymbol(
-            rightSymbol,
-            Set.from(visited),
-          )) {
-            allCanDeriveEmpty = false;
-            break;
-          }
-        }
-        if (allCanDeriveEmpty) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
+  final int nextToken;
+  final List<String> derivation;
 }

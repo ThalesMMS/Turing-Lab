@@ -1,0 +1,18 @@
+{
+  "codecId": "unrestricted-grammar.turing-lab-json.v1",
+  "id": "codec-unrestricted-grammar.turing-lab-json.v1-migration-extensions-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "extensionTokens": [
+      "multi-token",
+      "β",
+      "🧪"
+    ],
+    "unknownField": "x-β-3655245201",
+    "sourceFilename": "unrestricted_grammar_canonical.json",
+    "sourcePayloadBase64": "eyJpZCI6InVucmVzdHJpY3RlZF9leGFtcGxlIiwibmFtZSI6IlVucmVzdHJpY3RlZCBleGFtcGxlIiwibm9udGVybWluYWxzIjpbIlMiXSwicHJvZHVjdGlvbnMiOlt7ImlkIjoicDAiLCJsZWZ0IjpbeyJraW5kIjoibm9udGVybWluYWwiLCJ2YWx1ZSI6IlMifV0sIm9yZGVyIjowLCJyaWdodCI6W3sia2luZCI6InRlcm1pbmFsIiwidmFsdWUiOiJhIn0seyJraW5kIjoibm9udGVybWluYWwiLCJ2YWx1ZSI6IlMifV19LHsiaWQiOiJwMSIsImxlZnQiOlt7ImtpbmQiOiJub250ZXJtaW5hbCIsInZhbHVlIjoiUyJ9XSwib3JkZXIiOjEsInJpZ2h0IjpbeyJraW5kIjoidGVybWluYWwiLCJ2YWx1ZSI6ImIifV19XSwicmV2aXNpb24iOjAsInNjaGVtYSI6eyJpZCI6InR1cmluZy1sYWIudW5yZXN0cmljdGVkLWdyYW1tYXIiLCJ2ZXJzaW9uIjoxfSwic3RhcnRTeW1ib2wiOiJTIiwidGVybWluYWxzIjpbImEiLCJiIl19Cg=="
+  },
+  "property": "migration-extensions",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

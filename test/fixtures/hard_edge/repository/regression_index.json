@@ -1,0 +1,6 @@
+{
+  "schema": "turing-lab.repository-regression-index.v1",
+  "ownerIssue": 342,
+  "historicalDefects": [],
+  "rationale": "No closed historical defect is assigned solely to the cross-family batch layer. Family-specific regressions remain in their owning issue directories. New repository-level defects must add a minimized fixture here."
+}

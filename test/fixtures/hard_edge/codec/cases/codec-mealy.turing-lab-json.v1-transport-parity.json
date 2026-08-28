@@ -1,0 +1,13 @@
+{
+  "codecId": "mealy.turing-lab-json.v1",
+  "id": "codec-mealy.turing-lab-json.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "mealy_canonical.json",
+    "sourcePayloadBase64": "eyJkb2N1bWVudCI6eyJwYXlsb2FkIjp7ImlkIjoibWVhbHlfZml4dHVyZSIsImlucHV0QWxwaGFiZXQiOlsiYSIsImIiXSwibmFtZSI6IkNhbm9uaWNhbCBNZWFseSIsIm91dHB1dEFscGhhYmV0IjpbIngiXSwicmV2aXNpb24iOjEsInNjaGVtYSI6eyJpZCI6InR1cmluZy1sYWIubWVhbHkiLCJ2ZXJzaW9uIjoxfSwic3RhdGVzIjpbeyJpZCI6InEwIiwiaXNJbml0aWFsIjp0cnVlLCJsYWJlbCI6InN0YXJ0IiwicG9zaXRpb24iOnsieCI6MC4wLCJ5IjowLjB9fSx7ImlkIjoicTEiLCJpc0luaXRpYWwiOmZhbHNlLCJsYWJlbCI6InNlZW4iLCJwb3NpdGlvbiI6eyJ4IjoxNjAuMCwieSI6MC4wfX1dLCJ0cmFuc2l0aW9ucyI6W3siZnJvbSI6InEwIiwiaWQiOiJ0MCIsImlucHV0IjoiYSIsIm91dHB1dCI6WyJ4Il0sInRvIjoicTEifSx7ImZyb20iOiJxMSIsImlkIjoidDEiLCJpbnB1dCI6ImIiLCJvdXRwdXQiOltdLCJ0byI6InEwIn1dfSwic2NoZW1hIjp7ImlkIjoidHVyaW5nLWxhYi5tZWFseSIsInZlcnNpb24iOjF9LCJ0eXBlIjoidHJhbnNkdWNlciIsInZhcmlhbnQiOiJtZWFseSJ9LCJlbnZlbG9wZVZlcnNpb24iOjEsImV4dGVuc2lvbnMiOnt9LCJmb3JtYXQiOiJ0dXJpbmctbGFiLmRvY3VtZW50Iiwic291cmNlIjp7ImFwcGxpY2F0aW9uIjoiVHVyaW5nIExhYiJ9fQo="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

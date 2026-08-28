@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/algorithms/pda_simulator.dart' as pda_core;
 import '../../core/models/pda.dart';
 import '../../core/models/simulation_step.dart';
+import 'pda_editor_provider.dart';
 
 typedef PDASimulationResult = pda_core.PDASimulationResult;
 typedef PDAAcceptanceMode = pda_core.PDAAcceptanceMode;
@@ -72,6 +73,10 @@ class PDASimulationState {
     return currentStep?.stackContents ?? '';
   }
 
+  /// Gets the ordered atomic stack symbols at the current step.
+  List<String> get currentStackTokens =>
+      currentStep?.effectiveStackTokens ?? const [];
+
   /// Gets the current state at the current step
   String? get currentState {
     return currentStep?.currentState;
@@ -100,14 +105,21 @@ class PDASimulationState {
 }
 
 class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
-  PDASimulationNotifier() : super(const PDASimulationState());
+  PDASimulationNotifier([this._ref]) : super(const PDASimulationState());
+
+  final Ref? _ref;
 
   void clear() {
     state = const PDASimulationState();
   }
 
   void setPda(PDA pda) {
-    state = state.copyWith(pda: pda, result: null, currentStepIndex: 0);
+    state = state.copyWith(
+      pda: pda,
+      result: null,
+      currentStepIndex: 0,
+      mode: pda.acceptanceMode,
+    );
   }
 
   void setStepByStep(bool enabled) {
@@ -115,7 +127,23 @@ class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
   }
 
   void setAcceptanceMode(PDAAcceptanceMode mode) {
-    state = state.copyWith(mode: mode);
+    final current = state.pda;
+    PDA? updated;
+    final ref = _ref;
+    if (current != null &&
+        ref != null &&
+        identical(ref.read(pdaEditorProvider).pda, current)) {
+      ref.read(pdaEditorProvider.notifier).setAcceptanceMode(mode);
+      updated = ref.read(pdaEditorProvider).pda;
+    } else if (current != null) {
+      updated = current.copyWith(acceptanceMode: mode);
+    }
+    state = state.copyWith(
+      pda: updated,
+      result: null,
+      currentStepIndex: 0,
+      mode: mode,
+    );
   }
 
   void setResult(PDASimulationResult result, {int currentStepIndex = 0}) {
@@ -214,5 +242,5 @@ class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
 
 final pdaSimulationProvider =
     StateNotifierProvider<PDASimulationNotifier, PDASimulationState>((ref) {
-  return PDASimulationNotifier();
+  return PDASimulationNotifier(ref);
 });

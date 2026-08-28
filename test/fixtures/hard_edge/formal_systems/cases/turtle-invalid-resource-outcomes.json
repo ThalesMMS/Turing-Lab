@@ -1,0 +1,6 @@
+{
+  "caseId": "turtle-invalid-resource-outcomes",
+  "expectedInternalOutcome": "verified",
+  "schema": "turing-lab.hard-edge.formal-systems-property.v1",
+  "seed": 339
+}

@@ -218,7 +218,8 @@ void main() {
 
     test('Algorithm provider complements the current DFA', () async {
       final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createUnaryOperationDfa());
+      stateNotifier.replaceAutomaton(_createUnaryOperationDfa());
+      final sourceGeneration = stateNotifier.state.documentGeneration;
 
       final algorithmNotifier = container.read(
         automatonAlgorithmProvider.notifier,
@@ -234,6 +235,10 @@ void main() {
       expect(_acceptingStateIds(updatedAutomaton!), contains('q0'));
       expect(_acceptingStateIds(updatedAutomaton), isNot(contains('q1')));
       expect(updatedAutomaton.hasEpsilonTransitions, isFalse);
+      expect(
+        container.read(automatonStateProvider).documentGeneration,
+        sourceGeneration + 1,
+      );
     });
 
     test('Algorithm provider applies prefix closure to the current DFA',

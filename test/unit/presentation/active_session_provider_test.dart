@@ -7,12 +7,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/annotations/annotations.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/models/settings_model.dart';
+import 'package:turing_lab/core/transducers/transducers.dart';
+import 'package:turing_lab/core/l_systems/l_systems.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/data/services/active_session_persistence_service.dart';
 import 'package:turing_lab/presentation/providers/active_session_provider.dart';
+import 'package:turing_lab/presentation/providers/document_annotations_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
@@ -21,6 +26,10 @@ import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/settings_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import 'package:turing_lab/presentation/providers/workspace_registry_provider.dart';
+import 'package:turing_lab/presentation/providers/formal_extension_editor_providers.dart';
+import 'package:turing_lab/presentation/transducers/mealy_workspace_definition.dart';
+import 'package:turing_lab/presentation/transducers/moore_workspace_definition.dart';
 
 void main() {
   group('activeSessionPersistenceProvider', () {
@@ -40,7 +49,27 @@ void main() {
             testString: 'abb',
             simplifyOutput: false,
             alphabet: 'ab01 ',
+            documentId: 'saved-regex',
+            documentName: 'Saved regex',
           ),
+          annotations: {
+            DefaultFormalSystemIds.fsa: DocumentAnnotationCollection(
+              documentId: 'fsa-1',
+              documentRevision: '1',
+              annotations: [
+                DocumentAnnotation(
+                  id: 'note-1',
+                  documentId: 'fsa-1',
+                  documentRevision: '1',
+                  text: 'Restored note',
+                  x: 8,
+                  y: 12,
+                  createdAt: DateTime.utc(2026),
+                  updatedAt: DateTime.utc(2026),
+                ),
+              ],
+            ),
+          },
         ),
       );
 
@@ -59,6 +88,16 @@ void main() {
       expect(container.read(regexEditorProvider).testString, 'abb');
       expect(container.read(regexEditorProvider).simplifyOutput, isFalse);
       expect(container.read(regexEditorProvider).alphabet, 'ab01 ');
+      expect(container.read(regexEditorProvider).documentId, 'saved-regex');
+      expect(container.read(regexEditorProvider).documentName, 'Saved regex');
+      expect(
+        container
+            .read(documentAnnotationsProvider)[DefaultFormalSystemIds.fsa]
+            ?.annotations
+            .single
+            .text,
+        'Restored note',
+      );
       expect(
         container.read(homeNavigationProvider),
         HomeNavigationNotifier.regexIndex,
@@ -374,6 +413,85 @@ void main() {
 
       expect(await service.loadSession(), isNull);
     });
+
+    test('provider round trips Mealy and Moore documents and workspace key',
+        () async {
+      SharedPreferences.setMockInitialValues(const {});
+      final prefs = await SharedPreferences.getInstance();
+      final first = _containerWithPrefs(prefs);
+      await first.read(activeSessionPersistenceProvider).restoreComplete;
+
+      first.read(mealyEditorProvider.notifier).replaceDocument(_mealy());
+      first.read(mooreEditorProvider.notifier).replaceDocument(_moore());
+      final mooreIndex = first
+          .read(workspacePresentationRegistryProvider)
+          .indexOfKey(TransducerFormalSystemIds.moore)!;
+      first.read(homeNavigationProvider.notifier).setIndex(mooreIndex);
+      await first.read(activeSessionPersistenceProvider.notifier).flush();
+      first.dispose();
+
+      final restored = _containerWithPrefs(prefs);
+      addTearDown(restored.dispose);
+      await restored.read(activeSessionPersistenceProvider).restoreComplete;
+
+      final mealy = restored.read(mealyEditorProvider).document;
+      final moore = restored.read(mooreEditorProvider).document;
+      expect(mealy.id.value, 'saved-mealy');
+      expect(mealy.revision.value, 7);
+      expect(mealy.transitions.single.output.values, ['edge-output']);
+      expect(moore.id.value, 'saved-moore');
+      expect(moore.revision.value, 9);
+      expect(moore.states.single.output.values, ['state-output', 'ready']);
+      expect(
+        restored.read(activeWorkspaceKeyProvider),
+        TransducerFormalSystemIds.moore,
+      );
+    });
+
+    test('provider round trips unrestricted grammar and L-system documents',
+        () async {
+      SharedPreferences.setMockInitialValues(const {});
+      final prefs = await SharedPreferences.getInstance();
+      final first = _containerWithPrefs(prefs);
+      await first.read(activeSessionPersistenceProvider).restoreComplete;
+
+      final grammarController = first.read(unrestrictedGrammarEditorProvider);
+      grammarController.replaceGrammar(
+        grammarController.grammar.copyWith(name: 'Saved unrestricted'),
+      );
+      final lSystemController = first.read(lSystemEditorProvider);
+      lSystemController.replaceDocument(
+        lSystemController.document.copyWith(
+          name: 'Saved L-system',
+          revision: 17,
+          iterations: 2,
+        ),
+      );
+      final lSystemIndex = first
+          .read(workspacePresentationRegistryProvider)
+          .indexOfKey(LSystemFormalSystemIds.key)!;
+      first.read(homeNavigationProvider.notifier).setIndex(lSystemIndex);
+      await first.read(activeSessionPersistenceProvider.notifier).flush();
+      first.dispose();
+
+      final restored = _containerWithPrefs(prefs);
+      addTearDown(restored.dispose);
+      await restored.read(activeSessionPersistenceProvider).restoreComplete;
+
+      expect(
+        restored.read(unrestrictedGrammarEditorProvider).grammar.name,
+        'Saved unrestricted',
+      );
+      expect(
+        restored.read(lSystemEditorProvider).document.name,
+        'Saved L-system',
+      );
+      expect(restored.read(lSystemEditorProvider).document.revision, 17);
+      expect(
+        restored.read(activeWorkspaceKeyProvider),
+        LSystemFormalSystemIds.key,
+      );
+    });
   });
 }
 
@@ -488,6 +606,61 @@ Grammar _grammar() {
     modified: DateTime.utc(2026),
   );
 }
+
+MealyMachine _mealy() => MealyMachine(
+      id: const TransducerMachineId('saved-mealy'),
+      name: 'Saved Mealy',
+      revision: const TransducerRevision(7),
+      inputAlphabet: {const TransducerInputSymbol('a')},
+      outputAlphabet: {const TransducerOutputSymbol('edge-output')},
+      states: const [
+        MealyState(
+          id: TransducerStateId('q0'),
+          label: 'q0',
+          position: TransducerPoint(0, 0),
+          isInitial: true,
+        ),
+      ],
+      transitions: [
+        MealyTransition(
+          id: const TransducerTransitionId('loop'),
+          from: const TransducerStateId('q0'),
+          to: const TransducerStateId('q0'),
+          input: const TransducerInputSymbol('a'),
+          output: TransducerOutputWord.fromValues(const ['edge-output']),
+        ),
+      ],
+    );
+
+MooreMachine _moore() => MooreMachine(
+      id: const TransducerMachineId('saved-moore'),
+      name: 'Saved Moore',
+      revision: const TransducerRevision(9),
+      inputAlphabet: {const TransducerInputSymbol('a')},
+      outputAlphabet: {
+        const TransducerOutputSymbol('state-output'),
+        const TransducerOutputSymbol('ready'),
+      },
+      states: [
+        MooreState(
+          id: const TransducerStateId('q0'),
+          label: 'q0',
+          position: const TransducerPoint(0, 0),
+          output: TransducerOutputWord.fromValues(
+            const ['state-output', 'ready'],
+          ),
+          isInitial: true,
+        ),
+      ],
+      transitions: const [
+        MooreTransition(
+          id: TransducerTransitionId('loop'),
+          from: TransducerStateId('q0'),
+          to: TransducerStateId('q0'),
+          input: TransducerInputSymbol('a'),
+        ),
+      ],
+    );
 
 automaton_state.State _state(
   String id, {

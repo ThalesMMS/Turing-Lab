@@ -99,6 +99,11 @@ FSA _buildNFAInternal(
         position: node.position,
         stepContext: stepContext,
       );
+    case EmptyLanguageNode():
+      return _handleEmptyLanguageNode(
+        position: node.position,
+        stepContext: stepContext,
+      );
     case SymbolNode(:final symbol):
       return _handleSymbolNode(
         symbol,
@@ -178,6 +183,22 @@ FSA _handleEpsilonNode({
     position: position,
     title: 'Create NFA for epsilon',
     explanation: 'Creating an NFA fragment that accepts the empty string.',
+  );
+  return nfa;
+}
+
+FSA _handleEmptyLanguageNode({
+  int? position,
+  _RegexToNfaStepContext? stepContext,
+}) {
+  final nfa = _buildEmptyLanguageNFA();
+  _recordFragmentStep(
+    stepContext,
+    nfa: nfa,
+    symbol: '∅',
+    position: position,
+    title: 'Create NFA for the empty language',
+    explanation: 'Creating an NFA fragment that accepts no strings.',
   );
   return nfa;
 }

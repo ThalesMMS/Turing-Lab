@@ -15,6 +15,7 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
     required this.failureMessage,
     required this.emptyMessage,
     this.title = 'Load Examples',
+    this.exampleBuilder,
   });
 
   final Future<ListResult<AssetExample<T>>> examplesFuture;
@@ -23,6 +24,13 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
   final String failureMessage;
   final String emptyMessage;
   final String title;
+  final Widget? Function(
+    BuildContext context,
+    AssetExample<T> example,
+    bool isLoading,
+    VoidCallback? onPressed,
+  )?
+  exampleBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +44,12 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
           children: [
             Icon(Icons.lightbulb_outline, color: theme.colorScheme.secondary),
             const SizedBox(width: 8),
-            Text(
-              l10n.localizeWorkflowText(title),
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                l10n.localizeWorkflowText(title),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -57,7 +67,11 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
                     children: [
                       const Icon(Icons.hourglass_top, size: 20),
                       const SizedBox(width: 8),
-                      Text(l10n.localizeWorkflowText('Loading examples...')),
+                      Expanded(
+                        child: Text(
+                          l10n.localizeWorkflowText('Loading examples...'),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -83,23 +97,28 @@ class AlgorithmExamplesSection<T> extends StatelessWidget {
             }
 
             return Column(
-              children: examples
-                  .map(
-                    (example) => Padding(
-                      key: ValueKey<String>(
-                        'algorithm-example-${example.name}',
-                      ),
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: AlgorithmExampleButton(
+              children: examples.map((example) {
+                final isLoading = loadingExampleName == example.name;
+                final onPressed = loadingExampleName == null
+                    ? () => onExampleSelected(example.name)
+                    : null;
+                return Padding(
+                  key: ValueKey<String>('algorithm-example-${example.name}'),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child:
+                      exampleBuilder?.call(
+                        context,
+                        example,
+                        isLoading,
+                        onPressed,
+                      ) ??
+                      AlgorithmExampleButton(
                         title: l10n.localizedExampleName(example.name),
-                        isLoading: loadingExampleName == example.name,
-                        onPressed: loadingExampleName == null
-                            ? () => onExampleSelected(example.name)
-                            : null,
+                        isLoading: isLoading,
+                        onPressed: onPressed,
                       ),
-                    ),
-                  )
-                  .toList(),
+                );
+              }).toList(),
             );
           },
         ),

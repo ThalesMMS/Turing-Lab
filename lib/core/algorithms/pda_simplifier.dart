@@ -6,8 +6,13 @@ import '../models/pda_simplification.dart';
 import '../models/pda_transition.dart';
 import '../models/state.dart';
 import '../models/transition.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import 'pda_simulator.dart';
+import 'pda_simplification_messages.dart';
+
+const _ignoredValidationSuffix =
+    'Self-loop transitions must have a control point';
 
 /// Conservative, mode-aware reductions for pushdown automata.
 ///
@@ -23,24 +28,33 @@ class PDASimplifier {
     PDASimplificationOptions options = const PDASimplificationOptions(),
   }) {
     final validationError = _validate(pda, acceptanceMode, options);
-    if (validationError != null) return Failure(validationError);
+    if (validationError != null) {
+      return Failure(
+        validationError.message.stableCode,
+        structuredMessage: validationError.message,
+      );
+    }
 
+    final validationMessage = PdaSimplificationMessages.validationComplete();
     final phases = <PDASimplificationPhaseResult>[
-      const PDASimplificationPhaseResult(
+      PDASimplificationPhaseResult(
         phase: PDASimplificationPhase.validation,
         status: PDASimplificationPhaseStatus.completed,
-        description: 'The PDA and its active acceptance mode are valid.',
+        description: validationMessage.stableCode,
+        descriptionMessage: validationMessage,
       ),
     ];
     final changes = <PDASimplificationChange>[];
     final warnings = <String>[];
+    final structuredWarnings = <StructuredMessage>[];
     final originalPda = PDA.fromJson(pda.toJson());
 
     final reachableStateIds = _structurallyReachableStateIds(pda);
-    final unreachableStates = pda.states
-        .where((state) => !reachableStateIds.contains(state.id))
-        .toList()
-      ..sort(_compareStates);
+    final unreachableStates =
+        pda.states
+            .where((state) => !reachableStateIds.contains(state.id))
+            .toList()
+          ..sort(_compareStates);
     for (final state in unreachableStates) {
       changes.add(
         PDASimplificationChange(
@@ -72,42 +86,49 @@ class PDASimplifier {
         ),
       );
     }
+    final reachabilityMessage = unreachableStates.isEmpty
+        ? PdaSimplificationMessages.everyStateReachable()
+        : PdaSimplificationMessages.removedUnreachableStates(
+            unreachableStates.length,
+          );
     phases.add(
       PDASimplificationPhaseResult(
         phase: PDASimplificationPhase.structuralReachability,
         status: PDASimplificationPhaseStatus.completed,
-        description: unreachableStates.isEmpty
-            ? 'Every control state is structurally reachable.'
-            : 'Removed ${unreachableStates.length} structurally unreachable '
-                'control state(s).',
+        description: reachabilityMessage.stableCode,
+        descriptionMessage: reachabilityMessage,
       ),
     );
 
     if (options.enableSemanticUsefulness) {
-      const warning = 'Exact semantic usefulness analysis is unavailable for '
-          'general NPDAs; uncertain states were retained.';
-      warnings.add(warning);
+      final warning = PdaSimplificationMessages.semanticUsefulnessUnavailable();
+      warnings.add(warning.stableCode);
+      structuredWarnings.add(warning);
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.semanticUsefulness,
           status: PDASimplificationPhaseStatus.skipped,
-          description: warning,
+          description: warning.stableCode,
+          descriptionMessage: warning,
         ),
       );
     } else {
+      final disabled = PdaSimplificationMessages.semanticUsefulnessDisabled();
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.semanticUsefulness,
           status: PDASimplificationPhaseStatus.skipped,
-          description: 'Semantic usefulness analysis was disabled.',
+          description: disabled.stableCode,
+          descriptionMessage: disabled,
         ),
       );
     }
 
-    final reachableStates = pda.states
-        .where((state) => reachableStateIds.contains(state.id))
-        .toList()
-      ..sort(_compareStates);
+    final reachableStates =
+        pda.states
+            .where((state) => reachableStateIds.contains(state.id))
+            .toList()
+          ..sort(_compareStates);
     final representativeByStateId = <String, String>{
       for (final state in reachableStates) state.id: state.id,
     };
@@ -133,19 +154,23 @@ class PDASimplifier {
           ),
         );
       }
+      final computed = PdaSimplificationMessages.strongBisimulationComputed();
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.strongBisimulation,
           status: PDASimplificationPhaseStatus.completed,
-          description: 'Computed the fixed-point strong-bisimulation quotient.',
+          description: computed.stableCode,
+          descriptionMessage: computed,
         ),
       );
     } else {
+      final disabled = PdaSimplificationMessages.strongBisimulationDisabled();
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.strongBisimulation,
           status: PDASimplificationPhaseStatus.skipped,
-          description: 'Strong-bisimulation quotienting was disabled.',
+          description: disabled.stableCode,
+          descriptionMessage: disabled,
         ),
       );
     }
@@ -160,13 +185,17 @@ class PDASimplifier {
     );
     final rebuiltError = _validate(rebuilt, acceptanceMode, options);
     if (rebuiltError != null) {
-      return Failure('Simplification produced an invalid PDA: $rebuiltError');
+      final message = PdaSimplificationMessages.invalidRebuiltPda();
+      return Failure(message.stableCode, structuredMessage: message);
     }
+    final rebuildMessage =
+        PdaSimplificationMessages.rebuildValidationComplete();
     phases.add(
-      const PDASimplificationPhaseResult(
+      PDASimplificationPhaseResult(
         phase: PDASimplificationPhase.rebuildValidation,
         status: PDASimplificationPhaseStatus.completed,
-        description: 'The rebuilt PDA passed structural and mode validation.',
+        description: rebuildMessage.stableCode,
+        descriptionMessage: rebuildMessage,
       ),
     );
 
@@ -178,21 +207,32 @@ class PDASimplifier {
         acceptanceMode,
         check,
       );
-      if (comparison.isFailure) return Failure(comparison.error!);
+      if (comparison.isFailure) {
+        return Failure(
+          comparison.error!,
+          structuredMessage: comparison.structuredError,
+        );
+      }
       sampledEvidence = comparison.data!;
+      final sampleMessage = PdaSimplificationMessages.boundedSamplePassed(
+        sampledEvidence.wordsChecked,
+      );
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.boundedLanguageCheck,
           status: PDASimplificationPhaseStatus.completed,
-          description: 'The requested finite sample had no mismatch.',
+          description: sampleMessage.stableCode,
+          descriptionMessage: sampleMessage,
         ),
       );
     } else {
+      final disabled = PdaSimplificationMessages.boundedComparisonDisabled();
       phases.add(
-        const PDASimplificationPhaseResult(
+        PDASimplificationPhaseResult(
           phase: PDASimplificationPhase.boundedLanguageCheck,
           status: PDASimplificationPhaseStatus.skipped,
-          description: 'No bounded language comparison was requested.',
+          description: disabled.stableCode,
+          descriptionMessage: disabled,
         ),
       );
     }
@@ -205,6 +245,7 @@ class PDASimplifier {
         phases: phases,
         changes: changes,
         warnings: warnings,
+        structuredWarnings: structuredWarnings,
         counts: PDASimplificationCounts(
           statesBefore: pda.states.length,
           statesAfter: rebuilt.states.length,
@@ -216,67 +257,103 @@ class PDASimplifier {
     );
   }
 
-  static String? _validate(
+  static _PdaSimplificationValidation? _validate(
     PDA pda,
     PDAAcceptanceMode acceptanceMode,
     PDASimplificationOptions options,
   ) {
-    // A missing self-loop control point is a canvas-layout concern and does
-    // not make the transition relation semantically invalid.
-    final errors = pda
-        .validate()
-        .where(
-          (error) => !error
-              .endsWith('Self-loop transitions must have a control point'),
-        )
-        .toList();
-    if (pda.initialState == null) {
-      errors.add('PDA must define an initial state.');
+    if (pda.states.isEmpty) {
+      return _validation(PdaSimplificationMessages.emptyPda());
+    }
+    final initialState = pda.initialState;
+    if (initialState == null) {
+      return _validation(PdaSimplificationMessages.missingInitialState());
+    }
+    if (!pda.states.contains(initialState)) {
+      return _validation(PdaSimplificationMessages.initialStateOutsideSet());
     }
     if ((acceptanceMode == PDAAcceptanceMode.finalState ||
             acceptanceMode == PDAAcceptanceMode.both) &&
         pda.acceptingStates.isEmpty) {
-      errors.add(
-        'The selected acceptance mode requires at least one accepting state.',
+      return _validation(
+        PdaSimplificationMessages.missingAcceptingState(acceptanceMode),
       );
     }
+    if (pda.acceptingStates.any((state) => !pda.states.contains(state))) {
+      return _validation(PdaSimplificationMessages.acceptingStateOutsideSet());
+    }
+
+    for (final transition in pda.transitions) {
+      if (transition is! PDATransition) {
+        return _validation(PdaSimplificationMessages.nonPdaTransition());
+      }
+      if (!pda.states.contains(transition.fromState) ||
+          !pda.states.contains(transition.toState)) {
+        return _validation(
+          PdaSimplificationMessages.transitionEndpointOutsideSet(transition.id),
+        );
+      }
+      final transitionErrors = transition
+          .validate()
+          .where((error) => !error.endsWith(_ignoredValidationSuffix))
+          .toList(growable: false);
+      if (transitionErrors.isNotEmpty) {
+        return _validation(
+          PdaSimplificationMessages.invalidTransition(transition.id),
+        );
+      }
+    }
+
+    // A missing self-loop control point is a canvas-layout concern and does
+    // not make the transition relation semantically invalid.
+    final errors = pda
+        .validate()
+        .where((error) => !error.endsWith(_ignoredValidationSuffix))
+        .toList();
+    if (errors.isNotEmpty) {
+      return _validation(PdaSimplificationMessages.invalidPda());
+    }
     if (pda.alphabet.any((symbol) => symbol.isEmpty)) {
-      errors.add('The input alphabet must not contain an empty symbol.');
+      return _validation(PdaSimplificationMessages.inputAlphabetSymbolEmpty());
     }
     if (pda.stackAlphabet.any((symbol) => symbol.isEmpty)) {
-      errors.add('The stack alphabet must not contain an empty symbol.');
+      return _validation(PdaSimplificationMessages.stackAlphabetSymbolEmpty());
     }
     for (final transition in pda.pdaTransitions) {
       if (!transition.isLambdaInput &&
           !pda.alphabet.contains(transition.inputSymbol)) {
-        errors.add(
-          'Transition ${transition.id} references an input symbol outside '
-          'the PDA alphabet.',
+        return _validation(
+          PdaSimplificationMessages.transitionInputSymbolOutsideAlphabet(
+            transition.id,
+            transition.inputSymbol,
+          ),
         );
       }
     }
     final transitionIds = <String>{};
     for (final transition in pda.transitions) {
       if (!transitionIds.add(transition.id)) {
-        errors.add('Transition IDs must be unique: ${transition.id}.');
+        return _validation(
+          PdaSimplificationMessages.duplicateTransitionIds(transition.id),
+        );
       }
     }
     if (options.boundedCheck case final check?) {
       if (check.maxLength < 0) {
-        errors.add('Bounded comparison length must not be negative.');
+        return _validation(PdaSimplificationMessages.boundedLengthNegative());
       }
       if (check.alphabet.any((symbol) => symbol.isEmpty)) {
-        errors.add('Bounded comparison symbols must not be empty.');
+        return _validation(PdaSimplificationMessages.boundedSymbolsEmpty());
       }
       final unknownSymbols = check.alphabet.difference(pda.alphabet);
       if (unknownSymbols.isNotEmpty) {
-        errors.add(
-          'Bounded comparison alphabet contains symbols outside the PDA '
-          'alphabet: ${unknownSymbols.toList()..sort()}.',
+        final symbol = unknownSymbols.toList()..sort();
+        return _validation(
+          PdaSimplificationMessages.boundedSymbolOutsideAlphabet(symbol.first),
         );
       }
     }
-    return errors.isEmpty ? null : errors.join(' ');
+    return null;
   }
 
   static Set<String> _structurallyReachableStateIds(PDA pda) {
@@ -334,21 +411,22 @@ class PDASimplifier {
     while (true) {
       final signatures = <String, String>{};
       for (final state in states) {
-        final behaviors = (outgoing[state.id] ?? const <PDATransition>[])
-            .map(
-              (transition) => jsonEncode([
-                transition.inputSymbol,
-                transition.popSymbol,
-                transition.pushSymbols,
-                transition.isLambdaInput,
-                transition.isLambdaPop,
-                transition.isLambdaPush,
-                blockByStateId[transition.toState.id],
-              ]),
-            )
-            .toSet()
-            .toList()
-          ..sort();
+        final behaviors =
+            (outgoing[state.id] ?? const <PDATransition>[])
+                .map(
+                  (transition) => jsonEncode([
+                    transition.inputSymbol,
+                    transition.popSymbol,
+                    transition.pushSymbols,
+                    transition.isLambdaInput,
+                    transition.isLambdaPop,
+                    transition.isLambdaPush,
+                    blockByStateId[transition.toState.id],
+                  ]),
+                )
+                .toSet()
+                .toList()
+              ..sort();
         signatures[state.id] = jsonEncode([
           _observableRole(state, pda, acceptanceMode),
           behaviors,
@@ -429,10 +507,7 @@ class PDASimplifier {
     final memberIdsByRepresentative = <String, List<String>>{};
     for (final state in reachableStates) {
       memberIdsByRepresentative
-          .putIfAbsent(
-            representativeByStateId[state.id]!,
-            () => <String>[],
-          )
+          .putIfAbsent(representativeByStateId[state.id]!, () => <String>[])
           .add(state.id);
     }
 
@@ -479,27 +554,29 @@ class PDASimplifier {
 
     final rebuiltStates = rebuiltStateById.values.toSet();
     final rebuiltTransitions = canonicalTransitionByKey.values.toSet();
-    final acceptingStates =
-        rebuiltStates.where((state) => state.isAccepting).toSet();
+    final acceptingStates = rebuiltStates
+        .where((state) => state.isAccepting)
+        .toSet();
     return source.copyWith(
       states: rebuiltStates,
       transitions: rebuiltTransitions.cast<Transition>(),
       initialState: rebuiltStateById[source.initialState!.id],
       acceptingStates: acceptingStates,
+      acceptanceMode: acceptanceMode,
       modified: changes.isEmpty ? source.modified : DateTime.now(),
     );
   }
 
   static String _semanticTransitionKey(PDATransition transition) => jsonEncode([
-        transition.fromState.id,
-        transition.toState.id,
-        transition.inputSymbol,
-        transition.popSymbol,
-        transition.pushSymbols,
-        transition.isLambdaInput,
-        transition.isLambdaPop,
-        transition.isLambdaPush,
-      ]);
+    transition.fromState.id,
+    transition.toState.id,
+    transition.inputSymbol,
+    transition.popSymbol,
+    transition.pushSymbols,
+    transition.isLambdaInput,
+    transition.isLambdaPop,
+    transition.isLambdaPush,
+  ]);
 
   static Result<PDASampledEvidence> _runBoundedComparison(
     PDA source,
@@ -523,48 +600,53 @@ class PDASimplifier {
 
     for (final word in words) {
       final sourceResult = PDASimulator.simulateNPDA(source, word, mode: mode);
-      final simplifiedResult =
-          PDASimulator.simulateNPDA(simplified, word, mode: mode);
+      final simplifiedResult = PDASimulator.simulateNPDA(
+        simplified,
+        word,
+        mode: mode,
+      );
       if (sourceResult.isFailure || simplifiedResult.isFailure) {
-        return Failure(
-          'Bounded comparison was inconclusive for "$word": '
-          '${sourceResult.error ?? simplifiedResult.error}',
+        final message = PdaSimplificationMessages.boundedComparisonInconclusive(
+          word,
         );
+        return Failure(message.stableCode, structuredMessage: message);
       }
       final sourceSimulation = sourceResult.data!;
       final simplifiedSimulation = simplifiedResult.data!;
-      if (_isInconclusive(sourceSimulation.errorMessage) ||
-          _isInconclusive(simplifiedSimulation.errorMessage)) {
-        return Failure(
-          'Bounded comparison reached a simulation limit for "$word".',
-        );
+      if (sourceSimulation.isInconclusive ||
+          simplifiedSimulation.isInconclusive) {
+        final message =
+            PdaSimplificationMessages.boundedComparisonSimulationLimit(word);
+        return Failure(message.stableCode, structuredMessage: message);
       }
       if (sourceSimulation.accepted != simplifiedSimulation.accepted) {
-        return Failure(
-          'Bounded comparison found an acceptance mismatch for "$word".',
-        );
+        final message =
+            PdaSimplificationMessages.boundedComparisonAcceptanceMismatch(word);
+        return Failure(message.stableCode, structuredMessage: message);
       }
     }
+    final message = PdaSimplificationMessages.boundedSamplePassed(words.length);
     return Success(
       PDASampledEvidence(
         wordsChecked: words.length,
-        description: 'Finite sample comparison passed for ${words.length} '
-            'word(s); this sampled evidence is not a proof of equivalence.',
+        description: message.stableCode,
+        descriptionMessage: message,
       ),
     );
   }
 
-  static bool _isInconclusive(String? errorMessage) =>
-      errorMessage == PDA_SIMULATION_TIMEOUT_ERROR ||
-      errorMessage == PDA_SIMULATION_INFINITE_LOOP_ERROR ||
-      errorMessage == PDA_SIMULATION_LIMIT_REACHED_ERROR;
-
   static int _compareStates(State left, State right) =>
       left.id.compareTo(right.id);
 
-  static int _compareTransitions(
-    PDATransition left,
-    PDATransition right,
-  ) =>
+  static int _compareTransitions(PDATransition left, PDATransition right) =>
       left.id.compareTo(right.id);
 }
+
+final class _PdaSimplificationValidation {
+  const _PdaSimplificationValidation(this.message);
+
+  final StructuredMessage message;
+}
+
+_PdaSimplificationValidation _validation(StructuredMessage message) =>
+    _PdaSimplificationValidation(message);

@@ -142,7 +142,8 @@ void main() {
       expect(transitions, hasLength(1));
     });
 
-    testWidgets('fits initial PDA content once', (tester) async {
+    testWidgets('initial PDA fit does not enlarge sparse content',
+        (tester) async {
       final fitController = _FitCountingPdaCanvasController(
         editorNotifier: notifier,
       );
@@ -157,6 +158,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fitController.fitToContentCallCount, 1);
+      expect(fitController.currentScale, lessThanOrEqualTo(1.0001));
     });
 
     testWidgets('groups PDA self-loops into one path with a shared label card',

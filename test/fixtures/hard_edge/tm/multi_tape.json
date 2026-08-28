@@ -1,0 +1,10 @@
+{
+  "family": "tm",
+  "scenario": "multi-tape",
+  "seed": 338,
+  "cases": 4,
+  "expectedStatus": "passed",
+  "tapeCount": 2,
+  "inputTokens": ["a"],
+  "expectedHeads": [1, -1]
+}

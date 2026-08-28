@@ -13,8 +13,10 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../../l10n/app_localizations_structured_messages.dart';
 import '../../../l10n/app_localizations_workflows.dart';
 import '../../../core/constants/monospace_typography.dart';
+import '../../localization/locale_value_formatter.dart';
 
 /// Card widget for displaying simulation results with path visualization.
 ///
@@ -118,9 +120,9 @@ class SimulationResultCard extends StatelessWidget {
         Text(
           isAccepted ? l10n.accepted : l10n.rejected,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const Spacer(),
         if (result.isTimeout)
@@ -151,6 +153,7 @@ class SimulationResultCard extends StatelessWidget {
 
   Widget _buildMetrics(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -162,7 +165,7 @@ class SimulationResultCard extends StatelessWidget {
           context,
           icon: Icons.route,
           label: l10n.steps,
-          value: '${result.stepCount}',
+          value: formatter.integer(result.stepCount),
           textTheme: textTheme,
           colorScheme: colorScheme,
         ),
@@ -170,7 +173,7 @@ class SimulationResultCard extends StatelessWidget {
           context,
           icon: Icons.timer,
           label: l10n.time,
-          value: _formatExecutionTime(result.executionTime),
+          value: _formatExecutionTime(context, result.executionTime),
           textTheme: textTheme,
           colorScheme: colorScheme,
         ),
@@ -179,7 +182,7 @@ class SimulationResultCard extends StatelessWidget {
             context,
             icon: Icons.account_tree,
             label: l10n.states,
-            value: '${result.visitedStates.length}',
+            value: formatter.integer(result.visitedStates.length),
             textTheme: textTheme,
             colorScheme: colorScheme,
           ),
@@ -222,6 +225,12 @@ class SimulationResultCard extends StatelessWidget {
   }
 
   Widget _buildErrorMessage(BuildContext context, ColorScheme colorScheme) {
+    final l10n = appLocalizationsOf(context);
+    final isLegacyFailure =
+        result.message?.stableCode == 'simulation.legacy-failure';
+    final errorText = result.message == null || isLegacyFailure
+        ? l10n.localizeWorkflowText(result.errorMessage)
+        : l10n.resolveStructuredMessage(result.message!);
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -234,8 +243,7 @@ class SimulationResultCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              appLocalizationsOf(context)
-                  .localizeWorkflowText(result.errorMessage),
+              errorText,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: colorScheme.error),
@@ -264,9 +272,9 @@ class SimulationResultCard extends StatelessWidget {
             Text(
               appLocalizationsOf(context).executionPath,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary,
+              ),
             ),
           ],
         ),
@@ -314,8 +322,8 @@ class SimulationResultCard extends StatelessWidget {
     final color = isFirst
         ? colorScheme.primary
         : (isLast
-            ? (isAccepted ? colorScheme.tertiary : colorScheme.error)
-            : colorScheme.secondary);
+              ? (isAccepted ? colorScheme.tertiary : colorScheme.error)
+              : colorScheme.secondary);
 
     final formattedState = state.isEmpty ? '∅' : state;
 
@@ -346,10 +354,10 @@ class SimulationResultCard extends StatelessWidget {
             Text(
               formattedState,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontFamilyFallback: kMonospaceFontFamilyFallback,
-                  ),
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
+              ),
             ),
           ],
         ),
@@ -382,9 +390,9 @@ class SimulationResultCard extends StatelessWidget {
             Text(
               appLocalizationsOf(context).transitions,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.secondary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: colorScheme.secondary,
+              ),
             ),
           ],
         ),
@@ -416,10 +424,10 @@ class SimulationResultCard extends StatelessWidget {
                 child: Text(
                   displayTransition,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontFamilyFallback: kMonospaceFontFamilyFallback,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSecondaryContainer,
-                      ),
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSecondaryContainer,
+                  ),
                 ),
               );
             }).toList(),
@@ -429,17 +437,19 @@ class SimulationResultCard extends StatelessWidget {
     );
   }
 
-  String _formatExecutionTime(Duration duration) {
+  String _formatExecutionTime(BuildContext context, Duration duration) {
+    final formatter = LocaleValueFormatter.of(context);
     if (duration.inMilliseconds < 1) {
-      return '${duration.inMicroseconds}μs';
+      return '${formatter.integer(duration.inMicroseconds)}μs';
     } else if (duration.inMilliseconds < 1000) {
-      return '${duration.inMilliseconds}ms';
+      return '${formatter.integer(duration.inMilliseconds)}ms';
     } else if (duration.inSeconds < 60) {
-      return '${duration.inSeconds}.${(duration.inMilliseconds % 1000).toString().padLeft(3, '0').substring(0, 2)}s';
+      final secondsToHundredths = duration.inMilliseconds ~/ 10 / 100;
+      return '${formatter.decimal(secondsToHundredths, decimalDigits: 2)}s';
     } else {
       final minutes = duration.inMinutes;
       final seconds = duration.inSeconds % 60;
-      return '${minutes}m ${seconds}s';
+      return '${formatter.integer(minutes)}m ${formatter.integer(seconds)}s';
     }
   }
 }

@@ -49,12 +49,15 @@ Future<ProviderContainer> _pumpGrammarPage(
         home: Consumer(
           builder: (context, ref, _) {
             final actions = ref.watch(
-              workspaceQuickActionsProvider(WorkspaceTab.grammar),
+              workspaceQuickActionsProvider(
+                WorkspaceTab.grammar.formalSystemKey,
+              ),
             );
             return Scaffold(
               appBar: AppBar(
-                leading:
-                    const WorkspaceQuickActionsBar(tab: WorkspaceTab.grammar),
+                leading: const WorkspaceQuickActionsBar(
+                  tab: WorkspaceTab.grammar,
+                ),
                 leadingWidth: 144,
                 actions: [
                   IconButton(
@@ -111,7 +114,7 @@ void main() {
       grammar: grammar,
     );
 
-    await tester.tap(_appBarAction('Algorithms'));
+    await tester.tap(_appBarAction('Algorithms & Examples'));
     await tester.pumpAndSettle();
     await pumpUntilFound(
       tester,
@@ -133,8 +136,9 @@ void main() {
     expect(find.byType(GrammarAlgorithmPanel), findsOneWidget);
   });
 
-  testWidgets('populated desktop Grammar Help opens CFG theory',
-      (tester) async {
+  testWidgets('populated desktop Grammar Help opens CFG theory', (
+    tester,
+  ) async {
     final grammar = GrammarProvider()
       ..addProduction(leftSide: const ['S'], rightSide: const ['a']);
     final container = await _pumpGrammarPage(
@@ -205,9 +209,7 @@ void main() {
     expect(_appBarAction('Editar'), findsOneWidget);
   });
 
-  testWidgets('Portuguese localizes the desktop editor button', (
-    tester,
-  ) async {
+  testWidgets('Portuguese localizes the desktop editor button', (tester) async {
     await _pumpGrammarPage(
       tester,
       size: const Size(1200, 800),
@@ -224,32 +226,35 @@ void main() {
       find.descendant(of: productionEditor, matching: find.text('Editar')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Mostrar Algoritmos'), findsOneWidget);
+    expect(find.byTooltip('Mostrar Algoritmos e Exemplos'), findsOneWidget);
   });
 
-  testWidgets('mobile publishes Algorithms, Parser, and Edit in that order', (
+  testWidgets('mobile publishes Parser, Algorithms, and Edit in that order', (
     tester,
   ) async {
     await _pumpGrammarPage(tester);
 
-    final algorithms = _appBarAction('Algorithms');
     final parser = _appBarAction('Parser');
+    final algorithms = _appBarAction('Algorithms & Examples');
     final edit = _appBarAction('Edit');
 
-    expect(algorithms, findsOneWidget);
     expect(parser, findsOneWidget);
+    expect(algorithms, findsOneWidget);
     expect(edit, findsOneWidget);
     expect(
-      tester.getCenter(algorithms).dx,
-      lessThan(tester.getCenter(parser).dx),
+      tester.getCenter(parser).dx,
+      lessThan(tester.getCenter(algorithms).dx),
     );
-    expect(tester.getCenter(parser).dx, lessThan(tester.getCenter(edit).dx));
+    expect(
+      tester.getCenter(algorithms).dx,
+      lessThan(tester.getCenter(edit).dx),
+    );
   });
 
   testWidgets('Algorithms opens the grammar algorithm modal', (tester) async {
     final container = await _pumpGrammarPage(tester);
 
-    await tester.tap(_appBarAction('Algorithms'));
+    await tester.tap(_appBarAction('Algorithms & Examples'));
     await tester.pumpAndSettle();
     final exampleL10n = AppLocalizationsEn();
     await pumpUntilFound(
@@ -361,7 +366,7 @@ void main() {
   ) async {
     await _pumpGrammarPage(tester, size: const Size(1200, 800));
 
-    expect(find.byTooltip('Show Algorithms'), findsOneWidget);
+    expect(find.byTooltip('Show Algorithms & Examples'), findsOneWidget);
     expect(find.byTooltip('Show Parser'), findsOneWidget);
     expect(find.byTooltip('Show Simulation'), findsNothing);
     expect(find.text('Production Rules (0)'), findsOneWidget);
@@ -383,10 +388,7 @@ void main() {
           widget.section == GrammarEditorSection.productions,
     );
     final editButton = find.ancestor(
-      of: find.descendant(
-        of: productionEditor,
-        matching: find.text('Edit'),
-      ),
+      of: find.descendant(of: productionEditor, matching: find.text('Edit')),
       matching: find.bySubtype<ButtonStyleButton>(),
     );
 

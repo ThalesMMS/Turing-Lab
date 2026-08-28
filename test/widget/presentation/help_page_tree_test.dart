@@ -56,22 +56,22 @@ Finder _node(String id) => find.byKey(ValueKey('help-node-$id'));
 Finder _body(String id) => find.byKey(ValueKey('help-body-$id'));
 
 void main() {
-  testWidgets('keeps quick start inside the tree instead of a parallel action',
-      (
-    tester,
-  ) async {
-    await _pumpHelpPage(tester);
+  testWidgets(
+    'keeps quick start inside the tree instead of a parallel action',
+    (tester) async {
+      await _pumpHelpPage(tester);
 
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byIcon(Icons.rocket_launch),
-      ),
-      findsNothing,
-    );
-    expect(find.byIcon(Icons.rocket_launch), findsOneWidget);
-    expect(_node(HelpTopicIds.gettingStartedQuickStart), findsOneWidget);
-  });
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byIcon(Icons.rocket_launch),
+        ),
+        findsNothing,
+      );
+      expect(find.byIcon(Icons.rocket_launch), findsOneWidget);
+      expect(_node(HelpTopicIds.gettingStartedQuickStart), findsOneWidget);
+    },
+  );
 
   testWidgets('uses one centered vertical tree at every target width', (
     tester,
@@ -83,11 +83,7 @@ void main() {
     ];
 
     for (final (size, brightness, expectedWidth) in scenarios) {
-      await _pumpHelpPage(
-        tester,
-        size: size,
-        brightness: brightness,
-      );
+      await _pumpHelpPage(tester, size: size, brightness: brightness);
 
       expect(find.byType(PageView), findsNothing, reason: '$size');
       expect(find.byType(FilterChip), findsNothing, reason: '$size');
@@ -130,8 +126,18 @@ void main() {
 
     await tester.tap(_node('fsa'));
     await tester.pumpAndSettle();
+    await tester.dragUntilVisible(
+      _node('grammar'),
+      find.byType(ListView),
+      const Offset(0, -300),
+    );
     await tester.tap(_node('grammar'));
     await tester.pumpAndSettle();
+    await tester.dragUntilVisible(
+      _node(HelpTopicIds.gettingStartedQuickStart),
+      find.byType(ListView),
+      const Offset(0, 300),
+    );
     await tester.tap(_node(HelpTopicIds.gettingStartedQuickStart));
     await tester.pumpAndSettle();
 
@@ -257,10 +263,7 @@ void main() {
           (id) => tester
               .getTopLeft(
                 find
-                    .descendant(
-                      of: _node(id),
-                      matching: find.byType(Icon),
-                    )
+                    .descendant(of: _node(id), matching: find.byType(Icon))
                     .first,
               )
               .dx,
@@ -274,13 +277,14 @@ void main() {
     final dividerOffsets = ids
         .map((id) => find.byKey(ValueKey('help-divider-$id')))
         .map((divider) {
-      expect(divider, findsOneWidget);
-      expect(
-        tester.widget<Divider>(divider).color,
-        Theme.of(tester.element(divider)).colorScheme.outlineVariant,
-      );
-      return tester.getTopLeft(divider).dx;
-    }).toList();
+          expect(divider, findsOneWidget);
+          expect(
+            tester.widget<Divider>(divider).color,
+            Theme.of(tester.element(divider)).colorScheme.outlineVariant,
+          );
+          return tester.getTopLeft(divider).dx;
+        })
+        .toList();
     for (var index = 1; index < dividerOffsets.length; index++) {
       expect(
         dividerOffsets[index] - dividerOffsets[index - 1],
@@ -318,19 +322,13 @@ void main() {
     final node = tester.semantics.find(
       _node(HelpTopicIds.gettingStartedQuickStart),
     );
-    expect(
-      node.getSemanticsData().hasAction(SemanticsAction.tap),
-      isTrue,
-    );
+    expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
 
     final nodeFinder = find.semantics.byPredicate(
       (candidate) => candidate.id == node.id,
       describeMatch: (_) => 'the quick-start disclosure semantics node',
     );
-    tester.semantics.performAction(
-      nodeFinder,
-      SemanticsAction.tap,
-    );
+    tester.semantics.performAction(nodeFinder, SemanticsAction.tap);
     await tester.pumpAndSettle();
 
     expect(_body(HelpTopicIds.gettingStartedQuickStart), findsNothing);
@@ -370,9 +368,7 @@ void main() {
 
     await tester.tap(
       find.byKey(
-        const ValueKey(
-          'help-related-getting-started.choose-workspace',
-        ),
+        const ValueKey('help-related-getting-started.choose-workspace'),
       ),
     );
     await tester.pumpAndSettle();
@@ -423,10 +419,7 @@ void main() {
   testWidgets(
     'reveal crosses tall open bodies until a distant topic is focused',
     (tester) async {
-      await _pumpHelpPage(
-        tester,
-        size: const Size(320, 320),
-      );
+      await _pumpHelpPage(tester, size: const Size(320, 320));
       final tree = tester.widget<HelpTreeView>(find.byType(HelpTreeView));
       for (final topicId in [
         HelpTopicIds.gettingStartedQuickStart,

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "epic": 306,
+  "asOf": "2026-08-26",
+  "phaseRequires": {
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4,
+    "6": 5,
+    "7": 6,
+    "8": 7,
+    "9": 8
+  },
+  "verificationProfiles": {
+    "roadmap": [
+      "python3 tool/check_issue_roadmap.py --github"
+    ],
+    "docs": [
+      "python3 tool/check_comment_docs_english.py",
+      "python3 tool/check_stale_branding.py",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "qa": [
+      "bash test/scripts/qa_scripts_test.sh",
+      "bash tool/qa.sh --only format,analyze --format-all"
+    ],
+    "responsive": [
+      "flutter test test/responsive/ --concurrency=1",
+      "flutter test test/tablet_layout_test.dart",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "canvas": [
+      "bash tool/qa.sh --preset canvas",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "apple": [
+      "flutter test test/integration/apple_release_smoke_test.dart --concurrency=1",
+      "bash tool/qa.sh --preset apple --apple-target macos --apple-device macos",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "screenshots": [
+      "flutter test test/app_store/ --concurrency=1",
+      "bash tool/capture_app_store_screenshots.sh validate --all --output screenshots/app_store"
+    ],
+    "architecture": [
+      "bash tool/qa.sh --preset code",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "grammar": [
+      "bash tool/qa.sh --preset grammar",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "tm": [
+      "bash tool/qa.sh --preset tm",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "formalSystem": [
+      "flutter test test/unit/ test/features/ test/widget/ --concurrency=1",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "interoperability": [
+      "flutter test test/integration/ test/unit/ --concurrency=1",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "pumping": [
+      "flutter test test/features/ test/widget/ --concurrency=1",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "parity": [
+      "python3 tool/check_issue_roadmap.py --github",
+      "flutter test --concurrency=1",
+      "flutter analyze --no-fatal-infos"
+    ],
+    "certification": [
+      "bash tool/qa.sh --all --skip apple",
+      "bash tool/qa.sh --preset apple --apple-target macos --apple-device macos"
+    ],
+    "localization": [
+      "flutter test --concurrency=1",
+      "python3 tool/check_comment_docs_english.py",
+      "flutter analyze --no-fatal-infos"
+    ]
+  },
+  "issues": {
+    "102": {"phase": 3, "dependsOnIssues": [], "dependsOnPhaseExit": 2, "verificationProfile": "pumping"},
+    "163": {"phase": 9, "dependsOnIssues": [342], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "193": {"phase": 4, "dependsOnIssues": [303], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "210": {"phase": 9, "dependsOnIssues": [342], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "283": {"phase": 4, "dependsOnIssues": [303], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "296": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "docs"},
+    "297": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "canvas"},
+    "298": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "responsive"},
+    "299": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "apple"},
+    "300": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "screenshots"},
+    "301": {"phase": 2, "dependsOnIssues": [], "dependsOnPhaseExit": 1, "verificationProfile": "tm"},
+    "302": {"phase": 2, "dependsOnIssues": [], "dependsOnPhaseExit": 1, "verificationProfile": "canvas"},
+    "303": {"phase": 2, "dependsOnIssues": [], "dependsOnPhaseExit": 1, "verificationProfile": "grammar"},
+    "304": {"phase": 1, "dependsOnIssues": [], "dependsOnPhaseExit": 0, "verificationProfile": "qa"},
+    "305": {"phase": 1, "dependsOnIssues": [304], "dependsOnPhaseExit": 0, "verificationProfile": "docs"},
+    "306": {"phase": 0, "dependsOnIssues": [], "dependsOnPhaseExit": null, "verificationProfile": "roadmap"},
+    "307": {"phase": 2, "dependsOnIssues": [], "dependsOnPhaseExit": 1, "verificationProfile": "architecture"},
+    "308": {"phase": 2, "dependsOnIssues": [], "dependsOnPhaseExit": 1, "verificationProfile": "formalSystem"},
+    "309": {"phase": 3, "dependsOnIssues": [307, 308, 323], "dependsOnPhaseExit": 2, "verificationProfile": "formalSystem"},
+    "310": {"phase": 3, "dependsOnIssues": [307, 308, 323], "dependsOnPhaseExit": 2, "verificationProfile": "formalSystem"},
+    "311": {"phase": 3, "dependsOnIssues": [], "dependsOnPhaseExit": 2, "verificationProfile": "tm"},
+    "312": {"phase": 3, "dependsOnIssues": [], "dependsOnPhaseExit": 2, "verificationProfile": "tm"},
+    "313": {"phase": 4, "dependsOnIssues": [], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "314": {"phase": 3, "dependsOnIssues": [], "dependsOnPhaseExit": 2, "verificationProfile": "grammar"},
+    "315": {"phase": 3, "dependsOnIssues": [314], "dependsOnPhaseExit": 2, "verificationProfile": "grammar"},
+    "316": {"phase": 4, "dependsOnIssues": [314], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "317": {"phase": 4, "dependsOnIssues": [], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "318": {"phase": 4, "dependsOnIssues": [303], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "319": {"phase": 4, "dependsOnIssues": [314], "dependsOnPhaseExit": 3, "verificationProfile": "grammar"},
+    "320": {"phase": 3, "dependsOnIssues": [307, 323], "dependsOnPhaseExit": 2, "verificationProfile": "formalSystem"},
+    "321": {"phase": 3, "dependsOnIssues": [102, 307, 323], "dependsOnPhaseExit": 2, "verificationProfile": "pumping"},
+    "322": {"phase": 3, "dependsOnIssues": [102, 307, 323], "dependsOnPhaseExit": 2, "verificationProfile": "pumping"},
+    "323": {"phase": 2, "dependsOnIssues": [307], "dependsOnPhaseExit": 1, "verificationProfile": "interoperability"},
+    "324": {"phase": 5, "dependsOnIssues": [323], "dependsOnPhaseExit": 4, "verificationProfile": "interoperability"},
+    "325": {"phase": 5, "dependsOnIssues": [311, 312, 323], "dependsOnPhaseExit": 4, "verificationProfile": "interoperability"},
+    "326": {"phase": 5, "dependsOnIssues": [324, 325, 327], "dependsOnPhaseExit": 4, "verificationProfile": "interoperability"},
+    "327": {"phase": 5, "dependsOnIssues": [323], "dependsOnPhaseExit": 4, "verificationProfile": "interoperability"},
+    "328": {"phase": 6, "dependsOnIssues": [], "dependsOnPhaseExit": 5, "verificationProfile": "formalSystem"},
+    "329": {"phase": 6, "dependsOnIssues": [307, 323], "dependsOnPhaseExit": 5, "verificationProfile": "canvas"},
+    "330": {"phase": 6, "dependsOnIssues": [323], "dependsOnPhaseExit": 5, "verificationProfile": "interoperability"},
+    "331": {"phase": 6, "dependsOnIssues": [302], "dependsOnPhaseExit": 5, "verificationProfile": "canvas"},
+    "332": {"phase": 6, "dependsOnIssues": [317, 327], "dependsOnPhaseExit": 5, "verificationProfile": "formalSystem"},
+    "333": {"phase": 7, "startsInPhase": 0, "dependsOnIssues": [], "dependsOnPhaseExit": 6, "verificationProfile": "parity"},
+    "334": {"phase": 8, "dependsOnIssues": [333], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "335": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "336": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "337": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "338": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "339": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "340": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "341": {"phase": 8, "dependsOnIssues": [334], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "342": {"phase": 8, "dependsOnIssues": [335, 336, 337, 338, 339, 340, 341], "dependsOnPhaseExit": 7, "verificationProfile": "certification"},
+    "343": {"phase": 9, "dependsOnIssues": [342], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "344": {"phase": 9, "dependsOnIssues": [342], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "345": {"phase": 9, "dependsOnIssues": [163, 210, 343, 344], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "346": {"phase": 9, "dependsOnIssues": [345], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "347": {"phase": 9, "dependsOnIssues": [346], "dependsOnPhaseExit": 8, "verificationProfile": "localization"},
+    "348": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "formalSystem"},
+    "349": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "interoperability"},
+    "350": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "grammar"},
+    "351": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "pumping"},
+    "352": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "formalSystem"},
+    "353": {"phase": 7, "dependsOnIssues": [333], "dependsOnPhaseExit": 6, "verificationProfile": "formalSystem"}
+  }
+}

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart' hide State;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/constants/svg_export_defaults.dart';
+import 'package:turing_lab/core/annotations/annotations.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/transition.dart';
@@ -58,6 +59,42 @@ void main() {
     expect(pt.svgTmLegend, isNot(en.svgTmLegend));
     expect(en.svgTmLegend, contains('read'));
     expect(pt.svgTmLegend, contains('leitura'));
+  });
+
+  test('SVG excludes annotations by default and includes them explicitly', () {
+    final timestamp = DateTime.utc(2026);
+    final annotations = DocumentAnnotationCollection(
+      documentId: 'empty',
+      documentRevision: '1',
+      annotations: [
+        DocumentAnnotation(
+          id: 'note-1',
+          documentId: 'empty',
+          documentRevision: '1',
+          text: 'Review <this> & that',
+          x: 20,
+          y: 40,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        ),
+      ],
+    );
+
+    final excluded = SvgExporter.exportFsaToSvg(
+      emptyFsa(),
+      options: SvgExportOptions(annotations: annotations),
+    );
+    final included = SvgExporter.exportFsaToSvg(
+      emptyFsa(),
+      options: SvgExportOptions(
+        annotations: annotations,
+        includeAnnotations: true,
+      ),
+    );
+
+    expect(excluded, isNot(contains('class="annotations"')));
+    expect(included, contains('class="annotations"'));
+    expect(included, contains('Review &lt;this&gt; &amp; that'));
   });
 
   test('Portuguese workflow adapter localizes core algorithm prose', () {

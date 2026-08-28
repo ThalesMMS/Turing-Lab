@@ -1,0 +1,15 @@
+{
+  "schema": {"id": "turing-lab.mealy", "version": 1},
+  "id": "mealy_identity",
+  "name": "Identity transducer",
+  "revision": 1,
+  "inputAlphabet": ["0", "1"],
+  "outputAlphabet": ["0", "1"],
+  "states": [
+    {"id": "q0", "label": "q0", "position": {"x": 120, "y": 160}, "isInitial": true}
+  ],
+  "transitions": [
+    {"id": "identity_0", "from": "q0", "to": "q0", "input": "0", "output": ["0"]},
+    {"id": "identity_1", "from": "q0", "to": "q0", "input": "1", "output": ["1"]}
+  ]
+}

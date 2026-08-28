@@ -1,0 +1,18 @@
+{
+  "codecId": "pumping-lemma.regular.turing-lab-json.v1",
+  "id": "codec-pumping-lemma.regular.turing-lab-json.v1-migration-extensions-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "extensionTokens": [
+      "multi-token",
+      "β",
+      "🧪"
+    ],
+    "unknownField": "x-β-3655245201",
+    "sourceFilename": "pumping_lemma_regular_canonical.json",
+    "sourcePayloadBase64": "ewogICJzY2hlbWEiOiB7ImlkIjogInR1cmluZy1sYWIucHVtcGluZy1sZW1tYSIsICJ2ZXJzaW9uIjogMX0sCiAgInByb2JsZW0iOiB7CiAgICAiaWQiOiAicmVndWxhci5lcXVhbC1ibG9ja3MiLAogICAgInRpdGxlIjogIkVxdWFsIGEgYW5kIGIgYmxvY2tzIiwKICAgICJ0aGVvcmVtIjogInJlZ3VsYXIiLAogICAgImxhbmd1YWdlRGVzY3JpcHRpb24iOiAiTCA9IHthXm4gYl5uIHwgbiA+PSAwfSIsCiAgICAicmVwcmVzZW50YXRpb25LaW5kIjogImN1cmF0ZWRQcmVkaWNhdGUiLAogICAgInJlcHJlc2VudGF0aW9uIjogImVxdWFsLWEtYi1ibG9ja3MiLAogICAgInNvdXJjZVJldmlzaW9uIjogIjIwMjYtMDgtMjUiLAogICAgInN1Z2dlc3RlZFB1bXBpbmdMZW5ndGgiOiAyLAogICAgInN1Z2dlc3RlZFdpdG5lc3MiOiBbImEiLCAiYSIsICJiIiwgImIiXSwKICAgICJoaW50IjogIlRyYWNrIHRoZSB0aGVvcmVtIHF1YW50aWZpZXJzIGJlZm9yZSB0ZXN0aW5nIGEgcHVtcCBleHBvbmVudC4iLAogICAgImV4cGxhbmF0aW9uIjogIlB1bXBpbmcgYSBub25lbXB0eSBwYXJ0IG9mIHRoZSBmaXJzdCBibG9jayBicmVha3MgZXF1YWwgY291bnRzLiIKICB9LAogICJzZXNzaW9uIjogewogICAgInNlc3Npb25JZCI6ICJyZWd1bGFyLWNhbm9uaWNhbCIsCiAgICAiY2hhbGxlbmdlSWQiOiAicmVndWxhci5lcXVhbC1ibG9ja3MiLAogICAgInNvdXJjZVJldmlzaW9uIjogIjIwMjYtMDgtMjUiLAogICAgInRoZW9yZW0iOiAicmVndWxhciIsCiAgICAibW9kZSI6ICJndWlkZWRQcmFjdGljZSIsCiAgICAicm9sZSI6ICJsZWFybmVyIiwKICAgICJ0YXJnZXRMYW5ndWFnZSI6ICJMID0ge2FebiBiXm4gfCBuID49IDB9IiwKICAgICJwdW1waW5nTGVuZ3RoIjogbnVsbCwKICAgICJ3aXRuZXNzIjogW10sCiAgICAiZGVjb21wb3NpdGlvbiI6IG51bGwsCiAgICAicHVtcEV4cG9uZW50IjogbnVsbCwKICAgICJldmlkZW5jZSI6IG51bGwsCiAgICAiaGlzdG9yeSI6IFtdLAogICAgIm91dGNvbWUiOiAiaW5Qcm9ncmVzcyIsCiAgICAic2NvcmUiOiAwLAogICAgInJldmlzaW9uIjogMCwKICAgICJzdGFnZSI6ICJhd2FpdGluZ1B1bXBpbmdMZW5ndGgiCiAgfSwKICAicHJvZ3Jlc3MiOiB7ImNoYWxsZW5nZVNjb3JlcyI6IHt9fQp9Cg=="
+  },
+  "property": "migration-extensions",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

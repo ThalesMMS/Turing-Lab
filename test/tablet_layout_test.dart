@@ -16,8 +16,8 @@ import 'package:turing_lab/presentation/pages/pumping_lemma_page.dart';
 import 'package:turing_lab/presentation/pages/regex_page.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
-import 'package:turing_lab/presentation/widgets/pumping_lemma_game/pumping_lemma_game.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma_workspace.dart';
 import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 import 'responsive/responsive_harness.dart';
@@ -103,7 +103,7 @@ void main() {
         child: const PumpingLemmaPage(),
       );
 
-      expect(find.byType(PumpingLemmaGame), findsOneWidget);
+      expect(find.byType(PumpingLemmaWorkspace), findsOneWidget);
       expect(find.byType(PumpingLemmaProgress), findsNothing);
 
       final progressRail = find.byKey(WorkspaceDock.railButtonKey('progress'));
@@ -112,7 +112,7 @@ void main() {
 
       expect(find.byType(PumpingLemmaProgress), findsOneWidget);
       expect(
-        tester.getRect(find.byType(PumpingLemmaGame)).right,
+        tester.getRect(find.byType(PumpingLemmaWorkspace)).right,
         lessThanOrEqualTo(
           tester.getRect(find.byType(PumpingLemmaProgress)).left,
         ),

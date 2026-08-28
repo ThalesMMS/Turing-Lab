@@ -400,9 +400,7 @@ void _runFileOperationsPanelLoadingErrorTests(
       final automaton = _buildSampleAutomaton();
       final service = _StubFileOperationsService(
         loadAutomatonResponses: Queue.of([
-          const Failure<FSA>(
-            'Turing Lab could not access the selected JSON file data. Pick the file again and keep it available until the import finishes.',
-          ),
+          const Failure<FSA>(platformFileInaccessibleErrorCode),
         ]),
       );
 
@@ -435,6 +433,8 @@ void _runFileOperationsPanelLoadingErrorTests(
         find.textContaining('could not access the selected file'),
         findsOneWidget,
       );
+      expect(find.text(platformFileInaccessibleErrorCode), findsNothing);
+      expect(find.text('View technical details'), findsNothing);
     });
   });
 }

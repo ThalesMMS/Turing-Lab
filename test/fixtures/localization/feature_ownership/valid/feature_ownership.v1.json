@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "ownerIssues": {
+    "sharedChrome": 163,
+    "structuredMessages": 210,
+    "featureInterface": 343,
+    "helpTutorialExamples": 344
+  },
+  "registryAssembly": "registry_assembly.dart",
+  "arbFiles": {"en": "app_en.arb", "pt": "app_pt.arb"},
+  "parityRoot": "parity",
+  "descriptorEntries": [
+    {
+      "id": "fixture-standard",
+      "formalSystemKey": "fixture:standard",
+      "localizationNamespace": "formal.fixture",
+      "sourcePaths": ["registry.dart.txt"],
+      "arbCoverage": {
+        "englishKeys": ["featureLabel"],
+        "portugueseKeys": ["featureLabel"],
+        "keyPrefixes": ["feature"]
+      },
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/evidence_test.dart.txt"],
+      "parityCoverage": {"registry-fixture": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    }
+  ],
+  "workflowEntries": [
+    {
+      "id": "fixture-workflow",
+      "capabilityIds": ["workflow-fixture"],
+      "localizationNamespaces": ["formal.fixture"],
+      "arbCoverage": {
+        "englishKeys": ["featureLabel"],
+        "portugueseKeys": ["featureLabel"],
+        "keyPrefixes": ["feature"]
+      },
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/evidence_test.dart.txt"],
+      "evidenceTests": ["test/evidence_test.dart.txt"],
+      "parityCoverage": {"workflow-fixture": "partial"},
+      "completionStatus": "partial"
+    }
+  ]
+}

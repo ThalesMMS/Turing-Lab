@@ -101,7 +101,7 @@ void main() {
         expect(fsa.data, hasLength(5));
         expect(cfg.data, hasLength(5));
         expect(pda.data, hasLength(5));
-        expect(tm.data, hasLength(5));
+        expect(tm.data, hasLength(10));
         expect(regex.data, hasLength(5));
 
         return {

@@ -2,7 +2,8 @@
 //  settings_repository_impl.dart
 //  Turing Lab
 //
-//  Persists UI and symbol preferences in SharedPreferences through a repository layer that applies defaults and keeps the settings model in sync.
+//  Persists UI preferences in SharedPreferences through a repository layer
+//  that applies defaults and keeps the settings model in sync.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -18,7 +19,8 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   SharedPreferencesSettingsRepository({SettingsStorage? storage})
       : _storage = storage ?? const SharedPreferencesSettingsStorage();
 
-  static const String _emptyStringSymbolKey = 'settings_empty_string_symbol';
+  static const String _obsoleteEmptyStringSymbolKey =
+      'settings_empty_string_symbol';
   static const String _legacyEpsilonSymbolKey = 'settings_epsilon_symbol';
   static const String _themeModeKey = 'settings_theme_mode';
   static const String _localeCodeKey = 'settings_locale_code';
@@ -38,13 +40,9 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   @override
   Future<SettingsModel> loadSettings() async {
     const defaults = SettingsModel();
-    await _discardLegacyEpsilonSymbol();
+    await _discardObsoleteEmptyStringSymbolPreferences();
 
     final settings = SettingsModel(
-      emptyStringSymbol: await _readStringSetting(
-        _emptyStringSymbolKey,
-        defaults.emptyStringSymbol,
-      ),
       themeMode: await _readStringSetting(
         _themeModeKey,
         defaults.themeMode,
@@ -75,11 +73,16 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     return settings;
   }
 
-  Future<void> _discardLegacyEpsilonSymbol() async {
-    try {
-      await _storage.remove(_legacyEpsilonSymbolKey);
-    } catch (_) {
-      // A stale, unused preference must not make settings loading fail.
+  Future<void> _discardObsoleteEmptyStringSymbolPreferences() async {
+    for (final key in const {
+      _obsoleteEmptyStringSymbolKey,
+      _legacyEpsilonSymbolKey,
+    }) {
+      try {
+        await _storage.remove(key);
+      } catch (_) {
+        // A stale, unused preference must not make settings loading fail.
+      }
     }
   }
 
@@ -96,6 +99,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   }
 
   Future<void> _saveSettingsAtomically(SettingsModel settings) async {
+    await _discardObsoleteEmptyStringSymbolPreferences();
     final previousValues = await _snapshotPersistedSettings();
     var saved = false;
 
@@ -117,10 +121,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
 
   Future<bool> _writeSettings(SettingsModel settings) async {
     final writes = <Future<bool> Function()>[
-      () => _storage.writeString(
-            _emptyStringSymbolKey,
-            settings.emptyStringSymbol,
-          ),
       () => _storage.writeString(_themeModeKey, settings.themeMode),
       () => settings.localeCode == null
           ? _storage.remove(_localeCodeKey)
@@ -148,7 +148,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
 
   Future<Map<String, Object?>> _snapshotPersistedSettings() async {
     return <String, Object?>{
-      _emptyStringSymbolKey: await _snapshotString(_emptyStringSymbolKey),
       _themeModeKey: await _snapshotString(_themeModeKey),
       _localeCodeKey: await _snapshotString(_localeCodeKey),
       _showGridKey: await _snapshotBool(_showGridKey),
@@ -190,7 +189,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     Map<String, Object?> previousValues,
   ) async {
     await Future.wait<bool>([
-      _restoreString(_emptyStringSymbolKey, previousValues),
       _restoreString(_themeModeKey, previousValues),
       _restoreString(_localeCodeKey, previousValues),
       _restoreBool(_showGridKey, previousValues),

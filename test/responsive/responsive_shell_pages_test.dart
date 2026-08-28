@@ -14,7 +14,6 @@ import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
 import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
-import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 
 import 'responsive_fixtures.dart';
 import 'responsive_harness.dart';
@@ -58,10 +57,7 @@ class _LanguageComparisonHost extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {},
-                    ),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () {}),
                   ],
                 ),
               ),
@@ -123,12 +119,11 @@ void main() {
           prepare: loadResponsiveFixtures,
         );
 
-        final usesSelector =
-            viewport.logicalSize.width >= ResponsiveBreakpoints.mobile;
         expect(
-          find.byType(usesSelector ? WorkspaceSelector : MobileNavigation),
+          find.byType(WorkspaceSelector),
           findsOneWidget,
-          reason: 'the home shell picked the wrong navigation for '
+          reason:
+              'the home shell did not expose workspace navigation on '
               '${viewport.name}',
         );
 

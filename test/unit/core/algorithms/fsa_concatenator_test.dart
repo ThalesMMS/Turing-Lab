@@ -3,10 +3,12 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:turing_lab/core/algorithms/fsa_concatenator.dart';
+import 'package:turing_lab/core/algorithms/fsa_concatenation_messages.dart';
 import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
@@ -87,8 +89,9 @@ void main() {
       expect(result.isSuccess, isTrue, reason: result.error);
       expect(repeated.isSuccess, isTrue, reason: repeated.error);
       final report = result.data!;
-      final stateIds =
-          report.resultNFA.states.map((state) => state.id).toList();
+      final stateIds = report.resultNFA.states
+          .map((state) => state.id)
+          .toList();
       final transitionIds = report.resultNFA.fsaTransitions
           .map((transition) => transition.id)
           .toList();
@@ -119,7 +122,9 @@ void main() {
         containsAll(report.epsilonBridges.map((bridge) => bridge.id)),
       );
       expect(
-        report.clonesFor(FSAConcatenationOperand.right).every(
+        report
+            .clonesFor(FSAConcatenationOperand.right)
+            .every(
               (clone) =>
                   clone.clonedState.position.x >
                   left.states.map((state) => state.position.x).reduce(math.max),
@@ -132,6 +137,65 @@ void main() {
         report.resultNFA,
         accepted: {'ac', 'bc'},
         rejected: {'', 'a', 'b', 'c', 'abc'},
+      );
+    });
+
+    test('exposes stable diagnostics and structured construction steps', () {
+      final emptyLeft = FSA.empty(id: 'empty-left', name: 'Empty left');
+      final failure = FSAConcatenator.concatenate(
+        emptyLeft,
+        _literal('b', id: 'right'),
+      );
+
+      expect(failure.error, 'automaton.fsa-concatenation.empty-operand');
+      expect(
+        failure.structuredError,
+        FsaConcatenationMessages.emptyOperand('left'),
+      );
+      expect(failure.structuredError?.arguments['operand']?.value, 'left');
+
+      final success = FSAConcatenator.concatenate(
+        _literal('a', id: 'left'),
+        _literal('b', id: 'right'),
+      );
+      expect(success.isSuccess, isTrue, reason: success.error);
+      final report = success.data!;
+      final cloneStep = report.steps.first;
+      expect(cloneStep.title, 'automaton.fsa-concatenation.clone-title');
+      expect(
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(
+            cloneStep.properties[fsaConcatenationTitleMessageProperty] as Map,
+          ),
+        ),
+        FsaConcatenationMessages.cloneTitle('left'),
+      );
+      expect(
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(
+            cloneStep.properties[fsaConcatenationExplanationMessageProperty]
+                as Map,
+          ),
+        ).stableCode,
+        cloneStep.explanation,
+      );
+      expect(
+        report.steps[2].title,
+        'automaton.fsa-concatenation.connect-title',
+      );
+      expect(
+        report.steps[2].explanation,
+        'automaton.fsa-concatenation.connect-explanation',
+      );
+
+      final emptyLanguageResult = FSAConcatenator.concatenate(
+        _emptyLanguage(id: 'empty-language'),
+        _literal('b', id: 'right'),
+      );
+      expect(emptyLanguageResult.isSuccess, isTrue);
+      expect(
+        emptyLanguageResult.data!.steps[2].explanation,
+        'automaton.fsa-concatenation.connect-empty-explanation',
       );
     });
 

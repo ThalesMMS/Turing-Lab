@@ -1,0 +1,893 @@
+{
+  "fragment": "documents-interop",
+  "rows": [
+    {
+      "id": "document-fsa",
+      "area": "Documents and interoperability",
+      "capability": "Finite automaton document, workspace, and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["finite-automaton"],
+      "jflapXmlFamilies": ["fsa"],
+      "jflap": {
+        "summary": "New creates a finite automaton, and the FSA XML transducer participates in the common XML codec.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:191",
+          "../JFLAP/file/xml/TransducerFactory.java:197",
+          "../JFLAP/file/XMLCodec.java:65"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/fsa.dart:24",
+          "lib/data/codecs/fsa_jflap_codec.dart:17",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:34"
+        ],
+        "tests": [
+          "test/unit/data/document_codecs_test.dart:87",
+          "test/unit/data/document_codecs_test.dart:169",
+          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:55"
+        ],
+        "issues": [307, 323, 326],
+        "decision": "Keep a typed FSA model and independent codecs. Preserve JFLAP graph identity, positions, labels, acceptance, and supported notes, with explicit fidelity diagnostics for local-only fields."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The typed registry exposes both JFLAP XML and versioned JSON. Imports are transactional rather than replacing the active document during decoding."
+    },
+    {
+      "id": "document-mealy",
+      "area": "Documents and interoperability",
+      "capability": "Mealy machine document, workspace, and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["mealy-machine"],
+      "jflapXmlFamilies": ["mealy"],
+      "jflap": {
+        "summary": "New creates a Mealy machine, and the XML factory selects the Mealy transducer for that model.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:199",
+          "../JFLAP/file/xml/TransducerFactory.java:204",
+          "../JFLAP/file/xml/MealyTransducer.java:42"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/transducers/transducer_models.dart:223",
+          "lib/data/codecs/mealy_jflap_codec.dart:13",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:127"
+        ],
+        "tests": [
+          "test/unit/data/mealy_document_codecs_test.dart:23",
+          "test/unit/data/mealy_document_codecs_test.dart:39",
+          "test/widget/presentation/mealy_workspace_test.dart:14"
+        ],
+        "issues": [308, 309],
+        "decision": "Model transition output directly and keep JFLAP final-state metadata as non-semantic extension data instead of importing FSA acceptance into a transducer."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Canonical XML and JSON fixtures exercise stable identities, deterministic output, malformed input, Unicode, and loss consent."
+    },
+    {
+      "id": "document-moore",
+      "area": "Documents and interoperability",
+      "capability": "Moore machine document, workspace, and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["moore-machine"],
+      "jflapXmlFamilies": ["moore"],
+      "jflap": {
+        "summary": "New creates a Moore machine, and the XML factory selects the Moore transducer for state-output documents.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:208",
+          "../JFLAP/file/xml/TransducerFactory.java:205",
+          "../JFLAP/file/xml/MooreTransducer.java:52"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/transducers/transducer_models.dart:300",
+          "lib/data/codecs/moore_jflap_document_codec.dart:16",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:143"
+        ],
+        "tests": [
+          "test/unit/data/moore_document_codecs_test.dart:13",
+          "test/unit/data/moore_document_codecs_test.dart:55",
+          "test/widget/presentation/moore_workspace_test.dart:16"
+        ],
+        "issues": [308, 310],
+        "decision": "Keep outputs on states and treat transitions as input-only. Reject FSA final-state semantics and report conflicting JFLAP output representations deterministically."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The workspace and adapter test output editing through undo and redo, while codec tests cover reordered XML and conflicting output fields."
+    },
+    {
+      "id": "document-pda-input-modes",
+      "area": "Documents and interoperability",
+      "capability": "PDA documents with JFLAP single-character and multiple-character input modes",
+      "groups": ["document"],
+      "jflapNewTypes": [
+        "pda-multiple-character-input",
+        "pda-single-character-input"
+      ],
+      "jflapXmlFamilies": ["pda"],
+      "jflap": {
+        "summary": "New asks the user to choose multiple-character or single-character PDA input, while one PDA XML transducer reads and writes both.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:218",
+          "../JFLAP/gui/action/NewAction.java:221",
+          "../JFLAP/file/xml/TransducerFactory.java:198"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/core/models/pda.dart:25",
+          "lib/data/codecs/pda_jflap_document_codec.dart:22",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:62"
+        ],
+        "tests": [
+          "test/unit/data/pda_document_codecs_test.dart:50",
+          "test/unit/data/pda_document_codecs_test.dart:112",
+          "test/unit/data/pda_document_codecs_test.dart:155",
+          "test/widget/presentation/pda_page_controls_test.dart:550"
+        ],
+        "issues": [324],
+        "decision": "Use one token-aware PDA model instead of two document modes. Atomic token boundaries remain explicit locally, and standard JFLAP word-pop cases require visible loss consent."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "partial",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The deviation avoids a global character-mode switch. It is explicit in diagnostics and covered by behavioral round-trip tests."
+    },
+    {
+      "id": "document-tm-single-tape",
+      "area": "Documents and interoperability",
+      "capability": "Single-tape Turing machine document and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["tm-single-tape"],
+      "jflapXmlFamilies": ["tm"],
+      "jflap": {
+        "summary": "New creates a one-tape Turing machine, and the TM transducer handles standard Turing-machine XML.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:235",
+          "../JFLAP/gui/action/NewAction.java:238",
+          "../JFLAP/file/xml/TransducerFactory.java:199"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/tm.dart:32",
+          "lib/data/codecs/tm_jflap_document_codec.dart:22",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:76"
+        ],
+        "tests": [
+          "test/unit/data/tm_document_codecs_test.dart:21",
+          "test/unit/data/tm_document_codecs_test.dart:240",
+          "test/unit/data/tm_document_codecs_test.dart:362"
+        ],
+        "issues": [325],
+        "decision": "Represent all tape operations as vectors, including the one-tape case, so single-tape documents share validation and persistence with multi-tape documents."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The codec preserves nondeterminism, stable state identities, final-state acceptance, movement values, annotations, and unknown optional XML where safe."
+    },
+    {
+      "id": "document-tm-multi-tape",
+      "area": "Documents and interoperability",
+      "capability": "Multi-tape Turing machine creation, editing, and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["tm-multi-tape"],
+      "jflapXmlFamilies": ["tm"],
+      "jflap": {
+        "summary": "New prompts for two through five tapes and stores multi-tape machines through the TM transducer.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:243",
+          "../JFLAP/gui/action/NewAction.java:251",
+          "../JFLAP/file/xml/TransducerFactory.java:64"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/tm.dart:32",
+          "lib/presentation/pages/tm_page.dart:656",
+          "lib/data/codecs/tm_jflap_document_codec.dart:22"
+        ],
+        "tests": [
+          "test/unit/data/tm_multi_tape_codecs_test.dart:13",
+          "test/unit/data/tm_multi_tape_codecs_test.dart:41",
+          "test/unit/data/tm_multi_tape_codecs_test.dart:59"
+        ],
+        "issues": [311, 325],
+        "decision": "Allow the tape count to be changed in the live TM workspace and validate every read, write, and move vector against that count."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab does not copy JFLAP's fixed two-to-five prompt; it exposes increment and decrement controls while retaining the same document semantics."
+    },
+    {
+      "id": "document-tm-building-blocks",
+      "area": "Documents and interoperability",
+      "capability": "Turing machines with reusable building blocks and nested JFLAP documents",
+      "groups": ["document"],
+      "jflapNewTypes": ["tm-building-blocks"],
+      "jflapXmlFamilies": ["tm-building-blocks"],
+      "jflap": {
+        "summary": "New creates a one-tape building-block TM, and a dedicated XML transducer handles nested block documents.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:264",
+          "../JFLAP/gui/action/NewAction.java:267",
+          "../JFLAP/file/xml/TransducerFactory.java:200"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/tm.dart:42",
+          "lib/presentation/widgets/tm/tm_block_library_panel.dart:8",
+          "lib/data/codecs/tm_jflap_document_codec.dart:936"
+        ],
+        "tests": [
+          "test/unit/core/tm/tm_building_blocks_test.dart:180",
+          "test/unit/core/tm/tm_building_blocks_test.dart:320",
+          "test/unit/core/tm/tm_building_blocks_test.dart:342",
+          "test/unit/core/tm/tm_building_blocks_test.dart:482"
+        ],
+        "issues": [312, 325],
+        "decision": "Keep reusable submachines typed and revisioned, preserve nested definitions during JFLAP and JSON round-trips, and reject recursive or unresolved dependencies before execution."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The library UI exposes create, rename, duplicate, replace, and guarded deletion. Tests also cover nested execution, source mapping, flattening, unused blocks, malformed references, and undo."
+    },
+    {
+      "id": "document-grammar-family",
+      "area": "Documents and interoperability",
+      "capability": "Context-free and phrase-structure grammar documents through the JFLAP grammar family",
+      "groups": ["document"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflapXmlFamilies": ["grammar"],
+      "jflap": {
+        "summary": "New starts a context-free grammar, while the grammar XML transducer reads the general Grammar family.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:272",
+          "../JFLAP/gui/action/NewAction.java:275",
+          "../JFLAP/file/xml/TransducerFactory.java:201",
+          "../JFLAP/file/xml/GrammarTransducer.java:40"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/core/models/grammar.dart:15",
+          "lib/core/grammar/phrase_structure/phrase_structure_grammar.dart:60",
+          "lib/data/codecs/grammar_jflap_codec.dart:11",
+          "lib/data/grammar/unrestricted_grammar_module.dart:12"
+        ],
+        "tests": [
+          "test/unit/data/document_codecs_test.dart:276",
+          "test/unit/data/unrestricted_grammar_codecs_test.dart:43",
+          "test/widget/presentation/grammar_page_controls_test.dart:296",
+          "test/widget/presentation/unrestricted_grammar_workspace_test.dart:94"
+        ],
+        "issues": [314, 323, 326],
+        "decision": "Keep the CFG-oriented Grammar workspace and the unrestricted phrase-structure workspace as separate typed documents, while both interoperate with the JFLAP grammar family."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The split prevents unrestricted productions from being silently forced into CFG assumptions. Token-boundary loss in plain JFLAP productions is reported."
+    },
+    {
+      "id": "document-l-system",
+      "area": "Documents and interoperability",
+      "capability": "L-system document, turtle workspace, and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["l-system"],
+      "jflapXmlFamilies": ["l-system"],
+      "jflap": {
+        "summary": "New creates an L-system, and the L-system XML transducer persists productions and rendering parameters.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:280",
+          "../JFLAP/gui/action/NewAction.java:283",
+          "../JFLAP/file/xml/TransducerFactory.java:203",
+          "../JFLAP/file/xml/LSystemTransducer.java:37"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/l_systems/l_system_model.dart:218",
+          "lib/data/codecs/l_system_jflap_codec.dart:11",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:175"
+        ],
+        "tests": [
+          "test/unit/data/l_system_codecs_test.dart:14",
+          "test/unit/core/l_systems/l_system_core_contract_test.dart:168",
+          "test/widget/presentation/l_system_workspace_test.dart:12",
+          "test/widget/presentation/l_system_workspace_test.dart:117"
+        ],
+        "issues": [320],
+        "decision": "Preserve deterministic token vectors and JFLAP drawing semantics, expose bounded generation and turtle settings, and provide SVG and PNG output from the rendered geometry."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Unsupported stochastic, context-sensitive, and parametric JFLAP rules remain preserved but disabled instead of being executed with guessed semantics."
+    },
+    {
+      "id": "document-regular-expression",
+      "area": "Documents and interoperability",
+      "capability": "Regular-expression document and JFLAP XML round-trip",
+      "groups": ["document"],
+      "jflapNewTypes": ["regular-expression"],
+      "jflapXmlFamilies": ["regular-expression"],
+      "jflap": {
+        "summary": "New creates a regular expression and the RE transducer persists its expression text in JFLAP XML.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:288",
+          "../JFLAP/gui/action/NewAction.java:291",
+          "../JFLAP/file/xml/TransducerFactory.java:202",
+          "../JFLAP/file/xml/RETransducer.java:36"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/regex_document.dart:12",
+          "lib/data/codecs/regex_jflap_document_codec.dart:15",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:91"
+        ],
+        "tests": [
+          "test/unit/data/regex_document_codecs_test.dart:19",
+          "test/unit/data/regex_document_codecs_test.dart:103",
+          "test/unit/data/regex_document_codecs_test.dart:165",
+          "test/widget/presentation/regex_page_derived_results_test.dart:174"
+        ],
+        "issues": [327],
+        "decision": "Persist source, dialect, Unicode-scalar tokenization, alphabet, and canonical AST locally. Normalize JFLAP operators only when bounded semantic checks support the conversion."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Empty expressions, grouping, whitespace, epsilon aliases, empty-set loss, Unicode, malformed XML, unsafe constructs, and misleading extensions have direct tests."
+    },
+    {
+      "id": "document-pumping-lemma-regular",
+      "area": "Documents and interoperability",
+      "capability": "Regular pumping-lemma problem and session document",
+      "groups": ["document"],
+      "jflapNewTypes": ["pumping-lemma-regular"],
+      "jflapXmlFamilies": ["pumping-lemma-regular"],
+      "jflap": {
+        "summary": "New opens the regular pumping-lemma chooser, and its dedicated transducer persists the selected problem and progress.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:296",
+          "../JFLAP/gui/action/NewAction.java:301",
+          "../JFLAP/file/xml/TransducerFactory.java:206",
+          "../JFLAP/file/xml/RegPumpingLemmaTransducer.java:40"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/pumping_lemma/pumping_lemma_document.dart:57",
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:11",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:103"
+        ],
+        "tests": [
+          "test/unit/data/pumping_lemma_codecs_test.dart:14",
+          "test/unit/data/pumping_lemma_codecs_test.dart:52",
+          "test/widget/presentation/pumping_lemma_page_test.dart:46"
+        ],
+        "issues": [321],
+        "decision": "Use a theorem-specific document and persist the learner's typed session state, while retaining JFLAP segment lengths and local token vectors."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "partial",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Session persistence is covered. The game uses staged progress rather than general-purpose document undo."
+    },
+    {
+      "id": "document-pumping-lemma-context-free",
+      "area": "Documents and interoperability",
+      "capability": "Context-free pumping-lemma problem and session document",
+      "groups": ["document"],
+      "jflapNewTypes": ["pumping-lemma-context-free"],
+      "jflapXmlFamilies": ["pumping-lemma-context-free"],
+      "jflap": {
+        "summary": "New opens the context-free pumping-lemma chooser, and its dedicated transducer persists the five-part decomposition state.",
+        "evidence": [
+          "../JFLAP/gui/action/NewAction.java:306",
+          "../JFLAP/gui/action/NewAction.java:311",
+          "../JFLAP/file/xml/TransducerFactory.java:207",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:41"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/pumping_lemma/pumping_lemma_document.dart:76",
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:11",
+          "lib/presentation/workspaces/default_workspace_presentation_modules.dart:115"
+        ],
+        "tests": [
+          "test/unit/data/pumping_lemma_codecs_test.dart:14",
+          "test/unit/data/pumping_lemma_codecs_test.dart:52",
+          "test/widget/presentation/pumping_lemma_page_test.dart:109"
+        ],
+        "issues": [322],
+        "decision": "Keep the context-free theorem as a distinct typed workspace and codec target rather than overloading the regular three-part decomposition model."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "partial",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Malformed XML, unsafe XML, theorem mismatch, canonical JSON, local extensions, and distinct CFL segment lengths have direct codec tests."
+    },
+    {
+      "id": "document-open-save-transactions",
+      "area": "Document lifecycle",
+      "capability": "User-reachable Open, Save, and Save As flows across registered document families",
+      "groups": ["document"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "The File menu exposes Open, Save, and Save As. Open tries registered decoders and binds the decoded object and encoder to a new environment.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:161",
+          "../JFLAP/gui/action/OpenAction.java:95",
+          "../JFLAP/gui/action/OpenAction.java:171",
+          "../JFLAP/gui/action/SaveAction.java:66",
+          "../JFLAP/gui/action/SaveAsAction.java:69"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/file_operations/file_operations_panel_interoperability.dart:8",
+          "lib/presentation/widgets/file_operations/file_operations_panel_interoperability.dart:65",
+          "lib/presentation/widgets/file_operations/file_operations_panel_interoperability.dart:146",
+          "lib/presentation/widgets/file_operations/file_operations_panel_interoperability.dart:191"
+        ],
+        "tests": [
+          "test/widget/presentation/file_operations_panel/interoperability_tests.dart:56",
+          "test/widget/presentation/file_operations_panel/interoperability_tests.dart:102",
+          "test/widget/presentation/file_operations_panel/interoperability_tests.dart:282",
+          "test/widget/presentation/file_operations_panel/interoperability_tests.dart:413"
+        ],
+        "issues": [12, 13, 323],
+        "decision": "Use content detection and typed codecs behind one file panel. Preview metadata and fidelity before commit, require consent for loss, and restore the editor checkpoint if replacement fails."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Web downloads and native file destinations share the same encoded bytes. Cancellation, malformed input, concurrent commit, lossy consent, rollback, and responsive action layout are tested."
+    },
+    {
+      "id": "document-active-session-persistence",
+      "area": "Document lifecycle",
+      "capability": "Registry-driven active-session persistence and restoration",
+      "groups": ["document"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "JFLAP persistence is file-centric: environments remember their file and encoder after Open or Save.",
+        "evidence": [
+          "../JFLAP/gui/action/OpenAction.java:188",
+          "../JFLAP/gui/action/OpenAction.java:194",
+          "../JFLAP/gui/action/OpenAction.java:195"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/data/services/active_session_snapshot_codec.dart:60",
+          "lib/data/services/active_session_snapshot_codec.dart:74",
+          "lib/data/services/active_session_snapshot_codec.dart:105",
+          "lib/data/services/active_session_snapshot_codec.dart:184"
+        ],
+        "tests": [
+          "test/unit/data/active_session_persistence_service_test.dart:27",
+          "test/unit/data/transducer_active_session_persistence_test.dart:9",
+          "test/unit/presentation/active_session_provider_test.dart:417"
+        ],
+        "issues": [21, 307],
+        "decision": "Persist the active workspace and every registered module that declares a session codec, independently of explicit document export. Keep legacy snapshots migratable."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "notApplicable",
+        "interoperability": "notApplicable",
+        "examplesHelp": "notApplicable",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "notApplicable",
+        "platform": "covered"
+      },
+      "notes": "This is an additional offline recovery path, not a replacement for user-controlled JFLAP or JSON files."
+    },
+    {
+      "id": "document-jflap-notes",
+      "area": "Documents and interoperability",
+      "capability": "Sticky notes and document annotations in automaton XML",
+      "groups": ["document"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "The shared automaton transducer reads note text and location and appends notes during XML serialization.",
+        "evidence": [
+          "../JFLAP/file/xml/AutomatonTransducer.java:422",
+          "../JFLAP/file/xml/AutomatonTransducer.java:430",
+          "../JFLAP/file/xml/AutomatonTransducer.java:758",
+          "../JFLAP/file/xml/AutomatonTransducer.java:767"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/data/codecs/jflap_annotations.dart:7",
+          "lib/presentation/providers/document_annotations_provider.dart:37",
+          "lib/presentation/widgets/document_annotations.dart:448",
+          "lib/data/codecs/fsa_jflap_codec.dart:273",
+          "lib/data/codecs/pda_jflap_document_codec.dart:431",
+          "lib/data/codecs/tm_jflap_document_codec.dart:674",
+          "lib/data/codecs/mealy_jflap_codec.dart:335",
+          "lib/data/codecs/moore_jflap_document_codec.dart:397"
+        ],
+        "tests": [
+          "test/unit/data/document_codecs_test.dart:169",
+          "test/unit/data/pda_document_codecs_test.dart:128",
+          "test/unit/data/tm_document_codecs_test.dart:134",
+          "test/widget/presentation/document_annotations_provider_test.dart:36",
+          "test/unit/data/mealy_document_codecs_test.dart:83",
+          "test/unit/data/moore_document_codecs_test.dart:166"
+        ],
+        "issues": [349],
+        "decision": "Use typed, searchable, attachable annotations with undo and active-session persistence. Map JFLAP notes for FSA, PDA, and TM; preserve unsupported presentation fields through fidelity diagnostics."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "FSA, PDA, TM, Mealy, and Moore import and export JFLAP note text and position through the shared typed annotation model. Unsupported local presentation fields remain explicit fidelity diagnostics."
+    },
+    {
+      "id": "document-fragment-combination",
+      "area": "Documents and interoperability",
+      "capability": "Imported graph fragments and collision-safe automaton combination",
+      "groups": ["document"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "Combine Automata selects another open environment of a compatible type, clones the destination, offsets imported states, copies transitions, and opens the result in a new frame.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:476",
+          "../JFLAP/gui/action/CombineAutomaton.java:64",
+          "../JFLAP/gui/action/CombineAutomaton.java:69",
+          "../JFLAP/gui/action/CombineAutomaton.java:112",
+          "../JFLAP/gui/action/CombineAutomaton.java:155"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/automaton_fragments/automaton_fragment_combiner.dart:188",
+          "lib/presentation/widgets/automaton_fragment_import.dart:47",
+          "lib/presentation/widgets/automaton_fragment_import.dart:95",
+          "lib/presentation/widgets/automaton_fragment_import.dart:364"
+        ],
+        "tests": [
+          "test/unit/core/automaton_fragments/automaton_fragment_combiner_test.dart:22",
+          "test/unit/core/automaton_fragments/automaton_fragment_combiner_test.dart:100",
+          "test/unit/core/automaton_fragments/automaton_fragment_combiner_test.dart:339",
+          "test/unit/core/automaton_fragments/automaton_fragment_combiner_test.dart:408",
+          "test/widget/presentation/automaton_fragment_import_test.dart:121"
+        ],
+        "issues": [330],
+        "decision": "Decode a compatible document, let the learner select an induced subgraph and resolve semantic conflicts, remap every identity collision deterministically, preview the result, and commit through the editor's undo boundary."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab supports FSA, PDA, TM, Mealy, and Moore fragments. It adds selected-subgraph import, provenance, explicit PDA and TM conflict choices, annotation retargeting, and building-block reference rewriting."
+    },
+    {
+      "id": "export-raster-images",
+      "area": "Visual export",
+      "capability": "Raster image export",
+      "groups": ["export"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "The File menu offers JPG, PNG, GIF, and BMP export for the active component.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:166",
+          "../JFLAP/gui/menu/MenuBarCreator.java:168",
+          "../JFLAP/gui/menu/MenuBarCreator.java:169",
+          "../JFLAP/gui/menu/MenuBarCreator.java:170",
+          "../JFLAP/gui/menu/MenuBarCreator.java:171"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/core/formal_systems/default_formal_system_modules.dart:71",
+          "lib/presentation/widgets/file_operations_panel.dart:285",
+          "lib/presentation/l_systems/l_system_png_rasterizer.dart:7",
+          "lib/presentation/widgets/export/transducer_visual_exporter.dart:77"
+        ],
+        "tests": [
+          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:273",
+          "test/widget/presentation/l_system_workspace_test.dart:117",
+          "test/widget/presentation/variable_dependency_graph_workspace_test.dart:58",
+          "test/unit/presentation/transducer_visual_exporter_test.dart:72"
+        ],
+        "issues": [349],
+        "decision": "Prefer PNG as the single portable raster format for FSA, Mealy, Moore, L-system, and dependency-graph workspaces. Keep grammar, PDA, and TM exports vector-only because their existing semantic SVG is lossless and no raster-only workflow justifies duplicate encoders. Do not add legacy JPG, GIF, or BMP encoders without a concrete product need."
+      },
+      "dimensions": {
+        "domain": "partial",
+        "userReachable": "partial",
+        "teaching": "notApplicable",
+        "interoperability": "partial",
+        "examplesHelp": "partial",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "partial",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Registry-gated PNG is user-reachable for FSA, Mealy, Moore, L-system, and dependency-graph output. Grammar, PDA, and TM intentionally remain SVG-only; legacy JPG, GIF, and BMP are also excluded by the recorded product decision."
+    },
+    {
+      "id": "export-vector-svg",
+      "area": "Visual export",
+      "capability": "Vector SVG export",
+      "groups": ["export"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "When Batik is available, automaton environments expose Export to SVG and stream the active component through an SVG graphics context.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:172",
+          "../JFLAP/gui/menu/MenuBarCreator.java:182",
+          "../JFLAP/gui/action/ExportAction.java:53",
+          "../JFLAP/gui/action/ExportAction.java:77",
+          "../JFLAP/gui/action/ExportAction.java:107"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/export/svg_exporter.dart:31",
+          "lib/presentation/widgets/export/svg_exporter.dart:87",
+          "lib/presentation/widgets/export/svg_exporter.dart:102",
+          "lib/presentation/widgets/export/svg_exporter.dart:152",
+          "lib/presentation/widgets/export/svg_exporter.dart:170",
+          "lib/core/l_systems/l_system_export.dart:65",
+          "lib/presentation/widgets/export/transducer_visual_exporter.dart:34",
+          "lib/presentation/widgets/visual_export_binding.dart:35"
+        ],
+        "tests": [
+          "test/integration/io/interoperability_roundtrip/svg_export_tests.dart:5",
+          "test/integration/io/interoperability_roundtrip/svg_export_tests.dart:20",
+          "test/integration/io/interoperability_roundtrip/svg_export_tests.dart:211",
+          "test/unit/core/l_systems/l_system_core_contract_test.dart:264",
+          "test/unit/presentation/transducer_visual_exporter_test.dart:10",
+          "test/widget/presentation/file_operations_panel/registered_module_tests.dart:110"
+        ],
+        "issues": [349],
+        "decision": "Generate semantic SVG directly from typed geometry, with stable labels and dimensions, rather than printing Flutter widgets into a vector graphics adapter."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "notApplicable",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "FSA, PDA, TM, grammar, L-system, variable-dependency graph, Mealy, and Moore expose deterministic SVG through registry-declared, user-reachable export actions."
+    },
+    {
+      "id": "export-print",
+      "area": "Visual export",
+      "capability": "Direct system print of the active document view",
+      "groups": ["export"],
+      "jflapNewTypes": [],
+      "jflapXmlFamilies": [],
+      "jflap": {
+        "summary": "The File menu adds Print when the security manager permits it, and PrintAction sends the active component to a PrinterJob.",
+        "evidence": [
+          "../JFLAP/gui/menu/MenuBarCreator.java:201",
+          "../JFLAP/gui/menu/MenuBarCreator.java:204",
+          "../JFLAP/gui/action/PrintAction.java:56",
+          "../JFLAP/gui/action/PrintAction.java:71",
+          "../JFLAP/gui/action/PrintAction.java:83"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/presentation/widgets/file_operations_panel.dart:274",
+          "lib/presentation/widgets/file_operations_panel.dart:285",
+          "lib/presentation/widgets/file_operations_panel.dart:333",
+          "lib/presentation/widgets/file_operations_panel.dart:355",
+          "lib/presentation/widgets/file_operations_panel.dart:377"
+        ],
+        "tests": [
+          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:222",
+          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:273",
+          "test/widget/presentation/file_operations_panel/machine_operation_tests.dart:81",
+          "test/widget/presentation/file_operations_panel/machine_operation_tests.dart:227"
+        ],
+        "issues": [333],
+        "decision": "Current user flow exports SVG or PNG for printing through the host application. Turing Lab has no direct PrinterJob or platform print-sheet integration."
+      },
+      "dimensions": {
+        "domain": "missing",
+        "userReachable": "partial",
+        "teaching": "notApplicable",
+        "interoperability": "partial",
+        "examplesHelp": "missing",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "missing",
+        "testsEdgeCases": "partial",
+        "localization": "covered",
+        "platform": "partial"
+      },
+      "notes": "Direct printing is a non-material platform deviation. SVG and PNG let users print through the host application without adding a desktop-only print contract to mobile and web builds."
+    }
+  ]
+}

@@ -60,16 +60,11 @@ extension _RegexPageLayoutSections on _RegexPageState {
               id: AutomatonWorkspaceScaffold.simulationPanelId,
               label: l10n.simulation,
               icon: Icons.play_arrow,
-              child: SimulationPanel(
-                onSimulate: (input) {
-                  _testStringController.text = input;
-                  return _testStringMatch();
-                },
-              ),
+              child: _buildSimulationSection(),
             ),
             WorkspaceDockPanel(
               id: AutomatonWorkspaceScaffold.algorithmPanelId,
-              label: l10n.algorithms,
+              label: l10n.algorithmsAndExamples,
               icon: Icons.auto_awesome,
               child: _buildRegexAlgorithmsPanel(algorithmState),
             ),
@@ -132,8 +127,8 @@ extension _RegexPageLayoutSections on _RegexPageState {
             message: regexState.isValid
                 ? l10n.validRegex
                 : (regexState.errorMessage.isNotEmpty
-                    ? regexState.errorMessage
-                    : l10n.invalidRegex),
+                      ? regexState.errorMessage
+                      : l10n.invalidRegex),
             severity: regexState.isValid
                 ? ErrorSeverity.success
                 : ErrorSeverity.error,
@@ -158,11 +153,26 @@ extension _RegexPageLayoutSections on _RegexPageState {
           onChanged: _setAlphabet,
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 
-        // Test string input
-        Text(l10n.testStringLabel,
-            style: Theme.of(context).textTheme.titleMedium),
+  /// Simulation surface shared by the mobile Simulate sheet and the wide
+  /// dock Simulation panel: test-string input, match result, and batch
+  /// testing.
+  Widget _buildSimulationSection() {
+    final l10n = AppLocalizations.of(context);
+    final regexState = ref.watch(regexEditorProvider);
+
+    return Column(
+      key: const Key('regex-simulation-section'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.testStringLabel,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         TextField(
           key: const ValueKey('regex_test_input_field'),
@@ -194,6 +204,31 @@ extension _RegexPageLayoutSections on _RegexPageState {
             showDismissButton: false,
           ),
 
+        if (regexState.currentRegex.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Material(
+            type: MaterialType.transparency,
+            child: ExpansionTile(
+              key: const Key('regex-batch-section'),
+              tilePadding: EdgeInsets.zero,
+              title: Text(l10n.regexBatchTestingTitle),
+              subtitle: Text(l10n.regexBatchTestingSubtitle),
+              children: [
+                BatchExecutionPanel(
+                  executor: RegexBatchExecutor(
+                    ref.read(regexEditorProvider.notifier).buildDocument(),
+                  ),
+                  alphabet: regexState.alphabet.runes
+                      .map(String.fromCharCode)
+                      .toSet(),
+                  title: l10n.regexBatchExecutionTitle,
+                  initialStrategyId: 'match',
+                ),
+              ],
+            ),
+          ),
+        ],
+
         const SizedBox(height: 16),
       ],
     );
@@ -205,7 +240,7 @@ extension _RegexPageLayoutSections on _RegexPageState {
     final faToRegexWidget = _buildFaToRegexResult(algorithmState);
 
     return AlgorithmPanelScaffold(
-      title: l10n.algorithms,
+      title: l10n.algorithmsAndExamples,
       children: [
         ValueListenableBuilder<String?>(
           valueListenable: _loadingExampleName,
@@ -216,6 +251,13 @@ extension _RegexPageLayoutSections on _RegexPageState {
               onExampleSelected: _loadSelectedRegexExample,
               failureMessage: 'Failed to load Regex examples.',
               emptyMessage: 'No Regex examples available.',
+              exampleBuilder: (context, example, isLoading, onPressed) =>
+                  AssetExampleContentButton.maybeBuild(
+                    context: context,
+                    example: example,
+                    isLoading: isLoading,
+                    onPressed: onPressed,
+                  ),
             );
           },
         ),
@@ -246,6 +288,20 @@ extension _RegexPageLayoutSections on _RegexPageState {
             label: Text(l10n.clear),
           ),
         ),
+        DocumentAnnotationsSection(
+          systemKey: DefaultFormalSystemIds.regex,
+          documentId: regexState.documentId,
+          documentRevision: '${regexState.documentGeneration}',
+        ),
+        const Divider(),
+        FileOperationsPanel(
+          annotations: annotationsForDocument(
+            ref.watch(documentAnnotationsProvider),
+            DefaultFormalSystemIds.regex,
+            regexState.documentId,
+          ),
+          interoperability: _regexInteroperabilityBinding(regexState),
+        ),
       ],
     );
   }
@@ -273,24 +329,36 @@ extension _RegexPageLayoutSections on _RegexPageState {
                 icon: const Icon(Icons.account_tree_outlined),
                 label: Text(l10n.convertToDfa),
               ),
+              ElevatedButton.icon(
+                key: const ValueKey('open-manual-regex-to-fa'),
+                onPressed: _openManualRegexToFaConstruction,
+                icon: const Icon(Icons.school_outlined),
+                label: Text(
+                  appLocalizationsOf(
+                    context,
+                  ).localizeWorkflowText('Practice Regex to FA'),
+                ),
+              ),
             ];
 
-            if (constraints.maxWidth < 420) {
+            if (constraints.maxWidth < 720) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  buttons.first,
-                  const SizedBox(height: 12),
-                  buttons.last
+                  for (var index = 0; index < buttons.length; index++) ...[
+                    buttons[index],
+                    if (index != buttons.length - 1) const SizedBox(height: 12),
+                  ],
                 ],
               );
             }
 
             return Row(
               children: [
-                Expanded(child: buttons.first),
-                const SizedBox(width: 12),
-                Expanded(child: buttons.last),
+                for (var index = 0; index < buttons.length; index++) ...[
+                  Expanded(child: buttons[index]),
+                  if (index != buttons.length - 1) const SizedBox(width: 12),
+                ],
               ],
             );
           },
@@ -352,9 +420,7 @@ extension _RegexPageLayoutSections on _RegexPageState {
     ref.read(regexEditorProvider.notifier).clearInputs();
   }
 
-  Widget? _buildFaToRegexResult(
-    AlgorithmOperationState algorithmState,
-  ) {
+  Widget? _buildFaToRegexResult(AlgorithmOperationState algorithmState) {
     final l10n = AppLocalizations.of(context);
     final regexState = ref.watch(regexEditorProvider);
 
@@ -368,9 +434,9 @@ extension _RegexPageLayoutSections on _RegexPageState {
     final simplifiedRegex = algorithmState.simplifiedRegexResult;
     final displayedFromSimplified =
         (regexState.simplifyOutput && simplifiedRegex != null) ||
-            (!regexState.simplifyOutput &&
-                rawRegex == null &&
-                simplifiedRegex != null);
+        (!regexState.simplifyOutput &&
+            rawRegex == null &&
+            simplifiedRegex != null);
     final displayedRegex = displayedFromSimplified ? simplifiedRegex : rawRegex;
 
     if (displayedRegex == null) return null;
@@ -395,8 +461,8 @@ extension _RegexPageLayoutSections on _RegexPageState {
                         ? l10n.convertedRegexSimplified
                         : l10n.convertedRegexRaw,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -454,9 +520,9 @@ extension _RegexPageLayoutSections on _RegexPageState {
                       ? l10n.toggleOffRawOutput
                       : l10n.toggleOnSimplifiedOutput,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
           ],

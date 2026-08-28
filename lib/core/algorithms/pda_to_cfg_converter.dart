@@ -13,8 +13,10 @@ import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/production.dart';
 import '../models/state.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'pda_to_cfg_messages.dart';
 
 /// Structured result for PDA → CFG conversions containing both the
 /// generated grammar and a textual description.
@@ -46,32 +48,57 @@ class PDAtoCFGConverter {
     bool Function()? isCancelled,
   }) {
     if (maxGeneratedProductions != null && maxGeneratedProductions <= 0) {
-      return const Failure(
+      return Failure(
         'The PDA to CFG production limit must be greater than zero.',
+        structuredMessage: PdaToCfgMessages.invalidProductionLimit(),
       );
     }
     if (isCancelled?.call() == true) {
-      return const Failure(cancellationError);
+      return Failure(
+        cancellationError,
+        structuredMessage: PdaToCfgMessages.cancelled(),
+      );
     }
     if (pda.states.isEmpty) {
-      return const Failure('Cannot convert an empty PDA to a grammar.');
+      return Failure(
+        'Cannot convert an empty PDA to a grammar.',
+        structuredMessage: PdaToCfgMessages.emptyPda(),
+      );
     }
 
-    if (pda.initialState == null) {
-      return const Failure(
+    final initialState = pda.initialState;
+    if (initialState == null) {
+      return Failure(
         'PDA must define an initial state before conversion.',
+        structuredMessage: PdaToCfgMessages.missingInitialState(),
+      );
+    }
+    if (!pda.states.contains(initialState)) {
+      return Failure(
+        'PDA initial state must belong to the PDA state set before conversion.',
+        structuredMessage: PdaToCfgMessages.initialStateOutsideSet(),
       );
     }
 
     if (pda.acceptingStates.isEmpty) {
-      return const Failure(
+      return Failure(
         'PDA must have at least one accepting state for conversion.',
+        structuredMessage: PdaToCfgMessages.missingAcceptingState(),
+      );
+    }
+    if (pda.acceptingStates.any((state) => !pda.states.contains(state))) {
+      return Failure(
+        'Every accepting state must belong to the PDA state set before conversion.',
+        structuredMessage: PdaToCfgMessages.acceptingStateOutsideSet(),
       );
     }
 
     final normalizationError = _validatePopNormalized(pda);
     if (normalizationError != null) {
-      return Failure(normalizationError);
+      return Failure(
+        normalizationError.message,
+        structuredMessage: normalizationError.structuredMessage,
+      );
     }
 
     Grammar grammar;
@@ -82,14 +109,21 @@ class PDAtoCFGConverter {
         isCancelled: isCancelled,
       );
     } on _PdaToCfgCancellation {
-      return const Failure(cancellationError);
+      return Failure(
+        cancellationError,
+        structuredMessage: PdaToCfgMessages.cancelled(),
+      );
     } on _PdaToCfgProductionLimit catch (error) {
       return Failure(
         '$productionLimitErrorPrefix (${error.limit}).',
+        structuredMessage: PdaToCfgMessages.productionLimit(error.limit),
       );
     }
     if (grammar.productions.isEmpty) {
-      return const Failure('No productions could be generated for this PDA.');
+      return Failure(
+        'No productions could be generated for this PDA.',
+        structuredMessage: PdaToCfgMessages.noProductions(),
+      );
     }
 
     final description = _buildDescription(grammar, pda);
@@ -156,9 +190,7 @@ class PDAtoCFGConverter {
       final key = (from.id, stackSymbol, to.id);
       return variables.putIfAbsent(
         key,
-        () => freshNonterminal(
-          '[${from.label}, $stackSymbol, ${to.label}]',
-        ),
+        () => freshNonterminal('[${from.label}, $stackSymbol, ${to.label}]'),
       );
     }
 
@@ -241,8 +273,9 @@ class PDAtoCFGConverter {
             var currentFrom = to;
             for (var index = 0; index < pushSymbols.length; index++) {
               final stackSymbol = pushSymbols[index];
-              final nextTo =
-                  index < pushSymbols.length - 1 ? sequence[index] : target;
+              final nextTo = index < pushSymbols.length - 1
+                  ? sequence[index]
+                  : target;
               final variableName = variable(currentFrom, stackSymbol, nextTo);
               nonTerminals.add(variableName);
               rightSide.add(variableName);
@@ -296,7 +329,9 @@ class PDAtoCFGConverter {
           production.leftSide.length == 1 &&
           production.leftSide.first == grammar.startSymbol,
     )) {
-      final right = production.isLambda ? 'λ' : production.rightSide.join(' ');
+      final right = production.isLambda
+          ? kEpsilonSymbol
+          : production.rightSide.join(' ');
       buffer.writeln('  ${grammar.startSymbol} → $right');
     }
 
@@ -308,7 +343,9 @@ class PDAtoCFGConverter {
           production.leftSide.first != grammar.startSymbol,
     )) {
       final left = production.leftSide.join(' ');
-      final right = production.isLambda ? 'λ' : production.rightSide.join(' ');
+      final right = production.isLambda
+          ? kEpsilonSymbol
+          : production.rightSide.join(' ');
       buffer.writeln('  $left → $right');
     }
 
@@ -321,12 +358,15 @@ class PDAtoCFGConverter {
     return buffer.toString();
   }
 
-  static String? _validatePopNormalized(PDA pda) {
+  static _PdaToCfgValidation? _validatePopNormalized(PDA pda) {
     for (final transition in pda.pdaTransitions) {
       if (transition.isLambdaPop || isEpsilonSymbol(transition.popSymbol)) {
-        return 'PDA to CFG conversion requires every transition to pop '
-            'exactly one stack symbol. Transition ${transition.id} uses '
-            'a lambda pop; normalize the PDA before conversion.';
+        return _PdaToCfgValidation(
+          'PDA to CFG conversion requires every transition to pop '
+          'exactly one stack symbol. Transition ${transition.id} uses '
+          'an epsilon pop; normalize the PDA before conversion.',
+          PdaToCfgMessages.epsilonPop(transition.id),
+        );
       }
     }
     return null;
@@ -349,15 +389,18 @@ class PDAtoCFGConverter {
       if (isCancelled?.call() == true) {
         throw const _PdaToCfgCancellation();
       }
-      for (final suffix in _stateSequences(
-        states,
-        length - 1,
-        isCancelled,
-      )) {
+      for (final suffix in _stateSequences(states, length - 1, isCancelled)) {
         yield <State>[state, ...suffix];
       }
     }
   }
+}
+
+final class _PdaToCfgValidation {
+  const _PdaToCfgValidation(this.message, this.structuredMessage);
+
+  final String message;
+  final StructuredMessage structuredMessage;
 }
 
 class _PdaToCfgCancellation implements Exception {

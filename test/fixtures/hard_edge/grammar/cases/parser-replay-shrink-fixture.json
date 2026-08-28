@@ -1,0 +1,65 @@
+{
+  "caseId": "parser-replay-shrink-fixture",
+  "counterexample": {
+    "grammar": {
+      "id": "grammar-expression-336",
+      "name": "grammar-expression-336",
+      "terminals": [
+        "id",
+        "+"
+      ],
+      "nonterminals": [
+        "S",
+        "Tail"
+      ],
+      "startSymbol": "S",
+      "productions": [
+        {
+          "id": "s-id-tail",
+          "leftSide": [
+            "S"
+          ],
+          "rightSide": [
+            "id",
+            "Tail"
+          ],
+          "isLambda": false,
+          "order": 0
+        },
+        {
+          "id": "tail-empty",
+          "leftSide": [
+            "Tail"
+          ],
+          "rightSide": [],
+          "isLambda": true,
+          "order": 2
+        },
+        {
+          "id": "tail-more",
+          "leftSide": [
+            "Tail"
+          ],
+          "rightSide": [
+            "+",
+            "id",
+            "Tail"
+          ],
+          "isLambda": false,
+          "order": 1
+        }
+      ],
+      "type": "contextFree",
+      "created": "2026-08-26T00:00:00.000Z",
+      "modified": "2026-08-26T00:00:00.000Z"
+    },
+    "input": "id+id",
+    "property": "parser.replay-shrink",
+    "schemaVersion": 1,
+    "seed": 336
+  },
+  "expectedInternalOutcome": "verified",
+  "maximumWordLength": 3,
+  "schema": "turing-lab.hard-edge.grammar-property.v1",
+  "seed": 336
+}

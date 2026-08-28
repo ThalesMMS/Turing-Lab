@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "mutationThresholds": [
+    {
+      "family": "codec",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Codec mutations cross trust, migration, and semantic round-trip boundaries; every registered semantic mutant must be killed."
+    },
+    {
+      "family": "formal-systems",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Transducer, L-system, and pumping probes alter user-visible semantic outcomes; every registered mutant must be killed."
+    },
+    {
+      "family": "framework",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Framework probes certify fail-closed reporting itself; a survivor would invalidate the certification result."
+    },
+    {
+      "family": "grammar",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Parser and grammar mutations change membership, conversion, or trace semantics; every registered mutant must be killed."
+    },
+    {
+      "family": "graph",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Graph probes target layout, mapping, and history invariants with deterministic oracles; every registered mutant must be killed."
+    },
+    {
+      "family": "pda",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "PDA probes alter acceptance and stack behavior; every registered semantic mutant must be killed."
+    },
+    {
+      "family": "regular",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "Regular-language probes alter acceptance, closure, or conversion semantics; every registered mutant must be killed."
+    },
+    {
+      "family": "tm",
+      "minimumKillRatio": 1.0,
+      "maximumSurvivors": 0,
+      "rationale": "TM probes alter transition and bounded execution semantics; every registered mutant must be killed."
+    }
+  ],
+  "quarantines": []
+}

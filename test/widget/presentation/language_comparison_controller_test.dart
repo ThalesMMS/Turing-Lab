@@ -90,6 +90,47 @@ LanguageComparisonRequest _request({String suffix = ''}) {
 }
 
 void main() {
+  group('runLanguageComparison', () {
+    test('adapts a successful canonical comparison to a completed outcome',
+        () async {
+      final outcome = await runLanguageComparison(_request());
+
+      expect(outcome, isA<LanguageComparisonCompleted>());
+      expect(outcome.status, LanguageComparisonStatus.equivalent);
+    });
+
+    test('adapts malformed input to a typed failure without a verdict',
+        () async {
+      final valid = _buildFsa(id: 'valid');
+      final malformed = FSA(
+        id: 'malformed',
+        name: 'malformed',
+        states: const {},
+        transitions: const {},
+        alphabet: const {'a'},
+        initialState: null,
+        acceptingStates: const {},
+        created: DateTime.utc(2026, 1, 1),
+        modified: DateTime.utc(2026, 1, 1),
+        bounds: const math.Rectangle<double>(0, 0, 800, 600),
+      );
+
+      final outcome = await runLanguageComparison(
+        LanguageComparisonRequest(
+          automatonA: malformed,
+          automatonB: valid,
+        ),
+      );
+
+      expect(outcome, isA<LanguageComparisonFailure>());
+      expect(outcome.isEquivalent, isNull);
+      expect(
+        (outcome as LanguageComparisonFailure).reason,
+        LanguageComparisonFailureReason.malformedInput,
+      );
+    });
+  });
+
   group('LanguageComparisonRequest', () {
     test('fingerprints two edits of the same document differently', () {
       final first = LanguageComparisonRequest(

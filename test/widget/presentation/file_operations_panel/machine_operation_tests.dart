@@ -78,6 +78,54 @@ void _runFileOperationsPanelMachineOperationTests(
       expect(find.text('Grammar loaded successfully'), findsOneWidget);
     });
 
+    testWidgets('load grammar resolves structured parser failure in locale', (
+      tester,
+    ) async {
+      final grammar = _buildSampleGrammar();
+      final message = _parserFailureMessage(
+        'parser.grammar-xml',
+        'missing-start-element',
+      );
+      final service = _StubFileOperationsService(
+        loadGrammarResponses: Queue.of([
+          Failure<Grammar>(message.stableCode, structuredMessage: message),
+        ]),
+      );
+      fakeFilePicker().enqueuePickResult(
+        FilePickerResult([
+          PlatformFile(
+            name: 'invalid.cfg',
+            size: 3,
+            bytes: Uint8List.fromList([1, 2, 3]),
+          ),
+        ]),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: FileOperationsPanel(
+              grammar: grammar,
+              onGrammarLoaded: (_) {},
+              fileService: service,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Carregar JFLAP'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('A gramática do JFLAP não declara um símbolo inicial.'),
+        findsOneWidget,
+      );
+      expect(find.text(message.stableCode), findsNothing);
+    });
+
     testWidgets('grammar svg export uses current grammar model on web', (
       tester,
     ) async {

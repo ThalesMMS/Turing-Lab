@@ -8,12 +8,16 @@
 //
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../core/entities/grammar_entity.dart';
+import '../../core/annotations/annotations.dart';
 import '../../core/entities/turing_machine_entity.dart';
+import '../../core/interoperability/interoperability.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/fsa_transition.dart';
@@ -29,18 +33,40 @@ import 'file_operations_payload_mixin.dart';
 class FileOperationsService
     with FileOperationsPayloadMixin
     implements FileOperationsGateway {
-  static const _writeAccessRetryMessage =
-      'Turing Lab could not write to the selected location. The file may be outside the app sandbox or no longer writable. Choose a destination again from the system save dialog and try again.';
-  static const _readAccessRetryMessage =
-      'Turing Lab could not read the selected file. The file may be outside the app sandbox or no longer readable. Pick the file again from the system dialog and try again.';
-  static const _missingSaveLocationMessage =
-      'The selected save location is no longer available. Choose a different destination and try again.';
-  static const _missingReadLocationMessage =
-      'The selected file is no longer available. Pick the file again and try again.';
+  @override
+  Future<Result<Uint8List>> readBytes(String filePath) async {
+    try {
+      return Success(await File(filePath).readAsBytes());
+    } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: false);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'read');
+    }
+  }
+
+  @override
+  Future<StringResult> writeBytes(
+    Uint8List bytes,
+    String filePath, {
+    String mimeType = 'application/octet-stream',
+  }) async {
+    try {
+      await File(filePath).writeAsBytes(bytes, flush: true);
+      return Success(filePath);
+    } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'write');
+    }
+  }
 
   /// Renders the PNG payload without writing it to disk.
   @override
-  Future<Result<Uint8List>> exportAutomatonToPngBytes(FSA automaton) async {
+  Future<Result<Uint8List>> exportAutomatonToPngBytes(
+    FSA automaton, {
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
     ui.Picture? picture;
     ui.Image? image;
     try {
@@ -59,67 +85,159 @@ class FileOperationsService
       final drawingData = _prepareDrawingData(automaton);
       final painter = _AutomatonPainter(drawingData);
       painter.paint(canvas, size);
+      if (includeAnnotations && annotations != null) {
+        _paintDocumentAnnotations(canvas, annotations, automaton, size);
+      }
 
       picture = recorder.endRecording();
-      image = await picture.toImage(
-        size.width.toInt(),
-        size.height.toInt(),
-      );
+      image = await picture.toImage(size.width.toInt(), size.height.toInt());
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {
-        return const Failure('Failed to encode PNG data');
+        return fileOperationFailure('operation-failed', operation: 'encodePng');
       }
 
       return Success(byteData.buffer.asUint8List());
-    } catch (e) {
-      return Failure('Failed to export automaton to PNG: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportPng');
     } finally {
       image?.dispose();
       picture?.dispose();
     }
   }
 
-  static String describeFileAccessFailure(
+  void _paintDocumentAnnotations(
+    Canvas canvas,
+    DocumentAnnotationCollection annotations,
+    FSA automaton,
+    Size size,
+  ) {
+    final statePositions = {
+      for (final state in automaton.states)
+        state.id: Offset(state.position.x, state.position.y),
+    };
+    final transitionPositions = {
+      for (final transition in automaton.transitions.whereType<FSATransition>())
+        transition.id: Offset(
+          (transition.fromState.position.x + transition.toState.position.x) / 2,
+          (transition.fromState.position.y + transition.toState.position.y) / 2,
+        ),
+    };
+    for (final annotation in annotations.annotations) {
+      final attachment = annotation.attachment;
+      final attachmentPosition = switch (attachment?.type) {
+        AnnotationTargetType.state => statePositions[attachment!.targetId],
+        AnnotationTargetType.transition =>
+          transitionPositions[attachment!.targetId],
+        _ => null,
+      };
+      final rawX = attachmentPosition?.dx ?? annotation.x;
+      final rawY = attachmentPosition?.dy ?? annotation.y;
+      final x = (rawX + (attachmentPosition == null ? 0 : attachment!.offsetX))
+          .clamp(0, size.width - 1)
+          .toDouble();
+      final y = (rawY + (attachmentPosition == null ? 0 : attachment!.offsetY))
+          .clamp(0, size.height - 1)
+          .toDouble();
+      final width = annotation.width.clamp(
+        DocumentAnnotation.minimumWidth,
+        math.max(DocumentAnnotation.minimumWidth, size.width - x),
+      );
+      final height =
+          (annotation.collapsed
+                  ? DocumentAnnotation.minimumHeight
+                  : annotation.height)
+              .clamp(
+                DocumentAnnotation.minimumHeight,
+                math.max(DocumentAnnotation.minimumHeight, size.height - y),
+              );
+      final fill = switch (annotation.styleRole) {
+        AnnotationStyleRole.note => const Color(0xFFFFF3B0),
+        AnnotationStyleRole.information => const Color(0xFFDBEAFE),
+        AnnotationStyleRole.warning => const Color(0xFFFEE2E2),
+        AnnotationStyleRole.question => const Color(0xFFEDE9FE),
+        AnnotationStyleRole.todo => const Color(0xFFE5E7EB),
+      };
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, y, width.toDouble(), height.toDouble()),
+        const Radius.circular(8),
+      );
+      canvas
+        ..drawRRect(rect, Paint()..color = fill)
+        ..drawRRect(
+          rect,
+          Paint()
+            ..color = const Color(0xFF424242)
+            ..style = PaintingStyle.stroke,
+        );
+      if (!annotation.collapsed) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: annotation.text,
+            style: const TextStyle(color: Color(0xFF212121), fontSize: 12),
+          ),
+          textDirection: TextDirection.ltr,
+          maxLines: 8,
+          ellipsis: '…',
+        )..layout(maxWidth: math.max(1, width.toDouble() - 20));
+        painter.paint(canvas, Offset(x + 10, y + 10));
+      }
+    }
+  }
+
+  static StructuredMessage describeFileAccessFailure(
     Object error, {
     required bool isWrite,
-  }) {
-    if (error is! FileSystemException) {
-      return error.toString();
-    }
+  }) => StructuredMessage(
+    namespace: 'service.file-operations',
+    code: error is FileSystemException
+        ? _fileAccessFailureCode(error)
+        : 'access-failed',
+    category: StructuredMessageCategory.interoperability,
+    severity: StructuredMessageSeverity.error,
+    arguments: {
+      'operation': StructuredMessageArgument.outcome(
+        isWrite ? 'write' : 'read',
+        role: 'file-operation',
+      ),
+    },
+  );
 
+  Failure<T> _accessFailure<T>(
+    FileSystemException error, {
+    required bool isWrite,
+  }) {
+    final structuredMessage = describeFileAccessFailure(
+      error,
+      isWrite: isWrite,
+    );
+    return Failure<T>(
+      structuredMessage.stableCode,
+      structuredMessage: structuredMessage,
+    );
+  }
+
+  static String _fileAccessFailureCode(FileSystemException error) {
     final errorCode = error.osError?.errorCode;
     final normalized = [
       error.message,
       error.osError?.message,
       error.path,
     ].whereType<String>().join(' ').toLowerCase();
-
-    final isPermissionDenied = errorCode == 1 ||
+    if (errorCode == 1 ||
         errorCode == 13 ||
         normalized.contains('operation not permitted') ||
         normalized.contains('permission denied') ||
         normalized.contains('access is denied') ||
-        normalized.contains('not permitted');
-    if (isPermissionDenied) {
-      return isWrite ? _writeAccessRetryMessage : _readAccessRetryMessage;
+        normalized.contains('not permitted')) {
+      return 'access-denied';
     }
-
-    final isMissingPath = errorCode == 2 ||
+    if (errorCode == 2 ||
         normalized.contains('no such file') ||
         normalized.contains('cannot find the path') ||
-        normalized.contains('does not exist');
-    if (isMissingPath) {
-      return isWrite
-          ? _missingSaveLocationMessage
-          : _missingReadLocationMessage;
+        normalized.contains('does not exist')) {
+      return 'location-missing';
     }
-
-    final osMessage = error.osError?.message.trim();
-    if (osMessage != null && osMessage.isNotEmpty) {
-      return osMessage;
-    }
-
-    return error.message;
+    return 'access-failed';
   }
 
   /// Saves automaton to JFLAP XML format (.jff)
@@ -133,11 +251,14 @@ class FileOperationsService
       await file.writeAsString(serializeAutomatonToJFLAPString(automaton));
       return Success(filePath);
     } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: true);
+    } on CodecOperationException catch (e) {
       return Failure(
-        'Failed to save automaton to JFLAP format: ${describeFileAccessFailure(e, isWrite: true)}',
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
       );
-    } catch (e) {
-      return Failure('Failed to save automaton to JFLAP format: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'write');
     }
   }
 
@@ -149,11 +270,9 @@ class FileOperationsService
       final xmlString = await file.readAsString();
       return const JflapXmlCodec().decodeFsaXml(xmlString);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to load automaton from JFLAP format: ${describeFileAccessFailure(e, isWrite: false)}',
-      );
-    } catch (e) {
-      return Failure('Failed to load automaton from JFLAP format: $e');
+      return _accessFailure(e, isWrite: false);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'read');
     }
   }
 
@@ -168,11 +287,14 @@ class FileOperationsService
       await file.writeAsString(serializeAutomatonToJsonString(automaton));
       return Success(filePath);
     } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: true);
+    } on CodecOperationException catch (e) {
       return Failure(
-        'Failed to save automaton to JSON format: ${describeFileAccessFailure(e, isWrite: true)}',
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
       );
-    } catch (e) {
-      return Failure('Failed to save automaton to JSON format: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'write');
     }
   }
 
@@ -184,15 +306,21 @@ class FileOperationsService
       final jsonString = await file.readAsString();
       final decoded = jsonDecode(jsonString);
       if (decoded is! Map<String, dynamic>) {
-        return const Failure('Invalid automaton JSON format');
+        return fileOperationFailure(
+          'codec-malformed',
+          arguments: {
+            'reason': StructuredMessageArgument.outcome(
+              'invalidValue',
+              role: 'codec-malformed-reason',
+            ),
+          },
+        );
       }
       return Success(FSA.fromJson(decoded));
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to load automaton from JSON format: ${describeFileAccessFailure(e, isWrite: false)}',
-      );
-    } catch (e) {
-      return Failure('Failed to load automaton from JSON format: $e');
+      return _accessFailure(e, isWrite: false);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'read');
     }
   }
 
@@ -207,11 +335,14 @@ class FileOperationsService
       await file.writeAsString(serializeGrammarToJFLAPString(grammar));
       return Success(filePath);
     } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: true);
+    } on CodecOperationException catch (e) {
       return Failure(
-        'Failed to save grammar to JFLAP format: ${describeFileAccessFailure(e, isWrite: true)}',
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
       );
-    } catch (e) {
-      return Failure('Failed to save grammar to JFLAP format: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'write');
     }
   }
 
@@ -221,19 +352,11 @@ class FileOperationsService
     try {
       final file = File(filePath);
       final xmlString = await file.readAsString();
-      final result = const GrammarXmlCodec().decodeGrammarXml(xmlString);
-      if (result.isFailure) {
-        return Failure(
-          'Failed to load grammar from JFLAP format: ${result.error}',
-        );
-      }
-      return result;
+      return const GrammarXmlCodec().decodeGrammarXml(xmlString);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to load grammar from JFLAP format: ${describeFileAccessFailure(e, isWrite: false)}',
-      );
-    } catch (e) {
-      return Failure('Failed to load grammar from JFLAP format: $e');
+      return _accessFailure(e, isWrite: false);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'read');
     }
   }
 
@@ -245,11 +368,14 @@ class FileOperationsService
     try {
       final pngBytesResult = await exportAutomatonToPngBytes(automaton);
       if (pngBytesResult.isFailure) {
-        return Failure(pngBytesResult.error!);
+        return Failure(
+          pngBytesResult.error!,
+          structuredMessage: pngBytesResult.structuredError,
+        );
       }
       return writePngBytesToPath(pngBytesResult.data!, filePath);
-    } catch (e) {
-      return Failure('Failed to export automaton to PNG: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportPng');
     }
   }
 
@@ -264,11 +390,9 @@ class FileOperationsService
       await file.writeAsBytes(bytes);
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export automaton to PNG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export automaton to PNG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportPng');
     }
   }
 
@@ -280,6 +404,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final file = File(filePath);
@@ -289,15 +415,15 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          includeAnnotations: includeAnnotations,
+          annotations: annotations,
         ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export automaton to SVG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export automaton to SVG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -314,11 +440,9 @@ class FileOperationsService
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export grammar to SVG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export grammar to SVG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -330,6 +454,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final file = File(filePath);
@@ -339,15 +465,15 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          includeAnnotations: includeAnnotations,
+          annotations: annotations,
         ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export grammar to SVG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export grammar to SVG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -359,6 +485,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final file = File(filePath);
@@ -368,15 +496,15 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          includeAnnotations: includeAnnotations,
+          annotations: annotations,
         ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export PDA to SVG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export PDA to SVG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -388,6 +516,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final file = File(filePath);
@@ -397,15 +527,15 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          includeAnnotations: includeAnnotations,
+          annotations: annotations,
         ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
-      return Failure(
-        'Failed to export Turing machine to SVG: ${describeFileAccessFailure(e, isWrite: true)}',
-      );
-    } catch (e) {
-      return Failure('Failed to export Turing machine to SVG: $e');
+      return _accessFailure(e, isWrite: true);
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -414,8 +544,8 @@ class FileOperationsService
     try {
       final directory = await getApplicationDocumentsDirectory();
       return Success(directory.path);
-    } catch (e) {
-      return Failure('Failed to get documents directory: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'directory');
     }
   }
 
@@ -426,7 +556,12 @@ class FileOperationsService
   ) async {
     try {
       final dirResult = await getDocumentsDirectory();
-      if (!dirResult.isSuccess) return Failure(dirResult.error!);
+      if (!dirResult.isSuccess) {
+        return Failure(
+          dirResult.error!,
+          structuredMessage: dirResult.structuredError,
+        );
+      }
 
       final directory = Directory(dirResult.data!);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -434,8 +569,8 @@ class FileOperationsService
       final filePath = '${directory.path}/$fileName';
 
       return Success(filePath);
-    } catch (e) {
-      return Failure('Failed to create unique file: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'create');
     }
   }
 
@@ -443,7 +578,12 @@ class FileOperationsService
   Future<ListResult<String>> listFiles(String extension) async {
     try {
       final dirResult = await getDocumentsDirectory();
-      if (!dirResult.isSuccess) return Failure(dirResult.error!);
+      if (!dirResult.isSuccess) {
+        return Failure(
+          dirResult.error!,
+          structuredMessage: dirResult.structuredError,
+        );
+      }
 
       final directory = Directory(dirResult.data!);
       final files = <String>[];
@@ -454,8 +594,8 @@ class FileOperationsService
       }
 
       return Success(files);
-    } catch (e) {
-      return Failure('Failed to list files: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'list');
     }
   }
 
@@ -467,30 +607,31 @@ class FileOperationsService
         await file.delete();
         return const Success(true);
       }
-      return const Failure('File does not exist');
-    } catch (e) {
-      return Failure('Failed to delete file: $e');
+      return fileOperationFailure('location-missing', operation: 'delete');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'delete');
     }
   }
 
   _AutomatonDrawingData _prepareDrawingData(FSA automaton) {
     final states = automaton.states.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
-    final transitions = automaton.transitions
-        .whereType<FSATransition>()
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    final transitions =
+        automaton.transitions.whereType<FSATransition>().toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
 
     final drawableStates = states
         .map(
           (state) => _DrawableState(
             center: Offset(state.position.x, state.position.y),
             label: state.label,
-            fillColor:
-                state.isAccepting ? _kAcceptingFillColor : _kDefaultFillColor,
+            fillColor: state.isAccepting
+                ? _kAcceptingFillColor
+                : _kDefaultFillColor,
             strokeColor: state.isInitial ? _kInitialStrokeColor : _kStrokeColor,
-            strokeWidth:
-                state.isInitial ? _kInitialStrokeWidth : _kDefaultStrokeWidth,
+            strokeWidth: state.isInitial
+                ? _kInitialStrokeWidth
+                : _kDefaultStrokeWidth,
           ),
         )
         .toList();

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "lib/app.dart",
+      "literal": "Turing Lab",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical product name is locale-neutral under docs/BRANDING.md.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/about_page.dart",
+      "literal": "Turing Lab",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical product name is locale-neutral under docs/BRANDING.md.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/about_page.dart",
+      "literal": "$label: ",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Locale-neutral punctuation joins an already localized runtime label and value.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_graphview_canvas.dart",
+      "literal": "node pointer released",
+      "classification": "debugOrInternal",
+      "rationale": "Internal gesture-coordination reason passed only to debug instrumentation.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "Thales Matheus Mendonça Santos",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Proper name is not translated.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "Apache License 2.0",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical license name is not translated.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "JFLAP 7.1 License",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical license name is not translated.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "GraphView (MIT License)",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical package and license names are not translated.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "Turing Lab",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical product name is locale-neutral under docs/BRANDING.md.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "Susan H. Rodger",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Proper name is not translated.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/licenses_help_content.dart",
+      "literal": "JFLAP Team",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Canonical project contributor-group name is retained.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/help_tree_view.dart",
+      "literal": "${stepIndex + 1}.  ",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Locale-neutral ordered-list marker prefixes already localized help steps.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/step_navigation_controls.dart",
+      "literal": "${playbackSpeed.toStringAsFixed(2)}x",
+      "classification": "deliberateNotationOrAcronym",
+      "rationale": "Numeric playback multiplier notation contains no translatable words.",
+      "maxOccurrences": 2
+    }
+  ]
+}

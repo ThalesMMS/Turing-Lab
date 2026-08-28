@@ -8,9 +8,6 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
-import 'package:turing_lab/features/canvas/graphview/graphview_canvas_controller.dart'
-    show GraphViewCanvasController;
-
 import '../../../core/models/fsa.dart';
 import '../../../core/models/fsa_transition.dart';
 import '../../../core/models/transition.dart';
@@ -22,7 +19,7 @@ class GraphViewAutomatonMapper {
   const GraphViewAutomatonMapper._();
 
   /// Converts the provided [automaton] into a snapshot consumed by the
-  /// [GraphViewCanvasController].
+  /// canvas controller.
   static GraphViewAutomatonSnapshot toSnapshot(FSA? automaton) {
     if (automaton == null) {
       return const GraphViewAutomatonSnapshot.empty();

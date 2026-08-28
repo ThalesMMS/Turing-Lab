@@ -15,18 +15,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/algorithms/pda_simulator.dart' as pda_core;
+import '../../core/batch_execution/batch_execution.dart';
+import '../../core/models/computation_branch.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/models/step_explanation.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../core/services/simulation_runner.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../../l10n/automata_diagnostics_localizations.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart';
 import 'base_simulation_panel.dart';
+import 'batch_execution/batch_execution_panel.dart';
 import 'canvas_simulation_step_projection.dart';
+import 'computation_branch_inspector.dart';
 import 'trace_viewers/pda_trace_viewer.dart';
 import 'pda/stack_drawer.dart';
+import 'pda_acceptance_mode_control.dart';
 import '../../core/constants/monospace_typography.dart';
 
 /// Panel for PDA simulation and string testing
@@ -55,12 +62,12 @@ class PDASimulationPanel extends ConsumerStatefulWidget {
 class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   final TextEditingController _inputController = TextEditingController();
   late final SimulationHighlightService _fallbackHighlightService;
-  final TextEditingController _initialStackController = TextEditingController(
-    text: 'Z',
-  );
+  late final TextEditingController _initialStackController;
+  ProviderSubscription<PDAEditorState>? _editorSubscription;
 
   bool _isSimulating = false;
   pda_core.PDASimulationResult? _simulationResult;
+  SimulationOutcomeKind? _outcomeKind;
   String? _errorMessage;
   bool _stepByStep = true;
   late final SimulationRunner _simulationRunner;
@@ -73,6 +80,13 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   @override
   void initState() {
     super.initState();
+    _initialStackController = TextEditingController(
+      text: ref.read(pdaEditorProvider).pda?.initialStackSymbol ?? 'Z',
+    );
+    _editorSubscription = ref.listenManual<PDAEditorState>(
+      pdaEditorProvider,
+      _handleEditorStateChanged,
+    );
     _fallbackHighlightService = SimulationHighlightService();
     _simulationRunner = widget.simulationRunner ?? SimulationRunner();
   }
@@ -88,6 +102,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   @override
   void dispose() {
     _activeTask?.cancel();
+    _editorSubscription?.close();
     _inputController.dispose();
     _initialStackController.dispose();
     _fallbackHighlightService.clear();
@@ -97,6 +112,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   @override
   Widget build(BuildContext context) {
     final simState = ref.watch(pdaSimulationProvider);
+    final pda = ref.watch(pdaEditorProvider).pda;
     final hasSteps = simState.result?.steps.isNotEmpty == true;
 
     return SimulationPanelShell(
@@ -112,6 +128,23 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
         ],
         const SizedBox(height: 16),
         _buildResultsSection(context),
+        if (pda != null) ...[
+          const SizedBox(height: 16),
+          ExpansionTile(
+            key: const Key('pda-batch-section'),
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Batch testing'),
+            subtitle: const Text('Run ordered, bounded PDA simulations'),
+            children: [
+              BatchExecutionPanel(
+                executor: PdaBatchExecutor(pda),
+                alphabet: pda.alphabet,
+                title: 'PDA batch execution',
+                initialStrategyId: 'simulate',
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -124,49 +157,65 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
   }
 
   Widget _buildInputSection(BuildContext context) {
-    return SimulationInputSection(
-      title: 'Simulation Input',
-      children: [
-        SimulationTextField(
-          controller: _inputController,
-          labelText: 'Input String',
-          hintText: 'Leave blank for ε; whitespace is preserved',
-          isDense: false,
-        ),
-        const SizedBox(height: 12),
-        SimulationTextField(
-          controller: _initialStackController,
-          labelText: 'Initial Stack Symbol',
-          hintText: appLocalizationsOf(context).egInitialStack,
-          isDense: false,
-        ),
-        const SizedBox(height: 8),
-        Material(
-          type: MaterialType.transparency,
-          child: SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              appLocalizationsOf(context)
-                  .localizeWorkflowText('Record step-by-step trace'),
+    final pda = ref.watch(pdaEditorProvider).pda;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useDenseFields =
+            constraints.maxWidth < PdaAcceptanceModeControl.narrowBreakpoint;
+        return SimulationInputSection(
+          title: 'Simulation Input',
+          children: [
+            if (pda != null) ...[
+              PdaAcceptanceModeControl(
+                value: pda.acceptanceMode,
+                enabled: !_isSimulating,
+                onChanged: _setAcceptanceMode,
+              ),
+              const SizedBox(height: 16),
+            ],
+            SimulationTextField(
+              controller: _inputController,
+              labelText: 'Input String',
+              hintText: 'Leave blank for ε; whitespace is preserved',
+              isDense: useDenseFields,
             ),
-            value: _stepByStep,
-            onChanged: (value) {
-              setState(() {
-                _stepByStep = value;
-              });
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          appLocalizationsOf(context).pdaExamplesHint,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            const SizedBox(height: 12),
+            SimulationTextField(
+              controller: _initialStackController,
+              labelText: 'Initial Stack Symbol',
+              hintText: appLocalizationsOf(context).egInitialStack,
+              isDense: useDenseFields,
+            ),
+            const SizedBox(height: 8),
+            Material(
+              type: MaterialType.transparency,
+              child: SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  appLocalizationsOf(
+                    context,
+                  ).localizeWorkflowText('Record step-by-step trace'),
+                ),
+                value: _stepByStep,
+                onChanged: (value) {
+                  setState(() {
+                    _stepByStep = value;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              appLocalizationsOf(context).pdaExamplesHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -220,10 +269,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                       Text(
                         '${appLocalizationsOf(context).pdaStackPanelLabel}:',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -233,10 +282,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontFamilyFallback: kMonospaceFontFamilyFallback,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                          fontFamilyFallback: kMonospaceFontFamilyFallback,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                       if (highlightedIndex != null) ...[
                         const SizedBox(height: 8),
@@ -250,13 +299,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                appLocalizationsOf(context)
-                                    .highlightingStackCell(
-                                  highlightedIndex + 1,
-                                ),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                appLocalizationsOf(
+                                  context,
+                                ).highlightingStackCell(highlightedIndex + 1),
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -291,10 +337,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                       Text(
                         appLocalizationsOf(context).remainingInputColon,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -304,10 +350,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontFamilyFallback: kMonospaceFontFamilyFallback,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
+                          fontFamilyFallback: kMonospaceFontFamilyFallback,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                       ),
                     ],
                   ),
@@ -352,23 +398,50 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
 
   Widget _buildResults(BuildContext context) {
     final result = _simulationResult;
+    final acceptanceMode = ref.read(pdaSimulationProvider).mode;
+    final l10n = appLocalizationsOf(context);
     final isAccepted = result?.accepted ?? false;
     final hasResult = result != null;
+    final semanticResult = switch (_outcomeKind) {
+      SimulationOutcomeKind.accepted => true,
+      SimulationOutcomeKind.rejected => false,
+      _ => null,
+    };
     final colorScheme = Theme.of(context).colorScheme;
     final color = isAccepted ? colorScheme.tertiary : colorScheme.error;
     final message = hasResult
-        ? (isAccepted ? 'Accepted' : 'Rejected')
+        ? switch (_outcomeKind) {
+            SimulationOutcomeKind.accepted => 'Accepted',
+            SimulationOutcomeKind.rejected => 'Rejected',
+            SimulationOutcomeKind.provenCycle => 'Cycle detected',
+            SimulationOutcomeKind.boundedUnknown ||
+            SimulationOutcomeKind.timeout ||
+            SimulationOutcomeKind.configurationLimit => 'Inconclusive',
+            SimulationOutcomeKind.cancelled => 'Simulation cancelled',
+            SimulationOutcomeKind.failed || null => 'Simulation failed',
+          }
         : appLocalizationsOf(context).simulationFailed;
     final errorText = _errorMessage ?? result?.errorMessage;
 
     return SimulationStatusCard(
-      isAccepted: hasResult ? isAccepted : false,
+      isAccepted: hasResult ? semanticResult : false,
       message: message,
       children: [
+        if (result != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              '${l10n.acceptanceModeLabel(pdaAcceptanceModeLabel(context, acceptanceMode))}\n'
+              '${pdaAcceptanceModeExplanation(context, acceptanceMode)}',
+              key: const ValueKey('pda-simulation-acceptance-rule'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         if (result case final simulationResult?)
           Text(
-            appLocalizationsOf(context)
-                .timeMs(simulationResult.executionTime.inMilliseconds),
+            appLocalizationsOf(
+              context,
+            ).timeMs(simulationResult.executionTime.inMilliseconds),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         if (errorText != null && errorText.isNotEmpty)
@@ -376,11 +449,27 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
               errorText,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: color,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: color),
             ),
           ),
+        if (result != null) ...[
+          const SizedBox(height: 12),
+          ComputationBranchesUnavailableNotice(
+            key: const ValueKey('pda-computation-branches-unavailable'),
+            reason:
+                ref
+                    .read(pdaEditorProvider)
+                    .nondeterministicTransitionIds
+                    .isEmpty
+                ? ComputationBranchesUnavailableReason.deterministicExecution
+                : ComputationBranchesUnavailableReason.branchesNotRecorded,
+            labels: appLocalizationsOf(
+              context,
+            ).computationBranchInspectorLabels,
+          ),
+        ],
         if (result case final simulationResult?
             when simulationResult.steps.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -429,6 +518,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     setState(() {
       _isSimulating = true;
       _simulationResult = null;
+      _outcomeKind = null;
       _errorMessage = null;
     });
 
@@ -478,6 +568,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       setState(() {
         _isSimulating = false;
         _simulationResult = simulation;
+        _outcomeKind = outcome.kind;
         _errorMessage = simulation.errorMessage?.isNotEmpty == true
             ? simulation.errorMessage
             : null;
@@ -498,13 +589,50 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
       setState(() {
         _isSimulating = false;
         _simulationResult = null;
-        _errorMessage =
-            outcome.message ?? appLocalizationsOf(context).simulationFailed;
+        _outcomeKind = SimulationOutcomeKind.failed;
+        _errorMessage = outcome.structuredMessage == null
+            ? outcome.message ?? appLocalizationsOf(context).simulationFailed
+            : appLocalizationsOf(
+                context,
+              ).resolveStructuredMessage(outcome.structuredMessage!);
       });
       _highlightService.clear();
     }
 
     widget.onSimulationEnd?.call();
+  }
+
+  void _setAcceptanceMode(PDAAcceptanceMode mode) {
+    ref.read(pdaEditorProvider.notifier).setAcceptanceMode(mode);
+  }
+
+  void _handleEditorStateChanged(
+    PDAEditorState? previous,
+    PDAEditorState next,
+  ) {
+    if (!mounted || identical(previous?.pda, next.pda)) return;
+
+    _initialStackController.text = next.pda?.initialStackSymbol ?? 'Z';
+    final wasSimulating = _isSimulating;
+    _requestGeneration++;
+    _activeTask?.cancel();
+    _activeTask = null;
+    setState(() {
+      _isSimulating = false;
+      _simulationResult = null;
+      _outcomeKind = null;
+      _errorMessage = null;
+    });
+    final simulationNotifier = ref.read(pdaSimulationProvider.notifier);
+    final pda = next.pda;
+    if (pda == null) {
+      simulationNotifier.clear();
+    } else {
+      simulationNotifier.setPda(pda);
+    }
+    _highlightService.clear();
+    _updateStackState(const StackState.empty());
+    if (wasSimulating) widget.onSimulationEnd?.call();
   }
 
   void _cancelSimulation() {
@@ -520,6 +648,7 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
     setState(() {
       _isSimulating = false;
       _simulationResult = null;
+      _outcomeKind = SimulationOutcomeKind.cancelled;
       _errorMessage = appLocalizationsOf(context).simulationCancelled;
     });
     _highlightService.clear();

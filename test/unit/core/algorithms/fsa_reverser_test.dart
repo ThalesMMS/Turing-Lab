@@ -3,11 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
 import 'package:turing_lab/core/algorithms/fsa_reverser.dart';
+import 'package:turing_lab/core/algorithms/fsa_reverser_messages.dart';
 import 'package:turing_lab/core/algorithms/language_comparator.dart';
 import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
@@ -24,11 +26,17 @@ void main() {
         accepted: {'ba', 'baa', 'bab', 'baab', 'baba'},
         rejected: {'', 'a', 'b', 'ab', 'aba', 'bba'},
       );
-      await _expectReversalRelation(
-        operand,
-        reversed,
-        {'', 'a', 'b', 'ab', 'ba', 'aab', 'abb', 'abab', 'baba'},
-      );
+      await _expectReversalRelation(operand, reversed, {
+        '',
+        'a',
+        'b',
+        'ab',
+        'ba',
+        'aab',
+        'abb',
+        'abab',
+        'baba',
+      });
     });
 
     test('uses one epsilon entry per former accepting state', () async {
@@ -43,10 +51,7 @@ void main() {
         reversal.entryTransitions
             .map((transition) => transition.toState.id)
             .toSet(),
-        {
-          reversal.stateClones['q2']!.id,
-          reversal.stateClones['q3']!.id,
-        },
+        {reversal.stateClones['q2']!.id, reversal.stateClones['q3']!.id},
       );
       await _expectLanguage(
         reversal.resultNFA,
@@ -55,32 +60,34 @@ void main() {
       );
     });
 
-    test('handles empty, epsilon-only, and universal one-symbol languages',
-        () async {
-      final empty = FSAReverser.reverse(_emptyLanguage());
-      final epsilon = FSAReverser.reverse(_fromRegex('ε'));
-      final universal = FSAReverser.reverse(_fromRegex('a*'));
+    test(
+      'handles empty, epsilon-only, and universal one-symbol languages',
+      () async {
+        final empty = FSAReverser.reverse(_emptyLanguage());
+        final epsilon = FSAReverser.reverse(_fromRegex('ε'));
+        final universal = FSAReverser.reverse(_fromRegex('a*'));
 
-      expect(empty.isSuccess, isTrue, reason: empty.error);
-      expect(epsilon.isSuccess, isTrue, reason: epsilon.error);
-      expect(universal.isSuccess, isTrue, reason: universal.error);
-      expect(empty.data!.entryTransitions, isEmpty);
-      await _expectLanguage(
-        empty.data!.resultNFA,
-        accepted: const {},
-        rejected: {'', 'a', 'aa'},
-      );
-      await _expectLanguage(
-        epsilon.data!.resultNFA,
-        accepted: {''},
-        rejected: {'a', 'aa'},
-      );
-      await _expectLanguage(
-        universal.data!.resultNFA,
-        accepted: {'', 'a', 'aa', 'aaa'},
-        rejected: {'b', 'ab'},
-      );
-    });
+        expect(empty.isSuccess, isTrue, reason: empty.error);
+        expect(epsilon.isSuccess, isTrue, reason: epsilon.error);
+        expect(universal.isSuccess, isTrue, reason: universal.error);
+        expect(empty.data!.entryTransitions, isEmpty);
+        await _expectLanguage(
+          empty.data!.resultNFA,
+          accepted: const {},
+          rejected: {'', 'a', 'aa'},
+        );
+        await _expectLanguage(
+          epsilon.data!.resultNFA,
+          accepted: {''},
+          rejected: {'a', 'aa'},
+        );
+        await _expectLanguage(
+          universal.data!.resultNFA,
+          accepted: {'', 'a', 'aa', 'aaa'},
+          rejected: {'b', 'ab'},
+        );
+      },
+    );
 
     test('reverses epsilon transitions with their direction intact', () async {
       final operand = _epsilonAb();
@@ -100,52 +107,116 @@ void main() {
       );
     });
 
-    test('does not mutate the operand and reports stable construction steps',
-        () async {
-      final operand = _multipleAccepting();
-      final snapshot = operand.toJson();
+    test(
+      'does not mutate the operand and reports stable construction steps',
+      () async {
+        final operand = _multipleAccepting();
+        final snapshot = operand.toJson();
 
-      final result = FSAReverser.reverse(operand);
-      final repeated = FSAReverser.reverse(operand);
+        final result = FSAReverser.reverse(operand);
+        final repeated = FSAReverser.reverse(operand);
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      expect(repeated.isSuccess, isTrue, reason: repeated.error);
-      final reversal = result.data!;
-      expect(reversal.resultNFA.validate(), isEmpty);
-      expect(reversal.steps, hasLength(4));
-      expect(reversal.steps[1].title, 'Reverse every transition');
+        expect(result.isSuccess, isTrue, reason: result.error);
+        expect(repeated.isSuccess, isTrue, reason: repeated.error);
+        final reversal = result.data!;
+        expect(reversal.resultNFA.validate(), isEmpty);
+        expect(reversal.steps, hasLength(4));
+        expect(reversal.steps[1].title, 'automaton.fsa-reversal.reverse-title');
+        expect(
+          reversal.steps[2].properties['createdTransitionIds'],
+          containsAll(
+            reversal.entryTransitions.map((transition) => transition.id),
+          ),
+        );
+        expect(reversal.resultNFA.acceptingStates, {
+          reversal.stateClones[operand.initialState!.id],
+        });
+        expect(
+          reversal.newInitialState.position.x,
+          lessThan(
+            reversal.stateClones.values
+                .map((state) => state.position.x)
+                .reduce(math.min),
+          ),
+        );
+        expect(
+          repeated.data!.resultNFA.states.map((state) => state.id).toSet(),
+          reversal.resultNFA.states.map((state) => state.id).toSet(),
+        );
+        expect(
+          repeated.data!.resultNFA.fsaTransitions
+              .map((transition) => transition.id)
+              .toSet(),
+          reversal.resultNFA.fsaTransitions
+              .map((transition) => transition.id)
+              .toSet(),
+        );
+        expect(repeated.data!.resultNFA.id, reversal.resultNFA.id);
+        expect(operand.toJson(), snapshot);
+      },
+    );
+
+    test('exposes stable diagnostics and structured construction steps', () {
+      final empty = FSA(
+        id: 'empty-invalid',
+        name: 'Empty invalid',
+        states: const {},
+        transitions: const {},
+        alphabet: const {},
+        initialState: null,
+        acceptingStates: const {},
+        created: DateTime.utc(2026),
+        modified: DateTime.utc(2026),
+        bounds: const math.Rectangle(0, 0, 800, 600),
+      );
+      final failure = FSAReverser.reverse(empty);
+
+      expect(failure.error, 'automaton.fsa-reversal.empty-operand');
+      expect(failure.structuredError?.stableCode, failure.error);
+
+      final invalidTransition = FsaReversalMessages.invalidTransition('t0');
       expect(
-        reversal.steps[2].properties['createdTransitionIds'],
-        containsAll(
-          reversal.entryTransitions.map((transition) => transition.id),
-        ),
+        invalidTransition.stableCode,
+        'automaton.fsa-reversal.invalid-transition',
       );
       expect(
-        reversal.resultNFA.acceptingStates,
-        {reversal.stateClones[operand.initialState!.id]},
+        invalidTransition.arguments['transition']?.kind,
+        StructuredMessageArgumentKind.identifier,
+      );
+      expect(invalidTransition.arguments['transition']?.value, 't0');
+
+      final success = FSAReverser.reverse(_multipleAccepting());
+      expect(success.isSuccess, isTrue, reason: success.error);
+      final reversal = success.data!;
+      final step = reversal.steps.first;
+      expect(step.title, 'automaton.fsa-reversal.clone-title');
+      expect(
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(
+            step.properties[fsaReversalTitleMessageProperty] as Map,
+          ),
+        ).stableCode,
+        step.title,
       );
       expect(
-        reversal.newInitialState.position.x,
-        lessThan(
-          reversal.stateClones.values
-              .map((state) => state.position.x)
-              .reduce(math.min),
-        ),
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(
+            step.properties[fsaReversalExplanationMessageProperty] as Map,
+          ),
+        ).stableCode,
+        step.explanation,
       );
       expect(
-        repeated.data!.resultNFA.states.map((state) => state.id).toSet(),
-        reversal.resultNFA.states.map((state) => state.id).toSet(),
+        reversal.steps[2].explanation,
+        'automaton.fsa-reversal.entry-explanation',
       );
+
+      final noAccepting = FSAReverser.reverse(_emptyLanguage());
+      expect(noAccepting.isSuccess, isTrue, reason: noAccepting.error);
       expect(
-        repeated.data!.resultNFA.fsaTransitions
-            .map((transition) => transition.id)
-            .toSet(),
-        reversal.resultNFA.fsaTransitions
-            .map((transition) => transition.id)
-            .toSet(),
+        noAccepting.data!.steps[2].explanation,
+        'automaton.fsa-reversal.entry-empty-explanation',
       );
-      expect(repeated.data!.resultNFA.id, reversal.resultNFA.id);
-      expect(operand.toJson(), snapshot);
     });
 
     test('double reversal is language-equivalent to the operand', () {
@@ -237,11 +308,7 @@ FSA _multipleAccepting() {
     position: Vector2(40, 100),
     isInitial: true,
   );
-  final q1 = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(140, 60),
-  );
+  final q1 = State(id: 'q1', label: 'q1', position: Vector2(140, 60));
   final q2 = State(
     id: 'q2',
     label: 'q2',
@@ -290,16 +357,8 @@ FSA _epsilonAb() {
     position: Vector2(40, 100),
     isInitial: true,
   );
-  final q1 = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(140, 100),
-  );
-  final q2 = State(
-    id: 'q2',
-    label: 'q2',
-    position: Vector2(240, 100),
-  );
+  final q1 = State(id: 'q1', label: 'q1', position: Vector2(140, 100));
+  final q2 = State(id: 'q2', label: 'q2', position: Vector2(240, 100));
   final q3 = State(
     id: 'q3',
     label: 'q3',
@@ -310,11 +369,7 @@ FSA _epsilonAb() {
     id: 'epsilon-ab',
     states: {q0, q1, q2, q3},
     transitions: {
-      FSATransition.epsilon(
-        id: 'epsilon',
-        fromState: q0,
-        toState: q1,
-      ),
+      FSATransition.epsilon(id: 'epsilon', fromState: q0, toState: q1),
       FSATransition.deterministic(
         id: 'a',
         fromState: q1,

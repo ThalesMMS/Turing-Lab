@@ -1,0 +1,7 @@
+{
+  "caseId": "parser-earley-identifier",
+  "expectedInternalOutcome": "accepted",
+  "maximumWordLength": 3,
+  "schema": "turing-lab.hard-edge.grammar-property.v1",
+  "seed": 336
+}

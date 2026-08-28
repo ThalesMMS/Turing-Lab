@@ -3,6 +3,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/data/converters/asset_example_converters.dart';
 
 void main() {
+  test('inventory evidence executes every asset converter entrypoint', () {
+    final automaton = _pdaJson(initialStack: ['Z']);
+    expect(convertAssetJsonToFsa(automaton, 'FSA').isSuccess, isTrue);
+    expect(convertAssetJsonToPda(automaton, 'PDA').isSuccess, isTrue);
+    final tmResult = convertAssetJsonToTm({
+      ...automaton,
+      'tapeAlphabet': ['a', '□'],
+      'blankSymbol': '□',
+      'tapeCount': 1,
+    }, 'TM');
+    expect(tmResult.isSuccess, isTrue);
+    expect(tmResult.data!.name, 'pda_asset');
+    expect(
+      convertAssetJsonToGrammar({
+        'id': 'grammar',
+        'alphabet': ['a'],
+        'variables': ['S'],
+        'initialSymbol': 'S',
+        'productions': {
+          'S': ['a'],
+        },
+      }, 'Grammar').isSuccess,
+      isTrue,
+    );
+    expect(
+      convertAssetJsonToRegexPreset({
+        'id': 'regex',
+        'expression': 'a*',
+        'alphabet': ['a'],
+      }, 'Regex').isSuccess,
+      isTrue,
+    );
+  });
+
   group('PDA asset conversion', () {
     test('rejects an initial stack with more than one symbol', () {
       final result = convertAssetJsonToPda(

@@ -561,7 +561,7 @@ void main() {
       await _pumpPDATraceViewer(tester, result: result);
 
       expect(find.text('PDA Trace (2 steps)'), findsOneWidget);
-      expect(find.textContaining('rem=λ'), findsOneWidget);
+      expect(find.textContaining('rem=ε'), findsOneWidget);
     });
 
     testWidgets('displays lambda for empty stack', (tester) async {
@@ -587,7 +587,7 @@ void main() {
 
       await _pumpPDATraceViewer(tester, result: result);
 
-      expect(find.textContaining('stack=λ'), findsOneWidget);
+      expect(find.textContaining('stack=ε'), findsOneWidget);
     });
 
     testWidgets(
@@ -799,7 +799,7 @@ void main() {
       await _pumpPDATraceViewer(tester, result: result);
 
       expect(find.textContaining('q=q0'), findsOneWidget);
-      expect(find.textContaining('rem=λ'), findsOneWidget);
+      expect(find.textContaining('rem=ε'), findsOneWidget);
       expect(find.textContaining('stack=Z'), findsOneWidget);
     });
   });

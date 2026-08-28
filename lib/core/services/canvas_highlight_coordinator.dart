@@ -7,10 +7,10 @@ import '../models/simulation_highlight.dart';
 import 'highlight_channel.dart';
 
 /// Automaton family rendered by a concrete canvas surface.
-enum AutomatonSurfaceKind { fsa, pda, tm }
+enum AutomatonSurfaceKind { fsa, pda, tm, transducer }
 
 /// Independent highlight producers ordered by visual priority.
-enum CanvasHighlightSource { validation, analysis, simulation }
+enum CanvasHighlightSource { validation, diagnostic, analysis, simulation }
 
 /// Immutable identity for one revision of a concrete automaton canvas.
 @immutable
@@ -38,12 +38,8 @@ class CanvasHighlightTarget {
   }
 
   @override
-  int get hashCode => Object.hash(
-        kind,
-        identityHashCode(surface),
-        documentId,
-        revision,
-      );
+  int get hashCode =>
+      Object.hash(kind, identityHashCode(surface), documentId, revision);
 }
 
 /// Arbitrates highlight sources for exactly one concrete canvas.
@@ -51,12 +47,13 @@ class CanvasHighlightCoordinator {
   CanvasHighlightCoordinator({
     required CanvasHighlightTarget target,
     required HighlightChannel output,
-  })  : _target = target,
-        _output = output;
+  }) : _target = target,
+       _output = output;
 
   static const List<CanvasHighlightSource> _priority = [
     CanvasHighlightSource.simulation,
     CanvasHighlightSource.analysis,
+    CanvasHighlightSource.diagnostic,
     CanvasHighlightSource.validation,
   ];
 
@@ -81,7 +78,11 @@ class CanvasHighlightCoordinator {
 
     _target = target;
     _slots.clear();
-    _reconcile();
+    _effective = SimulationHighlight.empty;
+    // History snapshots and document replacements may update the concrete
+    // canvas outside this coordinator. Clear the output even when no owned
+    // slot was active so a stale snapshot highlight cannot survive retargeting.
+    _output.clear();
   }
 
   void _send(
@@ -101,10 +102,7 @@ class CanvasHighlightCoordinator {
     _reconcile();
   }
 
-  void _clear(
-    CanvasHighlightSourceHandle owner,
-    CanvasHighlightTarget target,
-  ) {
+  void _clear(CanvasHighlightSourceHandle owner, CanvasHighlightTarget target) {
     if (_disposed || owner._disposed || target != _target) {
       return;
     }
@@ -179,10 +177,7 @@ class CanvasHighlightSourceHandle implements HighlightChannel {
   }
 
   /// Publishes only when [target] is still the coordinator's current target.
-  void sendFor(
-    CanvasHighlightTarget target,
-    SimulationHighlight highlight,
-  ) {
+  void sendFor(CanvasHighlightTarget target, SimulationHighlight highlight) {
     _coordinator._send(this, target, highlight);
   }
 

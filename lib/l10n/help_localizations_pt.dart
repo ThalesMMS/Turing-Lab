@@ -1,127 +1,56 @@
 const ptHelpUiCopy = {
-  'homeHelpTooltip': 'Ajuda',
-  'homeSettingsTooltip': 'Configurações',
-  'helpPageTitle': 'Ajuda e documentação',
-  'helpSearchTooltip': 'Pesquisar ajuda',
-  'helpQuickStartTitle': 'Guia rápido',
-  'helpQuickStartBody': 'Bem-vindo ao Turing Lab. Comece com este fluxo básico:\n\n'
-      '1. Escolha um espaço de trabalho, como AF, Gramática, AP, MT ou Regex.\n'
-      '2. Inicie em branco ou abra um exemplo ou arquivo compatível.\n'
-      '3. Use o editor para criar sua máquina ou gramática. Toque duas vezes em um estado para ações rápidas.\n'
-      '4. Execute simulações para testar seu trabalho.\n'
-      '5. Use os algoritmos para transformar estruturas.\n\n'
-      'Dicas:\n'
-      '• Use as abas de navegação ou chips de seção para trocar de espaço rapidamente.\n'
-      '• Toque duas vezes em um estado para abrir o menu de ações rápidas.\n'
-      '• Faça pinça para ampliar ou reduzir o canvas.\n'
-      '• Toque no ícone de guia rápido quando precisar relembrar o fluxo.',
-  'helpGotIt': 'Entendi!',
-  'helpSearchFieldLabel': 'Pesquisar ajuda...',
-  'helpSearchClear': 'Limpar pesquisa',
-  'helpSearchClose': 'Fechar pesquisa',
-  'helpSearchTitle': 'Pesquisar ajuda',
-  'helpSearchSubtitle': 'Encontre tutoriais, atalhos e explicações de teoria',
-  'helpSearchNoResults': 'Nenhum resultado encontrado',
-  'helpSearchNoResultsDescription':
-      'Tente outras palavras-chave ou confira a ortografia',
-  'helpDisclosureExpand': 'Expandir',
-  'helpDisclosureCollapse': 'Recolher',
-  'helpRelatedTopics': 'Tópicos relacionados',
-  'helpTopicUnavailable': 'Este tópico de ajuda não está disponível.',
-  'helpTopicUnavailableDescription':
-      'Navegue pela árvore de ajuda ou pesquise outro tópico.',
-  'contextualHelpPanelLabel': 'Painel de ajuda contextual',
-  'closeHelpPanel': 'Fechar painel de ajuda',
-  'close': 'Fechar',
-  'viewAllRelatedHelp': 'Ver toda a ajuda relacionada',
-  'moreHelp': 'Mais ajuda',
-  'helpCenter': 'Central de ajuda',
-  'workspaceSimulateTooltip': 'Simular',
-  'workspaceAlgorithmsTooltip': 'Algoritmos',
-  'workspaceParserTooltip': 'Parser',
-  'workspaceEditTooltip': 'Editar',
   'grammarEmptyProductionEditInstruction':
       'Use Editar para adicionar sua primeira regra de produção',
-  'workspaceMetricsTooltip': 'Métricas',
+  'unrestrictedGrammarExampleAnBnCn': 'a^n b^n c^n',
+  'unrestrictedGrammarExampleContextCopying': 'Padrão de cópia com contexto',
+  'unrestrictedGrammarExampleTmGenerated': 'Gramática irrestrita gerada por MT',
+  'lSystemExampleKochCurve': 'Curva de Koch',
+  'lSystemExampleSierpinskiTriangle': 'Triângulo de Sierpiński',
+  'lSystemExampleDragonCurve': 'Curva do dragão',
+  'lSystemExampleFractalPlant': 'Planta fractal',
+  'lSystemExampleBranchingTree': 'Árvore ramificada',
+  'lSystemExampleSeededContextTurtle': 'Tartaruga contextual com semente',
   'relatedConcepts': 'Conceitos relacionados',
   'hideExamples': 'Ocultar exemplos',
   'viewExamples': 'Ver exemplos',
-  'keyboardShortcutsDialogLabel': 'Diálogo de atalhos de teclado',
-  'keyboardShortcutsTitle': 'Atalhos de teclado',
-  'keyboardShortcutsCanvasOperations': 'Operações do canvas',
-  'keyboardShortcutsSimulationControls': 'Controles de simulação',
-  'keyboardShortcutsDialogShortcuts': 'Atalhos de diálogos',
-  'closeShortcutsDialog': 'Fechar diálogo de atalhos',
-  'shortcutAlternativeSeparator': 'ou',
-  'aboutDeveloperLabel': 'Desenvolvedor',
-  'aboutProjectRepositoryLabel': 'Repositório do projeto',
-  'aboutProjectOpenError': 'Não foi possível abrir o repositório do projeto.',
-  'aboutOpenSourceLicenses': 'Licenças de código aberto',
-  'aboutLicensesIntro':
-      'O Turing Lab é uma reimplementação em Flutter inspirada no JFLAP e compatível com ele. Não é uma versão oficial do JFLAP.',
-  'aboutTuringLabLicenseSummary':
-      'O código Flutter original do Turing Lab é licenciado sob a Apache 2.0.',
-  'aboutJflapLicenseSummary':
-      'As partes derivadas do JFLAP permanecem sob a licença do JFLAP 7.1.',
-  'aboutGraphViewLicenseSummary':
-      'Biblioteca de visualização de grafos, bifurcada e modificada para o Turing Lab. Trabalho original de Nabil Mosharraf.',
-  'aboutAppleNoticesSummary':
-      'Avisos incluídos para o fork do GraphView e dependências de plugins das plataformas Apple.',
-  'aboutAppleNoticesTitle': 'Avisos de terceiros das plataformas Apple',
-  'aboutPackageLicenses': 'Licenças dos pacotes',
-  'aboutPackageLicensesDescription':
-      'Licenças informadas pelo Flutter para os pacotes Dart e Flutter incluídos.',
-  'aboutAcknowledgments': 'Agradecimentos ao JFLAP',
-  'aboutJflapCreator':
-      'Criadora e mantenedora original do JFLAP, Duke University.',
-  'aboutJflapTeam':
-      'Thomas Finley, Ryan Cavalcante, Stephen Reading, Bart Bressler, Jinghui Lim, Chris Morgan, Kyung Min (Jason) Lee, Jonathan Su e Henry Qin.',
-  'aboutOriginalProject': 'Site do JFLAP: http://www.jflap.org',
-  'aboutOriginalProjectTitle': 'Projeto original',
-  'aboutGraphViewFork':
-      'O Turing Lab inclui um fork mantido do GraphView sob a licença MIT; os avisos de terceiros das plataformas Apple estão incluídos aqui.',
-  'aboutGraphViewForkTitle': 'Fork do GraphView',
-  'aboutDistribution': 'Distribuição',
-  'aboutDistributionDescription':
-      'O Turing Lab é distribuído como um aplicativo educacional gratuito e não monetizado enquanto incluir material derivado do JFLAP.',
-  'aboutLicenseExpandPrompt':
-      'Expanda para carregar o texto da licença incluída.',
-  'aboutLicenseLoading': 'Carregando o texto da licença incluída...',
-  'aboutLicenseLoadFailed': 'Falha ao carregar a licença',
 };
 
 const ptHelpArticleBodies = {
   'gettingStarted':
       'O Turing Lab é um aplicativo interativo para estudantes e educadores que estudam linguagens formais e teoria dos autômatos.\n\n'
-          'Use a barra de navegação ou as abas inferiores para alternar entre AF, Gramática, AP, MT, Regex e Lema do Bombeamento. '
-          'Crie estruturas, edite-as diretamente, execute simulações, converta representações e salve ou carregue arquivos compatíveis.',
-  'fsa': 'Autômatos finitos são modelos computacionais com um número finito de estados. Eles reconhecem linguagens regulares.\n\n'
+      'Use a barra de navegação ou as abas inferiores para alternar entre AF, Gramática, AP, MT, Regex e Lema do Bombeamento. '
+      'Crie estruturas, edite-as diretamente, execute simulações, converta representações e salve ou carregue arquivos compatíveis.',
+  'fsa':
+      'Autômatos finitos são modelos computacionais com um número finito de estados. Eles reconhecem linguagens regulares.\n\n'
       'Crie estados com a ferramenta de adicionar estado, toque duas vezes para editar marcadores inicial ou final e crie transições escolhendo origem e destino. '
       'Use o painel de simulação para testar cadeias e execute algoritmos como AFN para AFD, minimização, complemento, operações de produto, AF para Regex e AF para Gramática.',
   'grammar':
       'Gramáticas livres de contexto usam variáveis, terminais, símbolo inicial e regras de produção para descrever linguagens livres de contexto.\n\n'
-          'Adicione produções com um não terminal à esquerda e uma sequência de terminais ou não terminais à direita. Use λ ou ε para a cadeia vazia. '
-          'As ferramentas de análise incluem LL, LR e o algoritmo CYK.',
-  'pda': 'Autômatos com pilha estendem autômatos finitos com uma pilha e reconhecem linguagens livres de contexto.\n\n'
+      'Adicione produções com um não terminal à esquerda e uma sequência de terminais ou não terminais à direita. Use ε para a cadeia vazia. '
+      'As ferramentas de análise incluem LL, LR e o algoritmo CYK.',
+  'pda':
+      'Autômatos com pilha estendem autômatos finitos com uma pilha e reconhecem linguagens livres de contexto.\n\n'
       'Uma transição de AP lê um símbolo de entrada, consulta ou remove o topo da pilha, empilha símbolos de substituição e muda de estado. '
       'Durante a simulação, o Turing Lab mostra como entrada, estado e pilha evoluem até consumir a entrada ou não haver transição válida.',
-  'tm': 'Máquinas de Turing usam fita, cabeçote de leitura/escrita e estados de controle. Elas modelam computação geral.\n\n'
+  'tm':
+      'Máquinas de Turing usam fita, cabeçote de leitura/escrita e estados de controle. Elas modelam computação geral.\n\n'
       'Transições leem um símbolo, escrevem outro, movem o cabeçote para a esquerda, direita ou ficam paradas, e entram em um novo estado. '
       'Configure aceitação por estado final ou parada em Configurações quando o espaço de trabalho oferecer suporte.',
   'regex':
       'Expressões regulares descrevem linguagens regulares com literais, concatenação, união, agrupamento, estrela de Kleene, mais e opcional.\n\n'
-          'Valide uma regex, teste cadeias, compare equivalência, analise complexidade, simplifique expressões e converta regexes para AFN ou AFD equivalentes.',
+      'Valide uma regex, teste cadeias, compare equivalência, analise complexidade, simplifique expressões e converta regexes para AFN ou AFD equivalentes.',
   'pumping':
       'O jogo do Lema do Bombeamento ajuda a explicar por que algumas linguagens não são regulares.\n\n'
-          'Escolha uma linguagem, encontre um comprimento de bombeamento, escolha uma cadeia longa o bastante, decomponha-a em xyz e mostre que bombear y leva para fora da linguagem.',
-  'fileOperations': 'O Turing Lab oferece fluxos de arquivo por espaço de trabalho.\n\n'
+      'Escolha uma linguagem, encontre um comprimento de bombeamento, escolha uma cadeia longa o bastante, decomponha-a em xyz e mostre que bombear y leva para fora da linguagem.',
+  'fileOperations':
+      'O Turing Lab oferece fluxos de arquivo por espaço de trabalho.\n\n'
       'AF suporta XML do JFLAP, JSON, SVG e exportação PNG em plataformas nativas. Gramática suporta importação/exportação de gramáticas JFLAP e SVG. '
       'AP e Máquina de Turing atualmente suportam apenas exportação SVG. Regex opera diretamente sobre expressões digitadas.',
   'troubleshooting':
       'Se o app ficar lento, reduza autômatos muito grandes ou simplifique grafos com muitas transições.\n\n'
-          'Se a simulação demorar demais, procure laços ou caminhos não determinísticos que crescem rapidamente. '
-          'Se um arquivo não carregar, confirme se o formato é compatível com o espaço atual e se o arquivo não está corrompido. '
-          'Use os controles de zoom quando elementos do canvas estiverem pequenos demais para tocar.',
+      'Se a simulação demorar demais, procure laços ou caminhos não determinísticos que crescem rapidamente. '
+      'Se um arquivo não carregar, confirme se o formato é compatível com o espaço atual e se o arquivo não está corrompido. '
+      'Use os controles de zoom quando elementos do canvas estiverem pequenos demais para tocar.',
 };
 
 const ptHelpSearchSuggestions = {
@@ -210,7 +139,7 @@ const ptHelpBodies = {
   'concept_transition':
       'Transições conectam estados e definem como o autômato muda de estado com base nos símbolos de entrada. Cada transição tem origem, destino e rótulo.',
   'concept_epsilon':
-      'Uma transição epsilon permite que um AFN mude de estado sem consumir símbolo de entrada. Ela pode ser escrita como ε ou λ e é usada para criar caminhos de computação simultâneos.',
+      'Uma transição epsilon permite que um AFN mude de estado sem consumir símbolo de entrada. Ela é escrita como ε e usada para criar caminhos de computação simultâneos.',
   'concept_pda':
       'Um AP é um autômato finito com memória de pilha. Ele reconhece linguagens livres de contexto e usa transições baseadas em estado atual, símbolo de entrada e topo da pilha.',
   'concept_stack':

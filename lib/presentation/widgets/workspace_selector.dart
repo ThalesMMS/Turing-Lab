@@ -2,25 +2,23 @@
 //  workspace_selector.dart
 //  Turing Lab
 //
-//  Compact workspace switcher shown at the leading edge of the global app
-//  bar on wide viewports. Replaces the permanent navigation rail so the
-//  canvas keeps the full width of the window.
+//  Workspace switcher shared by compact and wide app-bar layouts.
 //
 //  Thales Matheus Mendonça Santos - August 2026
 //
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_help.dart';
-import 'mobile_navigation.dart';
+import 'navigation_item.dart';
 
-/// Drop-down that switches between the FSA, Grammar, PDA, TM, Regex and
-/// Pumping workspaces from a single app-bar control.
+/// Drop-down that switches between every registered workspace.
 class WorkspaceSelector extends StatelessWidget {
   const WorkspaceSelector({
     super.key,
     required this.items,
     required this.currentIndex,
     required this.onSelected,
+    this.compact = false,
   });
 
   /// Width the app bar must reserve for the selector.
@@ -29,6 +27,9 @@ class WorkspaceSelector extends StatelessWidget {
   final List<NavigationItem> items;
   final int currentIndex;
   final ValueChanged<int> onSelected;
+
+  /// Whether the selector is rendered in the compact app-bar title slot.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,10 @@ class WorkspaceSelector extends StatelessWidget {
     final current = items[safeIndex];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 0 : 8,
+        vertical: compact ? 4 : 6,
+      ),
       child: MenuAnchor(
         alignmentOffset: const Offset(0, 4),
         menuChildren: [
@@ -88,7 +92,7 @@ class WorkspaceSelector extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -103,6 +107,9 @@ class WorkspaceSelector extends StatelessWidget {
             hint: l10n.workspaceSelectorHint,
             button: true,
             enabled: true,
+            expanded: controller.isOpen,
+            onTap: () =>
+                controller.isOpen ? controller.close() : controller.open(),
             excludeSemantics: true,
             child: Tooltip(
               message: l10n.workspaceSelectorHint,
@@ -111,15 +118,15 @@ class WorkspaceSelector extends StatelessWidget {
                 onTap: () =>
                     controller.isOpen ? controller.close() : controller.open(),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 4 : 10,
                     vertical: 6,
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: compact ? MainAxisSize.max : MainAxisSize.min,
                     children: [
                       Icon(current.icon, size: 20, color: colorScheme.primary),
-                      const SizedBox(width: 8),
+                      SizedBox(width: compact ? 4 : 8),
                       Flexible(
                         child: Text(
                           current.label,
@@ -127,11 +134,13 @@ class WorkspaceSelector extends StatelessWidget {
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Icon(
                         Icons.arrow_drop_down,
+                        semanticLabel: l10n.workspaceSelectorHint,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ],

@@ -1,0 +1,7 @@
+{
+  "caseId": "lr1-stale-result",
+  "expectedInternalOutcome": "stale",
+  "maximumWordLength": 3,
+  "schema": "turing-lab.hard-edge.grammar-property.v1",
+  "seed": 336
+}

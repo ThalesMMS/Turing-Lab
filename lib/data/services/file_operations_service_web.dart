@@ -15,7 +15,9 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:typed_data';
 import '../../core/entities/grammar_entity.dart';
+import '../../core/annotations/document_annotation_collection.dart';
 import '../../core/entities/turing_machine_entity.dart';
+import '../../core/interoperability/interoperability.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
@@ -28,18 +30,39 @@ import 'file_operations_payload_mixin.dart';
 class FileOperationsService
     with FileOperationsPayloadMixin
     implements FileOperationsGateway {
+  @override
+  Future<Result<Uint8List>> readBytes(String filePath) async {
+    return fileOperationFailure<Uint8List>(
+      'web-unsupported',
+      operation: 'read',
+    );
+  }
+
+  @override
+  Future<StringResult> writeBytes(
+    Uint8List bytes,
+    String filePath, {
+    String mimeType = 'application/octet-stream',
+  }) {
+    return _downloadBytes(filePath, mimeType, bytes);
+  }
+
   /// PNG rendering is not available in the web service implementation.
   @override
-  Future<Result<Uint8List>> exportAutomatonToPngBytes(FSA automaton) async {
-    return const Failure<Uint8List>('PNG export is not supported on web.');
+  Future<Result<Uint8List>> exportAutomatonToPngBytes(
+    FSA automaton, {
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    return fileOperationFailure<Uint8List>(
+      'web-unsupported',
+      operation: 'exportPng',
+    );
   }
 
   /// Starts a PNG download from previously rendered bytes.
   @override
-  Future<StringResult> writePngBytesToPath(
-    Uint8List bytes,
-    String filePath,
-  ) {
+  Future<StringResult> writePngBytesToPath(Uint8List bytes, String filePath) {
     return _downloadBytes(filePath, 'image/png', bytes);
   }
 
@@ -51,16 +74,19 @@ class FileOperationsService
     try {
       final xml = serializeAutomatonToJFLAPString(automaton);
       return _downloadText(filePath, 'application/xml', xml);
-    } catch (e) {
-      return Failure('Failed to prepare automaton download: $e');
+    } on CodecOperationException catch (e) {
+      return Failure(
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
+      );
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'download');
     }
   }
 
   @override
   Future<Result<FSA>> loadAutomatonFromJFLAP(String filePath) async {
-    return const Failure(
-      'Loading JFLAP files from a path is not supported on web.',
-    );
+    return fileOperationFailure('web-unsupported', operation: 'read');
   }
 
   @override
@@ -71,16 +97,19 @@ class FileOperationsService
     try {
       final jsonString = serializeAutomatonToJsonString(automaton);
       return _downloadText(filePath, 'application/json', jsonString);
-    } catch (e) {
-      return Failure('Failed to prepare automaton JSON download: $e');
+    } on CodecOperationException catch (e) {
+      return Failure(
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
+      );
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'download');
     }
   }
 
   @override
   Future<Result<FSA>> loadAutomatonFromJson(String filePath) async {
-    return const Failure(
-      'Loading automaton JSON files from a path is not supported on web.',
-    );
+    return fileOperationFailure('web-unsupported', operation: 'read');
   }
 
   @override
@@ -91,23 +120,26 @@ class FileOperationsService
     try {
       final xml = serializeGrammarToJFLAPString(grammar);
       return _downloadText(filePath, 'application/xml', xml);
-    } catch (e) {
-      return Failure('Failed to prepare grammar download: $e');
+    } on CodecOperationException catch (e) {
+      return Failure(
+        e.compatibilityCode,
+        structuredMessage: e.structuredMessage,
+      );
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'download');
     }
   }
 
   @override
   Future<Result<Grammar>> loadGrammarFromJFLAP(String filePath) async {
-    return const Failure(
-      'Loading grammars from a path is not supported on web.',
-    );
+    return fileOperationFailure('web-unsupported', operation: 'read');
   }
 
   Future<StringResult> exportAutomatonToPNG(
     FSA automaton,
     String filePath,
   ) async {
-    return const Failure('PNG export is not supported on web.');
+    return fileOperationFailure('web-unsupported', operation: 'exportPng');
   }
 
   @override
@@ -117,6 +149,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final svg = exportFsaToSvgString(
@@ -124,10 +158,12 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       );
       return _downloadText(filePath, 'image/svg+xml', svg);
-    } catch (e) {
-      return Failure('Failed to export automaton: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -139,8 +175,8 @@ class FileOperationsService
     try {
       final svg = exportGrammarToSvgString(grammar, options: options);
       return _downloadText(filePath, 'image/svg+xml', svg);
-    } catch (e) {
-      return Failure('Failed to export grammar: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -151,6 +187,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final svg = exportGrammarModelToSvgString(
@@ -158,10 +196,12 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       );
       return _downloadText(filePath, 'image/svg+xml', svg);
-    } catch (e) {
-      return Failure('Failed to export grammar: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -172,6 +212,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final svg = exportPdaToSvgString(
@@ -179,10 +221,12 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       );
       return _downloadText(filePath, 'image/svg+xml', svg);
-    } catch (e) {
-      return Failure('Failed to export PDA: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
@@ -193,6 +237,8 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     try {
       final svg = exportTuringMachineToSvgString(
@@ -200,30 +246,32 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        includeAnnotations: includeAnnotations,
+        annotations: annotations,
       );
       return _downloadText(filePath, 'image/svg+xml', svg);
-    } catch (e) {
-      return Failure('Failed to export Turing machine: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
   }
 
   Future<StringResult> getDocumentsDirectory() async {
-    return const Failure('Documents directory is not available on web.');
+    return fileOperationFailure('web-unsupported', operation: 'directory');
   }
 
   Future<StringResult> createUniqueFile(
     String baseName,
     String extension,
   ) async {
-    return const Failure('File creation is not supported on web.');
+    return fileOperationFailure('web-unsupported', operation: 'create');
   }
 
   Future<ListResult<String>> listFiles(String extension) async {
-    return const Failure('Listing files is not supported on web.');
+    return fileOperationFailure('web-unsupported', operation: 'list');
   }
 
   Future<BoolResult> deleteFile(String filePath) async {
-    return const Failure('Deleting files is not supported on web.');
+    return fileOperationFailure('web-unsupported', operation: 'delete');
   }
 
   Future<StringResult> _downloadText(
@@ -251,8 +299,8 @@ class FileOperationsService
       anchor.remove();
       html.Url.revokeObjectUrl(url);
       return Success(fileName);
-    } catch (e) {
-      return Failure('Failed to start download: $e');
+    } catch (_) {
+      return fileOperationFailure('operation-failed', operation: 'download');
     }
   }
 }

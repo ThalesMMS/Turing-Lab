@@ -1,0 +1,21 @@
+{
+  "family": "regular",
+  "expectedMutantKilled": true,
+  "expectedStatus": "passed",
+  "maxAttempts": 128,
+  "operator": "skip-dfa-completion",
+  "shrinker": "AutomatonShrinker",
+  "automaton": {
+    "alphabet": ["a", "b"],
+    "id": "incomplete-dfa-witness",
+    "states": [
+      {"accepting": false, "id": "q0", "initial": true},
+      {"accepting": true, "id": "q1", "initial": false},
+      {"accepting": false, "id": "unused", "initial": false}
+    ],
+    "transitions": [
+      {"fromId": "q0", "id": "t0", "readTokens": ["a"], "toId": "q1", "writeTokens": []},
+      {"fromId": "unused", "id": "unused-loop", "readTokens": ["b"], "toId": "unused", "writeTokens": []}
+    ]
+  }
+}

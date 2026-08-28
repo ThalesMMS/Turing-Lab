@@ -1,0 +1,18 @@
+{
+  "caseId": "pumping-regular-oracle",
+  "expectedInternalOutcome": "verified",
+  "payload": {
+    "decomposition": {
+      "theorem": "regular",
+      "x": ["multi"],
+      "y": ["🙂"],
+      "z": ["z"]
+    },
+    "exponent": 2,
+    "kind": "pumping",
+    "maximumTokens": 32,
+    "pumpingLength": 3
+  },
+  "schema": "turing-lab.hard-edge.formal-systems-property.v1",
+  "seed": 339
+}

@@ -1,7 +1,10 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import '../messages/structured_message.dart';
 import 'simulation_step.dart';
+import 'tm_transition.dart';
+import 'tm_acceptance.dart';
 
 /// Semantic outcome of a bounded Turing machine execution analysis.
 enum TMExecutionOutcome {
@@ -44,10 +47,7 @@ class TMExecutionSpaceMetrics {
 
 /// First and last execution steps at which the head touched one logical cell.
 class TMTapeCellTouchRange {
-  const TMTapeCellTouchRange({
-    required this.firstStep,
-    required this.lastStep,
-  });
+  const TMTapeCellTouchRange({required this.firstStep, required this.lastStep});
 
   final int firstStep;
   final int lastStep;
@@ -85,27 +85,29 @@ class TMTraceMetrics {
     required Map<int, TMTapeCellChange> tapeDiff,
     required Set<String> definedButNotExecutedTransitionIds,
     required this.retainedTraceSnapshots,
-  })  : readCounts = UnmodifiableMapView(Map<String, int>.from(readCounts)),
-        writeCountsByOldSymbol = UnmodifiableMapView(
-          Map<String, int>.from(writeCountsByOldSymbol),
-        ),
-        writeCountsByNewSymbol = UnmodifiableMapView(
-          Map<String, int>.from(writeCountsByNewSymbol),
-        ),
-        movementCounts = UnmodifiableMapView(
-          Map<String, int>.from(movementCounts),
-        ),
-        visitedCells = Set<int>.unmodifiable(visitedCells),
-        transitionExecutionCounts = UnmodifiableMapView(
-          Map<String, int>.from(transitionExecutionCounts),
-        ),
-        cellTouchRanges = UnmodifiableMapView(
-          Map<int, TMTapeCellTouchRange>.from(cellTouchRanges),
-        ),
-        tapeDiff =
-            UnmodifiableMapView(Map<int, TMTapeCellChange>.from(tapeDiff)),
-        definedButNotExecutedTransitionIds =
-            Set<String>.unmodifiable(definedButNotExecutedTransitionIds);
+  }) : readCounts = UnmodifiableMapView(Map<String, int>.from(readCounts)),
+       writeCountsByOldSymbol = UnmodifiableMapView(
+         Map<String, int>.from(writeCountsByOldSymbol),
+       ),
+       writeCountsByNewSymbol = UnmodifiableMapView(
+         Map<String, int>.from(writeCountsByNewSymbol),
+       ),
+       movementCounts = UnmodifiableMapView(
+         Map<String, int>.from(movementCounts),
+       ),
+       visitedCells = Set<int>.unmodifiable(visitedCells),
+       transitionExecutionCounts = UnmodifiableMapView(
+         Map<String, int>.from(transitionExecutionCounts),
+       ),
+       cellTouchRanges = UnmodifiableMapView(
+         Map<int, TMTapeCellTouchRange>.from(cellTouchRanges),
+       ),
+       tapeDiff = UnmodifiableMapView(
+         Map<int, TMTapeCellChange>.from(tapeDiff),
+       ),
+       definedButNotExecutedTransitionIds = Set<String>.unmodifiable(
+         definedButNotExecutedTransitionIds,
+       );
 
   final TMExecutionBranchSelection branchSelection;
   final Map<String, int> readCounts;
@@ -127,18 +129,33 @@ class TMTraceMetrics {
   int get distinctCellsVisited => visitedCells.length;
 }
 
-/// Canonical single-tape configuration used for exact cycle detection.
+/// Canonical multi-tape configuration used for exact cycle detection.
 class TMConfigurationSnapshot {
   TMConfigurationSnapshot({
-    required this.stateId,
-    required this.headPosition,
+    required String stateId,
+    required int headPosition,
     required Map<int, String> nonBlankCells,
-  }) : nonBlankCells = UnmodifiableMapView(
-          Map<int, String>.fromEntries(
-            nonBlankCells.entries.toList()
-              ..sort((a, b) => a.key.compareTo(b.key)),
-          ),
-        );
+  }) : this.multi(
+         stateId: stateId,
+         headPositions: [headPosition],
+         nonBlankCellsByTape: [nonBlankCells],
+       );
+
+  TMConfigurationSnapshot.multi({
+    required this.stateId,
+    required Iterable<int> headPositions,
+    required Iterable<Map<int, String>> nonBlankCellsByTape,
+  }) : headPositions = List<int>.unmodifiable(headPositions),
+       nonBlankCellsByTape = List<Map<int, String>>.unmodifiable(
+         nonBlankCellsByTape.map(_canonicalCells),
+       ) {
+    if (this.headPositions.isEmpty ||
+        this.headPositions.length != this.nonBlankCellsByTape.length) {
+      throw ArgumentError(
+        'TM configuration must contain one head for every non-empty tape vector.',
+      );
+    }
+  }
 
   factory TMConfigurationSnapshot.canonical({
     required String stateId,
@@ -155,17 +172,50 @@ class TMConfigurationSnapshot {
     );
   }
 
+  factory TMConfigurationSnapshot.canonicalMulti({
+    required String stateId,
+    required Iterable<int> headPositions,
+    required Iterable<Map<int, String>> tapes,
+    required String blankSymbol,
+  }) {
+    return TMConfigurationSnapshot.multi(
+      stateId: stateId,
+      headPositions: headPositions,
+      nonBlankCellsByTape: tapes
+          .map(
+            (tape) => Map<int, String>.fromEntries(
+              tape.entries.where((entry) => entry.value != blankSymbol),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
   final String stateId;
-  final int headPosition;
-  final Map<int, String> nonBlankCells;
+  final List<int> headPositions;
+  final List<Map<int, String>> nonBlankCellsByTape;
+
+  int get headPosition => headPositions.first;
+  Map<int, String> get nonBlankCells => nonBlankCellsByTape.first;
 
   /// Stable key that does not depend on redundant blank cells or map order.
   String get key => jsonEncode([
-        stateId,
-        headPosition,
-        for (final entry in nonBlankCells.entries) [entry.key, entry.value],
-      ]);
+    stateId,
+    for (var tape = 0; tape < headPositions.length; tape++)
+      [
+        headPositions[tape],
+        for (final entry in nonBlankCellsByTape[tape].entries)
+          [entry.key, entry.value],
+      ],
+  ]);
 }
+
+Map<int, String> _canonicalCells(Map<int, String> source) =>
+    UnmodifiableMapView(
+      Map<int, String>.fromEntries(
+        source.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+      ),
+    );
 
 /// Exact repeated-configuration witness for a deterministic cycle.
 class TMCycleWitness {
@@ -178,6 +228,53 @@ class TMCycleWitness {
   final int startStep;
   final int period;
   final TMConfigurationSnapshot configuration;
+}
+
+/// One retained atomic k-tape operation and its resulting configuration.
+class TMMultiTapeTraceStep {
+  TMMultiTapeTraceStep({
+    required this.step,
+    required this.fromStateId,
+    required this.toStateId,
+    required this.transitionId,
+    required Iterable<String> readSymbols,
+    required Iterable<String> writeSymbols,
+    required Iterable<TapeDirection> directions,
+    required this.configuration,
+  }) : readSymbols = List<String>.unmodifiable(readSymbols),
+       writeSymbols = List<String>.unmodifiable(writeSymbols),
+       directions = List<TapeDirection>.unmodifiable(directions);
+
+  final int step;
+  final String fromStateId;
+  final String toStateId;
+  final String transitionId;
+  final List<String> readSymbols;
+  final List<String> writeSymbols;
+  final List<TapeDirection> directions;
+  final TMConfigurationSnapshot configuration;
+}
+
+class TMMultiTapeMetrics {
+  TMMultiTapeMetrics({
+    required Iterable<int> maximumVisitedSpanByTape,
+    required Iterable<int> maximumNonBlankCellsByTape,
+    required this.maximumTotalNonBlankCells,
+  }) : maximumVisitedSpanByTape = List<int>.unmodifiable(
+         maximumVisitedSpanByTape,
+       ),
+       maximumNonBlankCellsByTape = List<int>.unmodifiable(
+         maximumNonBlankCellsByTape,
+       );
+
+  /// Per-tape logical span between minimum and maximum observed head positions.
+  final List<int> maximumVisitedSpanByTape;
+
+  /// Per-tape maximum simultaneous nonblank cells in one configuration.
+  final List<int> maximumNonBlankCellsByTape;
+
+  /// Maximum sum of nonblank cells across all tapes in one configuration.
+  final int maximumTotalNonBlankCells;
 }
 
 /// Result of executing one TM/input pair under explicit resource bounds.
@@ -198,7 +295,14 @@ class TMExecutionAnalysis {
     List<SimulationStep> trace = const [],
     this.traceMetrics,
     this.spaceMetrics,
-  }) : trace = List.unmodifiable(trace);
+    List<TMMultiTapeTraceStep> multiTapeTrace = const [],
+    this.multiTapeMetrics,
+    this.acceptancePolicy = TMAcceptancePolicy.finalState,
+    TMAcceptanceReason? acceptanceReason,
+    this.structuredMessage,
+  }) : trace = List.unmodifiable(trace),
+       multiTapeTrace = List.unmodifiable(multiTapeTrace),
+       acceptanceReason = acceptanceReason ?? _defaultReason(outcome, limit);
 
   final String input;
   final TMExecutionOutcome outcome;
@@ -215,15 +319,36 @@ class TMExecutionAnalysis {
   final List<SimulationStep> trace;
   final TMTraceMetrics? traceMetrics;
   final TMExecutionSpaceMetrics? spaceMetrics;
+  final List<TMMultiTapeTraceStep> multiTapeTrace;
+  final TMMultiTapeMetrics? multiTapeMetrics;
+  final TMAcceptancePolicy acceptancePolicy;
+  final TMAcceptanceReason acceptanceReason;
+
+  /// Locale-neutral semantic payload for [message], when available.
+  final StructuredMessage? structuredMessage;
 
   bool get isExact => switch (outcome) {
-        TMExecutionOutcome.accepted ||
-        TMExecutionOutcome.haltedRejected ||
-        TMExecutionOutcome.provenCycle ||
-        TMExecutionOutcome.invalidMachine =>
-          true,
-        TMExecutionOutcome.boundedUnknown ||
-        TMExecutionOutcome.cancelled =>
-          false,
-      };
+    TMExecutionOutcome.accepted ||
+    TMExecutionOutcome.haltedRejected ||
+    TMExecutionOutcome.provenCycle ||
+    TMExecutionOutcome.invalidMachine => true,
+    TMExecutionOutcome.boundedUnknown || TMExecutionOutcome.cancelled => false,
+  };
 }
+
+TMAcceptanceReason _defaultReason(
+  TMExecutionOutcome outcome,
+  TMExecutionLimit? limit,
+) => switch (outcome) {
+  TMExecutionOutcome.accepted => TMAcceptanceReason.enteredFinalState,
+  TMExecutionOutcome.haltedRejected =>
+    TMAcceptanceReason.reachableConfigurationsExhausted,
+  TMExecutionOutcome.provenCycle => TMAcceptanceReason.deterministicCycle,
+  TMExecutionOutcome.boundedUnknown => switch (limit) {
+    TMExecutionLimit.timeout => TMAcceptanceReason.timeout,
+    TMExecutionLimit.configurations => TMAcceptanceReason.configurationLimit,
+    TMExecutionLimit.steps || null => TMAcceptanceReason.stepLimit,
+  },
+  TMExecutionOutcome.cancelled => TMAcceptanceReason.cancelled,
+  TMExecutionOutcome.invalidMachine => TMAcceptanceReason.invalidMachine,
+};

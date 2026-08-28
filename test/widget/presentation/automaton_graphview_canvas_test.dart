@@ -18,12 +18,16 @@ import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphview/graphview_turing_lab.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/annotations/annotations.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
+import 'package:turing_lab/core/graph_layout/graph_layout.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
@@ -37,8 +41,11 @@ import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_util
 import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/document_annotations_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_canvas_document_actions.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
+import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 
 class _RecordingAutomatonStateNotifier extends AutomatonStateNotifier {
   _RecordingAutomatonStateNotifier() : super();
@@ -241,6 +248,338 @@ void main() {
     });
 
     testWidgets(
+      'exposes an accessible fragment-import action on editable canvases',
+      (tester) async {
+        final automaton = _singleStateAutomaton('fragment-destination');
+        provider.updateAutomaton(automaton);
+        controller.synchronize(automaton);
+        final documentActions = AutomatonCanvasDocumentActionsController();
+        final semantics = tester.ensureSemantics();
+        try {
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                home: Scaffold(
+                  body: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AutomatonGraphViewCanvas(
+                          automaton: automaton,
+                          canvasKey: GlobalKey(),
+                          controller: controller,
+                          toolController: toolController,
+                          documentActionsController: documentActions,
+                          annotationConfig:
+                              const AutomatonCanvasAnnotationConfig(
+                                systemKey: DefaultFormalSystemIds.fsa,
+                                documentId: 'fragment-destination',
+                                documentRevision: '1',
+                              ),
+                        ),
+                      ),
+                      GraphViewCanvasToolbar(
+                        controller: controller,
+                        onAddState: () {},
+                        onImportAutomaton: documentActions.importAutomaton,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(
+            find.byKey(const ValueKey('automaton-fragment-import-button')),
+            findsNothing,
+          );
+          await tester.tap(
+            find.byKey(const ValueKey('canvas-toolbar-overflow')),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics &&
+                  widget.properties.label ==
+                      'Canvas action: Import automaton' &&
+                  widget.properties.hint ==
+                      'Previews and combines a compatible automaton with this document.' &&
+                  widget.properties.button == true,
+            ),
+            findsOneWidget,
+          );
+        } finally {
+          semantics.dispose();
+        }
+      },
+    );
+
+    testWidgets('previews, cancels, applies, and undoes a deterministic layout', (
+      tester,
+    ) async {
+      final automaton = _singleStateAutomaton('layout-destination');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+      final documentActions = AutomatonCanvasDocumentActionsController();
+      final originalPosition = controller.nodePosition('A');
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: AutomatonGraphViewCanvas(
+                        automaton: automaton,
+                        canvasKey: GlobalKey(),
+                        controller: controller,
+                        toolController: toolController,
+                        documentActionsController: documentActions,
+                      ),
+                    ),
+                    GraphViewCanvasToolbar(
+                      controller: controller,
+                      onAddState: () {},
+                      onArrangeAutomaton: documentActions.arrange,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('automaton-layout-button')),
+          findsNothing,
+        );
+        await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
+        await tester.pumpAndSettle();
+        expect(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.properties.label ==
+                    'Canvas action: Arrange automaton states' &&
+                widget.properties.hint ==
+                    'Previews a layout before applying it to this automaton.' &&
+                widget.properties.button == true,
+          ),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text('Arrange automaton states'));
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('automaton-layout-dialog')),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.byKey(const ValueKey('layout-apply-button')),
+              )
+              .onPressed,
+          isNotNull,
+        );
+        expect(controller.nodePosition('A'), isNot(originalPosition));
+
+        await tester.tap(find.byKey(const ValueKey('layout-cancel-button')));
+        await tester.pumpAndSettle();
+        expect(controller.nodePosition('A'), originalPosition);
+        expect(controller.canUndo, isFalse);
+
+        documentActions.arrange();
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('layout-apply-button')));
+        await tester.pumpAndSettle();
+
+        final arrangedPosition =
+            provider.state.currentAutomaton!.states.single.position;
+        expect(arrangedPosition, isNot(Vector2(40, 40)));
+        expect(controller.canUndo, isTrue);
+
+        documentActions.arrange();
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump();
+        tester
+            .widget<DropdownButtonFormField<GraphLayoutAlgorithmId>>(
+              find.byKey(const ValueKey('layout-algorithm-field')),
+            )
+            .onChanged!(GraphLayoutAlgorithmId.restore);
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('layout-apply-button')));
+        await tester.pumpAndSettle();
+
+        expect(
+          provider.state.currentAutomaton!.states.single.position,
+          Vector2(40, 40),
+        );
+        expect(controller.undo(), isTrue);
+        expect(
+          provider.state.currentAutomaton!.states.single.position,
+          arrangedPosition,
+        );
+        expect(controller.undo(), isTrue);
+        expect(
+          provider.state.currentAutomaton!.states.single.position,
+          Vector2(40, 40),
+        );
+        expect(controller.canUndo, isFalse);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('affine layout transforms free notes in the same undo entry', (
+      tester,
+    ) async {
+      final automaton = _singleStateAutomaton('layout-annotations');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+      final documentActions = AutomatonCanvasDocumentActionsController();
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final annotations = container.read(documentAnnotationsProvider.notifier);
+      annotations.add(
+        key: DefaultFormalSystemIds.fsa,
+        documentId: automaton.id,
+        documentRevision: '1',
+        x: 10,
+        y: 20,
+        text: 'Free note',
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: automaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+                documentActionsController: documentActions,
+                annotationConfig: AutomatonCanvasAnnotationConfig(
+                  systemKey: DefaultFormalSystemIds.fsa,
+                  documentId: automaton.id,
+                  documentRevision: '1',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      documentActions.arrange();
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+      tester
+          .widget<DropdownButtonFormField<GraphLayoutAlgorithmId>>(
+            find.byKey(const ValueKey('layout-algorithm-field')),
+          )
+          .onChanged!(GraphLayoutAlgorithmId.reflectVertical);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+
+      final transformNotes = find.byKey(
+        const ValueKey('layout-transform-free-notes'),
+      );
+      expect(transformNotes, findsOneWidget);
+      await tester.ensureVisible(transformNotes);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(transformNotes);
+      await tester.tap(find.byKey(const ValueKey('layout-apply-button')));
+      await tester.pumpAndSettle();
+
+      DocumentAnnotation note() => annotationsForDocument(
+        container.read(documentAnnotationsProvider),
+        DefaultFormalSystemIds.fsa,
+        automaton.id,
+      )!.annotations.single;
+
+      expect(note().x, closeTo(70, 0.0001));
+      expect(note().y, closeTo(20, 0.0001));
+      expect(controller.undo(), isTrue);
+      expect(note().x, closeTo(10, 0.0001));
+      expect(note().y, closeTo(20, 0.0001));
+      expect(controller.redo(), isTrue);
+      expect(note().x, closeTo(70, 0.0001));
+    });
+
+    testWidgets('layout dialog scrolls on a narrow large-text viewport', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(320, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final automaton = _singleStateAutomaton('layout-narrow');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+      final documentActions = AutomatonCanvasDocumentActionsController();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: automaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+                documentActionsController: documentActions,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      documentActions.arrange();
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byKey(const ValueKey('layout-cancel-button')));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
       'delegates taps on empty background to controller when add-state tool is active',
       (tester) async {
         final automaton = FSA(
@@ -377,7 +716,7 @@ void main() {
       expect(
         controller.graphController.transformationController!.value
             .getMaxScaleOnAxis(),
-        closeTo(1.75, 0.0001),
+        closeTo(1.0, 0.0001),
       );
 
       final stateCenter = tester.getCenter(find.text('q0'));
@@ -435,42 +774,40 @@ void main() {
       }
     });
 
-    testWidgets(
-      'assistive activation opens the localized state editor',
-      (tester) async {
-        final semantics = tester.ensureSemantics();
-        try {
-          toolController.setActiveTool(AutomatonCanvasTool.selection);
-          final automaton = _singleStateAutomaton(
-            'assistive-state-editor',
-          );
-          await _pumpSingleStateCanvas(
-            tester,
-            automaton: automaton,
-            provider: provider,
-            controller: controller,
-            toolController: toolController,
-            locale: const Locale('pt'),
-          );
+    testWidgets('assistive activation opens the localized state editor', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        toolController.setActiveTool(AutomatonCanvasTool.selection);
+        final automaton = _singleStateAutomaton('assistive-state-editor');
+        await _pumpSingleStateCanvas(
+          tester,
+          automaton: automaton,
+          provider: provider,
+          controller: controller,
+          toolController: toolController,
+          locale: const Locale('pt'),
+        );
 
-          const stateLabel = 'Estado A. Estado inicial. 0 transições de saída. '
-              '0 transições de entrada.';
-          expect(find.bySemanticsLabel(stateLabel), findsOneWidget);
+        const stateLabel =
+            'Estado A. Estado inicial. 0 transições de saída. '
+            '0 transições de entrada.';
+        expect(find.bySemanticsLabel(stateLabel), findsOneWidget);
 
-          tester.semantics.tap(find.semantics.byLabel(stateLabel));
-          await tester.pumpAndSettle();
+        tester.semantics.tap(find.semantics.byLabel(stateLabel));
+        await tester.pumpAndSettle();
 
-          expect(find.text('Rótulo do estado'), findsOneWidget);
-          expect(find.text('Estado inicial'), findsOneWidget);
-          expect(find.text('Estado de aceitação'), findsOneWidget);
-          expect(find.text('Estado final'), findsNothing);
-          expect(find.text('Salvar alterações'), findsOneWidget);
-          expect(find.text('Fechar'), findsOneWidget);
-        } finally {
-          semantics.dispose();
-        }
-      },
-    );
+        expect(find.text('Rótulo do estado'), findsOneWidget);
+        expect(find.text('Estado inicial'), findsOneWidget);
+        expect(find.text('Estado de aceitação'), findsOneWidget);
+        expect(find.text('Estado final'), findsNothing);
+        expect(find.text('Salvar alterações'), findsOneWidget);
+        expect(find.text('Fechar'), findsOneWidget);
+      } finally {
+        semantics.dispose();
+      }
+    });
 
     testWidgets('Delete removes the state selected by a single tap', (
       tester,
@@ -493,6 +830,75 @@ void main() {
       expect(provider.currentAutomaton?.states, isEmpty);
     });
 
+    testWidgets('deleting a state prompts for attached-note handling', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('attached-note-delete-state');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+      final annotations = DocumentAnnotationsNotifier()
+        ..add(
+          key: DefaultFormalSystemIds.fsa,
+          documentId: automaton.id,
+          documentRevision: '1',
+          x: 0,
+          y: 0,
+          text: 'State invariant',
+          attachment: const AnnotationAttachment(
+            type: AnnotationTargetType.state,
+            targetId: 'A',
+            offsetX: 300,
+          ),
+        );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            documentAnnotationsProvider.overrideWith((ref) => annotations),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: automaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+                annotationConfig: AutomatonCanvasAnnotationConfig(
+                  systemKey: DefaultFormalSystemIds.fsa,
+                  documentId: automaton.id,
+                  documentRevision: '1',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tapAt(tester.getCenter(find.text('A')));
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.delete);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Attached notes'), findsOneWidget);
+      expect(provider.currentAutomaton?.states, isNotEmpty);
+
+      await tester.tap(find.text('Detach notes'));
+      await tester.pumpAndSettle();
+
+      expect(provider.currentAutomaton?.states, isEmpty);
+      expect(
+        annotations
+            .state[DefaultFormalSystemIds.fsa]!
+            .annotations
+            .single
+            .attachment,
+        isNull,
+      );
+      expect(annotations.canUndo(DefaultFormalSystemIds.fsa), isTrue);
+    });
+
     testWidgets('long press opens state options with a delete action', (
       tester,
     ) async {
@@ -509,9 +915,7 @@ void main() {
       await tester.longPressAt(center);
       await tester.pumpAndSettle();
 
-      final delete = find.byKey(
-        const ValueKey('automaton-state-delete-A'),
-      );
+      final delete = find.byKey(const ValueKey('automaton-state-delete-A'));
       expect(delete, findsOneWidget);
       await tester.tap(delete);
       await tester.pumpAndSettle();
@@ -956,8 +1360,9 @@ void main() {
         controller.dispose();
 
         expect(
-          () => transformation.value = Matrix4.identity()
-            ..translateByDouble(1.0, 0.0, 0.0, 1.0),
+          () =>
+              transformation.value = Matrix4.identity()
+                ..translateByDouble(1.0, 0.0, 0.0, 1.0),
           throwsFlutterError,
         );
       },
@@ -968,7 +1373,7 @@ void main() {
       AutomatonCanvasTool.transition,
     ]) {
       testWidgets(
-        "ignores drag gestures when ${tool.toString().split('.').last} tool is active",
+        "keeps node drags and canvas pan live when ${tool.toString().split('.').last} tool is active",
         (tester) async {
           toolController.setActiveTool(tool);
           final state = automaton_state.State(
@@ -1018,18 +1423,21 @@ void main() {
             transformation!.value.storage,
           );
 
+          // Dragging a state moves it even while a placement tool is active.
           await tester.drag(find.text('A'), const Offset(32, 0));
           await tester.pump();
+          expect(controller.moveStateCallCount, equals(1));
+          expect(controller.lastMoveStateId, 'A');
 
+          // Dragging empty canvas pans the viewport instead of adding
+          // anything.
           await tester.drag(find.byKey(canvasKey), const Offset(48, -16));
           await tester.pump();
-
-          expect(controller.moveStateCallCount, equals(0));
-          expect(controller.lastMoveStateId, isNull);
           expect(
             List<double>.from(transformation.value.storage),
-            equals(initialMatrix),
+            isNot(equals(initialMatrix)),
           );
+          expect(controller.lastAddStateWorldOffset, isNull);
         },
       );
     }
@@ -1266,34 +1674,28 @@ void main() {
 
       expect(_nodeBackgroundColor(tester, 'A'), colors.tertiaryContainer);
 
-      controller.applyHighlight(
-        SimulationHighlight(stateIds: {'A'}),
-      );
+      controller.applyHighlight(SimulationHighlight(stateIds: {'A'}));
       await tester.pump();
 
       expect(_nodeBackgroundColor(tester, 'A'), colors.primaryContainer);
     });
 
-    testWidgets('warning and error state highlights use distinct canvas tones',
-        (
-      tester,
-    ) async {
-      final automaton = buildAutomaton({});
-      await pumpCanvas(tester, automaton);
-      final colors = Theme.of(tester.element(find.text('A'))).colorScheme;
+    testWidgets(
+      'warning and error state highlights use distinct canvas tones',
+      (tester) async {
+        final automaton = buildAutomaton({});
+        await pumpCanvas(tester, automaton);
+        final colors = Theme.of(tester.element(find.text('A'))).colorScheme;
 
-      controller.applyHighlight(
-        SimulationHighlight(warningStateIds: {'A'}),
-      );
-      await tester.pump();
-      expect(_nodeBackgroundColor(tester, 'A'), colors.tertiaryContainer);
+        controller.applyHighlight(SimulationHighlight(warningStateIds: {'A'}));
+        await tester.pump();
+        expect(_nodeBackgroundColor(tester, 'A'), colors.tertiaryContainer);
 
-      controller.applyHighlight(
-        SimulationHighlight(errorStateIds: {'A'}),
-      );
-      await tester.pump();
-      expect(_nodeBackgroundColor(tester, 'A'), colors.errorContainer);
-    });
+        controller.applyHighlight(SimulationHighlight(errorStateIds: {'A'}));
+        await tester.pump();
+        expect(_nodeBackgroundColor(tester, 'A'), colors.errorContainer);
+      },
+    );
 
     testWidgets('tapping a transition path opens its editor directly', (
       tester,
@@ -1325,12 +1727,70 @@ void main() {
       final field = tester.widget<TextField>(find.byType(TextField));
       expect(field.controller?.text, 'x');
       expect(
-        find.byKey(
-          const ValueKey('automaton-transition-choice-direct-edge'),
-        ),
+        find.byKey(const ValueKey('automaton-transition-choice-direct-edge')),
         findsNothing,
       );
     });
+
+    testWidgets('tapping a transition label opens its editor', (tester) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      const transitionId = 'label-edge';
+      final transition = FSATransition(
+        id: transitionId,
+        fromState: stateA,
+        toState: stateB,
+        label: 'x',
+        inputSymbols: const {'x'},
+      );
+      final automaton = buildAutomaton({transition});
+      final canvasKey = GlobalKey();
+      await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+      final geometry = _paintedGeometry(tester, transitionId);
+      final labelRect = geometry.labelRect;
+      expect(labelRect, isNotNull, reason: 'label geometry must be laid out');
+      final localPosition = _worldToViewport(controller, labelRect!.center);
+      final canvasBox =
+          canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+      await tester.tapAt(canvasBox.localToGlobal(localPosition));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller?.text, 'x');
+    });
+
+    testWidgets(
+      'long-pressing a transition label opens its editor in add-state mode',
+      (tester) async {
+        toolController.setActiveTool(AutomatonCanvasTool.addState);
+        const transitionId = 'label-edge-add-state';
+        final transition = FSATransition(
+          id: transitionId,
+          fromState: stateA,
+          toState: stateB,
+          label: 'x',
+          inputSymbols: const {'x'},
+        );
+        final automaton = buildAutomaton({transition});
+        final canvasKey = GlobalKey();
+        await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+        final geometry = _paintedGeometry(tester, transitionId);
+        final labelRect = geometry.labelRect;
+        expect(labelRect, isNotNull);
+        final localPosition = _worldToViewport(controller, labelRect!.center);
+        final canvasBox =
+            canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+        final nodeCountBefore = controller.nodes.length;
+        await tester.longPressAt(canvasBox.localToGlobal(localPosition));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
+        // The long press never placed a state.
+        expect(controller.nodes.length, nodeCountBefore);
+      },
+    );
 
     testWidgets('tapping a distant control point does not hit the curve', (
       tester,
@@ -1658,10 +2118,7 @@ void main() {
           edgeDuringDrag!,
         );
         expect(anchorDuringDrag, isNotNull);
-        expect(
-          (anchorDuringDrag! - anchorBefore!).distance,
-          greaterThan(8),
-        );
+        expect((anchorDuringDrag! - anchorBefore!).distance, greaterThan(8));
 
         await gesture.up();
         await tester.pumpAndSettle();

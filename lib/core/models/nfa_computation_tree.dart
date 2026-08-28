@@ -12,6 +12,8 @@
 
 import 'dart:collection';
 
+import '../algorithms/automaton_simulation_messages.dart';
+import '../messages/structured_message.dart';
 import 'nfa_path_node.dart';
 
 /// Represents the complete computation tree for an NFA simulation,
@@ -29,6 +31,9 @@ class NFAComputationTree {
   /// Optional error message if simulation failed
   final String errorMessage;
 
+  /// Locale-neutral outcome for a failed computation-tree run.
+  final StructuredMessage? structuredMessage;
+
   /// Total number of computation steps performed
   final int totalSteps;
 
@@ -37,6 +42,7 @@ class NFAComputationTree {
     required this.inputString,
     required this.accepted,
     this.errorMessage = '',
+    this.structuredMessage,
     required this.totalSteps,
   });
 
@@ -45,11 +51,13 @@ class NFAComputationTree {
     required NFAPathNode root,
     required String inputString,
     required int totalSteps,
+    StructuredMessage? structuredMessage,
   }) {
     return NFAComputationTree._(
       root: root,
       inputString: inputString,
       accepted: true,
+      structuredMessage: structuredMessage,
       totalSteps: totalSteps,
     );
   }
@@ -60,12 +68,14 @@ class NFAComputationTree {
     required String inputString,
     required int totalSteps,
     String errorMessage = 'No accepting path found',
+    StructuredMessage? structuredMessage,
   }) {
     return NFAComputationTree._(
       root: root,
       inputString: inputString,
       accepted: false,
       errorMessage: errorMessage,
+      structuredMessage: structuredMessage,
       totalSteps: totalSteps,
     );
   }
@@ -75,12 +85,16 @@ class NFAComputationTree {
     required NFAPathNode root,
     required String inputString,
     required int totalSteps,
+    StructuredMessage? structuredMessage,
   }) {
     return NFAComputationTree._(
       root: root,
       inputString: inputString,
       accepted: false,
       errorMessage: 'Simulation timed out after $totalSteps steps',
+      structuredMessage:
+          structuredMessage ??
+          AutomatonSimulationMessages.computationTreeTimeout(steps: totalSteps),
       totalSteps: totalSteps,
     );
   }
@@ -90,12 +104,18 @@ class NFAComputationTree {
     required NFAPathNode root,
     required String inputString,
     required int totalSteps,
+    StructuredMessage? structuredMessage,
   }) {
     return NFAComputationTree._(
       root: root,
       inputString: inputString,
       accepted: false,
       errorMessage: 'Infinite loop detected after $totalSteps steps',
+      structuredMessage:
+          structuredMessage ??
+          AutomatonSimulationMessages.computationTreeInfiniteLoop(
+            steps: totalSteps,
+          ),
       totalSteps: totalSteps,
     );
   }
@@ -106,6 +126,7 @@ class NFAComputationTree {
     String? inputString,
     bool? accepted,
     String? errorMessage,
+    StructuredMessage? structuredMessage,
     int? totalSteps,
   }) {
     return NFAComputationTree._(
@@ -113,6 +134,7 @@ class NFAComputationTree {
       inputString: inputString ?? this.inputString,
       accepted: accepted ?? this.accepted,
       errorMessage: errorMessage ?? this.errorMessage,
+      structuredMessage: structuredMessage ?? this.structuredMessage,
       totalSteps: totalSteps ?? this.totalSteps,
     );
   }
@@ -124,6 +146,8 @@ class NFAComputationTree {
       'inputString': inputString,
       'accepted': accepted,
       'errorMessage': errorMessage,
+      if (structuredMessage != null)
+        'structuredMessage': structuredMessage!.toJson(),
       'totalSteps': totalSteps,
     };
   }
@@ -135,6 +159,11 @@ class NFAComputationTree {
       inputString: json['inputString'] as String,
       accepted: json['accepted'] as bool,
       errorMessage: json['errorMessage'] as String? ?? '',
+      structuredMessage: json['structuredMessage'] is Map
+          ? StructuredMessage.fromJson(
+              Map<String, Object?>.from(json['structuredMessage'] as Map),
+            )
+          : null,
       totalSteps: json['totalSteps'] as int,
     );
   }
@@ -147,12 +176,20 @@ class NFAComputationTree {
         other.inputString == inputString &&
         other.accepted == accepted &&
         other.errorMessage == errorMessage &&
+        other.structuredMessage == structuredMessage &&
         other.totalSteps == totalSteps;
   }
 
   @override
   int get hashCode {
-    return Object.hash(root, inputString, accepted, errorMessage, totalSteps);
+    return Object.hash(
+      root,
+      inputString,
+      accepted,
+      errorMessage,
+      structuredMessage,
+      totalSteps,
+    );
   }
 
   @override
@@ -199,8 +236,10 @@ class NFAComputationTree {
   bool get isFailed => !accepted || errorMessage.isNotEmpty;
 
   /// Checks if the simulation timed out
-  bool get isTimeout =>
-      errorMessage.contains('timeout') || errorMessage.contains('Timeout');
+  bool get isTimeout {
+    final message = errorMessage.toLowerCase();
+    return message.contains('timeout') || message.contains('timed out');
+  }
 
   /// Checks if the simulation detected an infinite loop
   bool get isInfiniteLoop =>

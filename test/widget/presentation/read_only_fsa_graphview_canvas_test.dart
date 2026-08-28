@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -116,6 +117,20 @@ void main() {
       final data = node.getSemanticsData();
       expect(data.hasAction(SemanticsAction.tap), isFalse);
       expect(data.hint, 'Read-only state.');
+
+      final viewport = tester.widget<Semantics>(
+        find.byKey(
+          const ValueKey('automaton-canvas-viewport-semantics'),
+        ),
+      );
+      expect(
+        viewport.properties.label,
+        'Automaton canvas viewport. 1 state, 0 transitions.',
+      );
+      expect(
+        viewport.properties.hint,
+        'This canvas is read-only. Pan or zoom to inspect the automaton.',
+      );
     } finally {
       semantics.dispose();
     }
@@ -171,6 +186,9 @@ void main() {
             canvasKey: GlobalKey(),
             controller: controller,
             customization: customization,
+            fragmentImportSystemKey: DefaultFormalSystemIds.fsa,
+            fragmentImportDocumentId: 'context-gate',
+            fragmentImportDocumentRevision: '1',
           ),
         ),
       ),
@@ -179,6 +197,10 @@ void main() {
 
     await _doubleTapNode(tester, find.text('A'));
     expect(find.byType(TextField), findsNothing);
+    expect(
+      find.byKey(const ValueKey('automaton-fragment-import-button')),
+      findsNothing,
+    );
   });
 
   testWidgets('tool-selection gate blocks edge editing', (tester) async {

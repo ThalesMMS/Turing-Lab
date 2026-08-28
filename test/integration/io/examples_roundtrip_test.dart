@@ -175,7 +175,7 @@ void main() {
         expect(counts[ExampleCategory.dfa], greaterThan(0));
         expect(counts.containsKey(ExampleCategory.cfg), isTrue);
         expect(counts[ExampleCategory.nfa], greaterThanOrEqualTo(0));
-        expect(counts[ExampleCategory.tm], equals(5));
+        expect(counts[ExampleCategory.tm], equals(9));
       });
 
       test('Search functionality works correctly', () {
@@ -218,7 +218,18 @@ void main() {
       test('Example category enum works correctly', () {
         expect(
           ExampleCategory.values.map((value) => value.name),
-          ['dfa', 'nfa', 'cfg', 'pda', 'tm', 'regex'],
+          [
+            'dfa',
+            'nfa',
+            'cfg',
+            'pda',
+            'tm',
+            'regex',
+            'mealy',
+            'moore',
+            'unrestrictedGrammar',
+            'lSystem',
+          ],
         );
       });
 
@@ -230,6 +241,8 @@ void main() {
         expect(categories, contains(ExampleCategory.pda));
         expect(categories, contains(ExampleCategory.tm));
         expect(categories, contains(ExampleCategory.regex));
+        expect(categories, contains(ExampleCategory.mealy));
+        expect(categories, contains(ExampleCategory.moore));
       });
 
       test('Data source provides category counts', () {
@@ -267,7 +280,7 @@ void main() {
         final dataSource = ExamplesAssetDataSource();
 
         final categories = dataSource.getAvailableCategories();
-        expect(categories.length, equals(6));
+        expect(categories.length, equals(10));
 
         final counts = dataSource.getExamplesCountByCategory();
         expect(counts.isNotEmpty, isTrue);
@@ -282,7 +295,7 @@ void main() {
 
         expect(result.isSuccess, isTrue);
         expect(result.data, isNotNull);
-        expect(result.data!, hasLength(5));
+        expect(result.data!, hasLength(10));
         expect(
           result.data!.map((example) => example.name),
           containsAll(<String>[
@@ -291,6 +304,11 @@ void main() {
             'MT - Cópia de string',
             'MT - Incremento binário',
             'MT - Verificador de palíndromo',
+            'MT multifitas - Cópia em duas fitas',
+            'MT multifitas - Comparação',
+            'MT multifitas - Palíndromo',
+            'MT multifitas - Fita de trabalho',
+            'TM - Reusable building blocks',
           ]),
         );
       });
@@ -321,7 +339,7 @@ void main() {
         expect(fsaResult.data, hasLength(5));
         expect(cfgResult.data, hasLength(5));
         expect(pdaResult.data, hasLength(5));
-        expect(tmResult.data, hasLength(5));
+        expect(tmResult.data, hasLength(10));
         expect(regexResult.data, hasLength(5));
 
         expect(

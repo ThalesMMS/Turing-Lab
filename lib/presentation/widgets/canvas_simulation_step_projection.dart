@@ -1,5 +1,6 @@
 import '../../core/models/simulation_step.dart';
 import '../../core/models/step_explanation.dart';
+import '../../core/transducers/transducers.dart';
 import 'canvas_simulation_playback_bar.dart';
 import 'pda/stack_drawer.dart';
 import 'tm/tape_drawer.dart';
@@ -28,8 +29,8 @@ CanvasSimulationWord _wordFromRemaining(String original, String remaining) {
         i < consumed
             ? CanvasWordSymbolStatus.consumed
             : i == consumed
-                ? CanvasWordSymbolStatus.current
-                : CanvasWordSymbolStatus.pending,
+            ? CanvasWordSymbolStatus.current
+            : CanvasWordSymbolStatus.pending,
       ),
   ];
 }
@@ -52,21 +53,44 @@ List<CanvasSimulationWord> projectTapeWordSteps(List<SimulationStep> steps) {
             i == step.headPosition
                 ? CanvasWordSymbolStatus.current
                 : i < step.tapeContents.length &&
-                        step.tapeContents[i] != original[i]
-                    ? CanvasWordSymbolStatus.consumed
-                    : CanvasWordSymbolStatus.pending,
+                      step.tapeContents[i] != original[i]
+                ? CanvasWordSymbolStatus.consumed
+                : CanvasWordSymbolStatus.pending,
+          ),
+      ],
+  ];
+}
+
+/// Annotates the tokenized input word for every step of a transducer
+/// execution trace: each step consumes exactly one token, so tokens before
+/// the step are struck out and the token consumed by the step is
+/// highlighted.
+List<CanvasSimulationWord> projectTransducerInputSteps(
+  List<TransducerExecutionStep> trace,
+) {
+  if (trace.isEmpty) {
+    return const <CanvasSimulationWord>[];
+  }
+  final tokens = trace.first.remainingInput.source.values;
+  return [
+    for (final step in trace)
+      [
+        for (var i = 0; i < tokens.length; i++)
+          CanvasSimulationWordSymbol(
+            tokens[i],
+            i < step.index
+                ? CanvasWordSymbolStatus.consumed
+                : i == step.index
+                ? CanvasWordSymbolStatus.current
+                : CanvasWordSymbolStatus.pending,
           ),
       ],
   ];
 }
 
 StackState projectPdaStackStep(SimulationStep step) {
-  final stackContents = step.stackContents;
-  final symbols =
-      stackContents.isEmpty ? <String>[] : stackContents.split('').toList();
-
   return StackState(
-    symbols: symbols,
+    symbols: step.effectiveStackTokens,
     lastOperation: step.usedTransition ?? 'step ${step.stepNumber}',
     operationType: _pdaStackOperationType(step.usedTransition),
   );

@@ -271,12 +271,16 @@ void main() {
     expect(tape.headPosition, 0);
     expect(tape.blankSymbol, '_');
 
+    await tester.ensureVisible(find.byTooltip('Next Step'));
+    await tester.pump();
     await tester.tap(find.byTooltip('Next Step'));
     await _pumpUntilWorkspaceTape(tester, const ['X', 'b']);
     tape = _workspaceTapePanel(tester).tapeState;
     expect(tape.cells, ['X', 'b']);
     expect(tape.headPosition, 1);
 
+    await tester.ensureVisible(find.byTooltip('Previous Step'));
+    await tester.pump();
     await tester.tap(find.byTooltip('Previous Step'));
     await _pumpUntilWorkspaceTape(tester, const ['a', 'b']);
     tape = _workspaceTapePanel(tester).tapeState;

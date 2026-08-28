@@ -211,7 +211,7 @@ void main() {
       expect(transition.isLambdaInput, isTrue);
       expect(transition.isLambdaPop, isTrue);
       expect(transition.isLambdaPush, isTrue);
-      expect(transition.label, 'λ, λ/λ');
+      expect(transition.label, 'ε, ε/ε');
     });
   });
 }

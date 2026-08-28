@@ -17,6 +17,7 @@ import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
 import '../../core/models/production.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/result.dart';
 
 /// Types of conversions that can be triggered from the grammar workspace.
@@ -29,17 +30,22 @@ enum GrammarConversionKind {
 
 /// State for managing grammar editing and conversions.
 class GrammarState {
+  final String documentId;
+  final int documentGeneration;
   final String name;
   final String startSymbol;
   final List<Production> productions;
   final GrammarType type;
   final bool isConverting;
   final String? error;
+  final StructuredMessage? structuredError;
   final int nextProductionId;
   final GrammarConversionKind? activeConversion;
   final Result<PDA>? lastPdaResult;
 
   const GrammarState({
+    required this.documentId,
+    required this.documentGeneration,
     required this.name,
     required this.startSymbol,
     required this.productions,
@@ -49,10 +55,13 @@ class GrammarState {
     this.activeConversion,
     this.lastPdaResult,
     this.error,
+    this.structuredError,
   });
 
   factory GrammarState.initial() {
     return const GrammarState(
+      documentId: 'grammar_default',
+      documentGeneration: 0,
       name: 'My Grammar',
       startSymbol: 'S',
       productions: [],
@@ -65,23 +74,31 @@ class GrammarState {
   }
 
   GrammarState copyWith({
+    String? documentId,
+    int? documentGeneration,
     String? name,
     String? startSymbol,
     List<Production>? productions,
     GrammarType? type,
     bool? isConverting,
     Object? error = _noErrorUpdate,
+    Object? structuredError = _noStructuredErrorUpdate,
     int? nextProductionId,
     Object? activeConversion = _noActiveConversionUpdate,
     Object? lastPdaResult = _noPdaResultUpdate,
   }) {
     return GrammarState(
+      documentId: documentId ?? this.documentId,
+      documentGeneration: documentGeneration ?? this.documentGeneration,
       name: name ?? this.name,
       startSymbol: startSymbol ?? this.startSymbol,
       productions: productions ?? this.productions,
       type: type ?? this.type,
       isConverting: isConverting ?? this.isConverting,
       error: error == _noErrorUpdate ? this.error : error as String?,
+      structuredError: structuredError == _noStructuredErrorUpdate
+          ? (error == _noErrorUpdate ? this.structuredError : null)
+          : structuredError as StructuredMessage?,
       nextProductionId: nextProductionId ?? this.nextProductionId,
       activeConversion: activeConversion == _noActiveConversionUpdate
           ? this.activeConversion
@@ -94,6 +111,7 @@ class GrammarState {
 }
 
 const _noErrorUpdate = Object();
+const _noStructuredErrorUpdate = Object();
 const _noActiveConversionUpdate = Object();
 const _noPdaResultUpdate = Object();
 
@@ -200,6 +218,8 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     GrammarType? type,
   }) {
     state = GrammarState(
+      documentId: 'grammar_${DateTime.now().microsecondsSinceEpoch}',
+      documentGeneration: state.documentGeneration + 1,
       name: name ?? 'My Grammar',
       startSymbol: startSymbol ?? 'S',
       productions: const [],
@@ -244,7 +264,7 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     terminals.removeWhere(_isLambda);
 
     return Grammar(
-      id: 'grammar_${now.microsecondsSinceEpoch}',
+      id: state.documentId,
       name: state.name,
       terminals: terminals,
       nonterminals: nonTerminals,
@@ -256,8 +276,15 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     );
   }
 
+  /// Restores an exact editor snapshot after a failed document replacement.
+  void restoreDocumentCheckpoint(GrammarState checkpoint) {
+    state = checkpoint;
+  }
+
   void applyGrammar(Grammar grammar) {
     state = state.copyWith(
+      documentId: grammar.id,
+      documentGeneration: state.documentGeneration + 1,
       name: grammar.name,
       startSymbol: grammar.startSymbol,
       type: grammar.type,
@@ -276,9 +303,11 @@ class GrammarProvider extends StateNotifier<GrammarState> {
   }
 
   int _nextProductionIdFor(Grammar grammar) {
-    return grammar.productions.map((p) {
-          return _productionIdNumber(p.id);
-        }).fold<int>(0, (prev, value) => value > prev ? value : prev) +
+    return grammar.productions
+            .map((p) {
+              return _productionIdNumber(p.id);
+            })
+            .fold<int>(0, (prev, value) => value > prev ? value : prev) +
         1;
   }
 
@@ -292,7 +321,11 @@ class GrammarProvider extends StateNotifier<GrammarState> {
       final result = ResultFactory.failure<FSA>(
         'Add at least one production before converting.',
       );
-      state = state.copyWith(error: result.error, lastPdaResult: null);
+      state = state.copyWith(
+        error: result.error,
+        structuredError: result.structuredError,
+        lastPdaResult: null,
+      );
       return result;
     }
 
@@ -300,6 +333,7 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     state = state.copyWith(
       isConverting: true,
       error: null,
+      structuredError: null,
       activeConversion: GrammarConversionKind.grammarToFsa,
       lastPdaResult: null,
     );
@@ -310,12 +344,14 @@ class GrammarProvider extends StateNotifier<GrammarState> {
       state = state.copyWith(
         isConverting: false,
         error: null,
+        structuredError: null,
         activeConversion: null,
       );
     } else {
       state = state.copyWith(
         isConverting: false,
         error: result.error,
+        structuredError: result.structuredError,
         activeConversion: null,
       );
     }

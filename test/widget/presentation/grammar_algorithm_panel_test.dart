@@ -2,20 +2,26 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/injection/data_providers.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
+import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
 
 class _MockGrammarNotifier extends GrammarProvider {
   _MockGrammarNotifier({
@@ -69,7 +75,8 @@ class _MockGrammarNotifier extends GrammarProvider {
       isAccepting: false,
     );
 
-    final result = convertToFsaResult ??
+    final result =
+        convertToFsaResult ??
         Success(
           FSA(
             id: 'test-fsa-${DateTime.now().millisecondsSinceEpoch}',
@@ -107,7 +114,8 @@ class _MockGrammarNotifier extends GrammarProvider {
       isAccepting: false,
     );
 
-    final result = convertToPdaResult ??
+    final result =
+        convertToPdaResult ??
         Success(
           PDA(
             id: 'test-pda-${DateTime.now().millisecondsSinceEpoch}',
@@ -151,7 +159,8 @@ class _MockGrammarNotifier extends GrammarProvider {
       isAccepting: false,
     );
 
-    final result = convertToPdaStandardResult ??
+    final result =
+        convertToPdaStandardResult ??
         Success(
           PDA(
             id: 'test-pda-std-${DateTime.now().millisecondsSinceEpoch}',
@@ -195,7 +204,8 @@ class _MockGrammarNotifier extends GrammarProvider {
       isAccepting: false,
     );
 
-    final result = convertToPdaGreibachResult ??
+    final result =
+        convertToPdaGreibachResult ??
         Success(
           PDA(
             id: 'test-pda-greibach-${DateTime.now().millisecondsSinceEpoch}',
@@ -314,6 +324,7 @@ Future<void> _pumpGrammarAlgorithmPanel(
   Result<PDA>? convertToPdaGreibachResult,
   _MockHomeNavigationNotifier? navigationNotifier,
   bool hasAnimatingIndicator = false,
+  Locale locale = const Locale('en'),
 }) async {
   final mockGrammarNotifier = _MockGrammarNotifier(
     initialState: grammarState,
@@ -327,10 +338,13 @@ Future<void> _pumpGrammarAlgorithmPanel(
   final mockAutomatonStateNotifier = _MockAutomatonStateNotifier();
   final mockPdaNotifier = _MockPdaEditorNotifier();
   final mockNavNotifier = navigationNotifier ?? _MockHomeNavigationNotifier();
+  SharedPreferences.setMockInitialValues({});
+  final preferences = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
         grammarProvider.overrideWith((ref) => mockGrammarNotifier),
         automatonStateProvider.overrideWith(
           (ref) => mockAutomatonStateNotifier,
@@ -338,8 +352,11 @@ Future<void> _pumpGrammarAlgorithmPanel(
         pdaEditorProvider.overrideWith((ref) => mockPdaNotifier),
         homeNavigationProvider.overrideWith((ref) => mockNavNotifier),
       ],
-      child: const MaterialApp(
-        home: Scaffold(
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(
           body: SingleChildScrollView(
             child: GrammarAlgorithmPanel(useExpanded: false),
           ),
@@ -361,6 +378,59 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('GrammarAlgorithmPanel', () {
+    testWidgets('hosts generic Grammar interoperability operations', (
+      tester,
+    ) async {
+      await _pumpGrammarAlgorithmPanel(tester);
+
+      final panel = tester.widget<FileOperationsPanel>(
+        find.byType(FileOperationsPanel),
+      );
+      expect(panel.interoperability?.systemKey, DefaultFormalSystemIds.grammar);
+      expect(panel.interoperability?.currentDocument?.document, isA<Grammar>());
+      expect(
+        find.byKey(const ValueKey<String>('interoperability_import_document')),
+        findsOneWidget,
+      );
+      expect(find.text('Load JFLAP'), findsNothing);
+    });
+
+    testWidgets('localizes classification details in Portuguese', (
+      tester,
+    ) async {
+      final grammarState = GrammarState.initial().copyWith(
+        type: GrammarType.contextFree,
+        productions: const [
+          Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+        ],
+      );
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: grammarState,
+        locale: const Locale('pt', 'BR'),
+      );
+
+      await tester.ensureVisible(find.text('Classificar gramática'));
+      await tester.tap(find.text('Classificar gramática'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('Orientação regular: compatível com ambas'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Formas normais: CNF estrita'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Evidências de produção:'), findsOneWidget);
+      expect(
+        find.textContaining('todos os predicados testados foram satisfeitos'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Regular orientation:'), findsNothing);
+      expect(find.textContaining('Production evidence:'), findsNothing);
+    });
+
     testWidgets('renders header with title and icon', (tester) async {
       await _pumpGrammarAlgorithmPanel(tester);
 
@@ -368,20 +438,110 @@ void main() {
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
 
+    testWidgets('opens the variable dependency graph from the CFG flow', (
+      tester,
+    ) async {
+      const productions = [
+        Production(id: 'p0', order: 0, leftSide: ['S'], rightSide: ['A']),
+        Production(id: 'p1', order: 1, leftSide: ['A'], rightSide: ['a']),
+      ];
+      final grammar = Grammar(
+        id: 'dependency-widget',
+        name: 'Dependency grammar',
+        terminals: const {'a'},
+        nonterminals: const {'S', 'A'},
+        startSymbol: 'S',
+        productions: productions.toSet(),
+        type: GrammarType.contextFree,
+        created: DateTime(2026),
+        modified: DateTime(2026),
+      );
+      final grammarState = GrammarState.initial().copyWith(
+        name: grammar.name,
+        startSymbol: grammar.startSymbol,
+        productions: productions,
+        type: grammar.type,
+      );
+      final openGraph = find.byKey(
+        const ValueKey('open-variable-dependency-graph'),
+      );
+
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: grammarState,
+        grammarOverride: grammar,
+      );
+      await tester.ensureVisible(openGraph);
+      await tester.tap(openGraph);
+      for (var attempt = 0; attempt < 60; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 3)),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
+        if (find.byKey(const ValueKey('vdg-viewport')).evaluate().isNotEmpty) {
+          break;
+        }
+      }
+
+      expect(find.byKey(const ValueKey('vdg-viewport')), findsOneWidget);
+      expect(find.text('Direct occurrence'), findsOneWidget);
+      expect(find.byKey(const ValueKey('vdg-invalidated')), findsNothing);
+    });
+
     testWidgets('renders all conversion buttons', (tester) async {
       await _pumpGrammarAlgorithmPanel(tester);
 
       expect(find.text('Conversions'), findsOneWidget);
       expect(find.text('Convert Right-Linear Grammar to FSA'), findsOneWidget);
+      expect(find.text('Practice Regular Grammar to FA'), findsOneWidget);
       expect(find.text('Convert Grammar to PDA (General)'), findsOneWidget);
       expect(find.text('Convert Grammar to PDA (Standard)'), findsOneWidget);
       expect(find.text('Convert Grammar to PDA (Greibach)'), findsOneWidget);
+      expect(find.text('CFG to PDA (LL) construction'), findsOneWidget);
+      expect(find.text('CFG to PDA (LR) construction'), findsOneWidget);
+    });
+
+    testWidgets('opens the manual regular grammar construction workspace', (
+      tester,
+    ) async {
+      final grammar = Grammar(
+        id: 'manual-grammar',
+        name: 'Manual grammar',
+        terminals: const {'a'},
+        nonterminals: const {'S'},
+        startSymbol: 'S',
+        productions: {
+          const Production(id: 'p0', leftSide: ['S'], rightSide: ['a', 'S']),
+          const Production(id: 'p1', leftSide: ['S'], rightSide: []),
+        },
+        type: GrammarType.regular,
+        created: DateTime(2026),
+        modified: DateTime(2026),
+      );
+      await _pumpGrammarAlgorithmPanel(tester, grammarOverride: grammar);
+
+      final action = find.text('Practice Regular Grammar to FA');
+      await tester.ensureVisible(action);
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Manual Regular Grammar to FA construction'),
+        findsOneWidget,
+      );
+      expect(find.text('Learner construction'), findsOneWidget);
+      expect(find.byType(FaGrammarRequirementEditor), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('renders all algorithm buttons', (tester) async {
       await _pumpGrammarAlgorithmPanel(tester);
 
-      expect(find.byType(AlgorithmButton), findsNWidgets(12));
+      expect(find.byType(AlgorithmButton), findsNWidgets(18));
+      expect(find.text('Classify grammar'), findsOneWidget);
+      expect(find.text('Variable dependency graph'), findsOneWidget);
       expect(find.text('Remove Left Recursion'), findsOneWidget);
       expect(find.text('Left Factor'), findsOneWidget);
       expect(find.text('Find First Sets'), findsOneWidget);
@@ -389,6 +549,51 @@ void main() {
       expect(find.text('Build Parse Table'), findsOneWidget);
       expect(find.text('Check Ambiguity'), findsOneWidget);
     });
+
+    testWidgets(
+      'reports inferred type and requires confirmation to update it',
+      (tester) async {
+        final grammarState = GrammarState.initial().copyWith(
+          type: GrammarType.contextFree,
+          productions: const [
+            Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+          ],
+        );
+        await _pumpGrammarAlgorithmPanel(tester, grammarState: grammarState);
+
+        await tester.ensureVisible(find.text('Classify grammar'));
+        await tester.tap(find.text('Classify grammar'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('Inferred type: regular'), findsOneWidget);
+        expect(
+          find.textContaining('Declared type: context-free'),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('copy-classification-report')),
+          findsOneWidget,
+        );
+        final update = find.byKey(
+          const ValueKey('update-declared-grammar-type'),
+        );
+        await tester.ensureVisible(update);
+        await tester.tap(update);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Update grammar metadata?'), findsOneWidget);
+        expect(
+          find.textContaining('The productions will not change.'),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Declared type: context-free'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('renders analysis results section', (tester) async {
       await _pumpGrammarAlgorithmPanel(tester);
@@ -659,11 +864,7 @@ void main() {
         tester,
         grammarState: GrammarState.initial().copyWith(
           productions: const [
-            Production(
-              id: 'p1',
-              leftSide: ['S'],
-              rightSide: ['a'],
-            ),
+            Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
           ],
         ),
         navigationNotifier: navNotifier,
@@ -706,11 +907,7 @@ void main() {
         tester,
         grammarState: GrammarState.initial().copyWith(
           productions: const [
-            Production(
-              id: 'p1',
-              leftSide: ['S'],
-              rightSide: ['a'],
-            ),
+            Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
           ],
         ),
         navigationNotifier: navNotifier,
@@ -738,6 +935,96 @@ void main() {
 
       expect(container.read(pdaEditorProvider).pda, same(loadedPda));
       expect(navNotifier.pdaCallCount, 0);
+    });
+
+    testWidgets('LL construction previews, opens, and undoes one transaction', (
+      tester,
+    ) async {
+      const productions = [
+        Production(
+          id: 'start',
+          leftSide: ['S'],
+          rightSide: ['identifier', 'Tail'],
+        ),
+        Production(
+          id: 'tail-more',
+          leftSide: ['Tail'],
+          rightSide: ['plus', 'identifier', 'Tail'],
+          order: 1,
+        ),
+        Production(
+          id: 'tail-empty',
+          leftSide: ['Tail'],
+          rightSide: [],
+          isLambda: true,
+          order: 2,
+        ),
+      ];
+      final grammar = Grammar(
+        id: 'll-construction-widget',
+        name: 'LL construction',
+        terminals: const {'identifier', 'plus'},
+        nonterminals: const {'S', 'Tail'},
+        startSymbol: 'S',
+        productions: productions.toSet(),
+        type: GrammarType.contextFree,
+        created: DateTime(2026),
+        modified: DateTime(2026),
+      );
+      final navNotifier = _MockHomeNavigationNotifier()..goToGrammar();
+      await _pumpGrammarAlgorithmPanel(
+        tester,
+        grammarState: GrammarState.initial().copyWith(
+          name: grammar.name,
+          startSymbol: grammar.startSymbol,
+          productions: productions,
+          type: grammar.type,
+        ),
+        grammarOverride: grammar,
+        navigationNotifier: navNotifier,
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(GrammarAlgorithmPanel)),
+        listen: false,
+      );
+      final loaded = _loadedPda();
+      container.read(pdaEditorProvider.notifier).setPda(loaded);
+      final openConstruction = find.byKey(const ValueKey('open-cfg-to-pda-ll'));
+
+      await tester.ensureVisible(openConstruction);
+      await tester.tap(openConstruction);
+      for (var attempt = 0; attempt < 80; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 3)),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
+        if (find.byKey(const ValueKey('cfg-pda-open')).evaluate().isNotEmpty) {
+          break;
+        }
+      }
+      expect(find.byKey(const ValueKey('cfg-pda-open')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const ValueKey('cfg-pda-open')));
+      await tester.tap(find.byKey(const ValueKey('cfg-pda-open')));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.text(
+          'A pushdown automaton is already loaded. Do you want to replace it?',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Replace'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(pdaEditorProvider).pda!.id, contains('cfg-pda-ll'));
+      expect(navNotifier.pdaCallCount, 1);
+      expect(find.text('Undo'), findsOneWidget);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(container.read(pdaEditorProvider).pda, same(loaded));
+      expect(
+        container.read(homeNavigationProvider),
+        HomeNavigationNotifier.grammarIndex,
+      );
     });
 
     testWidgets('tapping PDA Standard conversion button triggers conversion', (
@@ -985,9 +1272,12 @@ void main() {
       );
 
       await tester.ensureVisible(
-        find.text('Generate LL(1) or LR(1) parse table'),
+        find.text('Generate an LL(1) predictive parse table'),
       );
-      expect(find.text('Generate LL(1) or LR(1) parse table'), findsOneWidget);
+      expect(
+        find.text('Generate an LL(1) predictive parse table'),
+        findsOneWidget,
+      );
 
       await tester.ensureVisible(find.text('Detect if grammar is ambiguous'));
       expect(find.text('Detect if grammar is ambiguous'), findsOneWidget);
@@ -1003,24 +1293,14 @@ void main() {
           leftSide: ['S'],
           rightSide: ['A', 'a'],
         ),
-        const Production(
-          id: 'p1',
-          order: 1,
-          leftSide: ['S'],
-          rightSide: ['b'],
-        ),
+        const Production(id: 'p1', order: 1, leftSide: ['S'], rightSide: ['b']),
         const Production(
           id: 'p2',
           order: 2,
           leftSide: ['A'],
           rightSide: ['S', 'c'],
         ),
-        const Production(
-          id: 'p3',
-          order: 3,
-          leftSide: ['A'],
-          rightSide: ['d'],
-        ),
+        const Production(id: 'p3', order: 3, leftSide: ['A'], rightSide: ['d']),
       ];
       final grammar = Grammar(
         id: 'indirect-widget',
@@ -1050,10 +1330,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Transformation steps'), findsOneWidget);
-      expect(
-        find.textContaining('Substitution for A via S'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Substitution for A via S'), findsOneWidget);
       expect(
         find.textContaining('Direct recursion removal for A'),
         findsOneWidget,

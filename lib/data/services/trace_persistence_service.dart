@@ -102,7 +102,7 @@ class TracePersistenceService implements TraceRepository {
         'timestamp': DateTime.now().toIso8601String(),
         'automatonType': automatonType ?? 'unknown',
         'automatonId': automatonId,
-        'trace': trace.toJson(),
+        'trace': trace.toPersistedJson(),
       };
 
       final history = await getTraceHistory();
@@ -139,12 +139,8 @@ class TracePersistenceService implements TraceRepository {
       final history = payload == null
           ? <Map<String, dynamic>>[]
           : usesLegacyPayload
-              ? _sanitizeLegacyTraceList(
-                  await _decodeJson(payload),
-                )
-              : _sanitizeTraceList(
-                  await _decodeJson(payload),
-                );
+          ? _sanitizeLegacyTraceList(await _decodeJson(payload))
+          : _sanitizeTraceList(await _decodeJson(payload));
       _cacheTraceHistory(
         history,
         payload: payload,
@@ -190,7 +186,7 @@ class TracePersistenceService implements TraceRepository {
     await _enqueueTraceWrite(() async {
       try {
         final currentTraceData = {
-          'trace': trace.toJson(),
+          'trace': trace.toPersistedJson(),
           'currentStepIndex': currentStepIndex,
           'timestamp': DateTime.now().toIso8601String(),
         };
@@ -212,9 +208,7 @@ class TracePersistenceService implements TraceRepository {
       final currentTraceJson = _prefs.getString(_currentTraceKey);
       if (currentTraceJson == null) return _getLegacyCurrentTrace();
 
-      final decoded = _asStringKeyedMap(
-        await _decodeJson(currentTraceJson),
-      );
+      final decoded = _asStringKeyedMap(await _decodeJson(currentTraceJson));
       if (decoded == null) {
         return null;
       }
@@ -228,8 +222,8 @@ class TracePersistenceService implements TraceRepository {
       final currentStepIndex = rawStepIndex is int
           ? rawStepIndex
           : rawStepIndex is num
-              ? rawStepIndex.toInt()
-              : 0;
+          ? rawStepIndex.toInt()
+          : 0;
 
       return <String, dynamic>{
         ...decoded,
@@ -295,9 +289,7 @@ class TracePersistenceService implements TraceRepository {
     try {
       final metadata = payload == null
           ? <String, Map<String, dynamic>>{}
-          : _sanitizeMetadataMap(
-              await _decodeJson(payload),
-            );
+          : _sanitizeMetadataMap(await _decodeJson(payload));
       _metadataCache = _copyTraceMetadata(metadata);
       _metadataCachePayload = payload;
       return _copyTraceMetadata(metadata);
@@ -339,17 +331,11 @@ class TracePersistenceService implements TraceRepository {
     }
   }
 
-  Future<void> _writeTraceHistory(
-    List<Map<String, dynamic>> history,
-  ) async {
+  Future<void> _writeTraceHistory(List<Map<String, dynamic>> history) async {
     final payload = await _encodeJson(history);
     final succeeded = await _prefs.setString(_traceHistoryKey, payload);
     if (succeeded) {
-      _cacheTraceHistory(
-        history,
-        payload: payload,
-        usesLegacyPayload: false,
-      );
+      _cacheTraceHistory(history, payload: payload, usesLegacyPayload: false);
     }
   }
 
@@ -403,8 +389,9 @@ class TracePersistenceService implements TraceRepository {
 
   String _nextTraceId() {
     final nowMicros = DateTime.now().microsecondsSinceEpoch;
-    final nextMicros =
-        nowMicros > _lastTraceIdMicros ? nowMicros : _lastTraceIdMicros + 1;
+    final nextMicros = nowMicros > _lastTraceIdMicros
+        ? nowMicros
+        : _lastTraceIdMicros + 1;
     _lastTraceIdMicros = nextMicros;
     return nextMicros.toString();
   }
@@ -418,11 +405,7 @@ class TracePersistenceService implements TraceRepository {
       await _prefs.remove(_traceMetadataKey);
       await _prefs.remove(_legacyTraceHistoryKey);
       await _prefs.remove(_legacyCurrentTraceKey);
-      _cacheTraceHistory(
-        const [],
-        payload: null,
-        usesLegacyPayload: true,
-      );
+      _cacheTraceHistory(const [], payload: null, usesLegacyPayload: true);
       _metadataCache = <String, Map<String, dynamic>>{};
       _metadataCachePayload = null;
     });
@@ -448,9 +431,9 @@ class TracePersistenceService implements TraceRepository {
       await _enqueueTraceWrite(() async {
         final decoded = await _decodeJson(jsonData);
         final data = (decoded as Map).cast<String, dynamic>();
-        final traces = _sanitizeTraceList(data['traces'])
-            .take(_maxHistorySize)
-            .toList(growable: false);
+        final traces = _sanitizeTraceList(
+          data['traces'],
+        ).take(_maxHistorySize).toList(growable: false);
         final metadata = _sanitizeMetadataMap(data['metadata']);
 
         await _writeTraceHistory(traces);
@@ -507,8 +490,9 @@ class TracePersistenceService implements TraceRepository {
 
       traces.add(<String, dynamic>{
         ...map,
-        'automatonType':
-            map['automatonType'] is String ? map['automatonType'] : 'unknown',
+        'automatonType': map['automatonType'] is String
+            ? map['automatonType']
+            : 'unknown',
         'trace': nestedTrace,
       });
     }

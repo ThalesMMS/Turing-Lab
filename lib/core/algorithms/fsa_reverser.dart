@@ -13,9 +13,11 @@ import 'package:vector_math/vector_math_64.dart';
 import '../models/algorithm_step.dart';
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
+import '../messages/structured_message.dart';
 import '../models/state.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'fsa_reverser_messages.dart';
 
 class FSAReversalResult {
   final FSA resultNFA;
@@ -34,10 +36,10 @@ class FSAReversalResult {
     required this.newAcceptingState,
     required Set<FSATransition> entryTransitions,
     required List<AlgorithmStep> steps,
-  })  : stateClones = Map.unmodifiable(stateClones),
-        reversedTransitions = Map.unmodifiable(reversedTransitions),
-        entryTransitions = Set.unmodifiable(entryTransitions),
-        steps = List.unmodifiable(steps);
+  }) : stateClones = Map.unmodifiable(stateClones),
+       reversedTransitions = Map.unmodifiable(reversedTransitions),
+       entryTransitions = Set.unmodifiable(entryTransitions),
+       steps = List.unmodifiable(steps);
 }
 
 /// Constructs an epsilon-NFA that recognizes `L(operand)^R`.
@@ -48,16 +50,21 @@ class FSAReverser {
     try {
       final validationError = _validateOperand(operand);
       if (validationError != null) {
-        return ResultFactory.failure(validationError);
+        return Failure(
+          validationError.stableCode,
+          structuredMessage: validationError,
+        );
       }
 
       final sortedStates = [...operand.states]
         ..sort((first, second) => first.id.compareTo(second.id));
-      final maxX =
-          sortedStates.map((state) => state.position.x).reduce(math.max);
+      final maxX = sortedStates
+          .map((state) => state.position.x)
+          .reduce(math.max);
       const cloneLeft = 40 + _horizontalGap;
-      final acceptingIds =
-          operand.acceptingStates.map((state) => state.id).toSet();
+      final acceptingIds = operand.acceptingStates
+          .map((state) => state.id)
+          .toSet();
       final originalInitialId = operand.initialState!.id;
       final stateClones = <String, State>{
         for (var index = 0; index < sortedStates.length; index++)
@@ -79,7 +86,8 @@ class FSAReverser {
         maxX,
         cloneLeft,
       );
-      final centerY = stateClones.values
+      final centerY =
+          stateClones.values
               .map((state) => state.position.y)
               .reduce((first, second) => first + second) /
           stateClones.length;
@@ -100,10 +108,7 @@ class FSAReverser {
       };
       final newAccepting = stateClones[originalInitialId]!;
       final states = {newInitial, ...stateClones.values};
-      final transitions = {
-        ...reversedTransitions.values,
-        ...entryTransitions,
-      };
+      final transitions = {...reversedTransitions.values, ...entryTransitions};
       final result = FSA(
         id: 'reverse_${_stableHash(operand.id)}',
         name: 'Reverse(${operand.name})',
@@ -121,7 +126,7 @@ class FSAReverser {
 
       final resultError = _validateResult(result);
       if (resultError != null) {
-        return ResultFactory.failure(resultError);
+        return Failure(resultError.stableCode, structuredMessage: resultError);
       }
 
       return ResultFactory.success(
@@ -142,33 +147,34 @@ class FSAReverser {
         ),
       );
     } catch (error) {
-      return ResultFactory.failure('Could not reverse automaton: $error');
+      final message = FsaReversalMessages.internalFailure();
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
-  static String? _validateOperand(FSA operand) {
+  static StructuredMessage? _validateOperand(FSA operand) {
     if (operand.states.isEmpty) {
-      return 'Reversal operand must contain at least one state.';
+      return FsaReversalMessages.emptyOperand();
     }
     final initial = operand.initialState;
     if (initial == null) {
-      return 'Reversal operand must have an initial state.';
+      return FsaReversalMessages.missingInitialState();
     }
     if (!operand.states.contains(initial)) {
-      return 'Reversal operand has an initial state outside its state set.';
+      return FsaReversalMessages.initialStateOutsideSet();
     }
     for (final accepting in operand.acceptingStates) {
       if (!operand.states.contains(accepting)) {
-        return 'Reversal operand has an accepting state outside its state set.';
+        return FsaReversalMessages.acceptingStateOutsideSet();
       }
     }
     for (final transition in operand.transitions) {
       if (transition is! FSATransition) {
-        return 'Reversal operand contains a non-FSA transition.';
+        return FsaReversalMessages.nonFsaTransition();
       }
       if (!operand.states.contains(transition.fromState) ||
           !operand.states.contains(transition.toState)) {
-        return 'Reversal operand contains a transition with an unknown endpoint.';
+        return FsaReversalMessages.unknownTransitionEndpoint();
       }
       final errors = transition
           .validate()
@@ -178,8 +184,7 @@ class FSAReverser {
           )
           .toList(growable: false);
       if (errors.isNotEmpty) {
-        return 'Reversal operand contains an invalid transition '
-            '${transition.id}: ${errors.join(', ')}';
+        return FsaReversalMessages.invalidTransition(transition.id);
       }
     }
     return null;
@@ -191,7 +196,8 @@ class FSAReverser {
     double maxX,
     double cloneLeft,
   ) {
-    final sortedTransitions = [...operand.fsaTransitions]..sort(
+    final sortedTransitions = [...operand.fsaTransitions]
+      ..sort(
         (first, second) =>
             _transitionSortKey(first).compareTo(_transitionSortKey(second)),
       );
@@ -255,21 +261,22 @@ class FSAReverser {
     );
   }
 
-  static String? _validateResult(FSA result) {
+  static StructuredMessage? _validateResult(FSA result) {
     final stateIds = result.states.map((state) => state.id).toList();
     if (stateIds.toSet().length != stateIds.length) {
-      return 'Reversal produced duplicate state IDs.';
+      return FsaReversalMessages.duplicateStateIds();
     }
-    final transitionIds =
-        result.fsaTransitions.map((transition) => transition.id).toList();
+    final transitionIds = result.fsaTransitions
+        .map((transition) => transition.id)
+        .toList();
     if (transitionIds.toSet().length != transitionIds.length) {
-      return 'Reversal produced duplicate transition IDs.';
+      return FsaReversalMessages.duplicateTransitionIds();
     }
     final errors = result.validate().where(
-          (error) => !error.startsWith('Non-deterministic transition from'),
-        );
+      (error) => !error.startsWith('Non-deterministic transition from'),
+    );
     if (errors.isNotEmpty) {
-      return 'Reversal produced an invalid FSA: ${errors.join(', ')}';
+      return FsaReversalMessages.invalidResult();
     }
     return null;
   }
@@ -287,15 +294,26 @@ class FSAReverser {
       ..sort((first, second) => first.key.compareTo(second.key));
     final sortedEntries = [...entryTransitions]
       ..sort((first, second) => first.id.compareTo(second.id));
+    final cloneTitle = FsaReversalMessages.stepTitle('clone');
+    final cloneExplanation = FsaReversalMessages.cloneExplanation();
+    final reverseTitle = FsaReversalMessages.stepTitle('reverse');
+    final reverseExplanation = FsaReversalMessages.reverseExplanation();
+    final entryTitle = FsaReversalMessages.stepTitle('entry');
+    final entryExplanation = FsaReversalMessages.entryExplanation(
+      hasAcceptingStates: sortedEntries.isNotEmpty,
+    );
+    final acceptingTitle = FsaReversalMessages.stepTitle('accepting');
+    final acceptingExplanation = FsaReversalMessages.acceptingExplanation();
     return [
       AlgorithmStep(
         id: 'fsa_reverse_step_0',
         stepNumber: 0,
-        title: 'Clone and mirror the states',
-        explanation:
-            'Copy every state into a deterministic ID namespace and mirror the layout for the reversed flow.',
+        title: cloneTitle.stableCode,
+        explanation: cloneExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
+          fsaReversalTitleMessageProperty: cloneTitle.toJson(),
+          fsaReversalExplanationMessageProperty: cloneExplanation.toJson(),
           'clonedStates': [
             for (final clone in sortedClones)
               '${clone.key} → ${clone.value.id}',
@@ -306,11 +324,12 @@ class FSAReverser {
       AlgorithmStep(
         id: 'fsa_reverse_step_1',
         stepNumber: 1,
-        title: 'Reverse every transition',
-        explanation:
-            'Swap the source and target of every symbol and epsilon transition.',
+        title: reverseTitle.stableCode,
+        explanation: reverseExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
+          fsaReversalTitleMessageProperty: reverseTitle.toJson(),
+          fsaReversalExplanationMessageProperty: reverseExplanation.toJson(),
           'reversedTransitions': [
             for (final transition in sortedReversed)
               _reversedTransitionDescription(transition),
@@ -323,12 +342,12 @@ class FSAReverser {
       AlgorithmStep(
         id: 'fsa_reverse_step_2',
         stepNumber: 2,
-        title: 'Add the new entry',
-        explanation: sortedEntries.isEmpty
-            ? 'Create a fresh initial state. The operand has no accepting states, so it has no epsilon entry edges.'
-            : 'Create a fresh initial state and connect it by epsilon to every former accepting state.',
+        title: entryTitle.stableCode,
+        explanation: entryExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
+          fsaReversalTitleMessageProperty: entryTitle.toJson(),
+          fsaReversalExplanationMessageProperty: entryExplanation.toJson(),
           'createdStateIds': [newInitial.id],
           'entryTransitions': [
             for (final transition in sortedEntries)
@@ -342,11 +361,12 @@ class FSAReverser {
       AlgorithmStep(
         id: 'fsa_reverse_step_3',
         stepNumber: 3,
-        title: 'Set the reversed accepting state',
-        explanation:
-            'Make the clone of the former initial state the sole accepting state.',
+        title: acceptingTitle.stableCode,
+        explanation: acceptingExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
+          fsaReversalTitleMessageProperty: acceptingTitle.toJson(),
+          fsaReversalExplanationMessageProperty: acceptingExplanation.toJson(),
           'acceptingStateId': newAccepting.id,
         },
       ),

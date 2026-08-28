@@ -4,9 +4,19 @@ abstract final class HelpTopicIds {
   static const gettingStartedNavigation = 'getting-started.navigation';
   static const gettingStartedChooseWorkspace =
       'getting-started.choose-workspace';
+  static const gettingStartedSettings = 'getting-started.settings';
   static const gettingStartedFilesAndExamples =
       'getting-started.files-and-examples';
+  static const gettingStartedSuggestedSimulations =
+      'getting-started.suggested-simulations';
+  static const gettingStartedImportAutomatonFragments =
+      'getting-started.import-automaton-fragments';
+  static const gettingStartedManualConversions =
+      'getting-started.manual-conversions';
+  static const gettingStartedDocumentNotes = 'getting-started.document-notes';
   static const gettingStartedFirstInput = 'getting-started.first-input';
+  static const gettingStartedMultipleInputBatches =
+      'getting-started.multiple-input-batches';
   static const gettingStartedFindHelp = 'getting-started.find-help';
 
   static const fsaEditorOverview = 'fsa.editor.overview';
@@ -50,6 +60,8 @@ abstract final class HelpTopicIds {
       'fsa.editor.algorithms.fsa-to-grammar';
   static const fsaEditorAlgorithmsEquivalence =
       'fsa.editor.algorithms.equivalence';
+  static const fsaEditorAlgorithmsComparisonResults =
+      'fsa.editor.algorithms.language-comparison-results';
   static const fsaEditorAlgorithmsStepMode = 'fsa.editor.algorithms.step-mode';
   static const fsaEditorFilesAndExamples = 'fsa.editor.files-and-examples';
 
@@ -116,6 +128,8 @@ abstract final class HelpTopicIds {
       'tm.editor.tape.blank-and-alphabet';
   static const tmEditorTapeHeadAndCurrentCell =
       'tm.editor.tape.head-and-current-cell';
+  static const tmEditorMultiTapeTraceAndMetrics =
+      'tm.editor.multi-tape.synchronized-trace-and-metrics';
   static const tmEditorSimulation = 'tm.editor.simulation.workflow';
   static const tmEditorSimulationTraceAndTape =
       'tm.editor.simulation.trace-and-tape';
@@ -131,6 +145,10 @@ abstract final class HelpTopicIds {
       'tm.editor.algorithms.tape-operations';
   static const tmEditorAlgorithmsTime = 'tm.editor.algorithms.time';
   static const tmEditorAlgorithmsSpace = 'tm.editor.algorithms.space';
+  static const tmEditorBuildingBlocks =
+      'tm.editor.building-blocks.library-and-execution';
+  static const tmEditorBuildingBlocksManageLibrary =
+      'tm.editor.building-blocks.manage-library';
   static const tmEditorFilesAndExamples = 'tm.editor.files-and-examples';
   static const tmTheoryTm = 'tm.theory.tm';
   static const tmTheoryTapeAndHead = 'tm.theory.tape-and-head';
@@ -151,6 +169,8 @@ abstract final class HelpTopicIds {
   static const grammarEditorProductionValidation =
       'grammar.editor.productions.validation';
   static const grammarEditorParserWorkflow = 'grammar.editor.parser.workflow';
+  static const grammarEditorParserUserControlledDerivation =
+      'grammar.editor.parser.user-controlled-derivation';
   static const grammarEditorParserAutomaticEarley =
       'grammar.editor.parser.automatic-earley';
   static const grammarEditorParserBruteForce =
@@ -158,10 +178,18 @@ abstract final class HelpTopicIds {
   static const grammarEditorParserCyk = 'grammar.editor.parser.cyk';
   static const grammarEditorParserLl1 = 'grammar.editor.parser.ll1';
   static const grammarEditorParserLr = 'grammar.editor.parser.lr';
+  static const grammarEditorParserLr1Teaching =
+      'grammar.editor.parser.lr1-teaching';
+  static const grammarEditorParserMultipleRuns =
+      'grammar.editor.parser.multiple-runs';
+  static const grammarEditorParserParseTableTeaching =
+      'grammar.editor.parser.parse-table-teaching';
   static const grammarEditorParserResultsAndSteps =
       'grammar.editor.parser.results-and-steps';
   static const grammarEditorAlgorithms = 'grammar.editor.algorithms.overview';
   static const grammarEditorAlgorithmsCnf = 'grammar.editor.algorithms.cnf';
+  static const grammarEditorAlgorithmsNormalizationPractice =
+      'grammar.editor.algorithms.normalization-practice';
   static const grammarEditorAlgorithmsGnf = 'grammar.editor.algorithms.gnf';
   static const grammarEditorAlgorithmsRemoveLeftRecursion =
       'grammar.editor.algorithms.remove-left-recursion';
@@ -174,6 +202,8 @@ abstract final class HelpTopicIds {
       'grammar.editor.algorithms.parse-table';
   static const grammarEditorAlgorithmsAmbiguity =
       'grammar.editor.algorithms.ambiguity';
+  static const grammarEditorAlgorithmsDependencyGraph =
+      'grammar.editor.algorithms.variable-dependency-graph';
   static const grammarEditorConversionsRightLinearToFsa =
       'grammar.editor.conversions.right-linear-to-fsa';
   static const grammarEditorConversionsPdaGeneral =
@@ -182,6 +212,8 @@ abstract final class HelpTopicIds {
       'grammar.editor.conversions.pda-standard';
   static const grammarEditorConversionsPdaGreibach =
       'grammar.editor.conversions.pda-greibach';
+  static const grammarEditorConversionsPdaLlLr =
+      'grammar.editor.conversions.pda-ll-lr';
   static const grammarEditorFilesAndExamples =
       'grammar.editor.files-and-examples';
   static const grammarTheoryCfg = 'grammar.theory.cfg';
@@ -226,6 +258,8 @@ abstract final class HelpTopicIds {
   static const regexTheoryEquivalenceWithFsa =
       'regex.theory.equivalence-with-fsa';
 
+  static const pumpingEditorEnvironmentChoice =
+      'pumping.editor.environment-choice';
   static const pumpingEditorOverview = 'pumping.editor.overview';
   static const pumpingEditorGame = 'pumping.editor.game';
   static const pumpingEditorDifficultyAndChallenges =
@@ -253,6 +287,42 @@ abstract final class HelpTopicIds {
   static const pumpingTheoryNonregularAnbn = 'pumping.theory.nonregular-anbn';
   static const pumpingTheoryNonregularWw = 'pumping.theory.nonregular-ww';
 
+  static const mealyEditorOverview = 'transducers.mealy.editor.overview';
+  static const mealyEditorStatesAndTransitions =
+      'transducers.mealy.editor.states-and-transitions';
+  static const mooreEditorOverview = 'transducers.moore.editor.overview';
+  static const mooreEditorStatesAndTransitions =
+      'transducers.moore.editor.states-and-transitions';
+  static const transducerEditorCanvasAndAlphabets =
+      'transducers.editor.canvas-and-alphabets';
+  static const transducerEditorCanvasEditingGestures =
+      'transducers.editor.canvas-editing-gestures';
+  static const transducerEditorSimulationAndPlayback =
+      'transducers.editor.simulation-and-playback';
+  static const transducerEditorCompactCanvasPlayback =
+      'transducers.editor.compact-canvas-playback';
+  static const transducerEditorBatchComparisonAndExamples =
+      'transducers.editor.batch-comparison-and-examples';
+  static const transducerEditorFilesAndExport =
+      'transducers.editor.files-and-export';
+  static const unrestrictedGrammarEditorOverview =
+      'extended-formal-systems.grammar-unrestricted';
+  static const unrestrictedGrammarEditingAndClassification =
+      'extended-formal-systems.grammar-unrestricted.editing-and-classification';
+  static const unrestrictedGrammarDerivationAndDependencyGraph =
+      'extended-formal-systems.grammar-unrestricted.derivation-and-dependency-graph';
+  static const unrestrictedGrammarExamplesFilesAndLimits =
+      'extended-formal-systems.grammar-unrestricted.examples-files-and-limits';
+  static const unrestrictedGrammarTmToGrammarConstruction =
+      'extended-formal-systems.grammar-unrestricted.tm-to-grammar-construction';
+  static const lSystemEditorOverview = 'extended-formal-systems.l-system';
+  static const lSystemDefinitionAndRules =
+      'extended-formal-systems.l-system.definition-and-rules';
+  static const lSystemGenerationsAndTurtleView =
+      'extended-formal-systems.l-system.generations-and-turtle-view';
+  static const lSystemExamplesFilesAndLimits =
+      'extended-formal-systems.l-system.examples-files-and-limits';
+
   static const shortcutsCanvas = 'shortcuts.canvas';
   static const shortcutsSimulation = 'shortcuts.simulation';
   static const shortcutsDialogsAndForms = 'shortcuts.dialogs-and-forms';
@@ -270,6 +340,8 @@ abstract final class HelpTopicIds {
       'troubleshooting.parser-strategies';
   static const troubleshootingFileImportExport =
       'troubleshooting.file-import-export';
+  static const troubleshootingInteroperabilityReview =
+      'troubleshooting.interoperability-review';
   static const troubleshootingMissingStateMarkers =
       'troubleshooting.missing-state-markers';
   static const troubleshootingNondeterminism = 'troubleshooting.nondeterminism';

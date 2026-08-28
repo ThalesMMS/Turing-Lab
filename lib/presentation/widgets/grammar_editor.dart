@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/production.dart';
+import '../../core/utils/epsilon_utils.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
 import '../../l10n/app_localizations_resolver.dart';
@@ -344,10 +345,10 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                         labelText: _l10n.rightSideProduction,
                         hintText: _l10n.rightSideHint,
                         border: const OutlineInputBorder(),
-                        suffixIcon: _LambdaShortcutButton(
+                        suffixIcon: _EpsilonShortcutButton(
                           onInsert: () => _insertIntoController(
                             controller: _rightSideController,
-                            symbol: 'λ',
+                            symbol: kEpsilonSymbol,
                           ),
                         ),
                       ),
@@ -358,14 +359,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                         TextButton(
                           onPressed: () => _insertIntoController(
                             controller: _rightSideController,
-                            symbol: 'λ',
-                          ),
-                          child: Text(_l10n.insertLambda),
-                        ),
-                        TextButton(
-                          onPressed: () => _insertIntoController(
-                            controller: _rightSideController,
-                            symbol: 'ε',
+                            symbol: kEpsilonSymbol,
                           ),
                           child: Text(_l10n.insertEpsilon),
                         ),
@@ -431,10 +425,10 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                             labelText: _l10n.rightSideProduction,
                             hintText: _l10n.rightSideHint,
                             border: const OutlineInputBorder(),
-                            suffixIcon: _LambdaShortcutButton(
+                            suffixIcon: _EpsilonShortcutButton(
                               onInsert: () => _insertIntoController(
                                 controller: _rightSideController,
-                                symbol: 'λ',
+                                symbol: kEpsilonSymbol,
                               ),
                             ),
                           ),
@@ -445,14 +439,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                             TextButton(
                               onPressed: () => _insertIntoController(
                                 controller: _rightSideController,
-                                symbol: 'λ',
-                              ),
-                              child: Text(_l10n.insertLambda),
-                            ),
-                            TextButton(
-                              onPressed: () => _insertIntoController(
-                                controller: _rightSideController,
-                                symbol: 'ε',
+                                symbol: kEpsilonSymbol,
                               ),
                               child: Text(_l10n.insertEpsilon),
                             ),
@@ -703,7 +690,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final parsedLeft = _parseLeftSide(leftSide);
     final parsedRight = _parseRightSide(rightSide);
     final isLambda =
-        parsedRight.length == 1 && _isLambdaSymbol(parsedRight.first);
+        parsedRight.length == 1 && _isEmptyStringSymbol(parsedRight.first);
     final normalizedRight = isLambda ? <String>[] : parsedRight;
 
     ref.read(grammarProvider.notifier).addProduction(
@@ -728,7 +715,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final parsedLeft = _parseLeftSide(leftSide);
     final parsedRight = _parseRightSide(rightSide);
     final isLambda =
-        parsedRight.length == 1 && _isLambdaSymbol(parsedRight.first);
+        parsedRight.length == 1 && _isEmptyStringSymbol(parsedRight.first);
     final normalizedRight = isLambda ? <String>[] : parsedRight;
 
     ref.read(grammarProvider.notifier).updateProduction(
@@ -902,13 +889,13 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
 
       final parsedRight = _parseRightSide(rightSide);
       if (parsedRight.isEmpty) {
-        rightError = 'Right side must contain at least one symbol (or λ/ε)';
+        rightError = _l10n.rightSideAtLeastOneSymbol;
       } else {
-        final lambdaCount = parsedRight.where(_isLambdaSymbol).length;
-        if (lambdaCount > 1) {
-          rightError = 'Right side can contain only one λ/ε symbol';
-        } else if (lambdaCount == 1 && parsedRight.length > 1) {
-          rightError = 'λ/ε must be the only symbol on the right side';
+        final emptyStringCount = parsedRight.where(_isEmptyStringSymbol).length;
+        if (emptyStringCount > 1) {
+          rightError = _l10n.rightSideSingleLambda;
+        } else if (emptyStringCount == 1 && parsedRight.length > 1) {
+          rightError = _l10n.lambdaMustBeOnlySymbol;
         }
       }
     }
@@ -952,8 +939,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     return trimmed.split('');
   }
 
-  bool _isLambdaSymbol(String symbol) =>
-      symbol == 'ε' || symbol == 'λ' || symbol.toLowerCase() == 'lambda';
+  bool _isEmptyStringSymbol(String symbol) => isEpsilonSymbol(symbol);
 
   String _formatSymbols(List<String> symbols) {
     if (symbols.isEmpty) {
@@ -964,24 +950,24 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
 
   String _formatRightSide(Production production) {
     if (production.isLambda || production.rightSide.isEmpty) {
-      return 'ε';
+      return kEpsilonSymbol;
     }
     return _formatSymbols(production.rightSide);
   }
 }
 
-class _LambdaShortcutButton extends StatelessWidget {
-  const _LambdaShortcutButton({required this.onInsert});
+class _EpsilonShortcutButton extends StatelessWidget {
+  const _EpsilonShortcutButton({required this.onInsert});
 
   final VoidCallback onInsert;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: appLocalizationsOf(context).insertLambda,
+      tooltip: appLocalizationsOf(context).insertEpsilon,
       onPressed: onInsert,
       icon: const Text(
-        'λ',
+        kEpsilonSymbol,
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
     );

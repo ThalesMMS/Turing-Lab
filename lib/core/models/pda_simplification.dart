@@ -1,5 +1,6 @@
 import 'pda.dart';
 import 'pda_acceptance_mode.dart';
+import '../messages/structured_message.dart';
 
 /// Individually reportable phases of the conservative PDA simplifier.
 enum PDASimplificationPhase {
@@ -54,18 +55,22 @@ class PDASimplificationPhaseResult {
   final PDASimplificationPhase phase;
   final PDASimplificationPhaseStatus status;
   final String description;
+  final StructuredMessage? descriptionMessage;
 
   const PDASimplificationPhaseResult({
     required this.phase,
     required this.status,
     required this.description,
+    this.descriptionMessage,
   });
 
   Map<String, Object?> toJson() => {
-        'phase': phase.name,
-        'status': status.name,
-        'description': description,
-      };
+    'phase': phase.name,
+    'status': status.name,
+    'description': description,
+    if (descriptionMessage != null)
+      'descriptionMessage': descriptionMessage!.toJson(),
+  };
 }
 
 class PDASimplificationChange {
@@ -80,15 +85,15 @@ class PDASimplificationChange {
     required Iterable<String> sourceIds,
     this.representativeId,
   }) : sourceIds = List<String>.unmodifiable(
-          sourceIds.toSet().toList()..sort(),
-        );
+         sourceIds.toSet().toList()..sort(),
+       );
 
   Map<String, Object?> toJson() => {
-        'kind': kind.name,
-        'reason': reason.name,
-        'sourceIds': sourceIds,
-        if (representativeId != null) 'representativeId': representativeId,
-      };
+    'kind': kind.name,
+    'reason': reason.name,
+    'sourceIds': sourceIds,
+    if (representativeId != null) 'representativeId': representativeId,
+  };
 }
 
 class PDASimplificationCounts {
@@ -108,30 +113,34 @@ class PDASimplificationCounts {
   int get transitionsRemoved => transitionsBefore - transitionsAfter;
 
   Map<String, Object?> toJson() => {
-        'statesBefore': statesBefore,
-        'statesAfter': statesAfter,
-        'transitionsBefore': transitionsBefore,
-        'transitionsAfter': transitionsAfter,
-      };
+    'statesBefore': statesBefore,
+    'statesAfter': statesAfter,
+    'transitionsBefore': transitionsBefore,
+    'transitionsAfter': transitionsAfter,
+  };
 }
 
 class PDASampledEvidence {
   final int wordsChecked;
   final String description;
+  final StructuredMessage? descriptionMessage;
 
   const PDASampledEvidence({
     required this.wordsChecked,
     required this.description,
+    this.descriptionMessage,
   });
 
   /// A finite sample cannot prove equivalence of two general NPDAs.
   bool get isProof => false;
 
   Map<String, Object?> toJson() => {
-        'wordsChecked': wordsChecked,
-        'description': description,
-        'isProof': false,
-      };
+    'wordsChecked': wordsChecked,
+    'description': description,
+    if (descriptionMessage != null)
+      'descriptionMessage': descriptionMessage!.toJson(),
+    'isProof': false,
+  };
 }
 
 class PDASimplificationResult {
@@ -141,6 +150,7 @@ class PDASimplificationResult {
   final List<PDASimplificationPhaseResult> phases;
   final List<PDASimplificationChange> changes;
   final List<String> warnings;
+  final List<StructuredMessage> structuredWarnings;
   final PDASimplificationCounts counts;
   final PDASampledEvidence? sampledEvidence;
 
@@ -153,9 +163,11 @@ class PDASimplificationResult {
     required Iterable<String> warnings,
     required this.counts,
     this.sampledEvidence,
-  })  : phases = List.unmodifiable(phases),
-        changes = List.unmodifiable(changes),
-        warnings = List.unmodifiable(warnings);
+    Iterable<StructuredMessage> structuredWarnings = const [],
+  }) : phases = List.unmodifiable(phases),
+       changes = List.unmodifiable(changes),
+       warnings = List.unmodifiable(warnings),
+       structuredWarnings = List.unmodifiable(structuredWarnings);
 
   bool get changed => changes.isNotEmpty;
 

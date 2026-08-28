@@ -13,6 +13,7 @@ import 'dart:typed_data';
 
 import 'app_store_capture_case.dart';
 import 'app_store_capture_manifest.dart';
+import 'app_store_capture_path.dart';
 import 'app_store_capture_validation_issue.dart';
 import 'app_store_png_size.dart';
 
@@ -138,8 +139,7 @@ class AppStoreCaptureValidator {
       if (entity is! File) {
         continue;
       }
-      final relative =
-          entity.path.substring(rootPath.length).replaceAll(RegExp(r'^/+'), '');
+      final relative = appStoreCaptureRelativePath(rootPath, entity.path);
       final segments = relative.split('/');
       if (segments.any((segment) => segment.startsWith('.'))) {
         continue;

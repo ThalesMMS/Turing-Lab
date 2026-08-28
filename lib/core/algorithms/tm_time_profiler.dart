@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import '../messages/structured_message.dart';
 import '../models/tm.dart';
 import '../models/tm_execution_analysis.dart';
 import '../models/tm_time_profile.dart';
 import 'tm_execution_analyzer.dart';
+import 'tm_messages.dart';
 
-typedef TMTimeProfileProgressCallback = void Function(
-    TMTimeProfileProgress progress);
+typedef TMTimeProfileProgressCallback =
+    void Function(TMTimeProfileProgress progress);
 
 /// Builds a bounded empirical profile without inferring an asymptotic class.
 class TMTimeProfiler {
@@ -24,7 +26,8 @@ class TMTimeProfiler {
         alphabet: alphabet,
         rows: const [],
         plannedCandidateCount: 0,
-        validationError: validationError,
+        validationError: validationError.legacy,
+        validationMessage: validationError.structured,
       );
     }
 
@@ -34,8 +37,8 @@ class TMTimeProfiler {
       final possible = _possibleCandidateCount(alphabet.length, length);
       final candidateCount =
           possible > BigInt.from(bounds.maxCandidatesPerLength)
-              ? bounds.maxCandidatesPerLength
-              : possible.toInt();
+          ? bounds.maxCandidatesPerLength
+          : possible.toInt();
       final row = TMTimeProfilePlannedRow(
         inputLength: length,
         possibleCandidateCount: possible,
@@ -68,6 +71,7 @@ class TMTimeProfiler {
         kind: kind,
         status: TMTimeProfileStatus.invalid,
         message: profilePlan.validationError!,
+        structuredMessage: profilePlan.validationMessage,
         plan: profilePlan,
         rows: const [],
         profilingWallClockTime: Duration.zero,
@@ -79,6 +83,7 @@ class TMTimeProfiler {
     var completedCandidates = 0;
     var wasCancelled = false;
     var invalidMachine = false;
+    StructuredMessage? invalidMachineMessage;
 
     onProgress?.call(
       TMTimeProfileProgress(
@@ -124,6 +129,7 @@ class TMTimeProfiler {
         }
         if (execution.outcome == TMExecutionOutcome.invalidMachine) {
           invalidMachine = true;
+          invalidMachineMessage = execution.structuredMessage;
           break;
         }
         await Future<void>.delayed(Duration.zero);
@@ -149,10 +155,10 @@ class TMTimeProfiler {
     final status = invalidMachine
         ? TMTimeProfileStatus.invalid
         : wasCancelled
-            ? TMTimeProfileStatus.cancelled
-            : hasIncompleteRows || rows.length != profilePlan.rows.length
-                ? TMTimeProfileStatus.incomplete
-                : TMTimeProfileStatus.complete;
+        ? TMTimeProfileStatus.cancelled
+        : hasIncompleteRows || rows.length != profilePlan.rows.length
+        ? TMTimeProfileStatus.incomplete
+        : TMTimeProfileStatus.complete;
     final message = switch (status) {
       TMTimeProfileStatus.complete =>
         'The bounded profile exhaustively resolved every candidate.',
@@ -162,32 +168,62 @@ class TMTimeProfiler {
       TMTimeProfileStatus.invalid =>
         'The machine or one of the profile inputs is invalid.',
     };
+    final structuredMessage = switch (status) {
+      TMTimeProfileStatus.complete => TmTimeProfileMessages.complete(),
+      TMTimeProfileStatus.incomplete => TmTimeProfileMessages.incomplete(),
+      TMTimeProfileStatus.cancelled => TmTimeProfileMessages.cancelled(),
+      TMTimeProfileStatus.invalid =>
+        invalidMachineMessage ?? TmTimeProfileMessages.invalidMachine(),
+    };
     return TMTimeProfileReport(
       kind: kind,
       status: status,
       message: message,
+      structuredMessage: structuredMessage,
       plan: profilePlan,
       rows: rows,
       profilingWallClockTime: stopwatch.elapsed,
     );
   }
 
-  static String? _validateBounds(TMTimeProfileBounds bounds) {
-    if (bounds.maxLength < 0) return 'Maximum input length cannot be negative.';
+  static ({String legacy, StructuredMessage structured})? _validateBounds(
+    TMTimeProfileBounds bounds,
+  ) {
+    if (bounds.maxLength < 0) {
+      return (
+        legacy: 'Maximum input length cannot be negative.',
+        structured: TmTimeProfileMessages.maxLengthInvalid(),
+      );
+    }
     if (bounds.maxCandidatesPerLength <= 0) {
-      return 'Candidate limit per length must be greater than zero.';
+      return (
+        legacy: 'Candidate limit per length must be greater than zero.',
+        structured: TmTimeProfileMessages.candidateCapInvalid(),
+      );
     }
     if (bounds.maxStepsPerCandidate <= 0) {
-      return 'Step limit per candidate must be greater than zero.';
+      return (
+        legacy: 'Step limit per candidate must be greater than zero.',
+        structured: TmTimeProfileMessages.stepLimitInvalid(),
+      );
     }
     if (bounds.maxConfigurationsPerCandidate <= 0) {
-      return 'Configuration limit per candidate must be greater than zero.';
+      return (
+        legacy: 'Configuration limit per candidate must be greater than zero.',
+        structured: TmTimeProfileMessages.configurationLimitInvalid(),
+      );
     }
     if (bounds.timeoutPerCandidate <= Duration.zero) {
-      return 'Timeout per candidate must be greater than zero.';
+      return (
+        legacy: 'Timeout per candidate must be greater than zero.',
+        structured: TmTimeProfileMessages.timeoutInvalid(),
+      );
     }
     if (bounds.operationsPerBatch <= 0) {
-      return 'Operations per batch must be greater than zero.';
+      return (
+        legacy: 'Operations per batch must be greater than zero.',
+        structured: TmTimeProfileMessages.operationsPerBatchInvalid(),
+      );
     }
     return null;
   }
@@ -385,7 +421,8 @@ class _ProfileRowAccumulator {
   }
 
   TMTimeProfileRow finish({required bool witnessesComplete}) {
-    final isComplete = witnessesComplete &&
+    final isComplete =
+        witnessesComplete &&
         !plan.isSampled &&
         evaluatedCandidateCount == plan.candidateCount &&
         unknownCount == 0 &&

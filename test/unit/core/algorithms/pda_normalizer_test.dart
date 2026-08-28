@@ -4,12 +4,16 @@ import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/algorithms/pda_normalizer.dart';
+import 'package:turing_lab/core/algorithms/pda_normalization_messages.dart';
 import 'package:turing_lab/core/algorithms/pda_simulator.dart';
 import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 
 void main() {
   group('PDANormalizer', () {
@@ -47,28 +51,30 @@ void main() {
       );
     });
 
-    test('converts final-state acceptance with residual stack to empty stack',
-        () {
-      final source = _finalStateResidualStackPda();
+    test(
+      'converts final-state acceptance with residual stack to empty stack',
+      () {
+        final source = _finalStateResidualStackPda();
 
-      final result = PDANormalizer.normalize(
-        source,
-        sourceMode: PDAAcceptanceMode.finalState,
-        targetForm: PDANormalForm.emptyStackAndSinglePop,
-      );
+        final result = PDANormalizer.normalize(
+          source,
+          sourceMode: PDAAcceptanceMode.finalState,
+          targetForm: PDANormalForm.emptyStackAndSinglePop,
+        );
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      final report = result.data!;
-      expect(report.normalizedPda.acceptingStates, isEmpty);
-      _expectSameBoundedLanguage(
-        source,
-        report.normalizedPda,
-        sourceMode: PDAAcceptanceMode.finalState,
-        targetMode: PDAAcceptanceMode.emptyStack,
-        alphabet: const ['a'],
-        maxLength: 4,
-      );
-    });
+        expect(result.isSuccess, isTrue, reason: result.error);
+        final report = result.data!;
+        expect(report.normalizedPda.acceptingStates, isEmpty);
+        _expectSameBoundedLanguage(
+          source,
+          report.normalizedPda,
+          sourceMode: PDAAcceptanceMode.finalState,
+          targetMode: PDAAcceptanceMode.emptyStack,
+          alphabet: const ['a'],
+          maxLength: 4,
+        );
+      },
+    );
 
     test('preserves combined acceptance as final and empty together', () {
       final source = _bothAcceptancePda();
@@ -171,9 +177,7 @@ void main() {
     });
 
     test('returns deterministic collision-safe ids and provenance', () {
-      final source = _lambdaPopPda(
-        collidingIds: true,
-      );
+      final source = _lambdaPopPda(collidingIds: true);
 
       final first = PDANormalizer.normalize(
         source,
@@ -187,8 +191,9 @@ void main() {
       ).data!;
 
       final firstStateIds = first.normalizedPda.states.map((state) => state.id);
-      final firstTransitionIds =
-          first.normalizedPda.pdaTransitions.map((transition) => transition.id);
+      final firstTransitionIds = first.normalizedPda.pdaTransitions.map(
+        (transition) => transition.id,
+      );
       expect(firstStateIds.toSet(), hasLength(firstStateIds.length));
       expect(firstTransitionIds.toSet(), hasLength(firstTransitionIds.length));
       expect(
@@ -212,34 +217,47 @@ void main() {
       }
     });
 
-    test('does not mutate the source and reports introduced nondeterminism',
-        () {
-      final source = _finalStateResidualStackPda();
-      final sourceJson = source.toJson();
+    test(
+      'does not mutate the source and reports introduced nondeterminism',
+      () {
+        final source = _finalStateResidualStackPda();
+        final sourceJson = source.toJson();
 
-      final result = PDANormalizer.normalize(
-        source,
-        sourceMode: PDAAcceptanceMode.finalState,
-        targetForm: PDANormalForm.emptyStackAndSinglePop,
-      );
+        final result = PDANormalizer.normalize(
+          source,
+          sourceMode: PDAAcceptanceMode.finalState,
+          targetForm: PDANormalForm.emptyStackAndSinglePop,
+        );
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      final report = result.data!;
-      expect(source.toJson(), sourceJson);
-      expect(report.normalizedPda, isNot(same(source)));
-      expect(report.sourceWasDeterministic, isTrue);
-      expect(report.normalizedIsDeterministic, isFalse);
-      expect(report.introducedNondeterminism, isTrue);
-      expect(
-        report.warnings,
-        contains(contains('state and transition count')),
-      );
-      expect(
-        report.warnings,
-        contains(contains('non-deterministic')),
-      );
-      expect(report.normalizedPda.toJson(), isNot(contains('acceptanceMode')));
-    });
+        expect(result.isSuccess, isTrue, reason: result.error);
+        final report = result.data!;
+        expect(source.toJson(), sourceJson);
+        expect(report.normalizedPda, isNot(same(source)));
+        expect(report.sourceWasDeterministic, isTrue);
+        expect(report.normalizedIsDeterministic, isFalse);
+        expect(report.introducedNondeterminism, isTrue);
+        expect(report.warnings, contains('pda.normalization.growth-warning'));
+        expect(
+          report.warnings,
+          contains('pda.normalization.introduced-nondeterminism'),
+        );
+        expect(report.structuredWarnings, [
+          PdaNormalizationMessages.growthWarning(
+            addedStates: report.addedStates.length,
+            addedTransitions: report.addedTransitions.length,
+          ),
+          PdaNormalizationMessages.introducedNondeterminismWarning(),
+        ]);
+        expect(
+          report.normalizedPda.acceptanceMode,
+          PDAAcceptanceMode.emptyStack,
+        );
+        expect(
+          report.normalizedPda.toJson()['acceptanceMode'],
+          PDAAcceptanceMode.emptyStack.name,
+        );
+      },
+    );
 
     test('produces output accepted by the PDA to CFG converter', () {
       final source = _emptyStackAnBnPda();
@@ -274,7 +292,260 @@ void main() {
       );
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('accepting state'));
+      expect(result.error, 'pda.normalization.missing-accepting-state');
+      expect(
+        result.structuredError,
+        PdaNormalizationMessages.missingAcceptingState(),
+      );
+    });
+
+    test('exposes structured validation diagnostics', () {
+      final validState = _state('q', initial: true);
+      final acceptingState = _state('accept', accepting: true, x: 100);
+      final outsideState = _state('outside', x: 100);
+
+      final cases =
+          <({PDA pda, PDAAcceptanceMode mode, StructuredMessage message})>[
+            (
+              pda: PDA.empty(id: 'empty', name: 'Empty'),
+              mode: PDAAcceptanceMode.emptyStack,
+              message: PdaNormalizationMessages.emptyPda(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'missing-initial',
+                states: {validState},
+                accepting: {validState},
+                initial: null,
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.missingInitialState(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'outside-initial',
+                states: {validState},
+                accepting: {validState},
+                initial: outsideState,
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.initialStateOutsideSet(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'invalid-initial-stack',
+                states: {validState},
+                accepting: {validState},
+                initial: validState,
+                initialStackSymbol: 'X',
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.invalidInitialStackSymbol('X'),
+            ),
+            (
+              pda: _rawPda(
+                id: 'missing-accepting',
+                states: {validState},
+                accepting: const {},
+                initial: validState,
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.missingAcceptingState(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'outside-accepting',
+                states: {validState},
+                accepting: {outsideState},
+                initial: validState,
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.acceptingStateOutsideSet(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'non-pda-transition',
+                states: {validState, acceptingState},
+                accepting: {acceptingState},
+                initial: validState,
+                transitions: {
+                  FSATransition.deterministic(
+                    id: 'fsa-transition',
+                    fromState: validState,
+                    toState: acceptingState,
+                    symbol: 'a',
+                  ),
+                },
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.nonPdaTransition(),
+            ),
+            (
+              pda: _rawPda(
+                id: 'outside-endpoint',
+                states: {validState, acceptingState},
+                accepting: {acceptingState},
+                initial: validState,
+                transitions: {
+                  _transition(
+                    id: 'outside-endpoint-transition',
+                    from: validState,
+                    to: outsideState,
+                    pop: 'Z',
+                  ),
+                },
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message: PdaNormalizationMessages.transitionEndpointOutsideSet(
+                'outside-endpoint-transition',
+              ),
+            ),
+            (
+              pda: _rawPda(
+                id: 'outside-pop',
+                states: {validState, acceptingState},
+                accepting: {acceptingState},
+                initial: validState,
+                transitions: {
+                  _transition(
+                    id: 'outside-pop-transition',
+                    from: validState,
+                    to: acceptingState,
+                    pop: 'X',
+                  ),
+                },
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message:
+                  PdaNormalizationMessages.transitionPopSymbolOutsideAlphabet(
+                    'outside-pop-transition',
+                    'X',
+                  ),
+            ),
+            (
+              pda: _rawPda(
+                id: 'outside-push',
+                states: {validState, acceptingState},
+                accepting: {acceptingState},
+                initial: validState,
+                transitions: {
+                  _transition(
+                    id: 'outside-push-transition',
+                    from: validState,
+                    to: acceptingState,
+                    pop: 'Z',
+                    push: const ['X'],
+                  ),
+                },
+              ),
+              mode: PDAAcceptanceMode.finalState,
+              message:
+                  PdaNormalizationMessages.transitionPushSymbolOutsideAlphabet(
+                    'outside-push-transition',
+                    'X',
+                  ),
+            ),
+          ];
+
+      for (final testCase in cases) {
+        final result = PDANormalizer.normalize(
+          testCase.pda,
+          sourceMode: testCase.mode,
+          targetForm: PDANormalForm.finalStateAndSinglePop,
+        );
+        expect(result.isFailure, isTrue, reason: result.error);
+        expect(result.error, testCase.message.stableCode);
+        expect(result.structuredError, testCase.message);
+      }
+    });
+
+    test('exposes structured warning and provenance messages', () {
+      final source = _lambdaPopPda();
+      final result = PDANormalizer.normalize(
+        source,
+        sourceMode: PDAAcceptanceMode.finalState,
+        targetForm: PDANormalForm.emptyStackAndSinglePop,
+      );
+
+      expect(result.isSuccess, isTrue, reason: result.error);
+      final report = result.data!;
+      expect(report.structuredWarnings, hasLength(1));
+      expect(
+        report.structuredWarnings.single,
+        PdaNormalizationMessages.growthWarning(
+          addedStates: report.addedStates.length,
+          addedTransitions: report.addedTransitions.length,
+        ),
+      );
+
+      final initial = report.provenance.values.singleWhere(
+        (entry) => entry.descriptionMessage?.code == 'initial-state',
+      );
+      expect(initial.description, initial.descriptionMessage!.stableCode);
+      expect(
+        initial.descriptionMessage,
+        PdaNormalizationMessages.initialStateDescription('start'),
+      );
+
+      final singlePop = report.provenance.values.firstWhere(
+        (entry) => entry.descriptionMessage?.code == 'single-pop-transition',
+      );
+      expect(
+        singlePop.descriptionMessage,
+        PdaNormalizationMessages.singlePopTransitionDescription('push-a'),
+      );
+      expect(
+        StructuredMessage.fromJson(singlePop.descriptionMessage!.toJson()),
+        singlePop.descriptionMessage,
+      );
+
+      final bottomExit = PDANormalizer.normalize(
+        _emptyStackAnBnPda(),
+        sourceMode: PDAAcceptanceMode.emptyStack,
+        targetForm: PDANormalForm.finalStateAndSinglePop,
+      );
+      expect(bottomExit.isSuccess, isTrue, reason: bottomExit.error);
+      expect(
+        bottomExit.data!.provenance.values.any(
+          (entry) => entry.descriptionMessage?.code == 'acceptance-state',
+        ),
+        isTrue,
+      );
+      final acceptEmpty = bottomExit.data!.provenance.values.firstWhere(
+        (entry) => entry.descriptionMessage?.code == 'accept-empty-transition',
+      );
+      expect(
+        acceptEmpty.descriptionMessage,
+        PdaNormalizationMessages.acceptEmptyTransitionDescription(
+          sourceStateId: 'q',
+          targetMode: PDAAcceptanceMode.finalState,
+        ),
+      );
+
+      final drain = PDANormalizer.normalize(
+        _finalStateResidualStackPda(),
+        sourceMode: PDAAcceptanceMode.finalState,
+        targetForm: PDANormalForm.emptyStackAndSinglePop,
+      );
+      expect(drain.isSuccess, isTrue, reason: drain.error);
+      expect(
+        drain.data!.provenance.values.any(
+          (entry) => entry.descriptionMessage?.code == 'drain-state',
+        ),
+        isTrue,
+      );
+      expect(
+        drain.data!.provenance.values.any(
+          (entry) => entry.descriptionMessage?.code == 'enter-drain-transition',
+        ),
+        isTrue,
+      );
+      expect(
+        drain.data!.provenance.values.any(
+          (entry) => entry.descriptionMessage?.code == 'drain-transition',
+        ),
+        isTrue,
+      );
     });
   });
 }
@@ -297,13 +568,7 @@ PDA _emptyStackAnBnPda() {
         lambdaPop: true,
         push: const ['A'],
       ),
-      _transition(
-        id: 'pop-a',
-        from: q,
-        to: q,
-        input: 'b',
-        pop: 'A',
-      ),
+      _transition(id: 'pop-a', from: q, to: q, input: 'b', pop: 'A'),
       _transition(
         id: 'pop-bottom',
         from: q,
@@ -325,13 +590,7 @@ PDA _finalStateResidualStackPda() {
     alphabet: const {'a'},
     stackAlphabet: const {'Z'},
     transitions: {
-      _transition(
-        id: 'read-a',
-        from: q,
-        to: q,
-        input: 'a',
-        lambdaPop: true,
-      ),
+      _transition(id: 'read-a', from: q, to: q, input: 'a', lambdaPop: true),
     },
   );
 }
@@ -390,6 +649,33 @@ PDA _lambdaPopPda({bool collidingIds = false}) {
         lambdaPop: true,
       ),
     },
+  );
+}
+
+PDA _rawPda({
+  required String id,
+  required Set<State> states,
+  required State? initial,
+  required Set<State> accepting,
+  Iterable<Transition> transitions = const [],
+  Set<String> alphabet = const {'a'},
+  Set<String> stackAlphabet = const {'Z'},
+  String initialStackSymbol = 'Z',
+}) {
+  final instant = DateTime.utc(2026, 1, 1);
+  return PDA(
+    id: id,
+    name: id,
+    states: states,
+    transitions: transitions.toSet(),
+    alphabet: alphabet,
+    initialState: initial,
+    acceptingStates: accepting,
+    created: instant,
+    modified: instant,
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: stackAlphabet,
+    initialStackSymbol: initialStackSymbol,
   );
 }
 

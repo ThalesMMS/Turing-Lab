@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/pda.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/grammar.dart';
@@ -23,9 +24,12 @@ import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_pt.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 
 class _FakePdaExamplesDataSource extends ExamplesAssetDataSource {
   _FakePdaExamplesDataSource() : example = _buildPdaExample();
@@ -73,6 +77,7 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
   WidgetTester tester, {
   PDA? initialPda,
   PDAAcceptanceMode acceptanceMode = PDAAcceptanceMode.finalState,
+  Locale locale = const Locale('en'),
 }) async {
   final pdaNotifier = PDAEditorNotifier();
   if (initialPda != null) {
@@ -102,6 +107,9 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
         canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
       child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: PDAAlgorithmPanel(
             useExpanded: false,
@@ -117,12 +125,10 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
   );
 
   await tester.pump();
-  await _pumpUntilFound(
-    tester,
-    find.text(
-      AppLocalizationsEn().localizedExampleName('APD - Palíndromo'),
-    ),
-  );
+  final localizedExampleName = locale.languageCode == 'pt'
+      ? AppLocalizationsPt().localizedExampleName('APD - Palíndromo')
+      : AppLocalizationsEn().localizedExampleName('APD - Palíndromo');
+  await _pumpUntilFound(tester, find.text(localizedExampleName));
 
   return _PdaPanelHarness(
     notifier: pdaNotifier,
@@ -363,6 +369,40 @@ Future<void> _pumpUntilPdaLoaded(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('hosts generic PDA interoperability operations', (tester) async {
+    final pda = _buildPdaExample().payload;
+    await _pumpPdaAlgorithmPanel(tester, initialPda: pda);
+
+    final panel = tester.widget<FileOperationsPanel>(
+      find.byType(FileOperationsPanel),
+    );
+    expect(panel.interoperability?.systemKey, DefaultFormalSystemIds.pda);
+    expect(panel.interoperability?.currentDocument?.document, same(pda));
+    expect(
+      find.byKey(const ValueKey<String>('interoperability_import_document')),
+      findsOneWidget,
+    );
+    expect(find.text('Load JFLAP'), findsNothing);
+  });
+
+  testWidgets('offers PDA import before a document exists', (tester) async {
+    await _pumpPdaAlgorithmPanel(tester);
+
+    final panel = tester.widget<FileOperationsPanel>(
+      find.byType(FileOperationsPanel),
+    );
+    expect(panel.interoperability?.systemKey, DefaultFormalSystemIds.pda);
+    expect(panel.interoperability?.currentDocument, isNull);
+    expect(
+      find.byKey(const ValueKey<String>('interoperability_import_document')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('interoperability_export_jflap-xml')),
+      findsNothing,
+    );
+  });
+
   testWidgets('shows empty results before running an analysis', (tester) async {
     await _pumpPdaAlgorithmPanel(tester);
 
@@ -389,10 +429,7 @@ void main() {
     tester,
   ) async {
     final pda = _buildPdaExample().payload;
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: pda,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: pda);
 
     await tester.ensureVisible(find.text('Language Analysis'));
     await tester.tap(find.text('Language Analysis'));
@@ -453,9 +490,51 @@ void main() {
     );
   });
 
-  testWidgets('PDA to CFG cancel preserves the loaded grammar', (
+  testWidgets('PDA to CFG conversion summary is localized in Portuguese', (
     tester,
   ) async {
+    await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: _buildPdaExample().payload,
+      locale: const Locale('pt'),
+    );
+
+    await tester.ensureVisible(find.text('Converter para GLC'));
+    await tester.tap(find.text('Converter para GLC'));
+    await _pumpUntilFound(tester, find.text('Gramática gerada'));
+
+    expect(find.textContaining('A gramática gerada possui'), findsOneWidget);
+    expect(find.textContaining('GLC gerada a partir do AP'), findsOneWidget);
+    expect(find.textContaining('Start productions:'), findsNothing);
+    expect(find.textContaining('Generated grammar has'), findsNothing);
+  });
+
+  testWidgets(
+    'PDA to CFG conversion stays usable on a narrow Portuguese viewport',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPdaAlgorithmPanel(
+        tester,
+        initialPda: _buildPdaExample().payload,
+        locale: const Locale('pt'),
+      );
+
+      await tester.ensureVisible(find.text('Converter para GLC'));
+      await tester.tap(find.text('Converter para GLC'));
+      await _pumpUntilFound(tester, find.text('Gramática gerada'));
+
+      expect(find.textContaining('A gramática gerada possui'), findsOneWidget);
+      expect(find.textContaining('GLC gerada a partir do AP'), findsOneWidget);
+      expect(find.textContaining('[q0, Z, q1]'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('PDA to CFG cancel preserves the loaded grammar', (tester) async {
     await _pumpPdaAlgorithmPanel(
       tester,
       initialPda: _buildPdaExample().payload,
@@ -505,10 +584,7 @@ void main() {
     tester,
   ) async {
     final source = _buildLambdaPopPda();
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: source,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: source);
 
     await tester.ensureVisible(find.text('Convert to CFG'));
     await tester.tap(find.text('Convert to CFG'));
@@ -554,11 +630,15 @@ void main() {
 
     expect(harness.notifier.currentPda, same(source));
     expect(harness.appliedPdas, isEmpty);
-    expect(find.text('Active acceptance: final state and empty stack'),
-        findsOneWidget);
+    expect(
+      find.text('Active acceptance: final state and empty stack'),
+      findsOneWidget,
+    );
     expect(find.text('States: 3 → 2'), findsOneWidget);
     expect(
-        find.textContaining('uncertain states were retained'), findsOneWidget);
+      find.textContaining('uncertain states were retained'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
@@ -583,10 +663,7 @@ void main() {
     tester,
   ) async {
     final source = _buildPdaExample().payload;
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: source,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: source);
 
     await tester.ensureVisible(find.text('Simplify PDA'));
     await tester.tap(find.text('Simplify PDA'));
@@ -600,43 +677,37 @@ void main() {
     expect(harness.notifier.currentPda, same(source));
   });
 
-  testWidgets('loads PDA examples from the configured catalog into the editor',
-      (
-    tester,
-  ) async {
-    final harness = await _pumpPdaAlgorithmPanel(tester);
+  testWidgets(
+    'loads PDA examples from the configured catalog into the editor',
+    (tester) async {
+      final harness = await _pumpPdaAlgorithmPanel(tester);
 
-    final exampleLabel =
-        AppLocalizationsEn().localizedExampleName('APD - Palíndromo');
-    expect(find.text(exampleLabel), findsOneWidget);
+      final exampleLabel = AppLocalizationsEn().localizedExampleName(
+        'APD - Palíndromo',
+      );
+      expect(find.text(exampleLabel), findsOneWidget);
 
-    await tester.tap(find.text(exampleLabel));
-    await _pumpUntilPdaLoaded(tester, harness.notifier);
+      await tester.tap(find.text(exampleLabel));
+      await _pumpUntilPdaLoaded(tester, harness.notifier);
 
-    final pda = harness.notifier.state.pda;
-    expect(pda, isNotNull);
-    expect(pda!.name, equals('APD - Palíndromo'));
-    expect(pda.pdaTransitions, isNotEmpty);
-    expect(pda.initialStackSymbol, equals('Z'));
-  });
+      final pda = harness.notifier.state.pda;
+      expect(pda, isNotNull);
+      expect(pda!.name, equals('APD - Palíndromo'));
+      expect(pda.pdaTransitions, isNotEmpty);
+      expect(pda.initialStackSymbol, equals('Z'));
+    },
+  );
 
   testWidgets('reachable-state analysis emits stable PDA state ids', (
     tester,
   ) async {
     final pda = _buildPdaExample().payload;
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: pda,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: pda);
 
     final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Find Reachable States'));
     await tester.tap(find.text('Find Reachable States'));
-    await _pumpUntilHighlightEvent(
-      tester,
-      harness.output,
-      previousEventCount,
-    );
+    await _pumpUntilHighlightEvent(tester, harness.output, previousEventCount);
 
     expect(harness.output.events, isNotEmpty);
     expect(harness.output.events.last!.stateIds, {
@@ -650,19 +721,12 @@ void main() {
     tester,
   ) async {
     final pda = _buildNondeterministicPda();
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: pda,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: pda);
 
     final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Check Determinism'));
     await tester.tap(find.text('Check Determinism'));
-    await _pumpUntilHighlightEvent(
-      tester,
-      harness.output,
-      previousEventCount,
-    );
+    await _pumpUntilHighlightEvent(tester, harness.output, previousEventCount);
 
     expect(harness.output.events, isNotEmpty);
     expect(harness.output.events.last!.transitionIds, {
@@ -675,10 +739,7 @@ void main() {
     tester,
   ) async {
     final pda = _buildPdaExample().payload;
-    final harness = await _pumpPdaAlgorithmPanel(
-      tester,
-      initialPda: pda,
-    );
+    final harness = await _pumpPdaAlgorithmPanel(tester, initialPda: pda);
     final validation = harness.coordinator.source(
       CanvasHighlightSource.validation,
     );
@@ -691,11 +752,7 @@ void main() {
     final previousEventCount = harness.output.events.length;
     await tester.ensureVisible(find.text('Find Reachable States'));
     await tester.tap(find.text('Find Reachable States'));
-    await _pumpUntilHighlightEvent(
-      tester,
-      harness.output,
-      previousEventCount,
-    );
+    await _pumpUntilHighlightEvent(tester, harness.output, previousEventCount);
     expect(harness.output.events.last!.stateIds, isNotEmpty);
 
     await tester.pumpWidget(const SizedBox.shrink());

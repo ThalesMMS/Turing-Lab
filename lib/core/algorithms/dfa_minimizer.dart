@@ -16,9 +16,17 @@ import '../models/fsa.dart';
 import '../models/state.dart';
 import '../models/fsa_transition.dart';
 import '../models/dfa_minimization_step.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'dfa_minimizer_messages.dart';
 import 'state_renamer.dart';
+
+Result<T> _failure<T>(String legacy, StructuredMessage message) =>
+    Failure<T>(legacy, structuredMessage: message);
+
+Result<T> _propagateFailure<T>(Result<dynamic> result) =>
+    Failure<T>(result.error!, structuredMessage: result.structuredError);
 
 /// Minimizes a Deterministic Finite Automaton (DFA) using the Hopcroft algorithm
 class DFAMinimizer {
@@ -28,17 +36,23 @@ class DFAMinimizer {
       // Validate input
       final validationResult = _validateInput(dfa);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _propagateFailure(validationResult);
       }
 
       // Handle empty DFA
       if (dfa.states.isEmpty) {
-        return ResultFactory.failure('Cannot minimize empty DFA');
+        return _failure(
+          'Cannot minimize empty DFA',
+          DfaMinimizerMessages.emptyDfa(),
+        );
       }
 
       // Handle DFA with no initial state
       if (dfa.initialState == null) {
-        return ResultFactory.failure('DFA must have an initial state');
+        return _failure(
+          'DFA must have an initial state',
+          DfaMinimizerMessages.missingInitialState(),
+        );
       }
 
       // Step 1: Remove unreachable states
@@ -52,35 +66,51 @@ class DFAMinimizer {
 
       return ResultFactory.success(minimizedDFA);
     } catch (e) {
-      return ResultFactory.failure('Error minimizing DFA: $e');
+      return _failure(
+        'Error minimizing DFA: $e',
+        DfaMinimizerMessages.minimizationFailed(),
+      );
     }
   }
 
   /// Validates the input DFA
   static Result<void> _validateInput(FSA dfa) {
     if (dfa.states.isEmpty) {
-      return ResultFactory.failure('DFA must have at least one state');
+      return _failure(
+        'DFA must have at least one state',
+        DfaMinimizerMessages.emptyDfa(),
+      );
     }
 
     if (dfa.initialState == null) {
-      return ResultFactory.failure('DFA must have an initial state');
+      return _failure(
+        'DFA must have an initial state',
+        DfaMinimizerMessages.missingInitialState(),
+      );
     }
 
     if (!dfa.states.contains(dfa.initialState)) {
-      return ResultFactory.failure('Initial state must be in the states set');
+      return _failure(
+        'Initial state must be in the states set',
+        DfaMinimizerMessages.initialStateOutsideSet(),
+      );
     }
 
     for (final acceptingState in dfa.acceptingStates) {
       if (!dfa.states.contains(acceptingState)) {
-        return ResultFactory.failure(
+        return _failure(
           'Accepting state must be in the states set',
+          DfaMinimizerMessages.acceptingStateOutsideSet(),
         );
       }
     }
 
     // Check if DFA is deterministic
     if (!dfa.isDeterministic) {
-      return ResultFactory.failure('Input must be a deterministic automaton');
+      return _failure(
+        'Input must be a deterministic automaton',
+        DfaMinimizerMessages.nondeterministicInput(),
+      );
     }
 
     return ResultFactory.success(null);
@@ -128,8 +158,9 @@ class DFAMinimizer {
   /// Minimizes DFA using Hopcroft algorithm
   static FSA _minimizeWithHopcroft(FSA dfa) {
     // Filter alphabet to exclude epsilon-like symbols if present
-    final workingAlphabet =
-        dfa.alphabet.where((s) => !isEpsilonSymbol(s)).toSet();
+    final workingAlphabet = dfa.alphabet
+        .where((s) => !isEpsilonSymbol(s))
+        .toSet();
 
     // Initialize partition with accepting and non-accepting states
     final partition = <Set<State>>[
@@ -234,17 +265,18 @@ class DFAMinimizer {
     final initialId = newInitialState?.id;
     final fixedStates = <State>{};
     for (final s in newStates) {
-      fixedStates.add(s.copyWith(
-        isAccepting: acceptingIds.contains(s.id),
-        isInitial: s.id == initialId,
-      ));
+      fixedStates.add(
+        s.copyWith(
+          isAccepting: acceptingIds.contains(s.id),
+          isInitial: s.id == initialId,
+        ),
+      );
     }
-    final statesById = <String, State>{
-      for (final s in fixedStates) s.id: s,
-    };
+    final statesById = <String, State>{for (final s in fixedStates) s.id: s};
     final fixedInitialState = initialId != null ? statesById[initialId] : null;
-    final fixedAcceptingStates =
-        fixedStates.where((s) => s.isAccepting).toSet();
+    final fixedAcceptingStates = fixedStates
+        .where((s) => s.isAccepting)
+        .toSet();
 
     // Update stateMap to point to fixed state objects
     for (final entry in stateMap.entries) {
@@ -305,8 +337,9 @@ class DFAMinimizer {
   static State _createMinimizedState(Set<State> equivalenceClass, int counter) {
     final stateIds = equivalenceClass.map((s) => s.id).toList()..sort();
     final stateId = 'q${counter}_min';
-    final stateLabel =
-        stateIds.length == 1 ? stateIds.first : '{${stateIds.join(',')}}';
+    final stateLabel = stateIds.length == 1
+        ? stateIds.first
+        : '{${stateIds.join(',')}}';
 
     // Calculate position as center of the states
     double sumX = 0;
@@ -339,7 +372,7 @@ class DFAMinimizer {
       // Step 1: Validate input
       final validationResult = _validateInput(dfa);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _propagateFailure(validationResult);
       }
 
       // Step 2: Remove unreachable states
@@ -385,7 +418,10 @@ class DFAMinimizer {
 
       return ResultFactory.success(result);
     } catch (e) {
-      return ResultFactory.failure('Error minimizing DFA with steps: $e');
+      return _failure(
+        'Error minimizing DFA with steps: $e',
+        DfaMinimizerMessages.minimizationWithStepsFailed(),
+      );
     }
   }
 
@@ -398,8 +434,9 @@ class DFAMinimizer {
     int stepCounter = initialStepCounter;
 
     // Filter alphabet to exclude epsilon-like symbols if present
-    final workingAlphabet =
-        dfa.alphabet.where((s) => !isEpsilonSymbol(s)).toSet();
+    final workingAlphabet = dfa.alphabet
+        .where((s) => !isEpsilonSymbol(s))
+        .toSet();
 
     // Initialize partition with accepting and non-accepting states
     final partition = <Set<State>>[
@@ -537,8 +574,9 @@ class DFAMinimizer {
     // Capture state creation steps
     int stateIndex = 0;
     for (final equivalenceClass in partition) {
-      final isAccepting =
-          equivalenceClass.intersection(dfa.acceptingStates).isNotEmpty;
+      final isAccepting = equivalenceClass
+          .intersection(dfa.acceptingStates)
+          .isNotEmpty;
       final isInitial = equivalenceClass.contains(dfa.initialState);
       final stateId = 'q${stateIndex}_min';
 

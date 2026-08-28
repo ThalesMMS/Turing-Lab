@@ -4,12 +4,14 @@ import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/algorithms/pda_simplifier.dart';
+import 'package:turing_lab/core/algorithms/pda_simplification_messages.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/core/models/pda_simplification.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 
 void main() {
   group('PDASimplifier contract', () {
@@ -27,6 +29,7 @@ void main() {
       expect(result.isSuccess, isTrue, reason: result.error);
       final report = result.data!;
       expect(report.acceptanceMode, PDAAcceptanceMode.emptyStack);
+      expect(report.simplifiedPda.acceptanceMode, PDAAcceptanceMode.emptyStack);
       expect(
         report.simplifiedPda.states.map((state) => state.id),
         contains('uncertain'),
@@ -46,12 +49,13 @@ void main() {
         PDAAcceptanceMode.finalState,
         PDAAcceptanceMode.both,
       ]) {
-        final result = PDASimplifier.simplify(
-          pda,
-          acceptanceMode: mode,
-        );
+        final result = PDASimplifier.simplify(pda, acceptanceMode: mode);
         expect(result.isFailure, isTrue);
-        expect(result.error, contains('accepting state'));
+        expect(result.error, 'pda.simplification.missing-accepting-state');
+        expect(
+          result.structuredError,
+          PdaSimplificationMessages.missingAcceptingState(mode),
+        );
       }
     });
 
@@ -83,11 +87,9 @@ void main() {
                 'reason',
                 PDASimplificationChangeReason.unreachableControlState,
               )
-              .having(
-            (change) => change.sourceIds,
-            'sourceIds',
-            ['unreachable'],
-          ),
+              .having((change) => change.sourceIds, 'sourceIds', [
+                'unreachable',
+              ]),
         ),
       );
     });
@@ -115,7 +117,11 @@ void main() {
       );
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('outside the PDA alphabet'));
+      expect(
+        result.error,
+        'pda.simplification.transition-input-symbol-outside-alphabet',
+      );
+      expect(result.structuredError, isNotNull);
     });
 
     test('rejects colliding source transition identifiers', () {
@@ -136,7 +142,8 @@ void main() {
       );
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('Transition IDs must be unique'));
+      expect(result.error, 'pda.simplification.duplicate-transition-ids');
+      expect(result.structuredError, isNotNull);
     });
   });
 
@@ -194,8 +201,9 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue, reason: result.error);
-      final remainingIds =
-          result.data!.simplifiedPda.states.map((state) => state.id).toSet();
+      final remainingIds = result.data!.simplifiedPda.states
+          .map((state) => state.id)
+          .toSet();
       expect(remainingIds, containsAll({'toward-accept', 'toward-dead'}));
     });
 
@@ -208,8 +216,9 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue, reason: result.error);
-      final remainingIds =
-          result.data!.simplifiedPda.states.map((state) => state.id).toSet();
+      final remainingIds = result.data!.simplifiedPda.states
+          .map((state) => state.id)
+          .toSet();
       expect(
         remainingIds,
         containsAll({'input', 'pop', 'push-order', 'lambda'}),
@@ -241,6 +250,40 @@ void main() {
   });
 
   group('PDASimplifier determinism and evidence', () {
+    test('exposes structured phase, warning, and evidence messages', () {
+      final result = PDASimplifier.simplify(
+        _cyclicBisimilarPda(),
+        acceptanceMode: PDAAcceptanceMode.finalState,
+        options: const PDASimplificationOptions(
+          boundedCheck: PDABoundedLanguageCheck(alphabet: {'a'}, maxLength: 1),
+        ),
+      );
+
+      expect(result.isSuccess, isTrue, reason: result.error);
+      final report = result.data!;
+      final reachability = report.phase(
+        PDASimplificationPhase.structuralReachability,
+      );
+      expect(reachability.descriptionMessage, isNotNull);
+      expect(
+        reachability.description,
+        reachability.descriptionMessage!.stableCode,
+      );
+      expect(report.structuredWarnings, [
+        PdaSimplificationMessages.semanticUsefulnessUnavailable(),
+      ]);
+
+      final evidence = report.sampledEvidence!;
+      expect(evidence.descriptionMessage, isNotNull);
+      expect(evidence.description, evidence.descriptionMessage!.stableCode);
+      expect(
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(evidence.descriptionMessage!.toJson()),
+        ),
+        evidence.descriptionMessage,
+      );
+    });
+
     test('is independent of state and transition insertion order', () {
       final baseline = PDASimplifier.simplify(
         _cyclicBisimilarPda(),
@@ -278,10 +321,7 @@ void main() {
 
       expect(second.isSuccess, isTrue, reason: second.error);
       expect(second.data!.changed, isFalse);
-      expect(
-        second.data!.simplifiedPda.toJson(),
-        first.simplifiedPda.toJson(),
-      );
+      expect(second.data!.simplifiedPda.toJson(), first.simplifiedPda.toJson());
     });
 
     test('labels bounded comparison as sampled evidence, not proof', () {
@@ -301,10 +341,7 @@ void main() {
       expect(evidence, isNotNull);
       expect(evidence!.isProof, isFalse);
       expect(evidence.wordsChecked, 40);
-      expect(
-        evidence.description.toLowerCase(),
-        contains('sample'),
-      );
+      expect(evidence.description.toLowerCase(), contains('sample'));
       expect(
         result.data!.phase(PDASimplificationPhase.boundedLanguageCheck).status,
         PDASimplificationPhaseStatus.completed,
@@ -329,66 +366,64 @@ void main() {
       }
     });
 
-    test('covers representative PDA languages with sampled regression checks',
-        () {
-      final cases = <({
-        String name,
-        PDA pda,
-        PDAAcceptanceMode mode,
-        int maxLength,
-      })>[
-        (
-          name: 'epsilon',
-          pda: _epsilonPda(),
-          mode: PDAAcceptanceMode.finalState,
-          maxLength: 2,
-        ),
-        (
-          name: 'empty language',
-          pda: _emptyLanguagePda(),
-          mode: PDAAcceptanceMode.finalState,
-          maxLength: 3,
-        ),
-        (
-          name: 'residual-stack final-state acceptance',
-          pda: _residualStackFinalStatePda(),
-          mode: PDAAcceptanceMode.finalState,
-          maxLength: 3,
-        ),
-        (
-          name: 'empty-stack acceptance without finals',
-          pda: _emptyStackAcceptancePda(),
-          mode: PDAAcceptanceMode.emptyStack,
-          maxLength: 3,
-        ),
-        (
-          name: 'a^n b^n with combined acceptance',
-          pda: _anbnPda(),
-          mode: PDAAcceptanceMode.both,
-          maxLength: 4,
-        ),
-      ];
+    test(
+      'covers representative PDA languages with sampled regression checks',
+      () {
+        final cases =
+            <({String name, PDA pda, PDAAcceptanceMode mode, int maxLength})>[
+              (
+                name: 'epsilon',
+                pda: _epsilonPda(),
+                mode: PDAAcceptanceMode.finalState,
+                maxLength: 2,
+              ),
+              (
+                name: 'empty language',
+                pda: _emptyLanguagePda(),
+                mode: PDAAcceptanceMode.finalState,
+                maxLength: 3,
+              ),
+              (
+                name: 'residual-stack final-state acceptance',
+                pda: _residualStackFinalStatePda(),
+                mode: PDAAcceptanceMode.finalState,
+                maxLength: 3,
+              ),
+              (
+                name: 'empty-stack acceptance without finals',
+                pda: _emptyStackAcceptancePda(),
+                mode: PDAAcceptanceMode.emptyStack,
+                maxLength: 3,
+              ),
+              (
+                name: 'a^n b^n with combined acceptance',
+                pda: _anbnPda(),
+                mode: PDAAcceptanceMode.both,
+                maxLength: 4,
+              ),
+            ];
 
-      for (final testCase in cases) {
-        final result = PDASimplifier.simplify(
-          testCase.pda,
-          acceptanceMode: testCase.mode,
-          options: PDASimplificationOptions(
-            boundedCheck: PDABoundedLanguageCheck(
-              alphabet: testCase.pda.alphabet,
-              maxLength: testCase.maxLength,
+        for (final testCase in cases) {
+          final result = PDASimplifier.simplify(
+            testCase.pda,
+            acceptanceMode: testCase.mode,
+            options: PDASimplificationOptions(
+              boundedCheck: PDABoundedLanguageCheck(
+                alphabet: testCase.pda.alphabet,
+                maxLength: testCase.maxLength,
+              ),
             ),
-          ),
-        );
+          );
 
-        expect(
-          result.isSuccess,
-          isTrue,
-          reason: '${testCase.name}: ${result.error}',
-        );
-        expect(result.data!.sampledEvidence, isNotNull);
-      }
-    });
+          expect(
+            result.isSuccess,
+            isTrue,
+            reason: '${testCase.name}: ${result.error}',
+          );
+          expect(result.data!.sampledEvidence, isNotNull);
+        }
+      },
+    );
   });
 }
 
@@ -422,12 +457,7 @@ PDA _pdaWithUnreachableState() {
     id: 'unreachable-pda',
     states: [start, accept, unreachable],
     transitions: [
-      _transition(
-        id: 'accept-a',
-        from: start,
-        to: accept,
-        input: 'a',
-      ),
+      _transition(id: 'accept-a', from: start, to: accept, input: 'a'),
       _transition(
         id: 'unreachable-loop',
         from: unreachable,
@@ -542,12 +572,7 @@ PDA _differentPayloadPda() {
         input: 'b',
         push: const ['A', 'Z'],
       ),
-      _transition(
-        id: 'by-lambda',
-        from: lambda,
-        to: accept,
-        lambdaInput: true,
-      ),
+      _transition(id: 'by-lambda', from: lambda, to: accept, lambdaInput: true),
     ],
     initial: start,
     accepting: [accept],
@@ -745,8 +770,9 @@ PDATransition _transition({
     isLambdaInput: lambdaInput,
     isLambdaPop: lambdaPop,
     isLambdaPush: lambdaPush,
-    controlPoint:
-        from == to ? Vector2(from.position.x + 24, from.position.y + 24) : null,
+    controlPoint: from == to
+        ? Vector2(from.position.x + 24, from.position.y + 24)
+        : null,
   );
 }
 
@@ -790,18 +816,14 @@ String _semanticTransitionKey(PDATransition transition) {
 }
 
 Map<String, Object?> _structuralPdaDescription(PDA pda) {
-  final states = pda.states
-      .map(
-        (state) => [
-          state.id,
-          state.isInitial,
-          state.isAccepting,
-        ],
-      )
-      .toList()
-    ..sort((left, right) => left.first.toString().compareTo(
-          right.first.toString(),
-        ));
+  final states =
+      pda.states
+          .map((state) => [state.id, state.isInitial, state.isAccepting])
+          .toList()
+        ..sort(
+          (left, right) =>
+              left.first.toString().compareTo(right.first.toString()),
+        );
   final transitions = pda.pdaTransitions.map(_semanticTransitionKey).toList()
     ..sort();
   return {

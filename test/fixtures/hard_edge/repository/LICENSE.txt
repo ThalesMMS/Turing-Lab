@@ -1,0 +1,2 @@
+Repository-level hard-edge fixtures are independently authored for Turing Lab
+and distributed under the repository Apache-2.0 license.

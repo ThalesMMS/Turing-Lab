@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -54,6 +56,112 @@ void main() {
       expect(notifier.state.pda, isNull);
       expect(notifier.state.result, isNull);
       expect(notifier.state.currentStepIndex, 0);
+    });
+
+    test('acceptance mode stays synchronized with the editor document', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final source = _pda('mode');
+      container.read(pdaEditorProvider.notifier).setPda(source);
+      final notifier = container.read(pdaSimulationProvider.notifier)
+        ..setPda(source)
+        ..setAcceptanceMode(PDAAcceptanceMode.emptyStack);
+
+      expect(notifier.state.mode, PDAAcceptanceMode.emptyStack);
+      expect(notifier.state.pda?.acceptanceMode, PDAAcceptanceMode.emptyStack);
+      expect(
+        container.read(pdaEditorProvider).pda?.acceptanceMode,
+        PDAAcceptanceMode.emptyStack,
+      );
+      expect(
+        container
+            .read(pdaEditorProvider)
+            .pda!
+            .modified
+            .isAfter(source.modified),
+        isTrue,
+      );
+      final changed = container.read(pdaEditorProvider).pda!;
+      expect(changed.created, source.created);
+
+      notifier.setAcceptanceMode(PDAAcceptanceMode.emptyStack);
+
+      expect(container.read(pdaEditorProvider).pda!.modified, changed.modified);
+      expect(notifier.state.result, isNull);
+    });
+
+    test('canvas updates preserve document stack and acceptance settings', () {
+      final source = _pda('canvas').copyWith(
+        stackAlphabet: const {'BOTTOM'},
+        initialStackSymbol: 'BOTTOM',
+        acceptanceMode: PDAAcceptanceMode.both,
+      );
+      final notifier = PDAEditorNotifier()..setPda(source);
+      addTearDown(notifier.dispose);
+
+      notifier.updateFromCanvas(
+        states: source.states.toList(),
+        transitions: source.pdaTransitions.toList(),
+      );
+
+      expect(notifier.currentPda?.initialStackSymbol, 'BOTTOM');
+      expect(notifier.currentPda?.stackAlphabet, contains('BOTTOM'));
+      expect(notifier.currentPda?.acceptanceMode, PDAAcceptanceMode.both);
+    });
+
+    test('canvas updates preserve a document with no final states', () {
+      final original = _pda('empty-stack-only');
+      final state = original.states.single.copyWith(isAccepting: false);
+      final source = original.copyWith(
+        states: {state},
+        initialState: state,
+        acceptingStates: const {},
+        acceptanceMode: PDAAcceptanceMode.emptyStack,
+      );
+      final notifier = PDAEditorNotifier()..setPda(source);
+      addTearDown(notifier.dispose);
+
+      notifier.updateFromCanvas(
+        states: source.states.toList(),
+        transitions: source.pdaTransitions.toList(),
+      );
+
+      expect(notifier.currentPda?.acceptingStates, isEmpty);
+      expect(
+        notifier.currentPda?.acceptanceMode,
+        PDAAcceptanceMode.emptyStack,
+      );
+    });
+
+    test('fresh canvas state does not invent a final state', () {
+      final canvasState = automaton_state.State(
+        id: 'fresh',
+        label: 'fresh',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final notifier = PDAEditorNotifier();
+      addTearDown(notifier.dispose);
+
+      notifier.updateFromCanvas(
+        states: [canvasState],
+        transitions: const [],
+      );
+
+      expect(notifier.currentPda?.acceptingStates, isEmpty);
+      expect(
+        notifier.currentPda?.acceptanceMode,
+        PDAAcceptanceMode.finalState,
+      );
+    });
+
+    test('empty canvas clears the document without inventing states', () {
+      final notifier = PDAEditorNotifier()..setPda(_pda('existing'));
+      addTearDown(notifier.dispose);
+
+      notifier.updateFromCanvas(states: const [], transitions: const []);
+
+      expect(notifier.currentPda, isNull);
     });
   });
 }

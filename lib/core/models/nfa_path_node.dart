@@ -13,6 +13,8 @@
 
 import 'dart:collection';
 
+import '../messages/structured_message.dart';
+
 /// Single node in an NFA computation tree representing a branch point
 class NFAPathNode {
   /// Current state ID at this node
@@ -27,6 +29,9 @@ class NFAPathNode {
   /// Transition description used to reach this node
   final String? transitionUsed;
 
+  /// Stable transition IDs used to reach this node, in execution order.
+  final List<String> transitionIds;
+
   /// Step number in the simulation
   final int stepNumber;
 
@@ -39,20 +44,32 @@ class NFAPathNode {
   /// Whether this path is a dead-end (no valid transitions)
   final bool isDeadEnd;
 
+  /// Whether this node summarizes an epsilon path that closes a cycle.
+  final bool isCycle;
+
   /// Optional description of this node
   final String? description;
+
+  /// Locale-neutral replacement for [description].
+  final StructuredMessage? descriptionMessage;
 
   const NFAPathNode({
     required this.currentState,
     required this.remainingInput,
     this.inputSymbol,
     this.transitionUsed,
+    this.transitionIds = const [],
     required this.stepNumber,
     this.children = const [],
     this.isAccepting = false,
     this.isDeadEnd = false,
+    this.isCycle = false,
     this.description,
-  });
+    this.descriptionMessage,
+  }) : assert(
+         description == null || descriptionMessage == null,
+         'A path node cannot contain both legacy and structured descriptions.',
+       );
 
   /// Creates a copy of this path node with updated properties
   NFAPathNode copyWith({
@@ -60,22 +77,28 @@ class NFAPathNode {
     String? remainingInput,
     String? inputSymbol,
     String? transitionUsed,
+    List<String>? transitionIds,
     int? stepNumber,
     List<NFAPathNode>? children,
     bool? isAccepting,
     bool? isDeadEnd,
+    bool? isCycle,
     String? description,
+    StructuredMessage? descriptionMessage,
   }) {
     return NFAPathNode(
       currentState: currentState ?? this.currentState,
       remainingInput: remainingInput ?? this.remainingInput,
       inputSymbol: inputSymbol ?? this.inputSymbol,
       transitionUsed: transitionUsed ?? this.transitionUsed,
+      transitionIds: transitionIds ?? this.transitionIds,
       stepNumber: stepNumber ?? this.stepNumber,
       children: children ?? this.children,
       isAccepting: isAccepting ?? this.isAccepting,
       isDeadEnd: isDeadEnd ?? this.isDeadEnd,
+      isCycle: isCycle ?? this.isCycle,
       description: description ?? this.description,
+      descriptionMessage: descriptionMessage ?? this.descriptionMessage,
     );
   }
 
@@ -91,11 +114,14 @@ class NFAPathNode {
       'remainingInput': remainingInput,
       'inputSymbol': inputSymbol,
       'transitionUsed': transitionUsed,
+      'transitionIds': transitionIds,
       'stepNumber': stepNumber,
       'children': children.map((c) => c.toJson()).toList(),
       'isAccepting': isAccepting,
       'isDeadEnd': isDeadEnd,
+      'isCycle': isCycle,
       'description': description,
+      'descriptionMessage': descriptionMessage?.toJson(),
     };
   }
 
@@ -106,14 +132,24 @@ class NFAPathNode {
       remainingInput: json['remainingInput'] as String,
       inputSymbol: json['inputSymbol'] as String?,
       transitionUsed: json['transitionUsed'] as String?,
+      transitionIds:
+          (json['transitionIds'] as List?)?.whereType<String>().toList() ??
+          const [],
       stepNumber: json['stepNumber'] as int,
-      children: (json['children'] as List?)
+      children:
+          (json['children'] as List?)
               ?.map((c) => NFAPathNode.fromJson(c as Map<String, dynamic>))
               .toList() ??
           const [],
       isAccepting: json['isAccepting'] as bool? ?? false,
       isDeadEnd: json['isDeadEnd'] as bool? ?? false,
+      isCycle: json['isCycle'] as bool? ?? false,
       description: json['description'] as String?,
+      descriptionMessage: json['descriptionMessage'] is Map
+          ? StructuredMessage.fromJson(
+              Map<String, Object?>.from(json['descriptionMessage'] as Map),
+            )
+          : null,
     );
   }
 
@@ -125,11 +161,14 @@ class NFAPathNode {
         other.remainingInput == remainingInput &&
         other.inputSymbol == inputSymbol &&
         other.transitionUsed == transitionUsed &&
+        _listEquals(other.transitionIds, transitionIds) &&
         other.stepNumber == stepNumber &&
         _listEquals(other.children, children) &&
         other.isAccepting == isAccepting &&
         other.isDeadEnd == isDeadEnd &&
-        other.description == description;
+        other.isCycle == isCycle &&
+        other.description == description &&
+        other.descriptionMessage == descriptionMessage;
   }
 
   @override
@@ -139,11 +178,14 @@ class NFAPathNode {
       remainingInput,
       inputSymbol,
       transitionUsed,
+      Object.hashAll(transitionIds),
       stepNumber,
       Object.hashAll(children),
       isAccepting,
       isDeadEnd,
+      isCycle,
       description,
+      descriptionMessage,
     );
   }
 

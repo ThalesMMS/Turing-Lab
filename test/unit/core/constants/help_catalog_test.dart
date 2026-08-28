@@ -54,16 +54,12 @@ final duplicateFixture = HelpCatalog(
         HelpSubsectionDefinition(
           id: 'fsa.editor',
           icon: 'edit',
-          children: [
-            HelpTopicDefinition(id: 'shared.topic', icon: 'help'),
-          ],
+          children: [HelpTopicDefinition(id: 'shared.topic', icon: 'help')],
         ),
         HelpSubsectionDefinition(
           id: 'fsa.theory',
           icon: 'school',
-          children: [
-            HelpTopicDefinition(id: 'shared.topic', icon: 'help'),
-          ],
+          children: [HelpTopicDefinition(id: 'shared.topic', icon: 'help')],
         ),
       ],
     ),
@@ -188,14 +184,21 @@ void main() {
     final topic = copy['topic']!;
     expect(copy.entries.keys, ['topic']);
     expect(topic.keywords, ['parser']);
-    expect(topic.blocks.whereType<HelpParagraphBlock>().single.text,
-        'The original searchable summary.');
-    expect(topic.blocks.whereType<HelpHeadingBlock>().single.text,
-        'How to use it');
-    expect(topic.blocks.whereType<HelpOrderedStepsBlock>().single.steps,
-        ['Choose a strategy.']);
-    expect(topic.blocks.whereType<HelpCalloutBlock>().single.text,
-        'Resolve validation errors first.');
+    expect(
+      topic.blocks.whereType<HelpParagraphBlock>().single.text,
+      'The original searchable summary.',
+    );
+    expect(
+      topic.blocks.whereType<HelpHeadingBlock>().single.text,
+      'How to use it',
+    );
+    expect(topic.blocks.whereType<HelpOrderedStepsBlock>().single.steps, [
+      'Choose a strategy.',
+    ]);
+    expect(
+      topic.blocks.whereType<HelpCalloutBlock>().single.text,
+      'Resolve validation errors first.',
+    );
     expect(() => copy.entries.clear(), throwsUnsupportedError);
     expect(() => topic.keywords.clear(), throwsUnsupportedError);
     expect(() => topic.blocks.clear(), throwsUnsupportedError);
@@ -238,8 +241,14 @@ void main() {
       'getting-started.quick-start',
       'getting-started.navigation',
       'getting-started.choose-workspace',
+      'getting-started.settings',
       'getting-started.files-and-examples',
+      'getting-started.suggested-simulations',
+      'getting-started.import-automaton-fragments',
+      'getting-started.manual-conversions',
+      'getting-started.document-notes',
       'getting-started.first-input',
+      'getting-started.multiple-input-batches',
       'getting-started.find-help',
       'fsa',
       'fsa.editor',
@@ -273,6 +282,7 @@ void main() {
       'fsa.editor.algorithms.fa-to-regex',
       'fsa.editor.algorithms.fsa-to-grammar',
       'fsa.editor.algorithms.equivalence',
+      'fsa.editor.algorithms.language-comparison-results',
       'fsa.editor.algorithms.step-mode',
       'fsa.editor.files-and-examples',
       'fsa.theory',
@@ -295,15 +305,20 @@ void main() {
       'grammar.editor.productions.validation',
       'grammar.editor.parser',
       'grammar.editor.parser.workflow',
+      'grammar.editor.parser.user-controlled-derivation',
       'grammar.editor.parser.automatic-earley',
       'grammar.editor.parser.brute-force',
       'grammar.editor.parser.cyk',
       'grammar.editor.parser.ll1',
       'grammar.editor.parser.lr',
+      'grammar.editor.parser.lr1-teaching',
+      'grammar.editor.parser.parse-table-teaching',
       'grammar.editor.parser.results-and-steps',
+      'grammar.editor.parser.multiple-runs',
       'grammar.editor.algorithms',
       'grammar.editor.algorithms.overview',
       'grammar.editor.algorithms.cnf',
+      'grammar.editor.algorithms.normalization-practice',
       'grammar.editor.algorithms.gnf',
       'grammar.editor.algorithms.remove-left-recursion',
       'grammar.editor.algorithms.left-factor',
@@ -311,11 +326,13 @@ void main() {
       'grammar.editor.algorithms.follow',
       'grammar.editor.algorithms.parse-table',
       'grammar.editor.algorithms.ambiguity',
+      'grammar.editor.algorithms.variable-dependency-graph',
       'grammar.editor.conversions',
       'grammar.editor.conversions.right-linear-to-fsa',
       'grammar.editor.conversions.pda-general',
       'grammar.editor.conversions.pda-standard',
       'grammar.editor.conversions.pda-greibach',
+      'grammar.editor.conversions.pda-ll-lr',
       'grammar.editor.files-and-examples',
       'grammar.theory',
       'grammar.theory.cfg',
@@ -382,6 +399,7 @@ void main() {
       'tm.editor.tape.inspector',
       'tm.editor.tape.blank-and-alphabet',
       'tm.editor.tape.head-and-current-cell',
+      'tm.editor.multi-tape.synchronized-trace-and-metrics',
       'tm.editor.simulation',
       'tm.editor.simulation.workflow',
       'tm.editor.simulation.trace-and-tape',
@@ -394,6 +412,9 @@ void main() {
       'tm.editor.algorithms.tape-operations',
       'tm.editor.algorithms.time',
       'tm.editor.algorithms.space',
+      'tm.editor.building-blocks',
+      'tm.editor.building-blocks.library-and-execution',
+      'tm.editor.building-blocks.manage-library',
       'tm.editor.files-and-examples',
       'tm.theory',
       'tm.theory.tm',
@@ -431,6 +452,7 @@ void main() {
       'regex.theory.equivalence-with-fsa',
       'pumping',
       'pumping.editor',
+      'pumping.editor.environment-choice',
       'pumping.editor.overview',
       'pumping.editor.game',
       'pumping.editor.difficulty-and-challenges',
@@ -451,6 +473,27 @@ void main() {
       'pumping.theory.regular-example',
       'pumping.theory.nonregular-anbn',
       'pumping.theory.nonregular-ww',
+      'transducers',
+      'transducers.mealy.editor.overview',
+      'transducers.mealy.editor.states-and-transitions',
+      'transducers.moore.editor.overview',
+      'transducers.moore.editor.states-and-transitions',
+      'transducers.editor.canvas-and-alphabets',
+      'transducers.editor.canvas-editing-gestures',
+      'transducers.editor.simulation-and-playback',
+      'transducers.editor.compact-canvas-playback',
+      'transducers.editor.batch-comparison-and-examples',
+      'transducers.editor.files-and-export',
+      'extended-formal-systems',
+      'extended-formal-systems.grammar-unrestricted',
+      'extended-formal-systems.grammar-unrestricted.editing-and-classification',
+      'extended-formal-systems.grammar-unrestricted.derivation-and-dependency-graph',
+      'extended-formal-systems.grammar-unrestricted.examples-files-and-limits',
+      'extended-formal-systems.grammar-unrestricted.tm-to-grammar-construction',
+      'extended-formal-systems.l-system',
+      'extended-formal-systems.l-system.definition-and-rules',
+      'extended-formal-systems.l-system.generations-and-turtle-view',
+      'extended-formal-systems.l-system.examples-files-and-limits',
       'shortcuts',
       'shortcuts.canvas',
       'shortcuts.simulation',
@@ -465,6 +508,7 @@ void main() {
       'troubleshooting.simulation-limits',
       'troubleshooting.parser-strategies',
       'troubleshooting.file-import-export',
+      'troubleshooting.interoperability-review',
       'troubleshooting.missing-state-markers',
       'troubleshooting.nondeterminism',
       'troubleshooting.lost-canvas-view',
@@ -485,6 +529,8 @@ void main() {
       'tm',
       'regex',
       'pumping',
+      'transducers',
+      'extended-formal-systems',
       'shortcuts',
       'troubleshooting',
       'about',
@@ -492,6 +538,29 @@ void main() {
   });
 
   test('global categories expose the complete approved topic inventory', () {
+    expect(topicIdsUnder(kHelpCatalog, 'transducers'), [
+      'transducers.mealy.editor.overview',
+      'transducers.mealy.editor.states-and-transitions',
+      'transducers.moore.editor.overview',
+      'transducers.moore.editor.states-and-transitions',
+      'transducers.editor.canvas-and-alphabets',
+      'transducers.editor.canvas-editing-gestures',
+      'transducers.editor.simulation-and-playback',
+      'transducers.editor.compact-canvas-playback',
+      'transducers.editor.batch-comparison-and-examples',
+      'transducers.editor.files-and-export',
+    ]);
+    expect(topicIdsUnder(kHelpCatalog, 'extended-formal-systems'), [
+      'extended-formal-systems.grammar-unrestricted',
+      'extended-formal-systems.grammar-unrestricted.editing-and-classification',
+      'extended-formal-systems.grammar-unrestricted.derivation-and-dependency-graph',
+      'extended-formal-systems.grammar-unrestricted.examples-files-and-limits',
+      'extended-formal-systems.grammar-unrestricted.tm-to-grammar-construction',
+      'extended-formal-systems.l-system',
+      'extended-formal-systems.l-system.definition-and-rules',
+      'extended-formal-systems.l-system.generations-and-turtle-view',
+      'extended-formal-systems.l-system.examples-files-and-limits',
+    ]);
     expect(topicIdsUnder(kHelpCatalog, 'shortcuts'), [
       'shortcuts.canvas',
       'shortcuts.simulation',
@@ -507,6 +576,7 @@ void main() {
       'troubleshooting.simulation-limits',
       'troubleshooting.parser-strategies',
       'troubleshooting.file-import-export',
+      'troubleshooting.interoperability-review',
       'troubleshooting.missing-state-markers',
       'troubleshooting.nondeterminism',
       'troubleshooting.lost-canvas-view',
@@ -532,20 +602,24 @@ void main() {
   test('grammar keeps editor before theory and has every parser topic', () {
     final grammar = kHelpCatalog.nodeById('grammar')! as HelpCategoryDefinition;
 
-    expect(
-      grammar.children.map((node) => node.id),
-      ['grammar.editor', 'grammar.theory'],
-    );
+    expect(grammar.children.map((node) => node.id), [
+      'grammar.editor',
+      'grammar.theory',
+    ]);
     expect(
       topicIdsUnder(kHelpCatalog, 'grammar.editor.parser'),
       containsAll({
         'grammar.editor.parser.workflow',
+        'grammar.editor.parser.user-controlled-derivation',
         'grammar.editor.parser.automatic-earley',
         'grammar.editor.parser.brute-force',
         'grammar.editor.parser.cyk',
         'grammar.editor.parser.ll1',
         'grammar.editor.parser.lr',
+        'grammar.editor.parser.lr1-teaching',
+        'grammar.editor.parser.parse-table-teaching',
         'grammar.editor.parser.results-and-steps',
+        'grammar.editor.parser.multiple-runs',
       }),
     );
   });
@@ -611,10 +685,7 @@ void main() {
   test('pda keeps editor before theory and exposes every analysis control', () {
     final pda = kHelpCatalog.nodeById('pda')! as HelpCategoryDefinition;
 
-    expect(
-      pda.children.map((node) => node.id),
-      ['pda.editor', 'pda.theory'],
-    );
+    expect(pda.children.map((node) => node.id), ['pda.editor', 'pda.theory']);
     expect(
       topicIdsUnder(kHelpCatalog, 'pda.editor.algorithms'),
       containsAll({
@@ -757,7 +828,7 @@ void main() {
         'AFD - Binário divisível por 3',
         'AFD - Paridade AB',
         'AFD - Contém AB',
-        'AFNλ - A ou AB',
+        'AFNε - A ou AB',
       ],
       HelpTopicIds.grammarEditorFilesAndExamples: const [
         'GLC - Palíndromo',
@@ -858,10 +929,7 @@ void main() {
   test('tm keeps editor before theory and exposes every analysis control', () {
     final tm = kHelpCatalog.nodeById('tm')! as HelpCategoryDefinition;
 
-    expect(
-      tm.children.map((node) => node.id),
-      ['tm.editor', 'tm.theory'],
-    );
+    expect(tm.children.map((node) => node.id), ['tm.editor', 'tm.theory']);
     expect(
       topicIdsUnder(kHelpCatalog, 'tm.editor.algorithms'),
       containsAll({
@@ -941,7 +1009,7 @@ void main() {
     }
   });
 
-  test('tm copy records single-tape, analysis, and platform boundaries', () {
+  test('tm copy records multi-tape, analysis, and platform boundaries', () {
     final englishTape =
         enHelpCatalogCopy['tm.editor.tape.blank-and-alphabet']!.body;
     final portugueseTape =
@@ -959,10 +1027,10 @@ void main() {
     final portuguesePlayback =
         ptHelpCatalogCopy['tm.editor.simulation.results-and-canvas']!.body;
 
-    expect(englishTape, contains('single-tape editor'));
-    expect(englishTape, contains('does not expose multi-tape editing'));
-    expect(portugueseTape, contains('editor de fita única'));
-    expect(portugueseTape, contains('não expõe edição de múltiplas fitas'));
+    expect(englishTape, contains('tape-count controls'));
+    expect(englishTape, contains('one explicit operation per tape'));
+    expect(portugueseTape, contains('controles da quantidade de fitas'));
+    expect(portugueseTape, contains('uma operação explícita por fita'));
     expect(
       englishDecidability,
       contains('makes no claim about termination on every input'),
@@ -973,11 +1041,11 @@ void main() {
     );
     expect(
       englishFiles,
-      contains('does not offer TM JFLAP or JSON import or save actions'),
+      contains('import and export JFLAP XML and Turing Lab JSON'),
     );
     expect(
       portugueseFiles,
-      contains('não oferece ações de importar ou salvar MT em JFLAP ou JSON'),
+      contains('importar e exportar XML do JFLAP e JSON do Turing Lab'),
     );
     expect(
       englishPlayback,
@@ -986,6 +1054,47 @@ void main() {
     expect(
       portuguesePlayback,
       contains('layout estreito no iOS com menos de 1.024 pixels lógicos'),
+    );
+  });
+
+  test('tm building-block library guidance is structured and bilingual', () {
+    const topicId = 'tm.editor.building-blocks.manage-library';
+    final topic = kHelpCatalog.nodeById(topicId)! as HelpTopicDefinition;
+
+    expect(topic.contentKind, HelpTopicContentKind.structuredText);
+    expect(
+      topic.relatedTopicIds,
+      contains('tm.editor.building-blocks.library-and-execution'),
+    );
+    expect(topic.relatedTopicIds, contains('tm.editor.overview'));
+    expect(topic.relatedTopicIds, contains('tm.editor.files-and-examples'));
+    for (final copy in [enHelpCatalogCopy, ptHelpCatalogCopy]) {
+      final localized = copy[topicId]!;
+      expect(localized.body, isNotEmpty);
+      expect(localized.blocks.whereType<HelpParagraphBlock>(), isNotEmpty);
+      expect(localized.blocks.whereType<HelpHeadingBlock>(), hasLength(1));
+      expect(
+        localized.blocks.whereType<HelpOrderedStepsBlock>().single.steps,
+        hasLength(3),
+      );
+      expect(localized.blocks.whereType<HelpCalloutBlock>(), hasLength(1));
+    }
+
+    expect(
+      enHelpCatalogCopy[topicId]!.body,
+      contains('named, versioned TM definitions'),
+    );
+    expect(
+      ptHelpCatalogCopy[topicId]!.body,
+      contains('definições nomeadas e versionadas de MT'),
+    );
+    expect(
+      enHelpCatalogCopy[topicId]!.searchableTextSegments.join('\n'),
+      contains('Detach and delete'),
+    );
+    expect(
+      ptHelpCatalogCopy[topicId]!.searchableTextSegments.join('\n'),
+      contains('Desvincular e excluir'),
     );
   });
 
@@ -1018,8 +1127,11 @@ void main() {
       'MT - Verificador de palíndromo',
     ]) {
       expect(englishFiles, contains(example), reason: 'English: $example');
-      expect(portugueseFiles, contains(example),
-          reason: 'Portuguese: $example');
+      expect(
+        portugueseFiles,
+        contains(example),
+        reason: 'Portuguese: $example',
+      );
     }
   });
 
@@ -1042,7 +1154,7 @@ void main() {
     }
   });
 
-  test('tm tape analysis documents branch metrics and single-tape scope', () {
+  test('tm tape analysis documents branch and multi-tape metrics', () {
     final english =
         enHelpCatalogCopy['tm.editor.algorithms.tape-operations']!.body;
     final portuguese =
@@ -1050,71 +1162,75 @@ void main() {
 
     expect(english, contains('measures one real branch'));
     expect(english, contains('Defined but unexecuted transitions'));
-    expect(english, contains('Only one tape is executed'));
+    expect(english, contains('per-tape metrics'));
     expect(portuguese, contains('mede um ramo real'));
     expect(portuguese, contains('Transições definidas mas não executadas'));
-    expect(portuguese, contains('Somente uma fita é executada'));
+    expect(portuguese, contains('métricas por fita'));
   });
 
-  test('regex and pumping keep editor before theory with approved inventories',
-      () {
-    final regex = kHelpCatalog.nodeById('regex')! as HelpCategoryDefinition;
-    final pumping = kHelpCatalog.nodeById('pumping')! as HelpCategoryDefinition;
+  test(
+    'regex and pumping keep editor before theory with approved inventories',
+    () {
+      final regex = kHelpCatalog.nodeById('regex')! as HelpCategoryDefinition;
+      final pumping =
+          kHelpCatalog.nodeById('pumping')! as HelpCategoryDefinition;
 
-    expect(regex.children.map((node) => node.id), [
-      'regex.editor',
-      'regex.theory',
-    ]);
-    expect(pumping.children.map((node) => node.id), [
-      'pumping.editor',
-      'pumping.theory',
-    ]);
-    expect(topicIdsUnder(kHelpCatalog, 'regex'), [
-      'regex.editor.overview',
-      'regex.editor.input-and-validation',
-      'regex.editor.alphabet',
-      'regex.editor.test-strings',
-      'regex.editor.conversions.overview',
-      'regex.editor.conversions.to-nfa',
-      'regex.editor.conversions.to-dfa',
-      'regex.editor.conversions.fa-to-regex',
-      'regex.editor.simplification',
-      'regex.editor.complexity',
-      'regex.editor.sample-strings',
-      'regex.editor.equivalence',
-      'regex.editor.embedded-fsa-panels',
-      'regex.theory.regex',
-      'regex.theory.literals-and-grouping',
-      'regex.theory.concatenation-and-union',
-      'regex.theory.kleene-star-and-plus',
-      'regex.theory.optional',
-      'regex.theory.precedence',
-      'regex.theory.lambda',
-      'regex.theory.regular-languages',
-      'regex.theory.equivalence-with-fsa',
-    ]);
-    expect(topicIdsUnder(kHelpCatalog, 'pumping'), [
-      'pumping.editor.overview',
-      'pumping.editor.game',
-      'pumping.editor.difficulty-and-challenges',
-      'pumping.editor.regularity-choice',
-      'pumping.editor.witness-and-decomposition',
-      'pumping.editor.pumping-choice-and-submit',
-      'pumping.editor.feedback-retry-and-practice',
-      'pumping.editor.progress',
-      'pumping.editor.responsive-layout',
-      'pumping.theory.statement',
-      'pumping.theory.quantifiers',
-      'pumping.theory.proof-strategy',
-      'pumping.theory.choose-witness',
-      'pumping.theory.all-decompositions',
-      'pumping.theory.contradiction',
-      'pumping.theory.limitations',
-      'pumping.theory.regular-example',
-      'pumping.theory.nonregular-anbn',
-      'pumping.theory.nonregular-ww',
-    ]);
-  });
+      expect(regex.children.map((node) => node.id), [
+        'regex.editor',
+        'regex.theory',
+      ]);
+      expect(pumping.children.map((node) => node.id), [
+        'pumping.editor',
+        'pumping.theory',
+      ]);
+      expect(topicIdsUnder(kHelpCatalog, 'regex'), [
+        'regex.editor.overview',
+        'regex.editor.input-and-validation',
+        'regex.editor.alphabet',
+        'regex.editor.test-strings',
+        'regex.editor.conversions.overview',
+        'regex.editor.conversions.to-nfa',
+        'regex.editor.conversions.to-dfa',
+        'regex.editor.conversions.fa-to-regex',
+        'regex.editor.simplification',
+        'regex.editor.complexity',
+        'regex.editor.sample-strings',
+        'regex.editor.equivalence',
+        'regex.editor.embedded-fsa-panels',
+        'regex.theory.regex',
+        'regex.theory.literals-and-grouping',
+        'regex.theory.concatenation-and-union',
+        'regex.theory.kleene-star-and-plus',
+        'regex.theory.optional',
+        'regex.theory.precedence',
+        'regex.theory.lambda',
+        'regex.theory.regular-languages',
+        'regex.theory.equivalence-with-fsa',
+      ]);
+      expect(topicIdsUnder(kHelpCatalog, 'pumping'), [
+        'pumping.editor.environment-choice',
+        'pumping.editor.overview',
+        'pumping.editor.game',
+        'pumping.editor.difficulty-and-challenges',
+        'pumping.editor.regularity-choice',
+        'pumping.editor.witness-and-decomposition',
+        'pumping.editor.pumping-choice-and-submit',
+        'pumping.editor.feedback-retry-and-practice',
+        'pumping.editor.progress',
+        'pumping.editor.responsive-layout',
+        'pumping.theory.statement',
+        'pumping.theory.quantifiers',
+        'pumping.theory.proof-strategy',
+        'pumping.theory.choose-witness',
+        'pumping.theory.all-decompositions',
+        'pumping.theory.contradiction',
+        'pumping.theory.limitations',
+        'pumping.theory.regular-example',
+        'pumping.theory.nonregular-anbn',
+        'pumping.theory.nonregular-ww',
+      ]);
+    },
+  );
 
   test('regex theory copy names every supported operator in both locales', () {
     final english = enHelpCatalogCopy.entries.entries
@@ -1159,10 +1275,10 @@ void main() {
   });
 
   test('pumping progress copy names all four visible metrics', () {
-    final english =
-        enHelpCatalogCopy['pumping.editor.progress']!.body.toLowerCase();
-    final portuguese =
-        ptHelpCatalogCopy['pumping.editor.progress']!.body.toLowerCase();
+    final english = enHelpCatalogCopy['pumping.editor.progress']!.body
+        .toLowerCase();
+    final portuguese = ptHelpCatalogCopy['pumping.editor.progress']!.body
+        .toLowerCase();
 
     for (final label in const ['accuracy', 'correct', 'attempts', 'score']) {
       expect(english, contains(label), reason: 'English: $label');
@@ -1171,7 +1287,7 @@ void main() {
       'precisão',
       'corretas',
       'tentativas',
-      'pontuação'
+      'pontuação',
     ]) {
       expect(portuguese, contains(label), reason: 'Portuguese: $label');
     }
@@ -1300,9 +1416,7 @@ void main() {
         HelpCategoryDefinition(
           id: 'root',
           icon: 'help',
-          children: [
-            HelpTopicDefinition(id: 'root.topic', icon: 'help'),
-          ],
+          children: [HelpTopicDefinition(id: 'root.topic', icon: 'help')],
         ),
       ],
     );
@@ -1394,7 +1508,7 @@ void main() {
       contains('completes missing transitions internally'),
     );
     expect(normalizedEnglish, contains('deterministic'));
-    expect(english, contains('λ transitions'));
+    expect(english, contains('ε transitions'));
     expect(
       normalizedPortuguese,
       contains('complemento matemático pressupõe uma função'),
@@ -1404,11 +1518,43 @@ void main() {
       contains('completa internamente as transições ausentes'),
     );
     expect(normalizedPortuguese, contains('determinística'));
-    expect(portuguese, contains('transições λ'));
+    expect(portuguese, contains('transições ε'));
   });
 
-  test('grammar conversion copy distinguishes disablement from runtime errors',
-      () {
+  test('active automata, grammar, and PDA help presents canonical epsilon', () {
+    const topicIds = [
+      HelpTopicIds.fsaEditorTransitions,
+      HelpTopicIds.fsaEditorAlgorithmsOverview,
+      HelpTopicIds.fsaEditorAlgorithmsRemoveLambda,
+      HelpTopicIds.fsaTheoryEpsilon,
+      HelpTopicIds.fsaTheoryEpsilonClosure,
+      HelpTopicIds.grammarEditorProductionLambda,
+      HelpTopicIds.pdaEditorTransitions,
+      HelpTopicIds.pdaEditorLambdaSwitches,
+    ];
+
+    for (final topicId in topicIds) {
+      for (final copy in [
+        enHelpCatalogCopy[topicId]!,
+        ptHelpCatalogCopy[topicId]!,
+      ]) {
+        final visibleCopy = '${copy.title}\n${copy.body}';
+        expect(
+          visibleCopy.toLowerCase(),
+          anyOf(contains('ε'), contains('epsilon')),
+          reason: topicId,
+        );
+        expect(visibleCopy, isNot(contains('λ')), reason: topicId);
+        expect(
+          visibleCopy.toLowerCase(),
+          isNot(contains('lambda')),
+          reason: topicId,
+        );
+      }
+    }
+  });
+
+  test('grammar conversion copy distinguishes disablement from runtime errors', () {
     const topicIds = [
       HelpTopicIds.grammarEditorConversionsRightLinearToFsa,
       HelpTopicIds.grammarEditorConversionsPdaGeneral,
@@ -1558,6 +1704,108 @@ void main() {
     }
   });
 
+  test('getting-started guidance names every registered workspace family', () {
+    final englishNavigation =
+        enHelpCatalogCopy[HelpTopicIds.gettingStartedNavigation]!;
+    final englishChoice =
+        enHelpCatalogCopy[HelpTopicIds.gettingStartedChooseWorkspace]!;
+    final portugueseNavigation =
+        ptHelpCatalogCopy[HelpTopicIds.gettingStartedNavigation]!;
+    final portugueseChoice =
+        ptHelpCatalogCopy[HelpTopicIds.gettingStartedChooseWorkspace]!;
+
+    for (final name in const [
+      'Mealy',
+      'Moore',
+      'Unrestricted grammar',
+      'L-system',
+    ]) {
+      expect(englishNavigation.body, contains(name), reason: name);
+      expect(englishChoice.body, contains(name), reason: name);
+      expect(
+        englishNavigation.keywords.join('\n').toLowerCase(),
+        contains(name.toLowerCase()),
+        reason: name,
+      );
+      expect(
+        englishChoice.keywords.join('\n').toLowerCase(),
+        contains(name.toLowerCase()),
+        reason: name,
+      );
+    }
+    for (final name in const [
+      'Mealy',
+      'Moore',
+      'Gramática irrestrita',
+      'Sistema L',
+    ]) {
+      expect(portugueseNavigation.body, contains(name), reason: name);
+      expect(portugueseChoice.body, contains(name), reason: name);
+      expect(
+        portugueseNavigation.keywords.join('\n').toLowerCase(),
+        contains(name.toLowerCase()),
+        reason: name,
+      );
+      expect(
+        portugueseChoice.keywords.join('\n').toLowerCase(),
+        contains(name.toLowerCase()),
+        reason: name,
+      );
+    }
+  });
+
+  test('navigation localization resolves the new workspace identifiers', () {
+    final english = AppLocalizationsEn();
+    final portuguese = AppLocalizationsPt('pt_BR');
+
+    for (final (id, label, description) in const [
+      ('mealy', 'Mealy', 'Edit and simulate Mealy transducers.'),
+      ('moore', 'Moore', 'Edit and simulate Moore transducers.'),
+      (
+        'unrestrictedGrammar',
+        'Unrestricted grammar',
+        'Classify phrase-structure grammars and explore bounded derivations.',
+      ),
+      (
+        'lSystem',
+        'L-system',
+        'Expand parallel rewrite systems and render turtle graphics.',
+      ),
+    ]) {
+      expect(english.homeNavigationLabel(id), label, reason: id);
+      expect(english.homeNavigationDescription(id), description, reason: id);
+    }
+
+    for (final (id, label, description) in const [
+      ('mealy', 'Mealy', 'Edite e simule transdutores Mealy.'),
+      ('moore', 'Moore', 'Edite e simule transdutores Moore.'),
+      (
+        'unrestrictedGrammar',
+        'Gramática irrestrita',
+        'Classifique gramáticas de estrutura de frase e explore derivações limitadas.',
+      ),
+      (
+        'lSystem',
+        'Sistema L',
+        'Expanda sistemas de reescrita paralela e renderize gráficos de tartaruga.',
+      ),
+    ]) {
+      expect(portuguese.homeNavigationLabel(id), label, reason: id);
+      expect(portuguese.homeNavigationDescription(id), description, reason: id);
+    }
+
+    expect(english.helpSectionTitle('transducers'), 'Transducers');
+    expect(
+      english.helpSectionTitle('extended-formal-systems'),
+      'Extended formal systems',
+    );
+    expect(portuguese.helpSectionTitle('transducers'), 'Transdutores');
+    expect(
+      portuguese.helpSectionTitle('extended-formal-systems'),
+      'Sistemas formais estendidos',
+    );
+  });
+
   test('troubleshooting copy gives localized recovery actions', () {
     final english = enHelpCatalogCopy.entries.entries
         .where((entry) => entry.key.startsWith('troubleshooting.'))
@@ -1601,47 +1849,51 @@ void main() {
         ptHelpCatalogCopy[HelpTopicIds.troubleshootingFileImportExport]!.body;
     expect(englishFiles, contains('supported file that is not corrupted'));
     expect(englishFiles, isNot(contains('unmodified supported file')));
-    expect(portugueseFiles,
-        contains('arquivo compatível que não esteja corrompido'));
+    expect(
+      portugueseFiles,
+      contains('arquivo compatível que não esteja corrompido'),
+    );
     expect(portugueseFiles, isNot(contains('arquivo compatível não alterado')));
   });
 
-  test('about copy preserves project, license, credit, and distribution facts',
-      () {
-    final english = enHelpCatalogCopy.entries.entries
-        .where((entry) => entry.key.startsWith('about.'))
-        .map((entry) => entry.value.body)
-        .join('\n');
-    final portuguese = ptHelpCatalogCopy.entries.entries
-        .where((entry) => entry.key.startsWith('about.'))
-        .map((entry) => entry.value.body)
-        .join('\n');
+  test(
+    'about copy preserves project, license, credit, and distribution facts',
+    () {
+      final english = enHelpCatalogCopy.entries.entries
+          .where((entry) => entry.key.startsWith('about.'))
+          .map((entry) => entry.value.body)
+          .join('\n');
+      final portuguese = ptHelpCatalogCopy.entries.entries
+          .where((entry) => entry.key.startsWith('about.'))
+          .map((entry) => entry.value.body)
+          .join('\n');
 
-    for (final fact in const [
-      'Thales Matheus Mendonça Santos',
-      'https://github.com/ThalesMMS/Turing-Lab',
-      'Apache License 2.0',
-      'JFLAP 7.1 License',
-      'GraphView',
-      'Susan H. Rodger',
-      'Duke University',
-      'http://www.jflap.org',
-      'free, non-monetized educational app',
-    ]) {
-      expect(english, contains(fact), reason: 'English: $fact');
-    }
-    for (final fact in const [
-      'Thales Matheus Mendonça Santos',
-      'https://github.com/ThalesMMS/Turing-Lab',
-      'Apache License 2.0',
-      'Licença do JFLAP 7.1',
-      'GraphView',
-      'Susan H. Rodger',
-      'Duke University',
-      'http://www.jflap.org',
-      'aplicativo educacional gratuito e não monetizado',
-    ]) {
-      expect(portuguese, contains(fact), reason: 'Portuguese: $fact');
-    }
-  });
+      for (final fact in const [
+        'Thales Matheus Mendonça Santos',
+        'https://github.com/ThalesMMS/Turing-Lab',
+        'Apache License 2.0',
+        'JFLAP 7.1 License',
+        'GraphView',
+        'Susan H. Rodger',
+        'Duke University',
+        'http://www.jflap.org',
+        'free, non-monetized educational app',
+      ]) {
+        expect(english, contains(fact), reason: 'English: $fact');
+      }
+      for (final fact in const [
+        'Thales Matheus Mendonça Santos',
+        'https://github.com/ThalesMMS/Turing-Lab',
+        'Apache License 2.0',
+        'Licença do JFLAP 7.1',
+        'GraphView',
+        'Susan H. Rodger',
+        'Duke University',
+        'http://www.jflap.org',
+        'aplicativo educacional gratuito e não monetizado',
+      ]) {
+        expect(portuguese, contains(fact), reason: 'Portuguese: $fact');
+      }
+    },
+  );
 }

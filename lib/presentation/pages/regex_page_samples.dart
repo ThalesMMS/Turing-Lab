@@ -21,13 +21,14 @@ extension _RegexPageSampleSections on _RegexPageState {
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context).sampleStringsTitle,
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).sampleStringsTitle,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 if (regexState.sampleStrings != null)
                   IconButton(
                     onPressed: () => ref

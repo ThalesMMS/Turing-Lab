@@ -2,6 +2,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
 
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 
@@ -87,5 +88,29 @@ void main() {
 
     handle.dispose();
     handleDisposed = true;
+  });
+
+  testWidgets('formats execution progress with the active locale', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        locale: Locale('pt', 'BR'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: AlgorithmButton(
+            title: 'Analyze',
+            description: 'Analyze the automaton.',
+            icon: Icons.analytics,
+            isExecuting: true,
+            executionProgress: 0.125,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('13%'), findsOneWidget);
+    expect(find.text('12%'), findsNothing);
   });
 }

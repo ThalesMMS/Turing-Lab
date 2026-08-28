@@ -229,7 +229,8 @@ void main() {
         final result = LanguageComparator.compareLanguages(empty1, empty2);
 
         expect(result.isSuccess, false);
-        expect(result.error, contains('must have at least one state'));
+        expect(result.error, 'language.comparison.empty-state-set');
+        expect(result.structuredError?.stableCode, result.error);
       });
 
       test('Automata without initial state should fail validation', () {
@@ -242,7 +243,8 @@ void main() {
         );
 
         expect(result.isSuccess, false);
-        expect(result.error, contains('must have an initial state'));
+        expect(result.error, 'language.comparison.missing-initial-state');
+        expect(result.structuredError?.stableCode, result.error);
       });
 
       test('Automata with initial state not in states should fail', () {
@@ -255,7 +257,8 @@ void main() {
         );
 
         expect(result.isSuccess, false);
-        expect(result.error, contains('must be in the states set'));
+        expect(result.error, 'language.comparison.initial-state-outside-set');
+        expect(result.structuredError?.stableCode, result.error);
       });
 
       test('Automata with different alphabets should be handled', () {
@@ -286,11 +289,12 @@ void main() {
         final result = LanguageComparator.compareLanguages(invalidNfa, dfa);
 
         expect(result.isFailure, true);
-        expect(result.error, contains('Failed to determinize automaton A'));
+        expect(result.error, 'algorithm.fsa-determinizer.failed');
         expect(
-          result.error,
-          contains('Accepting state must be in the states set'),
+          result.structuredError?.stableCode,
+          'algorithm.fsa-determinizer.failed',
         );
+        expect(result.structuredError?.arguments['automaton']?.value, 'A');
       });
 
       test('Single state accepting automaton should work', () {

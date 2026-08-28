@@ -4,6 +4,51 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 
 void main() {
+  for (final platform in TargetPlatform.values) {
+    testWidgets('supports compact ${platform.name} canvases', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      late bool supported;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(platform: platform),
+          home: Builder(
+            builder: (context) {
+              supported = supportsCanvasSimulationPlayback(context);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      expect(supported, isTrue);
+    });
+  }
+
+  testWidgets('excludes wide canvases', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    late bool supported;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            supported = supportsCanvasSimulationPlayback(context);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    expect(supported, isFalse);
+  });
+
   testWidgets('navigates, plays to the end, and closes', (tester) async {
     final selected = <int>[];
     var closed = false;
@@ -76,10 +121,10 @@ void main() {
     await tester.pump();
 
     Text wordText() => tester.widget<Text>(
-          find.byWidgetPredicate(
-            (widget) => widget is Text && widget.textSpan != null,
-          ),
-        );
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.textSpan != null,
+      ),
+    );
 
     var spans = (wordText().textSpan! as TextSpan).children!;
     expect(spans, hasLength(2));

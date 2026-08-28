@@ -12,11 +12,14 @@
 
 import 'package:collection/collection.dart';
 
+import '../messages/structured_message.dart';
 import 'step_explanation.dart';
 
 /// Single step in an automaton simulation
 class SimulationStep {
+  static const schemaVersion = 2;
   static const SetEquality<String> _setEquality = SetEquality<String>();
+  static const ListEquality<String> _listEquality = ListEquality<String>();
 
   /// Current state in this step
   final String currentState;
@@ -33,6 +36,11 @@ class SimulationStep {
   /// Stack contents (for PDA)
   final String stackContents;
 
+  /// Ordered atomic PDA stack symbols, from bottom to top.
+  ///
+  /// `null` identifies legacy traces that only stored [stackContents].
+  final List<String>? stackTokens;
+
   /// Tape contents (for TM)
   final String tapeContents;
 
@@ -44,6 +52,9 @@ class SimulationStep {
 
   /// Description of what happens in this step
   final String? description;
+
+  /// Locale-neutral replacement for [description].
+  final StructuredMessage? descriptionMessage;
 
   /// Whether this step results in acceptance
   final bool? isAccepted;
@@ -68,17 +79,22 @@ class SimulationStep {
     this.activeStateIds,
     required this.remainingInput,
     this.stackContents = '',
+    this.stackTokens,
     this.tapeContents = '',
     this.usedTransition,
     required this.stepNumber,
     this.description,
+    this.descriptionMessage,
     this.isAccepted,
     this.inputSymbol,
     this.nextState,
     this.consumedInput = '',
     this.headPosition,
     this.explanation,
-  });
+  }) : assert(
+         description == null || descriptionMessage == null,
+         'A simulation step cannot contain both legacy and structured descriptions.',
+       );
 
   /// Creates a copy of this simulation step with updated properties
   ///
@@ -90,10 +106,12 @@ class SimulationStep {
     Set<String>? activeStateIds,
     String? remainingInput,
     String? stackContents,
+    List<String>? stackTokens,
     String? tapeContents,
     String? usedTransition,
     int? stepNumber,
     String? description,
+    StructuredMessage? descriptionMessage,
     bool? isAccepted,
     String? inputSymbol,
     String? nextState,
@@ -106,10 +124,12 @@ class SimulationStep {
       activeStateIds: activeStateIds ?? this.activeStateIds,
       remainingInput: remainingInput ?? this.remainingInput,
       stackContents: stackContents ?? this.stackContents,
+      stackTokens: stackTokens ?? this.stackTokens,
       tapeContents: tapeContents ?? this.tapeContents,
       usedTransition: usedTransition ?? this.usedTransition,
       stepNumber: stepNumber ?? this.stepNumber,
       description: description ?? this.description,
+      descriptionMessage: descriptionMessage ?? this.descriptionMessage,
       isAccepted: isAccepted ?? this.isAccepted,
       inputSymbol: inputSymbol ?? this.inputSymbol,
       nextState: nextState ?? this.nextState,
@@ -121,15 +141,20 @@ class SimulationStep {
 
   /// Converts the simulation step to a JSON representation
   Map<String, dynamic> toJson() {
-    return {
+    if (description != null && descriptionMessage != null) {
+      throw StateError(
+        'A simulation step cannot contain both legacy and structured descriptions.',
+      );
+    }
+    final shared = <String, dynamic>{
       'currentState': currentState,
       'activeStateIds': activeStateIds?.toList(),
       'remainingInput': remainingInput,
       'stackContents': stackContents,
+      'stackTokens': stackTokens,
       'tapeContents': tapeContents,
       'usedTransition': usedTransition,
       'stepNumber': stepNumber,
-      'description': description,
       'isAccepted': isAccepted,
       'inputSymbol': inputSymbol,
       'nextState': nextState,
@@ -137,10 +162,36 @@ class SimulationStep {
       'headPosition': headPosition,
       'explanation': explanation?.toJson(),
     };
+    if (description != null) {
+      return {...shared, 'description': description};
+    }
+    return {
+      'schemaVersion': schemaVersion,
+      ...shared,
+      'descriptionMessage': descriptionMessage?.toJson(),
+    };
   }
+
+  bool get usesLegacyText =>
+      description != null || (explanation?.usesLegacyText ?? false);
 
   /// Creates a simulation step from a JSON representation
   factory SimulationStep.fromJson(Map<String, dynamic> json) {
+    final version = json['schemaVersion'];
+    if (version != null && version != schemaVersion) {
+      throw FormatException('Unsupported simulation-step version: $version.');
+    }
+    final description = json['description'] as String?;
+    final descriptionMessage = json['descriptionMessage'] is Map
+        ? StructuredMessage.fromJson(
+            Map<String, Object?>.from(json['descriptionMessage'] as Map),
+          )
+        : null;
+    if (description != null && descriptionMessage != null) {
+      throw const FormatException(
+        'Simulation step contains both legacy and structured descriptions.',
+      );
+    }
     return SimulationStep(
       currentState: json['currentState'] as String,
       activeStateIds: json['activeStateIds'] is List
@@ -150,10 +201,16 @@ class SimulationStep {
           : null,
       remainingInput: json['remainingInput'] as String,
       stackContents: json['stackContents'] as String? ?? '',
+      stackTokens: json['stackTokens'] is List
+          ? List<String>.unmodifiable(
+              (json['stackTokens'] as List).cast<String>(),
+            )
+          : null,
       tapeContents: json['tapeContents'] as String? ?? '',
       usedTransition: json['usedTransition'] as String?,
       stepNumber: json['stepNumber'] as int,
-      description: json['description'] as String?,
+      description: description,
+      descriptionMessage: descriptionMessage,
       isAccepted: json['isAccepted'] as bool?,
       inputSymbol: json['inputSymbol'] as String?,
       nextState: json['nextState'] as String?,
@@ -175,10 +232,12 @@ class SimulationStep {
         _setEquality.equals(other.activeStateIds, activeStateIds) &&
         other.remainingInput == remainingInput &&
         other.stackContents == stackContents &&
+        _listEquality.equals(other.stackTokens, stackTokens) &&
         other.tapeContents == tapeContents &&
         other.usedTransition == usedTransition &&
         other.stepNumber == stepNumber &&
         other.description == description &&
+        other.descriptionMessage == descriptionMessage &&
         other.isAccepted == isAccepted &&
         other.inputSymbol == inputSymbol &&
         other.nextState == nextState &&
@@ -194,10 +253,12 @@ class SimulationStep {
       _setEquality.hash(activeStateIds),
       remainingInput,
       stackContents,
+      _listEquality.hash(stackTokens),
       tapeContents,
       usedTransition,
       stepNumber,
       description,
+      descriptionMessage,
       isAccepted,
       inputSymbol,
       nextState,
@@ -226,6 +287,11 @@ class SimulationStep {
   /// Checks if this step has stack operations (for PDA)
   bool get hasStackOperations => stackContents.isNotEmpty;
 
+  /// Atomic stack symbols when available, or Unicode scalar values for a
+  /// legacy flattened trace.
+  List<String> get effectiveStackTokens =>
+      stackTokens ?? stackContents.runes.map(String.fromCharCode).toList();
+
   /// Checks if this step has tape operations (for TM)
   bool get hasTapeOperations => tapeContents.isNotEmpty;
 
@@ -233,13 +299,14 @@ class SimulationStep {
   int get remainingInputLength => remainingInput.length;
 
   /// Gets the number of stack symbols (for PDA)
-  int get stackLength => stackContents.length;
+  int get stackLength => effectiveStackTokens.length;
 
   /// Gets the number of tape symbols (for TM)
   int get tapeLength => tapeContents.length;
 
   /// Gets the top of the stack (for PDA)
-  String? get stackTop => stackContents.isNotEmpty ? stackContents[0] : null;
+  String? get stackTop =>
+      effectiveStackTokens.isEmpty ? null : effectiveStackTokens.last;
 
   /// Gets the current tape symbol (for TM)
   String? get currentTapeSymbol {
@@ -251,8 +318,9 @@ class SimulationStep {
   }
 
   /// Gets the next input symbol
-  String? get nextInputSymbol =>
-      remainingInput.isNotEmpty ? remainingInput[0] : null;
+  String? get nextInputSymbol => remainingInput.isNotEmpty
+      ? String.fromCharCode(remainingInput.runes.first)
+      : null;
 
   /// Gets the stack operation performed (for PDA)
   String get stackOperation {
@@ -317,6 +385,7 @@ class SimulationStep {
     Set<String>? activeStateIds,
     required String remainingInput,
     required String stackContents,
+    List<String>? stackTokens,
     String? usedTransition,
     required int stepNumber,
     String consumedInput = '',
@@ -327,6 +396,9 @@ class SimulationStep {
       activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       stackContents: stackContents,
+      stackTokens: stackTokens == null
+          ? null
+          : List<String>.unmodifiable(stackTokens),
       usedTransition: usedTransition,
       stepNumber: stepNumber,
       consumedInput: consumedInput,
@@ -365,6 +437,7 @@ class SimulationStep {
     Set<String>? activeStateIds,
     required String inputString,
     String? initialStackSymbol,
+    List<String>? initialStackTokens,
     String? initialTapeSymbol,
     String consumedInput = '',
   }) {
@@ -373,6 +446,9 @@ class SimulationStep {
       activeStateIds: activeStateIds,
       remainingInput: inputString,
       stackContents: initialStackSymbol ?? '',
+      stackTokens: initialStackTokens == null
+          ? null
+          : List<String>.unmodifiable(initialStackTokens),
       tapeContents: initialTapeSymbol ?? '',
       stepNumber: 0,
       consumedInput: consumedInput,
@@ -385,6 +461,7 @@ class SimulationStep {
     Set<String>? activeStateIds,
     required String remainingInput,
     required String stackContents,
+    List<String>? stackTokens,
     required String tapeContents,
     required int stepNumber,
     String consumedInput = '',
@@ -395,6 +472,9 @@ class SimulationStep {
       activeStateIds: activeStateIds,
       remainingInput: remainingInput,
       stackContents: stackContents,
+      stackTokens: stackTokens == null
+          ? null
+          : List<String>.unmodifiable(stackTokens),
       tapeContents: tapeContents,
       stepNumber: stepNumber,
       consumedInput: consumedInput,

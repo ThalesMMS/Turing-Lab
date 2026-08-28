@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "description": "Source-backed #210 scope. New Dart files below core/data are discovered automatically.",
+  "roots": [
+    "lib/core",
+    "lib/data"
+  ],
+  "exclude": [
+    "**/*.freezed.dart",
+    "**/*.g.dart"
+  ]
+}

@@ -5,8 +5,10 @@ import '../../../core/models/grammar.dart';
 import '../../../core/result.dart';
 import '../../../core/services/file_operations_gateway.dart';
 
-const _kUnreadableFileMessage =
-    'Turing Lab could not access the selected file data. Pick the file again and keep it available until the import finishes.';
+const platformFileInaccessibleErrorCode = 'platform_file.inaccessible';
+
+bool isPlatformFileInaccessibleError(String? error) =>
+    error == platformFileInaccessibleErrorCode;
 
 String? _normalizedPath(String? path) {
   if (path == null) {
@@ -32,7 +34,7 @@ Future<Result<FSA>> loadAutomatonFromPlatformFile(
     return service.loadAutomatonFromJFLAP(normalizedPath);
   }
 
-  return const Failure<FSA>(_kUnreadableFileMessage);
+  return const Failure<FSA>(platformFileInaccessibleErrorCode);
 }
 
 /// Loads a grammar from the provided [PlatformFile], preferring in-memory
@@ -50,5 +52,5 @@ Future<Result<Grammar>> loadGrammarFromPlatformFile(
     return service.loadGrammarFromJFLAP(normalizedPath);
   }
 
-  return const Failure<Grammar>(_kUnreadableFileMessage);
+  return const Failure<Grammar>(platformFileInaccessibleErrorCode);
 }

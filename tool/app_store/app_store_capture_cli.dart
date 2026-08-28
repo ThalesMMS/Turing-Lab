@@ -123,9 +123,14 @@ String _repoRoot() {
 String _flutterBin() {
   final fromEnv = Platform.environment['FLUTTER_BIN'];
   if (fromEnv != null && fromEnv.isNotEmpty) {
+    if (Platform.isWindows &&
+        !fromEnv.toLowerCase().endsWith('.bat') &&
+        File('$fromEnv.bat').existsSync()) {
+      return '$fromEnv.bat';
+    }
     return fromEnv;
   }
-  return 'flutter';
+  return Platform.isWindows ? 'flutter.bat' : 'flutter';
 }
 
 String _absolutePath(String repoRoot, String path) {

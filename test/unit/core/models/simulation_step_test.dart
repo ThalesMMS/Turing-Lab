@@ -141,4 +141,32 @@ void main() {
       );
     });
   });
+
+  test('preserves atomic PDA stack tokens through copy and JSON', () {
+    const step = SimulationStep(
+      currentState: 'q1',
+      remainingInput: '',
+      stackContents: 'bottom🧪x🧪αβα',
+      stackTokens: ['bottom', '🧪x', '🧪', 'αβ', 'α'],
+      stepNumber: 1,
+    );
+
+    expect(step.effectiveStackTokens, ['bottom', '🧪x', '🧪', 'αβ', 'α']);
+    expect(step.stackTop, 'α');
+    expect(step.stackLength, 5);
+    expect(step.copyWith(stepNumber: 2).stackTokens, step.stackTokens);
+    expect(SimulationStep.fromJson(step.toJson()), step);
+  });
+
+  test('rejects non-string atomic PDA stack tokens in JSON', () {
+    expect(
+      () => SimulationStep.fromJson({
+        'currentState': 'q1',
+        'remainingInput': '',
+        'stackTokens': ['bottom', 1],
+        'stepNumber': 1,
+      }),
+      throwsA(isA<TypeError>()),
+    );
+  });
 }

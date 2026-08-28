@@ -187,4 +187,9 @@ class GraphViewCanvasController
     _provider.updateAutomaton(merged);
     synchronize(merged);
   }
+
+  @override
+  void replaceDomainDocument(FSA document) {
+    _provider.updateAutomaton(document);
+  }
 }

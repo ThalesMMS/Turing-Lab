@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar_analysis_messages.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -266,7 +267,7 @@ void main() {
       expectSameBoundedLanguage(input, transformed, ['a', 'c', 'd'], 4);
     });
 
-    test('leaves a grammar without left recursion unchanged', () {
+    test('returns a grammar without left recursion by identity', () {
       final input = grammar(
         id: 'no-cycle',
         start: 'S',
@@ -283,9 +284,16 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.data!.value, same(input));
+      expect(
+        formattedProductions(result.data!.value),
+        formattedProductions(input),
+      );
       expect(result.data!.steps, isEmpty);
-      expect(result.data!.notes,
-          ['No direct or indirect left recursion detected.']);
+      expect(result.data!.notes, isEmpty);
+      expect(
+        result.data!.structuredNotes,
+        [GrammarAnalysisMessages.noLeftRecursion()],
+      );
     });
 
     test('processes unreachable recursive nonterminals', () {
@@ -351,6 +359,10 @@ void main() {
       final repeated = GrammarAnalyzer.removeLeftRecursion(first.value);
       expect(repeated.isSuccess, isTrue);
       expect(repeated.data!.value, same(first.value));
+      expect(
+        formattedProductions(repeated.data!.value),
+        formattedProductions(first.value),
+      );
       expect(repeated.data!.steps, isEmpty);
     });
   });

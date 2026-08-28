@@ -13,13 +13,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/formal_systems/formal_systems.dart';
+
 import '../../core/models/pda.dart';
-import '../../core/services/highlight_channel.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import '../providers/pda_editor_provider.dart';
 import 'automaton_canvas_tool.dart';
+import 'automaton_canvas_document_actions.dart';
 import 'automaton_graphview_canvas.dart';
 import 'pda/stack_drawer.dart';
 
@@ -30,12 +32,14 @@ class PDACanvasGraphView extends ConsumerStatefulWidget {
     this.controller,
     this.toolController,
     this.currentStack,
+    this.documentActionsController,
   });
 
   final ValueChanged<PDA> onPdaModified;
   final GraphViewPdaCanvasController? controller;
   final AutomatonCanvasToolController? toolController;
   final StackState? currentStack;
+  final AutomatonCanvasDocumentActionsController? documentActionsController;
 
   @override
   ConsumerState<PDACanvasGraphView> createState() => _PDACanvasGraphViewState();
@@ -45,8 +49,7 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
   final GlobalKey _canvasKey = GlobalKey();
   late GraphViewPdaCanvasController _controller;
   late bool _ownsController;
-  SimulationHighlightService? _highlightService;
-  HighlightChannel? _previousHighlightChannel;
+  SimulationHighlightChannelRegistration? _highlightRegistration;
   ProviderSubscription<PDAEditorState>? _subscription;
   PDA? _lastDeliveredPda;
   StackState? _customizationStack;
@@ -76,10 +79,10 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
       );
       _ownsController = true;
       final highlightService = ref.read(canvasHighlightServiceProvider);
-      _highlightService = highlightService;
-      _previousHighlightChannel = highlightService.channel;
       final highlightChannel = GraphViewSimulationHighlightChannel(_controller);
-      highlightService.channel = highlightChannel;
+      _highlightRegistration = highlightService.registerChannel(
+        highlightChannel,
+      );
     }
 
     final initialState = ref.read(pdaEditorProvider);
@@ -111,11 +114,9 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
   @override
   void dispose() {
     _subscription?.close();
+    _highlightRegistration?.dispose();
     if (_ownsController) {
       _controller.dispose();
-    }
-    if (_highlightService != null) {
-      _highlightService!.channel = _previousHighlightChannel;
     }
     super.dispose();
   }
@@ -129,6 +130,14 @@ class _PDACanvasGraphViewState extends ConsumerState<PDACanvasGraphView> {
       controller: _controller,
       toolController: widget.toolController,
       customization: _customization,
+      documentActionsController: widget.documentActionsController,
+      annotationConfig: editorState.pda == null
+          ? null
+          : AutomatonCanvasAnnotationConfig(
+              systemKey: DefaultFormalSystemIds.pda,
+              documentId: editorState.pda!.id,
+              documentRevision: '${identityHashCode(editorState.pda)}',
+            ),
     );
   }
 }

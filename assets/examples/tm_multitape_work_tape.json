@@ -1,0 +1,20 @@
+{
+  "id": "tm_multitape_work_tape",
+  "name": "MT multifitas - Fita de trabalho",
+  "type": "tm",
+  "alphabet": ["1"],
+  "tapeAlphabet": ["1", "X", "B"],
+  "blankSymbol": "B",
+  "tapeCount": 2,
+  "states": [
+    {"id": "count", "name": "count", "x": 120.0, "y": 180.0, "isInitial": true, "isFinal": false},
+    {"id": "qa", "name": "accept", "x": 420.0, "y": 180.0, "isInitial": false, "isFinal": true}
+  ],
+  "initialId": "count",
+  "finalStates": ["qa"],
+  "transitions": [
+    {"id": "count-one", "fromState": "count", "toState": "count", "label": "T1: 1/1R | T2: B/XR", "controlPoint": {"x": 120.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "B"], "writeSymbols": ["1", "X"], "directions": ["right", "right"]},
+    {"id": "count-done", "fromState": "count", "toState": "qa", "label": "T1: B/BS | T2: B/BS", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["stay", "stay"]}
+  ],
+  "description": "Leaves tape 0 unchanged and records one X per input symbol on the work tape."
+}

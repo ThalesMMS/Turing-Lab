@@ -1,0 +1,35 @@
+{
+  "@@locale": "en",
+  "title": "Fixture",
+  "greeting": "Hello, {name}.",
+  "@greeting": {
+    "description": "Greets a person.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Ada"
+      }
+    }
+  },
+  "summary": "{count, plural, =0{No files for {name}.} =1{One file for {name}.} other{{count} files for {name}.}}",
+  "@summary": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      },
+      "name": {
+        "type": "String",
+        "example": "Ada"
+      }
+    }
+  },
+  "role": "{role, select, admin{Administrator} other{Member}}",
+  "@role": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  }
+}

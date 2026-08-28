@@ -923,6 +923,8 @@ class _StubFileOperationsService extends FileOperationsService {
     dynamic options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    dynamic annotations,
   }) async {
     exportCallCount++;
     if (exportResponses.isEmpty) {

@@ -1,0 +1,18 @@
+{
+  "schema": {"id": "turing-lab.mealy", "version": 1},
+  "id": "mealy_sequence_detector",
+  "name": "Sequence detector",
+  "revision": 1,
+  "inputAlphabet": ["a", "b"],
+  "outputAlphabet": ["0", "1"],
+  "states": [
+    {"id": "start", "label": "start", "position": {"x": 80, "y": 160}, "isInitial": true},
+    {"id": "saw_a", "label": "saw a", "position": {"x": 320, "y": 160}, "isInitial": false}
+  ],
+  "transitions": [
+    {"id": "start_a", "from": "start", "to": "saw_a", "input": "a", "output": ["0"]},
+    {"id": "start_b", "from": "start", "to": "start", "input": "b", "output": ["0"]},
+    {"id": "saw_a_a", "from": "saw_a", "to": "saw_a", "input": "a", "output": ["0"]},
+    {"id": "saw_a_b", "from": "saw_a", "to": "start", "input": "b", "output": ["1"]}
+  ]
+}

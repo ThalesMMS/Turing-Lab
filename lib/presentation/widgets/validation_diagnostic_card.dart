@@ -9,19 +9,26 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/validation_diagnostic.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
+import '../../l10n/app_localizations_workflows.dart';
 
 class ValidationDiagnosticCard extends StatelessWidget {
-  const ValidationDiagnosticCard({
-    super.key,
-    required this.diagnostic,
-  });
+  const ValidationDiagnosticCard({super.key, required this.diagnostic});
 
   final ValidationDiagnostic diagnostic;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = appLocalizationsOf(context);
     final fixes = diagnostic.suggestedFixes;
+    final localizedSummary = diagnostic.structuredMessage == null
+        ? diagnostic.summary
+        : l10n.resolveStructuredMessage(diagnostic.structuredMessage!);
+    final localizedDetails = diagnostic.details == null
+        ? null
+        : l10n.localizeWorkflowText(diagnostic.details!);
 
     return Card(
       margin: const EdgeInsets.all(8),
@@ -36,7 +43,7 @@ class ValidationDiagnosticCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    diagnostic.summary,
+                    localizedSummary,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -44,19 +51,18 @@ class ValidationDiagnosticCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (diagnostic.details != null &&
-                diagnostic.details!.trim().isNotEmpty)
+            if (localizedDetails != null && localizedDetails.trim().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  diagnostic.details!,
+                  localizedDetails,
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
             if (fixes.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                'Suggested fixes',
+                l10n.suggestedFixes,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -78,17 +84,20 @@ class ValidationDiagnosticCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              fix.label,
+                              l10n.localizeWorkflowText(fix.label),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             if (fix.details != null &&
-                                fix.details!.trim().isNotEmpty)
+                                l10n
+                                    .localizeWorkflowText(fix.details!)
+                                    .trim()
+                                    .isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 2),
                                 child: Text(
-                                  fix.details!,
+                                  l10n.localizeWorkflowText(fix.details!),
                                   style: theme.textTheme.bodySmall,
                                 ),
                               ),
@@ -103,7 +112,7 @@ class ValidationDiagnosticCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                'Code: ${diagnostic.code}',
+                l10n.interoperabilityDiagnosticTechnicalCode(diagnostic.code),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

@@ -1,0 +1,17 @@
+abstract final class FixturePumpingProblemContentCopies {
+  static final _entries = List<Object>.unmodifiable([
+    _entry(
+      id: 'fixture.exercise',
+      en: const PumpingLemmaProblemContentCopy(
+        title: 'Fixture exercise',
+        learningObjective: 'Track the quantifiers.',
+        explanation: 'Fixture explanation.',
+      ),
+      pt: const PumpingLemmaProblemContentCopy(
+        title: 'Exercício de fixture',
+        learningObjective: 'Acompanhe os quantificadores.',
+        explanation: 'Explicação da fixture.',
+      ),
+    ),
+  ]);
+}

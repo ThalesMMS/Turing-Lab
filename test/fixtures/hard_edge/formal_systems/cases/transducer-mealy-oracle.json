@@ -1,0 +1,110 @@
+{
+  "caseId": "transducer-mealy-oracle",
+  "expectedInternalOutcome": "verified",
+  "payload": {
+    "kind": "transducer",
+    "input": [
+      "aa",
+      "🙂",
+      "a"
+    ],
+    "machine": {
+      "schema": {
+        "id": "turing-lab.mealy",
+        "version": 1
+      },
+      "id": "hard-edge-mealy-339",
+      "name": "Hard edge Mealy",
+      "revision": 1,
+      "inputAlphabet": [
+        "a",
+        "aa",
+        "🙂"
+      ],
+      "outputAlphabet": [
+        "emoji",
+        "long",
+        "x"
+      ],
+      "states": [
+        {
+          "id": "q0",
+          "label": "zero",
+          "position": {
+            "x": -10.0,
+            "y": 0.0
+          },
+          "isInitial": true
+        },
+        {
+          "id": "q1",
+          "label": "one",
+          "position": {
+            "x": 10.0,
+            "y": 0.0
+          },
+          "isInitial": false
+        }
+      ],
+      "transitions": [
+        {
+          "id": "q0-a",
+          "from": "q0",
+          "to": "q1",
+          "input": "a",
+          "output": [
+            "x"
+          ]
+        },
+        {
+          "id": "q0-aa",
+          "from": "q0",
+          "to": "q0",
+          "input": "aa",
+          "output": [
+            "long",
+            "x"
+          ]
+        },
+        {
+          "id": "q0-emoji",
+          "from": "q0",
+          "to": "q0",
+          "input": "🙂",
+          "output": [
+            "emoji"
+          ]
+        },
+        {
+          "id": "q1-a",
+          "from": "q1",
+          "to": "q0",
+          "input": "a",
+          "output": [
+            "x"
+          ]
+        },
+        {
+          "id": "q1-aa",
+          "from": "q1",
+          "to": "q1",
+          "input": "aa",
+          "output": [
+            "long"
+          ]
+        },
+        {
+          "id": "q1-emoji",
+          "from": "q1",
+          "to": "q1",
+          "input": "🙂",
+          "output": [
+            "emoji"
+          ]
+        }
+      ]
+    }
+  },
+  "schema": "turing-lab.hard-edge.formal-systems-property.v1",
+  "seed": 339
+}

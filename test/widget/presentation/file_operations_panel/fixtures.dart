@@ -122,19 +122,27 @@ class _StubFileOperationsService extends FileOperationsService {
     Queue<Result<String>>? exportResponses,
     Queue<Result<FSA>>? loadAutomatonResponses,
     Queue<Result<Grammar>>? loadGrammarResponses,
+    Queue<Result<Uint8List>>? readBytesResponses,
+    Queue<Result<String>>? writeBytesResponses,
+    this.serializeAutomatonException,
     this.delayMs = 0,
-  })  : saveAutomatonResponses =
-            saveAutomatonResponses ?? Queue<Result<String>>(),
-        saveGrammarResponses = saveGrammarResponses ?? Queue<Result<String>>(),
-        exportResponses = exportResponses ?? Queue<Result<String>>(),
-        loadAutomatonResponses = loadAutomatonResponses ?? Queue<Result<FSA>>(),
-        loadGrammarResponses = loadGrammarResponses ?? Queue<Result<Grammar>>();
+  }) : saveAutomatonResponses =
+           saveAutomatonResponses ?? Queue<Result<String>>(),
+       saveGrammarResponses = saveGrammarResponses ?? Queue<Result<String>>(),
+       exportResponses = exportResponses ?? Queue<Result<String>>(),
+       loadAutomatonResponses = loadAutomatonResponses ?? Queue<Result<FSA>>(),
+       loadGrammarResponses = loadGrammarResponses ?? Queue<Result<Grammar>>(),
+       readBytesResponses = readBytesResponses ?? Queue<Result<Uint8List>>(),
+       writeBytesResponses = writeBytesResponses ?? Queue<Result<String>>();
 
   final Queue<Result<String>> saveAutomatonResponses;
   final Queue<Result<String>> saveGrammarResponses;
   final Queue<Result<String>> exportResponses;
   final Queue<Result<FSA>> loadAutomatonResponses;
   final Queue<Result<Grammar>> loadGrammarResponses;
+  final Queue<Result<Uint8List>> readBytesResponses;
+  final Queue<Result<String>> writeBytesResponses;
+  final CodecOperationException? serializeAutomatonException;
   final int delayMs;
 
   int saveAutomatonCallCount = 0;
@@ -145,9 +153,46 @@ class _StubFileOperationsService extends FileOperationsService {
   int exportAutomatonPngCallCount = 0;
   int loadAutomatonCallCount = 0;
   int loadGrammarCallCount = 0;
+  int readBytesCallCount = 0;
+  int writeBytesCallCount = 0;
+  Uint8List? lastWrittenBytes;
+  String? lastWrittenMimeType;
+  bool? lastPngIncludeAnnotations;
+  DocumentAnnotationCollection? lastPngAnnotations;
   FSA? lastFsaSvgExport;
   PDA? lastPdaSvgExport;
   Grammar? lastGrammarSvgExport;
+
+  @override
+  String serializeAutomatonToJFLAPString(FSA automaton) {
+    final exception = serializeAutomatonException;
+    if (exception != null) throw exception;
+    return super.serializeAutomatonToJFLAPString(automaton);
+  }
+
+  @override
+  Future<Result<Uint8List>> readBytes(String filePath) async {
+    readBytesCallCount++;
+    if (readBytesResponses.isEmpty) {
+      return const Failure<Uint8List>('No read bytes response configured');
+    }
+    return readBytesResponses.removeFirst();
+  }
+
+  @override
+  Future<StringResult> writeBytes(
+    Uint8List bytes,
+    String filePath, {
+    String mimeType = 'application/octet-stream',
+  }) async {
+    writeBytesCallCount++;
+    lastWrittenBytes = Uint8List.fromList(bytes);
+    lastWrittenMimeType = mimeType;
+    if (writeBytesResponses.isEmpty) {
+      return const Failure<String>('No write bytes response configured');
+    }
+    return writeBytesResponses.removeFirst();
+  }
 
   @override
   Future<StringResult> saveAutomatonToJFLAP(
@@ -186,6 +231,8 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -205,6 +252,8 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -224,6 +273,8 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -243,6 +294,8 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -261,6 +314,8 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
   }) async {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
@@ -273,8 +328,14 @@ class _StubFileOperationsService extends FileOperationsService {
   }
 
   @override
-  Future<Result<Uint8List>> exportAutomatonToPngBytes(FSA automaton) async {
+  Future<Result<Uint8List>> exportAutomatonToPngBytes(
+    FSA automaton, {
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
     exportPngBytesCallCount++;
+    lastPngIncludeAnnotations = includeAnnotations;
+    lastPngAnnotations = annotations;
     return Success(Uint8List.fromList(<int>[137, 80, 78, 71]));
   }
 
@@ -341,12 +402,14 @@ class _StubFileOperationsService extends FileOperationsService {
 
 class _FakeFilePicker extends FilePicker {
   _FakeFilePicker()
-      : _pickResults = Queue<FilePickerResult?>(),
-        _saveResults = Queue<String?>();
+    : _pickResults = Queue<FilePickerResult?>(),
+      _saveResults = Queue<String?>();
 
   final Queue<FilePickerResult?> _pickResults;
   final Queue<String?> _saveResults;
   Uint8List? lastSaveBytes;
+  FileType? lastPickType;
+  List<String>? lastPickAllowedExtensions;
 
   void enqueuePickResult(FilePickerResult? result) {
     _pickResults.add(result);
@@ -371,6 +434,8 @@ class _FakeFilePicker extends FilePicker {
     bool lockParentWindow = false,
     bool readSequential = false,
   }) async {
+    lastPickType = type;
+    lastPickAllowedExtensions = allowedExtensions;
     if (_pickResults.isEmpty) {
       return null;
     }

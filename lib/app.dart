@@ -11,7 +11,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/app_localizations.dart';
+import 'core/pumping_lemma/pumping_lemma.dart';
+import 'presentation/localization/app_locale_policy.dart';
 import 'presentation/pages/home_page.dart';
+import 'presentation/pages/pumping_lemma_chooser_page.dart';
+import 'presentation/pages/pumping_lemma_page.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/widgets/active_session_lifecycle.dart';
@@ -23,6 +27,7 @@ class TuringLabApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+    final platformLocales = View.of(context).platformDispatcher.locales;
 
     return ActiveSessionLifecycle(
       child: MaterialApp(
@@ -30,10 +35,20 @@ class TuringLabApp extends ConsumerWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: _resolveThemeMode(settings.themeMode),
-        locale: _resolveLocale(settings.localeCode),
+        locale: AppLocalePolicy.resolve(
+          persistedLocaleCode: settings.localeCode,
+          platformLocales: platformLocales,
+        ),
         home: const HomePage(),
+        routes: {
+          PumpingLemmaChooserPage.route: (_) => const PumpingLemmaChooserPage(),
+          PumpingLemmaChooserPage.regularRoute: (_) =>
+              const PumpingLemmaPage(theorem: PumpingLemmaTheorem.regular),
+          PumpingLemmaChooserPage.contextFreeRoute: (_) =>
+              const PumpingLemmaPage(theorem: PumpingLemmaTheorem.contextFree),
+        },
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+        supportedLocales: AppLocalePolicy.supportedLocales,
         debugShowCheckedModeBanner: false,
       ),
     );
@@ -45,19 +60,10 @@ class TuringLabApp extends ConsumerWidget {
         return ThemeMode.light;
       case 'dark':
         return ThemeMode.dark;
-      default:
+      case 'system':
         return ThemeMode.system;
-    }
-  }
-
-  static Locale? _resolveLocale(String? localeCode) {
-    switch (localeCode) {
-      case 'en':
-        return const Locale('en');
-      case 'pt':
-        return const Locale('pt');
       default:
-        return null;
+        return ThemeMode.light;
     }
   }
 }

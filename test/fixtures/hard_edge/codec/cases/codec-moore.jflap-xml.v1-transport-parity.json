@@ -1,0 +1,13 @@
+{
+  "codecId": "moore.jflap-xml.v1",
+  "id": "codec-moore.jflap-xml.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "moore_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZSB0eXBlPSJtb29yZSI+CiAgPHR5cGU+bW9vcmU8L3R5cGU+CiAgPGF1dG9tYXRvbj4KICAgIDxzdGF0ZSBpZD0icTAiIG5hbWU9ImV2ZW4iPgogICAgICA8eD44MDwveD4KICAgICAgPHk+MTIwPC95PgogICAgICA8aW5pdGlhbC8+CiAgICAgIDxvdXRwdXQ+ZXZlbjwvb3V0cHV0PgogICAgPC9zdGF0ZT4KICAgIDxzdGF0ZSBpZD0icTEiIG5hbWU9Im9kZCI+CiAgICAgIDx4PjI0MDwveD4KICAgICAgPHk+MTIwPC95PgogICAgICA8b3V0cHV0Pm9kZDwvb3V0cHV0PgogICAgPC9zdGF0ZT4KICAgIDx0cmFuc2l0aW9uPgogICAgICA8ZnJvbT5xMDwvZnJvbT4KICAgICAgPHRvPnExPC90bz4KICAgICAgPHJlYWQ+MTwvcmVhZD4KICAgICAgPHRyYW5zb3V0Pm9kZDwvdHJhbnNvdXQ+CiAgICA8L3RyYW5zaXRpb24+CiAgICA8dHJhbnNpdGlvbj4KICAgICAgPGZyb20+cTE8L2Zyb20+CiAgICAgIDx0bz5xMDwvdG8+CiAgICAgIDxyZWFkPjE8L3JlYWQ+CiAgICAgIDx0cmFuc291dD5ldmVuPC90cmFuc291dD4KICAgIDwvdHJhbnNpdGlvbj4KICAgIDx0cmFuc2l0aW9uPgogICAgICA8ZnJvbT5xMDwvZnJvbT4KICAgICAgPHRvPnEwPC90bz4KICAgICAgPHJlYWQ+MDwvcmVhZD4KICAgICAgPHRyYW5zb3V0PmV2ZW48L3RyYW5zb3V0PgogICAgPC90cmFuc2l0aW9uPgogICAgPHRyYW5zaXRpb24+CiAgICAgIDxmcm9tPnExPC9mcm9tPgogICAgICA8dG8+cTE8L3RvPgogICAgICA8cmVhZD4wPC9yZWFkPgogICAgICA8dHJhbnNvdXQ+b2RkPC90cmFuc291dD4KICAgIDwvdHJhbnNpdGlvbj4KICA8L2F1dG9tYXRvbj4KPC9zdHJ1Y3R1cmU+Cg=="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

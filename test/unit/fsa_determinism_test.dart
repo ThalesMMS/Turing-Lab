@@ -81,6 +81,7 @@ void main() {
       );
 
       expect(fsa.isDeterministic, isFalse);
+      expect(fsa.validate(), isEmpty);
     });
 
     test('Should be non-deterministic with epsilon transitions', () {
@@ -100,6 +101,7 @@ void main() {
       );
 
       expect(fsa.isDeterministic, isFalse);
+      expect(fsa.validate(), isEmpty);
     });
   });
 }

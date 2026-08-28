@@ -5,6 +5,7 @@
 //  Structured validation diagnostic model.
 //
 
+import '../messages/structured_message.dart';
 import 'step_explanation.dart';
 
 /// Structured diagnostic for validation errors (canvas/import/precondition).
@@ -30,6 +31,9 @@ class ValidationDiagnostic {
   /// Suggested fixes (actionable hints).
   final List<SuggestedFix> suggestedFixes;
 
+  /// Locale-neutral semantic message for presentation resolvers.
+  final StructuredMessage? structuredMessage;
+
   const ValidationDiagnostic({
     required this.code,
     required this.summary,
@@ -37,16 +41,37 @@ class ValidationDiagnostic {
     this.location,
     this.highlights = const [],
     this.suggestedFixes = const [],
+    this.structuredMessage,
   });
 
   Map<String, dynamic> toJson() => {
-        'code': code,
-        'summary': summary,
-        'details': details,
-        'location': location,
-        'highlights': highlights.map((h) => h.toJson()).toList(),
-        'suggestedFixes': suggestedFixes.map((s) => s.toJson()).toList(),
-      };
+    'code': code,
+    'summary': summary,
+    'details': details,
+    'location': location,
+    'highlights': highlights.map((h) => h.toJson()).toList(),
+    'suggestedFixes': suggestedFixes.map((s) => s.toJson()).toList(),
+    if (structuredMessage != null)
+      'structuredMessage': structuredMessage!.toJson(),
+  };
+
+  ValidationDiagnostic copyWith({
+    String? code,
+    String? summary,
+    String? details,
+    String? location,
+    List<HighlightTarget>? highlights,
+    List<SuggestedFix>? suggestedFixes,
+    StructuredMessage? structuredMessage,
+  }) => ValidationDiagnostic(
+    code: code ?? this.code,
+    summary: summary ?? this.summary,
+    details: details ?? this.details,
+    location: location ?? this.location,
+    highlights: highlights ?? this.highlights,
+    suggestedFixes: suggestedFixes ?? this.suggestedFixes,
+    structuredMessage: structuredMessage ?? this.structuredMessage,
+  );
 
   factory ValidationDiagnostic.fromJson(Map<String, dynamic> json) {
     return ValidationDiagnostic(
@@ -62,6 +87,11 @@ class ValidationDiagnostic {
           .whereType<Map>()
           .map((e) => SuggestedFix.fromJson(Map<String, dynamic>.from(e)))
           .toList(growable: false),
+      structuredMessage: json['structuredMessage'] is Map
+          ? StructuredMessage.fromJson(
+              Map<String, Object?>.from(json['structuredMessage'] as Map),
+            )
+          : null,
     );
   }
 }

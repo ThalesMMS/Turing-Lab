@@ -10,6 +10,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../../core/formal_systems/formal_systems.dart';
 import '../converters/asset_example_converters.dart';
 import '../../core/models/asset_example.dart';
 import '../../core/models/fsa.dart';
@@ -19,12 +20,27 @@ import '../../core/models/regex_preset.dart';
 import '../../core/models/tm.dart';
 import '../../core/result.dart';
 import '../../core/repositories/examples_repository.dart';
+import '../tm/tm_block_example_catalog.dart';
 
 export '../../core/models/asset_example.dart'
     show AssetExample, DifficultyLevel, ExampleCategory, ExampleComplexityLevel;
 
 /// Enhanced data source for loading example automatons from assets (Examples v1)
 class ExamplesAssetDataSource implements ExamplesRepository {
+  ExamplesAssetDataSource({FormalSystemRegistry? registry})
+    : _registry = registry ?? FormalSystemRegistry.defaultRegistry;
+
+  final FormalSystemRegistry _registry;
+
+  static const _systemByCategory = {
+    ExampleCategory.dfa: DefaultFormalSystemIds.fsa,
+    ExampleCategory.nfa: DefaultFormalSystemIds.fsa,
+    ExampleCategory.cfg: DefaultFormalSystemIds.grammar,
+    ExampleCategory.pda: DefaultFormalSystemIds.pda,
+    ExampleCategory.tm: DefaultFormalSystemIds.tm,
+    ExampleCategory.regex: DefaultFormalSystemIds.regex,
+  };
+
   static const Map<String, _ExampleMetadata> _exampleMetadata = {
     // DFA Examples - Basic Concepts
     'AFD - Termina com A': _ExampleMetadata(
@@ -215,6 +231,42 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       tags: ['tm', 'palindrome', 'binary', 'verification'],
       estimatedComplexity: ExampleComplexityLevel.high,
     ),
+    'MT multifitas - Cópia em duas fitas': _ExampleMetadata(
+      fileName: 'tm_multitape_copy.json',
+      category: ExampleCategory.tm,
+      difficulty: DifficultyLevel.medium,
+      description:
+          'Copia uma palavra binária da fita de entrada para uma segunda fita em passos atômicos.',
+      tags: ['tm', 'multi-tape', 'copy', 'atomic'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
+    ),
+    'MT multifitas - Comparação': _ExampleMetadata(
+      fileName: 'tm_multitape_comparison.json',
+      category: ExampleCategory.tm,
+      difficulty: DifficultyLevel.hard,
+      description:
+          'Compara as duas partes de uma entrada w#w usando a segunda fita como memória.',
+      tags: ['tm', 'multi-tape', 'comparison', 'work-tape'],
+      estimatedComplexity: ExampleComplexityLevel.high,
+    ),
+    'MT multifitas - Palíndromo': _ExampleMetadata(
+      fileName: 'tm_multitape_palindrome.json',
+      category: ExampleCategory.tm,
+      difficulty: DifficultyLevel.hard,
+      description:
+          'Compara a entrada de trás para frente com uma cópia percorrida para a direita.',
+      tags: ['tm', 'multi-tape', 'palindrome', 'comparison'],
+      estimatedComplexity: ExampleComplexityLevel.high,
+    ),
+    'MT multifitas - Fita de trabalho': _ExampleMetadata(
+      fileName: 'tm_multitape_work_tape.json',
+      category: ExampleCategory.tm,
+      difficulty: DifficultyLevel.medium,
+      description:
+          'Usa uma segunda fita como contador unário sem alterar a entrada.',
+      tags: ['tm', 'multi-tape', 'work-tape', 'unary'],
+      estimatedComplexity: ExampleComplexityLevel.medium,
+    ),
 
     // Regular expression examples
     'Regex - Repetição de A': _ExampleMetadata(
@@ -265,7 +317,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   Future<Result<AssetExample<FSA>>> loadTypedFsaExample(String name) {
     return _loadTypedExample(
       name,
-      {ExampleCategory.dfa, ExampleCategory.nfa},
+      DefaultFormalSystemIds.fsa,
       convertAssetJsonToFsa,
     );
   }
@@ -274,7 +326,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   Future<Result<AssetExample<Grammar>>> loadTypedCfgExample(String name) {
     return _loadTypedExample(
       name,
-      {ExampleCategory.cfg},
+      DefaultFormalSystemIds.grammar,
       convertAssetJsonToGrammar,
     );
   }
@@ -283,16 +335,20 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   Future<Result<AssetExample<PDA>>> loadTypedPdaExample(String name) {
     return _loadTypedExample(
       name,
-      {ExampleCategory.pda},
+      DefaultFormalSystemIds.pda,
       convertAssetJsonToPda,
     );
   }
 
   @override
-  Future<Result<AssetExample<TM>>> loadTypedTmExample(String name) {
+  Future<Result<AssetExample<TM>>> loadTypedTmExample(String name) async {
+    if (name == TMBlockExampleCatalog.exampleName) {
+      final examples = await const TMBlockExampleCatalog().loadExamples();
+      return Success(examples.single);
+    }
     return _loadTypedExample(
       name,
-      {ExampleCategory.tm},
+      DefaultFormalSystemIds.tm,
       convertAssetJsonToTm,
     );
   }
@@ -301,7 +357,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   Future<Result<AssetExample<RegexPreset>>> loadTypedRegexExample(String name) {
     return _loadTypedExample(
       name,
-      {ExampleCategory.regex},
+      DefaultFormalSystemIds.regex,
       convertAssetJsonToRegexPreset,
     );
   }
@@ -309,7 +365,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   @override
   Future<ListResult<AssetExample<FSA>>> loadAllTypedFsaExamples() {
     return _loadAllTypedExamples(
-      {ExampleCategory.dfa, ExampleCategory.nfa},
+      DefaultFormalSystemIds.fsa,
       loadTypedFsaExample,
     );
   }
@@ -317,7 +373,7 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   @override
   Future<ListResult<AssetExample<Grammar>>> loadAllTypedCfgExamples() {
     return _loadAllTypedExamples(
-      {ExampleCategory.cfg},
+      DefaultFormalSystemIds.grammar,
       loadTypedCfgExample,
     );
   }
@@ -325,35 +381,40 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   @override
   Future<ListResult<AssetExample<PDA>>> loadAllTypedPdaExamples() {
     return _loadAllTypedExamples(
-      {ExampleCategory.pda},
+      DefaultFormalSystemIds.pda,
       loadTypedPdaExample,
     );
   }
 
   @override
-  Future<ListResult<AssetExample<TM>>> loadAllTypedTmExamples() {
-    return _loadAllTypedExamples(
-      {ExampleCategory.tm},
+  Future<ListResult<AssetExample<TM>>> loadAllTypedTmExamples() async {
+    final bundled = await _loadAllTypedExamples(
+      DefaultFormalSystemIds.tm,
       loadTypedTmExample,
     );
+    if (bundled.isFailure) return Failure(bundled.error!);
+    final blockExamples = await const TMBlockExampleCatalog().loadExamples();
+    return Success([...bundled.data!, ...blockExamples]);
   }
 
   @override
   Future<ListResult<AssetExample<RegexPreset>>> loadAllTypedRegexExamples() {
     return _loadAllTypedExamples(
-      {ExampleCategory.regex},
+      DefaultFormalSystemIds.regex,
       loadTypedRegexExample,
     );
   }
 
   Future<ListResult<AssetExample<T>>> _loadAllTypedExamples<T extends Object>(
-    Set<ExampleCategory> categories,
+    FormalSystemKey systemKey,
     Future<Result<AssetExample<T>>> Function(String name) load,
   ) async {
+    final availability = _ensureExamplesAvailable(systemKey);
+    if (availability != null) return Failure(availability);
     final examples = <AssetExample<T>>[];
 
     for (final entry in _exampleMetadata.entries) {
-      if (!categories.contains(entry.value.category)) {
+      if (entry.value.systemKey != systemKey) {
         continue;
       }
 
@@ -368,19 +429,25 @@ class ExamplesAssetDataSource implements ExamplesRepository {
   }
 
   Future<Result<AssetExample<T>>> _loadTypedExample<T extends Object>(
-    String name,
-    Set<ExampleCategory> categories,
+    String lookupKey,
+    FormalSystemKey systemKey,
     Result<T> Function(Map<String, dynamic> json, String exampleName) convert,
   ) async {
-    final metadata = _exampleMetadata[name];
+    final availability = _ensureExamplesAvailable(systemKey);
+    if (availability != null) return Failure(availability);
+    final legacyEntry = _exampleMetadata.entries
+        .where((entry) => entry.key == lookupKey || entry.value.id == lookupKey)
+        .firstOrNull;
+    final metadata = legacyEntry?.value;
     if (metadata == null) {
-      return Failure('Example not found: $name');
+      return Failure('Example not found: $lookupKey');
     }
+    final displayName = legacyEntry!.key;
 
-    if (!categories.contains(metadata.category)) {
+    if (metadata.systemKey != systemKey) {
       return Failure(
-        'Example "$name" belongs to ${metadata.category.name.toUpperCase()}, '
-        'not ${categories.map((category) => category.name.toUpperCase()).join('/')}',
+        'Example "$lookupKey" belongs to ${metadata.category.name.toUpperCase()}, '
+        'not ${systemKey.type.value.toUpperCase()}',
       );
     }
 
@@ -391,18 +458,19 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       final decoded = jsonDecode(jsonString);
       if (decoded is! Map<String, dynamic>) {
         return Failure(
-          'Example $name has invalid JSON structure. Expected an object.',
+          'Example $displayName has invalid JSON structure. Expected an object.',
         );
       }
 
-      final conversionResult = convert(decoded, name);
+      final conversionResult = convert(decoded, displayName);
       if (conversionResult.isFailure) {
         return Failure(conversionResult.error!);
       }
 
       return Success(
         AssetExample<T>(
-          name: name,
+          id: metadata.id,
+          name: displayName,
           description: metadata.description,
           category: metadata.category,
           difficultyLevel: metadata.difficulty,
@@ -415,23 +483,65 @@ class ExamplesAssetDataSource implements ExamplesRepository {
       final message = e.message;
       if (message.contains('Unable to load asset')) {
         return Failure(
-          'Example asset not found for $name. Expected at $assetPath',
+          'Example asset not found for $displayName. Expected at $assetPath',
         );
       }
-      return Failure('Error loading example $name: $message');
+      return Failure('Error loading example $displayName: $message');
     } on PlatformException catch (e) {
       final message = e.message ?? e.toString();
       if (message.contains('Unable to load asset')) {
         return Failure(
-          'Example asset not found for $name. Expected at $assetPath',
+          'Example asset not found for $displayName. Expected at $assetPath',
         );
       }
-      return Failure('Error loading example $name: $e');
+      return Failure('Error loading example $displayName: $e');
     } on FormatException catch (e) {
-      return Failure('Invalid JSON for example $name: ${e.message}');
+      return Failure('Invalid JSON for example $displayName: ${e.message}');
     } on TypeError catch (e) {
-      return Failure('Example $name has invalid data: ${e.toString()}');
+      return Failure('Example $displayName has invalid data: ${e.toString()}');
     }
+  }
+
+  /// Loads examples supplied by an operational registry extension module.
+  Future<List<AssetExample<Object>>> loadRegisteredExamples(
+    FormalSystemKey systemKey,
+  ) async {
+    final module = _registry.moduleFor(systemKey);
+    if (module == null || !module.descriptor.capabilities.examples.isEnabled) {
+      throw StateError('Examples are unavailable for ${systemKey.value}');
+    }
+    final catalog = module.examples;
+    if (catalog != null) return catalog.loadExamples();
+    final builtInLoader = _builtInCatalogs[systemKey];
+    if (builtInLoader != null) return builtInLoader();
+    throw StateError(
+      'No registered example catalog is available for ${systemKey.value}',
+    );
+  }
+
+  Map<FormalSystemKey, Future<List<AssetExample<Object>>> Function()>
+  get _builtInCatalogs => {
+    DefaultFormalSystemIds.fsa: () => _unwrap(loadAllTypedFsaExamples()),
+    DefaultFormalSystemIds.grammar: () => _unwrap(loadAllTypedCfgExamples()),
+    DefaultFormalSystemIds.pda: () => _unwrap(loadAllTypedPdaExamples()),
+    DefaultFormalSystemIds.tm: () => _unwrap(loadAllTypedTmExamples()),
+    DefaultFormalSystemIds.regex: () => _unwrap(loadAllTypedRegexExamples()),
+  };
+
+  Future<List<AssetExample<Object>>> _unwrap<T extends Object>(
+    Future<ListResult<AssetExample<T>>> resultFuture,
+  ) async {
+    final result = await resultFuture;
+    if (result.isFailure) throw StateError(result.error!);
+    return result.data!.cast<AssetExample<Object>>();
+  }
+
+  String? _ensureExamplesAvailable(FormalSystemKey systemKey) {
+    final descriptor = _registry.descriptorFor(systemKey);
+    if (descriptor == null || !descriptor.capabilities.examples.isEnabled) {
+      return 'Examples are unavailable for ${systemKey.value}';
+    }
+    return null;
   }
 
   /// Gets all available categories
@@ -477,6 +587,15 @@ class _ExampleMetadata {
   final String description;
   final List<String> tags;
   final ExampleComplexityLevel estimatedComplexity;
+
+  String get id {
+    final extension = fileName.lastIndexOf('.');
+    final stem = extension < 0 ? fileName : fileName.substring(0, extension);
+    return 'asset/${stem.toLowerCase()}';
+  }
+
+  FormalSystemKey get systemKey =>
+      ExamplesAssetDataSource._systemByCategory[category]!;
 
   const _ExampleMetadata({
     required this.fileName,

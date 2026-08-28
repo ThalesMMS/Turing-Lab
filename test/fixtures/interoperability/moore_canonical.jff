@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure type="moore">
+  <type>moore</type>
+  <automaton>
+    <state id="q0" name="even">
+      <x>80</x>
+      <y>120</y>
+      <initial/>
+      <output>even</output>
+    </state>
+    <state id="q1" name="odd">
+      <x>240</x>
+      <y>120</y>
+      <output>odd</output>
+    </state>
+    <transition>
+      <from>q0</from>
+      <to>q1</to>
+      <read>1</read>
+      <transout>odd</transout>
+    </transition>
+    <transition>
+      <from>q1</from>
+      <to>q0</to>
+      <read>1</read>
+      <transout>even</transout>
+    </transition>
+    <transition>
+      <from>q0</from>
+      <to>q0</to>
+      <read>0</read>
+      <transout>even</transout>
+    </transition>
+    <transition>
+      <from>q1</from>
+      <to>q1</to>
+      <read>0</read>
+      <transout>odd</transout>
+    </transition>
+  </automaton>
+</structure>

@@ -45,11 +45,17 @@ class EquivalenceChecker {
     // Convert NFAs to DFAs if necessary
     final dfaAResult = FSADeterminizer.determinizeIfNeeded(a, 'A');
     if (dfaAResult.isFailure) {
-      return ResultFactory.failure(dfaAResult.error!);
+      return Failure(
+        dfaAResult.error!,
+        structuredMessage: dfaAResult.structuredError,
+      );
     }
     final dfaBResult = FSADeterminizer.determinizeIfNeeded(b, 'B');
     if (dfaBResult.isFailure) {
-      return ResultFactory.failure(dfaBResult.error!);
+      return Failure(
+        dfaBResult.error!,
+        structuredMessage: dfaBResult.structuredError,
+      );
     }
     final dfaA = dfaAResult.data!;
     final dfaB = dfaBResult.data!;
@@ -67,7 +73,7 @@ class EquivalenceChecker {
     final initialB = completedB.initialState!;
 
     // BFS over product automaton; early-exit on differing acceptance
-    final visited = <String>{'${initialA.id},${initialB.id}'};
+    final visited = <(String, String)>{(initialA.id, initialB.id)};
     final queue = Queue<List<State>>()..add([initialA, initialB]);
 
     while (queue.isNotEmpty) {
@@ -90,7 +96,7 @@ class EquivalenceChecker {
         if (nextA == null || nextB == null) {
           return ResultFactory.success(false); // completion invariant broken
         }
-        final key = '${nextA.id},${nextB.id}';
+        final key = (nextA.id, nextB.id);
         if (visited.add(key)) {
           queue.add([nextA, nextB]);
         }

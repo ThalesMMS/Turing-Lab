@@ -1,0 +1,9 @@
+{
+  "family": "tm",
+  "scenario": "building-blocks",
+  "seed": 338,
+  "cases": 2,
+  "expectedStatus": "passed",
+  "recursionPolicy": "rejectCycles",
+  "tapeSemantics": "shared"
+}

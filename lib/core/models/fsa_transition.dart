@@ -51,7 +51,7 @@ class FSATransition extends Transition {
                   ? 'ε'
                   : (symbol ??
                       ((inputSymbols != null && inputSymbols.isNotEmpty)
-                          ? inputSymbols.join(',')
+                          ? _sortedSymbolLabel(inputSymbols)
                           : ''))),
           type: type ??
               (() {
@@ -214,6 +214,13 @@ class FSATransition extends Transition {
   bool get isEpsilonTransition =>
       lambdaSymbol != null || inputSymbols.any(isEpsilonSymbol);
 
+  /// Whether at least one branch of this transition consumes an input token.
+  ///
+  /// Imported legacy machines can contain both epsilon and consuming symbols
+  /// on one edge even though new editor data rejects that shape.
+  bool get consumesInput =>
+      inputSymbols.any((symbol) => !isEpsilonSymbol(symbol));
+
   /// Checks if this transition accepts the given symbol
   bool acceptsSymbol(String symbol) {
     return isEpsilonSymbol(symbol)
@@ -299,11 +306,16 @@ class FSATransition extends Transition {
       id: id,
       fromState: fromState,
       toState: toState,
-      label: label ?? symbols.join(','),
+      label: label ?? _sortedSymbolLabel(symbols),
       controlPoint: controlPoint ?? Vector2.zero(),
       type: TransitionType.nondeterministic,
       inputSymbols: symbols,
       lambdaSymbol: null,
     );
   }
+}
+
+String _sortedSymbolLabel(Iterable<String> symbols) {
+  final ordered = symbols.toList()..sort();
+  return ordered.join(',');
 }

@@ -14,18 +14,22 @@ import '../models/grammar_diagnostic.dart';
 import '../models/grammar_diagnostic_severity.dart';
 import '../models/grammar_transformation_step.dart';
 import '../models/production.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
 import 'grammar_analyzer.dart';
+import 'grammar_cnf_messages.dart';
 
 class GrammarCnfTransformationReport {
   final Grammar grammar;
   final List<GrammarTransformationStep> steps;
+  final List<GrammarCnfStructuredTransformationStep> structuredSteps;
   final List<GrammarDiagnostic> diagnostics;
 
   const GrammarCnfTransformationReport({
     required this.grammar,
     this.steps = const [],
+    this.structuredSteps = const [],
     this.diagnostics = const [],
   });
 }
@@ -48,7 +52,22 @@ class GrammarCnfTransformer {
   }) {
     _fallbackCounter = 0;
     final steps = <GrammarTransformationStep>[];
+    final structuredSteps = <GrammarCnfStructuredTransformationStep>[];
     final diagnostics = <GrammarDiagnostic>[];
+
+    void addStep({
+      required String kind,
+      required GrammarTransformationStep step,
+    }) {
+      steps.add(step);
+      structuredSteps.add(
+        GrammarCnfStructuredTransformationStep(
+          legacyStep: step,
+          operationMessage: GrammarCnfMessages.stepTitle(kind),
+          rationaleMessage: GrammarCnfMessages.stepRationale(kind),
+        ),
+      );
+    }
 
     // Run non-crashing validation diagnostics first.
     final malformedResult = GrammarAnalyzer.validateMalformedProductions(input);
@@ -58,11 +77,9 @@ class GrammarCnfTransformer {
 
     if (input.type != GrammarType.contextFree) {
       diagnostics.add(
-        GrammarDiagnostic(
+        _cnfDiagnostic(
           code: 'cnf.grammar_not_cfg',
-          severity: GrammarDiagnosticSeverity.warning,
-          message:
-              'CNF conversion expects a context-free grammar; received ${input.type.name}. Attempting conversion anyway.',
+          message: GrammarCnfMessages.grammarNotCfg(input.type.name),
         ),
       );
     }
@@ -81,11 +98,9 @@ class GrammarCnfTransformer {
       );
       if (newStart == null) {
         diagnostics.add(
-          const GrammarDiagnostic(
+          _cnfDiagnostic(
             code: 'cnf.start_symbol_rename_failed',
-            severity: GrammarDiagnosticSeverity.error,
-            message:
-                'Failed to introduce a new start symbol for CNF conversion (name exhaustion).',
+            message: GrammarCnfMessages.startSymbolRenameFailed(),
           ),
         );
       } else {
@@ -105,8 +120,9 @@ class GrammarCnfTransformer {
           modified: DateTime.now(),
         );
 
-        steps.add(
-          GrammarTransformationStep(
+        addStep(
+          kind: 'start-symbol',
+          step: GrammarTransformationStep(
             id: 'cnf.start_symbol',
             operation: 'Introduce new start symbol',
             rationale:
@@ -129,8 +145,9 @@ class GrammarCnfTransformer {
       current = result.grammar;
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
-        steps.add(
-          GrammarTransformationStep(
+        addStep(
+          kind: 'epsilon',
+          step: GrammarTransformationStep(
             id: 'cnf.epsilon',
             operation: 'Remove ε-productions',
             rationale:
@@ -151,8 +168,9 @@ class GrammarCnfTransformer {
       current = result.grammar;
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
-        steps.add(
-          GrammarTransformationStep(
+        addStep(
+          kind: 'unit',
+          step: GrammarTransformationStep(
             id: 'cnf.unit',
             operation: 'Remove unit productions',
             rationale:
@@ -173,8 +191,9 @@ class GrammarCnfTransformer {
       current = result.grammar;
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
-        steps.add(
-          GrammarTransformationStep(
+        addStep(
+          kind: 'useless',
+          step: GrammarTransformationStep(
             id: 'cnf.useless',
             operation: 'Remove useless symbols',
             rationale:
@@ -198,8 +217,9 @@ class GrammarCnfTransformer {
       current = result.grammar;
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
-        steps.add(
-          GrammarTransformationStep(
+        addStep(
+          kind: 'binarize',
+          step: GrammarTransformationStep(
             id: 'cnf.binarize',
             operation: 'Replace terminals and binarize',
             rationale:
@@ -213,15 +233,21 @@ class GrammarCnfTransformer {
       }
     }
 
+    // Epsilon and unit elimination can reach one structural rule through
+    // multiple provenance paths. Production equality includes the ID, so a
+    // Set alone does not remove those semantic duplicates. Retain the stable
+    // first provenance record before strict normal-form validation.
+    current = _deduplicateProductionShapes(current);
+
     // Final CNF sanity warning (best-effort).
     final cnfViolations = _findCnfViolations(current);
     if (cnfViolations.isNotEmpty) {
+      final violationText =
+          '${cnfViolations.take(5).join('; ')}${cnfViolations.length > 5 ? '…' : ''}';
       diagnostics.add(
-        GrammarDiagnostic(
+        _cnfDiagnostic(
           code: 'cnf.not_strict_cnf',
-          severity: GrammarDiagnosticSeverity.warning,
-          message:
-              'CNF conversion produced productions that are not strictly CNF-shaped: ${cnfViolations.take(5).join('; ')}${cnfViolations.length > 5 ? '…' : ''}',
+          message: GrammarCnfMessages.notStrictCnf(violationText),
         ),
       );
     }
@@ -230,6 +256,7 @@ class GrammarCnfTransformer {
       GrammarCnfTransformationReport(
         grammar: current,
         steps: steps,
+        structuredSteps: structuredSteps,
         diagnostics: diagnostics,
       ),
     );
@@ -260,8 +287,10 @@ class GrammarCnfTransformer {
     return '$prefix$i';
   }
 
-  static String? _freshNonTerminal(
-      {required String base, required Set<String> used}) {
+  static String? _freshNonTerminal({
+    required String base,
+    required Set<String> used,
+  }) {
     if (!used.contains(base)) return base;
     for (var i = 1; i < 1000; i++) {
       final candidate = '${base}_$i';
@@ -271,6 +300,39 @@ class GrammarCnfTransformer {
   }
 
   static int _nextFallbackSuffix() => _fallbackCounter++;
+}
+
+GrammarDiagnostic _cnfDiagnostic({
+  required String code,
+  required StructuredMessage message,
+  List<String> symbols = const [],
+  List<String> productionIds = const [],
+}) => GrammarDiagnostic(
+  code: code,
+  severity: switch (message.severity) {
+    StructuredMessageSeverity.information => GrammarDiagnosticSeverity.info,
+    StructuredMessageSeverity.warning => GrammarDiagnosticSeverity.warning,
+    StructuredMessageSeverity.error => GrammarDiagnosticSeverity.error,
+    StructuredMessageSeverity.unknown => GrammarDiagnosticSeverity.info,
+  },
+  message: message.stableCode,
+  structuredMessage: message,
+  symbols: symbols,
+  productionIds: productionIds,
+);
+
+Grammar _deduplicateProductionShapes(Grammar grammar) {
+  final ordered = grammar.productions.toList()
+    ..sort((left, right) => left.id.compareTo(right.id));
+  final shapes = <String>{};
+  final productions = <Production>{};
+  for (final production in ordered) {
+    final shape =
+        '${production.leftSide.join('\u0000')}\u0001'
+        '${production.rightSide.join('\u0000')}\u0001${production.isLambda}';
+    if (shapes.add(shape)) productions.add(production);
+  }
+  return grammar.copyWith(productions: productions, modified: grammar.modified);
 }
 
 class _TransformResult {
@@ -353,11 +415,14 @@ _TransformResult _removeEpsilonProductionsWithCap(
     final subsetCount = 1 << nullablePositions.length;
     if (subsetCount > maxNullableSubsetExpansions) {
       diagnostics.add(
-        GrammarDiagnostic(
+        _cnfDiagnostic(
           code: 'cnf.nullable_subset_limit_exceeded',
-          severity: GrammarDiagnosticSeverity.error,
-          message:
-              'Skipping ε-expansion for production ${p.id}: ${nullablePositions.length} nullablePositions would require $subsetCount subsets through _GrammarCnfInternals.subsetsOfPositions, exceeding the cap of $maxNullableSubsetExpansions.',
+          message: GrammarCnfMessages.nullableSubsetLimitExceeded(
+            productionId: p.id,
+            nullablePositionCount: nullablePositions.length,
+            subsetCount: subsetCount,
+            limit: maxNullableSubsetExpansions,
+          ),
           symbols: p.leftSide,
           productionIds: [p.id],
         ),
@@ -527,8 +592,9 @@ _TransformResult _removeUselessSymbols(Grammar grammar) {
     );
   }
 
-  final productiveReport =
-      GrammarAnalyzer.detectUnproductiveNonTerminals(grammar);
+  final productiveReport = GrammarAnalyzer.detectUnproductiveNonTerminals(
+    grammar,
+  );
   final unproductive = <String>{};
   if (productiveReport.isSuccess) {
     for (final d
@@ -541,8 +607,9 @@ _TransformResult _removeUselessSymbols(Grammar grammar) {
   }
 
   final productiveGrammar = removeSymbols(grammar, unproductive);
-  final reachableReport =
-      GrammarAnalyzer.detectUnreachableNonTerminals(productiveGrammar);
+  final reachableReport = GrammarAnalyzer.detectUnreachableNonTerminals(
+    productiveGrammar,
+  );
   final unreachable = <String>{};
   if (reachableReport.isSuccess) {
     for (final d
@@ -636,11 +703,7 @@ _TransformResult _replaceTerminalsAndBinarize(
       }
     }
 
-    productions.add(
-      p.copyWith(
-        rightSide: replaced,
-      ),
-    );
+    productions.add(p.copyWith(rightSide: replaced));
   }
 
   // Add terminal alias productions (A -> a).
@@ -678,11 +741,11 @@ _TransformResult _replaceTerminalsAndBinarize(
           maxNewNonTerminals) {
         if (!emittedNewSymbolLimitDiagnostic) {
           diagnostics.add(
-            const GrammarDiagnostic(
+            _cnfDiagnostic(
               code: 'cnf.new_symbol_limit_reached',
-              severity: GrammarDiagnosticSeverity.warning,
-              message:
-                  'Reached CNF new-symbol limit; stopping further binarization to avoid excessive growth.',
+              message: GrammarCnfMessages.newSymbolLimitReached(
+                maxNewNonTerminals,
+              ),
             ),
           );
           emittedNewSymbolLimitDiagnostic = true;
@@ -704,7 +767,8 @@ _TransformResult _replaceTerminalsAndBinarize(
         base: 'X_${left}_$i',
         used: usedSymbols.union(nonterminals).union(grammar.terminals),
       );
-      final nt = freshNt ??
+      final nt =
+          freshNt ??
           'X_${left}_${i}_${GrammarCnfTransformer._nextFallbackSuffix()}';
       nonterminals.add(nt);
 

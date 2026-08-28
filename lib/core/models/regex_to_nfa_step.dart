@@ -12,8 +12,12 @@
 //
 
 import 'algorithm_step.dart';
+import '../messages/structured_message.dart';
 import 'state.dart';
 import 'transition.dart';
+
+const regexToNfaTitleMessageProperty = 'regexToNfaTitleMessage';
+const regexToNfaExplanationMessageProperty = 'regexToNfaExplanationMessage';
 
 /// Represents a single step in Regex to NFA conversion using Thompson's construction.
 ///
@@ -126,13 +130,21 @@ class RegexToNFAStep {
     int? totalTransitions,
   }) {
     return RegexToNFAStep._internal(
-      baseStep: baseStep,
+      baseStep: baseStep.copyWith(
+        title: _regexToNfaStepMessage(
+          _regexToNfaStepCode(stepType, 'title'),
+        ).stableCode,
+        explanation: _regexToNfaStepMessage(
+          _regexToNfaStepCode(stepType, 'explanation'),
+        ).stableCode,
+      ),
       stepType: stepType,
       regexFragment: regexFragment,
       regexPosition: regexPosition,
       processedSymbol: processedSymbol,
-      createdStates:
-          createdStates != null ? Set.unmodifiable(createdStates) : null,
+      createdStates: createdStates != null
+          ? Set.unmodifiable(createdStates)
+          : null,
       createdTransitions: createdTransitions != null
           ? Set.unmodifiable(createdTransitions)
           : null,
@@ -168,11 +180,8 @@ class RegexToNFAStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Begin Thompson\'s construction',
-        explanation:
-            'Starting conversion of regular expression "$regex" to NFA using Thompson\'s construction. '
-            'This algorithm builds an NFA by parsing the regex and creating NFA fragments for each subexpression, '
-            'then combining them using ε-transitions according to regex operators.',
+        title: _regexToNfaStepMessage('start-title').stableCode,
+        explanation: _regexToNfaStepMessage('start-explanation').stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.start,
@@ -193,18 +202,14 @@ class RegexToNFAStep {
     required Transition transition,
     required int stackSize,
   }) {
-    final displaySymbol = symbol.isEmpty ? 'ε' : symbol;
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Create NFA for symbol \'$displaySymbol\'',
-        explanation:
-            'Processing symbol \'$displaySymbol\' at position $position. '
-            'Creating a simple NFA fragment with two states: '
-            'start state ${startState.label} and accept state ${acceptState.label}, '
-            'connected by a transition on \'$displaySymbol\'. '
-            'This fragment is pushed onto the NFA stack.',
+        title: _regexToNfaStepMessage('basic-symbol-title').stableCode,
+        explanation: _regexToNfaStepMessage(
+          'basic-symbol-explanation',
+        ).stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.basicSymbol,
@@ -233,18 +238,14 @@ class RegexToNFAStep {
     required Set<Transition> epsilonTransitions,
     required int stackSize,
   }) {
-    final firstAcceptLabels = _stateLabels(firstAcceptStates);
-    final secondAcceptLabels = _stateLabels(secondAcceptStates);
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply concatenation',
-        explanation: 'Concatenating two NFA fragments at position $position. '
-            'Popping fragments for "$secondFragmentLabel" and "$firstFragmentLabel" from the stack. '
-            'Connecting accept state(s) of the first fragment ($firstAcceptLabels) with the start state '
-            'of the second fragment (${secondStart.label}) using an ε-transition. '
-            'The resulting fragment has start state ${firstStart.label} and accept state(s) $secondAcceptLabels.',
+        title: _regexToNfaStepMessage('concatenation-title').stableCode,
+        explanation: _regexToNfaStepMessage(
+          'concatenation-explanation',
+        ).stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.concatenation,
@@ -277,20 +278,12 @@ class RegexToNFAStep {
     required Set<Transition> newTransitions,
     required int stackSize,
   }) {
-    final firstAcceptLabels = _stateLabels(firstAcceptStates);
-    final secondAcceptLabels = _stateLabels(secondAcceptStates);
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply union (alternation)',
-        explanation:
-            'Creating union of two NFA fragments at position $position for pattern ($firstFragmentLabel|$secondFragmentLabel). '
-            'Popping two fragments from the stack. Creating new start state ${newStart.label} with ε-transitions '
-            'to both fragment starts (${firstStart.label} and ${secondStart.label}). '
-            'Creating new accept state ${newAccept.label} with ε-transitions from all fragment accept states '
-            '($firstAcceptLabels and $secondAcceptLabels). '
-            'The NFA can now follow either path non-deterministically.',
+        title: _regexToNfaStepMessage('union-title').stableCode,
+        explanation: _regexToNfaStepMessage('union-explanation').stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.union,
@@ -321,20 +314,14 @@ class RegexToNFAStep {
     required Set<Transition> newTransitions,
     required int stackSize,
   }) {
-    final oldAcceptLabels = _stateLabels(oldAcceptStates);
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply Kleene star (*)',
-        explanation:
-            'Applying Kleene star to fragment "$fragmentLabel" at position $position. '
-            'Popping fragment from stack. Creating new start state ${newStart.label} and accept state ${newAccept.label}. '
-            'Adding ε-transitions: (1) ${newStart.label} → ${oldStart.label} to enter the loop, '
-            '(2) the new start state is accepting to allow zero iterations, '
-            '(3) each old accept state ($oldAcceptLabels) → ${oldStart.label} to repeat the loop, '
-            '(4) each old accept state ($oldAcceptLabels) → ${newAccept.label} to exit the loop. '
-            'This allows zero or more repetitions of the pattern.',
+        title: _regexToNfaStepMessage('kleene-star-title').stableCode,
+        explanation: _regexToNfaStepMessage(
+          'kleene-star-explanation',
+        ).stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.kleeneStar,
@@ -362,19 +349,12 @@ class RegexToNFAStep {
     required Set<Transition> newTransitions,
     required int stackSize,
   }) {
-    final oldAcceptLabels = _stateLabels(oldAcceptStates);
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply plus (+)',
-        explanation:
-            'Applying plus operator to fragment "$fragmentLabel" at position $position. '
-            'Popping fragment from stack. Creating new start state ${newStart.label} and accept state ${newAccept.label}. '
-            'Adding ε-transitions: (1) ${newStart.label} → ${oldStart.label} to enter (required first iteration), '
-            '(2) each old accept state ($oldAcceptLabels) → ${oldStart.label} to repeat the loop, '
-            '(3) each old accept state ($oldAcceptLabels) → ${newAccept.label} to exit the loop. '
-            'This requires at least one iteration, unlike Kleene star.',
+        title: _regexToNfaStepMessage('plus-title').stableCode,
+        explanation: _regexToNfaStepMessage('plus-explanation').stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.plus,
@@ -402,19 +382,12 @@ class RegexToNFAStep {
     required Set<Transition> newTransitions,
     required int stackSize,
   }) {
-    final oldAcceptLabels = _stateLabels(oldAcceptStates);
     return RegexToNFAStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply optional (?)',
-        explanation:
-            'Applying optional operator to fragment "$fragmentLabel" at position $position. '
-            'Popping fragment from stack. Creating new start state ${newStart.label} and accept state ${newAccept.label}. '
-            'Adding ε-transitions: (1) ${newStart.label} → ${oldStart.label} to match the pattern, '
-            '(2) ${newStart.label} → ${newAccept.label} to skip the pattern (zero occurrences), '
-            '(3) each old accept state ($oldAcceptLabels) → ${newAccept.label} to complete after matching. '
-            'This allows zero or one occurrence of the pattern.',
+        title: _regexToNfaStepMessage('optional-title').stableCode,
+        explanation: _regexToNfaStepMessage('optional-explanation').stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.optional,
@@ -442,12 +415,8 @@ class RegexToNFAStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Complete NFA construction',
-        explanation:
-            'Thompson\'s construction complete. The final NFA has been built with '
-            'start state ${finalStartState.label} and accept state ${finalAcceptState.label}. '
-            'Total states: $totalStates. Total transitions: $totalTransitions. '
-            'The NFA accepts exactly the language defined by the regular expression.',
+        title: _regexToNfaStepMessage('complete-title').stableCode,
+        explanation: _regexToNfaStepMessage('complete-explanation').stableCode,
         type: AlgorithmType.regexToNfa,
       ),
       stepType: RegexToNFAStepType.complete,
@@ -460,12 +429,159 @@ class RegexToNFAStep {
     );
   }
 
+  /// Locale-neutral title contract resolved at the presentation boundary.
+  StructuredMessage get titleMessage => switch (stepType) {
+    RegexToNFAStepType.basicSymbol => _regexToNfaStepMessage(
+      'basic-symbol-title',
+      arguments: {
+        'symbol': _regexToNfaLiteral(
+          _displayRegexSymbol(processedSymbol),
+          'regex-symbol',
+        ),
+      },
+    ),
+    _ => _regexToNfaStepMessage(_regexToNfaStepCode(stepType, 'title')),
+  };
+
+  /// Locale-neutral explanation contract resolved at the presentation
+  /// boundary.
+  StructuredMessage get explanationMessage => switch (stepType) {
+    RegexToNFAStepType.start => _regexToNfaStepMessage(
+      'start-explanation',
+      arguments: {'regex': _regexToNfaLiteral(regexFragment ?? '', 'regex')},
+    ),
+    RegexToNFAStepType.basicSymbol => _regexToNfaStepMessage(
+      'basic-symbol-explanation',
+      arguments: {
+        'symbol': _regexToNfaLiteral(
+          _displayRegexSymbol(processedSymbol),
+          'regex-symbol',
+        ),
+        'position': _regexToNfaPosition(regexPosition),
+        'start-state': _regexToNfaLiteral(
+          fragmentStartState?.label ?? '',
+          'state-label',
+        ),
+        'accept-state': _regexToNfaLiteral(
+          fragmentAcceptState?.label ?? '',
+          'state-label',
+        ),
+        'state-count': StructuredMessageArgument.count(
+          createdStates?.length ?? 0,
+        ),
+        'transition-count': StructuredMessageArgument.count(
+          createdTransitions?.length ?? 0,
+        ),
+        'transitions': _regexToNfaLiteral(
+          _transitionPlan(createdTransitions),
+          'nfa-transitions',
+        ),
+        'stack-size': StructuredMessageArgument.count(stackSize ?? 0),
+      },
+    ),
+    RegexToNFAStepType.concatenation => _regexToNfaStepMessage(
+      'concatenation-explanation',
+      arguments: {
+        'position': _regexToNfaPosition(regexPosition),
+        'first-fragment': _regexToNfaLiteral(
+          firstFragmentLabel ?? '',
+          'regex-fragment',
+        ),
+        'second-fragment': _regexToNfaLiteral(
+          secondFragmentLabel ?? '',
+          'regex-fragment',
+        ),
+        'start-state': _regexToNfaLiteral(
+          fragmentStartState?.label ?? '',
+          'state-label',
+        ),
+        'accept-states': _regexToNfaLiteral(
+          _stateLabels(secondFragmentAcceptStates ?? const {}),
+          'state-labels',
+        ),
+        'transitions': _regexToNfaLiteral(
+          _transitionPlan(createdTransitions),
+          'nfa-transitions',
+        ),
+        'stack-size': StructuredMessageArgument.count(stackSize ?? 0),
+      },
+    ),
+    RegexToNFAStepType.union => _regexToNfaStepMessage(
+      'union-explanation',
+      arguments: {
+        'position': _regexToNfaPosition(regexPosition),
+        'pattern': _regexToNfaLiteral(
+          '(${firstFragmentLabel ?? ''}|${secondFragmentLabel ?? ''})',
+          'regex-fragment',
+        ),
+        'start-state': _regexToNfaLiteral(
+          fragmentStartState?.label ?? '',
+          'state-label',
+        ),
+        'accept-state': _regexToNfaLiteral(
+          fragmentAcceptState?.label ?? '',
+          'state-label',
+        ),
+        'transitions': _regexToNfaLiteral(
+          _transitionPlan(createdTransitions),
+          'nfa-transitions',
+        ),
+        'stack-size': StructuredMessageArgument.count(stackSize ?? 0),
+      },
+    ),
+    RegexToNFAStepType.kleeneStar ||
+    RegexToNFAStepType.plus ||
+    RegexToNFAStepType.optional => _regexToNfaStepMessage(
+      _regexToNfaStepCode(stepType, 'explanation'),
+      arguments: {
+        'fragment': _regexToNfaLiteral(
+          modifiedFragmentLabel ?? '',
+          'regex-fragment',
+        ),
+        'position': _regexToNfaPosition(regexPosition),
+        'start-state': _regexToNfaLiteral(
+          fragmentStartState?.label ?? '',
+          'state-label',
+        ),
+        'accept-state': _regexToNfaLiteral(
+          fragmentAcceptState?.label ?? '',
+          'state-label',
+        ),
+        'transitions': _regexToNfaLiteral(
+          _transitionPlan(createdTransitions),
+          'nfa-transitions',
+        ),
+        'stack-size': StructuredMessageArgument.count(stackSize ?? 0),
+      },
+    ),
+    RegexToNFAStepType.complete => _regexToNfaStepMessage(
+      'complete-explanation',
+      arguments: {
+        'start-state': _regexToNfaLiteral(
+          fragmentStartState?.label ?? '',
+          'state-label',
+        ),
+        'accept-state': _regexToNfaLiteral(
+          fragmentAcceptState?.label ?? '',
+          'state-label',
+        ),
+        'state-count': StructuredMessageArgument.count(totalStates ?? 0),
+        'transition-count': StructuredMessageArgument.count(
+          totalTransitions ?? 0,
+        ),
+      },
+    ),
+  };
+
   /// Converts this specialized step to generic, JSON-friendly step properties.
   Map<String, dynamic> toProperties() {
     final properties = <String, dynamic>{
-      'stepType': stepType.displayName,
+      'stepType': stepType.legacyPropertyValue,
+      'stepTypeCode': stepType.name,
       'combinesFragments': combinesFragments,
       'isFinalNFA': isFinalNFA,
+      regexToNfaTitleMessageProperty: titleMessage.toJson(),
+      regexToNfaExplanationMessageProperty: explanationMessage.toJson(),
     };
 
     _putStateIds(properties, 'createdStateIds', createdStates);
@@ -487,6 +603,20 @@ class RegexToNFAStep {
 
   static String _stateLabels(Set<State> states) {
     final labels = states.map((state) => state.label).toList()..sort();
+    return labels.join(', ');
+  }
+
+  static String _transitionPlan(Set<Transition>? transitions) {
+    if (transitions == null || transitions.isEmpty) return '∅';
+    final labels =
+        transitions
+            .map(
+              (transition) =>
+                  '${transition.fromState.label} → ${transition.toState.label} '
+                  '(${_displayRegexSymbol(transition.label)})',
+            )
+            .toList()
+          ..sort();
     return labels.join(', ');
   }
 
@@ -542,6 +672,38 @@ class RegexToNFAStep {
   }
 }
 
+StructuredMessage _regexToNfaStepMessage(
+  String code, {
+  Map<String, StructuredMessageArgument> arguments = const {},
+}) => StructuredMessage(
+  namespace: 'regex.to-nfa.step',
+  code: code,
+  category: StructuredMessageCategory.transformation,
+  severity: StructuredMessageSeverity.information,
+  arguments: arguments,
+);
+
+StructuredMessageArgument _regexToNfaLiteral(String value, String role) =>
+    StructuredMessageArgument.literal(value, role: role);
+
+StructuredMessageArgument _regexToNfaPosition(int? position) =>
+    StructuredMessageArgument.integer(position ?? -1, role: 'regex-position');
+
+String _displayRegexSymbol(String? symbol) =>
+    symbol == null || symbol.isEmpty ? 'ε' : symbol;
+
+String _regexToNfaStepCode(RegexToNFAStepType type, String suffix) =>
+    '${switch (type) {
+      RegexToNFAStepType.start => 'start',
+      RegexToNFAStepType.basicSymbol => 'basic-symbol',
+      RegexToNFAStepType.concatenation => 'concatenation',
+      RegexToNFAStepType.union => 'union',
+      RegexToNFAStepType.kleeneStar => 'kleene-star',
+      RegexToNFAStepType.plus => 'plus',
+      RegexToNFAStepType.optional => 'optional',
+      RegexToNFAStepType.complete => 'complete',
+    }}-$suffix';
+
 /// Types of steps in regex to NFA conversion
 enum RegexToNFAStepType {
   /// Starting the Thompson's construction algorithm
@@ -571,47 +733,44 @@ enum RegexToNFAStepType {
 
 /// Extension methods for RegexToNFAStepType
 extension RegexToNFAStepTypeExtension on RegexToNFAStepType {
-  /// Gets a human-readable name for the step type
-  String get displayName {
-    switch (this) {
-      case RegexToNFAStepType.start:
-        return 'Start';
-      case RegexToNFAStepType.basicSymbol:
-        return 'Basic Symbol';
-      case RegexToNFAStepType.concatenation:
-        return 'Concatenation';
-      case RegexToNFAStepType.union:
-        return 'Union';
-      case RegexToNFAStepType.kleeneStar:
-        return 'Kleene Star';
-      case RegexToNFAStepType.plus:
-        return 'Plus';
-      case RegexToNFAStepType.optional:
-        return 'Optional';
-      case RegexToNFAStepType.complete:
-        return 'Complete';
-    }
-  }
+  /// Compatibility code for callers that have not adopted presentation
+  /// resolution yet.
+  String get displayName => labelMessage.stableCode;
 
-  /// Gets a short description of what this step type does
-  String get description {
-    switch (this) {
-      case RegexToNFAStepType.start:
-        return 'Initialize Thompson\'s construction';
-      case RegexToNFAStepType.basicSymbol:
-        return 'Create NFA fragment for a single symbol';
-      case RegexToNFAStepType.concatenation:
-        return 'Concatenate two NFA fragments';
-      case RegexToNFAStepType.union:
-        return 'Create union of two NFA fragments';
-      case RegexToNFAStepType.kleeneStar:
-        return 'Apply Kleene star (zero or more repetitions)';
-      case RegexToNFAStepType.plus:
-        return 'Apply plus (one or more repetitions)';
-      case RegexToNFAStepType.optional:
-        return 'Apply optional (zero or one occurrence)';
-      case RegexToNFAStepType.complete:
-        return 'Finalize the NFA construction';
-    }
-  }
+  String get description => descriptionMessage.stableCode;
+
+  /// Historical JSON property retained for persisted step compatibility.
+  /// Presentation code must resolve [labelMessage] instead.
+  String get legacyPropertyValue => switch (this) {
+    RegexToNFAStepType.start => 'Start',
+    RegexToNFAStepType.basicSymbol => 'Basic Symbol',
+    RegexToNFAStepType.concatenation => 'Concatenation',
+    RegexToNFAStepType.union => 'Union',
+    RegexToNFAStepType.kleeneStar => 'Kleene Star',
+    RegexToNFAStepType.plus => 'Plus',
+    RegexToNFAStepType.optional => 'Optional',
+    RegexToNFAStepType.complete => 'Complete',
+  };
+
+  StructuredMessage get labelMessage =>
+      _regexToNfaStepTypeMessage('label', this);
+
+  StructuredMessage get descriptionMessage =>
+      _regexToNfaStepTypeMessage('description', this);
 }
+
+StructuredMessage _regexToNfaStepTypeMessage(
+  String code,
+  RegexToNFAStepType type,
+) => StructuredMessage(
+  namespace: 'regex.to-nfa.step-type',
+  code: code,
+  category: StructuredMessageCategory.transformation,
+  severity: StructuredMessageSeverity.information,
+  arguments: {
+    'type': StructuredMessageArgument.outcome(
+      type.name,
+      role: 'regex-to-nfa-step-type',
+    ),
+  },
+);

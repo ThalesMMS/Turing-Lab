@@ -11,9 +11,10 @@
 //
 
 import 'dart:math' as math;
-import 'dart:ui' show Tristate;
+import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -84,6 +85,28 @@ class _TestGraphViewCanvasController extends GraphViewCanvasController {
   }
 }
 
+Finder get _moreActionsButton =>
+    find.byKey(const ValueKey('canvas-toolbar-overflow'));
+
+Finder get _popupMenuItems =>
+    find.byWidgetPredicate((widget) => widget is PopupMenuItem);
+
+Future<void> _openMoreActions(WidgetTester tester) async {
+  await tester.tap(_moreActionsButton);
+  await tester.pumpAndSettle();
+}
+
+Finder _menuItem(String label) => find.ancestor(
+  of: find.text(label),
+  matching: find.byWidgetPredicate((widget) => widget is PopupMenuItem),
+);
+
+Future<void> _selectMenuAction(WidgetTester tester, String label) async {
+  await _openMoreActions(tester);
+  await tester.tap(_menuItem(label).last);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   late AutomatonStateNotifier provider;
   late _TestGraphViewCanvasController controller;
@@ -99,9 +122,7 @@ void main() {
     controller.dispose();
   });
 
-  testWidgets('defaults to one collapsed row of primary editing actions', (
-    tester,
-  ) async {
+  testWidgets('defaults to primary editing actions plus More', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -119,36 +140,41 @@ void main() {
       ),
     );
 
-    final icons = tester
-        .widgetList<IconButton>(find.byType(IconButton))
-        .map((button) => (button.icon as Icon).icon)
-        .toList();
+    expect(find.byIcon(Icons.pan_tool), findsOneWidget);
+    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_right_alt), findsOneWidget);
+    expect(find.byIcon(Icons.more_horiz), findsOneWidget);
+    expect(_moreActionsButton, findsOneWidget);
+    expect(find.byTooltip('More canvas actions'), findsOneWidget);
     expect(
-      icons,
-      <IconData>[
-        Icons.pan_tool,
-        Icons.add,
-        Icons.arrow_right_alt,
-        Icons.open_in_full,
-      ],
+      tester
+          .getSemantics(
+            find.bySemanticsLabel('Canvas action: More canvas actions'),
+          )
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
     );
+    expect(find.byIcon(Icons.open_in_full), findsNothing);
+    expect(find.byIcon(Icons.close_fullscreen), findsNothing);
     expect(find.byType(FittedBox), findsNothing);
     expect(find.byType(SingleChildScrollView), findsNothing);
 
     final toolbarHeight = tester
         .getSize(find.byKey(const ValueKey('canvas-toolbar-surface')))
         .height;
-    for (final button
-        in tester.widgetList<IconButton>(find.byType(IconButton))) {
-      expect(
-        tester.getSize(find.byWidget(button)).shortestSide,
-        greaterThanOrEqualTo(44),
-      );
+    for (final control in <Finder>[
+      find.widgetWithIcon(IconButton, Icons.pan_tool),
+      find.widgetWithIcon(IconButton, Icons.add),
+      find.widgetWithIcon(IconButton, Icons.arrow_right_alt),
+      _moreActionsButton,
+    ]) {
+      expect(tester.getSize(control).shortestSide, greaterThanOrEqualTo(44));
     }
     expect(toolbarHeight, lessThan(72));
   });
 
-  testWidgets('expands in one row and exposes the ordered secondary actions', (
+  testWidgets('More exposes the ordered secondary actions at wide widths', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 800);
@@ -174,35 +200,34 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
+    await _openMoreActions(tester);
 
-    final icons = tester
-        .widgetList<IconButton>(find.byType(IconButton))
-        .map((button) => (button.icon as Icon).icon)
-        .toList();
     expect(
-      icons,
-      <IconData>[
-        Icons.pan_tool,
-        Icons.add,
-        Icons.arrow_right_alt,
-        Icons.undo,
-        Icons.redo,
-        Icons.zoom_out,
-        Icons.zoom_in,
-        Icons.fit_screen,
-        Icons.center_focus_strong,
-        Icons.delete_outline,
-        Icons.help_outline,
-        Icons.close_fullscreen,
-      ],
+      tester.getTopLeft(_popupMenuItems.first).dy,
+      greaterThanOrEqualTo(tester.getBottomLeft(_moreActionsButton).dy),
     );
-    expect(find.text('100%'), findsOneWidget);
-    for (final button
-        in tester.widgetList<IconButton>(find.byType(IconButton))) {
+
+    const labels = <String>[
+      'Undo',
+      'Redo',
+      'Zoom out',
+      'Zoom 100%',
+      'Zoom in',
+      'Fit to content',
+      'Reset view',
+      'Clear canvas',
+      'Help & Shortcuts',
+    ];
+    for (final label in labels) {
+      expect(find.text(label), findsOneWidget);
+    }
+    final verticalPositions = labels
+        .map((label) => tester.getTopLeft(find.text(label)).dy)
+        .toList();
+    expect(verticalPositions, orderedEquals([...verticalPositions]..sort()));
+    for (var index = 0; index < _popupMenuItems.evaluate().length; index++) {
       expect(
-        tester.getSize(find.byWidget(button)).shortestSide,
+        tester.getSize(_popupMenuItems.at(index)).height,
         greaterThanOrEqualTo(44),
       );
     }
@@ -214,7 +239,7 @@ void main() {
     );
   });
 
-  testWidgets('uses explicit overflow instead of shrinking on narrow widths', (
+  testWidgets('uses explicit overflow without shrinking on narrow widths', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 720);
@@ -240,17 +265,12 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
-    expect(
-        find.byKey(const ValueKey('canvas-toolbar-overflow')), findsOneWidget);
+    expect(_moreActionsButton, findsOneWidget);
     expect(find.byType(FittedBox), findsNothing);
     expect(find.byType(SingleChildScrollView), findsNothing);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
-    await tester.pumpAndSettle();
+    await _openMoreActions(tester);
     expect(find.text('Fit to content'), findsOneWidget);
     expect(find.text('Clear canvas'), findsOneWidget);
   });
@@ -280,9 +300,6 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
     expect(tester.takeException(), isNull);
     expect(find.text('100%'), findsNothing);
 
@@ -293,8 +310,7 @@ void main() {
       find.widgetWithIcon(IconButton, Icons.pan_tool),
       find.widgetWithIcon(IconButton, Icons.add),
       find.widgetWithIcon(IconButton, Icons.arrow_right_alt),
-      find.byKey(const ValueKey('canvas-toolbar-overflow')),
-      find.widgetWithIcon(IconButton, Icons.close_fullscreen),
+      _moreActionsButton,
     ];
     for (final control in visibleControls) {
       expect(control, findsOneWidget);
@@ -303,8 +319,7 @@ void main() {
       expect(surfaceRect.contains(controlRect.bottomRight), isTrue);
     }
 
-    await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
-    await tester.pumpAndSettle();
+    await _openMoreActions(tester);
 
     expect(find.text('Zoom 100%'), findsOneWidget);
     expect(find.text('Fit to content'), findsOneWidget);
@@ -334,42 +349,35 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
     final transformation = controller.graphController.transformationController!;
     transformation.value = Matrix4.diagonal3Values(2, 2, 1);
     await tester.pump();
 
-    expect(find.text('200%'), findsOneWidget);
+    await _openMoreActions(tester);
+    expect(find.text('Zoom 200%'), findsOneWidget);
     expect(
-      tester
-          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_in))
-          .onPressed,
-      isNull,
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Zoom in')).enabled,
+      isFalse,
     );
     expect(
-      tester
-          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out))
-          .onPressed,
-      isNotNull,
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Zoom out')).enabled,
+      isTrue,
     );
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
 
     transformation.value = Matrix4.diagonal3Values(0.05, 0.05, 1);
     await tester.pump();
 
-    expect(find.text('5%'), findsOneWidget);
+    await _openMoreActions(tester);
+    expect(find.text('Zoom 5%'), findsOneWidget);
     expect(
-      tester
-          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out))
-          .onPressed,
-      isNull,
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Zoom out')).enabled,
+      isFalse,
     );
     expect(
-      tester
-          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_in))
-          .onPressed,
-      isNotNull,
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Zoom in')).enabled,
+      isTrue,
     );
   });
 
@@ -442,20 +450,19 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pump();
-
     expect(find.byType(AnimatedSize), findsNothing);
     expect(
       find.byKey(const ValueKey('canvas-toolbar-reduced-motion')),
       findsOneWidget,
     );
     expect(
-        find.byKey(const ValueKey('canvas-toolbar-overflow')), findsOneWidget);
+      find.byKey(const ValueKey('canvas-toolbar-overflow')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('focus traversal orders follow the expanded visual order', (
+  testWidgets('focus traversal places More after primary actions', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 800);
@@ -480,23 +487,128 @@ void main() {
         ),
       ),
     );
-    final collapsedOrders = tester
+    final orders = tester
         .widgetList<FocusTraversalOrder>(find.byType(FocusTraversalOrder))
         .map((widget) => (widget.order as NumericFocusOrder).order)
         .toList();
-    expect(collapsedOrders, orderedEquals(<double>[0, 1, 2, 900]));
+    expect(orders, orderedEquals(<double>[0, 1, 2, 800]));
+  });
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
+  testWidgets('More supports keyboard activation and regains focus on close', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                enableToolSelection: true,
+                showSelectionTool: true,
+                onSelectTool: () {},
+                onAddState: () {},
+                onAddTransition: () {},
+              ),
+            ),
+          ),
+        ),
+      );
 
-    final expandedOrders = tester
-        .widgetList<FocusTraversalOrder>(find.byType(FocusTraversalOrder))
-        .map((widget) => (widget.order as NumericFocusOrder).order)
-        .toList();
-    expect(
-      expandedOrders,
-      orderedEquals(<double>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 900]),
-    );
+      final focusable = tester.widget<FocusableActionDetector>(
+        find.ancestor(
+          of: _moreActionsButton,
+          matching: find.byType(FocusableActionDetector),
+        ),
+      );
+      focusable.focusNode!.requestFocus();
+      await tester.pump();
+      expect(focusable.focusNode!.hasFocus, isTrue);
+      final focusedDecoration = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('canvas-toolbar-overflow-focus-indicator')),
+      );
+      expect((focusedDecoration.decoration as BoxDecoration).border, isNotNull);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.text('Fit to content'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Fit to content'), findsNothing);
+      expect(focusable.focusNode!.hasFocus, isTrue);
+      final restoredDecoration = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('canvas-toolbar-overflow-focus-indicator')),
+      );
+      expect(
+        (restoredDecoration.decoration as BoxDecoration).border,
+        isNotNull,
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets('Clear is destructive and dispatches exactly once', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      var clearCount = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                onAddState: () {},
+                onClear: () => clearCount++,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final focusable = tester.widget<FocusableActionDetector>(
+        find.ancestor(
+          of: _moreActionsButton,
+          matching: find.byType(FocusableActionDetector),
+        ),
+      );
+      await _openMoreActions(tester);
+      expect(
+        find.bySemanticsLabel(
+          'Canvas action: Clear canvas. Destructive action.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .getSemantics(
+              find.bySemanticsLabel(
+                'Canvas action: Clear canvas. Destructive action.',
+              ),
+            )
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      final clearText = tester.widget<Text>(find.text('Clear canvas'));
+      expect(
+        clearText.style?.color,
+        Theme.of(tester.element(find.byWidget(clearText))).colorScheme.error,
+      );
+
+      await tester.tap(_menuItem('Clear canvas'));
+      await tester.pumpAndSettle();
+
+      expect(clearCount, 1);
+      expect(find.text('Clear canvas'), findsNothing);
+      expect(focusable.focusNode!.hasFocus, isTrue);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('exposes the selected editing tool as a toggled semantic', (
@@ -551,10 +663,8 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
-    expect(find.byTooltip('2 states · 1 transition'), findsOneWidget);
+    await _openMoreActions(tester);
+    expect(find.text('2 states · 1 transition'), findsOneWidget);
   });
 
   testWidgets('GraphViewCanvasToolbar hides status message when absent', (
@@ -577,7 +687,9 @@ void main() {
     expect(find.textContaining('transition'), findsNothing);
   });
 
-  testWidgets('Expanded layout renders expected actions', (tester) async {
+  testWidgets('primary actions stay inline while secondary actions use More', (
+    tester,
+  ) async {
     bool addStateInvoked = false;
 
     await tester.pumpWidget(
@@ -593,10 +705,8 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(IconButton), findsNWidgets(9));
+    expect(find.byType(IconButton), findsOneWidget);
+    expect(_moreActionsButton, findsOneWidget);
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
     await tester.pump();
@@ -606,15 +716,11 @@ void main() {
       tester.getSize(find.widgetWithIcon(IconButton, Icons.add)).height,
       greaterThanOrEqualTo(44),
     );
-    expect(
-      tester
-          .getSize(find.widgetWithIcon(IconButton, Icons.help_outline))
-          .height,
-      greaterThanOrEqualTo(48),
-    );
+    await _openMoreActions(tester);
+    expect(_menuItem('Help & Shortcuts'), findsOneWidget);
   });
 
-  testWidgets('Expanded layout renders actions in grouped order', (
+  testWidgets('More renders secondary actions in grouped order', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -631,26 +737,27 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
+    await _openMoreActions(tester);
 
-    final buttons =
-        tester.widgetList<IconButton>(find.byType(IconButton)).toList();
-    final icons = buttons.map((button) => (button.icon as Icon).icon).toList();
+    final icons = tester
+        .widgetList<Icon>(
+          find.descendant(of: _popupMenuItems, matching: find.byType(Icon)),
+        )
+        .map((icon) => icon.icon)
+        .toList();
 
     expect(
       icons,
       equals(<IconData>[
-        Icons.add,
         Icons.undo,
         Icons.redo,
         Icons.zoom_out,
+        Icons.zoom_in_map,
         Icons.zoom_in,
         Icons.fit_screen,
         Icons.center_focus_strong,
         Icons.delete_outline,
         Icons.help_outline,
-        Icons.close_fullscreen,
       ]),
     );
   });
@@ -678,18 +785,14 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
     expect(find.bySemanticsLabel('Canvas action: Add state'), findsOneWidget);
     expect(
-      find.bySemanticsLabel('Canvas action: Zoom out'),
+      find.bySemanticsLabel('Canvas action: More canvas actions'),
       findsOneWidget,
     );
-    expect(
-      find.bySemanticsLabel('Canvas action: Zoom in'),
-      findsOneWidget,
-    );
+    await _openMoreActions(tester);
+    expect(find.bySemanticsLabel('Canvas action: Zoom out'), findsOneWidget);
+    expect(find.bySemanticsLabel('Canvas action: Zoom in'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Canvas action: Fit to content'),
       findsOneWidget,
@@ -703,9 +806,7 @@ void main() {
     handleDisposed = true;
   });
 
-  testWidgets('localizes desktop canvas actions in Portuguese', (
-    tester,
-  ) async {
+  testWidgets('localizes desktop canvas actions in Portuguese', (tester) async {
     final semantics = tester.ensureSemantics();
     try {
       await tester.pumpWidget(
@@ -729,27 +830,33 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.open_in_full));
-      await tester.pumpAndSettle();
-
       for (final label in <String>[
         'Selecionar',
         'Adicionar estado',
         'Adicionar transição',
+        'Mais ações do canvas',
+      ]) {
+        expect(find.bySemanticsLabel('Ação do canvas: $label'), findsOneWidget);
+      }
+
+      await _openMoreActions(tester);
+      for (final label in <String>[
         'Desfazer',
         'Refazer',
         'Diminuir zoom',
         'Aumentar zoom',
         'Ajustar ao conteúdo',
         'Redefinir visualização',
-        'Limpar canvas',
         'Ajuda e atalhos',
       ]) {
-        expect(
-          find.bySemanticsLabel('Ação do canvas: $label'),
-          findsOneWidget,
-        );
+        expect(find.bySemanticsLabel('Ação do canvas: $label'), findsOneWidget);
       }
+      expect(
+        find.bySemanticsLabel(
+          'Ação do canvas: Limpar canvas. Ação destrutiva.',
+        ),
+        findsOneWidget,
+      );
     } finally {
       semantics.dispose();
     }
@@ -771,29 +878,20 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
     final initialFitCount = controller.fitCount;
     final initialResetCount = controller.resetCount;
 
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.zoom_out));
-    await tester.pump();
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.zoom_in));
-    await tester.pump();
+    await _selectMenuAction(tester, 'Zoom out');
+    await _selectMenuAction(tester, 'Zoom in');
 
     expect(controller.zoomOutCount, 1);
     expect(controller.zoomInCount, 1);
 
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.fit_screen));
-    await tester.pump();
+    await _selectMenuAction(tester, 'Fit to content');
 
     expect(controller.fitCount, initialFitCount + 1);
 
-    await tester.tap(
-      find.widgetWithIcon(IconButton, Icons.center_focus_strong),
-    );
-    await tester.pump();
+    await _selectMenuAction(tester, 'Reset view');
 
     expect(controller.resetCount, greaterThan(initialResetCount));
   });
@@ -855,23 +953,16 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
     final transformation = controller.graphController.transformationController!;
     transformation.value = Matrix4.identity();
     await tester.pump();
 
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.fit_screen));
-    await tester.pumpAndSettle();
+    await _selectMenuAction(tester, 'Fit to content');
 
     final fitMatrix = Matrix4.copy(transformation.value);
     expect(fitMatrix, isNot(equals(Matrix4.identity())));
 
-    await tester.tap(
-      find.widgetWithIcon(IconButton, Icons.center_focus_strong),
-    );
-    await tester.pumpAndSettle();
+    await _selectMenuAction(tester, 'Reset view');
 
     expect(
       List<double>.from(transformation.value.storage),
@@ -895,19 +986,26 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
+    await _openMoreActions(tester);
+    expect(
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Undo')).enabled,
+      isFalse,
+    );
+    expect(
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Redo')).enabled,
+      isFalse,
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
-
-    final undoFinder = find.widgetWithIcon(IconButton, Icons.undo);
-    final redoFinder = find.widgetWithIcon(IconButton, Icons.redo);
-
-    expect(tester.widget<IconButton>(undoFinder).onPressed, isNull);
-    expect(tester.widget<IconButton>(redoFinder).onPressed, isNull);
 
     controller.addStateAtCenter();
     await tester.pumpAndSettle();
 
-    expect(tester.widget<IconButton>(undoFinder).onPressed, isNotNull);
+    await _openMoreActions(tester);
+    expect(
+      tester.widget<PopupMenuItem<dynamic>>(_menuItem('Undo')).enabled,
+      isTrue,
+    );
   });
 
   testWidgets('renders editing tool toggles when enabled', (tester) async {
@@ -956,16 +1054,158 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
-    );
-    await tester.pump();
+    await _selectMenuAction(tester, 'Help & Shortcuts');
 
     expect(helpCount, equals(1));
   });
+
+  testWidgets(
+    'document actions keep their order and dispatch exactly once from More',
+    (tester) async {
+      var arrangeCount = 0;
+      var importCount = 0;
+      var notesCount = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                onAddState: () {},
+                onArrangeAutomaton: () => arrangeCount++,
+                onImportAutomaton: () => importCount++,
+                onDocumentNotes: () => notesCount++,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await _openMoreActions(tester);
+      const labels = [
+        'Arrange automaton states',
+        'Import automaton',
+        'Document notes',
+      ];
+      final positions = labels
+          .map((label) => tester.getTopLeft(find.text(label)).dy)
+          .toList();
+      expect(positions, orderedEquals([...positions]..sort()));
+      expect(find.text('New note'), findsNothing);
+      await tester.tap(_menuItem(labels[0]).last);
+      await tester.pumpAndSettle();
+      await _selectMenuAction(tester, labels[1]);
+      await _selectMenuAction(tester, labels[2]);
+
+      expect((arrangeCount, importCount, notesCount), (1, 1, 1));
+    },
+  );
+
+  testWidgets(
+    'document actions are capability-driven and disabled without a document',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                onAddState: () {},
+                onArrangeAutomaton: () {},
+                onImportAutomaton: () {},
+                onDocumentNotes: () {},
+                documentActionsEnabled: false,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await _openMoreActions(tester);
+      for (final label in const [
+        'Arrange automaton states',
+        'Import automaton',
+        'Document notes',
+      ]) {
+        expect(
+          tester.widget<PopupMenuItem<dynamic>>(_menuItem(label)).enabled,
+          isFalse,
+        );
+      }
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                onAddState: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await _openMoreActions(tester);
+      expect(find.text('Arrange automaton states'), findsNothing);
+      expect(find.text('Import automaton'), findsNothing);
+      expect(find.text('Document notes'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'document actions remain semantic and localized at 320 px and 200 percent',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('pt', 'BR'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: Scaffold(
+              body: GraphViewCanvasToolbar(
+                controller: controller,
+                onAddState: () {},
+                onArrangeAutomaton: () {},
+                onImportAutomaton: () {},
+                onDocumentNotes: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.text('Organizar estados do autômato'), findsOneWidget);
+      expect(find.text('Importar autômato'), findsOneWidget);
+      expect(find.text('Notas do documento'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Ação do canvas: Importar autômato'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('fallback Help opens and focuses canvas shortcuts', (
     tester,
@@ -983,13 +1223,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.open_in_full));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.bySemanticsLabel('Canvas action: Help & Shortcuts'),
-    );
-    await tester.pumpAndSettle();
+    await _selectMenuAction(tester, 'Help & Shortcuts');
 
     final page = tester.widget<HelpPage>(find.byType(HelpPage));
     final node = find.byKey(
@@ -998,9 +1232,7 @@ void main() {
     expect(page.initialTopicId, HelpTopicIds.shortcutsCanvas);
     expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
     expect(
-      find.byKey(
-        const ValueKey('help-body-${HelpTopicIds.shortcutsCanvas}'),
-      ),
+      find.byKey(const ValueKey('help-body-${HelpTopicIds.shortcutsCanvas}')),
       findsOneWidget,
     );
   });

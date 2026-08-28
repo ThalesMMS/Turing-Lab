@@ -10,7 +10,7 @@ import 'package:turing_lab/presentation/providers/settings_provider.dart';
 
 class _RecordingSettingsStorage implements SettingsStorage {
   _RecordingSettingsStorage([Map<String, Object?>? initialValues])
-      : values = Map<String, Object?>.from(initialValues ?? const {});
+    : values = Map<String, Object?>.from(initialValues ?? const {});
 
   final Map<String, Object?> values;
 
@@ -117,7 +117,6 @@ Future<void> _flushNotifierLoad() async {
 
 Map<String, Object?> _settingsValues(SettingsModel settings) {
   final values = <String, Object?>{
-    'settings_empty_string_symbol': settings.emptyStringSymbol,
     'settings_theme_mode': settings.themeMode,
     'settings_show_grid': settings.showGrid,
     'settings_show_coordinates': settings.showCoordinates,
@@ -136,7 +135,6 @@ Map<String, Object?> _settingsValues(SettingsModel settings) {
 
 SettingsModel _customSettings() {
   return const SettingsModel(
-    emptyStringSymbol: '∅',
     themeMode: 'dark',
     localeCode: 'pt',
     showGrid: false,
@@ -152,26 +150,31 @@ SettingsModel _customSettings() {
 
 void main() {
   group('Settings persistence', () {
-    test('removes the obsolete epsilon symbol preference on load', () async {
+    test('removes obsolete empty-string symbol preferences on load', () async {
       final storage = _RecordingSettingsStorage({
+        'settings_empty_string_symbol': 'λ',
         'settings_epsilon_symbol': 'λ',
       });
       final repository = SharedPreferencesSettingsRepository(storage: storage);
 
       await repository.loadSettings();
 
+      expect(storage.values, isNot(contains('settings_empty_string_symbol')));
       expect(storage.values, isNot(contains('settings_epsilon_symbol')));
     });
 
-    test('saveSettings writes all 11 keys correctly', () async {
-      final storage = _RecordingSettingsStorage();
+    test('saveSettings writes all 10 keys correctly', () async {
+      final storage = _RecordingSettingsStorage({
+        'settings_empty_string_symbol': 'λ',
+        'settings_epsilon_symbol': 'ε',
+      });
       final repository = SharedPreferencesSettingsRepository(storage: storage);
       final settings = _customSettings();
 
       await repository.saveSettings(settings);
 
       expect(storage.values, equals(_settingsValues(settings)));
-      expect(storage.values.length, equals(11));
+      expect(storage.values.length, equals(10));
     });
 
     test('loadSettings restores all persisted settings accurately', () async {
@@ -184,19 +187,23 @@ void main() {
       expect(loaded, equals(settings));
     });
 
-    test('round-trips through save then load with a fresh repository',
-        () async {
-      final settings = _customSettings();
-      final storage = _RecordingSettingsStorage();
+    test(
+      'round-trips through save then load with a fresh repository',
+      () async {
+        final settings = _customSettings();
+        final storage = _RecordingSettingsStorage();
 
-      await SharedPreferencesSettingsRepository(storage: storage)
-          .saveSettings(settings);
+        await SharedPreferencesSettingsRepository(
+          storage: storage,
+        ).saveSettings(settings);
 
-      final loaded = await SharedPreferencesSettingsRepository(storage: storage)
-          .loadSettings();
+        final loaded = await SharedPreferencesSettingsRepository(
+          storage: storage,
+        ).loadSettings();
 
-      expect(loaded, equals(settings));
-    });
+        expect(loaded, equals(settings));
+      },
+    );
 
     test('saveSettings rolls back written keys when one write fails', () async {
       final original = _settingsValues(const SettingsModel());
@@ -214,24 +221,26 @@ void main() {
       expect(storage.values, equals(original));
     });
 
-    test('saveSettings removes keys that were absent before a failed save',
-        () async {
-      final original = <String, Object?>{
-        'settings_theme_mode': 'light',
-      };
-      final storage = _FailingSettingsStorage(
-        original,
-        failKey: 'settings_grid_size',
-      );
-      final repository = SharedPreferencesSettingsRepository(storage: storage);
+    test(
+      'saveSettings removes keys that were absent before a failed save',
+      () async {
+        final original = <String, Object?>{'settings_theme_mode': 'light'};
+        final storage = _FailingSettingsStorage(
+          original,
+          failKey: 'settings_grid_size',
+        );
+        final repository = SharedPreferencesSettingsRepository(
+          storage: storage,
+        );
 
-      await expectLater(
-        repository.saveSettings(_customSettings()),
-        throwsException,
-      );
+        await expectLater(
+          repository.saveSettings(_customSettings()),
+          throwsException,
+        );
 
-      expect(storage.values, equals(original));
-    });
+        expect(storage.values, equals(original));
+      },
+    );
 
     test('serializes a failed pt save before a later en save', () async {
       final storage = _BlockingLocaleFailureStorage();
@@ -289,25 +298,23 @@ void main() {
       expect(loaded.gridSize, equals(28.0));
     });
 
-    test('uses system locale when the stored locale is missing or invalid',
-        () async {
-      final missingLocale = await SharedPreferencesSettingsRepository(
-        storage: _RecordingSettingsStorage(),
-      ).loadSettings();
-      final invalidLocale = await SharedPreferencesSettingsRepository(
-        storage: _RecordingSettingsStorage({
-          'settings_locale_code': 'fr',
-        }),
-      ).loadSettings();
+    test(
+      'uses system locale when the stored locale is missing or invalid',
+      () async {
+        final missingLocale = await SharedPreferencesSettingsRepository(
+          storage: _RecordingSettingsStorage(),
+        ).loadSettings();
+        final invalidLocale = await SharedPreferencesSettingsRepository(
+          storage: _RecordingSettingsStorage({'settings_locale_code': 'fr'}),
+        ).loadSettings();
 
-      expect(missingLocale.localeCode, isNull);
-      expect(invalidLocale.localeCode, isNull);
-    });
+        expect(missingLocale.localeCode, isNull);
+        expect(invalidLocale.localeCode, isNull);
+      },
+    );
 
     test('saving defaults clears an explicit locale preference', () async {
-      final storage = _RecordingSettingsStorage({
-        'settings_locale_code': 'pt',
-      });
+      final storage = _RecordingSettingsStorage({'settings_locale_code': 'pt'});
       final repository = SharedPreferencesSettingsRepository(storage: storage);
 
       await repository.saveSettings(const SettingsModel());
@@ -319,50 +326,26 @@ void main() {
       const defaults = SettingsModel();
       final persisted = _settingsValues(_customSettings());
       final assertions = <String, void Function(SettingsModel)>{
-        'settings_empty_string_symbol': (settings) => expect(
-              settings.emptyStringSymbol,
-              equals(defaults.emptyStringSymbol),
-            ),
-        'settings_theme_mode': (settings) => expect(
-              settings.themeMode,
-              equals(defaults.themeMode),
-            ),
-        'settings_locale_code': (settings) => expect(
-              settings.localeCode,
-              equals(defaults.localeCode),
-            ),
-        'settings_show_grid': (settings) => expect(
-              settings.showGrid,
-              equals(defaults.showGrid),
-            ),
-        'settings_show_coordinates': (settings) => expect(
-              settings.showCoordinates,
-              equals(defaults.showCoordinates),
-            ),
-        'settings_auto_save': (settings) => expect(
-              settings.autoSave,
-              equals(defaults.autoSave),
-            ),
-        'settings_show_tooltips': (settings) => expect(
-              settings.showTooltips,
-              equals(defaults.showTooltips),
-            ),
-        'settings_grid_size': (settings) => expect(
-              settings.gridSize,
-              equals(defaults.gridSize),
-            ),
-        'settings_node_size': (settings) => expect(
-              settings.nodeSize,
-              equals(defaults.nodeSize),
-            ),
-        'settings_font_size': (settings) => expect(
-              settings.fontSize,
-              equals(defaults.fontSize),
-            ),
-        'settings_animation_speed': (settings) => expect(
-              settings.animationSpeed,
-              equals(defaults.animationSpeed),
-            ),
+        'settings_theme_mode': (settings) =>
+            expect(settings.themeMode, equals(defaults.themeMode)),
+        'settings_locale_code': (settings) =>
+            expect(settings.localeCode, equals(defaults.localeCode)),
+        'settings_show_grid': (settings) =>
+            expect(settings.showGrid, equals(defaults.showGrid)),
+        'settings_show_coordinates': (settings) =>
+            expect(settings.showCoordinates, equals(defaults.showCoordinates)),
+        'settings_auto_save': (settings) =>
+            expect(settings.autoSave, equals(defaults.autoSave)),
+        'settings_show_tooltips': (settings) =>
+            expect(settings.showTooltips, equals(defaults.showTooltips)),
+        'settings_grid_size': (settings) =>
+            expect(settings.gridSize, equals(defaults.gridSize)),
+        'settings_node_size': (settings) =>
+            expect(settings.nodeSize, equals(defaults.nodeSize)),
+        'settings_font_size': (settings) =>
+            expect(settings.fontSize, equals(defaults.fontSize)),
+        'settings_animation_speed': (settings) =>
+            expect(settings.animationSpeed, equals(defaults.animationSpeed)),
       };
 
       for (final missingKey in persisted.keys) {
@@ -386,6 +369,19 @@ void main() {
       final loaded = await repository.loadSettings();
 
       expect(loaded, equals(const SettingsModel()));
+      expect(loaded.themeMode, equals('light'));
+    });
+
+    test('falls back to light for an invalid persisted theme', () async {
+      final repository = SharedPreferencesSettingsRepository(
+        storage: _RecordingSettingsStorage(<String, Object?>{
+          'settings_theme_mode': 'sepia',
+        }),
+      );
+
+      final loaded = await repository.loadSettings();
+
+      expect(loaded.themeMode, equals('light'));
     });
 
     test('falls back to defaults for wrong persisted types', () async {

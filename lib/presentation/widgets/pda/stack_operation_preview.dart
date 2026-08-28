@@ -13,6 +13,7 @@ import 'package:turing_lab/l10n/app_localizations_resolver.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import '../../../core/constants/monospace_typography.dart';
+import '../../../core/utils/epsilon_utils.dart';
 
 /// Stack operation preview widget
 ///
@@ -105,7 +106,7 @@ class StackOperationPreview extends StatelessWidget {
     IconData icon,
     Color color,
   ) {
-    final isLambda = value == 'λ' || value == 'ε' || value.isEmpty;
+    final isEmptyString = isEpsilonSymbol(value);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -117,12 +118,12 @@ class StackOperationPreview extends StatelessWidget {
             style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
           ),
           Text(
-            isLambda ? 'λ' : value,
+            isEmptyString ? kEpsilonSymbol : value,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isLambda ? theme.colorScheme.outline : color,
-              fontStyle: isLambda ? FontStyle.italic : FontStyle.normal,
+              color: isEmptyString ? theme.colorScheme.outline : color,
+              fontStyle: isEmptyString ? FontStyle.italic : FontStyle.normal,
               fontFamilyFallback: kMonospaceFontFamilyFallback,
             ),
           ),
@@ -135,13 +136,13 @@ class StackOperationPreview extends StatelessWidget {
     // Simulate the operation
     var resultStack = currentStack;
 
-    // Pop unless the symbol is lambda
-    if (popSymbol != 'λ' && popSymbol != 'ε' && popSymbol.isNotEmpty) {
+    // Pop unless the symbol represents the empty string.
+    if (!isEpsilonSymbol(popSymbol)) {
       resultStack = resultStack.pop();
     }
 
-    // Push unless the symbol is lambda
-    if (pushSymbol != 'λ' && pushSymbol != 'ε' && pushSymbol.isNotEmpty) {
+    // Push unless the symbol represents the empty string.
+    if (!isEpsilonSymbol(pushSymbol)) {
       // Push may be multiple symbols (e.g. "ABC")
       // Push right-to-left to keep the correct order
       for (var i = pushSymbol.length - 1; i >= 0; i--) {

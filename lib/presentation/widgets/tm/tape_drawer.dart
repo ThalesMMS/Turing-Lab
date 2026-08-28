@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations_resolver.dart';
 import '../../../core/constants/monospace_typography.dart';
+import '../../localization/locale_value_formatter.dart';
 
 /// Tape state at a specific moment
 class TapeState {
@@ -42,12 +43,12 @@ class TapeState {
 
   /// Empty/initial tape
   TapeState.initial({this.blankSymbol = '□'})
-      : cells = const [],
-        headPosition = 0,
-        lastOperation = null,
-        lastReadSymbol = null,
-        lastWriteSymbol = null,
-        highlightedCellIndices = const <int>{};
+    : cells = const [],
+      headPosition = 0,
+      lastOperation = null,
+      lastReadSymbol = null,
+      lastWriteSymbol = null,
+      highlightedCellIndices = const <int>{};
 
   bool get isEmpty => cells.isEmpty;
 
@@ -338,6 +339,7 @@ class _TMTapePanelState extends State<TMTapePanel>
 
   Future<void> _showCellEditDialog(int cellIndex, String currentSymbol) async {
     final theme = Theme.of(context);
+    final formatter = LocaleValueFormatter.of(context);
     final controller = TextEditingController(text: currentSymbol);
     final focusNode = FocusNode();
 
@@ -350,7 +352,10 @@ class _TMTapePanelState extends State<TMTapePanel>
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          appLocalizationsOf(context).editCell(cellIndex),
+          formatter.inLocalizedTemplate(
+            appLocalizationsOf(context).editCell,
+            cellIndex,
+          ),
           style: theme.textTheme.titleMedium,
         ),
         content: Column(
@@ -395,6 +400,7 @@ class _TMTapePanelState extends State<TMTapePanel>
                 hintText: appLocalizationsOf(context).enterASymbol,
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
+                  tooltip: appLocalizationsOf(context).clear,
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     controller.clear();
@@ -404,8 +410,9 @@ class _TMTapePanelState extends State<TMTapePanel>
               maxLength: 1,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 20,
-                  fontFamilyFallback: kMonospaceFontFamilyFallback),
+                fontSize: 20,
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
+              ),
             ),
           ],
         ),
@@ -454,7 +461,9 @@ class _TMTapePanelState extends State<TMTapePanel>
         child: Text(
           symbol,
           style: const TextStyle(
-              fontSize: 18, fontFamilyFallback: kMonospaceFontFamilyFallback),
+            fontSize: 18,
+            fontFamilyFallback: kMonospaceFontFamilyFallback,
+          ),
         ),
       ),
     );
@@ -463,8 +472,10 @@ class _TMTapePanelState extends State<TMTapePanel>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final maxPanelWidth =
-        (MediaQuery.sizeOf(context).width - 32).clamp(0.0, 300.0).toDouble();
+    final formatter = LocaleValueFormatter.of(context);
+    final maxPanelWidth = (MediaQuery.sizeOf(context).width - 32)
+        .clamp(0.0, 300.0)
+        .toDouble();
 
     return Card(
       elevation: 4,
@@ -488,8 +499,10 @@ class _TMTapePanelState extends State<TMTapePanel>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      appLocalizationsOf(context)
-                          .tapeHead(widget.tapeState.headPosition),
+                      formatter.inLocalizedTemplate(
+                        appLocalizationsOf(context).tapeHead,
+                        widget.tapeState.headPosition,
+                      ),
                       style: theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -521,7 +534,7 @@ class _TMTapePanelState extends State<TMTapePanel>
             // Tape Visual
             SizedBox(
               height: widget.tapeState.isEmpty ? 60 : 72,
-              child: _buildTapeContent(theme), // Always compact mode
+              child: _buildTapeContent(theme, formatter), // Always compact mode
             ),
           ],
         ),
@@ -529,13 +542,14 @@ class _TMTapePanelState extends State<TMTapePanel>
     );
   }
 
-  Widget _buildTapeContent(ThemeData theme) {
+  Widget _buildTapeContent(ThemeData theme, LocaleValueFormatter formatter) {
     if (widget.tapeState.isEmpty) {
       return Center(
         child: Text(
           appLocalizationsOf(context).emptyTape(widget.tapeState.blankSymbol),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.outline,
+            fontFamilyFallback: kMonospaceFontFamilyFallback,
           ),
         ),
       );
@@ -563,8 +577,10 @@ class _TMTapePanelState extends State<TMTapePanel>
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final sideSpacer =
-                  math.max(0.0, (constraints.maxWidth - _cellExtent) / 2);
+              final sideSpacer = math.max(
+                0.0,
+                (constraints.maxWidth - _cellExtent) / 2,
+              );
               return Stack(
                 fit: StackFit.expand,
                 children: [
@@ -578,7 +594,12 @@ class _TMTapePanelState extends State<TMTapePanel>
                         for (var i = 0; i < _phantomCells; i++)
                           _buildPhantomCell(theme),
                         for (var i = 0; i < renderLength; i++)
-                          _buildIndexedTapeCell(i, renderLength, theme),
+                          _buildIndexedTapeCell(
+                            i,
+                            renderLength,
+                            theme,
+                            formatter,
+                          ),
                         for (var i = 0; i < _phantomCells; i++)
                           _buildPhantomCell(theme),
                         SizedBox(width: sideSpacer),
@@ -597,12 +618,14 @@ class _TMTapePanelState extends State<TMTapePanel>
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(10),
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.06),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.06,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.18),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.18,
+                              ),
                               blurRadius: 8,
                             ),
                           ],
@@ -646,7 +669,12 @@ class _TMTapePanelState extends State<TMTapePanel>
     );
   }
 
-  Widget _buildIndexedTapeCell(int index, int renderLength, ThemeData theme) {
+  Widget _buildIndexedTapeCell(
+    int index,
+    int renderLength,
+    ThemeData theme,
+    LocaleValueFormatter formatter,
+  ) {
     final tapeState = widget.tapeState;
     final symbol = index < tapeState.cells.length
         ? tapeState.cells[index]
@@ -661,6 +689,7 @@ class _TMTapePanelState extends State<TMTapePanel>
       isHead && tapeState.wasWritten,
       tapeState.highlightedCellIndices.contains(index),
       theme,
+      formatter: formatter,
       isNewCell: _isExpanding && (index == 0 || index == renderLength - 1),
       slideFromLeft: index == 0,
     );
@@ -688,10 +717,22 @@ class _TMTapePanelState extends State<TMTapePanel>
     bool wasWritten,
     bool isHighlighted,
     ThemeData theme, {
+    required LocaleValueFormatter formatter,
     bool isNewCell = false,
     bool slideFromLeft = false,
   }) {
     final canEdit = !widget.isSimulating && widget.onCellEdit != null;
+    final l10n = appLocalizationsOf(context);
+    final semanticsValue = [
+      if (symbol == widget.tapeState.blankSymbol)
+        l10n.tapeCellBlankValue(symbol)
+      else
+        l10n.tapeCellSymbolValue(symbol),
+      if (isHead) l10n.tapeCellHeadState,
+      if (wasRead) l10n.tapeCellReadState,
+      if (wasWritten) l10n.tapeCellWrittenState,
+      if (isHighlighted) l10n.highlighted,
+    ].join(', ');
 
     final cellWidget = AnimatedBuilder(
       animation: _expansionGlowAnimation,
@@ -751,9 +792,10 @@ class _TMTapePanelState extends State<TMTapePanel>
                   color: isHead
                       ? theme.colorScheme.primary
                       : symbol == widget.tapeState.blankSymbol
-                          ? theme.colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.45)
-                          : theme.colorScheme.onSurface,
+                      ? theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.45,
+                        )
+                      : theme.colorScheme.onSurface,
                 ),
               ),
             ),
@@ -764,12 +806,13 @@ class _TMTapePanelState extends State<TMTapePanel>
             left: 0,
             right: 0,
             child: Text(
-              '$cellIndex',
+              formatter.integer(cellIndex),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 8,
-                color:
-                    theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.7,
+                ),
               ),
             ),
           ),
@@ -844,14 +887,27 @@ class _TMTapePanelState extends State<TMTapePanel>
     // This prevents other cells from repainting when only one cell animates
     final boundedResult = RepaintBoundary(child: result);
 
-    if (!canEdit) {
-      return boundedResult;
-    }
+    final semanticTap = canEdit
+        ? () => _showCellEditDialog(cellIndex, symbol)
+        : null;
+    final interactiveResult = canEdit
+        ? InkWell(
+            onTap: semanticTap,
+            borderRadius: BorderRadius.circular(8),
+            child: boundedResult,
+          )
+        : boundedResult;
 
-    return InkWell(
-      onTap: () => _showCellEditDialog(cellIndex, symbol),
-      borderRadius: BorderRadius.circular(8),
-      child: boundedResult,
+    return Semantics(
+      key: ValueKey('tm-tape-cell-$cellIndex'),
+      container: true,
+      label: formatter.inLocalizedTemplate(l10n.tapeCellSemantics, cellIndex),
+      value: semanticsValue,
+      hint: canEdit ? l10n.tapeCellEditHint : null,
+      button: canEdit,
+      onTap: semanticTap,
+      excludeSemantics: true,
+      child: interactiveResult,
     );
   }
 }

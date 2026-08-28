@@ -1,0 +1,5 @@
+abstract final class ExampleSuggestedSimulations {
+  static const byExampleId = <String, List<String>>{
+    'asset/fixture': ['a'],
+  };
+}

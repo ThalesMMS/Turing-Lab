@@ -28,7 +28,7 @@ void main() {
           isLambdaPop: false,
           isLambdaPush: true,
         ),
-        'λ, Z/λ',
+        'ε, Z/ε',
       );
     });
 
@@ -81,7 +81,7 @@ void main() {
 
       expect(
         PDATransition.epsilon(id: 'e', fromState: from, toState: to).label,
-        'λ, λ/λ',
+        'ε, ε/ε',
       );
       expect(
         PDATransition.readAndStack(
@@ -92,7 +92,7 @@ void main() {
           popSymbol: 'Z',
           pushSymbol: '',
         ).label,
-        'λ, Z/λ',
+        'ε, Z/ε',
       );
       expect(
         PDATransition.readOnly(
@@ -101,7 +101,7 @@ void main() {
           toState: to,
           inputSymbol: 'a',
         ).label,
-        'a, λ/λ',
+        'a, ε/ε',
       );
       expect(
         PDATransition.stackOnly(
@@ -111,7 +111,7 @@ void main() {
           popSymbol: '',
           pushSymbol: 'A',
         ).label,
-        'λ, λ/A',
+        'ε, ε/A',
       );
     });
   });

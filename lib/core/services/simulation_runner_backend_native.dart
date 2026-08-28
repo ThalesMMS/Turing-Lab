@@ -7,6 +7,7 @@ import '../models/pda.dart';
 import '../models/tm.dart';
 import '../result.dart';
 import 'simulation_runner_models.dart';
+import 'simulation_runner_messages.dart';
 
 SimulationRunnerBackend createSimulationRunnerBackend() =>
     _NativeSimulationRunnerBackend();
@@ -19,12 +20,10 @@ class _NativeSimulationRunnerBackend implements SimulationRunnerBackend {
     required bool stepByStep,
     required Duration timeout,
   }) {
-    return _NativeSimulationTask.spawn<PDASimulationResult,
-        (PDA, String, bool, Duration)>(
-      _pdaWorker,
-      (pda, inputString, stepByStep, timeout),
-      classifyPdaResult,
-    );
+    return _NativeSimulationTask.spawn<
+      PDASimulationResult,
+      (PDA, String, bool, Duration)
+    >(_pdaWorker, (pda, inputString, stepByStep, timeout), classifyPdaResult);
   }
 
   @override
@@ -34,12 +33,10 @@ class _NativeSimulationRunnerBackend implements SimulationRunnerBackend {
     required bool stepByStep,
     required Duration timeout,
   }) {
-    return _NativeSimulationTask.spawn<TMSimulationResult,
-        (TM, String, bool, Duration)>(
-      _tmWorker,
-      (tm, inputString, stepByStep, timeout),
-      classifyTmResult,
-    );
+    return _NativeSimulationTask.spawn<
+      TMSimulationResult,
+      (TM, String, bool, Duration)
+    >(_tmWorker, (tm, inputString, stepByStep, timeout), classifyTmResult);
   }
 }
 
@@ -87,7 +84,8 @@ class _NativeSimulationTask<T> implements SimulationTask<T> {
       _complete(
         SimulationOutcome(
           kind: SimulationOutcomeKind.failed,
-          message: 'Failed to start simulation worker: $error',
+          message: error.toString(),
+          structuredMessage: SimulationRunnerMessages.startFailed(),
         ),
       );
     }
@@ -102,7 +100,10 @@ class _NativeSimulationTask<T> implements SimulationTask<T> {
         _complete(
           SimulationOutcome(
             kind: SimulationOutcomeKind.failed,
-            message: message.error ?? 'Simulation failed',
+            message: message.error,
+            structuredMessage:
+                message.structuredError ??
+                SimulationRunnerMessages.executionFailed(),
           ),
         );
       }
@@ -110,21 +111,23 @@ class _NativeSimulationTask<T> implements SimulationTask<T> {
       _complete(
         SimulationOutcome(
           kind: SimulationOutcomeKind.failed,
-          message: 'Simulation worker failed: ${message.first}',
+          message: message.first?.toString(),
+          structuredMessage: SimulationRunnerMessages.workerFailed(),
         ),
       );
     } else if (message == null) {
       _complete(
-        const SimulationOutcome(
+        SimulationOutcome(
           kind: SimulationOutcomeKind.failed,
-          message: 'Simulation worker exited unexpectedly',
+          structuredMessage:
+              SimulationRunnerMessages.workerExitedUnexpectedly(),
         ),
       );
     } else {
       _complete(
-        const SimulationOutcome(
+        SimulationOutcome(
           kind: SimulationOutcomeKind.failed,
-          message: 'Simulation worker returned an invalid response',
+          structuredMessage: SimulationRunnerMessages.invalidWorkerResponse(),
         ),
       );
     }
@@ -135,9 +138,7 @@ class _NativeSimulationTask<T> implements SimulationTask<T> {
     if (_completer.isCompleted) return;
     _cancelled = true;
     _isolate?.kill(priority: Isolate.immediate);
-    _complete(
-      const SimulationOutcome(kind: SimulationOutcomeKind.cancelled),
-    );
+    _complete(const SimulationOutcome(kind: SimulationOutcomeKind.cancelled));
   }
 
   void _complete(SimulationOutcome<T> outcome) {
@@ -152,11 +153,12 @@ void _pdaWorker((SendPort, (PDA, String, bool, Duration)) message) {
   final (port, payload) = message;
   final (pda, input, stepByStep, timeout) = payload;
   port.send(
-    PDASimulator.simulate(
+    PDASimulator.simulateNPDA(
       pda,
       input,
       stepByStep: stepByStep,
       timeout: timeout,
+      mode: pda.acceptanceMode,
     ),
   );
 }
@@ -165,11 +167,6 @@ void _tmWorker((SendPort, (TM, String, bool, Duration)) message) {
   final (port, payload) = message;
   final (tm, input, stepByStep, timeout) = payload;
   port.send(
-    TMSimulator.simulate(
-      tm,
-      input,
-      stepByStep: stepByStep,
-      timeout: timeout,
-    ),
+    TMSimulator.simulate(tm, input, stepByStep: stepByStep, timeout: timeout),
   );
 }

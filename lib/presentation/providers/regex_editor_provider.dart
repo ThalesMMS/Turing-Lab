@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/messages/structured_message.dart';
 import '../../core/algorithms/automaton_simulator.dart';
 import '../../core/algorithms/dfa_completer.dart';
 import '../../core/algorithms/equivalence_checker.dart';
@@ -8,6 +9,7 @@ import '../../core/algorithms/regex_analyzer.dart';
 import '../../core/algorithms/regex_simplifier.dart';
 import '../../core/algorithms/regex_to_nfa_converter.dart';
 import '../../core/models/fsa.dart';
+import '../../core/models/regex_document.dart';
 import '../../core/models/regex_analysis.dart';
 
 class RegexEditorOperationResult<T> {
@@ -15,11 +17,13 @@ class RegexEditorOperationResult<T> {
     required this.isSuccess,
     this.data,
     this.error,
+    this.structuredError,
   });
 
   final bool isSuccess;
   final T? data;
   final String? error;
+  final StructuredMessage? structuredError;
 
   bool get isFailure => !isSuccess;
 
@@ -27,9 +31,17 @@ class RegexEditorOperationResult<T> {
     return RegexEditorOperationResult._(isSuccess: true, data: data);
   }
 
-  factory RegexEditorOperationResult.failure([String? error]) {
-    return RegexEditorOperationResult._(isSuccess: false, error: error);
-  }
+  factory RegexEditorOperationResult.failure([String? error]) =>
+      RegexEditorOperationResult._(isSuccess: false, error: error);
+
+  factory RegexEditorOperationResult.failureWithStructured(
+    String? error,
+    StructuredMessage structuredError,
+  ) => RegexEditorOperationResult._(
+    isSuccess: false,
+    error: error,
+    structuredError: structuredError,
+  );
 }
 
 class RegexEditorState {
@@ -37,6 +49,9 @@ class RegexEditorState {
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?_-';
 
   const RegexEditorState({
+    this.documentId = 'regex-workspace',
+    this.documentName = 'Regular expression',
+    this.documentGeneration = 0,
     this.currentRegex = '',
     this.testString = '',
     this.isValid = false,
@@ -59,6 +74,9 @@ class RegexEditorState {
 
   static const _unset = Object();
 
+  final String documentId;
+  final String documentName;
+  final int documentGeneration;
   final String currentRegex;
   final String testString;
   final bool isValid;
@@ -84,6 +102,9 @@ class RegexEditorState {
       alphabet.runes.map(String.fromCharCode).toSet();
 
   RegexEditorState copyWith({
+    String? documentId,
+    String? documentName,
+    int? documentGeneration,
     String? currentRegex,
     String? testString,
     bool? isValid,
@@ -104,6 +125,9 @@ class RegexEditorState {
     bool? showSampleStringsDetails,
   }) {
     return RegexEditorState(
+      documentId: documentId ?? this.documentId,
+      documentName: documentName ?? this.documentName,
+      documentGeneration: documentGeneration ?? this.documentGeneration,
       currentRegex: currentRegex ?? this.currentRegex,
       testString: testString ?? this.testString,
       isValid: isValid ?? this.isValid,
@@ -152,6 +176,7 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
     _testStringMatchVersion++;
     state = state.copyWith(
       alphabet: value,
+      documentGeneration: state.documentGeneration + 1,
       matches: false,
       hasTested: false,
       errorMessage: '',
@@ -172,9 +197,13 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
     required String testString,
     required bool simplifyOutput,
     String alphabet = RegexEditorState.defaultAlphabet,
+    String documentId = 'regex-workspace',
+    String documentName = 'Regular expression',
   }) {
     _testStringMatchVersion++;
     state = RegexEditorState(
+      documentId: documentId,
+      documentName: documentName,
       testString: testString,
       simplifyOutput: simplifyOutput,
       alphabet: alphabet,
@@ -189,6 +218,9 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
   void clearInputs() {
     _testStringMatchVersion++;
     state = RegexEditorState(
+      documentId: state.documentId,
+      documentName: state.documentName,
+      documentGeneration: state.documentGeneration + 1,
       simplifyOutput: state.simplifyOutput,
       alphabet: state.alphabet,
     );
@@ -199,6 +231,9 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
     final sourceChanged = regex != state.currentRegex;
     final nextState = state.copyWith(
       currentRegex: regex,
+      documentGeneration: sourceChanged
+          ? state.documentGeneration + 1
+          : state.documentGeneration,
       errorMessage: '',
       validationDiagnostic: null,
       hasTested: false,
@@ -206,14 +241,16 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
       equivalenceResult: sourceChanged ? null : state.equivalenceResult,
       equivalenceMessage: sourceChanged ? '' : state.equivalenceMessage,
       simplificationResult: sourceChanged ? null : state.simplificationResult,
-      showSimplificationSteps:
-          sourceChanged ? false : state.showSimplificationSteps,
+      showSimplificationSteps: sourceChanged
+          ? false
+          : state.showSimplificationSteps,
       selectedStepIndex: sourceChanged ? 0 : state.selectedStepIndex,
       regexAnalysis: sourceChanged ? null : state.regexAnalysis,
       showAnalysisDetails: sourceChanged ? false : state.showAnalysisDetails,
       sampleStrings: sourceChanged ? null : state.sampleStrings,
-      showSampleStringsDetails:
-          sourceChanged ? false : state.showSampleStringsDetails,
+      showSampleStringsDetails: sourceChanged
+          ? false
+          : state.showSampleStringsDetails,
     );
 
     if (regex.isEmpty) {
@@ -231,6 +268,31 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
       errorMessage: diagnostic?.displayMessage ?? '',
       validationDiagnostic: diagnostic,
     );
+  }
+
+  RegexDocument buildDocument() => RegexDocument(
+    id: state.documentId,
+    name: state.documentName,
+    source: state.currentRegex,
+    alphabet: state.alphabet.runes.map(String.fromCharCode),
+  );
+
+  void replaceDocument(RegexDocument document) {
+    _testStringMatchVersion++;
+    state = RegexEditorState(
+      documentId: document.id,
+      documentName: document.name,
+      documentGeneration: state.documentGeneration + 1,
+      currentRegex: document.source,
+      alphabet: document.alphabet.join(),
+      simplifyOutput: state.simplifyOutput,
+    );
+    if (document.source.isNotEmpty) validateRegex(document.source);
+  }
+
+  void restoreDocumentCheckpoint(RegexEditorState checkpoint) {
+    _testStringMatchVersion++;
+    state = checkpoint;
   }
 
   Future<void> testStringMatch(String input) async {
@@ -435,7 +497,13 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
 
     final result = RegexSimplifier.simplifyWithSteps(state.currentRegex);
     if (!result.isSuccess || result.data == null) {
-      return RegexEditorOperationResult<void>.failure(result.error);
+      final structuredError = result.structuredError;
+      return structuredError == null
+          ? RegexEditorOperationResult<void>.failure(result.error)
+          : RegexEditorOperationResult<void>.failureWithStructured(
+              result.error,
+              structuredError,
+            );
     }
 
     state = state.copyWith(
@@ -496,9 +564,7 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
     state = state.copyWith(showAnalysisDetails: !state.showAnalysisDetails);
   }
 
-  RegexEditorOperationResult<void> runSampleGeneration({
-    int maxSamples = 10,
-  }) {
+  RegexEditorOperationResult<void> runSampleGeneration({int maxSamples = 10}) {
     if (!state.canRunRegexOperation) {
       return RegexEditorOperationResult<void>.failure();
     }
@@ -521,8 +587,10 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
   }
 
   void clearSampleStrings() {
-    state =
-        state.copyWith(sampleStrings: null, showSampleStringsDetails: false);
+    state = state.copyWith(
+      sampleStrings: null,
+      showSampleStringsDetails: false,
+    );
   }
 
   void toggleSampleStringsDetails() {
@@ -534,5 +602,5 @@ class RegexEditorNotifier extends StateNotifier<RegexEditorState> {
 
 final regexEditorProvider =
     StateNotifierProvider<RegexEditorNotifier, RegexEditorState>(
-  (ref) => RegexEditorNotifier(),
-);
+      (ref) => RegexEditorNotifier(),
+    );

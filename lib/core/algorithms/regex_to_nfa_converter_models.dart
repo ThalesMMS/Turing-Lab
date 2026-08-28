@@ -59,6 +59,11 @@ class EpsilonNode extends RegexNode {
   const EpsilonNode({super.position});
 }
 
+/// Empty-language node.
+class EmptyLanguageNode extends RegexNode {
+  const EmptyLanguageNode({super.position});
+}
+
 /// Set/character class node ([...])
 class SetNode extends RegexNode {
   final Set<String> symbols;
@@ -124,6 +129,7 @@ enum TokenType {
   charClass,
   charShortcut,
   epsilon,
+  emptyLanguage,
 }
 
 /// Token for regex parsing

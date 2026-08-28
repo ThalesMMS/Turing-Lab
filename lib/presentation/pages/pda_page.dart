@@ -14,14 +14,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/pda.dart';
 import '../../core/constants/help_topic_ids.dart';
+import '../../core/formal_systems/formal_systems.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../providers/pda_editor_provider.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
+import '../widgets/automaton_diagnostic_highlight_bar.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/automaton_canvas_tool.dart';
+import '../widgets/automaton_canvas_document_actions.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/canvas_simulation_playback_bar.dart';
 import '../widgets/canvas_simulation_step_projection.dart';
@@ -36,6 +39,7 @@ import '../widgets/common/workspace_help.dart';
 import '../../core/models/step_explanation.dart';
 import '../providers/pda_simulation_provider.dart';
 import '../../core/services/simulation_highlight_service.dart';
+import '../../core/services/highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_pda_canvas_controller.dart';
 
@@ -61,14 +65,16 @@ class _PDAPageState extends ConsumerState<PDAPage>
   EdgeInsets _canvasToolbarInsets = EdgeInsets.zero;
   late final GraphViewPdaCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
-  late final CanvasHighlightSourceHandle _validationHighlights;
+  late final CanvasHighlightSourceHandle _diagnosticHighlights;
   late final CanvasHighlightSourceHandle _simulationHighlights;
   late final SimulationHighlightService _highlightService;
   late final AutomatonCanvasToolController _toolController;
+  final AutomatonCanvasDocumentActionsController _documentActions =
+      AutomatonCanvasDocumentActionsController();
   late final List<Override> _canvasHighlightOverrides;
   late final Listenable _canvasListenable;
   int _highlightRevision = 0;
-  int _highlightSyncGeneration = 0;
+  AutomatonDiagnosticHighlightKind? _activeDiagnosticHighlight;
 
   @override
   void initState() {
@@ -82,14 +88,18 @@ class _PDAPageState extends ConsumerState<PDAPage>
       target: _highlightTarget(initialEditorState.pda),
       output: GraphViewSimulationHighlightChannel(_canvasController),
     );
-    _validationHighlights =
-        _highlightCoordinator.source(CanvasHighlightSource.validation);
-    _simulationHighlights =
-        _highlightCoordinator.source(CanvasHighlightSource.simulation);
-    _highlightService = SimulationHighlightService(
-      channel: _simulationHighlights,
+    _diagnosticHighlights = _highlightCoordinator.source(
+      CanvasHighlightSource.diagnostic,
     );
-    _scheduleEditorHighlights(initialEditorState);
+    _simulationHighlights = _highlightCoordinator.source(
+      CanvasHighlightSource.simulation,
+    );
+    _highlightService = SimulationHighlightService(
+      channel: InterceptingHighlightChannel(
+        delegate: _simulationHighlights,
+        beforeActivity: _handleSimulationHighlightActivity,
+      ),
+    );
     _toolController = AutomatonCanvasToolController(
       AutomatonCanvasTool.selection,
     );
@@ -111,18 +121,28 @@ class _PDAPageState extends ConsumerState<PDAPage>
       if (!identical(previous?.pda, next.pda)) {
         _highlightRevision++;
         _highlightCoordinator.retarget(_highlightTarget(next.pda));
+        final target = _highlightCoordinator.target;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && target == _highlightCoordinator.target) {
+            _canvasController.clearHighlight();
+          }
+        });
+        if (_activeDiagnosticHighlight != null) {
+          setState(() {
+            _activeDiagnosticHighlight = null;
+          });
+        }
         if (_canvasSimulationSteps != null) {
           _stopCanvasSimulation();
           _handleStackChanged(const StackState.empty());
-          final simulationNotifier = ref.read(pdaSimulationProvider.notifier);
-          if (next.pda case final pda?) {
-            simulationNotifier.setPda(pda);
-          } else {
-            simulationNotifier.clear();
-          }
+        }
+        final simulationNotifier = ref.read(pdaSimulationProvider.notifier);
+        if (next.pda case final pda?) {
+          simulationNotifier.setPda(pda);
+        } else {
+          simulationNotifier.clear();
         }
       }
-      _scheduleEditorHighlights(next);
       if (next.pda == null && _latestPda != null) {
         setState(() {
           _latestPda = null;
@@ -148,10 +168,9 @@ class _PDAPageState extends ConsumerState<PDAPage>
   }
 
   void _handleAddStatePressed() {
-    if (_toolController.activeTool != AutomatonCanvasTool.addState) {
-      _toolController.setActiveTool(AutomatonCanvasTool.addState);
-    }
-    _canvasController.addStateAtCenter();
+    // Pure placement toggle: states are added by tapping the canvas while
+    // the tool is active, never as a side effect of pressing the button.
+    _toolController.toggleTool(AutomatonCanvasTool.addState);
   }
 
   void _handleCanvasToolbarInsetsChanged(EdgeInsets insets) {
@@ -164,8 +183,8 @@ class _PDAPageState extends ConsumerState<PDAPage>
   @override
   void dispose() {
     _pdaEditorSub?.close();
-    _highlightService.clear();
-    _validationHighlights.dispose();
+    _simulationHighlights.clear();
+    _diagnosticHighlights.dispose();
     _simulationHighlights.dispose();
     _highlightCoordinator.dispose();
     _canvasController.dispose();
@@ -222,10 +241,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
       topicId = HelpTopicIds.pdaTheoryPda;
     }
 
-    showWorkspaceHelp(
-      context: context,
-      topicId: topicId,
-    );
+    showWorkspaceHelp(context: context, topicId: topicId);
   }
 
   @override
@@ -248,29 +264,26 @@ class _PDAPageState extends ConsumerState<PDAPage>
           onSimulationStart: _handleSimulationStart,
           onSimulationEnd: _handleSimulationEnd,
         ),
-        mobileFloatingPanelBuilder: (
-          context, {
-          required onDragDelta,
-          required onPanelSizeChanged,
-        }) =>
-            CollapsibleCanvasPanel(
-          label: appLocalizationsOf(context).pdaStackPanelLabel,
-          icon: Icons.layers,
-          onDragDelta: onDragDelta,
-          onPanelSizeChanged: onPanelSizeChanged,
-          child: PDAStackPanel(
-            stackState: _currentStack,
-            initialStackSymbol: pda?.initialStackSymbol ?? 'Z',
-            stackAlphabet: pda?.stackAlphabet ?? const <String>{},
-            isSimulating: _isSimulating,
-            highlightedIndex: _inferHighlightedStackIndex(),
-            onClear: () {
-              setState(() {
-                _currentStack = const StackState.empty();
-              });
-            },
-          ),
-        ),
+        mobileFloatingPanelBuilder:
+            (context, {required onDragDelta, required onPanelSizeChanged}) =>
+                CollapsibleCanvasPanel(
+                  label: appLocalizationsOf(context).pdaStackPanelLabel,
+                  icon: Icons.layers,
+                  onDragDelta: onDragDelta,
+                  onPanelSizeChanged: onPanelSizeChanged,
+                  child: PDAStackPanel(
+                    stackState: _currentStack,
+                    initialStackSymbol: pda?.initialStackSymbol ?? 'Z',
+                    stackAlphabet: pda?.stackAlphabet ?? const <String>{},
+                    isSimulating: _isSimulating,
+                    highlightedIndex: _inferHighlightedStackIndex(),
+                    onClear: () {
+                      setState(() {
+                        _currentStack = const StackState.empty();
+                      });
+                    },
+                  ),
+                ),
       ),
     );
   }
@@ -284,20 +297,83 @@ class _PDAPageState extends ConsumerState<PDAPage>
     );
   }
 
-  void _scheduleEditorHighlights(PDAEditorState editorState) {
-    final generation = ++_highlightSyncGeneration;
-    final target = _highlightCoordinator.target;
-    final highlight = SimulationHighlight(
-      transitionIds: editorState.nondeterministicTransitionIds,
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          generation != _highlightSyncGeneration ||
-          target != _highlightCoordinator.target) {
-        return;
-      }
-      _validationHighlights.sendFor(target, highlight);
+  void _setDiagnosticHighlight(
+    AutomatonDiagnosticHighlightKind kind,
+    bool selected,
+    PDAEditorState editorState,
+  ) {
+    if (!selected) {
+      _clearDiagnosticHighlight();
+      return;
+    }
+
+    _stopCanvasSimulation();
+    final transitionIds = switch (kind) {
+      AutomatonDiagnosticHighlightKind.conflicts =>
+        editorState.nondeterministicTransitionIds,
+      AutomatonDiagnosticHighlightKind.epsilon =>
+        editorState.standaloneLambdaTransitionIds,
+    };
+    setState(() {
+      _activeDiagnosticHighlight = kind;
     });
+    _diagnosticHighlights.send(
+      SimulationHighlight(transitionIds: transitionIds),
+    );
+  }
+
+  void _clearDiagnosticHighlight() {
+    if (_activeDiagnosticHighlight != null && mounted) {
+      setState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+    _diagnosticHighlights.clear();
+  }
+
+  void _handleSimulationHighlightActivity() {
+    _diagnosticHighlights.clear();
+    if (_activeDiagnosticHighlight != null && mounted) {
+      setState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+  }
+
+  Widget _buildDiagnosticHighlightBar(
+    PDAEditorState editorState, {
+    required bool isMobile,
+  }) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SafeArea(
+        minimum: EdgeInsets.fromLTRB(
+          12,
+          isMobile
+              ? 12
+              : (_canvasToolbarInsets.top > 0
+                    ? _canvasToolbarInsets.top + 8
+                    : 88),
+          12,
+          12,
+        ),
+        child: AutomatonDiagnosticHighlightBar(
+          activeKind: _activeDiagnosticHighlight,
+          conflictCount: editorState.nondeterministicTransitionIds.length,
+          epsilonCount: editorState.standaloneLambdaTransitionIds.length,
+          onConflictSelected: (selected) => _setDiagnosticHighlight(
+            AutomatonDiagnosticHighlightKind.conflicts,
+            selected,
+            editorState,
+          ),
+          onEpsilonSelected: (selected) => _setDiagnosticHighlight(
+            AutomatonDiagnosticHighlightKind.epsilon,
+            selected,
+            editorState,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _showPanelSheet({
@@ -347,8 +423,9 @@ class _PDAPageState extends ConsumerState<PDAPage>
                         width: 36,
                         height: 4,
                         decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.outline.withValues(alpha: 0.4),
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.4,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -369,6 +446,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
                               ),
                             ),
                             IconButton(
+                              tooltip: appLocalizationsOf(sheetContext).close,
                               icon: const Icon(Icons.close),
                               onPressed: () => Navigator.of(sheetContext).pop(),
                             ),
@@ -402,13 +480,14 @@ class _PDAPageState extends ConsumerState<PDAPage>
     final canvas = PDACanvasGraphView(
       controller: _canvasController,
       toolController: _toolController,
+      documentActionsController: _documentActions,
       currentStack: _currentStack,
       onPdaModified: _handlePdaModified,
     );
 
-    publishWorkspaceQuickActions(
+    publishWorkspaceQuickActionsForKey(
       ref,
-      WorkspaceTab.pda,
+      DefaultFormalSystemIds.pda,
       WorkspaceQuickActions(
         onHelp: _showContextualHelp,
         onSimulate: _openSimulationSheet,
@@ -421,6 +500,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
       return Stack(
         children: [
           Positioned.fill(child: canvas),
+          _buildDiagnosticHighlightBar(editorState, isMobile: true),
           if (_canvasSimulationSteps case final steps?)
             Positioned(
               left: 16,
@@ -448,9 +528,12 @@ class _PDAPageState extends ConsumerState<PDAPage>
                   AutomatonCanvasTool.selection,
                 ),
                 onAddState: _handleAddStatePressed,
-                onAddTransition: () => _toolController.toggleTool(
-                  AutomatonCanvasTool.transition,
-                ),
+                onAddTransition: () =>
+                    _toolController.toggleTool(AutomatonCanvasTool.transition),
+                onArrangeAutomaton: _documentActions.arrange,
+                onImportAutomaton: _documentActions.importAutomaton,
+                onDocumentNotes: _documentActions.showDocumentNotes,
+                documentActionsEnabled: editorState.pda != null,
                 onHelp: _showContextualHelp,
                 onClear: _clearCanvasPda,
                 statusMessage: statusMessage,
@@ -464,6 +547,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
     final canvasWithChrome = Stack(
       children: [
         Positioned.fill(child: canvas),
+        _buildDiagnosticHighlightBar(editorState, isMobile: false),
         AnimatedBuilder(
           animation: _canvasListenable,
           builder: (context, _) {
@@ -479,6 +563,10 @@ class _PDAPageState extends ConsumerState<PDAPage>
               onHelp: _showContextualHelp,
               onAddTransition: () =>
                   _toolController.toggleTool(AutomatonCanvasTool.transition),
+              onArrangeAutomaton: _documentActions.arrange,
+              onImportAutomaton: _documentActions.importAutomaton,
+              onDocumentNotes: _documentActions.showDocumentNotes,
+              documentActionsEnabled: editorState.pda != null,
               onClear: _clearCanvasPda,
               statusMessage: statusMessage,
             );
@@ -511,6 +599,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
   }
 
   void _openSimulationSheet() {
+    _clearDiagnosticHighlight();
     _stopCanvasSimulation();
     _showPanelSheet(
       context: context,
@@ -533,9 +622,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
       context: context,
       title: 'PDA Algorithms',
       icon: Icons.auto_awesome,
-      child: PDAAlgorithmPanel(
-        onApplyPda: _canvasController.replacePda,
-      ),
+      child: PDAAlgorithmPanel(onApplyPda: _canvasController.replacePda),
     );
   }
 

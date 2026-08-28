@@ -14,6 +14,7 @@ import 'package:vector_math/vector_math_64.dart';
 import 'serialized_state_resolver.dart';
 import 'state.dart';
 import 'transition.dart';
+import '../utils/epsilon_utils.dart';
 
 /// Transition for Pushdown Automata (PDA)
 class PDATransition extends Transition {
@@ -28,9 +29,9 @@ class PDATransition extends Transition {
     required bool isLambdaPop,
     required bool isLambdaPush,
   }) {
-    final input = isLambdaInput ? 'λ' : inputSymbol;
-    final pop = isLambdaPop ? 'λ' : popSymbol;
-    final push = isLambdaPush ? 'λ' : pushSymbol;
+    final input = isLambdaInput ? kEpsilonSymbol : inputSymbol;
+    final pop = isLambdaPop ? kEpsilonSymbol : popSymbol;
+    final push = isLambdaPush ? kEpsilonSymbol : pushSymbol;
     return '$input, $pop/$push';
   }
 
@@ -223,29 +224,30 @@ class PDATransition extends Transition {
     final errors = super.validate();
 
     if (inputSymbol.isEmpty && !isLambdaInput) {
-      errors.add('PDA transition must have input symbol or be lambda input');
+      errors.add('PDA transition must have input symbol or be epsilon input');
     }
 
     if (popSymbol.isEmpty && !isLambdaPop) {
-      errors.add('PDA transition must have pop symbol or be lambda pop');
+      errors.add('PDA transition must have pop symbol or be epsilon pop');
     }
 
     if (pushSymbol.isEmpty && !isLambdaPush) {
-      errors.add('PDA transition must have push symbol or be lambda push');
+      errors.add('PDA transition must have push symbol or be epsilon push');
     }
 
     if (isLambdaInput && inputSymbol.isNotEmpty) {
       errors.add(
-        'PDA transition cannot have both input symbol and lambda input',
+        'PDA transition cannot have both input symbol and epsilon input',
       );
     }
 
     if (isLambdaPop && popSymbol.isNotEmpty) {
-      errors.add('PDA transition cannot have both pop symbol and lambda pop');
+      errors.add('PDA transition cannot have both pop symbol and epsilon pop');
     }
 
     if (isLambdaPush && pushSymbol.isNotEmpty) {
-      errors.add('PDA transition cannot have both push symbol and lambda push');
+      errors
+          .add('PDA transition cannot have both push symbol and epsilon push');
     }
 
     if (pushSymbols.any((symbol) => symbol.isEmpty)) {
@@ -269,22 +271,22 @@ class PDATransition extends Transition {
     return isLambdaPop || popSymbol == symbol;
   }
 
-  /// Gets the symbol to push onto the stack (empty string for lambda push)
+  /// Gets the symbol to push onto the stack (empty string for epsilon push)
   String get symbolToPush {
     return isLambdaPush ? '' : pushSymbol;
   }
 
-  /// Gets the symbol to pop from the stack (empty string for lambda pop)
+  /// Gets the symbol to pop from the stack (empty string for epsilon pop)
   String get symbolToPop {
     return isLambdaPop ? '' : popSymbol;
   }
 
-  /// Gets the input symbol (empty string for lambda input)
+  /// Gets the input symbol (empty string for epsilon input)
   String get effectiveInputSymbol {
     return isLambdaInput ? '' : inputSymbol;
   }
 
-  /// Checks if this is an epsilon transition (all operations are lambda)
+  /// Checks if this is an epsilon transition (all operations are empty)
   bool get isEpsilonTransition {
     return isLambdaInput && isLambdaPop && isLambdaPush;
   }

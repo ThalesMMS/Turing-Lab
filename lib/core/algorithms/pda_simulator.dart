@@ -11,6 +11,9 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'dart:collection';
+import 'dart:convert';
+
+import 'package:meta/meta.dart';
 
 import '../models/pda.dart';
 import '../models/pda_acceptance_mode.dart';
@@ -20,8 +23,12 @@ import '../models/fsa_transition.dart';
 import '../models/simulation_step.dart';
 import '../models/step_explanation.dart';
 import '../models/transition.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../simulation_cancelled_exception.dart';
+import 'pda_simulation_semantic_variant.dart';
+import 'pda_simulation_messages.dart';
+import 'pda_simulator_analysis_messages.dart';
 
 export '../models/pda_acceptance_mode.dart';
 
@@ -43,16 +50,22 @@ class PDASimulator {
     Duration timeout = const Duration(seconds: 5),
   }) {
     try {
-      // Delegate to epsilon-aware NPDA search with final-state acceptance.
+      // Delegate to the epsilon-aware NPDA search using the document policy.
       return simulateNPDA(
         pda,
         inputString,
         stepByStep: stepByStep,
         timeout: timeout,
-        mode: PDAAcceptanceMode.finalState,
+        mode: pda.acceptanceMode,
       );
     } catch (e) {
-      return Failure('Error simulating PDA: $e');
+      return Failure(
+        'Error simulating PDA: $e',
+        structuredMessage: PDASimulationMessages.simulationFailure(
+          operation: 'simulate',
+          error: e,
+        ),
+      );
     }
   }
 
@@ -72,15 +85,85 @@ class PDASimulator {
     PDAAcceptanceMode mode = PDAAcceptanceMode.finalState,
     int maxDepth = defaultMaxBranchingDepth,
     int maxConfigurations = defaultMaxConfigurations,
+    int? maxMemoryBytes,
+    bool Function()? isStale,
+  }) => _simulateNPDA(
+    pda,
+    inputString,
+    stepByStep: stepByStep,
+    timeout: timeout,
+    mode: mode,
+    maxDepth: maxDepth,
+    maxConfigurations: maxConfigurations,
+    maxMemoryBytes: maxMemoryBytes,
+    isStale: isStale,
+    semanticVariant: PDASimulationSemanticVariant.canonical,
+  );
+
+  /// Runs a deliberately non-canonical search for certification mutation tests.
+  @visibleForTesting
+  static Result<PDASimulationResult> simulateNPDAForCertification(
+    PDA pda,
+    String inputString, {
+    required PDASimulationSemanticVariant semanticVariant,
+    bool stepByStep = false,
+    Duration timeout = const Duration(seconds: 5),
+    PDAAcceptanceMode mode = PDAAcceptanceMode.finalState,
+    int maxDepth = defaultMaxBranchingDepth,
+    int maxConfigurations = defaultMaxConfigurations,
+    int? maxMemoryBytes,
+    bool Function()? isStale,
+  }) => _simulateNPDA(
+    pda,
+    inputString,
+    stepByStep: stepByStep,
+    timeout: timeout,
+    mode: mode,
+    maxDepth: maxDepth,
+    maxConfigurations: maxConfigurations,
+    maxMemoryBytes: maxMemoryBytes,
+    isStale: isStale,
+    semanticVariant: semanticVariant,
+  );
+
+  static Result<PDASimulationResult> _simulateNPDA(
+    PDA pda,
+    String inputString, {
+    required bool stepByStep,
+    required Duration timeout,
+    required PDAAcceptanceMode mode,
+    required int maxDepth,
+    required int maxConfigurations,
+    required int? maxMemoryBytes,
+    required bool Function()? isStale,
+    required PDASimulationSemanticVariant semanticVariant,
   }) {
     try {
       final stopwatch = Stopwatch()..start();
       final validationResult = _validateInput(pda, inputString);
       if (!validationResult.isSuccess) {
-        return Failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
       if (pda.initialState == null) {
-        return const Failure('PDA must have an initial state');
+        return Failure(
+          'PDA must have an initial state',
+          structuredMessage: PDASimulationMessages.missingInitialState(),
+        );
+      }
+      if (maxDepth < 0 || maxConfigurations < 0) {
+        return Failure(
+          'PDA search limits must not be negative',
+          structuredMessage: PDASimulationMessages.searchLimitsNegative(),
+        );
+      }
+      if (maxMemoryBytes != null && maxMemoryBytes < 0) {
+        return Failure(
+          'PDA memory limit must not be negative',
+          structuredMessage: PDASimulationMessages.memoryLimitNegative(),
+        );
       }
       final result = _simulateSearch(
         pda,
@@ -90,11 +173,20 @@ class PDASimulator {
         mode,
         maxDepth,
         maxConfigurations,
+        maxMemoryBytes,
+        isStale,
+        semanticVariant,
       );
       stopwatch.stop();
       return Success(result.copyWith(executionTime: stopwatch.elapsed));
     } catch (e) {
-      return Failure('Error simulating NPDA: $e');
+      return Failure(
+        'Error simulating NPDA: $e',
+        structuredMessage: PDASimulationMessages.simulationFailure(
+          operation: 'simulate-npda',
+          error: e,
+        ),
+      );
     }
   }
 
@@ -106,20 +198,42 @@ class PDASimulator {
     PDAAcceptanceMode mode = PDAAcceptanceMode.finalState,
     int maxDepth = defaultMaxBranchingDepth,
     int maxConfigurations = defaultMaxConfigurations,
+    int? maxMemoryBytes,
     int configurationsPerBatch = 250,
     bool Function()? isCancelled,
+    bool Function()? isStale,
   }) async {
     try {
       final validationResult = _validateInput(pda, inputString);
       if (!validationResult.isSuccess) {
-        return Failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
       if (pda.initialState == null) {
-        return const Failure('PDA must have an initial state');
+        return Failure(
+          'PDA must have an initial state',
+          structuredMessage: PDASimulationMessages.missingInitialState(),
+        );
       }
       if (configurationsPerBatch <= 0) {
-        return const Failure(
+        return Failure(
           'Configurations per batch must be greater than zero',
+          structuredMessage:
+              PDASimulationMessages.configurationsPerBatchInvalid(),
+        );
+      }
+      if (maxDepth < 0 || maxConfigurations < 0) {
+        return Failure(
+          'PDA search limits must not be negative',
+          structuredMessage: PDASimulationMessages.searchLimitsNegative(),
+        );
+      }
+      if (maxMemoryBytes != null && maxMemoryBytes < 0) {
+        return Failure(
+          'PDA memory limit must not be negative',
+          structuredMessage: PDASimulationMessages.memoryLimitNegative(),
         );
       }
 
@@ -131,6 +245,9 @@ class PDASimulator {
         mode,
         maxDepth,
         maxConfigurations,
+        maxMemoryBytes,
+        isStale,
+        PDASimulationSemanticVariant.canonical,
       );
       while (true) {
         if (isCancelled?.call() == true) {
@@ -143,7 +260,13 @@ class PDASimulator {
     } on SimulationCancelledException {
       rethrow;
     } catch (e) {
-      return Failure('Error simulating PDA: $e');
+      return Failure(
+        'Error simulating PDA: $e',
+        structuredMessage: PDASimulationMessages.simulationFailure(
+          operation: 'simulate-cooperative',
+          error: e,
+        ),
+      );
     }
   }
 
@@ -151,15 +274,19 @@ class PDASimulator {
   static Result<bool> accepts(PDA pda, String inputString) {
     final simulationResult = simulate(pda, inputString);
     if (!simulationResult.isSuccess) {
-      return Failure(simulationResult.error!);
+      return Failure(
+        simulationResult.error!,
+        structuredMessage: simulationResult.structuredError,
+      );
     }
 
     final result = simulationResult.data!;
-    final errorMessage = result.errorMessage;
-    if (errorMessage == PDA_SIMULATION_TIMEOUT_ERROR ||
-        errorMessage == PDA_SIMULATION_INFINITE_LOOP_ERROR ||
-        errorMessage == PDA_SIMULATION_LIMIT_REACHED_ERROR) {
-      return Failure(errorMessage!);
+    if (result.isInconclusive ||
+        result.outcome == PDASimulationOutcome.provenCycle) {
+      return Failure(
+        result.errorMessage!,
+        structuredMessage: result.structuredMessage,
+      );
     }
 
     return Success(result.accepted);
@@ -169,7 +296,10 @@ class PDASimulator {
   static Result<bool> rejects(PDA pda, String inputString) {
     final acceptsResult = accepts(pda, inputString);
     if (!acceptsResult.isSuccess) {
-      return Failure(acceptsResult.error!);
+      return Failure(
+        acceptsResult.error!,
+        structuredMessage: acceptsResult.structuredError,
+      );
     }
 
     return Success(!acceptsResult.data!);
@@ -186,9 +316,11 @@ class PDASimulator {
       final alphabet = pda.alphabet.toList();
 
       // Generate all possible strings up to maxLength
-      for (int length = 0;
-          length <= maxLength && acceptedStrings.length < maxResults;
-          length++) {
+      for (
+        int length = 0;
+        length <= maxLength && acceptedStrings.length < maxResults;
+        length++
+      ) {
         _generateStrings(
           pda,
           alphabet,
@@ -201,7 +333,10 @@ class PDASimulator {
 
       return Success(acceptedStrings);
     } catch (e) {
-      return Failure('Error finding accepted strings: $e');
+      return Failure(
+        'Error finding accepted strings: $e',
+        structuredMessage: PDASimulationMessages.acceptedStringsFailure(e),
+      );
     }
   }
 
@@ -216,9 +351,11 @@ class PDASimulator {
       final alphabet = pda.alphabet.toList();
 
       // Generate all possible strings up to maxLength
-      for (int length = 0;
-          length <= maxLength && rejectedStrings.length < maxResults;
-          length++) {
+      for (
+        int length = 0;
+        length <= maxLength && rejectedStrings.length < maxResults;
+        length++
+      ) {
         _generateRejectedStrings(
           pda,
           alphabet,
@@ -231,7 +368,10 @@ class PDASimulator {
 
       return Success(rejectedStrings);
     } catch (e) {
-      return Failure('Error finding rejected strings: $e');
+      return Failure(
+        'Error finding rejected strings: $e',
+        structuredMessage: PDASimulationMessages.rejectedStringsFailure(e),
+      );
     }
   }
 
@@ -247,17 +387,26 @@ class PDASimulator {
       // Validate input
       final validationResult = _validateInput(pda, '');
       if (!validationResult.isSuccess) {
-        return Failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty PDA
       if (pda.states.isEmpty) {
-        return const Failure('Cannot analyze empty PDA');
+        return Failure(
+          'Cannot analyze empty PDA',
+          structuredMessage: PdaAnalysisMessages.emptyPda(),
+        );
       }
 
       // Handle PDA with no initial state
       if (pda.initialState == null) {
-        return const Failure('PDA must have an initial state');
+        return Failure(
+          'PDA must have an initial state',
+          structuredMessage: PDASimulationMessages.missingInitialState(),
+        );
       }
 
       // Analyze the PDA
@@ -272,8 +421,29 @@ class PDASimulator {
       final finalResult = result.copyWith(executionTime: stopwatch.elapsed);
 
       return Success(finalResult);
+    } on ArgumentError catch (e) {
+      final structuredMessage = maxInputLength < 0
+          ? PdaAnalysisMessages.invalidMaxInputLength()
+          : timeout <= Duration.zero
+          ? PdaAnalysisMessages.invalidTimeout()
+          : PdaAnalysisMessages.failure(e);
+      return Failure(
+        'Error analyzing PDA: $e',
+        structuredMessage: structuredMessage,
+      );
+    } on StateError catch (e) {
+      final structuredMessage = e.message == 'PDA analysis timed out'
+          ? PdaAnalysisMessages.timedOut()
+          : PdaAnalysisMessages.failure(e);
+      return Failure(
+        'Error analyzing PDA: $e',
+        structuredMessage: structuredMessage,
+      );
     } catch (e) {
-      return Failure('Error analyzing PDA: $e');
+      return Failure(
+        'Error analyzing PDA: $e',
+        structuredMessage: PdaAnalysisMessages.failure(e),
+      );
     }
   }
 }

@@ -1,6 +1,48 @@
 part of '../pda_simulator_extended_test.dart';
 
 void _runPdaSimulationTests() {
+  group('PDASimulator production resource outcomes', () {
+    test('enforces an exact zero configuration budget before exploration', () {
+      final result = PDASimulator.simulateNPDA(
+        _pdaAcceptsA(),
+        'a',
+        maxConfigurations: 0,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.outcome, PDASimulationOutcome.configurationLimit);
+    });
+
+    test('keeps depth, timeout, memory, and stale outcomes distinct', () {
+      final pda = _pdaAcceptsA();
+      final depth = PDASimulator.simulateNPDA(pda, 'a', maxDepth: 0);
+      final timeout = PDASimulator.simulateNPDA(
+        pda,
+        'a',
+        timeout: Duration.zero,
+      );
+      final memory = PDASimulator.simulateNPDA(pda, 'a', maxMemoryBytes: 0);
+      final stale = PDASimulator.simulateNPDA(pda, 'a', isStale: () => true);
+
+      expect(depth.data!.outcome, PDASimulationOutcome.depthLimit);
+      expect(timeout.data!.outcome, PDASimulationOutcome.timeout);
+      expect(memory.data!.outcome, PDASimulationOutcome.memoryLimit);
+      expect(stale.data!.outcome, PDASimulationOutcome.staleRequest);
+    });
+
+    test('cooperative cancellation keeps its exception contract', () async {
+      await expectLater(
+        PDASimulator.simulateCooperative(
+          _pdaAcceptsA(),
+          'a',
+          configurationsPerBatch: 1,
+          isCancelled: () => true,
+        ),
+        throwsA(isA<SimulationCancelledException>()),
+      );
+    });
+  });
+
   group('PDASimulator.accepts and rejects', () {
     test('accepts returns true for accepted string', () {
       final pda = _pdaAcceptsA();
@@ -115,8 +157,10 @@ void _runPdaSimulationTests() {
         bounds: const math.Rectangle(0, 0, 400, 300),
       );
 
-      final longAcceptedInput =
-          List.filled(PDASimulator.defaultMaxBranchingDepth + 1, 'a').join();
+      final longAcceptedInput = List.filled(
+        PDASimulator.defaultMaxBranchingDepth + 1,
+        'a',
+      ).join();
 
       final result = PDASimulator.simulateNPDA(pda, longAcceptedInput);
 
@@ -129,6 +173,52 @@ void _runPdaSimulationTests() {
 
       expect(acceptsResult.isSuccess, false);
       expect(acceptsResult.error, contains('limit'));
+    });
+
+    test('reports configuration budget as inconclusive, not a proven loop', () {
+      final q0 = State(
+        id: 'q0',
+        label: 'q0',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final growStack = PDATransition(
+        id: 'grow-stack',
+        fromState: q0,
+        toState: q0,
+        inputSymbol: '',
+        popSymbol: '',
+        pushSymbol: 'A',
+        label: 'ε,ε/A',
+      );
+      final pda = PDA(
+        id: 'configuration-budget',
+        name: 'Configuration budget PDA',
+        states: {q0},
+        transitions: <Transition>{growStack},
+        alphabet: const {'a'},
+        initialState: q0,
+        acceptingStates: const {},
+        created: DateTime.now(),
+        modified: DateTime.now(),
+        bounds: const math.Rectangle(0, 0, 400, 300),
+        stackAlphabet: const {'A', 'Z'},
+      );
+
+      final result = PDASimulator.simulateNPDA(
+        pda,
+        'a',
+        maxConfigurations: 2,
+        maxDepth: 50,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.data!.accepted, isFalse);
+      expect(result.data!.errorMessage, PDA_SIMULATION_LIMIT_REACHED_ERROR);
+      expect(
+        result.data!.errorMessage,
+        isNot(PDA_SIMULATION_INFINITE_LOOP_ERROR),
+      );
     });
   });
 
@@ -159,7 +249,10 @@ void _runPdaSimulationTests() {
       );
       final result = PDASimulator.simulateNPDA(pda, 'a');
       expect(result.isSuccess, false);
-      expect(result.error, contains('state'));
+      expect(
+        result.structuredError?.stableCode,
+        'pda.simulation.empty-state-set',
+      );
     });
 
     test('returns failure when initial state not in states set', () {
@@ -192,7 +285,10 @@ void _runPdaSimulationTests() {
       );
       final result = PDASimulator.simulateNPDA(pda, 'a');
       expect(result.isSuccess, false);
-      expect(result.error, contains('Initial state'));
+      expect(
+        result.structuredError?.stableCode,
+        'pda.simulation.initial-state-outside-set',
+      );
     });
   });
 

@@ -7,26 +7,30 @@ import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
+import 'package:turing_lab/core/algorithms/fsa_kleene_star_messages.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
   group('FSAKleeneStar', () {
-    test('star of the singleton language a accepts exactly a* in bounds',
-        () async {
-      final operand = _fromRegex('a');
+    test(
+      'star of the singleton language a accepts exactly a* in bounds',
+      () async {
+        final operand = _fromRegex('a');
 
-      final result = FSAKleeneStar.apply(operand);
+        final result = FSAKleeneStar.apply(operand);
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      final star = result.data!;
-      expect(star.resultNFA.initialState!.isAccepting, isTrue);
-      expect(star.entryTransition.isEpsilonTransition, isTrue);
-      await _expectLanguage(
-        star.resultNFA,
-        accepted: {'', 'a', 'aa', 'aaa'},
-        rejected: {'b', 'ab', 'ba'},
-      );
-    });
+        expect(result.isSuccess, isTrue, reason: result.error);
+        final star = result.data!;
+        expect(star.resultNFA.initialState!.isAccepting, isTrue);
+        expect(star.entryTransition.isEpsilonTransition, isTrue);
+        await _expectLanguage(
+          star.resultNFA,
+          accepted: {'', 'a', 'aa', 'aaa'},
+          rejected: {'b', 'ab', 'ba'},
+        );
+      },
+    );
 
     test('star of the singleton language ab repeats complete words', () async {
       final result = FSAKleeneStar.apply(_fromRegex('ab'));
@@ -56,99 +60,106 @@ void main() {
       }
     });
 
-    test('operand that accepts epsilon still repeats its non-empty words',
-        () async {
-      final result = FSAKleeneStar.apply(_fromRegex('a?'));
+    test(
+      'operand that accepts epsilon still repeats its non-empty words',
+      () async {
+        final result = FSAKleeneStar.apply(_fromRegex('a?'));
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      await _expectLanguage(
-        result.data!.resultNFA,
-        accepted: {'', 'a', 'aa', 'aaa'},
-        rejected: {'b', 'ab'},
-      );
-    });
+        expect(result.isSuccess, isTrue, reason: result.error);
+        await _expectLanguage(
+          result.data!.resultNFA,
+          accepted: {'', 'a', 'aa', 'aaa'},
+          rejected: {'b', 'ab'},
+        );
+      },
+    );
 
-    test('supports existing epsilon transitions and multiple final states',
-        () async {
-      final operand = _epsilonToMultipleAccepting();
+    test(
+      'supports existing epsilon transitions and multiple final states',
+      () async {
+        final operand = _epsilonToMultipleAccepting();
 
-      final result = FSAKleeneStar.apply(operand);
+        final result = FSAKleeneStar.apply(operand);
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      expect(result.data!.repeatTransitions, hasLength(2));
-      expect(result.data!.exitTransitions, hasLength(2));
-      await _expectLanguage(
-        result.data!.resultNFA,
-        accepted: {'', 'a', 'b', 'ab', 'ba', 'abba'},
-        rejected: {'c', 'ac', 'abc'},
-      );
-    });
+        expect(result.isSuccess, isTrue, reason: result.error);
+        expect(result.data!.repeatTransitions, hasLength(2));
+        expect(result.data!.exitTransitions, hasLength(2));
+        await _expectLanguage(
+          result.data!.resultNFA,
+          accepted: {'', 'a', 'b', 'ab', 'ba', 'abba'},
+          rejected: {'c', 'ac', 'abc'},
+        );
+      },
+    );
 
-    test('does not mutate the operand and reports stable construction steps',
-        () async {
-      final operand = _epsilonToMultipleAccepting();
-      final snapshot = operand.toJson();
+    test(
+      'does not mutate the operand and reports stable construction steps',
+      () async {
+        final operand = _epsilonToMultipleAccepting();
+        final snapshot = operand.toJson();
 
-      final result = FSAKleeneStar.apply(operand);
-      final repeated = FSAKleeneStar.apply(operand);
+        final result = FSAKleeneStar.apply(operand);
+        final repeated = FSAKleeneStar.apply(operand);
 
-      expect(result.isSuccess, isTrue, reason: result.error);
-      expect(repeated.isSuccess, isTrue, reason: repeated.error);
-      final star = result.data!;
-      final stateIds = star.resultNFA.states.map((state) => state.id).toSet();
-      final transitionIds = star.resultNFA.fsaTransitions
-          .map((transition) => transition.id)
-          .toSet();
-      expect(stateIds, hasLength(star.resultNFA.states.length));
-      expect(transitionIds, hasLength(star.resultNFA.transitions.length));
-      expect(
-        repeated.data!.resultNFA.states.map((state) => state.id).toSet(),
-        stateIds,
-      );
-      expect(
-        repeated.data!.resultNFA.fsaTransitions
+        expect(result.isSuccess, isTrue, reason: result.error);
+        expect(repeated.isSuccess, isTrue, reason: repeated.error);
+        final star = result.data!;
+        final stateIds = star.resultNFA.states.map((state) => state.id).toSet();
+        final transitionIds = star.resultNFA.fsaTransitions
             .map((transition) => transition.id)
-            .toSet(),
-        transitionIds,
-      );
-      expect(repeated.data!.resultNFA.id, star.resultNFA.id);
-      expect(star.steps, hasLength(4));
-      expect(
-        star.steps[1].properties['createdTransitionIds'],
-        [star.entryTransition.id],
-      );
-      expect(
-        star.steps[2].properties['createdTransitionIds'],
-        containsAll(star.repeatTransitions.map((transition) => transition.id)),
-      );
-      expect(
-        star.steps[3].properties['createdTransitionIds'],
-        containsAll(star.exitTransitions.map((transition) => transition.id)),
-      );
-      expect(
-        star.stateClones.values.every(
-          (state) => !state.isInitial && !state.isAccepting,
-        ),
-        isTrue,
-      );
-      expect(
-        star.newInitialState.position.x,
-        lessThan(
-          star.stateClones.values
-              .map((state) => state.position.x)
-              .reduce(math.min),
-        ),
-      );
-      expect(
-        star.newAcceptingState.position.x,
-        greaterThan(
-          star.stateClones.values
-              .map((state) => state.position.x)
-              .reduce(math.max),
-        ),
-      );
-      expect(operand.toJson(), snapshot);
-    });
+            .toSet();
+        expect(stateIds, hasLength(star.resultNFA.states.length));
+        expect(transitionIds, hasLength(star.resultNFA.transitions.length));
+        expect(
+          repeated.data!.resultNFA.states.map((state) => state.id).toSet(),
+          stateIds,
+        );
+        expect(
+          repeated.data!.resultNFA.fsaTransitions
+              .map((transition) => transition.id)
+              .toSet(),
+          transitionIds,
+        );
+        expect(repeated.data!.resultNFA.id, star.resultNFA.id);
+        expect(star.steps, hasLength(4));
+        expect(star.steps[1].properties['createdTransitionIds'], [
+          star.entryTransition.id,
+        ]);
+        expect(
+          star.steps[2].properties['createdTransitionIds'],
+          containsAll(
+            star.repeatTransitions.map((transition) => transition.id),
+          ),
+        );
+        expect(
+          star.steps[3].properties['createdTransitionIds'],
+          containsAll(star.exitTransitions.map((transition) => transition.id)),
+        );
+        expect(
+          star.stateClones.values.every(
+            (state) => !state.isInitial && !state.isAccepting,
+          ),
+          isTrue,
+        );
+        expect(
+          star.newInitialState.position.x,
+          lessThan(
+            star.stateClones.values
+                .map((state) => state.position.x)
+                .reduce(math.min),
+          ),
+        );
+        expect(
+          star.newAcceptingState.position.x,
+          greaterThan(
+            star.stateClones.values
+                .map((state) => state.position.x)
+                .reduce(math.max),
+          ),
+        );
+        expect(operand.toJson(), snapshot);
+      },
+    );
 
     test('uses disjoint ID namespaces for distinct operands', () {
       final aStar = FSAKleeneStar.apply(_fromRegex('a'));
@@ -156,10 +167,12 @@ void main() {
 
       expect(aStar.isSuccess, isTrue, reason: aStar.error);
       expect(bStar.isSuccess, isTrue, reason: bStar.error);
-      final aStateIds =
-          aStar.data!.resultNFA.states.map((state) => state.id).toSet();
-      final bStateIds =
-          bStar.data!.resultNFA.states.map((state) => state.id).toSet();
+      final aStateIds = aStar.data!.resultNFA.states
+          .map((state) => state.id)
+          .toSet();
+      final bStateIds = bStar.data!.resultNFA.states
+          .map((state) => state.id)
+          .toSet();
       final aTransitionIds = aStar.data!.resultNFA.fsaTransitions
           .map((transition) => transition.id)
           .toSet();
@@ -171,31 +184,65 @@ void main() {
       expect(aTransitionIds.intersection(bTransitionIds), isEmpty);
     });
 
-    test('matches regex star construction for representative bounded inputs',
-        () async {
-      final direct = FSAKleeneStar.apply(_fromRegex('ab'));
-      final regex = RegexToNFAConverter.convert('(ab)*');
+    test('exposes stable diagnostics and localized step contracts', () {
+      final empty = FSA(
+        id: 'empty-invalid',
+        name: 'Empty invalid',
+        states: const {},
+        transitions: const {},
+        alphabet: const {},
+        initialState: null,
+        acceptingStates: const {},
+        created: DateTime.utc(2026),
+        modified: DateTime.utc(2026),
+        bounds: const math.Rectangle(0, 0, 800, 600),
+      );
+      final failure = FSAKleeneStar.apply(empty);
 
-      expect(direct.isSuccess, isTrue, reason: direct.error);
-      expect(regex.isSuccess, isTrue, reason: regex.error);
-      for (final input in ['', 'a', 'b', 'ab', 'abab', 'aba', 'abb']) {
-        final directSimulation = await AutomatonSimulator.simulateNFA(
-          direct.data!.resultNFA,
-          input,
-        );
-        final regexSimulation = await AutomatonSimulator.simulateNFA(
-          regex.data!,
-          input,
-        );
-        expect(directSimulation.isSuccess, isTrue);
-        expect(regexSimulation.isSuccess, isTrue);
-        expect(
-          directSimulation.data!.accepted,
-          regexSimulation.data!.accepted,
-          reason: 'Different result for "$input"',
-        );
-      }
+      expect(failure.error, 'automaton.fsa-kleene-star.empty-operand');
+      expect(failure.structuredError?.stableCode, failure.error);
+
+      final success = FSAKleeneStar.apply(_fromRegex('a'));
+      expect(success.isSuccess, isTrue, reason: success.error);
+      final step = success.data!.steps.first;
+      expect(step.title, 'automaton.fsa-kleene-star.clone-title');
+      expect(
+        StructuredMessage.fromJson(
+          Map<String, Object?>.from(
+            step.properties[fsaKleeneStarTitleMessageProperty] as Map,
+          ),
+        ).stableCode,
+        step.title,
+      );
     });
+
+    test(
+      'matches regex star construction for representative bounded inputs',
+      () async {
+        final direct = FSAKleeneStar.apply(_fromRegex('ab'));
+        final regex = RegexToNFAConverter.convert('(ab)*');
+
+        expect(direct.isSuccess, isTrue, reason: direct.error);
+        expect(regex.isSuccess, isTrue, reason: regex.error);
+        for (final input in ['', 'a', 'b', 'ab', 'abab', 'aba', 'abb']) {
+          final directSimulation = await AutomatonSimulator.simulateNFA(
+            direct.data!.resultNFA,
+            input,
+          );
+          final regexSimulation = await AutomatonSimulator.simulateNFA(
+            regex.data!,
+            input,
+          );
+          expect(directSimulation.isSuccess, isTrue);
+          expect(regexSimulation.isSuccess, isTrue);
+          expect(
+            directSimulation.data!.accepted,
+            regexSimulation.data!.accepted,
+            reason: 'Different result for "$input"',
+          );
+        }
+      },
+    );
   });
 }
 
@@ -247,11 +294,7 @@ FSA _epsilonToMultipleAccepting() {
     position: Vector2(40, 100),
     isInitial: true,
   );
-  final branch = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(140, 100),
-  );
+  final branch = State(id: 'q1', label: 'q1', position: Vector2(140, 100));
   final acceptA = State(
     id: 'q2',
     label: 'q2',
@@ -268,11 +311,7 @@ FSA _epsilonToMultipleAccepting() {
     id: 'epsilon-multiple',
     states: {initial, branch, acceptA, acceptB},
     transitions: {
-      FSATransition.epsilon(
-        id: 'epsilon',
-        fromState: initial,
-        toState: branch,
-      ),
+      FSATransition.epsilon(id: 'epsilon', fromState: initial, toState: branch),
       FSATransition.deterministic(
         id: 'a',
         fromState: branch,

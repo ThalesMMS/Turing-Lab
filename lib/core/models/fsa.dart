@@ -169,25 +169,6 @@ class FSA extends Automaton {
       }
     }
 
-    // Check for deterministic transitions
-    for (final state in states) {
-      final outgoingTransitions = getTransitionsFrom(state);
-      final inputSymbols = <String>{};
-
-      for (final transition in outgoingTransitions) {
-        if (transition is FSATransition) {
-          for (final symbol in transition.inputSymbols) {
-            if (inputSymbols.contains(symbol)) {
-              errors.add(
-                'Non-deterministic transition from state ${state.id} on symbol $symbol',
-              );
-            }
-            inputSymbols.add(symbol);
-          }
-        }
-      }
-    }
-
     return errors;
   }
 
@@ -249,90 +230,102 @@ class FSA extends Automaton {
 
   /// Checks if the language recognized by this FSA is finite.
   ///
-  /// For DFAs, the language is infinite iff there exists a cycle reachable
-  /// from the initial state that can also reach an accepting state.
-  /// For NFAs, the same condition suffices as an over-approximation.
+  /// The language is infinite iff a useful strongly connected component
+  /// contains a transition that consumes input. Epsilon transitions count for
+  /// reachability and may complete a mixed epsilon/symbol cycle, but an
+  /// epsilon-only cycle does not make the language infinite.
   bool get isFiniteLanguage {
     if (initialState == null) return true;
 
-    // Build graph adjacency for symbol transitions only (ignore epsilon).
+    // Build the complete graph. Malformed dangling endpoints are ignored here;
+    // [validate] remains responsible for reporting them.
     final adjacency = <State, Set<State>>{};
-    for (final s in states) {
-      adjacency[s] = <State>{};
+    final reverse = <State, Set<State>>{};
+    for (final state in states) {
+      adjacency[state] = <State>{};
+      reverse[state] = <State>{};
     }
-    for (final t in fsaTransitions) {
-      if (t.isEpsilonTransition) continue;
-      adjacency[t.fromState]!.add(t.toState);
+    for (final transition in fsaTransitions) {
+      if (!states.contains(transition.fromState) ||
+          !states.contains(transition.toState)) {
+        continue;
+      }
+      adjacency[transition.fromState]!.add(transition.toState);
+      reverse[transition.toState]!.add(transition.fromState);
     }
 
-    // Compute states reachable from initial.
     final reachable = <State>{};
     final queue = Queue<State>();
-    if (initialState != null) {
-      reachable.add(initialState!);
-      queue.add(initialState!);
-    }
+    reachable.add(initialState!);
+    queue.add(initialState!);
     while (queue.isNotEmpty) {
-      final u = queue.removeFirst();
-      for (final v in adjacency[u]!) {
-        if (reachable.add(v)) queue.add(v);
+      final state = queue.removeFirst();
+      for (final next in adjacency[state] ?? const <State>{}) {
+        if (reachable.add(next)) queue.add(next);
       }
     }
-
     if (reachable.isEmpty) return true;
 
-    // Compute states that can reach some accepting state (reverse graph).
-    final reverse = <State, Set<State>>{};
-    for (final s in states) {
-      reverse[s] = <State>{};
-    }
-    for (final t in fsaTransitions) {
-      if (t.isEpsilonTransition) continue;
-      reverse[t.toState]!.add(t.fromState);
-    }
     final coReach = <State>{...acceptingStates};
     final stack = <State>[...acceptingStates];
     while (stack.isNotEmpty) {
-      final u = stack.removeLast();
-      for (final p in reverse[u]!) {
-        if (coReach.add(p)) stack.add(p);
+      final state = stack.removeLast();
+      for (final previous in reverse[state] ?? const <State>{}) {
+        if (coReach.add(previous)) stack.add(previous);
       }
     }
 
-    // Restrict to states both reachable and co-reachable.
-    final core = states
+    final useful = states
         .where((s) => reachable.contains(s) && coReach.contains(s))
         .toSet();
-    if (core.isEmpty) return true;
+    if (useful.isEmpty) return true;
 
-    // Detect cycle in core subgraph via DFS with recursion stack.
-    final color = <State, int>{}; // 0=unvisited, 1=visiting, 2=done
-    bool hasCycle = false;
-
-    bool dfs(State u) {
-      color[u] = 1;
-      for (final v in adjacency[u]!.where(core.contains)) {
-        final c = color[v] ?? 0;
-        if (c == 0) {
-          if (dfs(v)) return true;
-        } else if (c == 1) {
-          return true; // back-edge found
+    // Kosaraju's algorithm, written iteratively so a large imported automaton
+    // cannot exhaust the call stack during a model query.
+    final visited = <State>{};
+    final finishOrder = <State>[];
+    for (final start in useful) {
+      if (!visited.add(start)) continue;
+      final traversal = <(State, bool)>[(start, false)];
+      while (traversal.isNotEmpty) {
+        final (state, expanded) = traversal.removeLast();
+        if (expanded) {
+          finishOrder.add(state);
+          continue;
         }
-      }
-      color[u] = 2;
-      return false;
-    }
-
-    for (final s in core) {
-      if ((color[s] ?? 0) == 0) {
-        if (dfs(s)) {
-          hasCycle = true;
-          break;
+        traversal.add((state, true));
+        for (final next
+            in (adjacency[state] ?? const <State>{}).where(useful.contains)) {
+          if (visited.add(next)) traversal.add((next, false));
         }
       }
     }
 
-    return !hasCycle;
+    final assigned = <State>{};
+    for (final start in finishOrder.reversed) {
+      if (!assigned.add(start)) continue;
+      final component = <State>{start};
+      final pending = <State>[start];
+      while (pending.isNotEmpty) {
+        final state = pending.removeLast();
+        for (final previous
+            in (reverse[state] ?? const <State>{}).where(useful.contains)) {
+          if (assigned.add(previous)) {
+            component.add(previous);
+            pending.add(previous);
+          }
+        }
+      }
+      final hasConsumingCycle = fsaTransitions.any(
+        (transition) =>
+            transition.consumesInput &&
+            component.contains(transition.fromState) &&
+            component.contains(transition.toState),
+      );
+      if (hasConsumingCycle) return false;
+    }
+
+    return true;
   }
 
   /// Gets all transitions from a state that accept a specific symbol

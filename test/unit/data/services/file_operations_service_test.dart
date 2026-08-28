@@ -13,9 +13,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
 
 void main() {
   group('FileOperationsService JFLAP import edge cases', () {
@@ -35,7 +38,17 @@ void main() {
       final result = await service.loadAutomatonFromBytes(_bytes(xml));
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('does not contain any states'));
+      expect(result.error, 'codec.malformed.syntax');
+      expect(
+        result.structuredError?.stableCode,
+        'parser.jflap-xml.empty-automaton',
+      );
+      expect(
+        lookupAppLocalizations(
+          const Locale('en'),
+        ).resolveStructuredMessage(result.structuredError!),
+        contains('has no states'),
+      );
     });
 
     test('missing coordinates fall back to defaults', () async {
@@ -77,7 +90,17 @@ void main() {
       final result = await service.loadAutomatonFromBytes(_bytes(xml));
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('references an unknown state'));
+      expect(result.error, 'codec.malformed.syntax');
+      expect(
+        result.structuredError?.stableCode,
+        'parser.jflap-xml.unknown-transition-endpoints',
+      );
+      expect(
+        lookupAppLocalizations(
+          const Locale('en'),
+        ).resolveStructuredMessage(result.structuredError!),
+        contains('references an unknown state'),
+      );
     });
 
     test('epsilon transitions are parsed correctly', () async {
@@ -105,8 +128,9 @@ void main() {
       final result = await service.loadAutomatonFromBytes(_bytes(xml));
 
       expect(result.isSuccess, isTrue);
-      final transition =
-          result.data!.transitions.whereType<FSATransition>().single;
+      final transition = result.data!.transitions
+          .whereType<FSATransition>()
+          .single;
       expect(transition.isEpsilonTransition, isTrue);
       expect(transition.lambdaSymbol, equals('ε'));
       expect(result.data!.alphabet, isEmpty);
@@ -114,7 +138,7 @@ void main() {
   });
 
   group('FileOperationsService file access messaging', () {
-    test('permission denied writes return sandbox-safe guidance', () {
+    test('permission denied writes return a stable structured code', () {
       final message = FileOperationsService.describeFileAccessFailure(
         const FileSystemException(
           'Cannot open file',
@@ -124,11 +148,11 @@ void main() {
         isWrite: true,
       );
 
-      expect(message, contains('could not write to the selected location'));
-      expect(message, contains('system save dialog'));
+      expect(message.stableCode, 'service.file-operations.access-denied');
+      expect(message.arguments['operation']?.value, 'write');
     });
 
-    test('missing reads ask the user to reselect the file', () {
+    test('missing reads return a stable structured code', () {
       final message = FileOperationsService.describeFileAccessFailure(
         const FileSystemException(
           'Cannot open file',
@@ -138,11 +162,11 @@ void main() {
         isWrite: false,
       );
 
-      expect(message, contains('no longer available'));
-      expect(message, contains('Pick the file again'));
+      expect(message.stableCode, 'service.file-operations.location-missing');
+      expect(message.arguments['operation']?.value, 'read');
     });
 
-    test('permission denied reads mention access restrictions', () {
+    test('permission denied reads return a stable structured code', () {
       final message = FileOperationsService.describeFileAccessFailure(
         const FileSystemException(
           'Cannot open file',
@@ -152,9 +176,44 @@ void main() {
         isWrite: false,
       );
 
-      expect(message, contains('could not read the selected file'));
-      expect(message, contains('system dialog'));
+      expect(message.stableCode, 'service.file-operations.access-denied');
+      expect(message.arguments['operation']?.value, 'read');
     });
+
+    test(
+      'missing file failures carry a localizable operation contract',
+      () async {
+        final service = FileOperationsService();
+        final directory = await Directory.systemTemp.createTemp(
+          'turing-lab-file-operations-',
+        );
+        addTearDown(() => directory.delete(recursive: true));
+
+        final result = await service.readBytes(
+          '${directory.path}${Platform.pathSeparator}missing.jff',
+        );
+
+        expect(result.error, 'service.file-operations.location-missing');
+        expect(
+          result.structuredError?.stableCode,
+          'service.file-operations.location-missing',
+        );
+        expect(result.structuredError?.arguments['operation']?.value, 'read');
+        expect(
+          result.structuredError?.arguments['operation']?.role,
+          'file-operation',
+        );
+        final english = lookupAppLocalizations(
+          const Locale('en'),
+        ).resolveStructuredMessage(result.structuredError!);
+        final portuguese = lookupAppLocalizations(
+          const Locale('pt'),
+        ).resolveStructuredMessage(result.structuredError!);
+        expect(english, isNot(portuguese));
+        expect(english, isNot(contains('service.file-operations')));
+        expect(portuguese, isNot(contains('service.file-operations')));
+      },
+    );
   });
 }
 

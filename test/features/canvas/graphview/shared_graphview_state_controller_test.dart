@@ -176,6 +176,11 @@ class _SharedStateHarnessController
     );
     synchronizeGraph(domain);
   }
+
+  @override
+  void replaceDomainDocument(_DomainRecord document) {
+    domain = document;
+  }
 }
 
 void main() {

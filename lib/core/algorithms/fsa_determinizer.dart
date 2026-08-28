@@ -7,6 +7,7 @@
 //
 import '../models/fsa.dart';
 import '../result.dart';
+import 'fsa_determinizer_messages.dart';
 import 'nfa_to_dfa_converter.dart';
 
 class FSADeterminizer {
@@ -17,10 +18,8 @@ class FSADeterminizer {
 
     final conversion = NFAToDFAConverter.convert(automaton);
     if (conversion.isFailure || conversion.data == null) {
-      return ResultFactory.failure(
-        'Failed to determinize automaton $label: '
-        '${conversion.error ?? 'unknown conversion failure'}',
-      );
+      final message = FsaDeterminizerMessages.failed(label);
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     return ResultFactory.success(conversion.data!);

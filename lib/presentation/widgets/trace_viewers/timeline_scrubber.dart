@@ -48,12 +48,12 @@ class TimelineScrubber extends StatelessWidget {
     required this.totalSteps,
     required this.onStepChanged,
     this.enabled = true,
-  })  : assert(currentStep >= 0, 'currentStep must be non-negative'),
-        assert(totalSteps >= 0, 'totalSteps must be non-negative'),
-        assert(
-          currentStep < totalSteps || totalSteps == 0,
-          'currentStep must be less than totalSteps',
-        );
+  }) : assert(currentStep >= 0, 'currentStep must be non-negative'),
+       assert(totalSteps >= 0, 'totalSteps must be non-negative'),
+       assert(
+         currentStep < totalSteps || totalSteps == 0,
+         'currentStep must be less than totalSteps',
+       );
 
   /// Current step index (0-based).
   ///
@@ -88,10 +88,11 @@ class TimelineScrubber extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = appLocalizationsOf(context);
     final isInteractive = enabled && totalSteps > 1;
+    final positionLabel = _getPositionLabel(l10n);
 
     return Semantics(
       label: l10n.timelineScrubber,
-      value: _getPositionLabel(l10n),
+      value: positionLabel,
       hint: isInteractive ? l10n.timelineNavigationHint : null,
       enabled: isInteractive,
       child: Column(
@@ -104,17 +105,21 @@ class TimelineScrubber extends StatelessWidget {
               Text(
                 l10n.timeline,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-              Text(
-                _getPositionLabel(l10n),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: isInteractive
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.bold,
-                    ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  positionLabel,
+                  textAlign: TextAlign.end,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: isInteractive
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -128,15 +133,15 @@ class TimelineScrubber extends StatelessWidget {
               inactiveTrackColor: colorScheme.surfaceContainerHighest,
               thumbColor: colorScheme.primary,
               overlayColor: colorScheme.primary.withValues(alpha: 0.12),
-              disabledActiveTrackColor:
-                  colorScheme.onSurface.withValues(alpha: 0.12),
-              disabledInactiveTrackColor:
-                  colorScheme.onSurface.withValues(alpha: 0.12),
+              disabledActiveTrackColor: colorScheme.onSurface.withValues(
+                alpha: 0.12,
+              ),
+              disabledInactiveTrackColor: colorScheme.onSurface.withValues(
+                alpha: 0.12,
+              ),
               disabledThumbColor: colorScheme.onSurface.withValues(alpha: 0.38),
               valueIndicatorColor: colorScheme.primaryContainer,
-              valueIndicatorTextStyle: Theme.of(context)
-                  .textTheme
-                  .labelSmall
+              valueIndicatorTextStyle: Theme.of(context).textTheme.labelSmall
                   ?.copyWith(color: colorScheme.onPrimaryContainer),
             ),
             child: Slider(
@@ -145,7 +150,7 @@ class TimelineScrubber extends StatelessWidget {
               max: totalSteps > 1 ? (totalSteps - 1).toDouble() : 1,
               divisions: totalSteps > 1 ? totalSteps - 1 : 1,
               label: totalSteps > 0
-                  ? '${l10n.stepLabel} ${currentStep + 1}'
+                  ? l10n.stepNumber(currentStep + 1)
                   : l10n.noSteps,
               onChanged: isInteractive
                   ? (value) => onStepChanged(value.round())

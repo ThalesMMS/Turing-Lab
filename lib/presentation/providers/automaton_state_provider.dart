@@ -29,12 +29,14 @@ class AutomatonStateProviderState {
   final List<FSA> automatonHistory;
   final bool isLoading;
   final String? error;
+  final int documentGeneration;
 
   const AutomatonStateProviderState({
     this.currentAutomaton,
     this.automatonHistory = const [],
     this.isLoading = false,
     this.error,
+    this.documentGeneration = 0,
   });
 
   static const _unset = Object();
@@ -44,6 +46,7 @@ class AutomatonStateProviderState {
     List<FSA>? automatonHistory,
     bool? isLoading,
     Object? error = _unset,
+    int? documentGeneration,
   }) {
     return AutomatonStateProviderState(
       currentAutomaton: currentAutomaton == _unset
@@ -52,12 +55,15 @@ class AutomatonStateProviderState {
       automatonHistory: automatonHistory ?? this.automatonHistory,
       isLoading: isLoading ?? this.isLoading,
       error: error == _unset ? this.error : error as String?,
+      documentGeneration: documentGeneration ?? this.documentGeneration,
     );
   }
 
   /// Clear all state and reset to initial
   AutomatonStateProviderState clear() {
-    return const AutomatonStateProviderState();
+    return AutomatonStateProviderState(
+      documentGeneration: documentGeneration + 1,
+    );
   }
 
   /// Clear only error state
@@ -77,6 +83,11 @@ class AutomatonStateNotifier
   /// Current automaton snapshot for collaborators that should not read the
   /// protected StateNotifier state directly.
   FSA? get currentAutomaton => state.currentAutomaton;
+
+  /// Restores an exact editor snapshot after a failed document replacement.
+  void restoreDocumentCheckpoint(AutomatonStateProviderState checkpoint) {
+    state = checkpoint;
+  }
 
   void _traceGraphView(String operation, [Map<String, Object?>? metadata]) {
     if (!kDebugMode) {
@@ -134,7 +145,11 @@ class AutomatonStateNotifier
         bounds: const Rectangle<double>(0, 0, 400, 300),
       );
 
-      state = state.copyWith(currentAutomaton: automaton, isLoading: false);
+      state = state.copyWith(
+        currentAutomaton: automaton,
+        isLoading: false,
+        documentGeneration: state.documentGeneration + 1,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -146,6 +161,17 @@ class AutomatonStateNotifier
   /// Updates the current automaton
   void updateAutomaton(FSA automaton) {
     state = state.copyWith(currentAutomaton: automaton);
+  }
+
+  /// Replaces the current document with an automaton from another origin.
+  ///
+  /// Editor and layout updates must use [updateAutomaton] so interoperability
+  /// metadata remains attached to the active document.
+  void replaceAutomaton(FSA automaton) {
+    state = state.copyWith(
+      currentAutomaton: automaton,
+      documentGeneration: state.documentGeneration + 1,
+    );
   }
 
   /// Adds a new state or updates an existing one using coordinates supplied by
@@ -565,7 +591,11 @@ class AutomatonStateNotifier
 
   /// Clears the current automaton
   void clearAutomaton() {
-    state = state.copyWith(currentAutomaton: null, error: null);
+    state = state.copyWith(
+      currentAutomaton: null,
+      error: null,
+      documentGeneration: state.documentGeneration + 1,
+    );
   }
 
   /// Clears any error messages

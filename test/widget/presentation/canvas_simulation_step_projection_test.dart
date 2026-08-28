@@ -2,11 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/step_explanation.dart';
+import 'package:turing_lab/core/transducers/transducers.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_step_projection.dart';
 
-List<CanvasWordSymbolStatus> _statuses(CanvasSimulationWord word) =>
-    [for (final symbol in word) symbol.status];
+List<CanvasWordSymbolStatus> _statuses(CanvasSimulationWord word) => [
+  for (final symbol in word) symbol.status,
+];
 
 void main() {
   test('projects PDA stack contents', () {
@@ -22,6 +24,25 @@ void main() {
 
     expect(stack.symbols, ['A', 'Z']);
     expect(stack.lastOperation, 'a,Z→AZ');
+  });
+
+  test('projects typed Unicode PDA stack tokens without splitting them', () {
+    const step = SimulationStep(
+      currentState: 'q1',
+      remainingInput: '',
+      stackContents: 'bottom🧪x🧪αβα',
+      stackTokens: ['bottom', '🧪x', '🧪', 'αβ', 'α'],
+      usedTransition: 'é,ε→ααβ🧪🧪x',
+      stepNumber: 1,
+    );
+
+    expect(projectPdaStackStep(step).symbols, [
+      'bottom',
+      '🧪x',
+      '🧪',
+      'αβ',
+      'α',
+    ]);
   });
 
   test('projects TM tape, head, blank, and highlighted cells', () {
@@ -118,6 +139,50 @@ void main() {
     expect(_statuses(words[2]), [
       CanvasWordSymbolStatus.current,
       CanvasWordSymbolStatus.consumed,
+    ]);
+  });
+
+  test('projects transducer input tokens around the active transition', () {
+    final input = TransducerInputWord.fromValues(const ['alpha', 'beta']);
+    final steps = [
+      TransducerExecutionStep(
+        index: 0,
+        sourceStateId: const TransducerStateId('q0'),
+        targetStateId: const TransducerStateId('q1'),
+        transitionId: const TransducerTransitionId('first'),
+        consumedInput: const TransducerInputSymbol('alpha'),
+        emittedOutput: TransducerOutputWord.fromValues(const ['x']),
+        cumulativeOutput: TransducerOutputWord.fromValues(const ['x']),
+        remainingInput: TransducerInputSuffix(input, 1),
+        sourceRevision: const TransducerRevision(0),
+      ),
+      TransducerExecutionStep(
+        index: 1,
+        sourceStateId: const TransducerStateId('q1'),
+        targetStateId: const TransducerStateId('q2'),
+        transitionId: const TransducerTransitionId('second'),
+        consumedInput: const TransducerInputSymbol('beta'),
+        emittedOutput: TransducerOutputWord.fromValues(const ['y']),
+        cumulativeOutput: TransducerOutputWord.fromValues(const ['x', 'y']),
+        remainingInput: TransducerInputSuffix(input, 2),
+        sourceRevision: const TransducerRevision(0),
+      ),
+    ];
+
+    final words = projectTransducerInputSteps(steps);
+
+    expect(words, hasLength(2));
+    expect(
+      [for (final symbol in words.first) symbol.symbol],
+      ['alpha', 'beta'],
+    );
+    expect(_statuses(words.first), [
+      CanvasWordSymbolStatus.current,
+      CanvasWordSymbolStatus.pending,
+    ]);
+    expect(_statuses(words.last), [
+      CanvasWordSymbolStatus.consumed,
+      CanvasWordSymbolStatus.current,
     ]);
   });
 }

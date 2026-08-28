@@ -25,10 +25,11 @@ void _registerStepTypeExtensionTests() {
       expect(DFAMinimizationStepType.splitClass.displayName, 'Split Class');
     });
 
-    test('FAToRegexStepType displayName should be human-readable', () {
-      expect(FAToRegexStepType.validation.displayName, 'Validation');
-      expect(FAToRegexStepType.selectState.displayName, 'Select State');
-      expect(FAToRegexStepType.createBypass.displayName, 'Create Bypass');
+    test('FAToRegexStepType compatibility getters expose stable codes', () {
+      for (final type in FAToRegexStepType.values) {
+        expect(type.displayName, type.labelMessage.stableCode);
+        expect(type.description, type.descriptionMessage.stableCode);
+      }
     });
 
     test('All step type extensions should have descriptions', () {

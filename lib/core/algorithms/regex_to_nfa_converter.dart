@@ -31,19 +31,26 @@ part 'regex_to_nfa_converter_models.dart';
 /// Converts Regular Expressions to Non-deterministic Finite Automata (NFA)
 class RegexToNFAConverter {
   static int _idSeq = 0;
-  static String _newStateId(String prefix) =>
-      '${prefix}_${DateTime.now().microsecondsSinceEpoch}_${_idSeq++}';
-  static String _newTransId(String prefix) =>
-      '${prefix}_${DateTime.now().microsecondsSinceEpoch}_${_idSeq++}';
+  static String _newStateId(String prefix) => '${prefix}_${_idSeq++}';
+  static String _newTransId(String prefix) => '${prefix}_${_idSeq++}';
+  static String _newAutomatonId(String prefix) => '${prefix}_${_idSeq++}';
+
+  static void _resetIds() => _idSeq = 0;
 
   /// Parses [regex] with the same syntax contract used by conversion.
   static RegexValidationResult validate(String regex) {
     return _validateRegexSyntax(regex);
   }
 
+  /// Returns the validated syntax tree used by conversion.
+  static RegexNode? parse(String regex) {
+    return validate(regex).isValid ? _parseRegex(regex) : null;
+  }
+
   /// Converts a regular expression to an equivalent NFA
   static Result<FSA> convert(String regex, {Set<String>? contextAlphabet}) {
     try {
+      _resetIds();
       // Validate input
       final validationResult = _validateRegex(regex);
       if (!validationResult.isSuccess) {
@@ -84,6 +91,7 @@ class RegexToNFAConverter {
     Set<String>? contextAlphabet,
   }) {
     try {
+      _resetIds();
       final stopwatch = Stopwatch()..start();
       final steps = <RegexToNFAStep>[];
       int stepCounter = 1;
@@ -163,3 +171,6 @@ class RegexToNFAConverter {
 String _newStateId(String prefix) => RegexToNFAConverter._newStateId(prefix);
 
 String _newTransId(String prefix) => RegexToNFAConverter._newTransId(prefix);
+
+String _newAutomatonId(String prefix) =>
+    RegexToNFAConverter._newAutomatonId(prefix);

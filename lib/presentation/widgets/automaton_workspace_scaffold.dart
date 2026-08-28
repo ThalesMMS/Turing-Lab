@@ -24,10 +24,13 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
     required this.simulationPanel,
     this.infoPanel,
     this.extraPanels = const <WorkspaceDockPanel>[],
+    this.dockController,
     this.mobileFloatingPanelBuilder,
-    this.algorithmTabTitle = 'Algorithms',
-    this.simulationTabTitle = 'Simulation',
-    this.infoTabTitle = 'Info',
+    this.algorithmTabTitle,
+    this.simulationTabTitle,
+    this.infoTabTitle,
+    this.algorithmPanelScrollable = true,
+    this.simulationPanelScrollable = true,
   });
 
   static const double mobileBreakpoint = 1024;
@@ -55,10 +58,18 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
 
   /// Workspace-specific dock panels appended after the shared ones.
   final List<WorkspaceDockPanel> extraPanels;
+  final WorkspaceDockController? dockController;
   final MovableCanvasPanelBuilder? mobileFloatingPanelBuilder;
-  final String algorithmTabTitle;
-  final String simulationTabTitle;
-  final String infoTabTitle;
+
+  /// Optional localized display overrides for the semantic panel slots.
+  ///
+  /// When omitted, the shell resolves the slot's label from the active locale.
+  /// These values are display text only and are never used as identifiers.
+  final String? algorithmTabTitle;
+  final String? simulationTabTitle;
+  final String? infoTabTitle;
+  final bool algorithmPanelScrollable;
+  final bool simulationPanelScrollable;
 
   @override
   State<AutomatonWorkspaceScaffold> createState() =>
@@ -68,17 +79,6 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
 class _AutomatonWorkspaceScaffoldState
     extends State<AutomatonWorkspaceScaffold> {
   Offset? _mobileFloatingPanelPosition;
-
-  String _localizedPanelTitle(String title) {
-    final l10n = appLocalizationsOf(context);
-    return switch (title) {
-      'Algorithms' => l10n.algorithms,
-      'Simulation' => l10n.simulation,
-      'Info' => l10n.info,
-      'Parser' => l10n.parser,
-      _ => title,
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,8 +124,10 @@ class _AutomatonWorkspaceScaffoldState
 
   Widget _buildWideLayout(double width) {
     final isTablet = width < AutomatonWorkspaceScaffold.tabletBreakpoint;
+    final l10n = appLocalizationsOf(context);
 
     return WorkspaceDock(
+      controller: widget.dockController,
       content: _buildCanvasSurface(),
       initialPanelWidth: isTablet
           ? AutomatonWorkspaceScaffold.tabletPanelWidth
@@ -135,20 +137,22 @@ class _AutomatonWorkspaceScaffoldState
       panels: [
         WorkspaceDockPanel(
           id: AutomatonWorkspaceScaffold.simulationPanelId,
-          label: _localizedPanelTitle(widget.simulationTabTitle),
+          label: widget.simulationTabTitle ?? l10n.simulation,
           icon: Icons.play_arrow,
           child: widget.simulationPanel,
+          scrollable: widget.simulationPanelScrollable,
         ),
         WorkspaceDockPanel(
           id: AutomatonWorkspaceScaffold.algorithmPanelId,
-          label: _localizedPanelTitle(widget.algorithmTabTitle),
+          label: widget.algorithmTabTitle ?? l10n.algorithms,
           icon: Icons.auto_awesome,
           child: widget.algorithmPanel,
+          scrollable: widget.algorithmPanelScrollable,
         ),
         if (widget.infoPanel case final infoPanel?)
           WorkspaceDockPanel(
             id: AutomatonWorkspaceScaffold.infoPanelId,
-            label: _localizedPanelTitle(widget.infoTabTitle),
+            label: widget.infoTabTitle ?? l10n.info,
             icon: Icons.info_outline,
             child: infoPanel,
           ),

@@ -64,8 +64,10 @@ Future<void> _pumpMobileTmPage(
 }
 
 void main() {
-  testWidgets('TM iOS canvas playback updates tape and head', (tester) async {
-    await _pumpMobileTmPage(tester, platform: TargetPlatform.iOS);
+  testWidgets('TM Android canvas playback updates tape and head', (
+    tester,
+  ) async {
+    await _pumpMobileTmPage(tester, platform: TargetPlatform.android);
     final canvas = tester.widget<TMCanvasGraphView>(
       find.byType(TMCanvasGraphView),
     );
@@ -76,10 +78,9 @@ void main() {
       tester.element(find.byType(TMCanvasGraphView)),
     );
     final stateId = container.read(tmEditorProvider).tm!.states.single.id;
-    container.read(tmEditorProvider.notifier).updateStateFlags(
-          id: stateId,
-          isAccepting: true,
-        );
+    container
+        .read(tmEditorProvider.notifier)
+        .updateStateFlags(id: stateId, isAccepting: true);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Simulate'));
@@ -88,26 +89,24 @@ void main() {
       find.byType(TMSimulationPanel),
     );
     expect(panel.onViewOnCanvas, isNotNull);
-    panel.onViewOnCanvas!(
-      [
-        SimulationStep(
-          currentState: stateId,
-          activeStateIds: {stateId},
-          remainingInput: '',
-          tapeContents: '01',
-          headPosition: 0,
-          stepNumber: 0,
-        ),
-        SimulationStep(
-          currentState: stateId,
-          activeStateIds: {stateId},
-          remainingInput: '',
-          tapeContents: 'X1',
-          headPosition: 1,
-          stepNumber: 1,
-        ),
-      ],
-    );
+    panel.onViewOnCanvas!([
+      SimulationStep(
+        currentState: stateId,
+        activeStateIds: {stateId},
+        remainingInput: '',
+        tapeContents: '01',
+        headPosition: 0,
+        stepNumber: 0,
+      ),
+      SimulationStep(
+        currentState: stateId,
+        activeStateIds: {stateId},
+        remainingInput: '',
+        tapeContents: 'X1',
+        headPosition: 1,
+        stepNumber: 1,
+      ),
+    ]);
     await tester.pumpAndSettle();
 
     expect(find.byType(TMSimulationPanel), findsNothing);
@@ -156,6 +155,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(GraphViewCanvasToolbar), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('canvas-toolbar-overflow')),
+        findsOneWidget,
+      );
       final toolbar = tester.widget<GraphViewCanvasToolbar>(
         find.byType(GraphViewCanvasToolbar),
       );
@@ -189,7 +192,7 @@ void main() {
 
       final appBarAlgorithms = find.descendant(
         of: find.byType(AppBar),
-        matching: find.byTooltip('Algorithms'),
+        matching: find.byTooltip('Algorithms & Examples'),
       );
       expect(appBarAlgorithms, findsOneWidget);
       final tape = tester.getRect(find.byType(CollapsibleCanvasPanel));
@@ -240,7 +243,7 @@ void main() {
   ) async {
     await _pumpMobileTmPage(tester);
 
-    await expandCanvasToolbar(tester);
+    await expectCanvasToolbarMore(tester);
     expect(
       find.byKey(const ValueKey('canvas-toolbar-overflow')),
       findsOneWidget,
@@ -258,14 +261,14 @@ void main() {
     }
     final algorithms = tester.widget<IconButton>(
       find.ancestor(
-        of: find.byTooltip('Algorithms'),
+        of: find.byTooltip('Algorithms & Examples'),
         matching: find.byType(IconButton),
       ),
     );
     expect(algorithms.onPressed, isNotNull);
     expect(find.byType(TMTapePanel), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Algorithms'));
+    await tester.tap(find.byTooltip('Algorithms & Examples'));
     await tester.pumpAndSettle();
     // The examples keep their canonical names; the sheet shows them through
     // the active locale, which is English here.
@@ -303,59 +306,57 @@ void main() {
     expect(page.initialTopicId, HelpTopicIds.tmEditorOverview);
     expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
     expect(
-      find.byKey(
-        const ValueKey('help-body-${HelpTopicIds.tmEditorOverview}'),
-      ),
+      find.byKey(const ValueKey('help-body-${HelpTopicIds.tmEditorOverview}')),
       findsOneWidget,
     );
   });
 
   testWidgets(
-      'populated TM Help opens theory and keeps the termination command', (
-    tester,
-  ) async {
-    await _pumpMobileTmPage(tester);
-    final canvas = tester.widget<TMCanvasGraphView>(
-      find.byType(TMCanvasGraphView),
-    );
-    canvas.controller!.addStateAt(const Offset(180, 300));
-    await tester.pumpAndSettle();
+    'populated TM Help opens theory and keeps the termination command',
+    (tester) async {
+      await _pumpMobileTmPage(tester);
+      final canvas = tester.widget<TMCanvasGraphView>(
+        find.byType(TMCanvasGraphView),
+      );
+      canvas.controller!.addStateAt(const Offset(180, 300));
+      await tester.pumpAndSettle();
 
-    await expandCanvasToolbar(tester);
-    await tapSecondaryCanvasAction(
-      tester,
-      semanticLabel: 'Canvas action: Help & Shortcuts',
-      menuLabel: 'Help & Shortcuts',
-      opensRoute: true,
-    );
-    await tester.pumpAndSettle();
+      await expectCanvasToolbarMore(tester);
+      await tapSecondaryCanvasAction(
+        tester,
+        semanticLabel: 'Canvas action: Help & Shortcuts',
+        menuLabel: 'Help & Shortcuts',
+        opensRoute: true,
+      );
+      await tester.pumpAndSettle();
 
-    final node = find.byKey(
-      const ValueKey('help-node-${HelpTopicIds.tmTheoryTm}'),
-    );
-    expect(
-      tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
-      HelpTopicIds.tmTheoryTm,
-    );
-    expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
-    expect(
-      find.byKey(const ValueKey('help-body-${HelpTopicIds.tmTheoryTm}')),
-      findsOneWidget,
-    );
+      final node = find.byKey(
+        const ValueKey('help-node-${HelpTopicIds.tmTheoryTm}'),
+      );
+      expect(
+        tester.widget<HelpPage>(find.byType(HelpPage)).initialTopicId,
+        HelpTopicIds.tmTheoryTm,
+      );
+      expect(tester.widget<InkWell>(node).focusNode?.hasFocus, isTrue);
+      expect(
+        find.byKey(const ValueKey('help-body-${HelpTopicIds.tmTheoryTm}')),
+        findsOneWidget,
+      );
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Algorithms'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    final terminationButton = tester.widget<AlgorithmButton>(
-      find.ancestor(
-        of: find.text(AppLocalizationsEn().terminationAndCyclesTitle),
-        matching: find.byType(AlgorithmButton),
-      ),
-    );
-    expect(terminationButton.icon, Icons.fact_check_outlined);
-  });
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Algorithms & Examples'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      final terminationButton = tester.widget<AlgorithmButton>(
+        find.ancestor(
+          of: find.text(AppLocalizationsEn().terminationAndCyclesTitle),
+          matching: find.byType(AlgorithmButton),
+        ),
+      );
+      expect(terminationButton.icon, Icons.fact_check_outlined);
+    },
+  );
 
   testWidgets('TMPage mobile exposes and toggles transition mode', (
     tester,
@@ -459,7 +460,7 @@ void main() {
     controller.addStateAt(const Offset(120, 120));
     await tester.pumpAndSettle();
 
-    await expandCanvasToolbar(tester);
+    await expectCanvasToolbarMore(tester);
     await tapSecondaryCanvasAction(
       tester,
       semanticLabel: 'Canvas action: Clear canvas',

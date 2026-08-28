@@ -1,0 +1,6 @@
+{
+  "id": "fixture-formal-payload",
+  "name": "Localized title",
+  "alphabet": ["a"],
+  "acceptsEmpty": true
+}

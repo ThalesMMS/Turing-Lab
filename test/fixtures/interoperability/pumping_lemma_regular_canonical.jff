@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>regular pumping lemma</type>
+  <name>Equal a and b blocks</name>
+  <first_player>Human</first_player>
+  <m>2</m>
+  <w>aabb</w>
+  <i>0</i>
+  <xLength>0</xLength>
+  <yLength>1</yLength>
+</structure>

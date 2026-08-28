@@ -1,0 +1,182 @@
+{
+  "expectedOutcome": "accepted",
+  "id": "pda-language-emptiness-337",
+  "input": "aabb",
+  "mode": "both",
+  "pda": {
+    "id": "generated-pda-0",
+    "name": "generated-pda-0",
+    "type": "PDA",
+    "states": [
+      {
+        "id": "q0",
+        "label": "q0",
+        "position": {
+          "x": 0.0,
+          "y": 100.0
+        },
+        "isInitial": true,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "q1",
+        "label": "q1",
+        "position": {
+          "x": 120.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "q2",
+        "label": "q2",
+        "position": {
+          "x": 240.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "transitions": [
+      {
+        "id": "finish",
+        "fromState": "q1",
+        "toState": "q2",
+        "label": "ε, bottom/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "",
+        "popSymbol": "bottom",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": true,
+        "isLambdaPop": false,
+        "isLambdaPush": true
+      },
+      {
+        "id": "first-b",
+        "fromState": "q0",
+        "toState": "q1",
+        "label": "b, β/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "b",
+        "popSymbol": "β",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": false,
+        "isLambdaPop": false,
+        "isLambdaPush": true
+      },
+      {
+        "id": "more-b",
+        "fromState": "q1",
+        "toState": "q1",
+        "label": "b, β/ε",
+        "controlPoint": {
+          "x": 30.0,
+          "y": -30.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "b",
+        "popSymbol": "β",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": false,
+        "isLambdaPop": false,
+        "isLambdaPush": true
+      },
+      {
+        "id": "push-a",
+        "fromState": "q0",
+        "toState": "q0",
+        "label": "a, ε/β",
+        "controlPoint": {
+          "x": 30.0,
+          "y": -30.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "a",
+        "popSymbol": "",
+        "pushSymbol": "β",
+        "pushSymbols": [
+          "β"
+        ],
+        "isLambdaInput": false,
+        "isLambdaPop": true,
+        "isLambdaPush": false
+      }
+    ],
+    "alphabet": [
+      "a",
+      "b"
+    ],
+    "initialState": {
+      "id": "q0",
+      "label": "q0",
+      "position": {
+        "x": 0.0,
+        "y": 100.0
+      },
+      "isInitial": true,
+      "isAccepting": false,
+      "type": "normal",
+      "properties": {}
+    },
+    "acceptingStates": [
+      {
+        "id": "q2",
+        "label": "q2",
+        "position": {
+          "x": 240.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "created": "2026-08-26T00:00:00.000Z",
+    "modified": "2026-08-26T00:00:00.000Z",
+    "bounds": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 400.0,
+      "height": 300.0
+    },
+    "zoomLevel": 1.0,
+    "panOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "stackAlphabet": [
+      "bottom",
+      "β"
+    ],
+    "initialStackSymbol": "bottom",
+    "acceptanceMode": "both"
+  },
+  "property": "language-emptiness",
+  "propertyPayload": {},
+  "schema": "turing-lab.hard-edge.pda-fixture.v1",
+  "seed": 337
+}

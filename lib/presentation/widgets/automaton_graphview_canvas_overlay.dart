@@ -7,7 +7,20 @@ void _logAutomatonGraphViewCanvasOverlay(String message) {
 }
 
 extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
-  List<GraphViewCanvasEdge> _findExistingEdgesExtracted(
+  Offset _worldToCanvasLocal(Offset worldPosition) =>
+      _viewportAdapter.worldToScreen(worldPosition);
+
+  void _invalidateEdgeRendererCachesIfNeeded() {
+    _edgePresentation.synchronizeStructure();
+  }
+
+  /// Self-loops keep clear of the initial-state marker, which only the canvas
+  /// knows about: GraphView nodes carry no automaton flags.
+  void _syncInitialStateIds() {
+    _edgePresentation.synchronizeStructure();
+  }
+
+  List<GraphViewCanvasEdge> _findExistingEdges(
     String fromId,
     String toId,
   ) {
@@ -16,7 +29,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
         .toList(growable: false);
   }
 
-  Future<void> _showTransitionEditorExtracted(
+  Future<void> _showTransitionEditor(
     String fromId,
     String toId,
   ) async {
@@ -106,6 +119,12 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
       return;
     }
 
+    if (result is AutomatonDeleteTransitionPayload &&
+        existing != null &&
+        !await _confirmTransitionAnnotationDeletion(existing.id)) {
+      return;
+    }
+
     _logAutomatonGraphViewCanvasOverlay(
       'Persisting transition '
       'for $fromId → $toId (transitionId: ${existing?.id})',
@@ -123,7 +142,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     );
   }
 
-  Future<_TransitionEditChoice?> _promptTransitionEditChoiceExtracted(
+  Future<_TransitionEditChoice?> _promptTransitionEditChoice(
     List<GraphViewCanvasEdge> edges,
   ) {
     return showDialog<_TransitionEditChoice>(
@@ -177,7 +196,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     );
   }
 
-  Offset _deriveControlPointExtracted(String fromId, String toId) {
+  Offset _deriveControlPoint(String fromId, String toId) {
     final fromNode = _controller.nodeById(fromId);
     final toNode = _controller.nodeById(toId);
     if (fromNode == null || toNode == null) {
@@ -235,7 +254,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
         : _edgeRenderer.geometryForEdge(graphEdge)?.editorAnchor;
   }
 
-  void _handleGraphRevisionChangedExtracted() {
+  void _handleGraphRevisionChanged() {
     if (!mounted) {
       return;
     }
@@ -249,7 +268,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     }
   }
 
-  void _refreshTransitionOverlayFromGraphExtracted() {
+  void _refreshTransitionOverlayFromGraph() {
     final state = _transitionOverlayState.value;
     if (state == null) {
       return;
@@ -287,7 +306,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     }
   }
 
-  bool _showTransitionOverlayExtracted(AutomatonTransitionOverlayData data) {
+  bool _showTransitionOverlay(AutomatonTransitionOverlayData data) {
     final overlayState = Overlay.maybeOf(context);
     if (overlayState == null) {
       return false;
@@ -317,7 +336,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     return overlayRenderObject.globalToLocal(globalAnchor);
   }
 
-  void _ensureTransitionOverlayExtracted(OverlayState overlayState) {
+  void _ensureTransitionOverlay(OverlayState overlayState) {
     if (_transitionOverlayEntry != null) {
       return;
     }
@@ -379,11 +398,16 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     overlayState.insert(_transitionOverlayEntry!);
   }
 
-  void _handleOverlaySubmitExtracted(
+  Future<void> _handleOverlaySubmit(
     _GraphViewTransitionOverlayState state,
     AutomatonTransitionPayload payload,
-  ) {
+  ) async {
     final data = state.data;
+    if (payload is AutomatonDeleteTransitionPayload &&
+        data.transitionId != null &&
+        !await _confirmTransitionAnnotationDeletion(data.transitionId!)) {
+      return;
+    }
     _logAutomatonGraphViewCanvasOverlay(
       'Persisting transition '
       'for ${data.fromStateId} → ${data.toStateId} '
@@ -402,7 +426,7 @@ extension _AutomatonGraphViewCanvasOverlay on _AutomatonGraphViewCanvasState {
     _hideTransitionOverlay();
   }
 
-  void _hideTransitionOverlayExtracted() {
+  void _hideTransitionOverlay() {
     final hadOverlay = _transitionOverlayState.value != null;
     final hadSelection = _selectedTransitions.isNotEmpty;
     if (hadOverlay) {

@@ -1,0 +1,13 @@
+{
+  "codecId": "pumping-lemma.context-free.jflap.v1",
+  "id": "codec-pumping-lemma.context-free.jflap.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "pumping_lemma_context_free_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT5jb250ZXh0LWZyZWUgcHVtcGluZyBsZW1tYTwvdHlwZT4KICA8bmFtZT5FcXVhbCBhLCBiLCBhbmQgYyBibG9ja3M8L25hbWU+CiAgPGZpcnN0X3BsYXllcj5IdW1hbjwvZmlyc3RfcGxheWVyPgogIDxtPjI8L20+CiAgPHc+YWFiYmNjPC93PgogIDxpPjA8L2k+CiAgPHVMZW5ndGg+MDwvdUxlbmd0aD4KICA8dkxlbmd0aD4xPC92TGVuZ3RoPgogIDx4TGVuZ3RoPjA8L3hMZW5ndGg+CiAgPHlMZW5ndGg+MTwveUxlbmd0aD4KPC9zdHJ1Y3R1cmU+Cg=="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

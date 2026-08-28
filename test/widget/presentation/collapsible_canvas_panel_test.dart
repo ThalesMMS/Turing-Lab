@@ -41,6 +41,53 @@ Future<void> _tapPanelBody(WidgetTester tester, Finder panel) async {
 }
 
 void main() {
+  testWidgets('external controller opens, closes, and keeps body taps synced', (
+    tester,
+  ) async {
+    final controller = CollapsibleCanvasPanelController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.topRight,
+            child: CollapsibleCanvasPanel(
+              controller: controller,
+              label: 'Stack',
+              icon: Icons.layers,
+              child: const SizedBox(
+                width: 180,
+                height: 160,
+                child: Text('controlled panel'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(controller.expanded, isFalse);
+    expect(find.text('controlled panel'), findsNothing);
+
+    controller.open();
+    await tester.pump();
+    expect(controller.expanded, isTrue);
+    expect(find.text('controlled panel'), findsOneWidget);
+
+    await _tapPanelBody(tester, find.byType(CollapsibleCanvasPanel));
+    await tester.pump();
+    expect(controller.expanded, isFalse);
+    expect(find.text('controlled panel'), findsNothing);
+
+    controller.toggle();
+    await tester.pump();
+    expect(find.text('controlled panel'), findsOneWidget);
+
+    controller.close();
+    await tester.pump();
+    expect(find.text('controlled panel'), findsNothing);
+  });
+
   testWidgets('collapses on body tap, hides the toggle, and keeps state', (
     tester,
   ) async {
@@ -96,20 +143,17 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MovableCanvasPanelHost(
-            builder: (
-              context, {
-              required onDragDelta,
-              required onPanelSizeChanged,
-            }) {
-              return CollapsibleCanvasPanel(
-                key: const ValueKey('movable-panel'),
-                label: 'Stack',
-                icon: Icons.layers,
-                onDragDelta: onDragDelta,
-                onPanelSizeChanged: onPanelSizeChanged,
-                child: const SizedBox(width: 180, height: 160),
-              );
-            },
+            builder:
+                (context, {required onDragDelta, required onPanelSizeChanged}) {
+                  return CollapsibleCanvasPanel(
+                    key: const ValueKey('movable-panel'),
+                    label: 'Stack',
+                    icon: Icons.layers,
+                    onDragDelta: onDragDelta,
+                    onPanelSizeChanged: onPanelSizeChanged,
+                    child: const SizedBox(width: 180, height: 160),
+                  );
+                },
           ),
         ),
       ),
@@ -142,20 +186,17 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MovableCanvasPanelHost(
-            builder: (
-              context, {
-              required onDragDelta,
-              required onPanelSizeChanged,
-            }) {
-              return CollapsibleCanvasPanel(
-                key: const ValueKey('anchored-panel'),
-                label: 'Tape',
-                icon: Icons.horizontal_rule,
-                onDragDelta: onDragDelta,
-                onPanelSizeChanged: onPanelSizeChanged,
-                child: const SizedBox(width: 220, height: 160),
-              );
-            },
+            builder:
+                (context, {required onDragDelta, required onPanelSizeChanged}) {
+                  return CollapsibleCanvasPanel(
+                    key: const ValueKey('anchored-panel'),
+                    label: 'Tape',
+                    icon: Icons.horizontal_rule,
+                    onDragDelta: onDragDelta,
+                    onPanelSizeChanged: onPanelSizeChanged,
+                    child: const SizedBox(width: 220, height: 160),
+                  );
+                },
           ),
         ),
       ),
@@ -192,20 +233,17 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: MovableCanvasPanelHost(
-            builder: (
-              context, {
-              required onDragDelta,
-              required onPanelSizeChanged,
-            }) {
-              return CollapsibleCanvasPanel(
-                key: const ValueKey('bounded-panel'),
-                label: 'Tape',
-                icon: Icons.horizontal_rule,
-                onDragDelta: onDragDelta,
-                onPanelSizeChanged: onPanelSizeChanged,
-                child: const SizedBox(width: 220, height: 120),
-              );
-            },
+            builder:
+                (context, {required onDragDelta, required onPanelSizeChanged}) {
+                  return CollapsibleCanvasPanel(
+                    key: const ValueKey('bounded-panel'),
+                    label: 'Tape',
+                    icon: Icons.horizontal_rule,
+                    onDragDelta: onDragDelta,
+                    onPanelSizeChanged: onPanelSizeChanged,
+                    child: const SizedBox(width: 220, height: 120),
+                  );
+                },
           ),
         ),
       ),

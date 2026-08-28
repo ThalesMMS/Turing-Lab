@@ -1,0 +1,144 @@
+{
+  "expectedOutcome": "accepted",
+  "id": "reverse-push",
+  "input": "a",
+  "mode": "finalState",
+  "pda": {
+    "id": "order-required",
+    "name": "order-required",
+    "type": "PDA",
+    "states": [
+      {
+        "id": "q0",
+        "label": "q0",
+        "position": {
+          "x": 0.0,
+          "y": 100.0
+        },
+        "isInitial": true,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "q1",
+        "label": "q1",
+        "position": {
+          "x": 100.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "q2",
+        "label": "q2",
+        "position": {
+          "x": 200.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "transitions": [
+      {
+        "id": "pop-x",
+        "fromState": "q1",
+        "toState": "q2",
+        "label": "ε, X/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "",
+        "popSymbol": "X",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": true,
+        "isLambdaPop": false,
+        "isLambdaPush": true
+      },
+      {
+        "id": "push-word",
+        "fromState": "q0",
+        "toState": "q1",
+        "label": "a, bottom/Xbottom",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "a",
+        "popSymbol": "bottom",
+        "pushSymbol": "Xbottom",
+        "pushSymbols": [
+          "X",
+          "bottom"
+        ],
+        "isLambdaInput": false,
+        "isLambdaPop": false,
+        "isLambdaPush": false
+      }
+    ],
+    "alphabet": [
+      "a"
+    ],
+    "initialState": {
+      "id": "q0",
+      "label": "q0",
+      "position": {
+        "x": 0.0,
+        "y": 100.0
+      },
+      "isInitial": true,
+      "isAccepting": false,
+      "type": "normal",
+      "properties": {}
+    },
+    "acceptingStates": [
+      {
+        "id": "q2",
+        "label": "q2",
+        "position": {
+          "x": 200.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "created": "2026-08-26T00:00:00.000Z",
+    "modified": "2026-08-26T00:00:00.000Z",
+    "bounds": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 400.0,
+      "height": 300.0
+    },
+    "zoomLevel": 1.0,
+    "panOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "stackAlphabet": [
+      "X",
+      "bottom"
+    ],
+    "initialStackSymbol": "bottom",
+    "acceptanceMode": "finalState"
+  },
+  "property": "mutation-kill",
+  "propertyPayload": {},
+  "schema": "turing-lab.hard-edge.pda-fixture.v1",
+  "seed": 337
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>fa</type>
+  <automaton>
+    <state id="q0" name="start"><x>0</x><y>0</y><initial/></state>
+    <state id="q1" name="accept"><x>120</x><y>-40</y><final/></state>
+    <state id="q2" name="branch"><x>120</x><y>40</y></state>
+    <transition><from>q0</from><to>q1</to><read>a</read></transition>
+    <transition><from>q0</from><to>q2</to><read>a</read></transition>
+    <transition><from>q2</from><to>q1</to><read>b</read></transition>
+  </automaton>
+</structure>

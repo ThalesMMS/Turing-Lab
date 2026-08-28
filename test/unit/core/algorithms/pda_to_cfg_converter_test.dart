@@ -16,6 +16,7 @@ import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/algorithms/pda_to_cfg_messages.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -42,7 +43,7 @@ void main() {
   PDA buildPda({
     required Set<State> states,
     required Set<PDATransition> transitions,
-    required State initial,
+    required State? initial,
     required Set<State> accepting,
     Set<String>? inputAlphabet,
     Set<String>? stackAlphabet,
@@ -66,7 +67,7 @@ void main() {
 
   String productionToString(Production production) {
     final left = production.leftSide.join(' ');
-    final right = production.isLambda ? 'λ' : production.rightSide.join(' ');
+    final right = production.isLambda ? 'ε' : production.rightSide.join(' ');
     return '$left → $right';
   }
 
@@ -98,8 +99,9 @@ void main() {
         final conversion = (result as Success<PdaToCfgConversion>).data;
         final grammar = conversion.grammar;
 
-        final productionStrings =
-            grammar.productions.map(productionToString).toSet();
+        final productionStrings = grammar.productions
+            .map(productionToString)
+            .toSet();
 
         expect(
           productionStrings,
@@ -134,6 +136,10 @@ void main() {
       expect(result, isA<Failure<PdaToCfgConversion>>());
       expect(result.error, contains('pop exactly one stack symbol'));
       expect(result.error, contains('t-lambda-pop'));
+      expect(
+        result.structuredError,
+        PdaToCfgMessages.epsilonPop('t-lambda-pop'),
+      );
     });
 
     test('expands pushed strings across intermediate states', () {
@@ -264,41 +270,48 @@ void main() {
       final conversion = (result as Success<PdaToCfgConversion>).data;
       final grammar = conversion.grammar;
 
-      final productionStrings =
-          grammar.productions.map(productionToString).toSet();
+      final productionStrings = grammar.productions
+          .map(productionToString)
+          .toSet();
 
-      expect(productionStrings, contains('[p, Z, q] → λ'));
+      expect(productionStrings, contains('[p, Z, q] → ε'));
     });
 
-    test('stops the triple construction at the configured production limit',
-        () {
-      final p = buildState('p', isInitial: true);
-      final q = buildState('q', isAccepting: true);
-      final transition = PDATransition(
-        id: 'large-push',
-        fromState: p,
-        toState: q,
-        label: 'a,Z→XYZ',
-        inputSymbol: 'a',
-        popSymbol: 'Z',
-        pushSymbol: 'XYZ',
-      );
-      final pda = buildPda(
-        states: {p, q},
-        transitions: {transition},
-        initial: p,
-        accepting: {q},
-        stackAlphabet: {'Z', 'X', 'Y'},
-      );
+    test(
+      'stops the triple construction at the configured production limit',
+      () {
+        final p = buildState('p', isInitial: true);
+        final q = buildState('q', isAccepting: true);
+        final transition = PDATransition(
+          id: 'large-push',
+          fromState: p,
+          toState: q,
+          label: 'a,Z→XYZ',
+          inputSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'XYZ',
+        );
+        final pda = buildPda(
+          states: {p, q},
+          transitions: {transition},
+          initial: p,
+          accepting: {q},
+          stackAlphabet: {'Z', 'X', 'Y'},
+        );
 
-      final result = PDAtoCFGConverter.convert(
-        pda,
-        maxGeneratedProductions: 2,
-      );
+        final result = PDAtoCFGConverter.convert(
+          pda,
+          maxGeneratedProductions: 2,
+        );
 
-      expect(result, isA<Failure<PdaToCfgConversion>>());
-      expect(result.error, startsWith('PDA to CFG production limit exceeded'));
-    });
+        expect(result, isA<Failure<PdaToCfgConversion>>());
+        expect(
+          result.error,
+          startsWith('PDA to CFG production limit exceeded'),
+        );
+        expect(result.structuredError, PdaToCfgMessages.productionLimit(2));
+      },
+    );
 
     test('polls cancellation while intermediate sequences are generated', () {
       final p = buildState('p', isInitial: true);
@@ -328,7 +341,84 @@ void main() {
 
       expect(result, isA<Failure<PdaToCfgConversion>>());
       expect(result.error, PDAtoCFGConverter.cancellationError);
+      expect(result.structuredError, PdaToCfgMessages.cancelled());
       expect(polls, greaterThan(6));
     });
+
+    test(
+      'emits structured validation messages for conversion preconditions',
+      () {
+        final initial = buildState('p', isInitial: true);
+        final accepting = buildState('q', isAccepting: true);
+
+        final emptyStates = buildPda(
+          states: const {},
+          transitions: const {},
+          initial: initial,
+          accepting: {accepting},
+        );
+        final emptyResult = PDAtoCFGConverter.convert(emptyStates);
+        expect(emptyResult.structuredError, PdaToCfgMessages.emptyPda());
+
+        final missingInitial = buildPda(
+          states: {initial, accepting},
+          transitions: const {},
+          initial: null,
+          accepting: {accepting},
+        );
+        final initialResult = PDAtoCFGConverter.convert(missingInitial);
+        expect(
+          initialResult.structuredError,
+          PdaToCfgMessages.missingInitialState(),
+        );
+
+        final initialOutside = buildPda(
+          states: {accepting},
+          transitions: const {},
+          initial: initial,
+          accepting: {accepting},
+        );
+        final initialOutsideResult = PDAtoCFGConverter.convert(initialOutside);
+        expect(
+          initialOutsideResult.structuredError,
+          PdaToCfgMessages.initialStateOutsideSet(),
+        );
+
+        final missingAccepting = buildPda(
+          states: {initial, accepting},
+          transitions: const {},
+          initial: initial,
+          accepting: const {},
+        );
+        final acceptingResult = PDAtoCFGConverter.convert(missingAccepting);
+        expect(
+          acceptingResult.structuredError,
+          PdaToCfgMessages.missingAcceptingState(),
+        );
+
+        final acceptingOutside = buildPda(
+          states: {initial},
+          transitions: const {},
+          initial: initial,
+          accepting: {accepting},
+        );
+        final acceptingOutsideResult = PDAtoCFGConverter.convert(
+          acceptingOutside,
+        );
+        expect(
+          acceptingOutsideResult.structuredError,
+          PdaToCfgMessages.acceptingStateOutsideSet(),
+        );
+
+        final invalidLimitResult = PDAtoCFGConverter.convert(
+          missingAccepting,
+          maxGeneratedProductions: 0,
+        );
+        expect(
+          invalidLimitResult.structuredError,
+          PdaToCfgMessages.invalidProductionLimit(),
+        );
+      },
+    );
   });
 }

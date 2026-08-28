@@ -11,6 +11,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
+import 'package:turing_lab/core/algorithms/regex_simplification_messages.dart';
 import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/algorithms/equivalence_checker.dart';
 import 'package:turing_lab/core/models/regex_simplification_step.dart';
@@ -85,13 +86,19 @@ void main() {
     test('returns error for unbalanced parentheses', () {
       final result = RegexSimplifier.simplify('(a');
       expect(result.isSuccess, false);
-      expect(result.error, contains('Unbalanced'));
+      expect(
+        result.structuredError,
+        RegexSimplificationMessages.unclosedOpeningParentheses(1),
+      );
     });
 
     test('returns error for mismatched closing parenthesis', () {
       final result = RegexSimplifier.simplify('a)');
       expect(result.isSuccess, false);
-      expect(result.error, contains('Unbalanced'));
+      expect(
+        result.structuredError,
+        RegexSimplificationMessages.unmatchedClosingParenthesis(1),
+      );
     });
 
     test('handles empty parentheses correctly', () {

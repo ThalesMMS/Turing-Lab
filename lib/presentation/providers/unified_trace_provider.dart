@@ -109,11 +109,13 @@ class UnifiedTraceState with TraceStepNavigation<UnifiedTraceState> {
       automatonType: automatonType == _unset
           ? this.automatonType
           : automatonType as String?,
-      automatonId:
-          automatonId == _unset ? this.automatonId : automatonId as String?,
+      automatonId: automatonId == _unset
+          ? this.automatonId
+          : automatonId as String?,
       traceHistory: traceHistory ?? this.traceHistory,
-      errorMessage:
-          errorMessage == _unset ? this.errorMessage : errorMessage as String?,
+      errorMessage: errorMessage == _unset
+          ? this.errorMessage
+          : errorMessage as String?,
       traceStatistics: traceStatistics ?? this.traceStatistics,
     );
   }
@@ -149,7 +151,7 @@ class UnifiedTraceNotifier extends StateNotifier<UnifiedTraceState> {
   final TraceRepository _persistenceService;
 
   UnifiedTraceNotifier(this._persistenceService)
-      : super(const UnifiedTraceState()) {
+    : super(const UnifiedTraceState()) {
     _loadTraceHistory();
     _loadTraceStatistics();
     _restoreCurrentTrace();
@@ -180,7 +182,7 @@ class UnifiedTraceNotifier extends StateNotifier<UnifiedTraceState> {
       if (traceData == null) return;
 
       final traceJson = traceData['trace'] as Map<String, dynamic>;
-      final trace = SimulationResult.fromJson(traceJson);
+      final trace = SimulationResult.fromPersistedJson(traceJson);
 
       state = state.copyWith(
         currentTrace: trace,
@@ -364,11 +366,12 @@ class UnifiedTraceNotifier extends StateNotifier<UnifiedTraceState> {
         return;
       }
 
-      final trace = SimulationResult.fromJson(traceJson);
+      final trace = SimulationResult.fromPersistedJson(traceJson);
       final storedStepIndex = persisted['currentStepIndex'];
       final stepIndex = storedStepIndex is int ? storedStepIndex : 0;
-      final normalizedStepIndex =
-          trace.steps.isEmpty ? 0 : stepIndex.clamp(0, trace.steps.length - 1);
+      final normalizedStepIndex = trace.steps.isEmpty
+          ? 0
+          : stepIndex.clamp(0, trace.steps.length - 1);
 
       state = state.copyWith(
         currentTrace: trace,
@@ -395,9 +398,9 @@ final dataTracePersistenceServiceProvider = traceRepositoryProvider;
 /// Provider for unified trace state
 final unifiedTraceProvider =
     StateNotifierProvider<UnifiedTraceNotifier, UnifiedTraceState>((ref) {
-  final persistenceService = ref.watch(dataTracePersistenceServiceProvider);
-  return UnifiedTraceNotifier(persistenceService);
-});
+      final persistenceService = ref.watch(dataTracePersistenceServiceProvider);
+      return UnifiedTraceNotifier(persistenceService);
+    });
 
 /// Provider for trace statistics
 final traceStatisticsProvider = Provider<Map<String, dynamic>>((ref) {

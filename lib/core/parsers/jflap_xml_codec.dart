@@ -6,6 +6,7 @@ import 'package:xml/xml.dart';
 
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
+import '../messages/structured_message.dart';
 import '../models/state.dart' as automaton_state;
 import '../result.dart';
 import '../utils/automaton_id_utils.dart';
@@ -51,15 +52,19 @@ class JflapXmlCodec {
 
   /// Decodes JFLAP XML into an [FSA] for file-operation imports.
   Result<FSA> decodeFsaXml(String xmlString) {
-    final document = XmlDocument.parse(xmlString);
-    return decodeFsaDocument(document);
+    try {
+      final document = XmlDocument.parse(xmlString);
+      return decodeFsaDocument(document);
+    } catch (_) {
+      return _failure('malformed-document');
+    }
   }
 
   /// Decodes a parsed JFLAP document into an [FSA].
   Result<FSA> decodeFsaDocument(XmlDocument document) {
     final automatonElement = document.findAllElements('automaton').firstOrNull;
     if (automatonElement == null) {
-      return const Failure('JFLAP import is missing the <automaton> element.');
+      return _failure('missing-automaton-element');
     }
 
     final states = <automaton_state.State>[];
@@ -86,21 +91,32 @@ class JflapXmlCodec {
     }
 
     if (states.isEmpty) {
-      return const Failure(
-        'JFLAP import does not contain any states. Empty automata cannot be loaded into the editor.',
-      );
+      return _failure('empty-automaton');
     }
 
+    var transitionIndex = 0;
     for (final transitionElement in automatonElement.findAllElements(
       'transition',
     )) {
-      final fromId =
-          transitionElement.findElements('from').firstOrNull?.innerText.trim();
-      final toId =
-          transitionElement.findElements('to').firstOrNull?.innerText.trim();
+      final fromId = transitionElement
+          .findElements('from')
+          .firstOrNull
+          ?.innerText
+          .trim();
+      final toId = transitionElement
+          .findElements('to')
+          .firstOrNull
+          ?.innerText
+          .trim();
       if (fromId == null || fromId.isEmpty || toId == null || toId.isEmpty) {
-        return const Failure(
-          'JFLAP import contains a transition without valid origin and destination states.',
+        return _failure(
+          'incomplete-transition',
+          arguments: {
+            'index': StructuredMessageArgument.index(
+              transitionIndex,
+              role: 'transition-index',
+            ),
+          },
         );
       }
 
@@ -110,8 +126,9 @@ class JflapXmlCodec {
       final fromState = _findState(states, fromId);
       final toState = _findState(states, toId);
       if (fromState == null || toState == null) {
-        return Failure(
-          'JFLAP import references an unknown state in transition $fromId -> $toId.',
+        return _failure(
+          'unknown-transition-endpoints',
+          arguments: _transitionEndpointArguments(fromId, toId),
         );
       }
 
@@ -130,13 +147,15 @@ class JflapXmlCodec {
           lambdaSymbol: isEpsilon ? kEpsilonSymbol : null,
         ),
       );
+      transitionIndex++;
     }
 
     final now = DateTime.now();
+    final importedId = 'imported_${now.millisecondsSinceEpoch}';
     return Success(
       FSA(
-        id: 'imported_${now.millisecondsSinceEpoch}',
-        name: 'Imported Automaton',
+        id: importedId,
+        name: importedId,
         states: states.toSet(),
         transitions: transitions.toSet(),
         alphabet: alphabet,
@@ -157,8 +176,8 @@ class JflapXmlCodec {
     final rawType = (automatonData['type'] as String? ?? 'fa').toLowerCase();
     final automatonType =
         rawType == 'dfa' || rawType == 'nfa' || rawType == 'fa'
-            ? 'fa'
-            : rawType;
+        ? 'fa'
+        : rawType;
 
     builder.element(
       'structure',
@@ -172,26 +191,26 @@ class JflapXmlCodec {
 
             final states = automatonData['states'] as List<dynamic>? ?? [];
             for (final state in states) {
-              _writeSerializableState(
-                builder,
-                state as Map<String, dynamic>,
-              );
+              _writeSerializableState(builder, state as Map<String, dynamic>);
             }
 
             final transitions =
                 automatonData['transitions'] as Map<String, dynamic>? ?? {};
             for (final transition in transitions.entries) {
               final keyParts = transition.key.split('|');
-              final fromState =
-                  keyParts.isNotEmpty ? keyParts.first.trim() : transition.key;
-              final rawSymbol =
-                  keyParts.length > 1 ? keyParts.sublist(1).join('|') : null;
+              final fromState = keyParts.isNotEmpty
+                  ? keyParts.first.trim()
+                  : transition.key;
+              final rawSymbol = keyParts.length > 1
+                  ? keyParts.sublist(1).join('|')
+                  : null;
               final readSymbol = normalizeToEpsilon(rawSymbol);
               final targets = transition.value as List<dynamic>? ?? [];
 
               for (final target in targets) {
-                final toStateId =
-                    target is String ? target : target?.toString() ?? '';
+                final toStateId = target is String
+                    ? target
+                    : target?.toString() ?? '';
                 if (fromState.isEmpty || toStateId.isEmpty) {
                   continue;
                 }
@@ -217,22 +236,27 @@ class JflapXmlCodec {
       final document = XmlDocument.parse(xmlString);
       final root = document.rootElement;
       if (root.name.local != 'structure') {
-        return const Failure(
-          'Failed to deserialize JFLAP automaton: Root element must be <structure>',
+        return _failure(
+          'unexpected-root-element',
+          arguments: {
+            'actual': StructuredMessageArgument.identifier(
+              root.name.local,
+              role: 'xml-element',
+            ),
+          },
         );
       }
 
-      final automatonElement =
-          document.findAllElements('automaton').firstOrNull;
+      final automatonElement = document
+          .findAllElements('automaton')
+          .firstOrNull;
       if (automatonElement == null) {
-        return const Failure(
-          'Failed to deserialize JFLAP automaton: No <automaton> element found',
-        );
+        return _failure('missing-automaton-element');
       }
 
       return _decodeSerializableRoot(root, automatonElement);
-    } catch (e) {
-      return Failure('Failed to deserialize JFLAP automaton: $e');
+    } catch (_) {
+      return _failure('malformed-document');
     }
   }
 
@@ -255,7 +279,8 @@ class JflapXmlCodec {
     var hasNondeterministicTransition = false;
 
     for (final stateElement in automatonElement.findAllElements('state')) {
-      final id = stateElement.getAttribute('id') ??
+      final id =
+          stateElement.getAttribute('id') ??
           stateElement.getAttribute('name') ??
           '';
       if (id.isEmpty) {
@@ -294,13 +319,16 @@ class JflapXmlCodec {
       final rawFrom = fromElements.first.innerText.trim();
       final rawTo = toElements.first.innerText.trim();
       if (!knownStateIds.contains(rawFrom) || !knownStateIds.contains(rawTo)) {
-        return Failure(
-          'Failed to deserialize JFLAP automaton: Transition references unknown state $rawFrom -> $rawTo',
+        return _failure(
+          'unknown-transition-endpoints',
+          arguments: _transitionEndpointArguments(rawFrom, rawTo),
         );
       }
 
-      final rawSymbol =
-          transitionElement.findElements('read').firstOrNull?.innerText;
+      final rawSymbol = transitionElement
+          .findElements('read')
+          .firstOrNull
+          ?.innerText;
       final symbol = normalizeToEpsilon(rawSymbol);
       final key = '$rawFrom|$symbol';
 
@@ -318,9 +346,10 @@ class JflapXmlCodec {
       }
     }
 
+    final importedId = _generateImportedAutomatonId();
     return Success({
-      'id': _generateImportedAutomatonId(),
-      'name': 'Imported Automaton',
+      'id': importedId,
+      'name': importedId,
       'states': states,
       'transitions': transitions.map(
         (key, value) => MapEntry(key, List<String>.unmodifiable(value)),
@@ -334,6 +363,28 @@ class JflapXmlCodec {
       ),
       'nextId': AutomatonIdUtils.calculateNextAutomatonId(states),
     });
+  }
+
+  Map<String, StructuredMessageArgument> _transitionEndpointArguments(
+    String from,
+    String to,
+  ) => {
+    'from': StructuredMessageArgument.identifier(from, role: 'source-state'),
+    'to': StructuredMessageArgument.identifier(to, role: 'target-state'),
+  };
+
+  Failure<T> _failure<T>(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) {
+    final message = StructuredMessage(
+      namespace: 'parser.jflap-xml',
+      code: code,
+      category: StructuredMessageCategory.interoperability,
+      severity: StructuredMessageSeverity.error,
+      arguments: arguments,
+    );
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   void _writeFsaState(XmlBuilder builder, automaton_state.State state) {
@@ -412,10 +463,12 @@ class JflapXmlCodec {
   }
 
   Vector2 _readPosition(XmlElement stateElement) {
-    final xText = stateElement.getAttribute('x') ??
+    final xText =
+        stateElement.getAttribute('x') ??
         stateElement.findElements('x').firstOrNull?.innerText ??
         '0.0';
-    final yText = stateElement.getAttribute('y') ??
+    final yText =
+        stateElement.getAttribute('y') ??
         stateElement.findElements('y').firstOrNull?.innerText ??
         '0.0';
     return Vector2(
@@ -428,9 +481,7 @@ class JflapXmlCodec {
     List<automaton_state.State> states,
     String id,
   ) {
-    return states.firstWhereOrNull(
-      (s) => s.id == id,
-    );
+    return states.firstWhereOrNull((s) => s.id == id);
   }
 
   String _generateImportedAutomatonId() {

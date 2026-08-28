@@ -1,0 +1,18 @@
+{
+  "schema": {"id": "turing-lab.mealy", "version": 1},
+  "id": "mealy_parity",
+  "name": "Parity output",
+  "revision": 1,
+  "inputAlphabet": ["0", "1"],
+  "outputAlphabet": ["E", "O"],
+  "states": [
+    {"id": "even", "label": "even", "position": {"x": 80, "y": 160}, "isInitial": true},
+    {"id": "odd", "label": "odd", "position": {"x": 320, "y": 160}, "isInitial": false}
+  ],
+  "transitions": [
+    {"id": "even_0", "from": "even", "to": "even", "input": "0", "output": ["E"]},
+    {"id": "even_1", "from": "even", "to": "odd", "input": "1", "output": ["O"]},
+    {"id": "odd_0", "from": "odd", "to": "odd", "input": "0", "output": ["O"]},
+    {"id": "odd_1", "from": "odd", "to": "even", "input": "1", "output": ["E"]}
+  ]
+}

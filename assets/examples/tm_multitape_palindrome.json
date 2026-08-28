@@ -1,0 +1,29 @@
+{
+  "id": "tm_multitape_palindrome",
+  "name": "MT multifitas - Palíndromo",
+  "type": "tm",
+  "alphabet": ["0", "1"],
+  "tapeAlphabet": ["0", "1", "B"],
+  "blankSymbol": "B",
+  "tapeCount": 2,
+  "states": [
+    {"id": "copy", "name": "copy", "x": 80.0, "y": 180.0, "isInitial": true, "isFinal": false},
+    {"id": "rewind", "name": "rewind", "x": 280.0, "y": 180.0, "isInitial": false, "isFinal": false},
+    {"id": "compare", "name": "compare", "x": 480.0, "y": 180.0, "isInitial": false, "isFinal": false},
+    {"id": "qa", "name": "accept", "x": 680.0, "y": 180.0, "isInitial": false, "isFinal": true}
+  ],
+  "initialId": "copy",
+  "finalStates": ["qa"],
+  "transitions": [
+    {"id": "copy-0", "fromState": "copy", "toState": "copy", "label": "T1: 0/0R | T2: B/0R", "controlPoint": {"x": 80.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["0", "B"], "writeSymbols": ["0", "0"], "directions": ["right", "right"]},
+    {"id": "copy-1", "fromState": "copy", "toState": "copy", "label": "T1: 1/1R | T2: B/1R", "controlPoint": {"x": 120.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "B"], "writeSymbols": ["1", "1"], "directions": ["right", "right"]},
+    {"id": "begin-rewind", "fromState": "copy", "toState": "rewind", "label": "T1: B/BS | T2: B/BL", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["stay", "left"]},
+    {"id": "rewind-0", "fromState": "rewind", "toState": "rewind", "label": "T1: B/BS | T2: 0/0L", "controlPoint": {"x": 280.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["B", "0"], "writeSymbols": ["B", "0"], "directions": ["stay", "left"]},
+    {"id": "rewind-1", "fromState": "rewind", "toState": "rewind", "label": "T1: B/BS | T2: 1/1L", "controlPoint": {"x": 320.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["B", "1"], "writeSymbols": ["B", "1"], "directions": ["stay", "left"]},
+    {"id": "begin-compare", "fromState": "rewind", "toState": "compare", "label": "T1: B/BL | T2: B/BR", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["left", "right"]},
+    {"id": "compare-0", "fromState": "compare", "toState": "compare", "label": "T1: 0/0L | T2: 0/0R", "controlPoint": {"x": 480.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["0", "0"], "writeSymbols": ["0", "0"], "directions": ["left", "right"]},
+    {"id": "compare-1", "fromState": "compare", "toState": "compare", "label": "T1: 1/1L | T2: 1/1R", "controlPoint": {"x": 520.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "1"], "writeSymbols": ["1", "1"], "directions": ["left", "right"]},
+    {"id": "palindrome", "fromState": "compare", "toState": "qa", "label": "T1: B/BS | T2: B/BS", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["stay", "stay"]}
+  ],
+  "description": "Copies the input, then compares tape 0 right-to-left with tape 1 left-to-right."
+}

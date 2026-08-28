@@ -1,0 +1,1049 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "regular-335-v1",
+  "cases": [
+    {
+      "id": "regular-path-fsa-model",
+      "family": "regular",
+      "algorithm": "fsa-model",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.model-integrity",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "f0c44273cca3315e1dbc3b18e0a9feb48d93fb7e1ee477b4c2b6db04216b6616",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/epsilon_symbol_cycle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-simulator",
+      "family": "regular",
+      "algorithm": "fsa-simulator",
+      "sourceKind": "generated",
+      "seed": 335,
+      "property": "regular.trace-replay",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-nfa-determinization",
+      "family": "regular",
+      "algorithm": "nfa-determinization",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.determinization",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "f0c44273cca3315e1dbc3b18e0a9feb48d93fb7e1ee477b4c2b6db04216b6616",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/epsilon_symbol_cycle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-determinizer-adapter",
+      "family": "regular",
+      "algorithm": "fsa-determinizer-adapter",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.determinization",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "f0c44273cca3315e1dbc3b18e0a9feb48d93fb7e1ee477b4c2b6db04216b6616",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/epsilon_symbol_cycle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-lambda-removal",
+      "family": "regular",
+      "algorithm": "lambda-removal",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.lambda-removal",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-dfa-completion",
+      "family": "regular",
+      "algorithm": "dfa-completion",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.completion",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "44aa6b3379b2673ead299e04407fc898c3c1350edeeb0e26898b25809fe54a56",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/shrink_probe.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-dfa-minimization",
+      "family": "regular",
+      "algorithm": "dfa-minimization",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.minimization",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-dfa-boolean-operations",
+      "family": "regular",
+      "algorithm": "dfa-boolean-operations",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.boolean-algebra",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-dfa-prefix-suffix-closures",
+      "family": "regular",
+      "algorithm": "dfa-prefix-suffix-closures",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.prefix-suffix",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-concatenation",
+      "family": "regular",
+      "algorithm": "fsa-concatenation",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.structural-closures",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-kleene-star",
+      "family": "regular",
+      "algorithm": "fsa-kleene-star",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.structural-closures",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-reversal",
+      "family": "regular",
+      "algorithm": "fsa-reversal",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.structural-closures",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-exact-equivalence",
+      "family": "regular",
+      "algorithm": "exact-equivalence",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.equivalence-witness",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-language-comparison",
+      "family": "regular",
+      "algorithm": "language-comparison",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.equivalence-witness",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fa-to-regex",
+      "family": "regular",
+      "algorithm": "fa-to-regex",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.fa-regex-roundtrip",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-regex-parser-and-converter",
+      "family": "regular",
+      "algorithm": "regex-parser-and-converter",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.regex-oracle",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "c768fbb9f30746af6ff1472ba8d8582c73bd7b7fcf4e2fee9fbf7f4bf764bc28",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/unicode_scalar_range.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-regex-simplifier",
+      "family": "regular",
+      "algorithm": "regex-simplifier",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.regex-simplification",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-regex-analyzer",
+      "family": "regular",
+      "algorithm": "regex-analyzer",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.regex-analysis",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fsa-regular-grammar",
+      "family": "regular",
+      "algorithm": "fsa-regular-grammar",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.grammar-roundtrip",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-regular-grammar-fsa",
+      "family": "regular",
+      "algorithm": "regular-grammar-fsa",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.grammar-roundtrip",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-fa-regex-manual-oracle",
+      "family": "regular",
+      "algorithm": "fa-regex-manual-oracle",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.fa-regex-roundtrip",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-regex-fa-manual-oracle",
+      "family": "regular",
+      "algorithm": "regex-fa-manual-oracle",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.regex-oracle",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "c768fbb9f30746af6ff1472ba8d8582c73bd7b7fcf4e2fee9fbf7f4bf764bc28",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/unicode_scalar_range.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-path-automaton-algorithm-provider",
+      "family": "regular",
+      "algorithm": "automaton-algorithm-provider",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.provider-integration",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": "flutter"
+    },
+    {
+      "id": "regular-path-automaton-simulation-provider",
+      "family": "regular",
+      "algorithm": "automaton-simulation-provider",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.provider-stale-result",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": "flutter"
+    },
+    {
+      "id": "regular-path-regex-editor-provider",
+      "family": "regular",
+      "algorithm": "regex-editor-provider",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.provider-stale-result",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "7805181cc81e74125dc253e666eae7ada6aacff44cedb4ec5e78f5794ad240b4",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/generated_oracle.json",
+      "expectedOutcome": "pass",
+      "requiredTool": "flutter"
+    },
+    {
+      "id": "regular-property-resource-outcomes",
+      "family": "regular",
+      "algorithm": "fsa-simulator",
+      "sourceKind": "independent",
+      "seed": 335,
+      "property": "regular.resource-outcomes",
+      "provenance": {
+        "origin": "Independently authored for Turing Lab issue 335",
+        "independentlyAuthored": true,
+        "generator": "regular-v1",
+        "jflapVersion": null,
+        "licenseBasis": "LICENSE.txt",
+        "sourceRevision": null,
+        "sourceSha256": null
+      },
+      "license": "Apache-2.0",
+      "regressionIssue": 335,
+      "platforms": [
+        "all"
+      ],
+      "sha256": "689ac2474841329d41880d450ae8f6d7c7d49e01b7dc8ac7af14fa1d4113df41",
+      "generatorVersion": "regular-v1",
+      "oracleVersion": "regular-independent-v1",
+      "budget": {
+        "maxIterations": 8,
+        "maxProductions": 20,
+        "maxRegexNodes": 24,
+        "maxStackDepth": 16,
+        "maxStates": 8,
+        "maxSymbols": 6,
+        "maxTapeCells": 24,
+        "maxTransitions": 24,
+        "maxWordLength": 12
+      },
+      "fixture": "test/fixtures/hard_edge/regular/resource_outcomes.json",
+      "expectedOutcome": "pass",
+      "requiredTool": null
+    }
+  ],
+  "mutations": [
+    {
+      "id": "regular-flip-initial-acceptance",
+      "family": "regular",
+      "property": "regular.mutations",
+      "operatorId": "flip-initial-acceptance",
+      "fixture": "test/fixtures/hard_edge/regular/mutation_probes.json",
+      "sha256": "1ac953a28d19d0f4723f2566164ef9180ba02f0a7cb5dd54a837cc18e3e52156",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-ignore-epsilon-reachability",
+      "family": "regular",
+      "property": "regular.mutations",
+      "operatorId": "ignore-epsilon-reachability",
+      "fixture": "test/fixtures/hard_edge/regular/mutation_probes.json",
+      "sha256": "1ac953a28d19d0f4723f2566164ef9180ba02f0a7cb5dd54a837cc18e3e52156",
+      "requiredTool": null
+    },
+    {
+      "id": "regular-skip-dfa-completion",
+      "family": "regular",
+      "property": "regular.mutations",
+      "operatorId": "skip-dfa-completion",
+      "fixture": "test/fixtures/hard_edge/regular/mutation_probes.json",
+      "sha256": "1ac953a28d19d0f4723f2566164ef9180ba02f0a7cb5dd54a837cc18e3e52156",
+      "requiredTool": null
+    }
+  ]
+}

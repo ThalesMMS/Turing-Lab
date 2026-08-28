@@ -18,35 +18,34 @@ StepExplanation _buildPdaStepExplanation({
   final beforeTop = priorStack.isEmpty ? '∅' : priorStack.last;
   final afterTop = nextStack.isEmpty ? '∅' : nextStack.last;
 
-  final bullets = <String>[
-    'Read input: $readSymbol',
-    'Stack action: pop $popSymbol, push $pushSymbol',
-    'Top of stack before: $beforeTop → after: $afterTop',
+  final bulletMessages = <StructuredMessage>[
+    PDASimulationMessages.readInput(readSymbol),
+    PDASimulationMessages.stackAction(
+      popSymbol: popSymbol,
+      pushSymbol: pushSymbol,
+    ),
+    PDASimulationMessages.stackTopChange(before: beforeTop, after: afterTop),
   ];
 
   if (!lambdaPop) {
-    bullets.add(
-      'Pop is allowed because the top of stack matches "${transition.popSymbol}".',
-    );
+    bulletMessages.add(PDASimulationMessages.popMatches(transition.popSymbol));
   } else {
-    bullets.add('No stack symbol was required (ε-pop).');
+    bulletMessages.add(PDASimulationMessages.noPop());
   }
 
   if (!lambdaPush && transition.pushSymbol.isNotEmpty) {
-    bullets.add('Pushed "${transition.pushSymbol}" onto the stack.');
+    bulletMessages.add(PDASimulationMessages.pushed(transition.pushSymbol));
   } else {
-    bullets.add('No symbols were pushed (ε-push).');
+    bulletMessages.add(PDASimulationMessages.noPush());
   }
 
   if (lambdaInput) {
-    bullets.add(
-      'This is an ε-move: it changes the stack/state without consuming input.',
-    );
+    bulletMessages.add(PDASimulationMessages.epsilonMove());
   }
 
   return StepExplanation(
-    title: 'Applied PDA transition',
-    bullets: bullets,
+    titleMessage: PDASimulationMessages.transitionTitle(),
+    bulletMessages: bulletMessages,
     categories: const [
       ExplanationCategory.info,
       ExplanationCategory.stackOperation,
@@ -56,10 +55,7 @@ StepExplanation _buildPdaStepExplanation({
         type: HighlightTargetType.state,
         id: transition.toState.id,
       ),
-      HighlightTarget(
-        type: HighlightTargetType.transition,
-        id: transition.id,
-      ),
+      HighlightTarget(type: HighlightTargetType.transition, id: transition.id),
       if (nextStack.isNotEmpty)
         HighlightTarget(
           type: HighlightTargetType.pdaStack,
@@ -75,6 +71,7 @@ StepExplanation _buildPdaStepExplanation({
 List<String>? _applyTransitionStack(
   PDATransition t,
   List<String> stack,
+  PDASimulationSemanticVariant semanticVariant,
 ) {
   final lambdaPop = t.isLambdaPop || t.popSymbol.isEmpty;
   final lambdaPush = t.isLambdaPush || t.pushSymbol.isEmpty;
@@ -85,8 +82,14 @@ List<String>? _applyTransitionStack(
   if (!lambdaPop && newStack.isNotEmpty) {
     newStack.removeLast();
   }
-  if (!lambdaPush && t.pushSymbol.isNotEmpty) {
-    for (final symbol in t.pushSymbols.reversed) {
+  final ignoresPush =
+      semanticVariant == PDASimulationSemanticVariant.ignorePush;
+  if (!lambdaPush && !ignoresPush && t.pushSymbol.isNotEmpty) {
+    final pushedSymbols =
+        semanticVariant == PDASimulationSemanticVariant.reversePushOrder
+        ? t.pushSymbols
+        : t.pushSymbols.reversed;
+    for (final symbol in pushedSymbols) {
       newStack.add(symbol);
     }
   }
@@ -100,8 +103,19 @@ String _transitionLabel(PDATransition t, String input) {
   return '$input,${lambdaPop ? 'ε' : t.popSymbol}→${lambdaPush ? 'ε' : t.pushSymbol}';
 }
 
-String _configurationKey(State state, String remaining, List<String> stack) {
-  return '${state.id}\u0000$remaining\u0000${stack.join('\u0001')}';
+String _configurationKey(
+  State state,
+  String remaining,
+  List<String> stack,
+  PDASimulationSemanticVariant semanticVariant,
+) {
+  return jsonEncode([
+    state.id,
+    remaining,
+    if (semanticVariant !=
+        PDASimulationSemanticVariant.omitStackFromConfiguration)
+      stack,
+  ]);
 }
 
 List<SimulationStep> _appendStep(
@@ -121,6 +135,9 @@ PDASimulationResult _simulateSearch(
   PDAAcceptanceMode mode,
   int maxDepth,
   int maxConfigurations,
+  int? maxMemoryBytes,
+  bool Function()? isStale,
+  PDASimulationSemanticVariant semanticVariant,
 ) {
   final search = _PdaSearch(
     pda,
@@ -130,6 +147,9 @@ PDASimulationResult _simulateSearch(
     mode,
     maxDepth,
     maxConfigurations,
+    maxMemoryBytes,
+    isStale,
+    semanticVariant,
   );
   PDASimulationResult? result;
   while (result == null) {
@@ -155,6 +175,9 @@ class _PdaSearch {
     this.mode,
     this.maxDepth,
     this.maxConfigurations,
+    this.maxMemoryBytes,
+    this.isStale,
+    this.semanticVariant,
   ) : startTime = DateTime.now() {
     final initialStack = <String>[pda.initialStackSymbol];
     final initialSteps = stepByStep
@@ -163,15 +186,19 @@ class _PdaSearch {
               currentState: pda.initialState!.id,
               remainingInput: inputString,
               stackContents: pda.initialStackSymbol,
+              stackTokens: initialStack,
               stepNumber: 0,
             ),
           ]
         : <SimulationStep>[];
-    queue.add(
-      (pda.initialState!, inputString, initialStack, initialSteps, 0),
-    );
+    queue.add((pda.initialState!, inputString, initialStack, initialSteps, 0));
     seenConfigs.add(
-      _configurationKey(pda.initialState!, inputString, initialStack),
+      _configurationKey(
+        pda.initialState!,
+        inputString,
+        initialStack,
+        semanticVariant,
+      ),
     );
   }
 
@@ -182,6 +209,9 @@ class _PdaSearch {
   final PDAAcceptanceMode mode;
   final int maxDepth;
   final int maxConfigurations;
+  final int? maxMemoryBytes;
+  final bool Function()? isStale;
+  final PDASimulationSemanticVariant semanticVariant;
   final DateTime startTime;
   final Queue<_PdaConfiguration> queue = Queue();
   final Set<String> seenConfigs = <String>{};
@@ -190,15 +220,17 @@ class _PdaSearch {
   var depthLimitReached = false;
 
   PDASimulationResult? runBatch(int batchSize) {
-    for (var processed = 0;
-        processed < batchSize && queue.isNotEmpty;
-        processed++) {
+    for (
+      var processed = 0;
+      processed < batchSize && queue.isNotEmpty;
+      processed++
+    ) {
       final terminal = _processNext();
       if (terminal != null) return terminal;
     }
     if (queue.isNotEmpty) return null;
     if (depthLimitReached) {
-      return PDASimulationResult.limitReached(
+      return PDASimulationResult.depthLimit(
         inputString: inputString,
         steps: longestBranch,
         executionTime: DateTime.now().difference(startTime),
@@ -208,20 +240,38 @@ class _PdaSearch {
       inputString: inputString,
       steps: longestBranch,
       errorMessage: 'Rejected: no accepting configuration found',
+      structuredMessage:
+          PDASimulationMessages.rejectedNoAcceptingConfiguration(),
       executionTime: DateTime.now().difference(startTime),
     );
   }
 
   PDASimulationResult? _processNext() {
-    if (DateTime.now().difference(startTime) > timeout) {
+    if (isStale?.call() == true) {
+      return PDASimulationResult.staleRequest(
+        inputString: inputString,
+        steps: longestBranch,
+        executionTime: DateTime.now().difference(startTime),
+      );
+    }
+    if (DateTime.now().difference(startTime) >= timeout) {
       return PDASimulationResult.timeout(
         inputString: inputString,
         steps: longestBranch,
         executionTime: DateTime.now().difference(startTime),
       );
     }
-    if (explored++ > maxConfigurations) {
-      return PDASimulationResult.infiniteLoop(
+    if (explored >= maxConfigurations) {
+      return PDASimulationResult.limitReached(
+        inputString: inputString,
+        steps: longestBranch,
+        executionTime: DateTime.now().difference(startTime),
+      );
+    }
+    explored++;
+    final memoryLimit = maxMemoryBytes;
+    if (memoryLimit != null && _estimatedMemoryBytes() > memoryLimit) {
+      return PDASimulationResult.memoryLimit(
         inputString: inputString,
         steps: longestBranch,
         executionTime: DateTime.now().difference(startTime),
@@ -233,24 +283,34 @@ class _PdaSearch {
       longestBranch = steps;
     }
 
-    final inputConsumed = remaining.isEmpty;
+    final inputConsumed =
+        remaining.isEmpty ||
+        semanticVariant ==
+            PDASimulationSemanticVariant.acceptBeforeInputConsumed;
     final accepted = switch (mode) {
       PDAAcceptanceMode.finalState =>
         inputConsumed && pda.acceptingStates.contains(state),
-      PDAAcceptanceMode.emptyStack => inputConsumed &&
-          (stack.isEmpty || (stack.length == 1 && stack.last.isEmpty)),
-      PDAAcceptanceMode.both => inputConsumed &&
-          pda.acceptingStates.contains(state) &&
-          (stack.isEmpty || (stack.length == 1 && stack.last.isEmpty)),
+      PDAAcceptanceMode.emptyStack =>
+        inputConsumed &&
+            (stack.isEmpty || (stack.length == 1 && stack.last.isEmpty)),
+      PDAAcceptanceMode.both =>
+        inputConsumed &&
+            pda.acceptingStates.contains(state) &&
+            (stack.isEmpty || (stack.length == 1 && stack.last.isEmpty)),
     };
     if (accepted) {
-      final finalStep = SimulationStep.finalStep(
-        finalState: state.id,
-        remainingInput: remaining,
-        stackContents: stack.join(''),
-        tapeContents: '',
-        stepNumber: (steps.isNotEmpty ? steps.last.stepNumber : 0) + 1,
-      );
+      final finalStep =
+          SimulationStep.finalStep(
+            finalState: state.id,
+            remainingInput: remaining,
+            stackContents: stack.join(''),
+            stackTokens: stack,
+            tapeContents: '',
+            stepNumber: (steps.isNotEmpty ? steps.last.stepNumber : 0) + 1,
+          ).copyWith(
+            description: _pdaAcceptanceDescription(mode),
+            explanation: _pdaAcceptanceExplanation(mode, state.id),
+          );
       return PDASimulationResult.success(
         inputString: inputString,
         steps: stepByStep
@@ -271,17 +331,20 @@ class _PdaSearch {
       List<String> nextStack,
       SimulationStep step,
     ) {
-      final key = _configurationKey(nextState, nextRemaining, nextStack);
-      if (!seenConfigs.add(key)) return;
-      queue.add(
-        (
-          nextState,
-          nextRemaining,
-          nextStack,
-          _appendStep(steps, step, stepByStep),
-          depth + 1,
-        ),
+      final key = _configurationKey(
+        nextState,
+        nextRemaining,
+        nextStack,
+        semanticVariant,
       );
+      if (!seenConfigs.add(key)) return;
+      queue.add((
+        nextState,
+        nextRemaining,
+        nextStack,
+        _appendStep(steps, step, stepByStep),
+        depth + 1,
+      ));
     }
 
     final nextStepNumber = (steps.isNotEmpty ? steps.last.stepNumber : 0) + 1;
@@ -290,7 +353,11 @@ class _PdaSearch {
           transition.fromState == state &&
           (transition.isLambdaInput || transition.inputSymbol.isEmpty),
     )) {
-      final nextStack = _applyTransitionStack(transition, stack);
+      final nextStack = _applyTransitionStack(
+        transition,
+        stack,
+        semanticVariant,
+      );
       if (nextStack == null) continue;
       enqueue(
         transition.toState,
@@ -300,6 +367,7 @@ class _PdaSearch {
           currentState: transition.toState.id,
           remainingInput: remaining,
           stackContents: nextStack.join(''),
+          stackTokens: nextStack,
           usedTransition: _transitionLabel(transition, 'ε'),
           stepNumber: nextStepNumber,
           consumedInput: '',
@@ -323,7 +391,11 @@ class _PdaSearch {
       )) {
         final symbol = transition.inputSymbol;
         final nextRemaining = remaining.substring(symbol.length);
-        final nextStack = _applyTransitionStack(transition, stack);
+        final nextStack = _applyTransitionStack(
+          transition,
+          stack,
+          semanticVariant,
+        );
         if (nextStack == null) continue;
         enqueue(
           transition.toState,
@@ -333,6 +405,7 @@ class _PdaSearch {
             currentState: transition.toState.id,
             remainingInput: nextRemaining,
             stackContents: nextStack.join(''),
+            stackTokens: nextStack,
             usedTransition: _transitionLabel(transition, symbol),
             stepNumber: nextStepNumber,
             consumedInput: symbol,
@@ -348,4 +421,52 @@ class _PdaSearch {
     }
     return null;
   }
+
+  int _estimatedMemoryBytes() {
+    var bytes = 0;
+    for (final key in seenConfigs) {
+      bytes += utf8.encode(key).length;
+    }
+    for (final configuration in queue) {
+      bytes += utf8.encode(configuration.$1.id).length;
+      bytes += utf8.encode(configuration.$2).length;
+      for (final token in configuration.$3) {
+        bytes += utf8.encode(token).length;
+      }
+      bytes += configuration.$4.length * 8;
+    }
+    return bytes;
+  }
+}
+
+String _pdaAcceptanceDescription(PDAAcceptanceMode mode) => switch (mode) {
+  PDAAcceptanceMode.finalState => 'Accepted by final state',
+  PDAAcceptanceMode.emptyStack => 'Accepted by empty stack',
+  PDAAcceptanceMode.both => 'Accepted by final state and empty stack',
+};
+
+StepExplanation _pdaAcceptanceExplanation(
+  PDAAcceptanceMode mode,
+  String stateId,
+) {
+  final bullets = switch (mode) {
+    PDAAcceptanceMode.finalState => [
+      'The complete input was consumed in accepting state "$stateId".',
+      'The stack does not need to be empty under this rule.',
+    ],
+    PDAAcceptanceMode.emptyStack => [
+      'The complete input was consumed and the stack is empty.',
+      'The current state does not need to be accepting under this rule.',
+    ],
+    PDAAcceptanceMode.both => [
+      'The complete input was consumed in accepting state "$stateId".',
+      'The stack is also empty, so both acceptance conditions hold.',
+    ],
+  };
+  return StepExplanation(
+    title: _pdaAcceptanceDescription(mode),
+    bullets: bullets,
+    categories: const [ExplanationCategory.acceptance],
+    highlights: [HighlightTarget(type: HighlightTargetType.state, id: stateId)],
+  );
 }

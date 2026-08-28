@@ -12,6 +12,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/algorithms/automaton_simulator.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/models/simulation_result.dart';
 import '../../core/repositories/trace_repository.dart';
 import 'automaton_state_provider.dart';
@@ -23,12 +24,14 @@ class SimulationState {
   final List<SimulationResult> simulationHistory;
   final bool isLoading;
   final String? error;
+  final StructuredMessage? structuredError;
 
   const SimulationState({
     this.simulationResult,
     this.simulationHistory = const [],
     this.isLoading = false,
     this.error,
+    this.structuredError,
   });
 
   static const _unset = Object();
@@ -38,6 +41,7 @@ class SimulationState {
     List<SimulationResult>? simulationHistory,
     bool? isLoading,
     Object? error = _unset,
+    Object? structuredError = _unset,
   }) {
     return SimulationState(
       simulationResult: simulationResult == _unset
@@ -46,6 +50,9 @@ class SimulationState {
       simulationHistory: simulationHistory ?? this.simulationHistory,
       isLoading: isLoading ?? this.isLoading,
       error: error == _unset ? this.error : error as String?,
+      structuredError: structuredError == _unset
+          ? this.structuredError
+          : structuredError as StructuredMessage?,
     );
   }
 
@@ -56,7 +63,7 @@ class SimulationState {
 
   /// Clear only error state
   SimulationState clearError() {
-    return copyWith(error: null);
+    return copyWith(error: null, structuredError: null);
   }
 
   /// Clear simulation results but keep history
@@ -69,12 +76,13 @@ class SimulationState {
 class AutomatonSimulationNotifier extends StateNotifier<SimulationState> {
   final Ref ref;
   final TraceRepository _tracePersistenceService;
+  int _requestVersion = 0;
 
   AutomatonSimulationNotifier({
     required this.ref,
     required TraceRepository tracePersistenceService,
-  })  : _tracePersistenceService = tracePersistenceService,
-        super(const SimulationState()) {
+  }) : _tracePersistenceService = tracePersistenceService,
+       super(const SimulationState()) {
     // Listen to automaton state changes and clear simulation when automaton changes
     ref.listen<AutomatonStateProviderState>(automatonStateProvider, (
       previous,
@@ -84,17 +92,21 @@ class AutomatonSimulationNotifier extends StateNotifier<SimulationState> {
       final previousAutomaton = previous?.currentAutomaton;
       final nextAutomaton = next.currentAutomaton;
       if (!identical(previousAutomaton, nextAutomaton)) {
-        state = state.clearSimulation();
+        _requestVersion++;
+        state = state.clear();
       }
     });
   }
 
   /// Simulates the current automaton with input string
   Future<void> simulateAutomaton(String inputString) async {
-    final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
+    final sourceState = ref.read(automatonStateProvider);
+    final currentAutomaton = sourceState.currentAutomaton;
     if (currentAutomaton == null) return;
+    final requestVersion = ++_requestVersion;
+    final documentGeneration = sourceState.documentGeneration;
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, structuredError: null);
 
     try {
       final result = await AutomatonSimulator.simulate(
@@ -104,18 +116,32 @@ class AutomatonSimulationNotifier extends StateNotifier<SimulationState> {
         timeout: const Duration(seconds: 5),
       );
 
+      if (!_isCurrentRequest(requestVersion, documentGeneration)) return;
+
       if (result.isSuccess) {
         _addSimulationToHistory(result.data!);
         state = state.copyWith(simulationResult: result.data, isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
       }
     } catch (e) {
+      if (!_isCurrentRequest(requestVersion, documentGeneration)) return;
       state = state.copyWith(
         isLoading: false,
         error: 'Error simulating automaton: $e',
+        structuredError: null,
       );
     }
+  }
+
+  bool _isCurrentRequest(int requestVersion, int documentGeneration) {
+    final current = ref.read(automatonStateProvider);
+    return requestVersion == _requestVersion &&
+        current.documentGeneration == documentGeneration;
   }
 
   /// Clear simulation results
@@ -145,9 +171,9 @@ class AutomatonSimulationNotifier extends StateNotifier<SimulationState> {
 /// Provider registration for automaton simulation operations
 final automatonSimulationProvider =
     StateNotifierProvider<AutomatonSimulationNotifier, SimulationState>((ref) {
-  final persistenceService = ref.watch(dataTracePersistenceServiceProvider);
-  return AutomatonSimulationNotifier(
-    ref: ref,
-    tracePersistenceService: persistenceService,
-  );
-});
+      final persistenceService = ref.watch(dataTracePersistenceServiceProvider);
+      return AutomatonSimulationNotifier(
+        ref: ref,
+        tracePersistenceService: persistenceService,
+      );
+    });

@@ -100,6 +100,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
     if (result == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context);
+    final values = LocaleValueFormatter.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -147,7 +148,8 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               Icon(Icons.arrow_downward, size: 16, color: colorScheme.primary),
               const SizedBox(width: 4),
               Text(
-                '${result.totalRulesApplied} ${l10n.rulesAppliedLabel}',
+                '${values.integer(result.totalRulesApplied)} '
+                '${l10n.rulesAppliedLabel}',
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.primary,
                   fontWeight: FontWeight.w500,
@@ -219,19 +221,22 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               children: [
                 _buildStatChip(
                   l10n.saved,
-                  '${result.charactersSaved} ${l10n.charactersAbbreviation}',
+                  '${values.integer(result.charactersSaved)} '
+                  '${l10n.charactersAbbreviation}',
                   Icons.compress,
                   colorScheme.tertiary,
                 ),
                 _buildStatChip(
                   l10n.reduction,
-                  '${result.reductionPercentage.toStringAsFixed(1)}%',
+                  values.percentFromRatio(result.reductionPercentage / 100),
                   Icons.trending_down,
                   colorScheme.secondary,
                 ),
                 _buildStatChip(
                   l10n.time,
-                  '${result.executionTimeMs}ms',
+                  l10n.durationMillisecondsValue(
+                    values.integer(result.executionTime.inMilliseconds),
+                  ),
                   Icons.timer_outlined,
                   colorScheme.primary,
                 ),
@@ -283,6 +288,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
     if (result == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context);
+    final values = LocaleValueFormatter.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -294,8 +300,9 @@ extension _RegexPageSimplificationSections on _RegexPageState {
           Row(
             children: [
               Text(
-                '${l10n.stepLabel} ${regexState.selectedStepIndex + 1} '
-                '${l10n.ofLabel} ${result.steps.length}',
+                '${l10n.stepLabel} '
+                '${values.integer(regexState.selectedStepIndex + 1)} '
+                '${l10n.ofLabel} ${values.integer(result.steps.length)}',
                 style: textTheme.labelMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -304,18 +311,22 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               IconButton(
                 onPressed: regexState.selectedStepIndex > 0
                     ? () => ref
-                        .read(regexEditorProvider.notifier)
-                        .setSelectedStepIndex(regexState.selectedStepIndex - 1)
+                          .read(regexEditorProvider.notifier)
+                          .setSelectedStepIndex(
+                            regexState.selectedStepIndex - 1,
+                          )
                     : null,
                 icon: const Icon(Icons.chevron_left),
                 tooltip: l10n.previousStep,
               ),
               IconButton(
-                onPressed: regexState.selectedStepIndex <
-                        result.steps.length - 1
+                onPressed:
+                    regexState.selectedStepIndex < result.steps.length - 1
                     ? () => ref
-                        .read(regexEditorProvider.notifier)
-                        .setSelectedStepIndex(regexState.selectedStepIndex + 1)
+                          .read(regexEditorProvider.notifier)
+                          .setSelectedStepIndex(
+                            regexState.selectedStepIndex + 1,
+                          )
                     : null,
                 icon: const Icon(Icons.chevron_right),
                 tooltip: l10n.nextStep,
@@ -342,8 +353,9 @@ extension _RegexPageSimplificationSections on _RegexPageState {
         const SizedBox(height: 8),
         if (result.steps.isNotEmpty)
           SizedBox(
-            height:
-                result.steps.length <= 4 ? result.steps.length * 88.0 : 360.0,
+            height: result.steps.length <= 4
+                ? result.steps.length * 88.0
+                : 360.0,
             child: ListView.builder(
               itemCount: result.steps.length,
               itemBuilder: (context, index) {
@@ -393,7 +405,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  step.title,
+                  l10n.resolveStructuredMessage(step.titleMessage),
                   style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -407,7 +419,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  step.stepType.displayName,
+                  l10n.resolveStructuredMessage(step.stepType.labelMessage),
                   style: textTheme.labelSmall?.copyWith(
                     color: colorScheme.onSecondaryContainer,
                   ),
@@ -431,7 +443,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    step.explanation,
+                    l10n.resolveStructuredMessage(step.explanationMessage),
                     style: textTheme.bodySmall?.copyWith(height: 1.4),
                   ),
                 ),
@@ -668,6 +680,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
     int index,
     bool isSelected,
   ) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -716,7 +729,7 @@ extension _RegexPageSimplificationSections on _RegexPageState {
             // Step title
             Expanded(
               child: Text(
-                step.title,
+                l10n.resolveStructuredMessage(step.titleMessage),
                 style: textTheme.bodySmall?.copyWith(
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
@@ -732,8 +745,10 @@ extension _RegexPageSimplificationSections on _RegexPageState {
             if (step.appliesRule && step.ruleApplied != null)
               Flexible(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.tertiaryContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(4),

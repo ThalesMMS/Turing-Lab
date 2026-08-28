@@ -34,6 +34,32 @@ class _FakeHighlightController implements GraphViewHighlightController {
 
 void main() {
   group('SimulationHighlightService', () {
+    test('scoped channels survive out-of-order disposal', () {
+      final fallback = _FakeHighlightController();
+      final first = _FakeHighlightController();
+      final second = _FakeHighlightController();
+      final fallbackChannel = GraphViewSimulationHighlightChannel(fallback);
+      final secondChannel = GraphViewSimulationHighlightChannel(second);
+      final service = SimulationHighlightService(channel: fallbackChannel);
+      final firstRegistration = service.registerChannel(
+        GraphViewSimulationHighlightChannel(first),
+      );
+      final secondRegistration = service.registerChannel(secondChannel);
+
+      firstRegistration.dispose();
+      expect(service.channel, same(secondChannel));
+
+      final liveHighlight = SimulationHighlight(stateIds: const {'live'});
+      service.dispatch(liveHighlight);
+      expect(first.lastHighlight, isNull);
+      expect(second.lastHighlight, liveHighlight);
+
+      secondRegistration.dispose();
+      expect(service.channel, same(fallbackChannel));
+      service.dispatch(SimulationHighlight(stateIds: const {'fallback'}));
+      expect(fallback.lastHighlight?.stateIds, {'fallback'});
+    });
+
     test('emits highlight payload to GraphView controller', () {
       final controller = _FakeHighlightController();
       final channel = GraphViewSimulationHighlightChannel(controller);

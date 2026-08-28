@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "date": "2026-08-26",
+    "jflapVersion": "7.1",
+    "jflapSourceRoot": "../JFLAP",
+    "jflapSourceFiles": 618,
+    "jflapSourceSha256": "2e07d87424972752ebd329fad1bc8e0f06de214fce65ceff901f00275360b2b7",
+    "turingLabCommit": "eff217d16d6167221300e38a6e39db9037c5b2fe"
+  },
+  "license": {
+    "source": "../JFLAP/LICENSE",
+    "summary": "JFLAP 7.1 permits use and modification only under its bundled license, requires the license in distributions, and requires distributions or derivative bundles containing JFLAP to remain free of charge.",
+    "consequence": "The matrix cites behavior and source locations but does not copy JFLAP implementation code into Turing Lab. Turing Lab implementations remain independent and document intentional deviations."
+  },
+  "requiredJflapNewTypes": [
+    "finite-automaton",
+    "mealy-machine",
+    "moore-machine",
+    "pda-multiple-character-input",
+    "pda-single-character-input",
+    "tm-single-tape",
+    "tm-multi-tape",
+    "tm-building-blocks",
+    "context-free-grammar",
+    "l-system",
+    "regular-expression",
+    "pumping-lemma-regular",
+    "pumping-lemma-context-free"
+  ],
+  "requiredJflapXmlFamilies": [
+    "fsa",
+    "mealy",
+    "moore",
+    "pda",
+    "tm",
+    "tm-building-blocks",
+    "grammar",
+    "l-system",
+    "regular-expression",
+    "pumping-lemma-regular",
+    "pumping-lemma-context-free"
+  ],
+  "requiredGroups": [
+    "document",
+    "simulation",
+    "parsing",
+    "conversion",
+    "layout",
+    "export",
+    "teaching",
+    "preference",
+    "example"
+  ]
+}

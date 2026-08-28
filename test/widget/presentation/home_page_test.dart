@@ -1,6 +1,7 @@
-import 'dart:ui' show SemanticsAction;
+import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,8 +20,8 @@ import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/pages/home_page.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
-import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
 import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
+import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
 import '../../support/workspace_dock_helpers.dart';
 
@@ -75,6 +76,7 @@ Future<void> _pumpHomePage(
   required _TestSimulationHighlightService highlightService,
   Size size = const Size(430, 932),
   Locale locale = const Locale('en'),
+  double textScale = 1,
   List<NavigatorObserver> navigatorObservers = const [],
 }) async {
   tester.view.physicalSize = size;
@@ -96,6 +98,12 @@ Future<void> _pumpHomePage(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         navigatorObservers: navigatorObservers,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
       ),
     ),
   );
@@ -123,14 +131,13 @@ void _expectFocusedHelpTopic(WidgetTester tester, String topicId) {
   expect(find.byKey(ValueKey('help-body-$topicId')), findsOneWidget);
 }
 
-void _expectSinglePushTo<T>(
-  _RecordingNavigatorObserver observer,
-) {
+void _expectSinglePushTo<T>(_RecordingNavigatorObserver observer) {
   expect(observer.pushedRoutes, hasLength(1));
   final route = observer.pushedRoutes.single;
   expect(route, isA<MaterialPageRoute<dynamic>>());
-  final page = (route as MaterialPageRoute<dynamic>)
-      .builder(observer.navigator!.context);
+  final page = (route as MaterialPageRoute<dynamic>).builder(
+    observer.navigator!.context,
+  );
   expect(page, isA<T>());
 }
 
@@ -144,7 +151,7 @@ void main() {
 
   group('HomePage', () {
     testWidgets(
-      'renders mobile navigation with dynamic titles and actions below 1024 width',
+      'renders the title workspace selector and actions below 1024 width',
       (tester) async {
         final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(1);
         final highlightService = _TestSimulationHighlightService();
@@ -161,17 +168,123 @@ void main() {
           size: const Size(800, 1280),
         );
 
-        expect(find.byType(MobileNavigation), findsOneWidget);
-        expect(find.byType(WorkspaceSelector), findsNothing);
-        expect(find.text('Grammar'), findsWidgets);
-        expect(find.text('Context-Free Grammars'), findsOneWidget);
-        expect(find.text('Pumping'), findsOneWidget);
+        expect(find.byType(WorkspaceSelector), findsOneWidget);
+        final selector = tester.widget<WorkspaceSelector>(
+          find.byType(WorkspaceSelector),
+        );
+        expect(selector.compact, isTrue);
+        expect(selector.items.map((item) => item.label), const [
+          'FSA',
+          'Grammar',
+          'PDA',
+          'TM',
+          'Regex',
+          'Regular pumping',
+          'Context-free pumping',
+          'Mealy',
+          'Moore',
+          'Unrestricted grammar',
+          'L-system',
+        ]);
+        expect(find.text('Grammar'), findsOneWidget);
         expect(find.byIcon(Icons.help_outline), findsWidgets);
         expect(find.byIcon(Icons.settings), findsWidgets);
+
+        await tester.tap(find.byIcon(Icons.arrow_drop_down));
+        await tester.pumpAndSettle();
+        expect(find.text('Context-Free Grammars'), findsOneWidget);
+        expect(find.text('Regular pumping'), findsOneWidget);
 
         expect(highlightService.clearCallCount, 0);
       },
     );
+
+    for (final width in const [320.0, 360.0, 430.0]) {
+      testWidgets(
+        'keeps compact app-bar controls separate at ${width.toInt()} px',
+        (tester) async {
+          final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
+          final highlightService = _TestSimulationHighlightService();
+
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
+          await _pumpHomePage(
+            tester,
+            navigationNotifier: navigationNotifier,
+            highlightService: highlightService,
+            size: Size(width, 800),
+          );
+
+          final selector = find.byType(WorkspaceSelector);
+          final quickActions = find.byType(WorkspaceQuickActionsBar);
+          final help = find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byTooltip('Help'),
+          );
+          final settings = find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byTooltip('Settings'),
+          );
+          expect(selector, findsOneWidget);
+          expect(quickActions, findsOneWidget);
+          expect(help, findsOneWidget);
+          expect(settings, findsOneWidget);
+          expect(
+            tester.getRect(quickActions).right,
+            lessThanOrEqualTo(tester.getRect(selector).left),
+          );
+          expect(
+            tester.getRect(selector).right,
+            lessThanOrEqualTo(tester.getRect(help).left),
+          );
+          expect(tester.getSize(find.text('FSA')).width, greaterThan(0));
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    testWidgets('keeps Portuguese compact navigation usable at 200% text', (
+      tester,
+    ) async {
+      final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(1);
+      final highlightService = _TestSimulationHighlightService();
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await _pumpHomePage(
+        tester,
+        navigationNotifier: navigationNotifier,
+        highlightService: highlightService,
+        size: const Size(320, 800),
+        locale: const Locale('pt'),
+        textScale: 2,
+      );
+
+      expect(find.text('Gramática'), findsOneWidget);
+      final title = tester.renderObject<RenderParagraph>(
+        find.text('Gramática'),
+      );
+      expect(title.didExceedMaxLines, isFalse);
+      expect(
+        find.byKey(const ValueKey('workspace-quick-actions-overflow')),
+        findsOneWidget,
+      );
+      expect(find.byTooltip('Ajuda'), findsOneWidget);
+      expect(find.byTooltip('Configurações'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-quick-actions-overflow')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Algoritmos e Exemplos'), findsOneWidget);
+      expect(find.text('Analisador'), findsOneWidget);
+      expect(find.text('Editar'), findsOneWidget);
+    });
 
     testWidgets(
       'renders the app-bar workspace selector at 1024 width or above',
@@ -191,20 +304,25 @@ void main() {
           size: const Size(1280, 900),
         );
 
-        expect(find.byType(MobileNavigation), findsNothing);
         expect(find.byType(WorkspaceSelector), findsOneWidget);
+        expect(
+          tester
+              .widget<WorkspaceSelector>(find.byType(WorkspaceSelector))
+              .compact,
+          isFalse,
+        );
         // The selector names the active workspace and nothing else, leaving
         // the rest of the window to the canvas.
         expect(find.text('FSA'), findsOneWidget);
         expect(find.text('Finite State Automata'), findsOneWidget);
-        expect(find.text('Pumping'), findsNothing);
+        expect(find.text('Regular pumping'), findsNothing);
         expect(find.byIcon(Icons.help_outline), findsWidgets);
         expect(find.byIcon(Icons.settings), findsWidgets);
 
         // Every workspace is one tap away.
         await tester.tap(find.byIcon(Icons.arrow_drop_down));
         await tester.pumpAndSettle();
-        expect(find.text('Pumping'), findsOneWidget);
+        expect(find.text('Regular pumping'), findsOneWidget);
 
         expect(highlightService.clearCallCount, 0);
       },
@@ -228,8 +346,8 @@ void main() {
         highlightService: highlightService,
       );
 
-      expect(find.text('Pumping'), findsWidgets);
-      expect(find.text('Pumping Lemma'), findsOneWidget);
+      expect(find.text('Regular pumping'), findsWidgets);
+      expect(find.text('Regular pumping lemma'), findsWidgets);
       expect(
         navigationNotifier.receivedIndices,
         isNot(contains(HomeNavigationNotifier.regexIndex)),
@@ -262,6 +380,25 @@ void main() {
         highlightService: highlightService,
       );
 
+      final selector = find.bySemanticsLabel('Workspace: FSA');
+      expect(selector, findsOneWidget);
+      expect(
+        tester
+            .getSemantics(selector)
+            .getSemanticsData()
+            .flagsCollection
+            .isExpanded,
+        Tristate.isFalse,
+      );
+      expect(
+        tester
+            .getSemantics(selector)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      await tester.tap(selector);
+      await tester.pumpAndSettle();
       expect(find.bySemanticsLabel('Navigate to FSA'), findsOneWidget);
       expect(find.bySemanticsLabel('Navigate to Regex'), findsOneWidget);
       final appBarHelp = find.descendant(
@@ -308,6 +445,8 @@ void main() {
       );
 
       expect(find.text('Gramática'), findsWidgets);
+      await tester.tap(find.bySemanticsLabel('Espaço de trabalho: Gramática'));
+      await tester.pumpAndSettle();
       expect(find.text('Gramáticas livres de contexto'), findsOneWidget);
       expect(find.byTooltip('Ajuda'), findsOneWidget);
       expect(find.byTooltip('Configurações'), findsOneWidget);
@@ -331,28 +470,36 @@ void main() {
         highlightService: highlightService,
       );
 
-      final navigationFinder = find.byType(MobileNavigation);
-
-      await tester.tap(
-        find.descendant(of: navigationFinder, matching: find.text('Regex')),
-      );
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Navigate to Regex'));
       await tester.pumpAndSettle();
 
       final pageView = tester.widget<PageView>(find.byType(PageView));
       expect(pageView.controller?.page, closeTo(4, 0.001));
       expect(navigationNotifier.receivedIndices.contains(4), isTrue);
       expect(find.text('Regex'), findsWidgets);
-      expect(find.text('Regular Expressions'), findsOneWidget);
-
-      await tester.tap(
-        find.descendant(of: navigationFinder, matching: find.text('PDA')),
+      expect(
+        tester
+            .widget<WorkspaceSelector>(find.byType(WorkspaceSelector))
+            .currentIndex,
+        4,
       );
+
+      await tester.tap(find.byIcon(Icons.arrow_drop_down));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Navigate to PDA'));
       await tester.pumpAndSettle();
 
       expect(pageView.controller?.page, closeTo(2, 0.001));
       expect(navigationNotifier.receivedIndices.contains(2), isTrue);
       expect(find.text('PDA'), findsWidgets);
-      expect(find.text('Pushdown Automata'), findsOneWidget);
+      expect(
+        tester
+            .widget<WorkspaceSelector>(find.byType(WorkspaceSelector))
+            .currentIndex,
+        2,
+      );
     });
 
     testWidgets('updates page view via navigation rail on desktop layout', (
@@ -546,15 +693,18 @@ void main() {
           tester.element(find.byType(HomePage)),
           listen: false,
         );
-        container.read(automatonStateProvider.notifier).addState(
+        container
+            .read(automatonStateProvider.notifier)
+            .addState(
               id: 'loaded-state',
               label: 'loaded',
               x: 120,
               y: 120,
               isInitial: true,
             );
-        final loadedAutomaton =
-            container.read(automatonStateProvider).currentAutomaton;
+        final loadedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
 
         await tester.enterText(
           find.byKey(const ValueKey('regex_input_field')),
@@ -573,9 +723,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text(
-            'Já existe um autômato carregado. Deseja substituí-lo?',
-          ),
+          find.text('Já existe um autômato carregado. Deseja substituí-lo?'),
           findsOneWidget,
         );
         await tester.tap(find.text('Cancelar'));
@@ -614,15 +762,18 @@ void main() {
         tester.element(find.byType(HomePage)),
         listen: false,
       );
-      container.read(automatonStateProvider.notifier).addState(
+      container
+          .read(automatonStateProvider.notifier)
+          .addState(
             id: 'loaded-state',
             label: 'loaded',
             x: 120,
             y: 120,
             isInitial: true,
           );
-      final loadedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
+      final loadedAutomaton = container
+          .read(automatonStateProvider)
+          .currentAutomaton;
 
       await tester.enterText(
         find.byKey(const ValueKey('regex_input_field')),
@@ -680,8 +831,9 @@ void main() {
         );
         canvas.controller!.addStateAt(const Offset(180, 240));
         await tester.pumpAndSettle();
-        final stateIdsBeforeHelp =
-            canvas.controller!.nodes.map((node) => node.id).toSet();
+        final stateIdsBeforeHelp = canvas.controller!.nodes
+            .map((node) => node.id)
+            .toSet();
 
         _triggerEnabledAppBarAction(tester, Icons.help_outline);
         await tester.pumpAndSettle();
@@ -700,11 +852,7 @@ void main() {
           stateIdsBeforeHelp,
         );
 
-        await tester.tap(find.byIcon(Icons.open_in_full));
-        await tester.pumpAndSettle();
-        await tester.tap(
-          find.byKey(const ValueKey('canvas-toolbar-overflow')),
-        );
+        await tester.tap(find.byKey(const ValueKey('canvas-toolbar-overflow')));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Help & Shortcuts').last);
         await tester.pumpAndSettle();
@@ -801,10 +949,9 @@ void main() {
         tester.element(find.byType(HomePage)),
         listen: false,
       );
-      container.read(grammarProvider.notifier).addProduction(
-        leftSide: const ['S'],
-        rightSide: const ['a'],
-      );
+      container
+          .read(grammarProvider.notifier)
+          .addProduction(leftSide: const ['S'], rightSide: const ['a']);
       await tester.pumpAndSettle();
 
       _triggerEnabledAppBarAction(tester, Icons.help_outline);
@@ -812,8 +959,9 @@ void main() {
       _expectFocusedHelpTopic(tester, HelpTopicIds.grammarTheoryCfg);
     });
 
-    testWidgets('Home Regex Help follows valid workspace state',
-        (tester) async {
+    testWidgets('Home Regex Help follows valid workspace state', (
+      tester,
+    ) async {
       final navigationNotifier = _TestHomeNavigationNotifier()
         ..setIndex(HomeNavigationNotifier.regexIndex);
       final highlightService = _TestSimulationHighlightService();
@@ -860,7 +1008,7 @@ void main() {
 
       final algorithms = find.descendant(
         of: find.byType(AppBar),
-        matching: find.byTooltip('Algorithms'),
+        matching: find.byTooltip('Algorithms & Examples'),
       );
       expect(algorithms, findsOneWidget);
       expect(tester.getCenter(algorithms).dx, lessThan(100));
@@ -882,6 +1030,46 @@ void main() {
         );
       }
     });
+
+    testWidgets(
+      'mobile keeps the workspace dropdown at the three-slot position '
+      'across workspaces',
+      (tester) async {
+        final navigationNotifier = _TestHomeNavigationNotifier()..setIndex(0);
+        final highlightService = _TestSimulationHighlightService();
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await _pumpHomePage(
+          tester,
+          navigationNotifier: navigationNotifier,
+          highlightService: highlightService,
+          size: const Size(430, 932),
+        );
+
+        // Workspaces publish between one and three left quick actions; the
+        // dropdown must not move when switching between them.
+        const threeSlots = 3 * 48.0;
+        for (final index in [
+          HomeNavigationNotifier.fsaIndex,
+          HomeNavigationNotifier.grammarIndex,
+          HomeNavigationNotifier.tmIndex,
+          HomeNavigationNotifier.regexIndex,
+          HomeNavigationNotifier.pumpingLemmaIndex,
+        ]) {
+          navigationNotifier.setIndex(index);
+          await tester.pumpAndSettle();
+          expect(
+            tester.getTopLeft(find.byType(WorkspaceSelector)).dx,
+            threeSlots,
+            reason: 'workspace index $index',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     for (final scenario in [
       ('mobile', const Size(430, 932)),

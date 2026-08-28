@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>turing</type>
+  <tapes>2</tapes>
+  <automaton>
+    <state id="q0" name="q0">
+      <x>0</x>
+      <y>0</y>
+      <initial/>
+    </state>
+    <state id="q1" name="q1">
+      <x>100</x>
+      <y>0</y>
+      <final/>
+    </state>
+    <transition>
+      <from>q0</from>
+      <to>q1</to>
+      <read tape="1">a</read>
+      <write tape="1">a</write>
+      <move tape="1">R</move>
+      <read tape="2"/>
+      <write tape="2"/>
+      <move tape="2">S</move>
+    </transition>
+  </automaton>
+</structure>

@@ -10,9 +10,12 @@
 //
 //  Created for Phase 4 integration testing - January 2026
 //
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 
 class _CellEditCallback {
@@ -30,9 +33,13 @@ Future<void> _pumpTapePanel(
   bool isSimulating = false,
   VoidCallback? onClear,
   void Function(int, String)? onCellEdit,
+  Locale locale = const Locale('en'),
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: TMTapePanel(
           tapeState: tapeState,
@@ -162,10 +169,7 @@ void main() {
     });
 
     testWidgets('renders tape with cells', (tester) async {
-      const tapeState = TapeState(
-        cells: ['0', '1', '0', '1'],
-        headPosition: 2,
-      );
+      const tapeState = TapeState(cells: ['0', '1', '0', '1'], headPosition: 2);
 
       await _pumpTapePanel(tester, tapeState: tapeState);
 
@@ -175,10 +179,7 @@ void main() {
     });
 
     testWidgets('highlights head position with arrow', (tester) async {
-      const tapeState = TapeState(
-        cells: ['a', 'b', 'c'],
-        headPosition: 1,
-      );
+      const tapeState = TapeState(cells: ['a', 'b', 'c'], headPosition: 1);
 
       await _pumpTapePanel(tester, tapeState: tapeState);
 
@@ -223,6 +224,64 @@ void main() {
       expect(find.byIcon(Icons.edit), findsOneWidget);
     });
 
+    testWidgets('exposes editable tape cell semantics in English', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
+      const tapeState = TapeState(
+        cells: ['a', '□'],
+        headPosition: 1,
+        lastReadSymbol: '□',
+        lastWriteSymbol: 'x',
+        highlightedCellIndices: {1},
+      );
+
+      await _pumpTapePanel(
+        tester,
+        tapeState: tapeState,
+        onCellEdit: (_, __) {},
+      );
+
+      final data = tester
+          .getSemantics(find.byKey(const ValueKey('tm-tape-cell-1')))
+          .getSemanticsData();
+      expect(data.label, 'Tape cell 1');
+      expect(
+        data.value,
+        'Blank symbol □, under the tape head, read in the last operation, '
+        'written in the last operation, highlighted',
+      );
+      expect(data.hint, 'Opens symbol editing for this tape cell.');
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
+
+      semanticsHandle.dispose();
+    });
+
+    testWidgets('localizes read-only tape cell semantics in Portuguese', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
+      const tapeState = TapeState(cells: ['a'], headPosition: 0);
+
+      await _pumpTapePanel(
+        tester,
+        tapeState: tapeState,
+        isSimulating: true,
+        onCellEdit: (_, __) {},
+        locale: const Locale('pt'),
+      );
+
+      final data = tester
+          .getSemantics(find.byKey(const ValueKey('tm-tape-cell-0')))
+          .getSemanticsData();
+      expect(data.label, 'Célula 0 da fita');
+      expect(data.value, 'Símbolo a, sob o cabeçote da fita');
+      expect(data.hint, isEmpty);
+      expect(data.hasAction(SemanticsAction.tap), isFalse);
+
+      semanticsHandle.dispose();
+    });
+
     testWidgets('displays clear button when onClear provided', (tester) async {
       const tapeState = TapeState(cells: ['a', 'b'], headPosition: 0);
       var clearCalled = false;
@@ -250,10 +309,7 @@ void main() {
     });
 
     testWidgets('allows cell editing when not simulating', (tester) async {
-      const tapeState = TapeState(
-        cells: ['a', 'b', 'c'],
-        headPosition: 1,
-      );
+      const tapeState = TapeState(cells: ['a', 'b', 'c'], headPosition: 1);
       final editCallback = _CellEditCallback();
 
       await _pumpTapePanel(
@@ -278,10 +334,7 @@ void main() {
     });
 
     testWidgets('disables cell editing when simulating', (tester) async {
-      const tapeState = TapeState(
-        cells: ['a', 'b', 'c'],
-        headPosition: 1,
-      );
+      const tapeState = TapeState(cells: ['a', 'b', 'c'], headPosition: 1);
       final editCallback = _CellEditCallback();
 
       await _pumpTapePanel(
@@ -518,10 +571,7 @@ void main() {
     });
 
     testWidgets('edit dialog title shows cell index', (tester) async {
-      const tapeState = TapeState(
-        cells: ['a', 'b', 'c'],
-        headPosition: 1,
-      );
+      const tapeState = TapeState(cells: ['a', 'b', 'c'], headPosition: 1);
       final editCallback = _CellEditCallback();
 
       await _pumpTapePanel(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Future<void> expandCanvasToolbar(WidgetTester tester) async {
-  await tester.tap(find.byIcon(Icons.open_in_full));
-  await tester.pump(const Duration(milliseconds: 250));
+Future<void> expectCanvasToolbarMore(WidgetTester tester) async {
+  expect(find.byKey(const ValueKey('canvas-toolbar-overflow')), findsOneWidget);
+  await tester.pump();
 }
 
 Future<void> tapSecondaryCanvasAction(

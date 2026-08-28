@@ -21,8 +21,8 @@ set -uo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-readonly CATEGORIES="prereqs format analyze unit widget integration graphview responsive golden screenshots apple"
-readonly PRESETS="code quick canvas grammar tm responsive golden screenshots apple all"
+readonly CATEGORIES="prereqs format analyze unit widget integration properties graphview responsive golden screenshots apple"
+readonly PRESETS="code quick canvas grammar tm localization responsive golden screenshots apple all"
 
 readonly EXIT_OK=0
 readonly EXIT_FAILED=1
@@ -57,11 +57,12 @@ Categories (reported independently):
                the result differs from the committed sources (--skip-l10n opts
                out). Every other category depends on it, so it is added to any
                --only selection automatically.
-  format       Changed-file `dart format` plus the English comment/doc check
+  format       Changed-file `dart format` plus repository policy checks
   analyze      `flutter analyze --no-fatal-infos` on the root package
   unit         test/unit/, test/core/, test/features/, test/app_store/, test/website/
-  widget       test/widget/ (see --widget-scope)
+  widget       test/widget/ by default (see --widget-scope)
   integration  test/integration/ (device-free smoke and IO round-trips)
+  properties   Reproducible hard-edge property catalog and local reports
   graphview    The vendored graphview package: pub get, analyze, tests, benchmarks
   responsive   test/responsive/ and test/tablet_layout_test.dart
   golden       test/goldens/ comparison only; this script never re-records
@@ -75,6 +76,7 @@ Presets:
                unit/widget suites
   grammar      prereqs analyze, plus grammar/CFG-named unit/widget suites
   tm           prereqs analyze, plus Turing-machine-named unit/widget suites
+  localization prereqs format analyze unit widget integration responsive
   responsive   prereqs responsive
   golden       prereqs golden
   screenshots  prereqs screenshots
@@ -100,9 +102,8 @@ Options:
                              is a hard failure (exit 127).
       --format-all           Format-check the whole tree instead of changed files
       --base SHA             Base revision for the changed-file format check
-      --widget-scope SCOPE   `stable` (default) runs the eight historically
-                             green presentation suites; `all` runs test/widget/,
-                             which still contains documented baseline failures
+      --widget-scope SCOPE   `all` (default) runs test/widget/; `stable` runs
+                             the eight legacy focused presentation suites
       --apple-target NAME    iphone | ipad | macos, required for Apple L2
       --apple-device ID      Device id passed to `flutter test -d`, required for
                              Apple L2
@@ -134,7 +135,7 @@ Examples:
   tool/qa.sh --preset grammar
   tool/qa.sh --only analyze,unit --base origin/main
   tool/qa.sh --preset apple --apple-target macos --apple-device macos
-  tool/qa.sh --all --widget-scope all
+  tool/qa.sh --all
 USAGE
 }
 
@@ -172,6 +173,7 @@ preset_categories() {
   canvas) echo "prereqs analyze unit widget graphview responsive golden" ;;
   grammar) echo "prereqs analyze unit widget" ;;
   tm) echo "prereqs analyze unit widget" ;;
+  localization) echo "prereqs format analyze unit widget integration responsive" ;;
   responsive) echo "prereqs responsive" ;;
   golden) echo "prereqs golden" ;;
   screenshots) echo "prereqs screenshots" ;;
@@ -200,7 +202,7 @@ SKIP_GRAPHVIEW_BENCHMARKS=0
 ALLOW_MISSING_TOOLCHAIN="${ALLOW_MISSING_FLUTTER:-0}"
 FORMAT_ALL=0
 FORMAT_BASE="${QA_FORMAT_BASE:-}"
-WIDGET_SCOPE="stable"
+WIDGET_SCOPE="all"
 APPLE_TARGET=""
 APPLE_DEVICE=""
 SCREENSHOTS_SCOPE="all"
@@ -530,6 +532,14 @@ git_diff_generated_l10n() {
   git diff --exit-code -- $GENERATED_L10N
 }
 
+domain_message_report() {
+  python3 tool/check_domain_message_prose.py \
+    --scope tool/localization/domain_message_scope.v1.json \
+    --allowlist tool/localization/domain_message_allowlist.v1.json \
+    --inventory docs/localization/domain_message_inventory.v1.json \
+    --json >"$REPORT_DIR/domain-message-prose.json"
+}
+
 format_changed() {
   PATH="$(dirname "$DART"):$PATH" "$ROOT_DIR/tool/check_changed_dart_format.sh" "$@"
 }
@@ -553,7 +563,7 @@ collect_targets() {
       expression="$expression -o -name *${pattern}*_test.dart"
     fi
   done
-  find $existing -type f \( $expression \) 2>/dev/null | sort | tr '\n' ' '
+  command -p find $existing -type f \( $expression \) 2>/dev/null | sort | tr '\n' ' '
   set +f
 }
 
@@ -675,18 +685,117 @@ category_format() {
       "$(echo tool/check_changed_dart_format.sh $FORMAT_BASE)" -- format_changed "$FORMAT_BASE"
   fi
 
+  exec_step format feature-ui-literals \
+    "Feature-interface literal inventory and unapproved prose" \
+    "$DART run tool/localization_literal_scan.dart --scope tool/localization/feature_ui_scope.v1.json --inventory docs/localization/feature_ui_literal_inventory.v1.json --json $REPORT_DIR/feature-ui-literals.json" -- \
+    "$DART" run tool/localization_literal_scan.dart \
+      --scope tool/localization/feature_ui_scope.v1.json \
+      --inventory docs/localization/feature_ui_literal_inventory.v1.json \
+      --json "$REPORT_DIR/feature-ui-literals.json"
+
+  exec_step format pseudo-localization \
+    "Deterministic nonshipping pseudo-localization contract" \
+    "$DART run tool/localization/check_pseudo_localization.dart" -- \
+    "$DART" run tool/localization/check_pseudo_localization.dart
+
   if command -v python3 >/dev/null 2>&1; then
     exec_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" -- \
       python3 tool/check_comment_docs_english.py
+    exec_step format stale-branding "Active instructions use Turing Lab branding" \
+      "python3 tool/check_stale_branding.py" -- \
+      python3 tool/check_stale_branding.py
+    exec_step format issue-roadmap "Issue roadmap schema and dependencies" \
+      "python3 tool/check_issue_roadmap.py" -- \
+      python3 tool/check_issue_roadmap.py
+    exec_step format jflap-parity "JFLAP parity matrix schema and generated report" \
+      "python3 tool/check_jflap_parity_matrix.py" -- \
+      python3 tool/check_jflap_parity_matrix.py
+    exec_step format feature-localization \
+      "Feature localization ownership, ARB parity, and evidence" \
+      "python3 tool/check_feature_localization.py" -- \
+      python3 tool/check_feature_localization.py
+    exec_step format domain-message-prose \
+      "Domain-message prose inventory and unapproved diagnostics" \
+      "python3 tool/check_domain_message_prose.py --scope tool/localization/domain_message_scope.v1.json --allowlist tool/localization/domain_message_allowlist.v1.json --inventory docs/localization/domain_message_inventory.v1.json --json > $REPORT_DIR/domain-message-prose.json" -- \
+      domain_message_report
+    exec_step format educational-content \
+      "Educational content inventory and evidence" \
+      "python3 tool/check_educational_content.py" -- \
+      python3 tool/check_educational_content.py
+    exec_step format arb-resources \
+      "ARB JSON, ICU syntax, parity, and placeholder contracts" \
+      "python3 tool/check_arb_resources.py --json-output $REPORT_DIR/arb-resources.json" -- \
+      python3 tool/check_arb_resources.py \
+      --json-output "$REPORT_DIR/arb-resources.json"
+    exec_step format native-shell-localization \
+      "Native shell branding and macOS English/Portuguese menu resources" \
+      "python3 test/tool/native_shell_localization_contract_test.py" -- \
+      python3 test/tool/native_shell_localization_contract_test.py
+    exec_step format localization-validator-tests \
+      "Localization validator regression tests" \
+      "python3 -m unittest discover -s test/tool -p '*_test.py'" -- \
+      python3 -m unittest discover -s test/tool -p '*_test.py'
     return 0
   fi
   if [[ "$ALLOW_MISSING_TOOLCHAIN" == "1" ]]; then
     skip_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" missing_python3_opt_in
+    skip_step format stale-branding "Active instructions use Turing Lab branding" \
+      "python3 tool/check_stale_branding.py" missing_python3_opt_in
+    skip_step format issue-roadmap "Issue roadmap schema and dependencies" \
+      "python3 tool/check_issue_roadmap.py" missing_python3_opt_in
+    skip_step format jflap-parity "JFLAP parity matrix schema and generated report" \
+      "python3 tool/check_jflap_parity_matrix.py" missing_python3_opt_in
+    skip_step format feature-localization \
+      "Feature localization ownership, ARB parity, and evidence" \
+      "python3 tool/check_feature_localization.py" missing_python3_opt_in
+    skip_step format domain-message-prose \
+      "Domain-message prose inventory and unapproved diagnostics" \
+      "python3 tool/check_domain_message_prose.py" missing_python3_opt_in
+    skip_step format educational-content \
+      "Educational content inventory and evidence" \
+      "python3 tool/check_educational_content.py" missing_python3_opt_in
+    skip_step format arb-resources \
+      "ARB JSON, ICU syntax, parity, and placeholder contracts" \
+      "python3 tool/check_arb_resources.py" missing_python3_opt_in
+    skip_step format native-shell-localization \
+      "Native shell branding and macOS English/Portuguese menu resources" \
+      "python3 test/tool/native_shell_localization_contract_test.py" \
+      missing_python3_opt_in
+    skip_step format localization-validator-tests \
+      "Localization validator regression tests" \
+      "python3 -m unittest discover -s test/tool -p '*_test.py'" \
+      missing_python3_opt_in
   else
     record_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" failed missing_python3 - 0
+    record_step format stale-branding "Active instructions use Turing Lab branding" \
+      "python3 tool/check_stale_branding.py" failed missing_python3 - 0
+    record_step format issue-roadmap "Issue roadmap schema and dependencies" \
+      "python3 tool/check_issue_roadmap.py" failed missing_python3 - 0
+    record_step format jflap-parity "JFLAP parity matrix schema and generated report" \
+      "python3 tool/check_jflap_parity_matrix.py" failed missing_python3 - 0
+    record_step format feature-localization \
+      "Feature localization ownership, ARB parity, and evidence" \
+      "python3 tool/check_feature_localization.py" failed missing_python3 - 0
+    record_step format domain-message-prose \
+      "Domain-message prose inventory and unapproved diagnostics" \
+      "python3 tool/check_domain_message_prose.py" failed missing_python3 - 0
+    record_step format educational-content \
+      "Educational content inventory and evidence" \
+      "python3 tool/check_educational_content.py" failed missing_python3 - 0
+    record_step format arb-resources \
+      "ARB JSON, ICU syntax, parity, and placeholder contracts" \
+      "python3 tool/check_arb_resources.py" failed missing_python3 - 0
+    record_step format native-shell-localization \
+      "Native shell branding and macOS English/Portuguese menu resources" \
+      "python3 test/tool/native_shell_localization_contract_test.py" \
+      failed missing_python3 - 0
+    record_step format localization-validator-tests \
+      "Localization validator regression tests" \
+      "python3 -m unittest discover -s test/tool -p '*_test.py'" \
+      failed missing_python3 - 0
   fi
 }
 
@@ -731,6 +840,12 @@ category_widget() {
 category_integration() {
   exec_step integration suites "Device-free integration and IO round-trips" \
     "$FLUTTER test test/integration/" -- "$FLUTTER" test test/integration/
+}
+
+category_properties() {
+  exec_step properties framework "Reproducible hard-edge property catalog" \
+    "$DART run tool/hard_edge_cases.dart run --profile qa --output $REPORT_DIR/hard-edge" -- \
+    "$DART" run tool/hard_edge_cases.dart run --profile qa --output "$REPORT_DIR/hard-edge"
 }
 
 category_graphview() {

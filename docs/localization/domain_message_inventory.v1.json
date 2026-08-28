@@ -1,0 +1,3730 @@
+{
+  "schemaVersion": 1,
+  "ownerIssue": 210,
+  "status": "structured-with-compatibility-descriptions",
+  "zeroUserVisibleProseClaim": true,
+  "sourceDigestSha256": "a8e83e26a4009f50cfae8833b0e22e0df0ff5433922d105f10ef044750602cbe",
+  "summary": {
+    "familyCount": 13,
+    "producerCount": 210,
+    "occurrenceCount": 3281,
+    "migrationRequiredCount": 0,
+    "compatibilityDescriptionCount": 2727
+  },
+  "families": [
+    {
+      "id": "algorithms",
+      "owner": "core-algorithms",
+      "targetNamespace": "algorithm",
+      "status": "structured-compatibility",
+      "producers": [
+        {
+          "path": "lib/core/algorithms/automaton_simulator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 229,
+          "lastLine": 1045,
+          "sourceDigestSha256": "daa8ebed67db6d89027302ce31137415e83907e9cdfa65e6531bceb369757dda",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 13
+          },
+          "surfaces": {
+            "errorMessage": 1,
+            "label": 1,
+            "returnedMessage": 11
+          }
+        },
+        {
+          "path": "lib/core/algorithms/cfg/cfg_toolkit.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 22,
+          "firstLine": 32,
+          "lastLine": 632,
+          "sourceDigestSha256": "abfe7fbdfd0ad29577a3ee0e59a6490c6b38422dca02ae9b436cf1474abeac18",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 22
+          },
+          "surfaces": {
+            "positionalProducer": 3,
+            "returnedMessage": 19
+          }
+        },
+        {
+          "path": "lib/core/algorithms/cfg/cyk_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 15,
+          "firstLine": 36,
+          "lastLine": 555,
+          "sourceDigestSha256": "f8022856809a698c13ce4de3b68291a6b2e062b80ec3fa2cb28c6ece2766673d",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 14
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 2,
+            "positionalProducer": 2,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/dfa_completer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 56,
+          "lastLine": 165,
+          "sourceDigestSha256": "a046a9beb02893d3182d244759b57b77c8dc94d2aef3a013f721cdbc3596db69",
+          "classificationCounts": {
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "label": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/dfa_minimizer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 26,
+          "firstLine": 45,
+          "lastLine": 680,
+          "sourceDigestSha256": "51d942f43c58622e4fa467c2533e1cf7fb6db280d25488f4ea3e0318b0b93ff0",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 26
+          },
+          "surfaces": {
+            "returnedMessage": 26
+          }
+        },
+        {
+          "path": "lib/core/algorithms/dfa_operations.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 34,
+          "firstLine": 41,
+          "lastLine": 570,
+          "sourceDigestSha256": "ecff69be52343d644fb3618fee0ff9cc3e3ca168efa9b3c65b684e9fc2cad9f4",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 33
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "label": 1,
+            "returnedMessage": 32
+          }
+        },
+        {
+          "path": "lib/core/algorithms/dfa_operations_messages.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 3,
+          "firstLine": 80,
+          "lastLine": 82,
+          "sourceDigestSha256": "36b8b35bb9680a0ab47cdcaf4799aad64d6171b0b8260fcfb44c3c5a252d2bc1",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fa_to_regex_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 23,
+          "firstLine": 89,
+          "lastLine": 704,
+          "sourceDigestSha256": "a38383a5904246184873bb130ec178b3a188edf4982a1d571f1d27ad30243e74",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 23
+          },
+          "surfaces": {
+            "returnedMessage": 23
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa_concatenator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 15,
+          "firstLine": 123,
+          "lastLine": 391,
+          "sourceDigestSha256": "207ac7fc0d18510394262249a023ab052e02abd4326d5c483c7bcfa140baf417",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 15
+          },
+          "surfaces": {
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa_kleene_star.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 22,
+          "firstLine": 63,
+          "lastLine": 403,
+          "sourceDigestSha256": "1c3eaabe7115b60a6e0c86995f09fdb66cc61fbac110b075a7985338a6fce9c6",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 22
+          },
+          "surfaces": {
+            "returnedMessage": 22
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa_reverser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 20,
+          "firstLine": 72,
+          "lastLine": 380,
+          "sourceDigestSha256": "5f920f7f64ed9190da61a0dec71e64d7855e852406e1be73718992372d0026b5",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 20
+          },
+          "surfaces": {
+            "returnedMessage": 20
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa_to_grammar_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 8,
+          "firstLine": 32,
+          "lastLine": 114,
+          "sourceDigestSha256": "228608bd87bf85eee8a9da6c3efb181566688e9a816991d0a8b3365077d64479",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analysis/grammar_analysis_models.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 103,
+          "lastLine": 132,
+          "sourceDigestSha256": "3399a72761d32c9b4cc71004122b914cc01a817098b39a36cd461840b848a028",
+          "classificationCounts": {
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analysis/grammar_left_recursion_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 21,
+          "firstLine": 80,
+          "lastLine": 397,
+          "sourceDigestSha256": "df55d1edf00122ce0aec3ecaaf529a7d707425d8aa3624d35db2f6e3fe908055",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 21
+          },
+          "surfaces": {
+            "positionalProducer": 1,
+            "returnedMessage": 20
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analysis/grammar_nullable_first_follow_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 20,
+          "firstLine": 82,
+          "lastLine": 337,
+          "sourceDigestSha256": "9f645cf44aef98cf6268aa2be864540338f91dfa2ac5d798679a3ec28de67171",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 20
+          },
+          "surfaces": {
+            "positionalProducer": 4,
+            "returnedMessage": 16
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analysis/grammar_predictive_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 50,
+          "lastLine": 383,
+          "sourceDigestSha256": "c29c4714ad83db3619bb03ebd8a3f2c3a54c23d0fe392ee6208fd3f289b1c038",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "positionalProducer": 3,
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analysis/grammar_structural_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 15,
+          "lastLine": 315,
+          "sourceDigestSha256": "043ba47b4ccf9a94327332c671b821b56644f8f573c4d1f959cc28caf51165d9",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "returnedMessage": 18
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 75,
+          "lastLine": 75,
+          "sourceDigestSha256": "28308cab2532a2067b4163a0c4a89b3534b4dd7257a7ca665c61411864762049",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_cnf_transformer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 33,
+          "firstLine": 81,
+          "lastLine": 847,
+          "sourceDigestSha256": "cf5bd2a85be42ebd75c2deceed5c11a19f6aab69c9457d9299f8dacfdfe1e227",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 33
+          },
+          "surfaces": {
+            "returnedMessage": 33
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_gnf_transformer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 4,
+          "firstLine": 33,
+          "lastLine": 70,
+          "sourceDigestSha256": "85473c23318abe1e103cb0bbb72ded68305217c830f39ddb1c639a666a376acb",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 36,
+          "firstLine": 58,
+          "lastLine": 1176,
+          "sourceDigestSha256": "92eb8691563570744a571e67ea207b2532e476038f55d19d1ff06a92e9570177",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 36
+          },
+          "surfaces": {
+            "errorMessage": 3,
+            "label": 5,
+            "message": 12,
+            "positionalProducer": 4,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_parser_earley.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 62,
+          "lastLine": 275,
+          "sourceDigestSha256": "24350528214ddc190c2edc561d4716603250fb33b4cb39705006c4a93fc23d33",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "message": 4,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_parser_simple_recursive.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 7,
+          "firstLine": 62,
+          "lastLine": 217,
+          "sourceDigestSha256": "25cb3635809b4f276f1e14081939d2a34fedd00f520284a7c01d0e27bd4c375b",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 7
+          },
+          "surfaces": {
+            "errorMessage": 1,
+            "message": 2,
+            "positionalProducer": 3,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_to_fsa_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 11,
+          "firstLine": 76,
+          "lastLine": 269,
+          "sourceDigestSha256": "4d53667a502513e548623286ef8f2ccd4b74f3c2f6de8652218e868d68b60845",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 11
+          },
+          "surfaces": {
+            "returnedMessage": 11
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_to_pda/cfg_to_pda_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 17,
+          "firstLine": 86,
+          "lastLine": 746,
+          "sourceDigestSha256": "9973b043e307347608a4f8df2cf438f9af4a1c7e1a536bce2b07440af33c29d2",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 16
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "label": 7,
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_to_pda/cfg_to_pda_differential_checker.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 4,
+          "firstLine": 22,
+          "lastLine": 137,
+          "sourceDigestSha256": "a4ce6491de6591252bae5580f9bf07476ca862c5192fbd004335806541ac58bc",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar_to_pda_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 47,
+          "firstLine": 74,
+          "lastLine": 599,
+          "sourceDigestSha256": "3e6a02c3a7937aa1af8ad6fbfed816e5295689318ac0a109515b00d5b25821d4",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 47
+          },
+          "surfaces": {
+            "label": 6,
+            "returnedMessage": 41
+          }
+        },
+        {
+          "path": "lib/core/algorithms/language_comparator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 43,
+          "firstLine": 47,
+          "lastLine": 544,
+          "sourceDigestSha256": "af10d53f09d3975098867562ff98396fad7bc5459d7d8ca3b113c2b2ea529963",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 42
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "label": 1,
+            "returnedMessage": 41
+          }
+        },
+        {
+          "path": "lib/core/algorithms/language_comparison_step_messages.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 103,
+          "lastLine": 115,
+          "sourceDigestSha256": "ca4e75bdeecb9353d2ddf810ad95d17d9116851c4f29d01d657ef8333cfc3193",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/algorithms/lr1_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 29,
+          "firstLine": 72,
+          "lastLine": 845,
+          "sourceDigestSha256": "ef129a739b94ac84d64ad19e417ebc882209579042411406f9bda7e1355e29dc",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 29
+          },
+          "surfaces": {
+            "message": 23,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/nfa_to_dfa_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 22,
+          "firstLine": 42,
+          "lastLine": 422,
+          "sourceDigestSha256": "4b18c4504050b7f76f93f2b43e9d8fbed81b74a1b665bf7a57021ac2253ea1da",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 20
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "positionalProducer": 4,
+            "returnedMessage": 17
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_language_emptiness_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 19,
+          "firstLine": 168,
+          "lastLine": 555,
+          "sourceDigestSha256": "bb422d7bc1cd23c057f264affa90407f8ad164b863dd7869fc854981b5d085cb",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 19
+          },
+          "surfaces": {
+            "message": 17,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_normalizer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 17,
+          "firstLine": 223,
+          "lastLine": 575,
+          "sourceDigestSha256": "2857e0f61302665890e2086643e967e8f5f3c11ce6ea5f6ef093b7fe6e13de7d",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 17
+          },
+          "surfaces": {
+            "label": 3,
+            "returnedMessage": 14
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simplifier.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 15,
+          "lastLine": 594,
+          "sourceDigestSha256": "39fd4f8a9abe16e4500f96a43c195c78cf69fad11d4387045d474104611c8f05",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simulation_result.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 5,
+          "lastLine": 14,
+          "sourceDigestSha256": "6c3f4aa24010f434ae4f77bff0437abb1b85f9ed4df419aef8b22f3463b498cc",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simulator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 63,
+          "lastLine": 444,
+          "sourceDigestSha256": "2079195dcf19c63c621e3e2b6ad74944b4432be7900f8132a02b5f94d11fea58",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "positionalProducer": 17,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simulator_analysis.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 4,
+          "firstLine": 13,
+          "lastLine": 168,
+          "sourceDigestSha256": "fdacfe3521a109b6fd1186cb791c1a7a4dc0fb4ead6aa354b78f6a52ac33c82a",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simulator_generation.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 22,
+          "lastLine": 22,
+          "sourceDigestSha256": "26c3f85214736a9c8ec105882115fbc0cfef67fbdf5bf72941152c17ce79ec80",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_simulator_search.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 11,
+          "firstLine": 103,
+          "lastLine": 463,
+          "sourceDigestSha256": "2509362b40883d3cf7c9e706f9b2ab869d68c0dd1c1d0e3c0b342c291bccdfab",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 11
+          },
+          "surfaces": {
+            "errorMessage": 1,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/pda_to_cfg_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 26,
+          "firstLine": 36,
+          "lastLine": 367,
+          "sourceDigestSha256": "c979c24535567cb600ac1060435c6cbb243cb1561432e95956b8cedc658f80bb",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 26
+          },
+          "surfaces": {
+            "positionalProducer": 8,
+            "returnedMessage": 18
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 109,
+          "lastLine": 299,
+          "sourceDigestSha256": "f191df1f753befa021e7695b421c1e9b03c6a5c980c82e6650425bc94398b0ab",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_analyzer_helpers.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 10,
+          "firstLine": 42,
+          "lastLine": 151,
+          "sourceDigestSha256": "d98b81a5705350eac8f840ff027e5b98914ec275228fc8c2a30359cc071e3a36",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 10
+          },
+          "surfaces": {
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_simplifier.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 65,
+          "lastLine": 195,
+          "sourceDigestSha256": "7789000c8e8c6c8d9437a997dbd311e264223f4d186e40d9929e8d93bf902e30",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_simplifier_models.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 110,
+          "lastLine": 114,
+          "sourceDigestSha256": "ca9c8cb5e7f6f2c9ac8ec917088010a91289c2388ccf10e0fd3b1896a3b4cbbb",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_simplifier_steps.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 13,
+          "firstLine": 32,
+          "lastLine": 326,
+          "sourceDigestSha256": "97abfc9721daa2b16c37b316455888e2fd33f9d272be5ae9bd03ba1810f62f46",
+          "classificationCounts": {
+            "protocolDescription": 13
+          },
+          "surfaces": {
+            "returnedMessage": 13
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_to_nfa_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 34,
+          "lastLine": 165,
+          "sourceDigestSha256": "60b6b188090bbbc7b22124a0e9b21568f08d0217924fcf2c9ec394dd784ee64c",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_to_nfa_converter_builders.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 49,
+          "lastLine": 556,
+          "sourceDigestSha256": "90b93bd312d4fd03e49af83c3e5bce0e12985d0677ec5f907e8caac8b4115054",
+          "classificationCounts": {
+            "developerDiagnostic": 6,
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "developerDiagnostic": 6,
+            "label": 3,
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_to_nfa_converter_construction.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 28,
+          "firstLine": 65,
+          "lastLine": 556,
+          "sourceDigestSha256": "ebc2ebad9445fea48892d5eea58992642bc2a638378b1899816e13799e95273e",
+          "classificationCounts": {
+            "developerDiagnostic": 5,
+            "supportedCompatibilityDescription": 23
+          },
+          "surfaces": {
+            "developerDiagnostic": 5,
+            "explanation": 7,
+            "returnedMessage": 10,
+            "title": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_to_nfa_converter_models.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 1,
+          "firstLine": 27,
+          "lastLine": 27,
+          "sourceDigestSha256": "cbf470c24d03b3456d5e6563ef1a46ffebf69a75eed72f742fce4e7687dd9718",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/regex_to_nfa_converter_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 77,
+          "lastLine": 288,
+          "sourceDigestSha256": "bb937acacc7bc2121af9014fbe7f1e6fd7a5a5aaea06f24968376a92b9f1762a",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "message": 1,
+            "returnedMessage": 17
+          }
+        },
+        {
+          "path": "lib/core/algorithms/state_renamer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 53,
+          "lastLine": 53,
+          "sourceDigestSha256": "b70efe4b1898078dc53be4e21fb5f701b3a01b7fd28229b183a5aadf480df9aa",
+          "classificationCounts": {
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "label": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_block_dependency_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 17,
+          "firstLine": 25,
+          "lastLine": 247,
+          "sourceDigestSha256": "981e4e4ccb157a5976b7109c9af672fd1c8c21305b951e43d2d9808c34fd3004",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 17
+          },
+          "surfaces": {
+            "message": 11,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_block_execution_engine.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 29,
+          "lastLine": 397,
+          "sourceDigestSha256": "c2b47a75446f8afc1d7ef4634e8d8a60d9aa844f49fc62858fd0fafc535b7b09",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 2,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_block_inline_expander.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 8,
+          "firstLine": 25,
+          "lastLine": 240,
+          "sourceDigestSha256": "c39aaf7d0242df40175fbbf94f783e2dbc403ece4bd4af10c2ace9578c413c73",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "message": 1,
+            "returnedMessage": 7
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_execution_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 25,
+          "firstLine": 167,
+          "lastLine": 723,
+          "sourceDigestSha256": "5944b08de1a5c998639e9d71600ee08b19aecc28f37efe43d3b968cade592077",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 25
+          },
+          "surfaces": {
+            "message": 7,
+            "returnedMessage": 18
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_execution_kernel.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 42,
+          "lastLine": 228,
+          "sourceDigestSha256": "67e4f5b7b1c94c467cfbaeb8ab27a3017108620efcc5504af81a7e7c1b51603d",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 3,
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_language_explorer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 8,
+          "firstLine": 18,
+          "lastLine": 200,
+          "sourceDigestSha256": "8d02fb65e73d8bd56db5fd1fdb4c01f53cb61c1bde97fa6ef2e9479f73b60711",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_messages.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 1,
+          "firstLine": 67,
+          "lastLine": 67,
+          "sourceDigestSha256": "21003f476594b4ec3a89b2f1b64fb1b3cc3e4d425220cc916cd8d58ed08c8303",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_multi_tape_execution_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 108,
+          "lastLine": 286,
+          "sourceDigestSha256": "4f3b185a87e53c398c79c4742fe0faec2836508f9cf5ce56e22429bf47521b4d",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_reachability_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 73,
+          "lastLine": 412,
+          "sourceDigestSha256": "2ea3eebe8f1dca09db62ee4fd078cbf7013cd290e6dcc244600c8c0fc90018a6",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "returnedMessage": 18
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_simulator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 44,
+          "firstLine": 30,
+          "lastLine": 1641,
+          "sourceDigestSha256": "65932e80519bb44a88298c66049de1f1a612b75f5a3320409052b4d928412621",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 44
+          },
+          "surfaces": {
+            "errorMessage": 10,
+            "positionalProducer": 21,
+            "returnedMessage": 13
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_space_profiler.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 24,
+          "lastLine": 260,
+          "sourceDigestSha256": "1575c318c32f81d72e9003d5046a5467e4dbd6ae0d26c751eac216d5626a3e10",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "positionalProducer": 1,
+            "returnedMessage": 11
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_time_profiler.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 10,
+          "firstLine": 164,
+          "lastLine": 224,
+          "sourceDigestSha256": "e408d68b6d219d9c8011a892d1a63b9907d4e6e3ff7d0a1b23ce93bd13f71007",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 10
+          },
+          "surfaces": {
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 72,
+          "lastLine": 565,
+          "sourceDigestSha256": "0c31c42ffdcbf735a5201a9ee645d175196ca7e3ff9c9e67f7014163b58f6d00",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_differential_checker.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 24,
+          "lastLine": 129,
+          "sourceDigestSha256": "b6b4d68f3ea1f5c832dbb3c8d66c60f6666f0b8c293e914058112e4cb70dc8dd",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "batch",
+      "owner": "simulation-runtime",
+      "targetNamespace": "batch",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/batch_execution/batch_execution_models.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 301,
+          "lastLine": 301,
+          "sourceDigestSha256": "d5d9f797f7de900b2eff99425519ad23eb68a881af43dbba2b5d92e2f8d0011d",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/batch_execution/batch_execution_runner.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 58,
+          "lastLine": 63,
+          "sourceDigestSha256": "814ebae56f42264f1e5059c266ac223441831993851faec1b6537d10089d2179",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/batch_execution/batch_input_file_parser.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 16,
+          "lastLine": 157,
+          "sourceDigestSha256": "409f8a3bf289cea399027f1eb2386460ed81fc1d36c90472caa07b334ef4710c",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/batch_execution/batch_input_generator.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 12,
+          "lastLine": 65,
+          "sourceDigestSha256": "92c20a638e677961a9852d80d4f59b9c41e1322eb3f07c86ae40539f334db497",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "protocolDescription": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/batch_execution/batch_report_comparator.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 43,
+          "lastLine": 54,
+          "sourceDigestSha256": "448b2489be61f1f28bc9c210ddc5f71d5a8500170327afad57de91dbfec92957",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/batch_execution/canonical_batch_executors.dart",
+          "owner": "simulation-runtime",
+          "targetNamespace": "batch",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 340,
+          "lastLine": 640,
+          "sourceDigestSha256": "f4bab68e8c5b6bc78bbed14795d99b53115d2d899542c76a7af6c930ac06555f",
+          "classificationCounts": {
+            "protocolDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "codecs",
+      "owner": "interoperability",
+      "targetNamespace": "codec",
+      "status": "structured-compatibility",
+      "producers": [
+        {
+          "path": "lib/data/codecs/codec_utils.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 7,
+          "firstLine": 43,
+          "lastLine": 203,
+          "sourceDigestSha256": "5dcdcb2c3f7dc1d97f170c2272e0d3695cab0b740c5ac1ff207dc9307318cb8a",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "message": 2,
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/codecs/default_document_interoperability_registry.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 73,
+          "lastLine": 107,
+          "sourceDigestSha256": "8a726fd2a32e1e7989113736e2b2dc307495a7f05f6f8af1ae5b7a9d883c3081",
+          "classificationCounts": {
+            "protocolDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/data/codecs/fsa_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 56,
+          "firstLine": 34,
+          "lastLine": 736,
+          "sourceDigestSha256": "00a68283ff32bf32ceca955d64fedba8a582e1f7a3c8958aa2133bc2e013ff2e",
+          "classificationCounts": {
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 54
+          },
+          "surfaces": {
+            "message": 23,
+            "positionalProducer": 6,
+            "returnedMessage": 27
+          }
+        },
+        {
+          "path": "lib/data/codecs/grammar_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 28,
+          "firstLine": 28,
+          "lastLine": 405,
+          "sourceDigestSha256": "63ccc042a3c5a4df52943df1e38e97867d3cf06d5e7ed016b68c77a02ba4f99b",
+          "classificationCounts": {
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 26
+          },
+          "surfaces": {
+            "message": 9,
+            "positionalProducer": 4,
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/data/codecs/hardened_xml.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 3,
+          "firstLine": 25,
+          "lastLine": 69,
+          "sourceDigestSha256": "947126f3b53288e096b3e92d617affb51176bc5138d1ef449183c5e32dda1398",
+          "classificationCounts": {
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "message": 2,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/codecs/jflap_annotations.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 27,
+          "lastLine": 90,
+          "sourceDigestSha256": "22dd0df4fbc015fdbf91155d7f6dfca5f50440bda28169e4a17f4471b661d4a3",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "message": 3,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/data/codecs/l_system_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 44,
+          "firstLine": 34,
+          "lastLine": 868,
+          "sourceDigestSha256": "adc51889657790b442750df940bc1aae5fdf247776058d12a526979bd7c34a96",
+          "classificationCounts": {
+            "developerDiagnostic": 8,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 35
+          },
+          "surfaces": {
+            "developerDiagnostic": 8,
+            "message": 12,
+            "positionalProducer": 1,
+            "returnedMessage": 23
+          }
+        },
+        {
+          "path": "lib/data/codecs/l_system_jflap_messages.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 3,
+          "firstLine": 128,
+          "lastLine": 155,
+          "sourceDigestSha256": "1258af63d8ab266e9ebabb0a244e268bd1a56cf3e7ec304c09059e0509a84e50",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/codecs/l_system_json_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 18,
+          "lastLine": 21,
+          "sourceDigestSha256": "1e52e41b1ff4810da1fa3bf6683a94e7f6a042524ee877bcea8eae7038a71bb1",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/codecs/mealy_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 57,
+          "firstLine": 35,
+          "lastLine": 746,
+          "sourceDigestSha256": "2861973ea8a8955a18f968aded68a7ca7a9c9821bd1dfa0c8404cea4a4075682",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 55
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 23,
+            "positionalProducer": 8,
+            "returnedMessage": 25
+          }
+        },
+        {
+          "path": "lib/data/codecs/mealy_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 19,
+          "lastLine": 115,
+          "sourceDigestSha256": "02afaf2092098526820f661b13b72179295060b307fd380d11a5bf821513ddf4",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 2,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/data/codecs/moore_jflap_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 67,
+          "firstLine": 38,
+          "lastLine": 817,
+          "sourceDigestSha256": "37cd2bbf3b91c361617870ef9a149235fec3751546f6b0b7b28f60c6e7e6d2fb",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 64
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 25,
+            "positionalProducer": 8,
+            "returnedMessage": 33
+          }
+        },
+        {
+          "path": "lib/data/codecs/moore_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 19,
+          "lastLine": 116,
+          "sourceDigestSha256": "a12f02e3691a773b22585cf8e98510492dd77d2586e3b43efe421981199490ea",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 2,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/data/codecs/pda_jflap_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 66,
+          "firstLine": 39,
+          "lastLine": 907,
+          "sourceDigestSha256": "2eae7b8f3813c239d84e131fd8453e342541457a5852feb6dedda3b0cf6b6729",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 3,
+            "supportedCompatibilityDescription": 62
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 15,
+            "positionalProducer": 6,
+            "returnedMessage": 44
+          }
+        },
+        {
+          "path": "lib/data/codecs/pda_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 19,
+          "lastLine": 233,
+          "sourceDigestSha256": "ba1970cb93730bbd0fafdfe46eeaf5ccab5d05f87ee138aac039604216fa39c9",
+          "classificationCounts": {
+            "developerDiagnostic": 9,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 9,
+            "message": 1,
+            "positionalProducer": 2,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/codecs/pumping_lemma_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 26,
+          "firstLine": 30,
+          "lastLine": 452,
+          "sourceDigestSha256": "cbb202887ab75dc523fc84513e25a96863c3145a8dc9ecab2bd45e5c047dde86",
+          "classificationCounts": {
+            "developerDiagnostic": 5,
+            "protocolDescription": 6,
+            "supportedCompatibilityDescription": 15
+          },
+          "surfaces": {
+            "developerDiagnostic": 5,
+            "message": 7,
+            "returnedMessage": 14
+          }
+        },
+        {
+          "path": "lib/data/codecs/pumping_lemma_json_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 16,
+          "firstLine": 34,
+          "lastLine": 240,
+          "sourceDigestSha256": "0c921e7f075b50f39a52b870b2ecd8b8034b010a3a943efb51790767d1d106ee",
+          "classificationCounts": {
+            "protocolDescription": 4,
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "message": 9,
+            "positionalProducer": 2,
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/data/codecs/regex_jflap_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 48,
+          "firstLine": 32,
+          "lastLine": 576,
+          "sourceDigestSha256": "14c5cd5ad4d8c64d934260a7cf4f54b15fc75b00162b15f62d2bafe2ffb76502",
+          "classificationCounts": {
+            "developerDiagnostic": 9,
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 37
+          },
+          "surfaces": {
+            "developerDiagnostic": 9,
+            "message": 7,
+            "returnedMessage": 32
+          }
+        },
+        {
+          "path": "lib/data/codecs/regex_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 19,
+          "lastLine": 242,
+          "sourceDigestSha256": "816509ed302ba5ac9d9230e0c6ea71b0ff6a02755908b06997ad1171c05c4833",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "message": 6,
+            "positionalProducer": 3,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm_jflap_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 199,
+          "firstLine": 39,
+          "lastLine": 2366,
+          "sourceDigestSha256": "2e5a047b4eeb379e7a52c3d88ba4198489eca3970ceef62e4c3d8b0f687d2639",
+          "classificationCounts": {
+            "developerDiagnostic": 14,
+            "protocolDescription": 9,
+            "supportedCompatibilityDescription": 176
+          },
+          "surfaces": {
+            "developerDiagnostic": 14,
+            "message": 40,
+            "positionalProducer": 33,
+            "returnedMessage": 112
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm_jflap_messages.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 33,
+          "firstLine": 352,
+          "lastLine": 456,
+          "sourceDigestSha256": "1f238c4683bd0df031b3cba2cb40e95276f77849ec0b86f7273138063c902e1c",
+          "classificationCounts": {
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 32
+          },
+          "surfaces": {
+            "returnedMessage": 33
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 29,
+          "firstLine": 24,
+          "lastLine": 373,
+          "sourceDigestSha256": "c3aaf03233988ad27bdc78dd09d9210178bf8c4cef8cf2099ece7a996c6cb210",
+          "classificationCounts": {
+            "developerDiagnostic": 12,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 16
+          },
+          "surfaces": {
+            "developerDiagnostic": 12,
+            "message": 5,
+            "positionalProducer": 3,
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/data/codecs/unrestricted_grammar_jflap_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 29,
+          "firstLine": 30,
+          "lastLine": 370,
+          "sourceDigestSha256": "b4799736097b8e7a50a55a48e37b8c62e936525879c7be59a5269bced1446b3a",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "protocolDescription": 3,
+            "supportedCompatibilityDescription": 23
+          },
+          "surfaces": {
+            "developerDiagnostic": 3,
+            "message": 8,
+            "positionalProducer": 4,
+            "returnedMessage": 14
+          }
+        },
+        {
+          "path": "lib/data/codecs/unrestricted_grammar_json_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 11,
+          "firstLine": 29,
+          "lastLine": 212,
+          "sourceDigestSha256": "772595a3e2a423a16e8ccfe9d0bcf556f598910d57534f9b7efb69510ed69561",
+          "classificationCounts": {
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "message": 6,
+            "positionalProducer": 2,
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/codecs/versioned_json_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 70,
+          "firstLine": 63,
+          "lastLine": 729,
+          "sourceDigestSha256": "0e421cc303b83454203987c718a4deb05080bfeaab90d819827f7a0c16c14d26",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "protocolDescription": 7,
+            "supportedCompatibilityDescription": 60
+          },
+          "surfaces": {
+            "developerDiagnostic": 3,
+            "message": 38,
+            "positionalProducer": 15,
+            "returnedMessage": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "domain-support",
+      "owner": "domain-core-data",
+      "targetNamespace": "domain",
+      "status": "structured-compatibility",
+      "producers": [
+        {
+          "path": "lib/core/annotations/document_annotation.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 26,
+          "firstLine": 26,
+          "lastLine": 300,
+          "sourceDigestSha256": "50e82e50d451221b427bfe1631cc6cfbf4748f2767baed747438b6a084cee5e7",
+          "classificationCounts": {
+            "developerDiagnostic": 8,
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "developerDiagnostic": 5,
+            "returnedMessage": 21
+          }
+        },
+        {
+          "path": "lib/core/annotations/document_annotation_collection.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 30,
+          "lastLine": 196,
+          "sourceDigestSha256": "230ce84408a5d80a051ed67771aa606fd9072e505c73c0c67e5afb641b4854d6",
+          "classificationCounts": {
+            "developerDiagnostic": 6,
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "developerDiagnostic": 6,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/annotations/document_annotation_extensions.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 5,
+          "lastLine": 13,
+          "sourceDigestSha256": "add09c0ceaa1a0de240bc3b3fdeb06b09f55da7e87d4c09f6954b45296f07dac",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/automaton_fragments/automaton_fragment_combiner.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 22,
+          "firstLine": 213,
+          "lastLine": 1249,
+          "sourceDigestSha256": "03bae93391164bac07e904c0bf1ff4ca60ee9f2164842262ed047d59bc97313e",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 22
+          },
+          "surfaces": {
+            "message": 16,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/constants/help_catalog.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 8,
+          "lastLine": 12,
+          "sourceDigestSha256": "62a6b6c44218b7432e52afc3d6565dce9c591dcbce6b6e507cf67eab8d160b59",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/constants/monospace_typography.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 21,
+          "lastLine": 23,
+          "sourceDigestSha256": "3165fc09e476b48c5102e82c1f5734e3bb64124d52eebd8de7ed896787af506f",
+          "classificationCounts": {
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/constants/svg_export_defaults.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 4,
+          "lastLine": 7,
+          "sourceDigestSha256": "a7dcabc5082adf6411355e629ebd581a02c1cc797722ac73b4becc94cff46994",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/formal_systems/conversion_capability.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 19,
+          "lastLine": 19,
+          "sourceDigestSha256": "be96d2e76a275fb749e74076d743e258f49dcbb9b00f1a0f097fa1daa2011997",
+          "classificationCounts": {
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/formal_systems/default_formal_system_modules.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 69,
+          "lastLine": 249,
+          "sourceDigestSha256": "af255e4d34d69a6894f4b2f9da418024a043eb6bfffe4925d8247c5944b95cbc",
+          "classificationCounts": {
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/formal_systems/formal_system_configuration.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 42,
+          "lastLine": 56,
+          "sourceDigestSha256": "0de30062cd5ecc6ec24cf21c0fa33ab2ac7e0d3d29ff4543878f251c091505be",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/formal_systems/formal_system_ids.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 74,
+          "lastLine": 74,
+          "sourceDigestSha256": "62d95e1d12d2e252577e7db22415f970debae3f29ff661e36ec48412038c4500",
+          "classificationCounts": {
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/graph_layout/graph_layout_document_adapter.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 1,
+          "firstLine": 47,
+          "lastLine": 47,
+          "sourceDigestSha256": "b795c710c13a16f70dc755486e355f2d5fb3146f3f3ab5817c2e5522f9d599f6",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/graph_layout/graph_layout_engine.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 30,
+          "lastLine": 841,
+          "sourceDigestSha256": "1c2ffa923fe8709997f3f9943e0ad4e4584cc41443c908606d4ee61b40672ad9",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "message": 13,
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/core/graph_layout/graph_layout_task_io.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 11,
+          "lastLine": 121,
+          "sourceDigestSha256": "0b600e5e6bf6bce2f803c6c6c46fb6453a43b402571af5690c56dcf340e7aa36",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/graph_layout/graph_layout_task_web.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 1,
+          "firstLine": 10,
+          "lastLine": 10,
+          "sourceDigestSha256": "c0c72da753d7bed3da25ff004001ec00ecf122d84ea81aeeee5b2aa94e56148f",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/fa_grammar_manual.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 15,
+          "firstLine": 429,
+          "lastLine": 1013,
+          "sourceDigestSha256": "c8cccc64c678b9bf845114083edd2440cd74bc2cf1109a37d87d1999ac1854b3",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 15
+          },
+          "surfaces": {
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/fa_grammar_session_factory.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 53,
+          "firstLine": 47,
+          "lastLine": 607,
+          "sourceDigestSha256": "af1261e29e8e497406cd634775142d9543553f48bbbd907a38875cd6d7448178",
+          "classificationCounts": {
+            "developerDiagnostic": 5,
+            "supportedCompatibilityDescription": 48
+          },
+          "surfaces": {
+            "developerDiagnostic": 5,
+            "returnedMessage": 48
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/fa_to_regex_manual.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 30,
+          "firstLine": 29,
+          "lastLine": 665,
+          "sourceDigestSha256": "901876bc99b0a59e767b6588bacc6084a24901dccab6de542ee682a4e642e132",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 30
+          },
+          "surfaces": {
+            "label": 2,
+            "message": 1,
+            "returnedMessage": 27
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/manual_conversion_factories.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 53,
+          "firstLine": 42,
+          "lastLine": 731,
+          "sourceDigestSha256": "d9930e8cddadbcb0542307275dee00719427f95e0f74c7814572c85e27d1a4e5",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 49
+          },
+          "surfaces": {
+            "developerDiagnostic": 3,
+            "hint": 5,
+            "message": 1,
+            "returnedMessage": 39,
+            "title": 5
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/manual_conversion_session.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 38,
+          "firstLine": 74,
+          "lastLine": 917,
+          "sourceDigestSha256": "004824de693b7ae2dc098b3eb99feb0df51f09940538476b84c9c462c6fc467d",
+          "classificationCounts": {
+            "developerDiagnostic": 16,
+            "supportedCompatibilityDescription": 22
+          },
+          "surfaces": {
+            "developerDiagnostic": 16,
+            "message": 3,
+            "returnedMessage": 19
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/regex_to_fa_manual.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 40,
+          "firstLine": 231,
+          "lastLine": 1011,
+          "sourceDigestSha256": "d48cf7979d989a69f006b24244d83f1aee855fa721fd2f2d3a2406b4029d7ec3",
+          "classificationCounts": {
+            "developerDiagnostic": 4,
+            "supportedCompatibilityDescription": 36
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "label": 1,
+            "message": 2,
+            "reason": 4,
+            "returnedMessage": 31
+          }
+        },
+        {
+          "path": "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 34,
+          "firstLine": 74,
+          "lastLine": 463,
+          "sourceDigestSha256": "2041effa122fdff2c1188af5ca5fdebe260f45509d81234bc6b0a91df35ac720",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 30
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "hint": 1,
+            "returnedMessage": 31
+          }
+        },
+        {
+          "path": "lib/core/messages/structured_message.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 21,
+          "firstLine": 65,
+          "lastLine": 585,
+          "sourceDigestSha256": "c4f77100a2ee08c44c971211d06a17b495baf4f8d7b3ea1038cc8669607e90c0",
+          "classificationCounts": {
+            "developerDiagnostic": 15,
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "developerDiagnostic": 15,
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/repositories/active_session_repository.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 8,
+          "firstLine": 89,
+          "lastLine": 170,
+          "sourceDigestSha256": "041917cb6360925be6ea2d5704acfce04e81caa396dcf1fe10f62a91f70e9b88",
+          "classificationCounts": {
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 7
+          },
+          "surfaces": {
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/result.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 98,
+          "lastLine": 120,
+          "sourceDigestSha256": "1e0d08245c0ae007521793aa0f08814daff276cefed5ee94260fbe33b6e5d093",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/simulation_cancelled_exception.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 1,
+          "firstLine": 5,
+          "lastLine": 5,
+          "sourceDigestSha256": "e9465183d0ab81913c003a7f7ae27f6aa4817ad8b750e01122551be9036d5b0a",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/converters/asset_example_converters.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 38,
+          "firstLine": 24,
+          "lastLine": 705,
+          "sourceDigestSha256": "6fb8a90c62b1ab22feb6c955499a1a110c635da24d4e1f3705f0433f3931bd44",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 38
+          },
+          "surfaces": {
+            "label": 2,
+            "positionalProducer": 31,
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/data/data_sources/examples_asset_data_source.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 23,
+          "firstLine": 46,
+          "lastLine": 594,
+          "sourceDigestSha256": "8b948045c77c5f2947e4a9c6b4d99e15bb3267b4885bad1c672baa30772c8152",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "supportedCompatibilityDescription": 21
+          },
+          "surfaces": {
+            "description": 2,
+            "developerDiagnostic": 2,
+            "positionalProducer": 9,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/data/formal_systems/registered_formal_system_module.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 3,
+          "firstLine": 82,
+          "lastLine": 140,
+          "sourceDigestSha256": "1a1d3eb69eb29e1d28277bad64bce6144ade743e6fde0115195e5bd7ff6482d5",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "message": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/data/repositories/settings_repository_impl.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 23,
+          "lastLine": 118,
+          "sourceDigestSha256": "da30b77991ce0f3eb34ead7251b81563b50c3cf5552ab000f13c8cfdb86b5757",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/data/tm/tm_block_example_catalog.dart",
+          "owner": "domain-core-data",
+          "targetNamespace": "domain",
+          "status": "structured-compatibility",
+          "occurrenceCount": 21,
+          "firstLine": 17,
+          "lastLine": 228,
+          "sourceDigestSha256": "eb566792be4f95c529396c7b7462eadc4da883f9deb0482f4a74262a4f74d6eb",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 21
+          },
+          "surfaces": {
+            "description": 1,
+            "returnedMessage": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "grammar",
+      "owner": "grammar-and-parsing",
+      "targetNamespace": "grammar",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/grammar/dependency_graph/variable_dependency_graph.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 297,
+          "lastLine": 646,
+          "sourceDigestSha256": "5882cadbb0ad5140458638358178daad5e911f2be46494615d7dd1809472a5e2",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/grammar_symbol.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 19,
+          "lastLine": 29,
+          "sourceDigestSha256": "74d15d4e6f1bf608359b830823902f6b80954806d4947e2ccb3b468b04230b55",
+          "classificationCounts": {
+            "developerDiagnostic": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 3
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/legacy_context_free_grammar_adapter.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 24,
+          "lastLine": 73,
+          "sourceDigestSha256": "b7e7022e4caee562736920e93493ba4a898f0d1153539e7a0be3478a4da6e704",
+          "classificationCounts": {
+            "developerDiagnostic": 4,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 4,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/phrase_structure_grammar.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 117,
+          "lastLine": 135,
+          "sourceDigestSha256": "45e221bb86b50c4a7954a6821417578ca3ee8b1051c773f4c2f3467f6d84c9e4",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/phrase_structure_production.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 21,
+          "lastLine": 38,
+          "sourceDigestSha256": "f289894fbb41b39de6dfe8fc0601be33b33da4bf1fcae4737d160ffd1737c98d",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/symbol_sequence.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 43,
+          "lastLine": 50,
+          "sourceDigestSha256": "e1db369657c2e063b67e8a284b1e28dbff658134aaa43a816efa0f8380f6299a",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/grammar/phrase_structure/user_derivation_session.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 11,
+          "firstLine": 61,
+          "lastLine": 675,
+          "sourceDigestSha256": "6da63db1ef1458cc67c50e21ef861200dfcf8a32a51384329efca8eadd2275fe",
+          "classificationCounts": {
+            "developerDiagnostic": 11
+          },
+          "surfaces": {
+            "developerDiagnostic": 10,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 26,
+          "firstLine": 44,
+          "lastLine": 988,
+          "sourceDigestSha256": "62da6e664c206ddd2ce7ed4d126e804defa30046327f85e1b5f8f0809e9d932b",
+          "classificationCounts": {
+            "developerDiagnostic": 11,
+            "protocolDescription": 15
+          },
+          "surfaces": {
+            "developerDiagnostic": 11,
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/data/grammar/unrestricted_grammar_module.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "grammar",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 15,
+          "lastLine": 93,
+          "sourceDigestSha256": "d28399c3fc1f41935a0071f607b02d90f765e243f2978172b8a2f10d1deb8576",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 2,
+            "returnedMessage": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "interoperability",
+      "owner": "interoperability",
+      "targetNamespace": "interop",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/interoperability/codec_descriptor.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 89,
+          "lastLine": 146,
+          "sourceDigestSha256": "28235d309301d1824c24428665cd9fa1b19a3bcc927e6431826528a7ec96fe38",
+          "classificationCounts": {
+            "developerDiagnostic": 5
+          },
+          "surfaces": {
+            "developerDiagnostic": 5
+          }
+        },
+        {
+          "path": "lib/core/interoperability/codec_outcome.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 61,
+          "lastLine": 61,
+          "sourceDigestSha256": "5c49129a6e5eeb7bed781057a92fa70d75a1f18916ad49cbae214007c44ff51b",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/core/interoperability/document_import_transaction.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 84,
+          "lastLine": 91,
+          "sourceDigestSha256": "dcee0907e195d24e6b482254ea2dbb7b137a377adb15f0422709eaed280ae5a1",
+          "classificationCounts": {
+            "developerDiagnostic": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 3
+          }
+        },
+        {
+          "path": "lib/core/interoperability/document_interoperability_registry.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 87,
+          "lastLine": 526,
+          "sourceDigestSha256": "44111c9941273887fe86e4886e794f26f7de7607ee61c268031be5672ab4581a",
+          "classificationCounts": {
+            "protocolDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/interoperability/document_migration.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 23,
+          "lastLine": 23,
+          "sourceDigestSha256": "6e566ccef6d809df7310d485c943475292ab5e8a0f90b981978f3ab09b54c4dc",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/core/interoperability/document_transport.dart",
+          "owner": "interoperability",
+          "targetNamespace": "interop",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 72,
+          "lastLine": 104,
+          "sourceDigestSha256": "1b02045f05de03ddad5a49571958ec703525eb869e2fc3ebaa955b34b2074dd9",
+          "classificationCounts": {
+            "developerDiagnostic": 4
+          },
+          "surfaces": {
+            "developerDiagnostic": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "l-systems",
+      "owner": "formal-systems",
+      "targetNamespace": "l-system",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/l_systems/l_system_expander.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 44,
+          "lastLine": 244,
+          "sourceDigestSha256": "49b9a61a085512abcc7113b4256fcdd45c57f5abb8215717b8e1442c830ab48b",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/l_systems/l_system_export.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 9,
+          "firstLine": 43,
+          "lastLine": 132,
+          "sourceDigestSha256": "19051a5add3f463e2840afce6b88baffaa614de82ba06059a5913d4c6829c370",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/l_systems/l_system_formal_system.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 95,
+          "lastLine": 96,
+          "sourceDigestSha256": "6ebe90116b2423c103a0dfe224ca01123db389c3d8bca4521032add382f0d9f3",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/l_systems/l_system_model.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 18,
+          "firstLine": 7,
+          "lastLine": 576,
+          "sourceDigestSha256": "9ebef940a7cd227b9fba499d34853421875fa795adfc0bac8a32d944879117d5",
+          "classificationCounts": {
+            "developerDiagnostic": 17,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 17,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/l_systems/l_system_turtle.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 43,
+          "lastLine": 240,
+          "sourceDigestSha256": "2c140469741896f47f1d7c732072191960f41c28e22ae32e931c97d33d0a5eb1",
+          "classificationCounts": {
+            "developerDiagnostic": 5
+          },
+          "surfaces": {
+            "developerDiagnostic": 5
+          }
+        },
+        {
+          "path": "lib/data/l_systems/l_system_examples.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 14,
+          "firstLine": 24,
+          "lastLine": 174,
+          "sourceDigestSha256": "85c0fde82932103b2325be003a1cecfea38b0bf5b92915710689be9c4e4e1534",
+          "classificationCounts": {
+            "protocolDescription": 14
+          },
+          "surfaces": {
+            "description": 6,
+            "returnedMessage": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "models",
+      "owner": "domain-models",
+      "targetNamespace": "model",
+      "status": "structured-compatibility",
+      "producers": [
+        {
+          "path": "lib/core/models/algorithm_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 33,
+          "firstLine": 156,
+          "lastLine": 275,
+          "sourceDigestSha256": "c2ede93486254e70f51f359b4e593990996512161d947eb8e185b8d3ad757ce7",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 33
+          },
+          "surfaces": {
+            "returnedMessage": 33
+          }
+        },
+        {
+          "path": "lib/core/models/automaton.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 115,
+          "lastLine": 368,
+          "sourceDigestSha256": "e2931572b5606a64ea70a501621394690d47f801710ec8146003d6a1d1b905f3",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 12
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/models/computation_branch.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 131,
+          "lastLine": 147,
+          "sourceDigestSha256": "4e087ef9096dea62a0144166df93418398321a0c0ad718f59a32037d8808747e",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/models/cyk_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 75,
+          "firstLine": 205,
+          "lastLine": 1050,
+          "sourceDigestSha256": "dd243d1d2d1929b2fcc0ea6d9522b3dde1a80503d931907bbb5765cdd2c4f4a6",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 75
+          },
+          "surfaces": {
+            "bullets": 17,
+            "explanation": 8,
+            "positionalProducer": 1,
+            "returnedMessage": 33,
+            "title": 16
+          }
+        },
+        {
+          "path": "lib/core/models/derivation_tree_node.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 43,
+          "lastLine": 43,
+          "sourceDigestSha256": "eee826906f350050b620864b5321f125887ce4ee59298fbf364cebcf096c8347",
+          "classificationCounts": {
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/models/dfa_minimization_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 61,
+          "firstLine": 159,
+          "lastLine": 881,
+          "sourceDigestSha256": "197831a7cd400dcbbf1a6b69776cbff9c1055a0dbc922aa711bddb77a1ccb40c",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 61
+          },
+          "surfaces": {
+            "explanation": 10,
+            "returnedMessage": 41,
+            "title": 10
+          }
+        },
+        {
+          "path": "lib/core/models/fa_to_regex_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 674,
+          "lastLine": 784,
+          "sourceDigestSha256": "2794430d88db0b0a8d3889cff37d6438e68ae5bbefa382a8d6e638194501c08a",
+          "classificationCounts": {
+            "developerDiagnostic": 2,
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/models/fsa.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 2,
+          "firstLine": 162,
+          "lastLine": 167,
+          "sourceDigestSha256": "7b28c459195088ff39840349312cdb34a006e33eccc6a8ef61d7728b8f91a680",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/models/fsa_computation_branch_adapter.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 115,
+          "lastLine": 233,
+          "sourceDigestSha256": "46da7c72b7c5aaede6821016b7e88c44bb9903e3a097ccecb9fc3233fd96962a",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/models/fsa_transition.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 179,
+          "lastLine": 206,
+          "sourceDigestSha256": "9d12505790c2d3184889cebce17d9c38bce821c1d3592adc9d566f0b25f68083",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/models/grammar.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 13,
+          "firstLine": 134,
+          "lastLine": 484,
+          "sourceDigestSha256": "71de5bec3274f5c21e2804c96d8a31ee9b4d3808693aed92e4b7836194b221ed",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 13
+          },
+          "surfaces": {
+            "returnedMessage": 13
+          }
+        },
+        {
+          "path": "lib/core/models/grammar_diagnostic.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 57,
+          "lastLine": 57,
+          "sourceDigestSha256": "0c76bbdb60c07dfc73eba266d50af56f252c050db80290966fffb8efc9488d0a",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/models/help_catalog.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 109,
+          "lastLine": 120,
+          "sourceDigestSha256": "5448eee8451462f407c9b5d78e617dd27963d17b29740fc2be256703b7aa72f7",
+          "classificationCounts": {
+            "developerDiagnostic": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/models/ll1_parse_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 5,
+          "firstLine": 72,
+          "lastLine": 84,
+          "sourceDigestSha256": "5cd3d065e966d7febecfbf0804557dc471284ce65827d910e30c80ed75c3eb16",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/core/models/lr1_models.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 4,
+          "firstLine": 57,
+          "lastLine": 138,
+          "sourceDigestSha256": "71ff1c3298ecf570fc47a67690f25e8375cccc720bad70f68c36ce0cf9eb87df",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/models/nfa_computation_tree.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 34,
+          "firstLine": 70,
+          "lastLine": 381,
+          "sourceDigestSha256": "7e93d18b92fd16d4e22e246c24486afc86ddbc65dfac85d78c2c47e6508bbcc1",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 34
+          },
+          "surfaces": {
+            "errorMessage": 3,
+            "returnedMessage": 31
+          }
+        },
+        {
+          "path": "lib/core/models/nfa_path_node.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 71,
+          "lastLine": 196,
+          "sourceDigestSha256": "6858dc03b7558fa959fd6c3899c02616522ca1969340d8e52c520973d6d23ba5",
+          "classificationCounts": {
+            "developerDiagnostic": 4
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/core/models/nfa_to_dfa_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 34,
+          "firstLine": 125,
+          "lastLine": 730,
+          "sourceDigestSha256": "6106def175384e2bf171ef1017fc8c26148077dcc65ebb18f3cec20c3db88183",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 34
+          },
+          "surfaces": {
+            "explanation": 6,
+            "returnedMessage": 22,
+            "title": 6
+          }
+        },
+        {
+          "path": "lib/core/models/parse_table.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 22,
+          "firstLine": 115,
+          "lastLine": 492,
+          "sourceDigestSha256": "420571d06f36a052d74f701f47d3bc35ff569d3fa5dd775e41c260c02c2cea56",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 22
+          },
+          "surfaces": {
+            "returnedMessage": 22
+          }
+        },
+        {
+          "path": "lib/core/models/pda.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 7,
+          "firstLine": 181,
+          "lastLine": 214,
+          "sourceDigestSha256": "cc62cd6691f98c195de590d3b3826e94d444b000e3712403bbca79cec9d27ae8",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 7
+          },
+          "surfaces": {
+            "returnedMessage": 7
+          }
+        },
+        {
+          "path": "lib/core/models/pda_transition.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 11,
+          "firstLine": 35,
+          "lastLine": 258,
+          "sourceDigestSha256": "c59349c10d54648a8e8703d1e619517d312ceb2e22f4f345d41deb60ba61f9f7",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 11
+          },
+          "surfaces": {
+            "returnedMessage": 11
+          }
+        },
+        {
+          "path": "lib/core/models/production.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 10,
+          "firstLine": 105,
+          "lastLine": 351,
+          "sourceDigestSha256": "8d9690b70bb8bafb572eac58cecaf3cfab14cffb1cc51026537bf2a6bd458c3a",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/models/regex_analysis.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 19,
+          "firstLine": 135,
+          "lastLine": 425,
+          "sourceDigestSha256": "542474fcb49b349b83729a6d7f0282d53ff98c0a379b5c15c950404aa0f5d6a8",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 19
+          },
+          "surfaces": {
+            "returnedMessage": 19
+          }
+        },
+        {
+          "path": "lib/core/models/regex_document.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 35,
+          "lastLine": 119,
+          "sourceDigestSha256": "6a5262ed50475197537d83ffc4bd218282117f278695d5df9e89854f54ab9883",
+          "classificationCounts": {
+            "developerDiagnostic": 4,
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 4,
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/models/regex_simplification_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 438,
+          "lastLine": 439,
+          "sourceDigestSha256": "0d6c67653757766616c3f194f1fd3e58360eb5dd00866de718a15f11b819b6b0",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/models/regex_to_nfa_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 6,
+          "firstLine": 514,
+          "lastLine": 749,
+          "sourceDigestSha256": "d7a08223d11620665fdcbc25a06ee1c4af75696749ef4d42c7beae641d04f8ac",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/models/serialized_state_resolver.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 29,
+          "lastLine": 39,
+          "sourceDigestSha256": "e1627ba65f8ec482ccee6f5e2d47a8ff243901e1b378a48f61400403c9233656",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/models/simulation_result.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 18,
+          "firstLine": 111,
+          "lastLine": 487,
+          "sourceDigestSha256": "660a5e615d81090d5f8de580a46b78ac5b38fb7f3e5f60aa23bb6870ca322c14",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 17
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "errorMessage": 2,
+            "returnedMessage": 15
+          }
+        },
+        {
+          "path": "lib/core/models/simulation_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 96,
+          "lastLine": 355,
+          "sourceDigestSha256": "be066e881e1c97110fc54fa12e7e3e00e8dbcd89513c3416264b819e357a587a",
+          "classificationCounts": {
+            "developerDiagnostic": 4,
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 4,
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/models/state.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 135,
+          "lastLine": 205,
+          "sourceDigestSha256": "cf6b5dcba614ea0b4960358af45deabb06287e83c7112dff44a7372090e26d27",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 9
+          },
+          "surfaces": {
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/core/models/step_explanation.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 10,
+          "firstLine": 62,
+          "lastLine": 514,
+          "sourceDigestSha256": "999ef7f5b5daa15f18bb3fda7add4912fa649849699549e1d031412d56640544",
+          "classificationCounts": {
+            "developerDiagnostic": 10
+          },
+          "surfaces": {
+            "developerDiagnostic": 10
+          }
+        },
+        {
+          "path": "lib/core/models/tm.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 14,
+          "firstLine": 242,
+          "lastLine": 397,
+          "sourceDigestSha256": "285276b02b4c4daa09c25c5606b86ffd8cfe86b85ab6b8861f6032c1f87122ca",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 14
+          },
+          "surfaces": {
+            "returnedMessage": 14
+          }
+        },
+        {
+          "path": "lib/core/models/tm_building_blocks.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 187,
+          "lastLine": 193,
+          "sourceDigestSha256": "c4cade922c3921f594c70e381ea1524d34dba6271249a5dc0620e67694760966",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/models/tm_execution_analysis.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 155,
+          "lastLine": 155,
+          "sourceDigestSha256": "d4419f1dd978497824ea72eb7e02bc5002d66b426085525345f0c3ec29ff9e97",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/core/models/tm_transition.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 14,
+          "firstLine": 29,
+          "lastLine": 396,
+          "sourceDigestSha256": "b0c163ffb1a7c0f3dfa3a993dc27d521605c4c03c3da0b6139c4a45432734ef9",
+          "classificationCounts": {
+            "developerDiagnostic": 4,
+            "supportedCompatibilityDescription": 10
+          },
+          "surfaces": {
+            "developerDiagnostic": 4,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/models/transition.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "structured-compatibility",
+          "occurrenceCount": 9,
+          "firstLine": 79,
+          "lastLine": 173,
+          "sourceDigestSha256": "d17f8e6ab1a3ed1bdb4d3986f54951f77bc2e082d0cc3693bae7a019d4689c34",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/models/typed_algorithm_step.dart",
+          "owner": "domain-models",
+          "targetNamespace": "model",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 34,
+          "lastLine": 34,
+          "sourceDigestSha256": "6ad7f2505015a3013c35c4e5e7fdb4e6dc7b0241a9c3f7d3f663815a49b4c839",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "parsers",
+      "owner": "grammar-and-parsing",
+      "targetNamespace": "parser",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/parsers/grammar_xml_codec.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "parser",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 16,
+          "lastLine": 131,
+          "sourceDigestSha256": "afb7bf121c5407a76e6ac504003d7b85f80f1733c08db31c05edd2fbc52b5220",
+          "classificationCounts": {
+            "protocolDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/parsers/jflap_xml_codec.dart",
+          "owner": "grammar-and-parsing",
+          "targetNamespace": "parser",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 22,
+          "lastLine": 488,
+          "sourceDigestSha256": "c562b68d9107f69d432f539d691db1b9e68231b40d865eca99ad010eda7bd97f",
+          "classificationCounts": {
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "pumping-lemma",
+      "owner": "formal-systems",
+      "targetNamespace": "pumping",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/pumping_lemma/pumping_decomposition.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "pumping",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 93,
+          "lastLine": 93,
+          "sourceDigestSha256": "c0de29c905e6f698bd80f29647ba9707abc60d538c58538c2a500812425bbe02",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/core/pumping_lemma/pumping_lemma_document.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "pumping",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 15,
+          "lastLine": 84,
+          "sourceDigestSha256": "9420e12aaba51a533ebf69e78f4225f552a4a3c6be3ead1f1daf08baebf03622",
+          "classificationCounts": {
+            "developerDiagnostic": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 3
+          }
+        },
+        {
+          "path": "lib/core/pumping_lemma/pumping_lemma_problem.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "pumping",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 16,
+          "firstLine": 278,
+          "lastLine": 677,
+          "sourceDigestSha256": "102dd45a518938ae4a441496eaf9ce7b21327e0e8f04152b93ed6a69f7f80aab",
+          "classificationCounts": {
+            "developerDiagnostic": 8,
+            "protocolDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 8,
+            "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/pumping_lemma/pumping_lemma_progress.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "pumping",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 154,
+          "lastLine": 210,
+          "sourceDigestSha256": "f8a7d53a90fe7ae141b831f41e96b7aa62441f80cfb16a178aa11c62642c069a",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        },
+        {
+          "path": "lib/core/pumping_lemma/pumping_lemma_session_controller.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "pumping",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 2,
+          "firstLine": 45,
+          "lastLine": 59,
+          "sourceDigestSha256": "361452767fdc52a849dae98094f638959707a5ffb2e5ee4ccb50a9eca9d59ee2",
+          "classificationCounts": {
+            "developerDiagnostic": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "owner": "domain-services",
+      "targetNamespace": "service",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/core/services/algorithm_step_highlight_service.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 55,
+          "lastLine": 97,
+          "sourceDigestSha256": "51877205141bd45a1fbeeb742a5695044a607816fa1b77a7981aed1dec4c989f",
+          "classificationCounts": {
+            "developerDiagnostic": 4
+          },
+          "surfaces": {
+            "developerDiagnostic": 4
+          }
+        },
+        {
+          "path": "lib/core/services/highlight_channel.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 66,
+          "lastLine": 94,
+          "sourceDigestSha256": "cc4a6f5af30630762919776aa5e910dd9fea35e7dc4b71282cedbcbba86a6545",
+          "classificationCounts": {
+            "developerDiagnostic": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 3
+          }
+        },
+        {
+          "path": "lib/core/services/simulation_highlight_service.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 95,
+          "lastLine": 176,
+          "sourceDigestSha256": "ab05fe79161e0a16be8e90343568377e085d0048f097b6aca0113c494b9b46b3",
+          "classificationCounts": {
+            "developerDiagnostic": 4
+          },
+          "surfaces": {
+            "developerDiagnostic": 4
+          }
+        },
+        {
+          "path": "lib/core/services/tm_block_project_editor.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 129,
+          "lastLine": 144,
+          "sourceDigestSha256": "483de220fdff94fa0adc1b1cf26e5657eb028eaa1ef672835ac54c0111d0177b",
+          "classificationCounts": {
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/services/active_session_module_registry.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 110,
+          "lastLine": 110,
+          "sourceDigestSha256": "9017ae10787bee1b14d9e3a9e6db25d51c590b6fb429d84d79dd2c3e8bbbbf05",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "developerDiagnostic": 1
+          }
+        },
+        {
+          "path": "lib/data/services/active_session_persistence_service.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 6,
+          "firstLine": 24,
+          "lastLine": 89,
+          "sourceDigestSha256": "2f1e6ce31f7c36022fc97b32f9dd3ae4eee2526bfd9b9aa36a409794114ef1f7",
+          "classificationCounts": {
+            "protocolDescription": 6
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/data/services/active_session_snapshot_codec.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 16,
+          "firstLine": 48,
+          "lastLine": 217,
+          "sourceDigestSha256": "aa10d047490368a7f3ce72f15372a1100dc5719bebd961afb674780aebc3b39c",
+          "classificationCounts": {
+            "developerDiagnostic": 14,
+            "protocolDescription": 2
+          },
+          "surfaces": {
+            "developerDiagnostic": 11,
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/data/services/file_operations_payload_mixin.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 266,
+          "lastLine": 270,
+          "sourceDigestSha256": "68efaa21e22a7b7f7d4f1a777fcb4ea468f3d55d311781629c580d8ebb583204",
+          "classificationCounts": {
+            "protocolDescription": 4
+          },
+          "surfaces": {
+            "positionalProducer": 2,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/data/services/file_operations_service_io.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 9,
+          "firstLine": 228,
+          "lastLine": 569,
+          "sourceDigestSha256": "3d9c15f62db16ad9a072fea625f335570d97a8de1aaaad447362a05670b94255",
+          "classificationCounts": {
+            "protocolDescription": 9
+          },
+          "surfaces": {
+            "returnedMessage": 9
+          }
+        },
+        {
+          "path": "lib/data/services/file_operations_service_web.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 5,
+          "firstLine": 164,
+          "lastLine": 252,
+          "sourceDigestSha256": "1bf08c56604bbbc0dd1e6ced305e0608376e97abd88a7ec4f32e68d624c18094",
+          "classificationCounts": {
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "returnedMessage": 5
+          }
+        },
+        {
+          "path": "lib/data/services/grammar_teaching_session_store.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 16,
+          "lastLine": 95,
+          "sourceDigestSha256": "53a84d3fa8a7fcb99f721dbcccea1563f2c72f4a3304f8aefe16917c89e6dfdc",
+          "classificationCounts": {
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/services/manual_conversion_session_store.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 11,
+          "lastLine": 56,
+          "sourceDigestSha256": "5784c9d97e8955425fea66667804a0dfe898cd4ab49ca9b23eee59821839959a",
+          "classificationCounts": {
+            "protocolDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/data/services/trace_persistence_service.dart",
+          "owner": "domain-services",
+          "targetNamespace": "service",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 10,
+          "firstLine": 60,
+          "lastLine": 443,
+          "sourceDigestSha256": "55ac3a8b34478d34d93b99d2678d2c9473a1e3d53ef23577f3dbc2f0df6fb89d",
+          "classificationCounts": {
+            "developerDiagnostic": 5,
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "developerDiagnostic": 5,
+            "returnedMessage": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "transducers",
+      "owner": "transducers",
+      "targetNamespace": "transducer",
+      "status": "allowlisted-non-ui",
+      "producers": [
+        {
+          "path": "lib/data/transducers/mealy_example_catalog.dart",
+          "owner": "transducers",
+          "targetNamespace": "transducer",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 3,
+          "firstLine": 50,
+          "lastLine": 68,
+          "sourceDigestSha256": "c240ed3fde0b2186d3cc85b82357a42087769f48d7c0f3a56dd0deb4bd47943c",
+          "classificationCounts": {
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "returnedMessage": 3
+          }
+        },
+        {
+          "path": "lib/data/transducers/moore_example_catalog.dart",
+          "owner": "transducers",
+          "targetNamespace": "transducer",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 4,
+          "firstLine": 58,
+          "lastLine": 68,
+          "sourceDigestSha256": "d57463ad784c7c676797de45a7172d6b01c9e38f85b043258e47644ba6ad6589",
+          "classificationCounts": {
+            "protocolDescription": 4
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "validation",
+      "owner": "domain-validation",
+      "targetNamespace": "validation",
+      "status": "structured-compatibility",
+      "producers": [
+        {
+          "path": "lib/core/validators/input_validators.dart",
+          "owner": "domain-validation",
+          "targetNamespace": "validation",
+          "status": "structured-compatibility",
+          "occurrenceCount": 108,
+          "firstLine": 66,
+          "lastLine": 706,
+          "sourceDigestSha256": "0f3fab2f59a29510bf808890a6464a2b33ccfb9da15ae477f82481322c292056",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 108
+          },
+          "surfaces": {
+            "returnedMessage": 108
+          }
+        },
+        {
+          "path": "lib/core/validators/validation_issue_to_diagnostic.dart",
+          "owner": "domain-validation",
+          "targetNamespace": "validation",
+          "status": "structured-compatibility",
+          "occurrenceCount": 126,
+          "firstLine": 40,
+          "lastLine": 534,
+          "sourceDigestSha256": "abe52065713273c34f0a5e676587633c20c81082e44a487634c2b0d428ffbfb2",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 126
+          },
+          "surfaces": {
+            "details": 31,
+            "label": 31,
+            "returnedMessage": 64
+          }
+        },
+        {
+          "path": "lib/core/validators/validation_messages.dart",
+          "owner": "domain-validation",
+          "targetNamespace": "validation",
+          "status": "structured-compatibility",
+          "occurrenceCount": 16,
+          "firstLine": 22,
+          "lastLine": 37,
+          "sourceDigestSha256": "c25cab7609aa2cfb991057b5027cfef55db1177d4ccfc8efe7a9337a877a0c41",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 16
+          },
+          "surfaces": {
+            "returnedMessage": 16
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "family": "tm",
+  "scenario": "grammar-conversion",
+  "seed": 338,
+  "cases": 2,
+  "expectedStatus": "passed",
+  "sourceRevision": 338,
+  "evidenceKind": "bounded-not-proof"
+}

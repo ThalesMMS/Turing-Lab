@@ -1,0 +1,36 @@
+import 'package:flutter/material.dart';
+
+Widget buildVisibleCopy() => const Text('Save changes');
+
+Widget buildRawCopy() => const Text(r'Raw hardcoded copy');
+
+Widget buildTripleQuotedCopy() => const Text('''Triple hardcoded
+copy''');
+
+Widget buildRawTripleQuotedCopy() => const Text(r"""Raw triple hardcoded
+copy""");
+
+Widget buildMultilineArgument() => const Text(
+  'Delete',
+);
+
+Widget buildAdjacentCopy() => const Text(
+  'Save '
+  'everything',
+);
+
+Widget buildMixedCopy(AppLocalizations l10n, String reason) {
+  final localized = l10n.save;
+  return Column(
+    children: [
+      Text('Still hardcoded'),
+      Text('Failure: $reason'),
+      Text(reason.isEmpty ? l10n.cancel : 'Delete everything'),
+    ],
+  );
+}
+
+Widget buildLocalizedSibling(AppLocalizations l10n) => ErrorCard(
+  fileName: 'Grammar',
+  message: l10n.errorLoadingGrammar('parser failure'),
+);

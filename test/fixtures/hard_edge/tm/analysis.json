@@ -1,0 +1,15 @@
+{
+  "family": "tm",
+  "scenario": "analysis",
+  "seed": 338,
+  "cases": 4,
+  "expectedStatus": "passed",
+  "outcomes": [
+    "accepted",
+    "haltedRejected",
+    "provenCycle",
+    "boundedUnknown",
+    "cancelled",
+    "invalidMachine"
+  ]
+}

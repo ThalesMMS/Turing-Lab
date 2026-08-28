@@ -7,9 +7,7 @@ void _runJffFormatTests() {
       final automatonData = _copyAutomatonData(originalAutomaton);
 
       // Convert to JFF format
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
       expect(jffXml, isNotEmpty);
       expect(jffXml, contains('<?xml'));
       expect(jffXml, contains('<structure'));
@@ -35,9 +33,7 @@ void _runJffFormatTests() {
       final originalAutomaton = _createTestDFA();
       final automatonData = _copyAutomatonData(originalAutomaton);
 
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
 
       expect(jffXml, contains('<structure type="fa">'));
       expect(jffXml, contains('<type>fa</type>'));
@@ -49,9 +45,7 @@ void _runJffFormatTests() {
       final automatonData = _copyAutomatonData(complexAutomaton);
 
       // Convert to JFF format
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
       expect(jffXml, isNotEmpty);
 
       // Parse back from JFF format
@@ -77,9 +71,7 @@ void _runJffFormatTests() {
       final automatonData = _copyAutomatonData(epsilonNFA);
 
       // Convert to JFF format
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
       expect(jffXml, isNotEmpty);
       // JFLAP XML spec requires epsilon as empty <read/> tag, not <read>ε</read>
       expect(jffXml, isNot(contains('<read>ε</read>')));
@@ -102,7 +94,8 @@ void _runJffFormatTests() {
 
       if (roundTripResult.isSuccess) {
         final data = roundTripResult.data!;
-        final transitions = data['transitions'] as Map<String, List<String>>? ??
+        final transitions =
+            data['transitions'] as Map<String, List<String>>? ??
             <String, List<String>>{};
 
         expect(data['type'], equals('nfa'));
@@ -180,9 +173,7 @@ void _runJffFormatTests() {
   </automaton>
 </structure>''';
 
-      final serviceResult = _deserializeAutomatonFromJflap(
-        xml,
-      );
+      final serviceResult = _deserializeAutomatonFromJflap(xml);
       final parserResult = _deserializeAutomatonFromJflap(xml);
 
       expect(serviceResult.isSuccess, isTrue);
@@ -220,9 +211,7 @@ void _runJffFormatTests() {
       final epsilonTags = RegExp(r'<read\s*/>').allMatches(jffXml).length;
       expect(epsilonTags, equals(3));
 
-      final roundTrip = _deserializeAutomatonFromJflap(
-        jffXml,
-      );
+      final roundTrip = _deserializeAutomatonFromJflap(jffXml);
       expect(roundTrip.isSuccess, isTrue);
 
       final transitions =
@@ -388,7 +377,7 @@ void _runJffFormatTests() {
         expect(result.isSuccess, isTrue);
         final data = result.data!;
         expect(data['id'] as String, startsWith('imported_'));
-        expect(data['name'], equals('Imported Automaton'));
+        expect(data['name'], equals(data['id']));
         expect(data['type'], equals('dfa'));
         expect(data['alphabet'], equals(['a']));
         expect(data['nextId'], equals(2));
@@ -401,7 +390,8 @@ void _runJffFormatTests() {
       final result = _deserializeAutomatonFromJflap(xml);
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('Root element must be <structure>'));
+      expect(result.error, 'parser.jflap-xml.unexpected-root-element');
+      expect(result.structuredError?.arguments['actual']?.value, 'invalid');
     });
 
     test(
@@ -427,7 +417,9 @@ void _runJffFormatTests() {
         final result = _deserializeAutomatonFromJflap(xml);
 
         expect(result.isFailure, isTrue);
-        expect(result.error, contains('unknown state'));
+        expect(result.error, 'parser.jflap-xml.unknown-transition-endpoints');
+        expect(result.structuredError?.arguments['from']?.value, 'q0');
+        expect(result.structuredError?.arguments['to']?.value, 'q9');
       },
     );
 
@@ -435,14 +427,10 @@ void _runJffFormatTests() {
       final emptyAutomaton = _createEmptyAutomaton();
       final automatonData = _copyAutomatonData(emptyAutomaton);
 
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
       expect(jffXml, contains('<automaton>'));
 
-      final jffRoundTrip = _deserializeAutomatonFromJflap(
-        jffXml,
-      );
+      final jffRoundTrip = _deserializeAutomatonFromJflap(jffXml);
       expect(jffRoundTrip.isSuccess, isTrue);
       expect(jffRoundTrip.data!['alphabet'], isEmpty);
       expect(jffRoundTrip.data!['nextId'], equals(0));
@@ -450,12 +438,8 @@ void _runJffFormatTests() {
           jffRoundTrip.data!['transitions'] as Map<String, List<String>>;
       expect(jffTransitions, isEmpty);
 
-      final jsonString = _serializeAutomatonToJson(
-        automatonData,
-      );
-      final jsonRoundTrip = _deserializeAutomatonFromJson(
-        jsonString,
-      );
+      final jsonString = _serializeAutomatonToJson(automatonData);
+      final jsonRoundTrip = _deserializeAutomatonFromJson(jsonString);
       expect(jsonRoundTrip.isSuccess, isTrue);
       final jsonData = jsonRoundTrip.data!;
       expect(jsonData['states'], isEmpty);
@@ -466,9 +450,7 @@ void _runJffFormatTests() {
       final originalAutomaton = _createEpsilonNFA();
       final automatonData = _copyAutomatonData(originalAutomaton);
 
-      final jffXml = _serializeAutomatonToJflap(
-        automatonData,
-      );
+      final jffXml = _serializeAutomatonToJflap(automatonData);
       final result = _deserializeAutomatonFromJflap(jffXml);
 
       expect(result.isSuccess, isTrue);

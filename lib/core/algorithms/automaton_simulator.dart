@@ -10,6 +10,8 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:collection';
+
 import '../models/fsa.dart';
 import '../models/state.dart';
 import '../models/fsa_transition.dart';
@@ -20,11 +22,13 @@ import '../models/nfa_path_node.dart';
 import '../models/nfa_computation_tree.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'automaton_simulation_messages.dart';
 
 /// Simulates Finite Automata (FA) with input strings
 class AutomatonSimulator {
   static const _epsilonClosureTransition = 'ε-closure';
   static const int defaultMaxNfaTraceNodes = 10000;
+  static const int defaultMaxNfaEpsilonPathEdges = 256;
 
   /// Simulates a DFA with an input string (deterministic, no epsilon)
   static Future<Result<SimulationResult>> simulateDFA(
@@ -39,24 +43,28 @@ class AutomatonSimulator {
       // Validate input (generic checks)
       final validationResult = _validateInput(automaton, inputString);
       if (!validationResult.isSuccess) {
-        return Failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Validate DFA constraints
       if (automaton.isNondeterministic || automaton.hasEpsilonTransitions) {
-        return const Failure(
-          'DFA required: automaton must be deterministic and epsilon-free',
-        );
+        final message = AutomatonSimulationMessages.dfaRequired();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       // Handle empty automaton
       if (automaton.states.isEmpty) {
-        return const Failure('Cannot simulate empty automaton');
+        final message = AutomatonSimulationMessages.emptyAutomaton();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       // Handle automaton with no initial state
       if (automaton.initialState == null) {
-        return const Failure('Automaton must have an initial state');
+        final message = AutomatonSimulationMessages.missingInitialState();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       final transitionIndex = _FsaTransitionIndex(automaton);
@@ -76,7 +84,8 @@ class AutomatonSimulator {
 
       return Success(finalResult);
     } catch (e) {
-      return Failure('Error simulating DFA: $e');
+      final message = AutomatonSimulationMessages.dfaFailure(e);
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
@@ -111,29 +120,36 @@ class AutomatonSimulator {
     bool strictAlphabet = true,
   }) {
     if (automaton.states.isEmpty) {
-      return const Failure('Automaton must have at least one state');
+      final message = AutomatonSimulationMessages.emptyAutomaton();
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     if (automaton.initialState == null) {
-      return const Failure('Automaton must have an initial state');
+      final message = AutomatonSimulationMessages.missingInitialState();
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     if (!automaton.states.contains(automaton.initialState)) {
-      return const Failure('Initial state must be in the states set');
+      final message = AutomatonSimulationMessages.initialStateOutsideSet();
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     for (final acceptingState in automaton.acceptingStates) {
       if (!automaton.states.contains(acceptingState)) {
-        return const Failure('Accepting state must be in the states set');
+        final message = AutomatonSimulationMessages.acceptingStateOutsideSet();
+        return Failure(message.stableCode, structuredMessage: message);
       }
     }
 
     // Validate input string symbols
     if (strictAlphabet) {
-      for (int i = 0; i < inputString.length; i++) {
-        final symbol = inputString[i];
+      for (final input in _unicodeScalars(inputString)) {
+        final symbol = input.symbol;
         if (!automaton.alphabet.contains(symbol)) {
-          return Failure('Input string contains invalid symbol: $symbol');
+          final message = AutomatonSimulationMessages.invalidInputSymbol(
+            symbol,
+          );
+          return Failure(message.stableCode, structuredMessage: message);
         }
       }
     }
@@ -166,12 +182,18 @@ class AutomatonSimulator {
     );
 
     // Process each input symbol with batching for large inputs.
-    for (var inputOffset = 0; inputOffset < inputString.length; inputOffset++) {
-      final symbol = inputString[inputOffset];
+    final inputScalars = _unicodeScalars(inputString);
+    for (
+      var inputOffset = 0;
+      inputOffset < inputScalars.length;
+      inputOffset++
+    ) {
+      final input = inputScalars[inputOffset];
+      final symbol = input.symbol;
       stepNumber++;
 
       // Check timeout
-      if (DateTime.now().difference(startTime) > timeout) {
+      if (DateTime.now().difference(startTime) >= timeout) {
         return SimulationResult.timeout(
           inputString: inputString,
           steps: steps,
@@ -182,25 +204,19 @@ class AutomatonSimulator {
       // Find next state deterministically
       final transitions = transitionIndex.transitionsFor(currentState, symbol);
       if (transitions.isEmpty) {
-        return SimulationResult.failure(
+        final message = AutomatonSimulationMessages.noDfaTransition(
+          state: currentState.label,
+          symbol: symbol,
+        );
+        return SimulationResult.structuredFailure(
           inputString: inputString,
           steps: steps,
-          errorMessage:
-              'No transition from state ${currentState.label} on symbol $symbol',
+          message: message,
           executionTime: DateTime.now().difference(startTime),
         );
       }
       final transition = transitions.first;
       final nextState = transition.toState;
-
-      // Check for infinite loop (simplified)
-      if (steps.length > 10000) {
-        return SimulationResult.infiniteLoop(
-          inputString: inputString,
-          steps: steps,
-          executionTime: DateTime.now().difference(startTime),
-        );
-      }
 
       // Add step (record destination state, consistent with TM simulator)
       if (stepByStep) {
@@ -209,15 +225,20 @@ class AutomatonSimulator {
           SimulationStep.fsa(
             currentState: nextState.label,
             activeStateIds: {nextState.id},
-            remainingInput: inputString.substring(inputOffset + 1),
+            remainingInput: inputString.substring(input.end),
             usedTransition: 'δ($fromStateLabel, $symbol) = ${nextState.label}',
             stepNumber: stepNumber,
             consumedInput: symbol,
             explanation: StepExplanation(
-              title: 'Transition applied',
-              bullets: [
-                'Read symbol "$symbol" from the input.',
-                'From state ${currentState.label}, the transition on "$symbol" leads to ${nextState.label}.',
+              titleMessage:
+                  AutomatonSimulationMessages.transitionAppliedTitle(),
+              bulletMessages: [
+                AutomatonSimulationMessages.readSymbol(symbol),
+                AutomatonSimulationMessages.transitionDetail(
+                  fromState: currentState.label,
+                  symbol: symbol,
+                  toState: nextState.label,
+                ),
               ],
               categories: const [ExplanationCategory.info],
               highlights: [
@@ -274,10 +295,10 @@ class AutomatonSimulator {
         executionTime: DateTime.now().difference(startTime),
       );
     } else {
-      return SimulationResult.failure(
+      return SimulationResult.structuredFailure(
         inputString: inputString,
         steps: steps,
-        errorMessage: 'Rejected: no accepting state reached',
+        message: AutomatonSimulationMessages.rejectedNoAcceptingState(),
         executionTime: DateTime.now().difference(startTime),
       );
     }
@@ -302,17 +323,22 @@ class AutomatonSimulator {
         strictAlphabet: false,
       );
       if (!validationResult.isSuccess) {
-        return Failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Handle empty automaton
       if (nfa.states.isEmpty) {
-        return const Failure('Cannot simulate empty automaton');
+        final message = AutomatonSimulationMessages.emptyAutomaton();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       // Handle automaton with no initial state
       if (nfa.initialState == null) {
-        return const Failure('Automaton must have an initial state');
+        final message = AutomatonSimulationMessages.missingInitialState();
+        return Failure(message.stableCode, structuredMessage: message);
       }
 
       final transitionIndex = _FsaTransitionIndex(nfa);
@@ -333,7 +359,8 @@ class AutomatonSimulator {
 
       return Success(finalResult);
     } catch (e) {
-      return Failure('Error simulating NFA: $e');
+      final message = AutomatonSimulationMessages.nfaFailure(e);
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
@@ -354,10 +381,12 @@ class AutomatonSimulator {
     final startTime = DateTime.now();
 
     // Initialize simulation with epsilon closure of initial state
-    final initialClosure =
-        transitionIndex.epsilonClosureWithTransitionIds({nfa.initialState!});
+    final initialClosure = transitionIndex.epsilonClosureWithTransitionIds({
+      nfa.initialState!,
+    });
     var currentStates = initialClosure.states;
     var remainingInput = inputString;
+    final inputScalars = _unicodeScalars(inputString);
     int stepNumber = 0;
     int nextStepNumber() => ++stepNumber;
 
@@ -389,10 +418,14 @@ class AutomatonSimulator {
           stepNumber: nextStepNumber(),
           consumedInput: '',
           explanation: StepExplanation(
-            title: 'Computed ε-closure',
-            bullets: [
-              'Before reading any input, an NFA may take ε-transitions (moves that consume no input).',
-              'Starting from ${nfa.initialState!.label}, ε-transitions reach: $initialStateLabel.',
+            titleMessage:
+                AutomatonSimulationMessages.computedEpsilonClosureTitle(),
+            bulletMessages: [
+              AutomatonSimulationMessages.epsilonClosureBeforeReading(),
+              AutomatonSimulationMessages.epsilonClosureReached(
+                initialState: nfa.initialState!.label,
+                stateSet: initialStateLabel,
+              ),
             ],
             categories: const [ExplanationCategory.epsilonMove],
             highlights: [
@@ -410,27 +443,83 @@ class AutomatonSimulator {
     }
 
     // Build computation tree - start with root nodes for each state in epsilon closure
+    final initialPathExpansion = transitionIndex.epsilonPathsFrom(
+      nfa.initialState!,
+      maximumPaths: maxTraceNodes,
+      maximumPathLength: defaultMaxNfaEpsilonPathEdges,
+      shouldStop: () => DateTime.now().difference(startTime) >= timeout,
+    );
     final rootNodes = <NFAPathNode>[];
-    for (final state in currentStates) {
+    for (final path in initialPathExpansion.paths) {
+      final state = path.state;
       rootNodes.add(
         NFAPathNode(
           currentState: state.id,
           remainingInput: inputString,
           stepNumber: 0,
-          transitionUsed: 'Initial state (with ε-closure)',
-          description: 'Initial state ${state.id}',
+          transitionUsed: path.transitions.isEmpty
+              ? 'Initial state'
+              : 'ε: ${nfa.initialState!.label} → '
+                    '${path.transitions.map((transition) => transition.toState.label).join(' → ε → ')}',
+          transitionIds: [
+            for (final transition in path.transitions) transition.id,
+          ],
+          isCycle: path.closesCycle,
+          descriptionMessage:
+              AutomatonSimulationMessages.initialStateDescription(state.id),
         ),
       );
     }
     var traceNodeCount = rootNodes.length;
 
+    if (initialPathExpansion.timedOut) {
+      final tree = NFAComputationTree.timeout(
+        root: _buildTreeRoot(rootNodes),
+        inputString: inputString,
+        totalSteps: stepNumber,
+      );
+      return SimulationResult.timeout(
+        inputString: inputString,
+        steps: steps,
+        executionTime: DateTime.now().difference(startTime),
+        computationTree: tree,
+      );
+    }
+
+    if (initialPathExpansion.truncated) {
+      final legacyMessage = _nfaTraceTruncationMessage(
+        maxTraceNodes,
+        epsilonPathLimited: initialPathExpansion.depthLimited,
+      );
+      final message = AutomatonSimulationMessages.nfaTraceTruncated(
+        maximumNodes: maxTraceNodes,
+        epsilonPathLimited: initialPathExpansion.depthLimited,
+        epsilonPathLimit: defaultMaxNfaEpsilonPathEdges,
+      );
+      final tree = NFAComputationTree.rejected(
+        root: _buildTreeRoot(rootNodes),
+        inputString: inputString,
+        totalSteps: stepNumber,
+        errorMessage: legacyMessage,
+        structuredMessage: message,
+      );
+      return SimulationResult.structuredFailure(
+        inputString: inputString,
+        steps: steps,
+        message: message,
+        executionTime: DateTime.now().difference(startTime),
+        compatibilityErrorMessage: legacyMessage,
+        computationTree: tree,
+      );
+    }
+
     // Maintain a queue of active path nodes to expand
-    var activeLeaves = rootNodes.toList();
+    var activeLeaves = rootNodes.where((node) => !node.isCycle).toList();
     final allLeaves = <NFAPathNode>[];
     int totalSteps = 0;
 
     // Process each input symbol
-    while (remainingInput.isNotEmpty) {
+    for (final input in inputScalars) {
       final symbolStepNumber = nextStepNumber();
       totalSteps = stepNumber;
 
@@ -451,8 +540,8 @@ class AutomatonSimulator {
         );
       }
 
-      final symbol = remainingInput[0];
-      remainingInput = remainingInput.substring(1);
+      final symbol = input.symbol;
+      remainingInput = inputString.substring(input.end);
 
       // Find next states by symbol, exploring all transitions
       var nextStates = <State>{};
@@ -465,8 +554,9 @@ class AutomatonSimulator {
 
       // Apply epsilon closure to next states (flexible)
       final closureBefore = nextStates;
-      final epsilonClosure =
-          transitionIndex.epsilonClosureWithTransitionIds(nextStates);
+      final epsilonClosure = transitionIndex.epsilonClosureWithTransitionIds(
+        nextStates,
+      );
       nextStates = epsilonClosure.states;
       final beforeLabel = stateSetLabel(closureBefore);
       final afterLabel = stateSetLabel(nextStates);
@@ -481,12 +571,15 @@ class AutomatonSimulator {
             stepNumber: symbolStepNumber,
             consumedInput: symbol,
             explanation: StepExplanation(
-              title: 'Symbol consumed',
-              bullets: [
-                'Read symbol "$symbol" from the input.',
+              titleMessage: AutomatonSimulationMessages.symbolConsumedTitle(),
+              bulletMessages: [
+                AutomatonSimulationMessages.readSymbol(symbol),
                 if (closureBefore.length > 1)
-                  'This is an NFA step: multiple states may be active at once (nondeterminism).',
-                'After taking all possible transitions on "$symbol", the active state set is $beforeLabel.',
+                  AutomatonSimulationMessages.nondeterministicStep(),
+                AutomatonSimulationMessages.activeSetAfterTransitions(
+                  symbol: symbol,
+                  stateSet: beforeLabel,
+                ),
               ],
               categories: [
                 ExplanationCategory.info,
@@ -495,10 +588,7 @@ class AutomatonSimulator {
               ],
               highlights: [
                 for (final s in closureBefore)
-                  HighlightTarget(
-                    type: HighlightTargetType.state,
-                    id: s.id,
-                  ),
+                  HighlightTarget(type: HighlightTargetType.state, id: s.id),
                 for (final transitionId in transitionIds)
                   HighlightTarget(
                     type: HighlightTargetType.transition,
@@ -521,10 +611,14 @@ class AutomatonSimulator {
             stepNumber: nextStepNumber(),
             consumedInput: '',
             explanation: StepExplanation(
-              title: 'Expanded via ε-transitions',
-              bullets: [
-                'After consuming "$symbol", we also follow any ε-transitions (moves that consume no input).',
-                'ε-closure expanded the active state set from $beforeLabel to $afterLabel.',
+              titleMessage:
+                  AutomatonSimulationMessages.expandedViaEpsilonTitle(),
+              bulletMessages: [
+                AutomatonSimulationMessages.epsilonAfterConsuming(symbol),
+                AutomatonSimulationMessages.epsilonClosureExpanded(
+                  before: beforeLabel,
+                  after: afterLabel,
+                ),
               ],
               categories: const [ExplanationCategory.epsilonMove],
               highlights: [
@@ -540,22 +634,6 @@ class AutomatonSimulator {
           ),
         );
         totalSteps = stepNumber;
-      }
-
-      // Check for infinite loop (simplified)
-      if (steps.length > 1000) {
-        final partialRoot = _buildTreeRoot(rootNodes);
-        final tree = NFAComputationTree.infiniteLoop(
-          root: partialRoot,
-          inputString: inputString,
-          totalSteps: totalSteps,
-        );
-        return SimulationResult.infiniteLoop(
-          inputString: inputString,
-          steps: steps,
-          executionTime: DateTime.now().difference(startTime),
-          computationTree: tree,
-        );
       }
 
       // Expand each active leaf node in the computation tree
@@ -582,18 +660,91 @@ class AutomatonSimulator {
         );
 
         // Get transitions from this state on the current symbol
-        final transitions = transitionIndex.transitionsFor(
-          leafState,
-          symbol,
-        );
+        final transitions = transitionIndex.transitionsFor(leafState, symbol);
 
-        // Get epsilon closure destinations
-        final destStates = <State>{};
+        // Keep one child per concrete symbol transition and epsilon path.
+        // This preserves parallel-edge identity and avoids inventing a direct
+        // symbol transition to states reached only through epsilon closure.
+        final destinations = <_FsaRecordedPath>[];
+        var epsilonPathsTruncated = false;
+        var epsilonPathDepthLimited = false;
+        var epsilonPathsTimedOut = false;
         for (final t in transitions) {
-          destStates.addAll(transitionIndex.epsilonClosure({t.toState}));
+          final remainingSlots =
+              maxTraceNodes - traceNodeCount - destinations.length;
+          if (remainingSlots <= 0) {
+            epsilonPathsTruncated = true;
+            break;
+          }
+          final expansion = transitionIndex.epsilonPathsFrom(
+            t.toState,
+            maximumPaths: remainingSlots,
+            maximumPathLength: defaultMaxNfaEpsilonPathEdges,
+            shouldStop: () => DateTime.now().difference(startTime) >= timeout,
+          );
+          for (final epsilonPath in expansion.paths) {
+            destinations.add(
+              _FsaRecordedPath(
+                state: epsilonPath.state,
+                symbolTransition: t,
+                epsilonTransitions: epsilonPath.transitions,
+                closesEpsilonCycle: epsilonPath.closesCycle,
+              ),
+            );
+          }
+          if (expansion.timedOut) {
+            epsilonPathsTimedOut = true;
+            break;
+          }
+          if (expansion.truncated) {
+            epsilonPathsTruncated = true;
+            epsilonPathDepthLimited = expansion.depthLimited;
+            break;
+          }
         }
 
-        if (destStates.isEmpty) {
+        if (epsilonPathsTimedOut) {
+          final tree = NFAComputationTree.timeout(
+            root: _buildTreeRoot(rootNodes),
+            inputString: inputString,
+            totalSteps: totalSteps,
+          );
+          return SimulationResult.timeout(
+            inputString: inputString,
+            steps: steps,
+            executionTime: DateTime.now().difference(startTime),
+            computationTree: tree,
+          );
+        }
+
+        if (epsilonPathsTruncated && destinations.isEmpty) {
+          final legacyMessage = _nfaTraceTruncationMessage(
+            maxTraceNodes,
+            epsilonPathLimited: epsilonPathDepthLimited,
+          );
+          final message = AutomatonSimulationMessages.nfaTraceTruncated(
+            maximumNodes: maxTraceNodes,
+            epsilonPathLimited: epsilonPathDepthLimited,
+            epsilonPathLimit: defaultMaxNfaEpsilonPathEdges,
+          );
+          final tree = NFAComputationTree.rejected(
+            root: _buildTreeRoot(rootNodes),
+            inputString: inputString,
+            totalSteps: totalSteps,
+            errorMessage: legacyMessage,
+            structuredMessage: message,
+          );
+          return SimulationResult.structuredFailure(
+            inputString: inputString,
+            steps: steps,
+            message: message,
+            executionTime: DateTime.now().difference(startTime),
+            compatibilityErrorMessage: legacyMessage,
+            computationTree: tree,
+          );
+        }
+
+        if (destinations.isEmpty) {
           // Dead end - mark the leaf as dead-end and update it in the tree
           final deadEndLeaf = leaf.copyWith(isDeadEnd: true);
           _replaceNodeInTree(rootNodes, leaf, deadEndLeaf);
@@ -601,42 +752,91 @@ class AutomatonSimulator {
         } else {
           // Create child nodes for each destination state
           final children = <NFAPathNode>[];
-          for (final destState in destStates) {
+          for (final destination in destinations) {
             if (traceNodeCount >= maxTraceNodes) {
-              const messagePrefix = 'NFA trace truncated';
-              final message =
-                  '$messagePrefix after $maxTraceNodes nodes. Rerun without step-by-step tracing to check acceptance.';
+              final legacyMessage = _nfaTraceTruncationMessage(maxTraceNodes);
+              final message = AutomatonSimulationMessages.nfaTraceTruncated(
+                maximumNodes: maxTraceNodes,
+                epsilonPathLimited: false,
+                epsilonPathLimit: defaultMaxNfaEpsilonPathEdges,
+              );
               final tree = NFAComputationTree.rejected(
                 root: _buildTreeRoot(rootNodes),
                 inputString: inputString,
                 totalSteps: totalSteps,
-                errorMessage: message,
+                errorMessage: legacyMessage,
+                structuredMessage: message,
               );
-              return SimulationResult.failure(
+              return SimulationResult.structuredFailure(
                 inputString: inputString,
                 steps: steps,
-                errorMessage: message,
+                message: message,
                 executionTime: DateTime.now().difference(startTime),
+                compatibilityErrorMessage: legacyMessage,
                 computationTree: tree,
               );
             }
+            final destState = destination.state;
+            final epsilonTransitions = destination.epsilonTransitions;
+            final transitionSummary = epsilonTransitions.isEmpty
+                ? 'δ(${leafState.label}, $symbol) → '
+                      '${destination.symbolTransition.toState.label}'
+                : 'δ(${leafState.label}, $symbol) → '
+                      '${destination.symbolTransition.toState.label}; '
+                      'ε → ${epsilonTransitions.map((transition) => transition.toState.label).join(' → ε → ')}';
             final childNode = NFAPathNode(
               currentState: destState.id,
               remainingInput: remainingInput,
               inputSymbol: symbol,
-              transitionUsed:
-                  'δ(${leaf.currentState}, $symbol) → ${destState.id}',
+              transitionUsed: transitionSummary,
+              transitionIds: [
+                destination.symbolTransition.id,
+                for (final transition in epsilonTransitions) transition.id,
+              ],
               stepNumber: symbolStepNumber,
-              description: 'Consumed $symbol, now at ${destState.id}',
+              isCycle: destination.closesEpsilonCycle,
+              descriptionMessage:
+                  AutomatonSimulationMessages.consumedSymbolDescription(
+                    symbol: symbol,
+                    stateId: destState.id,
+                  ),
             );
             children.add(childNode);
-            newActiveLeaves.add(childNode);
+            if (!childNode.isCycle) {
+              newActiveLeaves.add(childNode);
+            }
             traceNodeCount++;
           }
           // Update the leaf with its children (create a new node)
           final updatedLeaf = leaf.copyWith(children: children);
           // Replace the old leaf in rootNodes
           _replaceNodeInTree(rootNodes, leaf, updatedLeaf);
+          if (epsilonPathsTruncated) {
+            final legacyMessage = _nfaTraceTruncationMessage(
+              maxTraceNodes,
+              epsilonPathLimited: epsilonPathDepthLimited,
+            );
+            final message = AutomatonSimulationMessages.nfaTraceTruncated(
+              maximumNodes: maxTraceNodes,
+              epsilonPathLimited: epsilonPathDepthLimited,
+              epsilonPathLimit: defaultMaxNfaEpsilonPathEdges,
+            );
+            final tree = NFAComputationTree.rejected(
+              root: _buildTreeRoot(rootNodes),
+              inputString: inputString,
+              totalSteps: totalSteps,
+              errorMessage: legacyMessage,
+              structuredMessage: message,
+            );
+            return SimulationResult.structuredFailure(
+              inputString: inputString,
+              steps: steps,
+              message: message,
+              executionTime: DateTime.now().difference(startTime),
+              compatibilityErrorMessage: legacyMessage,
+              computationTree: tree,
+            );
+          }
         }
       }
 
@@ -645,18 +845,22 @@ class AutomatonSimulator {
 
       // If no next states, early reject
       if (currentStates.isEmpty) {
+        final message = AutomatonSimulationMessages.noNfaTransition(symbol);
+        final legacyMessage = 'No transition found for symbol $symbol';
         final treeRoot = _buildTreeRoot(rootNodes);
         final tree = NFAComputationTree.rejected(
           root: treeRoot,
           inputString: inputString,
           totalSteps: totalSteps,
-          errorMessage: 'No transition found for symbol $symbol',
+          errorMessage: legacyMessage,
+          structuredMessage: message,
         );
-        return SimulationResult.failure(
+        return SimulationResult.structuredFailure(
           inputString: inputString,
           steps: steps,
-          errorMessage: 'No transition found for symbol $symbol',
+          message: message,
           executionTime: DateTime.now().difference(startTime),
+          compatibilityErrorMessage: legacyMessage,
           computationTree: tree,
         );
       }
@@ -678,13 +882,15 @@ class AutomatonSimulator {
     }
 
     // Check if any current state is accepting
-    final isAccepted =
-        currentStates.intersection(nfa.acceptingStates).isNotEmpty;
+    final isAccepted = currentStates
+        .intersection(nfa.acceptingStates)
+        .isNotEmpty;
 
     final finalStateLabel = currentStates.length == 1
         ? currentStates.first.label
         : '{${currentStates.map((s) => s.label).join(',')}}';
-    final shouldAddFinalStep = steps.isEmpty ||
+    final shouldAddFinalStep =
+        steps.isEmpty ||
         steps.last.remainingInput.isNotEmpty ||
         steps.last.usedTransition == _epsilonClosureTransition ||
         steps.last.currentState != finalStateLabel;
@@ -717,6 +923,7 @@ class AutomatonSimulator {
             inputString: inputString,
             totalSteps: totalSteps,
             errorMessage: 'Input not accepted - no accepting state reached',
+            structuredMessage: AutomatonSimulationMessages.nfaNotAccepted(),
           );
 
     if (isAccepted) {
@@ -727,11 +934,13 @@ class AutomatonSimulator {
         computationTree: tree,
       );
     } else {
-      return SimulationResult.failure(
+      return SimulationResult.structuredFailure(
         inputString: inputString,
         steps: steps,
-        errorMessage: 'Input not accepted - no accepting state reached',
+        message: AutomatonSimulationMessages.nfaNotAccepted(),
         executionTime: DateTime.now().difference(startTime),
+        compatibilityErrorMessage:
+            'Input not accepted - no accepting state reached',
         computationTree: tree,
       );
     }
@@ -745,8 +954,8 @@ class AutomatonSimulator {
   ) {
     final stopwatch = Stopwatch()..start();
     var currentStates = transitionIndex.epsilonClosure({nfa.initialState!});
-    for (var inputOffset = 0; inputOffset < inputString.length; inputOffset++) {
-      final symbol = inputString[inputOffset];
+    for (final input in _unicodeScalars(inputString)) {
+      final symbol = input.symbol;
       if (stopwatch.elapsed > timeout) {
         return SimulationResult.timeout(
           inputString: inputString,
@@ -765,10 +974,10 @@ class AutomatonSimulator {
       }
       currentStates = transitionIndex.epsilonClosure(destinations);
       if (currentStates.isEmpty) {
-        return SimulationResult.failure(
+        return SimulationResult.structuredFailure(
           inputString: inputString,
           steps: const [],
-          errorMessage: 'No transition found for symbol $symbol',
+          message: AutomatonSimulationMessages.noNfaTransition(symbol),
           executionTime: stopwatch.elapsed,
         );
       }
@@ -782,12 +991,36 @@ class AutomatonSimulator {
         executionTime: stopwatch.elapsed,
       );
     }
-    return SimulationResult.failure(
+    return SimulationResult.structuredFailure(
       inputString: inputString,
       steps: const [],
-      errorMessage: 'Input not accepted - no accepting state reached',
+      message: AutomatonSimulationMessages.nfaNotAccepted(),
       executionTime: stopwatch.elapsed,
     );
+  }
+
+  static List<({String symbol, int start, int end})> _unicodeScalars(
+    String input,
+  ) {
+    final scalars = <({String symbol, int start, int end})>[];
+    var offset = 0;
+    for (final rune in input.runes) {
+      final symbol = String.fromCharCode(rune);
+      scalars.add((symbol: symbol, start: offset, end: offset + symbol.length));
+      offset += symbol.length;
+    }
+    return scalars;
+  }
+
+  static String _nfaTraceTruncationMessage(
+    int maximumNodes, {
+    bool epsilonPathLimited = false,
+  }) {
+    final bound = epsilonPathLimited
+        ? 'at the $defaultMaxNfaEpsilonPathEdges-edge epsilon-path limit'
+        : 'after $maximumNodes nodes';
+    return 'NFA trace truncated $bound. '
+        'Rerun without step-by-step tracing to check acceptance.';
   }
 
   /// Builds a single root node from multiple root nodes (for epsilon closure)
@@ -810,7 +1043,8 @@ class AutomatonSimulator {
       stepNumber: 0,
       children: rootNodes,
       transitionUsed: 'ε-closure of initial state',
-      description: 'Initial ε-closure',
+      descriptionMessage:
+          AutomatonSimulationMessages.initialEpsilonClosureDescription(),
     );
   }
 
@@ -860,7 +1094,10 @@ class AutomatonSimulator {
   static Future<Result<bool>> accepts(FSA automaton, String inputString) async {
     final simulationResult = await simulate(automaton, inputString);
     if (!simulationResult.isSuccess) {
-      return Failure(simulationResult.error!);
+      return Failure(
+        simulationResult.error!,
+        structuredMessage: simulationResult.structuredError,
+      );
     }
 
     return Success(simulationResult.data!.accepted);
@@ -870,7 +1107,10 @@ class AutomatonSimulator {
   static Future<Result<bool>> rejects(FSA automaton, String inputString) async {
     final acceptsResult = await accepts(automaton, inputString);
     if (!acceptsResult.isSuccess) {
-      return Failure(acceptsResult.error!);
+      return Failure(
+        acceptsResult.error!,
+        structuredMessage: acceptsResult.structuredError,
+      );
     }
 
     return Success(!acceptsResult.data!);
@@ -887,9 +1127,11 @@ class AutomatonSimulator {
       final alphabet = automaton.alphabet.toList();
 
       // Generate all possible strings up to maxLength
-      for (int length = 0;
-          length <= maxLength && acceptedStrings.length < maxResults;
-          length++) {
+      for (
+        int length = 0;
+        length <= maxLength && acceptedStrings.length < maxResults;
+        length++
+      ) {
         await _generateStrings(
           automaton,
           alphabet,
@@ -902,7 +1144,8 @@ class AutomatonSimulator {
 
       return Success(acceptedStrings);
     } catch (e) {
-      return Failure('Error finding accepted strings: $e');
+      final message = AutomatonSimulationMessages.acceptedStringsFailure(e);
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
@@ -948,9 +1191,11 @@ class AutomatonSimulator {
       final alphabet = automaton.alphabet.toList();
 
       // Generate all possible strings up to maxLength
-      for (int length = 0;
-          length <= maxLength && rejectedStrings.length < maxResults;
-          length++) {
+      for (
+        int length = 0;
+        length <= maxLength && rejectedStrings.length < maxResults;
+        length++
+      ) {
         await _generateRejectedStrings(
           automaton,
           alphabet,
@@ -963,7 +1208,8 @@ class AutomatonSimulator {
 
       return Success(rejectedStrings);
     } catch (e) {
-      return Failure('Error finding rejected strings: $e');
+      final message = AutomatonSimulationMessages.rejectedStringsFailure(e);
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
@@ -1009,16 +1255,18 @@ class _FsaTransitionIndex {
         (bySymbol[symbol] ??= <FSATransition>[]).add(transition);
       }
       if (transition.isEpsilonTransition) {
-        (_epsilonDestinations[transition.fromState] ??= <State>{})
-            .add(transition.toState);
-        (_epsilonTransitions[transition.fromState] ??= <FSATransition>[])
-            .add(transition);
+        (_epsilonDestinations[transition.fromState] ??= <State>{}).add(
+          transition.toState,
+        );
+        (_epsilonTransitions[transition.fromState] ??= <FSATransition>[]).add(
+          transition,
+        );
       }
     }
   }
 
   final Map<State, Map<String, List<FSATransition>>>
-      _transitionsByStateAndSymbol = {};
+  _transitionsByStateAndSymbol = {};
   final Map<State, Set<State>> _epsilonDestinations = {};
   final Map<State, List<FSATransition>> _epsilonTransitions = {};
 
@@ -1046,14 +1294,160 @@ class _FsaTransitionIndex {
       },
     );
   }
+
+  /// Enumerates distinct epsilon paths without recursively expanding cycles.
+  ///
+  /// The seed's empty path is included. A transition that closes a cycle is
+  /// recorded as the final edge of a path, but that path is not expanded. This
+  /// preserves its provenance while keeping the computation trace finite.
+  _FsaEpsilonPathExpansion epsilonPathsFrom(
+    State seed, {
+    required int maximumPaths,
+    required int maximumPathLength,
+    required bool Function() shouldStop,
+  }) {
+    if (maximumPaths <= 0) {
+      return const _FsaEpsilonPathExpansion(
+        paths: [],
+        truncated: true,
+        depthLimited: false,
+        timedOut: false,
+      );
+    }
+
+    final paths = <_FsaEpsilonPath>[
+      _FsaEpsilonPath(state: seed, transitions: const [], closesCycle: false),
+    ];
+    final queue = Queue<_FsaEpsilonSearchEntry>()
+      ..add(
+        _FsaEpsilonSearchEntry(
+          state: seed,
+          transitions: const [],
+          visitedStateIds: {seed.id},
+        ),
+      );
+    var truncated = false;
+    var depthLimited = false;
+    var timedOut = false;
+
+    search:
+    while (queue.isNotEmpty) {
+      if (shouldStop()) {
+        timedOut = true;
+        break;
+      }
+      final current = queue.removeFirst();
+      final transitions =
+          _epsilonTransitions[current.state] ?? const <FSATransition>[];
+      if (current.transitions.length >= maximumPathLength) {
+        if (transitions.isNotEmpty) {
+          truncated = true;
+          depthLimited = true;
+        }
+        continue;
+      }
+      for (final transition in transitions) {
+        if (shouldStop()) {
+          timedOut = true;
+          break search;
+        }
+        if (paths.length >= maximumPaths) {
+          truncated = true;
+          break search;
+        }
+
+        final nextTransitions = [...current.transitions, transition];
+        final closesCycle = current.visitedStateIds.contains(
+          transition.toState.id,
+        );
+        paths.add(
+          _FsaEpsilonPath(
+            state: transition.toState,
+            transitions: nextTransitions,
+            closesCycle: closesCycle,
+          ),
+        );
+
+        if (closesCycle) {
+          continue;
+        }
+        queue.add(
+          _FsaEpsilonSearchEntry(
+            state: transition.toState,
+            transitions: nextTransitions,
+            visitedStateIds: {
+              ...current.visitedStateIds,
+              transition.toState.id,
+            },
+          ),
+        );
+      }
+    }
+
+    return _FsaEpsilonPathExpansion(
+      paths: List.unmodifiable(paths),
+      truncated: truncated,
+      depthLimited: depthLimited,
+      timedOut: timedOut,
+    );
+  }
 }
 
 class _FsaEpsilonClosure {
-  const _FsaEpsilonClosure({
-    required this.states,
-    required this.transitionIds,
-  });
+  const _FsaEpsilonClosure({required this.states, required this.transitionIds});
 
   final Set<State> states;
   final Set<String> transitionIds;
+}
+
+class _FsaEpsilonPath {
+  const _FsaEpsilonPath({
+    required this.state,
+    required this.transitions,
+    required this.closesCycle,
+  });
+
+  final State state;
+  final List<FSATransition> transitions;
+  final bool closesCycle;
+}
+
+class _FsaEpsilonPathExpansion {
+  const _FsaEpsilonPathExpansion({
+    required this.paths,
+    required this.truncated,
+    required this.depthLimited,
+    required this.timedOut,
+  });
+
+  final List<_FsaEpsilonPath> paths;
+  final bool truncated;
+  final bool depthLimited;
+  final bool timedOut;
+}
+
+class _FsaEpsilonSearchEntry {
+  const _FsaEpsilonSearchEntry({
+    required this.state,
+    required this.transitions,
+    required this.visitedStateIds,
+  });
+
+  final State state;
+  final List<FSATransition> transitions;
+  final Set<String> visitedStateIds;
+}
+
+class _FsaRecordedPath {
+  const _FsaRecordedPath({
+    required this.state,
+    required this.symbolTransition,
+    required this.epsilonTransitions,
+    required this.closesEpsilonCycle,
+  });
+
+  final State state;
+  final FSATransition symbolTransition;
+  final List<FSATransition> epsilonTransitions;
+  final bool closesEpsilonCycle;
 }

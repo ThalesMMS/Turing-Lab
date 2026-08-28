@@ -155,10 +155,7 @@ class TMDirectionIndicator extends StatelessWidget {
         if (showIcon && showText) const SizedBox(width: 4),
         if (showText)
           Text(
-            TMDirectionHelper.getLabel(
-              direction,
-              appLocalizationsOf(context),
-            ),
+            TMDirectionHelper.getLabel(direction, appLocalizationsOf(context)),
             style: TextStyle(
               fontSize: fontSize,
               color: color,
@@ -187,41 +184,58 @@ class TMDirectionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = TMDirectionHelper.getColor(direction);
     final symbol = TMDirectionHelper.getSymbol(direction);
+    final label = TMDirectionHelper.getLabel(
+      direction,
+      appLocalizationsOf(context),
+    );
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.2) : Colors.transparent,
-          border: Border.all(
-            color: selected ? color : color.withValues(alpha: 0.3),
-            width: selected ? 2 : 1,
-          ),
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: onTap != null,
+        enabled: onTap != null,
+        selected: selected,
+        label: label,
+        excludeSemantics: true,
+        onTap: onTap,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              symbol,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                color: color,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: selected
+                  ? color.withValues(alpha: 0.2)
+                  : Colors.transparent,
+              border: Border.all(
+                color: selected ? color : color.withValues(alpha: 0.3),
+                width: selected ? 2 : 1,
               ),
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(width: 6),
-            Text(
-              direction.name.toUpperCase()[0],
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                color: color,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  symbol,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  direction.name.toUpperCase()[0],
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

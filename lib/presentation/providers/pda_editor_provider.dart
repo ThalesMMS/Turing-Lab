@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import '../../core/models/pda.dart';
+import '../../core/models/pda_acceptance_mode.dart';
 import '../../core/models/pda_transition.dart';
 import '../../core/models/state.dart';
 import '../../core/models/transition.dart';
@@ -32,22 +33,32 @@ class PDAEditorState {
   /// Identifiers of transitions that involve at least one lambda operation.
   final Set<String> lambdaTransitionIds;
 
+  /// Identifiers whose input, pop, and push operations are all lambda.
+  ///
+  /// This matches JFLAP's standalone PDA lambda-transition checker. The
+  /// broader [lambdaTransitionIds] set continues to power workspace summaries.
+  final Set<String> standaloneLambdaTransitionIds;
+
   const PDAEditorState({
     this.pda,
     this.nondeterministicTransitionIds = const {},
     this.lambdaTransitionIds = const {},
+    this.standaloneLambdaTransitionIds = const {},
   });
 
   PDAEditorState copyWith({
     PDA? pda,
     Set<String>? nondeterministicTransitionIds,
     Set<String>? lambdaTransitionIds,
+    Set<String>? standaloneLambdaTransitionIds,
   }) {
     return PDAEditorState(
       pda: pda ?? this.pda,
       nondeterministicTransitionIds:
           nondeterministicTransitionIds ?? this.nondeterministicTransitionIds,
       lambdaTransitionIds: lambdaTransitionIds ?? this.lambdaTransitionIds,
+      standaloneLambdaTransitionIds:
+          standaloneLambdaTransitionIds ?? this.standaloneLambdaTransitionIds,
     );
   }
 }
@@ -338,6 +349,7 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
       return;
     }
 
+    final previous = state.pda;
     final stateSet = states.toSet();
     final transitionSet = transitions.toSet();
 
@@ -349,7 +361,9 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
     final acceptingStates = states.where((s) => s.isAccepting).toSet();
 
     final alphabet = <String>{};
-    final stackAlphabet = <String>{'Z'};
+    final stackAlphabet = <String>{
+      previous?.initialStackSymbol ?? 'Z',
+    };
 
     for (final transition in transitionSet) {
       if (!transition.isLambdaInput && transition.inputSymbol.isNotEmpty) {
@@ -378,14 +392,13 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
       transitions: transitionSet.map<Transition>((t) => t).toSet(),
       alphabet: alphabet,
       initialState: initialState,
-      acceptingStates: {
-        if (acceptingStates.isEmpty) states.last else ...acceptingStates,
-      },
+      acceptingStates: acceptingStates,
       created: now,
       modified: now,
       bounds: const math.Rectangle(0, 0, 800, 600),
       stackAlphabet: stackAlphabet,
-      initialStackSymbol: stackAlphabet.first,
+      initialStackSymbol: previous?.initialStackSymbol ?? stackAlphabet.first,
+      acceptanceMode: previous?.acceptanceMode ?? PDAAcceptanceMode.finalState,
       zoomLevel: 1,
       panOffset: Vector2.zero(),
     );
@@ -394,27 +407,67 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
   }
 
   Set<String> _findNondeterministicTransitions(Set<PDATransition> transitions) {
-    final grouped = <String, List<PDATransition>>{};
+    final transitionsByState = <String, List<PDATransition>>{};
 
     for (final transition in transitions) {
-      final key = [
-        transition.fromState.id,
-        if (transition.isLambdaInput) 'λ' else transition.inputSymbol,
-        if (transition.isLambdaPop) 'λ' else transition.popSymbol,
-      ].join('|');
-
-      grouped.putIfAbsent(key, () => []).add(transition);
+      transitionsByState
+          .putIfAbsent(transition.fromState.id, () => [])
+          .add(transition);
     }
 
-    return grouped.values
-        .where((list) => list.length > 1)
-        .expand((list) => list.map((transition) => transition.id))
-        .toSet();
+    final nondeterministic = <String>{};
+    for (final outgoing in transitionsByState.values) {
+      for (var firstIndex = 0; firstIndex < outgoing.length; firstIndex++) {
+        for (var secondIndex = firstIndex + 1;
+            secondIndex < outgoing.length;
+            secondIndex++) {
+          final first = outgoing[firstIndex];
+          final second = outgoing[secondIndex];
+          if (_pdaGuardsOverlap(first, second)) {
+            nondeterministic
+              ..add(first.id)
+              ..add(second.id);
+          }
+        }
+      }
+    }
+    return nondeterministic;
   }
+
+  /// Mirrors JFLAP's PDA nondeterminism test: input and pop guards conflict
+  /// when either string is a prefix of the other. Empty epsilon guards are
+  /// therefore compatible with every concrete guard.
+  bool _pdaGuardsOverlap(PDATransition first, PDATransition second) {
+    final firstInput = first.isLambdaInput ? '' : first.inputSymbol;
+    final secondInput = second.isLambdaInput ? '' : second.inputSymbol;
+    final firstPop = first.isLambdaPop ? '' : first.popSymbol;
+    final secondPop = second.isLambdaPop ? '' : second.popSymbol;
+    return _arePrefixes(firstInput, secondInput) &&
+        _arePrefixes(firstPop, secondPop);
+  }
+
+  bool _arePrefixes(String first, String second) =>
+      first.startsWith(second) || second.startsWith(first);
 
   /// Replaces the current PDA with a new instance, recalculating metadata.
   void setPda(PDA pda) {
     _updateStateWithPda(pda);
+  }
+
+  /// Stores a new acceptance rule as a document edit.
+  void setAcceptanceMode(PDAAcceptanceMode mode) {
+    final current = state.pda;
+    if (current == null || current.acceptanceMode == mode) return;
+    final now = DateTime.now();
+    final nextModified = now.isAfter(current.modified)
+        ? now
+        : current.modified.add(const Duration(microseconds: 1));
+    _updateStateWithPda(
+      current.copyWith(
+        acceptanceMode: mode,
+        modified: nextModified,
+      ),
+    );
   }
 
   /// Clears the editor state, removing any PDA currently rendered on the canvas.
@@ -431,11 +484,16 @@ class PDAEditorNotifier extends StateNotifier<PDAEditorState> {
         .where((t) => t.isLambdaInput || t.isLambdaPop || t.isLambdaPush)
         .map((t) => t.id)
         .toSet();
+    final standaloneLambdaTransitionIds = transitions
+        .where((t) => t.isLambdaInput && t.isLambdaPop && t.isLambdaPush)
+        .map((t) => t.id)
+        .toSet();
 
     state = state.copyWith(
       pda: pda,
       nondeterministicTransitionIds: nondeterministicTransitionIds,
       lambdaTransitionIds: lambdaTransitionIds,
+      standaloneLambdaTransitionIds: standaloneLambdaTransitionIds,
     );
   }
 

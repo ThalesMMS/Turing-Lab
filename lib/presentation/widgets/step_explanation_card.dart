@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/step_explanation.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 
 class StepExplanationCard extends StatelessWidget {
@@ -29,11 +30,17 @@ class StepExplanationCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final l10n = appLocalizationsOf(context);
 
-    final title = explanation?.title?.trim().isNotEmpty == true
-        ? explanation!.title!.trim()
-        : titleWhenEmpty;
+    final title = explanation?.titleMessage == null
+        ? (explanation?.title?.trim().isNotEmpty == true
+              ? explanation!.title!.trim()
+              : titleWhenEmpty)
+        : l10n.resolveStructuredMessage(explanation!.titleMessage!);
 
-    final bullets = explanation?.bullets ?? const <String>[];
+    final bullets = explanation?.bulletMessages.isNotEmpty == true
+        ? explanation!.bulletMessages
+              .map(l10n.resolveStructuredMessage)
+              .toList(growable: false)
+        : explanation?.bullets ?? const <String>[];
     final suggestedFixes =
         explanation?.suggestedFixes ?? const <SuggestedFix>[];
 
@@ -61,8 +68,9 @@ class StepExplanationCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     l10n.localizeWorkflowText(title),
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -107,8 +115,9 @@ class StepExplanationCard extends StatelessWidget {
               Divider(height: 16, color: scheme.outline.withValues(alpha: 0.2)),
               Text(
                 l10n.suggestedFixes,
-                style: theme.textTheme.labelLarge
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 6),
               ...suggestedFixes.map(
@@ -146,15 +155,20 @@ class _SuggestedFixRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.localizeWorkflowText(fix.label),
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                fix.labelMessage == null
+                    ? l10n.localizeWorkflowText(fix.label)
+                    : l10n.resolveStructuredMessage(fix.labelMessage!),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               if (fix.details?.trim().isNotEmpty == true)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    l10n.localizeWorkflowText(fix.details!.trim()),
+                    fix.detailsMessage == null
+                        ? l10n.localizeWorkflowText(fix.details!.trim())
+                        : l10n.resolveStructuredMessage(fix.detailsMessage!),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurface.withValues(alpha: 0.7),
                     ),

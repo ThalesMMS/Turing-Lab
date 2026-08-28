@@ -13,14 +13,74 @@
 //
 import 'package:flutter/foundation.dart';
 
+import '../../core/algorithms/language_comparator.dart';
 import '../../core/models/equivalence_comparison_result.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/language_comparison_outcome.dart';
+import '../../core/messages/structured_message.dart';
 
 /// Runs one comparison. Implementations may be synchronous or asynchronous.
-typedef LanguageComparisonRunner = Future<LanguageComparisonOutcome> Function(
+typedef LanguageComparisonRunner =
+    Future<LanguageComparisonOutcome> Function(
+      LanguageComparisonRequest request,
+    );
+
+/// Runs the canonical comparator and adapts its legacy result into the typed
+/// outcome consumed by comparison surfaces.
+Future<LanguageComparisonOutcome> runLanguageComparison(
   LanguageComparisonRequest request,
-);
+) async {
+  final result = LanguageComparator.compareLanguages(
+    request.automatonA,
+    request.automatonB,
+  );
+  if (result.isSuccess) {
+    return LanguageComparisonCompleted(result.data!);
+  }
+
+  final message = result.error ?? 'Language comparison failed';
+  final structuredMessage = result.structuredError;
+  return LanguageComparisonFailure(
+    reason: _failureReasonFor(request, message, structuredMessage),
+    message: message,
+    structuredMessage: structuredMessage,
+  );
+}
+
+LanguageComparisonFailureReason _failureReasonFor(
+  LanguageComparisonRequest request,
+  String message,
+  StructuredMessage? structuredMessage,
+) {
+  if (!_isUsableInput(request.automatonA) ||
+      !_isUsableInput(request.automatonB)) {
+    return LanguageComparisonFailureReason.malformedInput;
+  }
+
+  if (structuredMessage?.namespace == 'language.comparison' &&
+      structuredMessage?.category == StructuredMessageCategory.validation) {
+    return LanguageComparisonFailureReason.malformedInput;
+  }
+
+  final normalized = message.toLowerCase();
+  if (normalized.contains('determin')) {
+    return LanguageComparisonFailureReason.determinization;
+  }
+  if (normalized.contains('normaliz') || normalized.contains('complet')) {
+    return LanguageComparisonFailureReason.normalization;
+  }
+  if (normalized.contains('product')) {
+    return LanguageComparisonFailureReason.productConstruction;
+  }
+  return LanguageComparisonFailureReason.internalError;
+}
+
+bool _isUsableInput(FSA automaton) {
+  final initialState = automaton.initialState;
+  return automaton.states.isNotEmpty &&
+      initialState != null &&
+      automaton.states.contains(initialState);
+}
 
 /// The two automata a comparison was asked about, at the revision it saw.
 @immutable
@@ -41,6 +101,11 @@ class LanguageComparisonRequest {
   /// makes a witness traceable to the revision it was computed from.
   String get revision =>
       '${_revisionOf(automatonA)}|${_revisionOf(automatonB)}';
+
+  /// Whether two automata represent the same source revision.
+  static bool sameRevision(FSA left, FSA right) {
+    return _revisionOf(left) == _revisionOf(right);
+  }
 
   /// Whether [result] was computed from exactly the automata of this request.
   bool producedThis(EquivalenceComparisonResult result) {
@@ -64,9 +129,9 @@ class LanguageComparisonSnapshot {
   });
 
   const LanguageComparisonSnapshot.idle()
-      : isRunning = false,
-        request = null,
-        outcome = null;
+    : isRunning = false,
+      request = null,
+      outcome = null;
 
   /// Whether a comparison is in flight for [request].
   final bool isRunning;
@@ -84,7 +149,7 @@ class LanguageComparisonSnapshot {
 /// Serializes comparison requests for one surface.
 class LanguageComparisonController extends ChangeNotifier {
   LanguageComparisonController({required LanguageComparisonRunner runner})
-      : _runner = runner;
+    : _runner = runner;
 
   final LanguageComparisonRunner _runner;
 
@@ -106,9 +171,7 @@ class LanguageComparisonController extends ChangeNotifier {
   /// meantime.
   Future<void> compare(LanguageComparisonRequest request) async {
     final generation = ++_generation;
-    _publish(
-      LanguageComparisonSnapshot(isRunning: true, request: request),
-    );
+    _publish(LanguageComparisonSnapshot(isRunning: true, request: request));
 
     LanguageComparisonOutcome outcome;
     try {
@@ -168,7 +231,8 @@ class LanguageComparisonController extends ChangeNotifier {
     }
     return const LanguageComparisonFailure(
       reason: LanguageComparisonFailureReason.internalError,
-      message: 'Comparison result does not match the requested automaton '
+      message:
+          'Comparison result does not match the requested automaton '
           'revisions',
     );
   }

@@ -14,35 +14,57 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../core/batch_execution/batch_execution.dart';
+import '../../core/models/computation_branch.dart';
+import '../../core/models/fsa_computation_branch_adapter.dart';
 import '../../core/models/simulation_result.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/automata_diagnostics_localizations.dart';
 import 'base_simulation_panel.dart';
 import 'common/simulation_speed_control.dart';
 import 'common/simulation_result_card.dart';
+import 'computation_branch_inspector.dart';
 import 'trace_viewers/fsa_trace_viewer.dart';
+import 'batch_execution/batch_execution_panel.dart';
 import '../../core/constants/monospace_typography.dart';
+import 'error_banner.dart';
 
 /// Panel for automaton simulation
 class SimulationPanel extends StatefulWidget {
   final FutureOr<void> Function(String) onSimulate;
   final SimulationResult? simulationResult;
+  final String? errorMessage;
   final String? regexResult;
   final SimulationHighlightService? highlightService;
   final double animationSpeed;
   final ValueChanged<double>? onAnimationSpeedChanged;
   final ValueChanged<List<SimulationStep>>? onViewOnCanvas;
+  final BatchCaseExecutor? batchExecutor;
+  final Set<String> batchAlphabet;
+
+  /// Whether the active FSA is deterministic.
+  ///
+  /// A null value means the embedding context did not opt into branch
+  /// inspection. FSA workspaces pass the document's current value.
+  final bool? isDeterministic;
+  final Map<String, String> computationStateLabels;
 
   const SimulationPanel({
     super.key,
     required this.onSimulate,
     this.simulationResult,
+    this.errorMessage,
     this.regexResult,
     this.highlightService,
     this.animationSpeed = 1.0,
     this.onAnimationSpeedChanged,
     this.onViewOnCanvas,
+    this.batchExecutor,
+    this.batchAlphabet = const {},
+    this.isDeterministic,
+    this.computationStateLabels = const {},
   });
 
   @override
@@ -51,11 +73,15 @@ class SimulationPanel extends StatefulWidget {
 
 class _SimulationPanelState extends State<SimulationPanel> {
   final TextEditingController _inputController = TextEditingController();
+  final FocusNode _branchInspectorButtonFocusNode = FocusNode();
   late final SimulationHighlightService _fallbackHighlightService;
   bool _isSimulating = false;
   bool _isStepByStep = false;
   int _simulationGeneration = 0;
   int _highlightSyncGeneration = 0;
+  bool _showBranchInspector = false;
+  ComputationBranchId? _selectedBranchId;
+  ComputationBranchNodeId? _selectedBranchNodeId;
 
   SimulationHighlightService get _highlightService =>
       widget.highlightService ?? _fallbackHighlightService;
@@ -74,6 +100,14 @@ class _SimulationPanelState extends State<SimulationPanel> {
         oldWidget.highlightService != widget.highlightService) {
       _scheduleHighlightSynchronization();
     }
+    if (oldWidget.simulationResult != widget.simulationResult) {
+      if (_showBranchInspector) {
+        _highlightService.clear();
+      }
+      _showBranchInspector = false;
+      _selectedBranchId = null;
+      _selectedBranchNodeId = null;
+    }
   }
 
   @override
@@ -81,6 +115,7 @@ class _SimulationPanelState extends State<SimulationPanel> {
     _simulationGeneration++;
     _highlightSyncGeneration++;
     _inputController.dispose();
+    _branchInspectorButtonFocusNode.dispose();
     _fallbackHighlightService.clear();
     super.dispose();
   }
@@ -149,10 +184,32 @@ class _SimulationPanelState extends State<SimulationPanel> {
         ),
         const SizedBox(height: 12),
         _buildStepByStepControls(context),
+        if (widget.errorMessage?.trim().isNotEmpty == true) ...[
+          const SizedBox(height: 12),
+          ErrorBanner(
+            message: widget.errorMessage!.trim(),
+            severity: ErrorSeverity.error,
+            showRetryButton: false,
+            showDismissButton: false,
+          ),
+        ],
         if (widget.simulationResult != null)
           SimulationResultsSection(
             title: l10n.simulationResult,
-            child: SimulationResultCard(result: widget.simulationResult!),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SimulationResultCard(result: widget.simulationResult!),
+                if (widget.isDeterministic != null) ...[
+                  const SizedBox(height: 12),
+                  _buildBranchInspectorAction(),
+                  if (_showBranchInspector) ...[
+                    const SizedBox(height: 12),
+                    _buildBranchInspector(),
+                  ],
+                ],
+              ],
+            ),
           ),
         if (_isStepByStep &&
             !_isSimulating &&
@@ -182,7 +239,93 @@ class _SimulationPanelState extends State<SimulationPanel> {
             child: _buildRegexResultCard(context, widget.regexResult!),
           ),
         ],
+        if (widget.batchExecutor case final executor?) ...[
+          const SizedBox(height: 16),
+          ExpansionTile(
+            key: const Key('simulation-batch-section'),
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Batch testing'),
+            subtitle: const Text('Run ordered, bounded input cases'),
+            children: [
+              BatchExecutionPanel(
+                executor: executor,
+                alphabet: widget.batchAlphabet,
+                title: 'Automaton batch execution',
+                initialStrategyId: executor.strategyIds.first,
+              ),
+            ],
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildBranchInspectorAction() {
+    final l10n = appLocalizationsOf(context);
+    final label = _showBranchInspector
+        ? l10n.computationBranchesHide
+        : l10n.computationBranchesInspect;
+    return Semantics(
+      expanded: _showBranchInspector,
+      child: Tooltip(
+        message: l10n.computationBranchesInspectHint,
+        child: OutlinedButton.icon(
+          key: const ValueKey('fsa-computation-branches-action'),
+          focusNode: _branchInspectorButtonFocusNode,
+          onPressed: () {
+            setState(() {
+              _showBranchInspector = !_showBranchInspector;
+            });
+            if (!_showBranchInspector) {
+              _highlightService.clear();
+              _scheduleHighlightSynchronization();
+            }
+          },
+          icon: Icon(
+            _showBranchInspector
+                ? Icons.account_tree
+                : Icons.account_tree_outlined,
+          ),
+          label: Text(label),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBranchInspector() {
+    final adapted = _adaptedBranches();
+    final labels = appLocalizationsOf(context).computationBranchInspectorLabels;
+    return ComputationBranchInspector(
+      availability: adapted.availability,
+      selectedBranchId: _selectedBranchId,
+      selectedNodeId: _selectedBranchNodeId,
+      onBranchSelected: (branchId) {
+        final availability = adapted.availability;
+        final selection = availability is ComputationBranchesAvailable
+            ? availability.graph.resolveSelection(branchId: branchId)
+            : const ComputationBranchSelection();
+        setState(() {
+          _selectedBranchId = selection.branchId;
+          _selectedBranchNodeId = selection.nodeId;
+        });
+      },
+      onNodeSelected: (nodeId) {
+        setState(() {
+          _selectedBranchNodeId = nodeId;
+        });
+      },
+      onBranchHighlightRequested: (branchId) {
+        _highlightService.dispatch(adapted.highlightForBranch(branchId));
+      },
+      labels: labels,
+    );
+  }
+
+  FsaComputationBranches _adaptedBranches() {
+    return FsaComputationBranchAdapter.adapt(
+      widget.simulationResult,
+      isDeterministic: widget.isDeterministic ?? false,
+      stateLabels: widget.computationStateLabels,
     );
   }
 
@@ -210,9 +353,9 @@ class _SimulationPanelState extends State<SimulationPanel> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -231,9 +374,9 @@ class _SimulationPanelState extends State<SimulationPanel> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontFamilyFallback: kMonospaceFontFamilyFallback,
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

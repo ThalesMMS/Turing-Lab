@@ -1,0 +1,5 @@
+const examples = {
+  'Fixture example': _ExampleMetadata(
+    fileName: 'fixture.json',
+  ),
+};

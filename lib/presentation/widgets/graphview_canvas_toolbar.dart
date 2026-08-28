@@ -2,13 +2,14 @@
 //  graphview_canvas_toolbar.dart
 //  Turing Lab
 //
-//  Defines the shared expandable canvas toolbar used by FSA, PDA, and TM.
+//  Defines the shared canvas toolbar used by FSA, PDA, TM, Mealy, and Moore.
 //  Primary editing tools remain visible while history, viewport, destructive,
-//  and support actions expand into the same row or an explicit overflow menu.
+//  and support actions live in one anchored secondary-action menu.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/help_topic_ids.dart';
 import '../../features/canvas/graphview/base_graphview_canvas_controller.dart';
@@ -24,13 +25,10 @@ part 'graphview_canvas_toolbar_placement.dart';
 part 'graphview_canvas_toolbar_widget.dart';
 
 const double _kToolbarButtonExtent = 44;
-const double _kWideExpandedToolbarWidth = 760;
-const double _kCompactToolbarInlineZoomMinWidth = 312;
 const double _kViewportClearance = 8;
 
 class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
   final GlobalKey _surfaceKey = GlobalKey();
-  bool _expanded = false;
   bool _geometryReportScheduled = false;
   EdgeInsets? _lastReportedInsets;
 
@@ -83,13 +81,6 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
     }
   }
 
-  void _toggleExpanded() {
-    setState(() {
-      _expanded = !_expanded;
-    });
-    _scheduleGeometryReport();
-  }
-
   void _scheduleGeometryReport() {
     if (_geometryReportScheduled) {
       return;
@@ -115,12 +106,12 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
       final surfaceRect = surfaceOrigin & surfaceBox.size;
       final insets = switch (widget.placement) {
         CanvasToolbarPlacement.topRight => EdgeInsets.only(
-            top: surfaceRect.bottom + _kViewportClearance,
-          ),
+          top: surfaceRect.bottom + _kViewportClearance,
+        ),
         CanvasToolbarPlacement.bottomCenter => EdgeInsets.only(
-            bottom:
-                viewportBox.size.height - surfaceRect.top + _kViewportClearance,
-          ),
+          bottom:
+              viewportBox.size.height - surfaceRect.top + _kViewportClearance,
+        ),
       };
       if (_lastReportedInsets == insets) {
         return;
@@ -141,8 +132,10 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
     };
     final safeAreaMinimum = switch (placement) {
       CanvasToolbarPlacement.topRight => const EdgeInsets.all(12),
-      CanvasToolbarPlacement.bottomCenter =>
-        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      CanvasToolbarPlacement.bottomCenter => const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
     };
 
     return Align(
@@ -151,24 +144,15 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
         minimum: safeAreaMinimum,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final useWideExpandedLayout = _expanded &&
-                (!constraints.maxWidth.isFinite ||
-                    constraints.maxWidth >= _kWideExpandedToolbarWidth);
-            final showCompactInlineZoom = !constraints.maxWidth.isFinite ||
-                constraints.maxWidth >= _kCompactToolbarInlineZoomMinWidth;
             final reduceMotion =
                 MediaQuery.maybeOf(context)?.disableAnimations ?? false;
             final groups = _buildActionGroups(context);
             final surface = _ToolbarSurface(
               key: _surfaceKey,
               groups: groups,
-              expanded: _expanded,
-              useWideExpandedLayout: useWideExpandedLayout,
-              showCompactInlineZoom: showCompactInlineZoom,
-              currentZoomPercent:
-                  (widget.controller.currentScale * 100).round(),
+              currentZoomPercent: (widget.controller.currentScale * 100)
+                  .round(),
               statusMessage: widget.statusMessage,
-              onToggleExpanded: _toggleExpanded,
             );
 
             return NotificationListener<SizeChangedLayoutNotification>(
@@ -181,9 +165,7 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
                   policy: OrderedTraversalPolicy(),
                   child: reduceMotion
                       ? KeyedSubtree(
-                          key: const ValueKey(
-                            'canvas-toolbar-reduced-motion',
-                          ),
+                          key: const ValueKey('canvas-toolbar-reduced-motion'),
                           child: surface,
                         )
                       : AnimatedSize(
@@ -220,7 +202,8 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
             action: _ToolbarAction.addState,
             handler: widget.onAddState,
             isToggle: widget.enableToolSelection,
-            isSelected: widget.enableToolSelection &&
+            isSelected:
+                widget.enableToolSelection &&
                 widget.activeTool == AutomatonCanvasTool.addState,
           ),
           if (widget.onAddTransition != null)
@@ -228,8 +211,14 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
               action: _ToolbarAction.transition,
               handler: widget.onAddTransition,
               isToggle: widget.enableToolSelection,
-              isSelected: widget.enableToolSelection &&
+              isSelected:
+                  widget.enableToolSelection &&
                   widget.activeTool == AutomatonCanvasTool.transition,
+            ),
+          if (widget.onManageBlocks != null)
+            _ToolbarButtonConfig(
+              action: _ToolbarAction.blocks,
+              handler: widget.onManageBlocks,
             ),
         ],
       ),
@@ -267,6 +256,35 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
           ),
         ],
       ),
+      if (widget.onArrangeAutomaton != null ||
+          widget.onImportAutomaton != null ||
+          widget.onDocumentNotes != null)
+        _ToolbarGroupConfig(
+          id: _ToolbarGroup.document,
+          actions: [
+            if (widget.onArrangeAutomaton != null)
+              _ToolbarButtonConfig(
+                action: _ToolbarAction.arrangeAutomaton,
+                handler: widget.documentActionsEnabled
+                    ? widget.onArrangeAutomaton
+                    : null,
+              ),
+            if (widget.onImportAutomaton != null)
+              _ToolbarButtonConfig(
+                action: _ToolbarAction.importAutomaton,
+                handler: widget.documentActionsEnabled
+                    ? widget.onImportAutomaton
+                    : null,
+              ),
+            if (widget.onDocumentNotes != null)
+              _ToolbarButtonConfig(
+                action: _ToolbarAction.documentNotes,
+                handler: widget.documentActionsEnabled
+                    ? widget.onDocumentNotes
+                    : null,
+              ),
+          ],
+        ),
       if (widget.onClear != null)
         _ToolbarGroupConfig(
           id: _ToolbarGroup.destructive,
@@ -282,7 +300,8 @@ class _GraphViewCanvasToolbarState extends State<GraphViewCanvasToolbar> {
         actions: [
           _ToolbarButtonConfig(
             action: _ToolbarAction.help,
-            handler: widget.onHelp ??
+            handler:
+                widget.onHelp ??
                 () {
                   openHelp(context, topicId: HelpTopicIds.shortcutsCanvas);
                 },
@@ -297,33 +316,18 @@ class _ToolbarSurface extends StatelessWidget {
   const _ToolbarSurface({
     super.key,
     required this.groups,
-    required this.expanded,
-    required this.useWideExpandedLayout,
-    required this.showCompactInlineZoom,
     required this.currentZoomPercent,
     required this.statusMessage,
-    required this.onToggleExpanded,
   });
 
   final List<_ToolbarGroupConfig> groups;
-  final bool expanded;
-  final bool useWideExpandedLayout;
-  final bool showCompactInlineZoom;
   final int currentZoomPercent;
   final String? statusMessage;
-  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final rowChildren = !expanded
-        ? _buildCollapsedChildren(context)
-        : useWideExpandedLayout
-            ? _buildWideExpandedChildren(context)
-            : _buildCompactExpandedChildren(
-                context,
-                showInlineZoom: showCompactInlineZoom,
-              );
+    final rowChildren = _buildCollapsedChildren(context);
 
     return SizedBox(
       height: 60,
@@ -349,88 +353,19 @@ class _ToolbarSurface extends StatelessWidget {
     return [
       _ToolbarActionGroup(config: editingGroup),
       const SizedBox(width: 8),
-      _ToolbarChromeButton(
-        icon: Icons.open_in_full,
-        label: appLocalizationsOf(context).canvasExpandToolbarAction,
-        hint: appLocalizationsOf(context).canvasExpandToolbarHint,
-        traversalOrder: 900,
-        onPressed: onToggleExpanded,
-      ),
-    ];
-  }
-
-  List<Widget> _buildWideExpandedChildren(BuildContext context) {
-    final children = <Widget>[];
-    for (final group in groups) {
-      if (children.isNotEmpty) {
-        children.add(const SizedBox(width: 8));
-      }
-      children.add(
-        _ToolbarActionGroup(
-          config: group,
-          currentZoomPercent:
-              group.id == _ToolbarGroup.viewport ? currentZoomPercent : null,
-        ),
-      );
-    }
-    if (statusMessage case final message? when message.trim().isNotEmpty) {
-      children
-        ..add(const SizedBox(width: 8))
-        ..add(_ToolbarStatusAffordance(message: message));
-    }
-    children
-      ..add(const SizedBox(width: 8))
-      ..add(
-        _ToolbarChromeButton(
-          icon: Icons.close_fullscreen,
-          label: appLocalizationsOf(context).canvasCollapseToolbarAction,
-          hint: appLocalizationsOf(context).canvasCollapseToolbarHint,
-          traversalOrder: 900,
-          onPressed: onToggleExpanded,
-        ),
-      );
-    return children;
-  }
-
-  List<Widget> _buildCompactExpandedChildren(
-    BuildContext context, {
-    required bool showInlineZoom,
-  }) {
-    final editingGroup = groups.firstWhere(
-      (group) => group.id == _ToolbarGroup.editing,
-    );
-    return [
-      _ToolbarActionGroup(config: editingGroup),
-      if (showInlineZoom) ...[
-        const SizedBox(width: 6),
-        _ToolbarZoomLabel(percent: currentZoomPercent),
-      ],
-      const SizedBox(width: 6),
       _ToolbarOverflowButton(
         groups: groups,
         currentZoomPercent: currentZoomPercent,
         statusMessage: statusMessage,
-      ),
-      const SizedBox(width: 6),
-      _ToolbarChromeButton(
-        icon: Icons.close_fullscreen,
-        label: appLocalizationsOf(context).canvasCollapseToolbarAction,
-        hint: appLocalizationsOf(context).canvasCollapseToolbarHint,
-        traversalOrder: 900,
-        onPressed: onToggleExpanded,
       ),
     ];
   }
 }
 
 class _ToolbarActionGroup extends StatelessWidget {
-  const _ToolbarActionGroup({
-    required this.config,
-    this.currentZoomPercent,
-  });
+  const _ToolbarActionGroup({required this.config});
 
   final _ToolbarGroupConfig config;
-  final int? currentZoomPercent;
 
   @override
   Widget build(BuildContext context) {
@@ -440,16 +375,7 @@ class _ToolbarActionGroup extends StatelessWidget {
       if (children.isNotEmpty) {
         children.add(const SizedBox(width: 2));
       }
-      children.add(
-        _ToolbarActionButton(config: action, group: config.id),
-      );
-      if (config.id == _ToolbarGroup.viewport &&
-          action.action == _ToolbarAction.zoomOut &&
-          currentZoomPercent != null) {
-        children
-          ..add(const SizedBox(width: 2))
-          ..add(_ToolbarZoomLabel(percent: currentZoomPercent!));
-      }
+      children.add(_ToolbarActionButton(config: action, group: config.id));
     }
 
     return DecoratedBox(
@@ -504,106 +430,7 @@ class _ToolbarActionButton extends StatelessWidget {
   }
 }
 
-class _ToolbarChromeButton extends StatelessWidget {
-  const _ToolbarChromeButton({
-    required this.icon,
-    required this.label,
-    required this.hint,
-    required this.traversalOrder,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final String hint;
-  final double traversalOrder;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final l10n = appLocalizationsOf(context);
-    return FocusTraversalOrder(
-      order: NumericFocusOrder(traversalOrder),
-      child: Semantics(
-        label: l10n.canvasActionSemantics(label),
-        hint: hint,
-        button: true,
-        excludeSemantics: true,
-        child: IconButton(
-          tooltip: label,
-          onPressed: onPressed,
-          icon: Icon(icon),
-          style: IconButton.styleFrom(
-            fixedSize: const Size.square(_kToolbarButtonExtent),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            foregroundColor: colorScheme.onSurfaceVariant,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToolbarZoomLabel extends StatelessWidget {
-  const _ToolbarZoomLabel({required this.percent});
-
-  final int percent;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = appLocalizationsOf(context);
-    return Semantics(
-      label: l10n.canvasZoomLevel(percent),
-      readOnly: true,
-      excludeSemantics: true,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 54, minHeight: 44),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              '$percent%',
-              maxLines: 1,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToolbarStatusAffordance extends StatelessWidget {
-  const _ToolbarStatusAffordance({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: message,
-      child: Semantics(
-        label: message,
-        readOnly: true,
-        excludeSemantics: true,
-        child: const SizedBox.square(
-          dimension: _kToolbarButtonExtent,
-          child: Icon(Icons.info_outline),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToolbarOverflowButton extends StatelessWidget {
+class _ToolbarOverflowButton extends StatefulWidget {
   const _ToolbarOverflowButton({
     required this.groups,
     required this.currentZoomPercent,
@@ -615,10 +442,40 @@ class _ToolbarOverflowButton extends StatelessWidget {
   final String? statusMessage;
 
   @override
+  State<_ToolbarOverflowButton> createState() => _ToolbarOverflowButtonState();
+}
+
+class _ToolbarOverflowButtonState extends State<_ToolbarOverflowButton> {
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'Canvas toolbar More actions',
+  );
+  final GlobalKey<PopupMenuButtonState<_ToolbarAction>> _menuKey =
+      GlobalKey<PopupMenuButtonState<_ToolbarAction>>();
+  bool _menuOpen = false;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _openMenu() {
+    _menuKey.currentState?.showButtonMenu();
+  }
+
+  void _returnFocus() {
+    if (!mounted) {
+      return;
+    }
+    setState(() => _menuOpen = false);
+    _focusNode.requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = appLocalizationsOf(context);
-    final overflowGroups = groups
+    final overflowGroups = widget.groups
         .where((group) => group.id != _ToolbarGroup.editing)
         .toList(growable: false);
 
@@ -628,94 +485,177 @@ class _ToolbarOverflowButton extends StatelessWidget {
         label: l10n.canvasActionSemantics(l10n.canvasMoreActions),
         hint: l10n.canvasMoreActionsHint,
         button: true,
+        focusable: true,
+        focused: _focusNode.hasFocus,
+        expanded: _menuOpen,
+        onTap: _openMenu,
         excludeSemantics: true,
-        child: SizedBox.square(
-          dimension: _kToolbarButtonExtent,
-          child: PopupMenuButton<_ToolbarAction>(
-            key: const ValueKey('canvas-toolbar-overflow'),
-            tooltip: l10n.canvasMoreActions,
-            icon: const Icon(Icons.more_horiz),
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+        child: FocusableActionDetector(
+          focusNode: _focusNode,
+          onFocusChange: (_) => setState(() {}),
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _openMenu();
+                return null;
+              },
             ),
-            onSelected: (action) {
-              for (final group in overflowGroups) {
-                for (final config in group.actions) {
-                  if (config.action == action) {
-                    config.handler?.call();
-                    return;
+          },
+          child: ExcludeFocus(
+            child: DecoratedBox(
+              key: const ValueKey('canvas-toolbar-overflow-focus-indicator'),
+              decoration: BoxDecoration(
+                color: _focusNode.hasFocus
+                    ? colorScheme.secondaryContainer
+                    : Colors.transparent,
+                border: _focusNode.hasFocus
+                    ? Border.all(color: colorScheme.primary, width: 2)
+                    : null,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: PopupMenuButton<_ToolbarAction>(
+                key: _menuKey,
+                tooltip: l10n.canvasMoreActions,
+                padding: EdgeInsets.zero,
+                position: PopupMenuPosition.under,
+                borderRadius: BorderRadius.circular(10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                onOpened: () => setState(() => _menuOpen = true),
+                onCanceled: _returnFocus,
+                onSelected: (action) {
+                  _returnFocus();
+                  for (final group in overflowGroups) {
+                    for (final config in group.actions) {
+                      if (config.action == action) {
+                        config.handler?.call();
+                        return;
+                      }
+                    }
                   }
-                }
-              }
-            },
-            itemBuilder: (context) {
-              final items = <PopupMenuEntry<_ToolbarAction>>[
-                PopupMenuItem<_ToolbarAction>(
-                  enabled: false,
-                  height: _kToolbarButtonExtent,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.zoom_in_map),
-                      const SizedBox(width: 12),
-                      Text(l10n.canvasZoomLevel(currentZoomPercent)),
-                    ],
+                },
+                itemBuilder: (context) {
+                  final items = <PopupMenuEntry<_ToolbarAction>>[];
+                  for (
+                    var groupIndex = 0;
+                    groupIndex < overflowGroups.length;
+                    groupIndex++
+                  ) {
+                    final group = overflowGroups[groupIndex];
+                    if (groupIndex > 0) {
+                      items.add(const PopupMenuDivider());
+                    }
+                    for (final config in group.actions) {
+                      final isDestructive =
+                          group.id == _ToolbarGroup.destructive;
+                      final actionLabel = config.action.label(l10n);
+                      items.add(
+                        PopupMenuItem<_ToolbarAction>(
+                          value: config.action,
+                          enabled: config.handler != null,
+                          height: _kToolbarButtonExtent,
+                          child: Semantics(
+                            label: isDestructive
+                                ? l10n.canvasDestructiveActionSemantics(
+                                    actionLabel,
+                                  )
+                                : l10n.canvasActionSemantics(actionLabel),
+                            hint: config.action.semanticsHint(l10n),
+                            button: true,
+                            enabled: config.handler != null,
+                            excludeSemantics: true,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  config.action.icon,
+                                  color: isDestructive
+                                      ? colorScheme.error
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Flexible(
+                                  child: Text(
+                                    actionLabel,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: isDestructive
+                                        ? TextStyle(color: colorScheme.error)
+                                        : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                      if (group.id == _ToolbarGroup.viewport &&
+                          config.action == _ToolbarAction.zoomOut) {
+                        items.add(
+                          PopupMenuItem<_ToolbarAction>(
+                            enabled: false,
+                            height: _kToolbarButtonExtent,
+                            child: Semantics(
+                              label: l10n.canvasZoomLevel(
+                                widget.currentZoomPercent,
+                              ),
+                              readOnly: true,
+                              excludeSemantics: true,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.zoom_in_map),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      l10n.canvasZoomLevel(
+                                        widget.currentZoomPercent,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  }
+                  if (widget.statusMessage case final message?
+                      when message.trim().isNotEmpty) {
+                    items
+                      ..add(const PopupMenuDivider())
+                      ..add(
+                        PopupMenuItem<_ToolbarAction>(
+                          enabled: false,
+                          height: _kToolbarButtonExtent,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline),
+                              const SizedBox(width: 12),
+                              Flexible(child: Text(message)),
+                            ],
+                          ),
+                        ),
+                      );
+                  }
+                  return items;
+                },
+                child: SizedBox.square(
+                  key: const ValueKey('canvas-toolbar-overflow'),
+                  dimension: _kToolbarButtonExtent,
+                  child: Icon(
+                    Icons.more_horiz,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-              ];
-              for (var groupIndex = 0;
-                  groupIndex < overflowGroups.length;
-                  groupIndex++) {
-                final group = overflowGroups[groupIndex];
-                if (groupIndex > 0) {
-                  items.add(const PopupMenuDivider());
-                }
-                for (final config in group.actions) {
-                  final isDestructive = group.id == _ToolbarGroup.destructive;
-                  items.add(
-                    PopupMenuItem<_ToolbarAction>(
-                      value: config.action,
-                      enabled: config.handler != null,
-                      height: _kToolbarButtonExtent,
-                      child: Row(
-                        children: [
-                          Icon(
-                            config.action.icon,
-                            color: isDestructive ? colorScheme.error : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            config.action.label(l10n),
-                            style: isDestructive
-                                ? TextStyle(color: colorScheme.error)
-                                : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              }
-              if (statusMessage case final message?
-                  when message.trim().isNotEmpty) {
-                items
-                  ..add(const PopupMenuDivider())
-                  ..add(
-                    PopupMenuItem<_ToolbarAction>(
-                      enabled: false,
-                      height: _kToolbarButtonExtent,
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info_outline),
-                          const SizedBox(width: 12),
-                          Flexible(child: Text(message)),
-                        ],
-                      ),
-                    ),
-                  );
-              }
-              return items;
-            },
+              ),
+            ),
           ),
         ),
       ),
@@ -737,22 +677,20 @@ ButtonStyle _toolbarActionButtonStyle({
     backgroundColor: isDestructive
         ? colorScheme.errorContainer
         : isSelected
-            ? colorScheme.primaryContainer
-            : Colors.transparent,
+        ? colorScheme.primaryContainer
+        : Colors.transparent,
     foregroundColor: isDestructive
         ? colorScheme.onErrorContainer
         : isSelected
-            ? colorScheme.onPrimaryContainer
-            : colorScheme.onSurfaceVariant,
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onSurfaceVariant,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(10),
       side: isDestructive
           ? BorderSide(color: colorScheme.error.withValues(alpha: 0.45))
           : isSelected
-              ? BorderSide(
-                  color: colorScheme.primary.withValues(alpha: 0.42),
-                )
-              : BorderSide.none,
+          ? BorderSide(color: colorScheme.primary.withValues(alpha: 0.42))
+          : BorderSide.none,
     ),
   );
 }
@@ -775,12 +713,16 @@ enum _ToolbarAction {
   selection(icon: Icons.pan_tool),
   addState(icon: Icons.add),
   transition(icon: Icons.arrow_right_alt),
+  blocks(icon: Icons.account_tree_outlined),
   undo(icon: Icons.undo),
   redo(icon: Icons.redo),
   zoomOut(icon: Icons.zoom_out),
   zoomIn(icon: Icons.zoom_in),
   fitContent(icon: Icons.fit_screen),
   resetView(icon: Icons.center_focus_strong),
+  arrangeAutomaton(icon: Icons.auto_fix_high_outlined),
+  importAutomaton(icon: Icons.account_tree_outlined),
+  documentNotes(icon: Icons.sticky_note_2_outlined),
   clear(icon: Icons.delete_outline),
   help(icon: Icons.help_outline);
 
@@ -788,33 +730,57 @@ enum _ToolbarAction {
 
   final IconData icon;
 
-  double get traversalOrder => index.toDouble();
+  double get traversalOrder => switch (this) {
+    selection => 0,
+    addState => 1,
+    transition => 2,
+    blocks => 2.5,
+    undo => 3,
+    redo => 4,
+    zoomOut => 5,
+    zoomIn => 6,
+    fitContent => 7,
+    resetView => 8,
+    arrangeAutomaton => 9,
+    importAutomaton => 10,
+    documentNotes => 11,
+    clear => 12,
+    help => 13,
+  };
 
   String label(AppLocalizations l10n) => switch (this) {
-        selection => l10n.canvasSelectAction,
-        addState => l10n.canvasAddStateAction,
-        transition => l10n.canvasAddTransitionAction,
-        undo => l10n.canvasUndoAction,
-        redo => l10n.canvasRedoAction,
-        zoomOut => l10n.canvasZoomOutAction,
-        zoomIn => l10n.canvasZoomInAction,
-        fitContent => l10n.canvasFitToContentAction,
-        resetView => l10n.canvasResetViewAction,
-        clear => l10n.canvasClearAction,
-        help => l10n.canvasHelpShortcutsAction,
-      };
+    selection => l10n.canvasSelectAction,
+    addState => l10n.canvasAddStateAction,
+    transition => l10n.canvasAddTransitionAction,
+    blocks => l10n.canvasManageBlocksAction,
+    undo => l10n.canvasUndoAction,
+    redo => l10n.canvasRedoAction,
+    zoomOut => l10n.canvasZoomOutAction,
+    zoomIn => l10n.canvasZoomInAction,
+    fitContent => l10n.canvasFitToContentAction,
+    resetView => l10n.canvasResetViewAction,
+    arrangeAutomaton => l10n.canvasArrangeAutomatonAction,
+    importAutomaton => l10n.canvasImportAutomatonAction,
+    documentNotes => l10n.canvasDocumentNotesAction,
+    clear => l10n.canvasClearAction,
+    help => l10n.canvasHelpShortcutsAction,
+  };
 
   String semanticsHint(AppLocalizations l10n) => switch (this) {
-        selection => l10n.canvasSelectHint,
-        addState => l10n.canvasAddStateHint,
-        transition => l10n.canvasAddTransitionHint,
-        undo => l10n.canvasUndoHint,
-        redo => l10n.canvasRedoHint,
-        zoomOut => l10n.canvasZoomOutHint,
-        zoomIn => l10n.canvasZoomInHint,
-        fitContent => l10n.canvasFitToContentHint,
-        resetView => l10n.canvasResetViewHint,
-        clear => l10n.canvasClearHint,
-        help => l10n.canvasHelpShortcutsHint,
-      };
+    selection => l10n.canvasSelectHint,
+    addState => l10n.canvasAddStateHint,
+    transition => l10n.canvasAddTransitionHint,
+    blocks => l10n.canvasManageBlocksHint,
+    undo => l10n.canvasUndoHint,
+    redo => l10n.canvasRedoHint,
+    zoomOut => l10n.canvasZoomOutHint,
+    zoomIn => l10n.canvasZoomInHint,
+    fitContent => l10n.canvasFitToContentHint,
+    resetView => l10n.canvasResetViewHint,
+    arrangeAutomaton => l10n.canvasArrangeAutomatonHint,
+    importAutomaton => l10n.canvasImportAutomatonHint,
+    documentNotes => l10n.canvasDocumentNotesHint,
+    clear => l10n.canvasClearHint,
+    help => l10n.canvasHelpShortcutsHint,
+  };
 }

@@ -10,6 +10,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
 import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/core/models/cyk_step.dart';
 
@@ -543,10 +544,12 @@ void main() {
           timeout: Duration.zero,
         );
 
-        expect(parseResult.isFailure, isTrue);
-        expect(parseResult.error, 'CYK parsing timed out');
-        expect(stepResult.isFailure, isTrue);
-        expect(stepResult.error, 'CYK parsing timed out');
+        expect(parseResult.isSuccess, isTrue);
+        expect(parseResult.data!.outcome, GrammarParseOutcome.timedOut);
+        expect(parseResult.data!.message, 'CYK parsing timed out');
+        expect(stepResult.isSuccess, isTrue);
+        expect(stepResult.data!.outcome, GrammarParseOutcome.timedOut);
+        expect(stepResult.data!.message, 'CYK parsing timed out');
       });
 
       test('Should generate cell processing steps', () {

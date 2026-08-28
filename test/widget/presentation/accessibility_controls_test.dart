@@ -17,8 +17,9 @@ Future<void> _pumpHelpPage(
   WidgetTester tester, {
   Locale locale = const Locale('en'),
   bool disableAnimations = false,
+  Size size = const Size(430, 932),
 }) async {
-  tester.view.physicalSize = const Size(430, 932);
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
@@ -45,6 +46,27 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('ErrorBanner', () {
+    testWidgets('announces newly inserted feedback as a live region', (
+      tester,
+    ) async {
+      final semanticsHandle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ErrorBanner(
+              message: 'Import completed',
+              severity: ErrorSeverity.success,
+            ),
+          ),
+        ),
+      );
+
+      final semantics = tester.getSemantics(find.byType(ErrorBanner));
+      expect(semantics.getSemanticsData().flagsCollection.isLiveRegion, isTrue);
+      expect(semantics.label, contains('Import completed'));
+      semanticsHandle.dispose();
+    });
+
     testWidgets('renders a dismiss action with a 44pt tap target', (
       tester,
     ) async {
@@ -86,7 +108,16 @@ void main() {
         expect(category.flagsCollection.isButton, isTrue);
         expect(category.flagsCollection.isExpanded, Tristate.isTrue);
 
+        final tree = tester.widget<HelpTreeView>(find.byType(HelpTreeView));
+        tree.scrollController.jumpTo(
+          tree.scrollController.position.maxScrollExtent,
+        );
+        await tester.pumpAndSettle();
         await tester.tap(_helpNode('fsa'));
+        await tester.pumpAndSettle();
+        tree.scrollController.jumpTo(
+          tree.scrollController.position.maxScrollExtent,
+        );
         await tester.pumpAndSettle();
 
         final subsection = tester.getSemantics(_helpNode('fsa.editor'));
@@ -101,18 +132,13 @@ void main() {
     testWidgets('category, subsection, and topic targets are at least 48x48', (
       tester,
     ) async {
-      await _pumpHelpPage(tester);
+      await _pumpHelpPage(tester, size: const Size(430, 1800));
 
-      await tester.tap(_helpNode('fsa'));
-      await tester.pumpAndSettle();
-      await tester.tap(_helpNode('fsa.editor'));
+      final tree = tester.widget<HelpTreeView>(find.byType(HelpTreeView));
+      tree.controller.revealTopic(HelpTopicIds.fsaEditorOverview);
       await tester.pumpAndSettle();
 
-      for (final id in [
-        'fsa',
-        'fsa.editor',
-        HelpTopicIds.fsaEditorOverview,
-      ]) {
+      for (final id in ['fsa', 'fsa.editor', HelpTopicIds.fsaEditorOverview]) {
         final size = tester.getSize(_helpNode(id));
         expect(size.width, greaterThanOrEqualTo(48), reason: id);
         expect(size.height, greaterThanOrEqualTo(48), reason: id);
@@ -200,9 +226,7 @@ void main() {
 
       final expansion = tester.widget<AnimatedSwitcher>(
         find.byKey(
-          const ValueKey(
-            'help-expansion-getting-started.quick-start',
-          ),
+          const ValueKey('help-expansion-getting-started.quick-start'),
         ),
       );
       expect(expansion.duration, Duration.zero);

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/formal_systems/formal_systems.dart';
+import '../../core/annotations/document_annotation_collection.dart';
 import '../../core/models/automaton.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
@@ -10,15 +12,26 @@ import '../../core/models/pda.dart';
 import '../../core/models/production.dart';
 import '../../core/models/settings_model.dart';
 import '../../core/models/tm.dart';
+import '../../core/transducers/transducers.dart';
+import '../../core/l_systems/l_systems.dart';
+import '../../core/grammar/phrase_structure/phrase_structure.dart';
 import '../../core/repositories/active_session_repository.dart';
 import '../../injection/data_providers.dart';
 import 'automaton_state_provider.dart';
+import 'document_annotations_provider.dart';
 import 'grammar_provider.dart';
 import 'home_navigation_provider.dart';
 import 'pda_editor_provider.dart';
 import 'regex_editor_provider.dart';
 import 'settings_provider.dart';
 import 'tm_editor_provider.dart';
+import 'workspace_registry_provider.dart';
+import 'formal_extension_editor_providers.dart';
+import '../l_systems/l_system_editor_controller.dart';
+import '../unrestricted_grammar/unrestricted_grammar_editor_controller.dart';
+import '../transducers/mealy_workspace_definition.dart';
+import '../transducers/moore_workspace_definition.dart';
+import '../transducers/transducer_editor_state.dart';
 
 final activeSessionPersistenceServiceProvider = activeSessionRepositoryProvider;
 
@@ -72,12 +85,18 @@ class ActiveSessionPersistenceNotifier
   bool _hasPendingChange = false;
   bool _isRestoring = false;
   bool _disposed = false;
-  late int _latestWorkspaceIndex;
+  late FormalSystemKey _latestWorkspaceKey;
   FSA? _latestFsa;
   Grammar? _latestGrammar;
   PDA? _latestPda;
   TM? _latestTm;
   RegexSessionSnapshot? _latestRegex;
+  late MealyMachine _latestMealy;
+  late MooreMachine _latestMoore;
+  late UnrestrictedGrammar _latestUnrestrictedGrammar;
+  late LSystemDocument _latestLSystem;
+  Map<FormalSystemKey, DocumentAnnotationCollection> _latestAnnotations =
+      const {};
 
   Future<void> flush() async {
     _saveDebounce?.cancel();
@@ -101,16 +120,22 @@ class ActiveSessionPersistenceNotifier
   }
 
   void _attachListeners() {
-    _latestWorkspaceIndex = _ref.read(homeNavigationProvider);
+    _latestWorkspaceKey = _ref.read(activeWorkspaceKeyProvider);
     _latestFsa = _ref.read(automatonStateProvider).currentAutomaton;
     _latestGrammar = _buildGrammarSnapshot(_ref.read(grammarProvider));
     _latestPda = _ref.read(pdaEditorProvider).pda;
     _latestTm = _ref.read(tmEditorProvider).tm;
     _latestRegex = _buildRegexSnapshot(_ref.read(regexEditorProvider));
+    _latestMealy = _ref.read(mealyEditorProvider).document;
+    _latestMoore = _ref.read(mooreEditorProvider).document;
+    _latestUnrestrictedGrammar =
+        _ref.read(unrestrictedGrammarEditorProvider).grammar;
+    _latestLSystem = _ref.read(lSystemEditorProvider).document;
+    _latestAnnotations = _ref.read(documentAnnotationsProvider);
 
     _ref.listen<SettingsModel>(settingsProvider, _handleSettingsChanged);
-    _ref.listen<int>(homeNavigationProvider, (_, next) {
-      _latestWorkspaceIndex = next;
+    _ref.listen<FormalSystemKey>(activeWorkspaceKeyProvider, (_, next) {
+      _latestWorkspaceKey = next;
       _scheduleSave();
     });
     _ref.listen<AutomatonStateProviderState>(
@@ -148,6 +173,41 @@ class ActiveSessionPersistenceNotifier
         _scheduleSave();
       },
     );
+    _ref.listen<TransducerEditorState<MealyMachine>>(
+      mealyEditorProvider,
+      (_, next) {
+        _latestMealy = next.document;
+        _scheduleSave();
+      },
+    );
+    _ref.listen<TransducerEditorState<MooreMachine>>(
+      mooreEditorProvider,
+      (_, next) {
+        _latestMoore = next.document;
+        _scheduleSave();
+      },
+    );
+    _ref.listen<UnrestrictedGrammarEditorController>(
+      unrestrictedGrammarEditorProvider,
+      (_, next) {
+        _latestUnrestrictedGrammar = next.grammar;
+        _scheduleSave();
+      },
+    );
+    _ref.listen<LSystemEditorController>(
+      lSystemEditorProvider,
+      (_, next) {
+        _latestLSystem = next.document;
+        _scheduleSave();
+      },
+    );
+    _ref.listen<Map<FormalSystemKey, DocumentAnnotationCollection>>(
+      documentAnnotationsProvider,
+      (_, next) {
+        _latestAnnotations = next;
+        _scheduleSave();
+      },
+    );
   }
 
   Future<void> _restore() async {
@@ -178,7 +238,7 @@ class ActiveSessionPersistenceNotifier
 
   void _applySession(ActiveSessionSnapshot session) {
     if (session.fsa != null) {
-      _ref.read(automatonStateProvider.notifier).updateAutomaton(session.fsa!);
+      _ref.read(automatonStateProvider.notifier).replaceAutomaton(session.fsa!);
     }
     if (session.grammar != null) {
       _ref.read(grammarProvider.notifier).applyGrammar(session.grammar!);
@@ -196,12 +256,47 @@ class ActiveSessionPersistenceNotifier
             testString: regex.testString,
             simplifyOutput: regex.simplifyOutput,
             alphabet: regex.alphabet,
+            documentId: regex.documentId,
+            documentName: regex.documentName,
           );
     }
+    final mealy =
+        session.documentFor<MealyMachine>(TransducerFormalSystemIds.mealy);
+    if (mealy != null) {
+      _ref.read(mealyEditorProvider.notifier).replaceDocument(mealy);
+    }
+    final moore =
+        session.documentFor<MooreMachine>(TransducerFormalSystemIds.moore);
+    if (moore != null) {
+      _ref.read(mooreEditorProvider.notifier).replaceDocument(moore);
+    }
+    final unrestricted = session.documentFor<UnrestrictedGrammar>(
+      UnrestrictedGrammarCapabilities.systemKey,
+    );
+    if (unrestricted != null) {
+      _ref
+          .read(unrestrictedGrammarEditorProvider)
+          .replaceGrammar(unrestricted, recordHistory: false);
+    }
+    final lSystem = session.documentFor<LSystemDocument>(
+      LSystemFormalSystemIds.key,
+    );
+    if (lSystem != null) {
+      _ref
+          .read(lSystemEditorProvider)
+          .replaceDocument(lSystem, recordHistory: false);
+    }
+    for (final entry in session.annotations.entries) {
+      _ref
+          .read(documentAnnotationsProvider.notifier)
+          .restore(entry.key, entry.value);
+    }
 
-    _ref
-        .read(homeNavigationProvider.notifier)
-        .setIndex(session.activeWorkspaceIndex);
+    final workspaceIndex = _ref
+            .read(workspacePresentationRegistryProvider)
+            .indexOfKey(session.activeWorkspaceKey) ??
+        0;
+    _ref.read(homeNavigationProvider.notifier).setIndex(workspaceIndex);
   }
 
   void _handleSettingsChanged(SettingsModel? previous, SettingsModel next) {
@@ -315,13 +410,20 @@ class ActiveSessionPersistenceNotifier
 
   ActiveSessionSnapshot _buildSnapshot() {
     return ActiveSessionSnapshot(
-      activeWorkspaceIndex: _latestWorkspaceIndex,
+      activeWorkspaceKey: _latestWorkspaceKey,
       savedAt: DateTime.now(),
       fsa: _latestFsa,
       grammar: _latestGrammar,
       pda: _latestPda,
       tm: _latestTm,
       regex: _latestRegex,
+      documents: {
+        TransducerFormalSystemIds.mealy: _latestMealy,
+        TransducerFormalSystemIds.moore: _latestMoore,
+        UnrestrictedGrammarCapabilities.systemKey: _latestUnrestrictedGrammar,
+        LSystemFormalSystemIds.key: _latestLSystem,
+      },
+      annotations: _latestAnnotations,
     );
   }
 
@@ -345,6 +447,8 @@ class ActiveSessionPersistenceNotifier
       testString: state.testString,
       simplifyOutput: state.simplifyOutput,
       alphabet: state.alphabet,
+      documentId: state.documentId,
+      documentName: state.documentName,
     );
 
     return snapshot.hasContent ? snapshot : null;
@@ -400,6 +504,8 @@ class _PersistedRegexState {
     required this.testString,
     required this.simplifyOutput,
     required this.alphabet,
+    required this.documentId,
+    required this.documentName,
   });
 
   factory _PersistedRegexState.fromState(RegexEditorState state) {
@@ -408,6 +514,8 @@ class _PersistedRegexState {
       testString: state.testString,
       simplifyOutput: state.simplifyOutput,
       alphabet: state.alphabet,
+      documentId: state.documentId,
+      documentName: state.documentName,
     );
   }
 
@@ -415,6 +523,8 @@ class _PersistedRegexState {
   final String testString;
   final bool simplifyOutput;
   final String alphabet;
+  final String documentId;
+  final String documentName;
 
   RegexSessionSnapshot? toSnapshot() {
     final snapshot = RegexSessionSnapshot(
@@ -422,6 +532,8 @@ class _PersistedRegexState {
       testString: testString,
       simplifyOutput: simplifyOutput,
       alphabet: alphabet,
+      documentId: documentId,
+      documentName: documentName,
     );
     return snapshot.hasContent ? snapshot : null;
   }
@@ -435,12 +547,20 @@ class _PersistedRegexState {
         other.currentRegex == currentRegex &&
         other.testString == testString &&
         other.simplifyOutput == simplifyOutput &&
-        other.alphabet == alphabet;
+        other.alphabet == alphabet &&
+        other.documentId == documentId &&
+        other.documentName == documentName;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(currentRegex, testString, simplifyOutput, alphabet);
+  int get hashCode => Object.hash(
+        currentRegex,
+        testString,
+        simplifyOutput,
+        alphabet,
+        documentId,
+        documentName,
+      );
 }
 
 class _PersistedPdaState {
@@ -501,7 +621,8 @@ bool _pdaEquals(PDA? left, PDA? right) {
 
   return _automatonContentEquals(left, right) &&
       setEquals(left.stackAlphabet, right.stackAlphabet) &&
-      left.initialStackSymbol == right.initialStackSymbol;
+      left.initialStackSymbol == right.initialStackSymbol &&
+      left.acceptanceMode == right.acceptanceMode;
 }
 
 bool _tmEquals(TM? left, TM? right) {
@@ -515,7 +636,8 @@ bool _tmEquals(TM? left, TM? right) {
   return _automatonContentEquals(left, right) &&
       setEquals(left.tapeAlphabet, right.tapeAlphabet) &&
       left.blankSymbol == right.blankSymbol &&
-      left.tapeCount == right.tapeCount;
+      left.tapeCount == right.tapeCount &&
+      left.acceptancePolicy == right.acceptancePolicy;
 }
 
 bool _automatonContentEquals(Automaton left, Automaton right) {
@@ -539,6 +661,7 @@ int _pdaHash(PDA pda) {
     _automatonHash(pda),
     Object.hashAllUnordered(pda.stackAlphabet),
     pda.initialStackSymbol,
+    pda.acceptanceMode,
   );
 }
 
@@ -548,6 +671,7 @@ int _tmHash(TM tm) {
     Object.hashAllUnordered(tm.tapeAlphabet),
     tm.blankSymbol,
     tm.tapeCount,
+    tm.acceptancePolicy,
   );
 }
 

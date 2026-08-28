@@ -35,7 +35,11 @@ class _LicenseTextCardState extends State<_LicenseTextCard> {
       final licenseTextFuture = Future<String>(
         () => rootBundle.loadString(widget.assetPath),
       );
-      licenseTextFuture.catchError((Object _) => '');
+      licenseTextFuture.catchError((Object error, StackTrace stackTrace) {
+        debugPrint('Failed to load bundled license: ${widget.assetPath}');
+        debugPrintStack(stackTrace: stackTrace);
+        return '';
+      });
       _licenseTextFuture = licenseTextFuture;
     });
   }
@@ -78,11 +82,7 @@ class _LicenseTextCardState extends State<_LicenseTextCard> {
             children: [
               const Icon(Icons.error_outline),
               const SizedBox(width: 8),
-              Expanded(
-                child: SelectableText(
-                  l10n.aboutLicenseLoadFailed(snapshot.error!),
-                ),
-              ),
+              Expanded(child: SelectableText(l10n.aboutLicenseLoadFailed)),
             ],
           );
         }

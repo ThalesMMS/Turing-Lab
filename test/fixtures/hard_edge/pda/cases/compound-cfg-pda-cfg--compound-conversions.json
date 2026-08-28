@@ -1,0 +1,150 @@
+{
+  "expectedOutcome": "accepted",
+  "id": "pda-compound-conversions-337",
+  "input": "a",
+  "mode": "both",
+  "pda": {
+    "id": "single-pop-conversion",
+    "name": "single-pop-conversion",
+    "type": "PDA",
+    "states": [
+      {
+        "id": "c0",
+        "label": "c0",
+        "position": {
+          "x": 0.0,
+          "y": 100.0
+        },
+        "isInitial": true,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "c1",
+        "label": "c1",
+        "position": {
+          "x": 120.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "transitions": [
+      {
+        "id": "consume-a",
+        "fromState": "c0",
+        "toState": "c1",
+        "label": "a, bottom/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "a",
+        "popSymbol": "bottom",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": false,
+        "isLambdaPop": false,
+        "isLambdaPush": true
+      }
+    ],
+    "alphabet": [
+      "a"
+    ],
+    "initialState": {
+      "id": "c0",
+      "label": "c0",
+      "position": {
+        "x": 0.0,
+        "y": 100.0
+      },
+      "isInitial": true,
+      "isAccepting": false,
+      "type": "normal",
+      "properties": {}
+    },
+    "acceptingStates": [
+      {
+        "id": "c1",
+        "label": "c1",
+        "position": {
+          "x": 120.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "created": "2026-08-26T00:00:00.000Z",
+    "modified": "2026-08-26T00:00:00.000Z",
+    "bounds": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 400.0,
+      "height": 300.0
+    },
+    "zoomLevel": 1.0,
+    "panOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "stackAlphabet": [
+      "bottom"
+    ],
+    "initialStackSymbol": "bottom",
+    "acceptanceMode": "both"
+  },
+  "property": "compound-conversions",
+  "propertyPayload": {
+    "sourceGrammar": {
+      "id": "greibach-source",
+      "name": "greibach-source",
+      "terminals": [
+        "a",
+        "b"
+      ],
+      "nonterminals": [
+        "S"
+      ],
+      "startSymbol": "S",
+      "productions": [
+        {
+          "id": "more",
+          "leftSide": [
+            "S"
+          ],
+          "rightSide": [
+            "a",
+            "S"
+          ],
+          "isLambda": false,
+          "order": 0
+        },
+        {
+          "id": "end",
+          "leftSide": [
+            "S"
+          ],
+          "rightSide": [
+            "b"
+          ],
+          "isLambda": false,
+          "order": 1
+        }
+      ],
+      "type": "contextFree",
+      "created": "2026-08-26T00:00:00.000Z",
+      "modified": "2026-08-26T00:00:00.000Z"
+    }
+  },
+  "schema": "turing-lab.hard-edge.pda-fixture.v1",
+  "seed": 337
+}

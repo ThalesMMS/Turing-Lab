@@ -1,5 +1,58 @@
 part of 'regex_to_nfa_converter.dart';
 
+const int _maxRegexCharacterClassRange = 4096;
+
+final class _RegexCharacterClassScalar {
+  const _RegexCharacterClassScalar({
+    required this.value,
+    required this.offset,
+    required this.length,
+    required this.escaped,
+  });
+
+  final int value;
+  final int offset;
+  final int length;
+  final bool escaped;
+}
+
+List<_RegexCharacterClassScalar> _regexCharacterClassScalars(String content) {
+  final result = <_RegexCharacterClassScalar>[];
+  final scalars = content.runes.toList(growable: false);
+  var runeIndex = 0;
+  var codeUnitOffset = 0;
+  while (runeIndex < scalars.length) {
+    final scalar = scalars[runeIndex];
+    final scalarLength = String.fromCharCode(scalar).length;
+    if (scalar == 0x5c && runeIndex + 1 < scalars.length) {
+      final escaped = scalars[runeIndex + 1];
+      final escapedLength = String.fromCharCode(escaped).length;
+      result.add(
+        _RegexCharacterClassScalar(
+          value: escaped,
+          offset: codeUnitOffset,
+          length: scalarLength + escapedLength,
+          escaped: true,
+        ),
+      );
+      runeIndex += 2;
+      codeUnitOffset += scalarLength + escapedLength;
+      continue;
+    }
+    result.add(
+      _RegexCharacterClassScalar(
+        value: scalar,
+        offset: codeUnitOffset,
+        length: scalarLength,
+        escaped: false,
+      ),
+    );
+    runeIndex++;
+    codeUnitOffset += scalarLength;
+  }
+  return result;
+}
+
 /// Validates the regular expression
 Result<void> _validateRegex(String regex) {
   final validation = _validateRegexSyntax(regex);
@@ -115,15 +168,26 @@ RegexValidationResult _validateRegexSyntax(String regex) {
           length: 2,
         );
       }
-      for (var offset = 1; offset + 1 < content.length; offset++) {
-        if (content[offset] == '-' &&
-            content[offset - 1].codeUnitAt(0) >
-                content[offset + 1].codeUnitAt(0)) {
+      final scalars = _regexCharacterClassScalars(content);
+      for (var offset = 1; offset + 1 < scalars.length; offset++) {
+        if (scalars[offset].value != 0x2d || scalars[offset].escaped) continue;
+        final start = scalars[offset - 1];
+        final end = scalars[offset + 1];
+        final rangeLength = end.value - start.value;
+        if (rangeLength < 0) {
           return invalid(
             'Character class range must be in ascending order',
-            contentStart + offset - 1,
+            contentStart + start.offset,
             RegexValidationCategory.characterClass,
-            length: 3,
+            length: end.offset + end.length - start.offset,
+          );
+        }
+        if (rangeLength > _maxRegexCharacterClassRange) {
+          return invalid(
+            'Character class range exceeds the supported size limit',
+            contentStart + start.offset,
+            RegexValidationCategory.characterClass,
+            length: end.offset + end.length - start.offset,
           );
         }
       }
@@ -244,102 +308,131 @@ RegexNode? _parseRegex(String regex) {
 /// Tokenizes the regular expression
 List<RegexToken> _tokenize(String regex) {
   final tokens = <RegexToken>[];
+  final characters = <({String value, int offset})>[];
+  var offset = 0;
+  for (final rune in regex.runes) {
+    final value = String.fromCharCode(rune);
+    characters.add((value: value, offset: offset));
+    offset += value.length;
+  }
   int i = 0;
 
-  while (i < regex.length) {
-    final char = regex[i];
+  while (i < characters.length) {
+    final char = characters[i].value;
+    final position = characters[i].offset;
 
     switch (char) {
       case '(':
         tokens.add(
-          RegexToken(type: TokenType.leftParen, value: char, position: i),
+          RegexToken(
+              type: TokenType.leftParen, value: char, position: position),
         );
         break;
       case ')':
         tokens.add(
-          RegexToken(type: TokenType.rightParen, value: char, position: i),
+          RegexToken(
+              type: TokenType.rightParen, value: char, position: position),
         );
         break;
       case '|':
-        tokens.add(RegexToken(type: TokenType.union, value: char, position: i));
+        tokens.add(
+          RegexToken(type: TokenType.union, value: char, position: position),
+        );
         break;
       case '*':
         tokens.add(
-          RegexToken(type: TokenType.kleeneStar, value: char, position: i),
+          RegexToken(
+              type: TokenType.kleeneStar, value: char, position: position),
         );
         break;
       case '+':
-        tokens.add(RegexToken(type: TokenType.plus, value: char, position: i));
+        tokens.add(
+          RegexToken(type: TokenType.plus, value: char, position: position),
+        );
         break;
       case '?':
         tokens.add(
-          RegexToken(type: TokenType.question, value: char, position: i),
+          RegexToken(type: TokenType.question, value: char, position: position),
         );
         break;
       case '.':
-        tokens.add(RegexToken(type: TokenType.dot, value: char, position: i));
+        tokens.add(
+          RegexToken(type: TokenType.dot, value: char, position: position),
+        );
         break;
       case '[':
         // Character class until ']'
         int j = i + 1;
         final buf = StringBuffer();
-        while (j < regex.length && regex[j] != ']') {
-          // handle escaped chars inside class
-          if (regex[j] == '\\' && j + 1 < regex.length && regex[j + 1] != ']') {
-            buf.write(regex[j + 1]);
+        while (j < characters.length) {
+          if (characters[j].value == '\\' && j + 1 < characters.length) {
+            buf.write(characters[j].value);
+            buf.write(characters[j + 1].value);
             j += 2;
             continue;
           }
-          buf.write(regex[j]);
+          if (characters[j].value == ']') break;
+          buf.write(characters[j].value);
           j++;
         }
-        if (j >= regex.length || regex[j] != ']') {
+        if (j >= characters.length || characters[j].value != ']') {
           // Unclosed class → treat '[' literal
           tokens.add(
-            RegexToken(type: TokenType.symbol, value: char, position: i),
+            RegexToken(type: TokenType.symbol, value: char, position: position),
           );
         } else {
           tokens.add(
             RegexToken(
               type: TokenType.charClass,
               value: buf.toString(),
-              position: i,
+              position: position,
             ),
           );
           i = j; // will be incremented by i++ at end
         }
         break;
       case '\\':
-        if (i + 1 < regex.length) {
-          final next = regex[i + 1];
+        if (i + 1 < characters.length) {
+          final next = characters[i + 1].value;
           // common shortcuts
           if ('dDsSwW'.contains(next)) {
             tokens.add(
               RegexToken(
-                  type: TokenType.charShortcut, value: next, position: i),
+                  type: TokenType.charShortcut,
+                  value: next,
+                  position: position),
             );
             i++;
             break;
           }
           // escaped metachar -> literal
           tokens.add(
-            RegexToken(type: TokenType.symbol, value: next, position: i),
+            RegexToken(type: TokenType.symbol, value: next, position: position),
           );
           i++;
         } else {
           tokens.add(
-            RegexToken(type: TokenType.symbol, value: char, position: i),
+            RegexToken(type: TokenType.symbol, value: char, position: position),
           );
         }
         break;
       default:
         if (char == 'ε') {
           tokens.add(
-            RegexToken(type: TokenType.epsilon, value: char, position: i),
+            RegexToken(
+                type: TokenType.epsilon, value: char, position: position),
+          );
+        } else if (char == '∅') {
+          tokens.add(
+            RegexToken(
+              type: TokenType.emptyLanguage,
+              value: char,
+              position: position,
+            ),
           );
         } else {
           tokens.add(
-            RegexToken(type: TokenType.symbol, value: char, position: i),
+            RegexToken(type: TokenType.symbol, value: char, position: position),
           );
         }
         break;
@@ -431,6 +524,8 @@ RegexNode? _parsePrimary(List<RegexToken> tokens) {
       return DotNode(position: token.position);
     case TokenType.epsilon:
       return EpsilonNode(position: token.position);
+    case TokenType.emptyLanguage:
+      return EmptyLanguageNode(position: token.position);
     case TokenType.charClass:
       return SetNode(
         symbols: _parseCharClass(token.value),

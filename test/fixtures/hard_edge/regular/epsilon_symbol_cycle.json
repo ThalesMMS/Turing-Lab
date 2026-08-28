@@ -1,0 +1,14 @@
+{
+  "alphabet": ["a"],
+  "expectedFinite": false,
+  "expectedStatus": "passed",
+  "family": "regular",
+  "initialState": "q0",
+  "acceptingStates": ["q1"],
+  "states": ["q0", "q1", "q2"],
+  "transitions": [
+    {"from": "q0", "read": [], "to": "q1"},
+    {"from": "q1", "read": ["a"], "to": "q2"},
+    {"from": "q2", "read": [], "to": "q1"}
+  ]
+}

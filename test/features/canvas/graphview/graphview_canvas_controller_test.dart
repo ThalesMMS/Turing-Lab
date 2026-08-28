@@ -123,6 +123,17 @@ class _CountingGraphObserver implements GraphObserver {
   }
 }
 
+class _RecordingHistoryCompanion implements GraphViewHistoryCompanion {
+  int undoCalls = 0;
+  int redoCalls = 0;
+
+  @override
+  void redo() => redoCalls++;
+
+  @override
+  void undo() => undoCalls++;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -290,6 +301,24 @@ void main() {
       final call = provider.addStateCalls.single;
       expect(call['x'], closeTo(352, 0.0001));
       expect(call['y'], closeTo(192, 0.0001));
+    });
+
+    test('exposes the safe viewport in world coordinates', () {
+      controller.updateViewportSize(const Size(800, 600));
+      controller.updateViewportInsets(
+        const EdgeInsets.fromLTRB(100, 50, 200, 150),
+      );
+      controller.graphController.transformationController!.value =
+          Matrix4.identity()
+            ..translateByDouble(100.0, -50.0, 0.0, 1.0)
+            ..scaleByDouble(2.0, 2.0, 2.0, 1.0);
+
+      final world = controller.safeViewportWorldRect!;
+
+      expect(world.left, closeTo(0, 0.0001));
+      expect(world.top, closeTo(50, 0.0001));
+      expect(world.right, closeTo(250, 0.0001));
+      expect(world.bottom, closeTo(250, 0.0001));
     });
 
     test('exposes live zoom percentage bounds', () {
@@ -761,6 +790,38 @@ void main() {
 
       expect(controller.canRedo, isTrue);
       expect(controller.redo(), isTrue);
+    });
+
+    test('complete replacement and sidecar share one undo/redo entry', () {
+      final importedState = automaton_state.State(
+        id: 'imported',
+        label: 'Imported',
+        position: Vector2(120, 80),
+        isInitial: true,
+      );
+      final replacement = provider.state.currentAutomaton!.copyWith(
+        states: {importedState},
+        initialState: importedState,
+      );
+      final companion = _RecordingHistoryCompanion();
+
+      controller.replaceDocumentAsMutation(
+        replacement,
+        companion: companion,
+      );
+
+      expect(provider.state.currentAutomaton!.states, {importedState});
+      expect(controller.canUndo, isTrue);
+      expect(controller.undo(), isTrue);
+      expect(provider.state.currentAutomaton!.states, isEmpty);
+      expect(companion.undoCalls, 1);
+      expect(controller.canUndo, isFalse);
+      expect(controller.canRedo, isTrue);
+
+      expect(controller.redo(), isTrue);
+      expect(provider.state.currentAutomaton!.states, {importedState});
+      expect(companion.redoCalls, 1);
+      expect(controller.canUndo, isTrue);
     });
 
     test('undo preserves an atomic FSA symbol containing a comma', () {

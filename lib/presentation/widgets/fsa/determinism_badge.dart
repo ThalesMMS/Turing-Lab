@@ -68,8 +68,9 @@ class DeterminismInfo {
   static List<String> _findNonDeterministicStates(FSA fsa) {
     final result = <String>[];
     for (final state in fsa.states) {
-      final transitions =
-          fsa.fsaTransitions.where((t) => t.fromState.id == state.id).toList();
+      final transitions = fsa.fsaTransitions
+          .where((t) => t.fromState.id == state.id)
+          .toList();
 
       final symbolGroups = <String, int>{};
       for (final transition in transitions) {
@@ -88,8 +89,9 @@ class DeterminismInfo {
   static List<String> _findNonDeterministicSymbols(FSA fsa) {
     final symbols = <String>{};
     for (final state in fsa.states) {
-      final transitions =
-          fsa.fsaTransitions.where((t) => t.fromState.id == state.id).toList();
+      final transitions = fsa.fsaTransitions
+          .where((t) => t.fromState.id == state.id)
+          .toList();
 
       final symbolCounts = <String, int>{};
       for (final transition in transitions) {
@@ -123,47 +125,57 @@ class FsaTypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
+    final l10n = appLocalizationsOf(context);
 
-    return GestureDetector(
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: '${info.type}, ${l10n.determinismAnalysis}',
+      button: onTap != null,
+      enabled: onTap != null,
+      hint: onTap != null ? l10n.showDetails : null,
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile || compact ? 8 : 12,
-          vertical: isMobile || compact ? 4 : 6,
-        ),
-        decoration: BoxDecoration(
-          color: info.badgeColor,
-          borderRadius: BorderRadius.circular(isMobile || compact ? 12 : 16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              info.isDeterministic ? Icons.check_circle : Icons.info,
-              color: Colors.white,
-              size: isMobile || compact ? 14 : 16,
-            ),
-            SizedBox(width: isMobile || compact ? 4 : 6),
-            Text(
-              info.type,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: isMobile || compact ? 12 : 14,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile || compact ? 8 : 12,
+            vertical: isMobile || compact ? 4 : 6,
+          ),
+          decoration: BoxDecoration(
+            color: info.badgeColor,
+            borderRadius: BorderRadius.circular(isMobile || compact ? 12 : 16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-            ),
-            if (onTap != null && !isMobile && !compact) ...[
-              const SizedBox(width: 4),
-              const Icon(Icons.info_outline, color: Colors.white, size: 14),
             ],
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                info.isDeterministic ? Icons.check_circle : Icons.info,
+                color: Colors.white,
+                size: isMobile || compact ? 14 : 16,
+              ),
+              SizedBox(width: isMobile || compact ? 4 : 6),
+              Text(
+                info.type,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile || compact ? 12 : 14,
+                ),
+              ),
+              if (onTap != null && !isMobile && !compact) ...[
+                const SizedBox(width: 4),
+                const Icon(Icons.info_outline, color: Colors.white, size: 14),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -225,6 +237,7 @@ class NonDeterminismPanel extends StatelessWidget {
                 ),
                 if (onClose != null)
                   IconButton(
+                    tooltip: appLocalizationsOf(context).close,
                     icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: onClose,
                     visualDensity: VisualDensity.compact,
@@ -299,8 +312,9 @@ class NonDeterminismPanel extends StatelessWidget {
                     info.nonDeterministicSymbols.isNotEmpty) ...[
                   _buildFeature(
                     icon: Icons.content_copy,
-                    label: appLocalizationsOf(context)
-                        .symbolsWithMultipleTransitions,
+                    label: appLocalizationsOf(
+                      context,
+                    ).symbolsWithMultipleTransitions,
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 4),
@@ -325,8 +339,9 @@ class NonDeterminismPanel extends StatelessWidget {
                 if (info.isDeterministic) ...[
                   _buildFeature(
                     icon: Icons.check_circle,
-                    label:
-                        appLocalizationsOf(context).allTransitionsDeterministic,
+                    label: appLocalizationsOf(
+                      context,
+                    ).allTransitionsDeterministic,
                     color: Colors.green,
                   ),
                 ],
@@ -360,11 +375,18 @@ class FSADeterminismOverlay extends StatefulWidget {
   final bool isMobile;
   final double desktopTop;
 
+  /// When true, renders as a regular flow widget (badge with the details
+  /// panel below it) instead of positioning itself inside a [Stack]. Used by
+  /// the mobile layout, which stacks the diagnostics bar and the badge in one
+  /// top-anchored column so they can never overlap.
+  final bool inline;
+
   const FSADeterminismOverlay({
     super.key,
     required this.automaton,
     this.isMobile = false,
     this.desktopTop = 16,
+    this.inline = false,
   });
 
   @override
@@ -379,6 +401,36 @@ class _FSADeterminismOverlayState extends State<FSADeterminismOverlay> {
     if (widget.automaton == null) return const SizedBox.shrink();
 
     final info = DeterminismInfo.fromFSA(widget.automaton!);
+
+    if (widget.inline) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FsaTypeBadge(
+            info: info,
+            compact: widget.isMobile,
+            onTap: () {
+              setState(() {
+                _showDetails = !_showDetails;
+              });
+            },
+          ),
+          if (_showDetails)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: NonDeterminismPanel(
+                info: info,
+                onClose: () {
+                  setState(() {
+                    _showDetails = false;
+                  });
+                },
+              ),
+            ),
+        ],
+      );
+    }
 
     return Stack(
       children: [

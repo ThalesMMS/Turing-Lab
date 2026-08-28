@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/algorithms/grammar_cnf_messages.dart';
 import 'package:turing_lab/core/algorithms/grammar_cnf_transformer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
 import 'package:turing_lab/core/models/production.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 
 Grammar buildGrammar({
   String id = 'g',
@@ -73,6 +75,15 @@ void main() {
       final report = result.data!;
 
       expect(report.steps, isNotEmpty);
+      expect(report.structuredSteps, hasLength(report.steps.length));
+      expect(
+        report.structuredSteps.map((step) => step.operationMessage.stableCode),
+        contains('grammar.cnf.binarize-title'),
+      );
+      expect(
+        report.structuredSteps.map((step) => step.rationaleMessage.stableCode),
+        contains('grammar.cnf.binarize-rationale'),
+      );
       expect(report.diagnostics, isEmpty);
       expect(report.grammar.productions, isNotEmpty);
 
@@ -88,16 +99,25 @@ void main() {
         }
 
         if (rhs.length == 1) {
-          expect(report.grammar.terminals.contains(rhs.single), isTrue,
-              reason: '$p');
+          expect(
+            report.grammar.terminals.contains(rhs.single),
+            isTrue,
+            reason: '$p',
+          );
           continue;
         }
 
         expect(rhs.length, 2, reason: '$p');
-        expect(report.grammar.nonterminals.contains(rhs[0]), isTrue,
-            reason: '$p');
-        expect(report.grammar.nonterminals.contains(rhs[1]), isTrue,
-            reason: '$p');
+        expect(
+          report.grammar.nonterminals.contains(rhs[0]),
+          isTrue,
+          reason: '$p',
+        );
+        expect(
+          report.grammar.nonterminals.contains(rhs[1]),
+          isTrue,
+          reason: '$p',
+        );
       }
     });
 
@@ -130,13 +150,17 @@ void main() {
       final report = result.data!;
 
       expect(report.grammar.startSymbol, isNot('S'));
-      expect(report.grammar.nonterminals.contains(report.grammar.startSymbol),
-          isTrue);
+      expect(
+        report.grammar.nonterminals.contains(report.grammar.startSymbol),
+        isTrue,
+      );
 
       final startProductions = report.grammar.productions
-          .where((p) =>
-              p.leftSide.length == 1 &&
-              p.leftSide.single == report.grammar.startSymbol)
+          .where(
+            (p) =>
+                p.leftSide.length == 1 &&
+                p.leftSide.single == report.grammar.startSymbol,
+          )
           .toList();
       expect(startProductions, isNotEmpty);
 
@@ -245,11 +269,7 @@ void main() {
         startSymbol: 'S',
         productions: {
           const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
-          const Production(
-            id: 'p2',
-            leftSide: ['S'],
-            rightSide: ['A', 'B'],
-          ),
+          const Production(id: 'p2', leftSide: ['S'], rightSide: ['A', 'B']),
           const Production(id: 'p3', leftSide: ['B'], rightSide: ['b']),
         },
       );
@@ -332,6 +352,28 @@ void main() {
         ),
         isTrue,
       );
+      final diagnostic = diagnostics.firstWhere(
+        (d) => d.code == 'cnf.nullable_subset_limit_exceeded',
+      );
+      final message = diagnostic.structuredMessage!;
+      expect(message.stableCode, 'grammar.cnf.nullable-subset-limit-exceeded');
+      expect(
+        message.arguments['production']!.kind,
+        StructuredMessageArgumentKind.identifier,
+      );
+      expect(message.arguments['production']!.role, 'production-id');
+      expect(message.arguments['production']!.value, 'p1');
+      expect(
+        message.arguments['nullable-positions']!.kind,
+        StructuredMessageArgumentKind.count,
+      );
+      expect(message.arguments['nullable-positions']!.value, 4);
+      expect(message.arguments['subsets']!.value, 16);
+      expect(
+        message.arguments['limit']!.kind,
+        StructuredMessageArgumentKind.bound,
+      );
+      expect(message.arguments['limit']!.value, 8);
     });
 
     test('emits new-symbol limit warning only once', () {
@@ -371,6 +413,90 @@ void main() {
           .where((d) => d.code == 'cnf.new_symbol_limit_reached')
           .toList();
       expect(limitWarnings, hasLength(1));
+      expect(limitWarnings.single.structuredMessage, isNotNull);
+      expect(
+        limitWarnings.single.structuredMessage!.stableCode,
+        'grammar.cnf.new-symbol-limit-reached',
+      );
+      expect(
+        limitWarnings.single.structuredMessage!.arguments['limit']!.kind,
+        StructuredMessageArgumentKind.bound,
+      );
+      expect(
+        limitWarnings.single.structuredMessage!.arguments['limit']!.value,
+        0,
+      );
+    });
+
+    test('uses a typed structured warning for non-CFG input', () {
+      final grammar = buildGrammar(
+        id: 'g7',
+        name: 'regular input',
+        type: GrammarType.regular,
+        productions: {
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+        },
+      );
+
+      final result = GrammarCnfTransformer.toCnf(grammar);
+      expect(result.isSuccess, isTrue, reason: result.error);
+      final diagnostic = result.data!.diagnostics.firstWhere(
+        (d) => d.code == 'cnf.grammar_not_cfg',
+      );
+
+      expect(diagnostic.severity, GrammarDiagnosticSeverity.warning);
+      expect(
+        diagnostic.structuredMessage,
+        GrammarCnfMessages.grammarNotCfg('regular'),
+      );
+      expect(
+        diagnostic.structuredMessage!.arguments['type']!.kind,
+        StructuredMessageArgumentKind.outcome,
+      );
+      expect(diagnostic.structuredMessage!.arguments['type']!.value, 'regular');
+    });
+
+    test('uses a typed structured warning for non-strict output', () {
+      final grammar = buildGrammar(
+        id: 'g8',
+        name: 'non-strict output',
+        type: GrammarType.contextFree,
+        nonterminals: {'S', 'A', 'B', 'C'},
+        terminals: {'a', 'b', 'c'},
+        productions: {
+          const Production(
+            id: 'p1',
+            leftSide: ['S'],
+            rightSide: ['A', 'B', 'C'],
+          ),
+          const Production(id: 'p2', leftSide: ['A'], rightSide: ['a']),
+          const Production(id: 'p3', leftSide: ['B'], rightSide: ['b']),
+          const Production(id: 'p4', leftSide: ['C'], rightSide: ['c']),
+        },
+      );
+
+      final result = GrammarCnfTransformer.toCnf(
+        grammar,
+        maxNewNonTerminals: 0,
+      );
+      expect(result.isSuccess, isTrue, reason: result.error);
+      final diagnostic = result.data!.diagnostics.firstWhere(
+        (d) => d.code == 'cnf.not_strict_cnf',
+      );
+
+      expect(diagnostic.severity, GrammarDiagnosticSeverity.warning);
+      expect(
+        diagnostic.structuredMessage!.stableCode,
+        'grammar.cnf.not-strict-cnf',
+      );
+      expect(
+        diagnostic.structuredMessage!.arguments['violations']!.kind,
+        StructuredMessageArgumentKind.literal,
+      );
+      expect(
+        diagnostic.structuredMessage!.arguments['violations']!.value,
+        contains('RHS length 3'),
+      );
     });
   });
 }

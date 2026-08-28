@@ -15,9 +15,22 @@ class ValidationIssueToDiagnostic {
   static ValidationDiagnostic fromIssue(ValidationIssue issue) {
     final explicit = issue.diagnostic;
     if (explicit != null) {
+      final message = issue.structuredMessage;
+      if (message != null && explicit.structuredMessage == null) {
+        return explicit.copyWith(structuredMessage: message);
+      }
       return explicit;
     }
 
+    final diagnostic = _mapIssue(issue);
+    final message = issue.structuredMessage;
+    if (message == null) {
+      return diagnostic;
+    }
+    return diagnostic.copyWith(structuredMessage: message);
+  }
+
+  static ValidationDiagnostic _mapIssue(ValidationIssue issue) {
     final (summary, details) = _splitMessage(issue.message);
 
     // Keep mapping conservative: attach fixes/highlights only for codes we can
@@ -321,7 +334,7 @@ class ValidationIssueToDiagnostic {
             SuggestedFix(
               label: 'Mark an accepting (halt) state',
               details:
-                  'Add one or more accepting states where the machine should halt and accept.',
+                  'This TM policy uses final-state acceptance. Mark one or more final states, or select halting acceptance.',
               actionId: 'canvas.toggleAcceptingState',
             ),
           ],

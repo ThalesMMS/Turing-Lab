@@ -1,6 +1,104 @@
 import '../core/constants/help_topic_ids.dart';
 import 'help_catalog_copy.dart';
 
+final _documentNotesBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Adicionar e gerenciar uma nota do documento'),
+  HelpOrderedStepsBlock([
+    'Abra Notas do documento nas ações de documento do canvas ou expanda Notas do documento quando a página mostrar essa seção. Selecione Adicionar nota.',
+    'Preencha Texto da nota e escolha um Estilo. Deixe Anexo como Nenhum para criar uma nota livre. Para acompanhar um item, escolha Estado, Transição, Produção ou Célula da tabela e informe o ID do destino. Selecione Salvar alterações.',
+    'Use Pesquisar notas para localizar texto ou IDs de destino. Selecione uma nota para editá-la. Ações da nota oferece Duplicar e Excluir. Desfazer alteração na nota e Refazer alteração na nota afetam somente edições de notas.',
+    'Arraste, recolha ou redimensione uma nota no canvas de autômato. As exportações de documentos sempre preservam as notas. Ative Incluir notas nas exportações visuais para adicioná-las a SVG e PNG.',
+  ]),
+  const HelpCalloutBlock(
+    'As notas não alteram o modelo formal, a simulação, a conversão nem a aceitação. Textos como ε, λ, q₀ e A → a permanecem conteúdo literal da nota. Links e HTML não são interpretados.',
+  ),
+];
+
+final _multipleInputBatchBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Executar várias entradas no mesmo modelo'),
+  HelpOrderedStepsBlock([
+    'Abra Batch execution na área de simulação. Em Inputs, one case per line, digite os casos, selecione Import TXT/CSV ou defina Max length e Max cases antes de Generate words. Use ε para a palavra vazia.',
+    'Abra Limits and execution settings. Escolha Tokenization e os limites necessários, depois selecione Run batch. Selecione Cancel batch ou pressione Escape para solicitar o cancelamento.',
+    'Filtre ou ordene os resultados, abra um rastro retido quando disponível e use Compare model somente para comparar esses casos. Exporte o relatório concluído com Export JSON ou Export CSV.',
+  ]),
+  const HelpCalloutBlock(
+    'Casos cancelados, expirados ou limitados sem resposta não são aceitação nem rejeição. Uma comparação pode revelar diferença nos casos testados, mas a ausência de diferença em um lote finito não prova equivalência. Preserve os símbolos formais.',
+  ),
+];
+
+final _suggestedSimulationBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Carregar um exemplo e testar sua entrada'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e Exemplos. Localize um cartão que mostre Simulação sugerida ou Simulações sugeridas e revise a descrição, o objetivo de aprendizagem e a limitação disponíveis.',
+    'Preserve a entrada sugerida exatamente como exibida. Selecione o cartão ou Carregar exemplo para substituir o modelo formal atual pelo exemplo incluído.',
+    'Feche a área de exemplos, informe a sugestão no campo de simulação, teste ou derivação do espaço de trabalho e execute-a. Carregar o exemplo não preenche o campo nem inicia a execução.',
+  ]),
+  const HelpCalloutBlock(
+    'Cada sugestão é verificada com seu exemplo incluído e deve ser aceita, derivada ou concluída enquanto o exemplo permanecer inalterado. Uma execução bem-sucedida não prova todas as propriedades do modelo nem estabelece equivalência de linguagens. Espaços podem marcar limites entre tokens, e entradas formais não são traduzidas. Exemplos de sistema L não mostram simulações sugeridas.',
+  ),
+];
+
+final _automatonFragmentImportBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Clonar um fragmento de autômato compatível'),
+  HelpOrderedStepsBlock([
+    'Em um editor de AF, AP ou MT, selecione Importar autômato nas ações de documento do canvas e escolha um arquivo do mesmo modelo de grafo.',
+    'Em Prévia da importação do autômato, escolha Estados a importar. Uma transição só é clonada quando os dois estados das suas pontas estão selecionados. Defina a Âncora de inserção e resolva as escolhas de estado inicial ou configuração de AP exibidas.',
+    'Leia Fidelidade da origem e Alterações exatas. Selecione Aplicar somente quando não houver diagnóstico bloqueante ou selecione Cancelar para não alterar o documento atual.',
+  ]),
+  const HelpCalloutBlock(
+    'A ação cria uma cópia estrutural desconectada com novos IDs. Ela não conecta o fragmento, substitui o documento, executa uma operação algébrica nem prova equivalência de linguagens. Símbolos como ε, q₀, Z₀ e □ permanecem dados formais e não são traduzidos.',
+  ),
+];
+
+final _settingsBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Ajuste o Turing Lab ao seu espaço de trabalho'),
+  HelpOrderedStepsBlock([
+    'Abra Configurações pela barra do app na Tela inicial. Em Modo do tema, escolha Sistema, Claro ou Escuro. Em Idioma do aplicativo, escolha English ou Português.',
+    'Em Canvas, ative ou desative Mostrar grade e Mostrar coordenadas e ajuste Tamanho da grade, Tamanho dos estados e Tamanho da fonte. Em Geral, ative ou desative Salvamento automático e Mostrar dicas.',
+    'Selecione Salvar configurações para persistir as escolhas atuais. Selecione Restaurar padrões para gravar as configurações padrão ou abra Sobre o Turing Lab para ver informações do produto e créditos.',
+  ]),
+  const HelpCalloutBlock(
+    'A troca de Idioma do aplicativo é aplicada imediatamente e tenta salvar a nova escolha. Se a persistência falhar, a página restaura o valor anterior e mostra um erro. Restaurar padrões recupera a resolução automática do idioma da plataforma. Essas preferências afetam apenas a apresentação e o comportamento de salvamento; não editam modelos formais, símbolos nem entradas.',
+  ),
+];
+
+final _interoperabilityReviewBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Revise uma troca de arquivo antes de confirmá-la'),
+  HelpOrderedStepsBlock([
+    'Quando uma ação de Carregar, Salvar ou Exportar abrir Revisar importação ou Revisar exportação, confira Arquivo, Tipo, Formato, Versão e Fidelidade antes de continuar.',
+    'Considere Exata uma representação totalmente compatível, Normalizada uma representação compatível cuja grafia ou estrutura foi canonizada e Perda de dados uma transação que omite informações. Expanda Relatório por campo e leia cada campo preservado, normalizado ou omitido e sua localização de origem.',
+    'Selecione Substituir documento ou Exportar arquivo somente quando o relatório corresponder à sua intenção. Selecione Importar com perda de dados ou Exportar com perda de dados somente quando aceitar as omissões listadas; selecione Cancelar para deixar o documento atual inalterado.',
+  ]),
+  const HelpCalloutBlock(
+    'A revisão de fidelidade descreve a transação do codec, não a linguagem reconhecida pelo documento. Ela não traduz símbolos formais nem estabelece equivalência de linguagens. Se a operação falhar, leia se o documento não é compatível, é ambíguo, não pode ser lido, excede um limite de recursos ou sofreu uma falha interna antes de tentar novamente com um arquivo compatível.',
+  ),
+];
+
+final _manualConversionBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Praticar uma conversão passo a passo'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e Exemplos e selecione Practice FA to Regex, Practice FA to Regular Grammar ou Practice Regular Grammar to FA. No espaço de trabalho de expressão regular, selecione Practice Regex to FA.',
+    'Leia Source e a instrução numerada em Learner construction. Construa o item solicitado e selecione Check step. Uma etapa válida avança a barra de progresso. Use Hint para ver orientação, Reveal step para inserir a etapa esperada e Undo ou Redo para percorrer as ações aceitas.',
+    'Use Compare para ler a evidência registrada na última etapa validada. Selecione Restart para limpar as ações da origem atual. Se uma edição da origem invalidar a sessão, selecione Restart from edited source ou Branch from edited source. As duas opções recomeçam na etapa 1 da revisão editada; Branch registra a sessão invalidada como origem da ramificação.',
+    'Quando Construction complete aparecer, selecione Open result. Se o editor de destino já tiver conteúdo, selecione Substituir para carregar o resultado ou Cancelar para manter o destino atual e voltar à construção concluída.',
+  ]),
+  const HelpCalloutBlock(
+    'Close mantém neste dispositivo o progresso salvo; essa ação não descarta a construção. Structural validation verifica a forma solicitada, e Bounded evidence cobre apenas os limites exibidos. Considere a equivalência de linguagens estabelecida somente quando Compare informar Exact equivalence. Símbolos formais como ε, λ, ∅, q₀, Z₀ e □ permanecem dados do modelo.',
+  ),
+];
+
+final _pumpingEnvironmentChoiceBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Escolha o ambiente da prova'),
+  HelpOrderedStepsBlock([
+    'Quando a rota antiga Lema do Bombeamento abrir esta tela, leia a diferença entre Bombeamento regular e Bombeamento livre de contexto. Escolha o ambiente que corresponde ao teorema e à família de linguagens que você está estudando.',
+    'Escolha Bombeamento regular para o jogo de linguagens regulares. Ele usa comprimento de bombeamento p, uma palavra testemunha, decomposição xyz com |xy| ≤ p e |y| > 0 e um expoente de bombeamento. Escolha Bombeamento livre de contexto para o jogo correspondente; sua decomposição e suas restrições de prova são diferentes: w = uvxyz, |vxy| ≤ p e |vy| > 0.',
+    'Depois de escolher o ambiente, o app substitui esta tela pelo espaço de trabalho correspondente. Inicie o jogo, leia o painel do teorema e use os controles Ajuda e Progresso no ambiente escolhido. Abra novamente o seletor de ambiente pela navegação do app quando precisar trocar de teorema.',
+  ]),
+  const HelpCalloutBlock(
+    'Cada ambiente mantém sua própria sessão e progresso. Uma decomposição regular não pode ser enviada ao ambiente livre de contexto, e nenhum dos jogos decide automaticamente se uma linguagem é regular ou não regular. Use o teorema e a ordem dos quantificadores como limite da prova; o feedback do jogo é prática guiada.',
+  ),
+];
+
 final _fsaSimulationBlocks = <HelpContentBlock>[
   const HelpHeadingBlock('Execute e inspecione uma simulação'),
   HelpOrderedStepsBlock([
@@ -25,6 +123,19 @@ final _fsaAlgorithmBlocks = <HelpContentBlock>[
   ),
 ];
 
+final _languageComparisonResultsBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Ler um resultado de comparação de linguagens'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e Exemplos. Ative Modo passo a passo se quiser o traço da comparação, depois selecione Comparar equivalência e escolha o arquivo do segundo autômato.',
+    'Leia primeiro o status. Se ele for NÃO EQUIVALENTES, leia Cadeia distintiva encontrada; ε indica que somente um dos autômatos aceita a palavra vazia.',
+    'Use Estatísticas e os diagramas somente leitura Autômato atual e Autômato comparado para confirmar quais modelos foram comparados. Expanda Autômato produto quando estiver disponível.',
+    'Se você ativou Modo passo a passo, expanda Passos do algoritmo e use Passo anterior e Próximo passo para acompanhar a normalização do alfabeto, a determinização, a construção do produto e a busca por uma cadeia distintiva.',
+  ]),
+  const HelpCalloutBlock(
+    'EQUIVALENTES e NÃO EQUIVALENTES são vereditos concluídos. Inconclusivo dentro dos limites e A análise falhou não decidem a equivalência. Fechar o resultado não altera nenhum dos autômatos.',
+  ),
+];
+
 final _grammarParserBlocks = <HelpContentBlock>[
   const HelpHeadingBlock('Analise uma cadeia de entrada'),
   HelpOrderedStepsBlock([
@@ -37,6 +148,54 @@ final _grammarParserBlocks = <HelpContentBlock>[
   ),
 ];
 
+final _lr1TeachingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Estude uma análise LR(1) canônica'),
+  HelpOrderedStepsBlock([
+    'Comece com uma gramática válida e uma Cadeia de teste. Selecione LR(1) canônico e Analisar cadeia. Uma tabela sem conflitos é necessária para uma execução completa de deslocamento e redução; gramática inválida, falha de tokenização, conflitos e limites de recursos aparecem no resultado.',
+    'Em Coleção canônica, escolha um chip de estado. Compare Gramática com os itens LR(1), o prefixo viável e as transições de saída. O estado selecionado acompanha a célula e o passo que você examina.',
+    'Leia a tabela ACTION / GOTO e selecione uma célula. Em Execução por deslocamento e redução, use Reiniciar execução, Passo anterior, Reproduzir execução, Pausar execução e Próximo passo para acompanhar pilhas de estados e símbolos, entrada restante, antecipação, reduções, explicações e a árvore de derivação parcial.',
+  ]),
+  const HelpCalloutBlock(
+    'Construção e execução são visões somente leitura da gramática atual e do resultado do analisador. Conflitos preservam todas as ações e itens de origem e mostram um prefixo testemunha, mas impedem a análise. Uma análise concluída decide apenas a cadeia informada; não prova equivalência de linguagens. Se a gramática ou a entrada mudar, analise novamente para substituir o estado obsoleto do ambiente.',
+  ),
+];
+
+final _parseTableTeachingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Pratique uma tabela de análise gerada'),
+  HelpOrderedStepsBlock([
+    'Abra o ambiente didático da tabela depois que a Análise da gramática gerar uma tabela LL(1) ou que o analisador produzir uma tabela ACTION/GOTO LR(1) canônica. Leia a linha e a coluna mostradas para cada célula antes de responder.',
+    'Ative o Modo didático e edite Sua entrada. Informe um ID de produção, uma ação shift/reduce ou um estado GOTO. Em uma célula em conflito, use um chip de ação gerada para escolher uma das ações concorrentes. Mantenha as respostas geradas visíveis para comparar ou oculte-as antes de tentar a célula.',
+    'Use Desfazer e Refazer para revisar. Leia a mensagem ao vivo sob cada célula: uma entrada correta é aceita, uma escolha de conflito identifica a ação selecionada, uma célula gerada vazia continua vazia e uma entrada incorreta permanece como diagnóstico.',
+  ]),
+  const HelpCalloutBlock(
+    'A tabela gerada é uma referência somente leitura. As edições didáticas não alteram a gramática, o analisador nem as respostas geradas. Uma alteração na gramática de origem invalida a sessão, e um exercício salvo inválido precisa ser reiniciado a partir da tabela atual.',
+  ),
+];
+
+final _grammarBatchParsingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Execute várias análises da gramática'),
+  HelpOrderedStepsBlock([
+    'Expanda Batch parsing abaixo de Resultados da análise. Informe um caso por linha, use Add case ou Import TXT/CSV, ou defina Max length e Max cases e selecione Generate words. Use ε para a palavra vazia; no modo Explicit tokens, separe os terminais declarados por espaços.',
+    'Abra Limits and execution settings. Escolha Strategy e Tokenization, defina os limites de passos, configurações, tempo e traço, escolha a retenção de traços e a concorrência e decida se a execução deve parar após o primeiro resultado não bem-sucedido. Selecione Run batch ou pressione Ctrl+Enter; Escape solicita o cancelamento.',
+    'Filtre ou ordene os resultados, execute novamente um caso com traço, inspecione um traço mantido, remova casos e exporte o relatório concluído como JSON ou CSV. O mesmo painel executa Automatic (Earley), Brute force, CYK, LL(1) ou LR(1); mantenha a estratégia selecionada junto do relatório ao comparar execuções.',
+  ]),
+  const HelpCalloutBlock(
+    'Cada caso recebe seu próprio resultado: aceito e rejeitado são decisões, enquanto conflitos, entrada ou gramática inválida, cancelamento, limites de tempo, passos ou configurações permanecem diagnósticos ou inconclusivos. Um lote finito não prova equivalência de linguagens. O executor aceita no máximo 10.000 casos e limita os traços mantidos a 10.000 passos; alterar a gramática limpa resultados obsoletos. Os relatórios preservam entradas formais, estratégia, limites e revisão do modelo.',
+  ),
+];
+
+final _userControlledDerivationBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Construa uma derivação'),
+  HelpOrderedStepsBlock([
+    'Informe a Cadeia de teste e selecione Iniciar derivação controlada.',
+    'Antes do primeiro passo, escolha Mais à esquerda, Mais à direita ou Qualquer ocorrência. Selecione uma produção aplicável e a Posição exata, examine Visualização do passo e selecione Aplicar este passo.',
+    'Use Desfazer passo, Refazer passo, Ramificar aqui ou Reiniciar para revisar o histórico. Solicitar dica limitada pode mostrar um passo sugerido, e Árvore de derivação atual mostra a árvore parcial.',
+  ]),
+  const HelpCalloutBlock(
+    'Um beco sem saída local ou uma dica limitada sem sugestão não prova que a cadeia não pertence à linguagem. Alterar a gramática ou o alvo invalida a sessão; inicie outra sessão para a fonte atual.',
+  ),
+];
+
 final _grammarAlgorithmBlocks = <HelpContentBlock>[
   const HelpHeadingBlock('Execute uma análise ou transformação de gramática'),
   HelpOrderedStepsBlock([
@@ -46,6 +205,42 @@ final _grammarAlgorithmBlocks = <HelpContentBlock>[
   ]),
   const HelpCalloutBlock(
     'Controles desativados, relatórios de validação e diagnósticos de erro mantêm a gramática do editor inalterada.',
+  ),
+];
+
+final _variableDependencyGraphBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Examine dependências e recursão'),
+  HelpOrderedStepsBlock([
+    'Abra Análise da gramática e selecione Grafo de dependência de variáveis.',
+    'Em Modo de dependência, escolha Ocorrência direta, Canto esquerdo ou Canto esquerdo considerando anuláveis. Altere o Layout do grafo ou use os controles de ajuste e zoom quando necessário.',
+    'Selecione uma variável, aresta de dependência ou testemunho de recursão para examinar alcançabilidade e a origem exata nas produções. Use Exportar SVG ou Exportar PNG para salvar o grafo atual.',
+  ]),
+  const HelpCalloutBlock(
+    'Alcançabilidade, produtividade e testemunhos de recursão descrevem dependências entre variáveis; eles não provam que a gramática é ambígua. Se a gramática de origem mudar, reabra o grafo para analisar a revisão atual.',
+  ),
+];
+
+final _cfgToPdaLlLrBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Visualize uma construção de pilha LL ou LR'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos. Em Conversões, selecione Construção GLC para AP (LL) ou Construção GLC para AP (LR).',
+    'Examine Premissas da construção e selecione uma das Etapas da construção para destacar as produções de origem, os estados e transições gerados e, quando houver, as células LR.',
+    'Se desejar, selecione Executar verificação amostral em Evidência diferencial limitada. Selecione Abrir no editor de AP somente quando quiser substituir o AP atual pela prévia.',
+  ]),
+  const HelpCalloutBlock(
+    'Conflitos LL(1) impedem a construção LL, e conflitos LR(1) canônicos impedem a construção LR. Amostras finitas podem encontrar divergências, mas não provam equivalência de linguagens. Uma edição na origem invalida a prévia.',
+  ),
+];
+
+final _grammarNormalizationPracticeBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Praticar as etapas canônicas da FNC'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e selecione Praticar normalização de gramática em uma gramática com produções.',
+    'Percorra Remover lambda, Remover produções unitárias, Remover produções inúteis e Concluir FNC. Digite uma produção por linha como A -> símbolo símbolo e use ε para um lado direito vazio.',
+    'Selecione Verificar etapa, corrija as produções ausentes ou inesperadas informadas e use Comparar com referência somente depois de fazer sua tentativa.',
+  ]),
+  const HelpCalloutBlock(
+    'O verificador compara o conjunto canônico de produções gerado para cada etapa. Uma diferença não prova que sua gramática deixe de ser equivalente quanto à linguagem, e um resultado de uma etapa posterior é informado como fora de ordem.',
   ),
 ];
 
@@ -85,6 +280,18 @@ final _tmSimulationBlocks = <HelpContentBlock>[
   ),
 ];
 
+final _tmMultiTapeBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Inspecionar uma execução multifitas sincronizada'),
+  HelpOrderedStepsBlock([
+    'Defina mais de uma fita e informe em cada transição uma operação de leitura, escrita e direção para cada fita.',
+    'Simule uma entrada. Em Rastro sincronizado de múltiplas fitas, selecione um passo para examinar a transição atômica única e sua configuração registrada.',
+    'Expanda cada fita para comparar cabeçote, operação e células próximas. Depois, leia a maior extensão visitada e o máximo de células não brancas por fita e no total simultâneo.',
+  ]),
+  const HelpCalloutBlock(
+    'Todas as operações de uma linha do rastro acontecem no mesmo passo da máquina. Os máximos descrevem somente essa execução limitada; não provam complexidade de espaço nem o comportamento em outras entradas.',
+  ),
+];
+
 final _tmAlgorithmBlocks = <HelpContentBlock>[
   const HelpHeadingBlock('Execute uma análise de máquina de Turing'),
   HelpOrderedStepsBlock([
@@ -97,6 +304,212 @@ final _tmAlgorithmBlocks = <HelpContentBlock>[
   ),
 ];
 
+final _tmBuildingBlockBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Compor uma máquina com blocos reutilizáveis'),
+  HelpOrderedStepsBlock([
+    'Abra Blocos de construção e crie uma definição nomeada, ou carregue o exemplo de blocos reutilizáveis para examinar um projeto completo.',
+    'Use Inserir para colocar uma invocação no canvas raiz; renomeie ou duplique definições na biblioteca e use a navegação para examinar referências aninhadas.',
+    'Execute a MT e examine os passos Entrar, Transição e Retornar junto com a pilha de chamadas e o estado compartilhado das fitas.',
+  ]),
+  const HelpCalloutBlock(
+    'Todo bloco compartilha com a máquina raiz a quantidade de fitas, o símbolo branco e as próprias fitas. Referências ausentes ou recursão direta ou indireta invalidam o projeto, e excluir uma definição referenciada exige desvincular explicitamente suas invocações.',
+  ),
+];
+
+final _tmBuildingBlockLibraryBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Gerencie a biblioteca de blocos de construção'),
+  HelpOrderedStepsBlock([
+    'Abra Biblioteca de blocos de construção e selecione Criar bloco. Informe um nome e confirme com Criar bloco. Uma nova definição começa com um estado inicial e herda da máquina raiz a quantidade de fitas, o alfabeto da fita e o símbolo branco.',
+    'Selecione um bloco para abrir seus detalhes. Use Inserir na tela raiz para adicionar uma âncora de invocação ao grafo raiz, Renomear para alterar o nome exibido ou Duplicar para criar uma definição independente. Use a migalha Máquina raiz ou a migalha de um bloco aninhado para voltar a um nível anterior.',
+    'Use Desfazer e Refazer nas edições da biblioteca. Se um bloco estiver referenciado, Excluir abre um diálogo de resolução explícita. Escolha Desvincular e excluir somente quando quiser converter cada invocação em um estado comum; cancelar mantém a definição e suas referências inalteradas.',
+  ]),
+  const HelpCalloutBlock(
+    'A biblioteca armazena definições versionadas e referências de invocação, não cópias traduzidas de uma máquina. Um bloco mantém o contrato de fitas do projeto, e diagnósticos como referências ausentes, divergências de revisão, diferenças na quantidade de fitas ou dependências recursivas precisam ser resolvidos antes de confiar na execução.',
+  ),
+];
+
+final _mealyEditingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Construa uma máquina Mealy'),
+  HelpOrderedStepsBlock([
+    'Adicione estados ao canvas; depois edite um estado e marque-o como inicial.',
+    'Adicione uma transição e informe um símbolo do alfabeto de entrada.',
+    'Informe cada token de saída em uma linha, ou deixe a saída vazia, e salve a transição.',
+  ]),
+  const HelpCalloutBlock(
+    'Em Mealy, a saída pertence às transições. Estados nunca são finais nem de aceitação, e uma máquina determinística completa precisa de uma transição para cada par de estado e símbolo de entrada.',
+  ),
+];
+
+final _mooreEditingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Construa uma máquina Moore'),
+  HelpOrderedStepsBlock([
+    'Adicione estados ao canvas; depois edite um estado e marque-o como inicial.',
+    'Informe cada token de saída do estado em uma linha, ou deixe a saída vazia.',
+    'Adicione transições com um símbolo de entrada cada; transições Moore não têm campos de saída.',
+  ]),
+  const HelpCalloutBlock(
+    'Em Moore, a saída pertence aos estados. Uma execução emite a saída do estado inicial antes de ler a entrada, e estados nunca são finais nem de aceitação.',
+  ),
+];
+
+final _transducerCanvasBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Prepare a máquina e edite o canvas'),
+  HelpOrderedStepsBlock([
+    'Abra Detalhes da máquina e informe um símbolo de entrada ou saída por linha.',
+    'Selecione Aplicar alfabetos antes de usar esses símbolos nos estados ou nas transições.',
+    'Use as ferramentas do canvas para selecionar, adicionar, mover, conectar ou editar estados e transições; use os controles de visualização para ampliar, ajustar ou reorganizar o grafo.',
+  ]),
+  const HelpCalloutBlock(
+    'Detalhes da máquina informa estruturas inválidas, não determinísticas ou parciais. Resolva os diagnósticos antes de confiar na simulação ou na comparação exata.',
+  ),
+];
+
+final _transducerCanvasEditingGestureBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Posicionar e editar elementos do grafo'),
+  HelpOrderedStepsBlock([
+    'Selecione Adicionar estado e depois escolha um ponto vazio do canvas. A ação da barra apenas ativa ou desativa o modo de posicionamento; cada seleção no canvas vazio cria um estado.',
+    'Selecione Adicionar transição e depois escolha o estado de origem e o estado de destino. Escolha duas vezes o mesmo estado para criar um laço. Preencha o editor de transição Mealy ou Moore e selecione Salvar.',
+    'Selecione Selecionar para arrastar um estado. Toque duas vezes em um estado para editá-lo. Em qualquer ferramenta, você também pode manter pressionado ou usar o botão secundário do ponteiro sobre um estado, rótulo de transição ou curva de transição para abrir seu editor.',
+  ]),
+  const HelpCalloutBlock(
+    'Adicionar estado e Adicionar transição permanecem ativos para repetir a ação. Selecione novamente a ferramenta ativa ou selecione Selecionar para sair desse modo. Deslocamento, zoom por pinça, arraste de estados e gestos de contexto continuam disponíveis enquanto uma ferramenta de posicionamento está ativa.',
+  ),
+];
+
+final _transducerSimulationBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Execute e inspecione um transdutor'),
+  HelpOrderedStepsBlock([
+    'Abra Simulação, informe um token de entrada por linha e defina um máximo de passos não negativo.',
+    'Selecione Executar e leia o resultado da execução e a saída acumulada.',
+    'Selecione os passos do traço para inspecionar a entrada consumida e a saída emitida; use Ver no canvas quando essa ação estiver disponível.',
+  ]),
+  const HelpCalloutBlock(
+    'Uma execução limitada, cancelada, inválida ou incompleta não é um resultado bem-sucedido. Editar ou substituir a máquina remove a reprodução referente à revisão anterior.',
+  ),
+];
+
+final _transducerCompactCanvasPlaybackBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Levar um traço compacto para o canvas'),
+  HelpOrderedStepsBlock([
+    'Em um layout compacto, abra Simulação, informe um token de entrada por linha e selecione Executar. Visualizar no Canvas aparece quando o resultado registra ao menos um passo de traço.',
+    'Selecione Visualizar no Canvas. A folha de simulação fecha, e a barra de reprodução abre no primeiro passo. O canvas destaca o estado de destino e a transição desse passo, enquanto a faixa de entrada marca tokens consumidos, atual e pendentes.',
+    'Use Passo anterior, Reproduzir, Pausar ou Próximo passo para percorrer o mesmo traço mantido. Selecione Fechar para remover a barra de reprodução e seus destaques.',
+  ]),
+  const HelpCalloutBlock(
+    'Visualizar no Canvas fica disponível somente em layouts compactos; layouts amplos mantêm o traço no painel Simulação. Limpar, editar ou substituir a máquina descarta a reprodução obsoleta. Mudar para um layout amplo também fecha a barra de reprodução compacta.',
+  ),
+];
+
+final _transducerBatchBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Execute um lote ou compare saídas'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e exemplos, depois Lote, e informe um vetor JSON de tokens por linha.',
+    'Execute o lote e inspecione o estado e a saída registrados para cada entrada.',
+    'Para comparar máquinas, escolha um exemplo, selecione o modo Exata ou Limitada e revise a entrada testemunha e as saídas diferentes, quando apresentadas.',
+  ]),
+  const HelpCalloutBlock(
+    'A comparação exata exige máquinas compatíveis, completas e determinísticas. A comparação limitada pode encontrar uma diferença, mas a ausência de diferenças dentro do limite escolhido permanece inconclusiva.',
+  ),
+];
+
+final _transducerFilesBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Carregue exemplos e troque arquivos'),
+  HelpOrderedStepsBlock([
+    'Abra Exemplos e revise a descrição e as simulações sugeridas antes de carregar uma máquina.',
+    'Abra Detalhes da máquina, depois Arquivos, para importar ou exportar XML JFLAP ou JSON versionado do Turing Lab.',
+    'Revise as informações de fidelidade antes de substituir a máquina atual ou exporte o canvas como SVG ou PNG quando precisar de uma imagem.',
+  ]),
+  const HelpCalloutBlock(
+    'Carregar um exemplo ou importar um arquivo substitui a máquina atual. Símbolos formais, limites de tokens e rótulos escritos por você são preservados, não traduzidos.',
+  ),
+];
+
+final _unrestrictedGrammarEditingBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Edite e classifique a gramática'),
+  HelpOrderedStepsBlock([
+    'Abra Editar gramática. Informe os conjuntos de terminais e não terminais como vetores JSON de cadeias e escolha um não terminal declarado como símbolo inicial.',
+    'Informe cada lado da produção como vetor JSON. Prefixe não terminais com n: e terminais com t: para manter explícitos os limites dos tokens.',
+    'Adicione ou salve a produção, use Desfazer ou Refazer quando necessário e leia a classificação e os diagnósticos das produções.',
+  ]),
+  const HelpCalloutBlock(
+    'A classificação descreve as produções escritas. Ela não prova a menor classe de gramática capaz de gerar a mesma linguagem.',
+  ),
+];
+
+final _unrestrictedGrammarDerivationBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Explore derivações e dependências'),
+  HelpOrderedStepsBlock([
+    'Abra Derivação limitada. Informe a palavra-alvo como vetor JSON de símbolos terminais e defina o máximo de formas exploradas.',
+    'Busque uma derivação, cancele se necessário e inspecione o resultado e as posições registradas das produções.',
+    'Inicie uma derivação manual para escolher cada substituição ou abra o grafo de dependência de variáveis em Algoritmos e Exemplos.',
+  ]),
+  const HelpCalloutBlock(
+    'Um testemunho de derivação prova que a gramática gera aquela palavra. Atingir um limite é inconclusivo e não prova que a palavra está fora da linguagem.',
+  ),
+];
+
+final _unrestrictedGrammarFilesBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Carregue exemplos e troque gramáticas'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e Exemplos e revise um exemplo antes de carregá-lo no editor.',
+    'Abra Informações, depois Arquivos, para importar ou exportar XML JFLAP ou JSON versionado do Turing Lab.',
+    'Quando a gramática vier de uma conversão de máquina de Turing, inspecione em Informações a proveniência das produções mapeadas.',
+  ]),
+  const HelpCalloutBlock(
+    'Carregar um exemplo ou importar um arquivo substitui a gramática atual. Revise primeiro as informações de fidelidade e mantenha símbolos formais e nomes escritos por você iguais entre os idiomas.',
+  ),
+];
+
+final _tmToUnrestrictedGrammarBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock(
+    'Revise uma construção de MT para gramática irrestrita',
+  ),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e escolha Construção de MT para gramática irrestrita. Aguarde a prévia terminar e leia Premissas da construção e todos os diagnósticos antes de usar a gramática gerada.',
+    'Use uma MT de fita única com estado inicial válido, alfabeto da fita contendo cada símbolo de entrada, símbolo branco que não seja símbolo de entrada e sem blocos de construção incorporados. A construção assume uma fita infinita nas duas direções e aceitação imediata ao entrar em estado final; uma máquina sem estado final produz um aviso de linguagem vazia, enquanto modelos multifitas ou com blocos de construção são bloqueados.',
+    'Filtre as regras geradas por Família de produções. Selecione uma produção para inspecionar sua regra formal, invariante, estado ou transição de origem e operação exata da fita. Execute a verificação amostral para obter evidência em amostras finitas; depois selecione Copiar relatório para preservar o relatório estruturado ou Abrir no editor de gramática irrestrita para substituir a gramática de destino.',
+  ]),
+  const HelpCalloutBlock(
+    'A prévia para no limite padrão de 50.000 produções únicas. Um resultado concluído mantém símbolos formais da fita e da gramática como tokens atômicos e registra a proveniência das produções no relatório estruturado; um modelo incompatível, saída inválida, limite de construção ou mudança da revisão da origem mantém a prévia bloqueada. Amostras finitas coincidentes são evidência, não prova de equivalência de linguagens. Abrir o resultado substitui a gramática irrestrita atual e pode ser desfeito.',
+  ),
+];
+
+final _lSystemDefinitionBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Defina o sistema de reescrita'),
+  HelpOrderedStepsBlock([
+    'Informe o axioma como tokens separados por espaços e escreva uma produção paralela por linha.',
+    'Use X -> Y para uma regra básica ou acrescente contextos à esquerda e à direita com < e > e um peso numérico com @.',
+    'Associe tokens a comandos de tartaruga, defina os valores de iteração e desenho e selecione Aplicar e expandir.',
+  ]),
+  const HelpCalloutBlock(
+    'Cada passo de produção lê a mesma geração de origem. Uma semente aleatória torna repetíveis as escolhas ponderadas, mas expressões paramétricas continuam não suportadas.',
+  ),
+];
+
+final _lSystemGenerationBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Inspecione gerações e a geometria de tartaruga'),
+  HelpOrderedStepsBlock([
+    'Aplique a definição e leia o estado da expansão, os tokens gerados e a descrição localizada da geometria.',
+    'Use o controle deslizante de geração ou a reprodução para inspecionar gerações anteriores.',
+    'Amplie ou redefina a visualização da tartaruga e exporte a geometria atual como SVG ou PNG quando esses controles estiverem ativados.',
+  ]),
+  const HelpCalloutBlock(
+    'Limites de crescimento, memória, tempo decorrido e segmentos podem interromper a expansão ou a renderização. Um resultado limitado está incompleto, e a configuração de movimento reduzido desativa a reprodução automática.',
+  ),
+];
+
+final _lSystemFilesBlocks = <HelpContentBlock>[
+  const HelpHeadingBlock('Carregue exemplos e troque sistemas L'),
+  HelpOrderedStepsBlock([
+    'Abra Algoritmos e Exemplos e leia o resumo, o objetivo, a limitação e a descrição visual de um exemplo antes de selecioná-lo.',
+    'Abra Arquivos para importar ou exportar XML JFLAP ou JSON versionado do Turing Lab.',
+    'Depois de carregar ou importar, aplique a definição e confira os tokens gerados e a visualização de tartaruga antes de exportar uma imagem.',
+  ]),
+  const HelpCalloutBlock(
+    'Carregar um exemplo ou importar um arquivo substitui o documento atual. Revise as informações de fidelidade e não traduza tokens formais nem nomes de comandos.',
+  ),
+];
+
 final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.gettingStarted: HelpNodeCopy(
     title: 'Primeiros passos',
@@ -104,7 +517,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.gettingStartedQuickStart: HelpNodeCopy(
     title: 'Guia rápido',
-    body: 'O guia rápido mostra o menor caminho entre a tela inicial e um '
+    body:
+        'O guia rápido mostra o menor caminho entre a tela inicial e um '
         'modelo formal testado. Use-o ao abrir o Turing Lab pela primeira vez '
         'ou quando quiser relembrar o fluxo. Use as abas de navegação ou chips '
         'de seção para escolher um espaço de trabalho, comece com um documento '
@@ -122,15 +536,17 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.gettingStartedNavigation: HelpNodeCopy(
     title: 'Navegar pelo Turing Lab',
-    body: 'A navegação principal alterna entre os espaços AF, Gramática, AP, '
-        'MT, Regex e Bombeamento. Use-a para mudar o tipo de modelo de linguagem '
-        'que você edita ou estuda. Selecione o destino na tela inicial, na barra '
-        'de navegação ou no controle de seção disponível para o tamanho da '
-        'tela. O Turing Lab abrirá esse espaço com as ferramentas próximas ao '
-        'canvas ou à área de entrada. Os rótulos e as posições se adaptam a '
-        'celular, tablet e desktop; oriente-se pelo rótulo visível, não por uma '
-        'posição fixa. Leia Escolher um espaço de trabalho antes de criar um '
-        'novo modelo.',
+    body:
+        'A navegação principal alterna entre os espaços AF, Gramática, AP, MT, '
+        'Regex, Bombeamento regular, Bombeamento livre de contexto, Mealy, '
+        'Moore, Gramática irrestrita e Sistema L. Use-a para mudar o tipo de '
+        'modelo de linguagem que você edita ou estuda. Selecione o destino na '
+        'tela inicial, na barra de navegação ou no controle de seção disponível '
+        'para o tamanho da tela. O Turing Lab abrirá esse espaço com as '
+        'ferramentas próximas ao canvas ou à área de entrada. Os rótulos e as '
+        'posições se adaptam a celular, tablet e desktop; oriente-se pelo '
+        'rótulo visível, não por uma posição fixa. Leia Escolher um espaço de '
+        'trabalho antes de criar um novo modelo.',
     keywords: [
       'navegação',
       'AF',
@@ -138,30 +554,67 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'AP',
       'MT',
       'Regex',
-      'Bombeamento'
+      'Bombeamento regular',
+      'Bombeamento livre de contexto',
+      'Mealy',
+      'Moore',
+      'Gramática irrestrita',
+      'Sistema L',
     ],
   ),
   HelpTopicIds.gettingStartedChooseWorkspace: HelpNodeCopy(
     title: 'Escolher um espaço de trabalho',
-    body: 'Cada espaço representa um modelo de linguagem formal ou uma '
+    body:
+        'Cada espaço representa um modelo de linguagem formal ou uma '
         'atividade de aprendizagem. Use AF para linguagens regulares e memória '
         'finita, Gramática para produções, AP para memória em pilha, MT para '
-        'computação em fita, Regex para expressões regulares e Bombeamento para '
-        'praticar provas. Selecione o cartão ou rótulo correspondente na tela '
-        'inicial. O editor escolhido abrirá com controles, simulação, algoritmos '
-        'e teoria próprios. Conversões podem levar um resultado a outro espaço, '
-        'mas uma estrutura não suportada não cabe em um modelo menos expressivo. '
-        'Continue na visão geral do editor escolhido.',
+        'computação em fita, Regex para expressões regulares e Bombeamento '
+        'regular ou livre de contexto para praticar provas. Escolha Mealy '
+        'quando a saída pertence às transições, Moore quando a saída pertence '
+        'aos estados, Gramática irrestrita para produções de estrutura de frase '
+        'ou Sistema L para reescrita paralela e gráficos de tartaruga. Selecione '
+        'o cartão ou rótulo correspondente na tela inicial. O editor escolhido '
+        'abrirá com controles, simulação, algoritmos e teoria próprios. '
+        'Conversões podem levar um resultado a outro espaço, mas uma estrutura '
+        'não suportada não cabe em um modelo menos expressivo. Continue na '
+        'visão geral do editor escolhido.',
     keywords: [
       'espaço de trabalho',
       'linguagem formal',
       'autômato',
-      'gramática'
+      'gramática',
+      'Mealy',
+      'Moore',
+      'gramática irrestrita',
+      'sistema L',
+    ],
+  ),
+  HelpTopicIds.gettingStartedSettings: HelpNodeCopy(
+    blocks: _settingsBlocks,
+    title: 'Configurar preferências',
+    body:
+        'Configurações é a rota da barra do app na Tela inicial para as '
+        'preferências de aparência, idioma, canvas e uso geral. Use-a para '
+        'ajustar a interface sem alterar um documento formal. Escolha o tema '
+        'e o idioma do aplicativo, ajuste controles e tamanhos do canvas, '
+        'gerencie salvamento automático e dicas e então salve as escolhas ou '
+        'restaure os padrões. Continue em Navegar pelo Turing Lab para '
+        'encontrar a rota novamente.',
+    keywords: [
+      'configurações',
+      'tema',
+      'idioma',
+      'canvas',
+      'grade',
+      'coordenadas',
+      'salvamento automático',
+      'dicas',
     ],
   ),
   HelpTopicIds.gettingStartedFilesAndExamples: HelpNodeCopy(
     title: 'Arquivos e exemplos',
-    body: 'Arquivos e exemplos permitem começar com material salvo ou incluído '
+    body:
+        'Arquivos e exemplos permitem começar com material salvo ou incluído '
         'no aplicativo. Use um exemplo para aprender um recurso e a importação '
         'ou exportação para continuar seu próprio trabalho. Abra o painel de '
         'exemplos ou uma ação de arquivo e selecione o item solicitado quando '
@@ -173,9 +626,152 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'do espaço para ver os formatos exatos.',
     keywords: ['arquivos', 'exemplos', 'importar', 'exportar', 'seletor'],
   ),
+  HelpTopicIds.gettingStartedSuggestedSimulations: HelpNodeCopy(
+    blocks: _suggestedSimulationBlocks,
+    title: 'Testar uma simulação sugerida',
+    body:
+        'Os cartões de exemplos que aceitam simulação mostram uma entrada '
+        'verificada em Simulação sugerida ou Simulações sugeridas. Abra '
+        'Algoritmos e Exemplos, revise a descrição e os limites do exemplo e '
+        'preserve a entrada exatamente como exibida. Selecione o cartão ou '
+        'Carregar exemplo para carregar o modelo incluído, substituindo o modelo '
+        'formal atual. Depois, informe a sugestão no campo de simulação, teste '
+        'ou derivação do espaço de trabalho e execute-a. Carregar um exemplo não '
+        'preenche o campo nem inicia a execução. O exemplo inalterado deve '
+        'aceitar, derivar ou concluir a sugestão, mas uma execução bem-sucedida '
+        'não prova todas as propriedades nem a equivalência de linguagens. '
+        'Espaços podem marcar limites entre tokens, e mudar o idioma da interface '
+        'não traduz entradas formais. Exemplos de sistema L não mostram '
+        'simulações sugeridas.',
+    keywords: [
+      'Simulação sugerida',
+      'Simulações sugeridas',
+      'Algoritmos e Exemplos',
+      'Carregar exemplo',
+      'entrada verificada',
+    ],
+  ),
+  HelpTopicIds.gettingStartedImportAutomatonFragments: HelpNodeCopy(
+    blocks: _automatonFragmentImportBlocks,
+    title: 'Importar e clonar fragmentos de autômato',
+    body:
+        'Importar autômato copia parte ou todo um autômato compatível para o '
+        'documento atual de AF, AP ou MT. A ação não substitui o documento '
+        'atual. Selecione Importar autômato nas ações de documento do canvas e '
+        'escolha um arquivo que seja decodificado como o mesmo modelo de grafo. '
+        'Em Prévia da importação do autômato, leia Fidelidade da origem e os '
+        'diagnósticos do decodificador. Em Estados a importar, mantenha apenas '
+        'os estados necessários. Uma transição da origem só é clonada quando '
+        'os dois estados das suas pontas estão selecionados. Os valores X e Y '
+        'da Âncora de inserção posicionam os estados clonados, que são '
+        'deslocados novamente quando necessário para evitar sobreposição. Se '
+        'os dois documentos tiverem estado inicial, escolha Manter o estado '
+        'inicial atual ou Usar o estado inicial importado. Em um AP, diferenças '
+        'no modo de aceitação ou no símbolo inicial da pilha bloqueiam Aplicar '
+        'até que você escolha explicitamente a configuração do destino. MTs '
+        'com números de fitas ou símbolos brancos diferentes não podem ser '
+        'combinadas por esta ação. Alterações exatas lista os estados, '
+        'transições, notas, blocos reutilizáveis de MT, adições aos alfabetos e '
+        'efeitos de configuração que serão aplicados. Cada alfabeto de entrada, '
+        'pilha ou fita do destino incorpora todo o conjunto '
+        'correspondente da origem, mesmo quando você seleciona apenas alguns '
+        'estados. Selecione Aplicar para confirmar uma importação estrutural. '
+        'Antes de Aplicar, Cancelar mantém os dois documentos inalterados; a '
+        'aplicação nunca altera o arquivo de origem. Os elementos importados '
+        'recebem novos IDs e ficam desconectados do grafo existente, exceto '
+        'pelas próprias transições selecionadas entre eles. Esse fluxo não '
+        'abre nem substitui um documento, não cria transições conectoras e não '
+        'executa união, interseção ou outra operação algébrica. O resultado '
+        'pode reconhecer uma linguagem diferente. O sucesso da importação não '
+        'estabelece equivalência entre os autômatos de origem, destino ou '
+        'combinado. Símbolos e rótulos formais como ε, q₀, Z₀ e □ são clonados '
+        'como dados do modelo e não são traduzidos com a interface.',
+    keywords: [
+      'Importar autômato',
+      'Prévia da importação do autômato',
+      'Estados a importar',
+      'Âncora de inserção',
+      'Alterações exatas',
+      'clonar fragmento',
+    ],
+  ),
+  HelpTopicIds.gettingStartedManualConversions: HelpNodeCopy(
+    blocks: _manualConversionBlocks,
+    title: 'Praticar conversões manuais',
+    body:
+        'A construção manual permite montar uma conversão ao lado da origem. '
+        'Inicie com Practice FA to Regex, Practice FA to Regular Grammar, '
+        'Practice Regular Grammar to FA ou Practice Regex to FA. O painel '
+        'Source permanece visível enquanto Learner construction apresenta um '
+        'requisito numerado por vez. Construa o estado, a transição, a produção '
+        'ou a expressão solicitada e selecione Check step. O espaço de trabalho '
+        'só avança depois que o requisito passa pela validação implementada. '
+        'Hint mostra orientação e a origem dos itens formais. Reveal step aplica '
+        'os dados esperados, marca a ação como revelada e avança a sessão. Undo '
+        'e Redo percorrem ações aceitas ou reveladas. Restart limpa essas ações '
+        'para a mesma revisão da origem. O progresso fica salvo neste '
+        'dispositivo; por isso, Close sai do espaço de trabalho em tela cheia '
+        'sem descartá-lo. Editar a origem muda sua revisão e invalida a sessão '
+        'aberta ou restaurada. Os controles de etapa ficam indisponíveis '
+        'enquanto ela estiver invalidada. Restart from edited source reinicia '
+        'a mesma sessão na etapa 1 com o documento editado. Branch from edited '
+        'source também começa na etapa 1, mas cria uma sessão cujo vínculo de '
+        'origem aponta para a sessão e o cursor invalidados; as ações aceitas '
+        'não são levadas para a revisão editada. Compare mostra a evidência '
+        'mais recente como Exact equivalence, Structural validation ou Bounded '
+        'evidence. Structural validation verifica a correspondência ou a forma '
+        'solicitada. Bounded evidence cobre apenas os limites informados. '
+        'Nenhum desses dois rótulos prova equivalência geral de linguagens. '
+        'Considere a equivalência estabelecida somente quando Compare informar '
+        'explicitamente Exact equivalence. Construction complete indica que '
+        'todas as etapas exigidas passaram ou foram reveladas. Selecione Open '
+        'result para carregar o artefato construído no editor de destino. Se '
+        'esse editor já contiver um documento, Substituir confirma a troca. '
+        'Cancelar mantém o destino atual e retorna à construção concluída. '
+        'Símbolos como ε, λ, ∅, q₀, Z₀ e □ continuam sendo dados formais do '
+        'modelo e não são traduzidos.',
+    keywords: [
+      'construção manual',
+      'Practice FA to Regex',
+      'Practice Regex to FA',
+      'Check step',
+      'Branch from edited source',
+      'Open result',
+    ],
+  ),
+  HelpTopicIds.gettingStartedDocumentNotes: HelpNodeCopy(
+    blocks: _documentNotesBlocks,
+    title: 'Trabalhar com notas do documento',
+    body:
+        'As notas do documento são anotações sem significado formal armazenadas '
+        'com o documento atual. Abra Notas do documento e selecione Adicionar '
+        'nota. Em Editar nota, preencha Texto da nota. Você pode usar **negrito**, '
+        '_itálico_ ou `código`; links e HTML não são interpretados. Escolha um '
+        'Estilo: Nota, Informação, Aviso, Pergunta ou A fazer. Deixe Anexo como '
+        'Nenhum para criar uma nota livre, ou escolha Estado, Transição, Produção '
+        'ou Célula da tabela e informe o ID do destino. Selecione Salvar '
+        'alterações. Pesquisar notas encontra texto e IDs de destino. Selecione '
+        'uma nota para editá-la ou abra Ações da nota para '
+        'Duplicar ou Excluir. Desfazer alteração na nota e Refazer alteração na '
+        'nota mantêm um histórico separado para as notas. No canvas de autômato, '
+        'arraste, recolha ou redimensione o cartão. As exportações de documentos '
+        'sempre preservam as notas. Ative Incluir notas nas exportações visuais '
+        'para adicioná-las a SVG e PNG. As notas não alteram o modelo formal, a '
+        'simulação, a conversão nem a aceitação. Conteúdo formal como ε, λ, q₀ e '
+        'A → a permanece texto literal da nota e não é traduzido.',
+    keywords: [
+      'Notas do documento',
+      'Adicionar nota',
+      'Pesquisar notas',
+      'Anexo',
+      'ID do destino',
+      'Incluir notas nas exportações visuais',
+    ],
+  ),
   HelpTopicIds.gettingStartedFirstInput: HelpNodeCopy(
     title: 'Testar a primeira entrada',
-    body: 'Uma simulação verifica como o modelo atual processa uma cadeia de '
+    body:
+        'Uma simulação verifica como o modelo atual processa uma cadeia de '
         'entrada. Use-a quando o editor indicar um modelo utilizável e sempre '
         'que quiser testar se uma cadeia pertence à linguagem. Digite a cadeia '
         'em Cadeia de entrada, deixe o campo vazio para ε quando isso for '
@@ -185,6 +781,41 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'impedir a execução; siga a mensagem exibida. Continue no tópico de '
         'simulação do espaço atual.',
     keywords: ['entrada', 'simulação', 'aceita', 'rejeitada', 'epsilon'],
+  ),
+  HelpTopicIds.gettingStartedMultipleInputBatches: HelpNodeCopy(
+    blocks: _multipleInputBatchBlocks,
+    title: 'Executar lotes com várias entradas',
+    body:
+        'Os lotes com várias entradas executam o modelo formal atual sobre uma '
+        'lista e mantêm cada caso e resultado separados. Abra Batch execution '
+        'na área de simulação e adicione um caso por linha. Raw string preserva '
+        'o texto digitado, Unicode symbols lê valores escalares Unicode e '
+        'Explicit tokens usa espaços como limites entre tokens. Use ε para a '
+        'palavra vazia. Import TXT/CSV ou Generate words pode preencher a '
+        'lista. Max length e Max cases limitam as entradas geradas. O painel '
+        'Limits and execution settings controla estratégia, limites de passos, '
+        'configurações e tempo, retenção de rastros e concorrência. Selecione '
+        'Run batch para iniciar. Selecionar Cancel batch ou pressionar Escape '
+        'solicita o cancelamento, '
+        'portanto um resultado cancelado ou limitado não é aceitação nem '
+        'rejeição. Cada resultado registra seu desfecho e as métricas '
+        'disponíveis. Compare model verifica somente os casos finitos do '
+        'relatório atual. Não encontrar diferença não prova equivalência geral. '
+        'Export JSON e Export CSV preservam o relatório. Alterar uma entrada ou '
+        'configuração de execução invalida os resultados concluídos. Cadeias e '
+        'tokens formais são dados do modelo; mudar o idioma da interface não os '
+        'traduz nem reescreve. Continue em Testar a primeira entrada, Limites '
+        'de simulação ou Lote, comparação e exemplos.',
+    keywords: [
+      'Batch execution',
+      'várias entradas',
+      'Run batch',
+      'Cancel batch',
+      'Tokenization',
+      'Compare model',
+      'Export JSON',
+      'Export CSV',
+    ],
   ),
   HelpTopicIds.gettingStartedFindHelp: HelpNodeCopy(
     title: 'Encontrar ajuda e atalhos',
@@ -211,7 +842,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorOverview: HelpNodeCopy(
     title: 'Visão geral do editor de autômatos finitos',
-    body: 'O espaço de autômatos finitos reúne o canvas de estados, os painéis '
+    body:
+        'O espaço de autômatos finitos reúne o canvas de estados, os painéis '
         'de simulação e algoritmos, o estado de validação e as ações de arquivo. '
         'Use-o para construir ou examinar um AFD, AFN ou AFN-ε. Comece com '
         'Adicionar estado, conecte os estados com Adicionar transição, marque '
@@ -228,7 +860,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorSelection: HelpNodeCopy(
     title: 'Selecionar e mover itens',
-    body: 'O modo Selecionar permite examinar, mover, editar ou excluir itens '
+    body:
+        'O modo Selecionar permite examinar, mover, editar ou excluir itens '
         'existentes no canvas. Use-o depois de criar estados ou quando outra '
         'ferramenta de edição estiver ativa. Escolha Selecionar e selecione um '
         'estado ou transição; arraste um estado com o ponteiro ou um dedo e '
@@ -240,7 +873,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorStates: HelpNodeCopy(
     title: 'Adicionar e editar estados',
-    body: 'Estados representam as posições da memória finita de um autômato. '
+    body:
+        'Estados representam as posições da memória finita de um autômato. '
         'Use-os para indicar onde o processamento começa, quais situações podem '
         'ocorrer e onde a entrada é aceita. Escolha Adicionar estado e '
         'posicione-o; depois, selecione-o para editar Rótulo do estado, Estado '
@@ -253,29 +887,31 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorTransitions: HelpNodeCopy(
     title: 'Adicionar e editar transições',
-    body: 'Transições descrevem qual estado sucede o atual para um símbolo de '
+    body:
+        'Transições descrevem qual estado sucede o atual para um símbolo de '
         'entrada. Use-as para definir o comportamento do autômato para cada '
         'símbolo relevante. Escolha Adicionar transição, selecione origem e '
-        'destino e informe um símbolo ou a opção λ; selecione uma aresta para '
+        'destino e informe um símbolo ou a opção ε; selecione uma aresta para '
         'editá-la ou excluí-la. O canvas desenha uma aresta direcionada com '
         'rótulo e recalcula alfabeto e determinismo. Um AFD não aceita '
-        'transições λ nem dois destinos para o mesmo estado e símbolo, enquanto '
+        'transições ε nem dois destinos para o mesmo estado e símbolo, enquanto '
         'um AFN aceita. Continue em Determinismo e validação.',
     keywords: [
       'transição',
       'Adicionar transição',
       'símbolo',
       'lambda',
-      'aresta'
+      'aresta',
     ],
   ),
   HelpTopicIds.fsaEditorDeterminism: HelpNodeCopy(
     title: 'Determinismo e validação',
-    body: 'O indicador de determinismo e o estado de validação resumem se o '
+    body:
+        'O indicador de determinismo e o estado de validação resumem se o '
         'autômato atual cumpre regras estruturais importantes. Consulte-os '
         'antes da simulação e de algoritmos que exigem um AFD. Examine o texto '
         'de estado e abra os detalhes de determinismo para localizar estados '
-        'inicial ou de aceitação ausentes, transições λ ou transições '
+        'inicial ou de aceitação ausentes, transições ε ou transições '
         'concorrentes. Os indicadores mudam durante a edição e distinguem AFD '
         'de AFN. O indicador apenas diagnostica; alguns algoritmos continuam '
         'indisponíveis ou exibem erro até a correção do modelo. Continue em '
@@ -284,7 +920,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorHistoryAndClear: HelpNodeCopy(
     title: 'Desfazer, refazer e limpar',
-    body: 'Os controles de histórico revertem ou restauram edições, enquanto '
+    body:
+        'Os controles de histórico revertem ou restauram edições, enquanto '
         'Limpar canvas remove o autômato atual. Use Desfazer após uma edição '
         'indesejada, Refazer se recuar demais e Limpar canvas somente para '
         'recomeçar. Selecione Desfazer ou pressione Ctrl+Z; nas plataformas '
@@ -303,7 +940,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorViewportZoom: HelpNodeCopy(
     title: 'Zoom e deslocamento',
-    body: 'Zoom e deslocamento mudam a visualização sem alterar o autômato. '
+    body:
+        'Zoom e deslocamento mudam a visualização sem alterar o autômato. '
         'Use-os para examinar transições densas ou percorrer um canvas maior. '
         'Selecione Aumentar zoom ou Diminuir zoom, use o gesto do ponteiro '
         'quando disponível, faça pinça com dois dedos em telas sensíveis ao '
@@ -316,7 +954,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorViewportFitAndReset: HelpNodeCopy(
     title: 'Ajustar ao conteúdo e redefinir visualização',
-    body: 'Ajustar ao conteúdo enquadra todo o autômato, enquanto Redefinir '
+    body:
+        'Ajustar ao conteúdo enquadra todo o autômato, enquanto Redefinir '
         'visualização restaura zoom e posição padrão. Use Ajustar ao conteúdo '
         'quando houver estados fora da tela e Redefinir visualização para '
         'voltar a uma vista neutra. Selecione a ação correspondente nos '
@@ -328,7 +967,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorViewportAutoLayout: HelpNodeCopy(
     title: 'Layout automático',
-    body: 'Layout automático reorganiza os estados atuais em um círculo. Use-o '
+    body:
+        'Layout automático reorganiza os estados atuais em um círculo. Use-o '
         'quando posições manuais se sobrepuserem ou dificultarem a leitura das '
         'transições. Abra Algoritmos e selecione Layout automático. As '
         'coordenadas dos estados mudam e as transições são redesenhadas para o '
@@ -344,7 +984,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorSimulationInputAndRun: HelpNodeCopy(
     blocks: _fsaSimulationBlocks,
     title: 'Informar entrada e executar a simulação',
-    body: 'A entrada da simulação é a cadeia que o autômato tentará consumir. '
+    body:
+        'A entrada da simulação é a cadeia que o autômato tentará consumir. '
         'Use-a para verificar se uma cadeia específica pertence à linguagem '
         'modelada. Digite o texto em Cadeia de entrada, deixe-o vazio para ε, '
         'ative Modo passo a passo se quiser um traço e selecione Simular; '
@@ -358,13 +999,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Cadeia de entrada',
       'Simular',
       'Executar simulação',
-      'cancelar'
+      'cancelar',
     ],
   ),
   HelpTopicIds.fsaEditorSimulationResultsAndPlayback: HelpNodeCopy(
     blocks: _fsaSimulationBlocks,
     title: 'Ler resultados e reproduzir passos',
-    body: 'Os resultados informam se a entrada foi Aceita ou Rejeitada e podem '
+    body:
+        'Os resultados informam se a entrada foi Aceita ou Rejeitada e podem '
         'mostrar o caminho percorrido. Use o traço para estudar a execução ou '
         'investigar um resultado inesperado. Ative Modo passo a passo antes de '
         'simular e depois use Passo anterior, Próximo passo, Reproduzir, Pausar, '
@@ -379,7 +1021,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Rejeitada',
       'Visualizar no Canvas',
       'reprodução',
-      'traço'
+      'traço',
     ],
   ),
   'fsa.editor.algorithms': HelpNodeCopy(
@@ -389,11 +1031,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsOverview: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Visão geral dos algoritmos de autômatos finitos',
-    body: 'O painel Algoritmos converte, combina, simplifica e analisa '
+    body:
+        'O painel Algoritmos converte, combina, simplifica e analisa '
         'autômatos finitos. Use-o após construir ou carregar um autômato quando '
         'precisar de uma forma equivalente ou linguagem derivada. Abra '
         'Algoritmos e selecione Expressão regular para AFN, AFN para AFD, '
-        'Remover transições λ, Minimizar AFD, Completar AFD, Complemento do AFD, '
+        'Remover transições ε, Minimizar AFD, Completar AFD, Complemento do AFD, '
         'União de AFDs, Interseção de AFDs, Diferença de AFDs, Fecho por '
         'prefixos, Fecho por sufixos, AF para expressão regular, AF para '
         'gramática ou Comparar equivalência. O painel mostra progresso, estado '
@@ -406,20 +1049,22 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsRegexToNfa: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Expressão regular para AFN',
-    body: 'Expressão regular para AFN constrói um autômato não determinístico '
+    body:
+        'Expressão regular para AFN constrói um autômato não determinístico '
         'para uma expressão regular. Use essa conversão quando for mais fácil '
         'escrever a expressão do que desenhar o grafo equivalente. Em '
         'Algoritmos, digite um valor válido em Expressão regular e ative a seta '
         'ao lado de Expressão regular para AFN. O AFN gerado aparece no canvas '
         'com estados e transições para a mesma linguagem. Sintaxe inválida ou '
         'entrada vazia impede a conversão, e o resultado pode conter transições '
-        'λ. Continue em AFN para AFD ou no tópico teórico AFN.',
+        'ε. Continue em AFN para AFD ou no tópico teórico AFN.',
     keywords: ['expressão regular para AFN', 'regex', 'conversão', 'lambda'],
   ),
   HelpTopicIds.fsaEditorAlgorithmsNfaToDfa: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'AFN para AFD',
-    body: 'AFN para AFD aplica a construção de subconjuntos para criar um '
+    body:
+        'AFN para AFD aplica a construção de subconjuntos para criar um '
         'autômato determinístico da mesma linguagem. Use-a quando uma simulação '
         'ou operação exigir AFD. Construa ou carregue um AFN, abra Algoritmos e '
         'selecione AFN para AFD. O resultado representa conjuntos de estados do '
@@ -431,12 +1076,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorAlgorithmsRemoveLambda: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
-    title: 'Remover transições λ',
-    body: 'Remover transições λ cria um autômato equivalente sem movimentos '
+    title: 'Remover transições ε',
+    body:
+        'Remover transições ε cria um autômato equivalente sem movimentos '
         'epsilon. Use o comando antes de operações que exigem uma transição '
         'consumindo símbolo em cada passo. Abra Algoritmos e selecione Remover '
-        'transições λ para o autômato atual. O resultado propaga alcance e '
-        'aceitação pelos fechos epsilon e elimina as arestas λ. O autômato '
+        'transições ε para o autômato atual. O resultado propaga alcance e '
+        'aceitação pelos fechos epsilon e elimina as arestas ε. O autômato '
         'precisa de uma estrutura inicial válida, e o grafo transformado pode '
         'ter mais transições com símbolos. Continue em Fecho epsilon ou AFN '
         'para AFD.',
@@ -445,11 +1091,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsMinimizeDfa: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Minimizar AFD',
-    body: 'Minimizar AFD reúne estados indistinguíveis de um autômato '
+    body:
+        'Minimizar AFD reúne estados indistinguíveis de um autômato '
         'determinístico. Use-o para obter um AFD menor que reconhece a mesma '
         'linguagem. Torne o autômato determinístico, abra Algoritmos e selecione '
         'Minimizar AFD. O resultado remove distinções inalcançáveis e combina '
-        'classes de estados equivalentes. Transições λ, não determinismo ou '
+        'classes de estados equivalentes. Transições ε, não determinismo ou '
         'estrutura inicial inválida impedem a minimização, e os rótulos dos '
         'estados podem mudar. Continue em Equivalência para comparar as '
         'linguagens.',
@@ -458,37 +1105,40 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsCompleteDfa: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Completar AFD',
-    body: 'Completar AFD adiciona as transições ausentes para cada estado e '
+    body:
+        'Completar AFD adiciona as transições ausentes para cada estado e '
         'símbolo do alfabeto. Use-o quando precisar de uma função de transição '
         'total ou quiser examinar a forma usada no complemento. Abra Algoritmos '
         'e selecione Completar AFD. O resultado inclui um estado armadilha e '
         'direciona para ele os casos antes ausentes. A entrada deve ser '
-        'determinística e não ter transições λ; um AFD já completo pode mudar '
+        'determinística e não ter transições ε; um AFD já completo pode mudar '
         'pouco ou nada. Continue em Complemento do AFD.',
     keywords: [
       'Completar AFD',
       'estado armadilha',
       'transição total',
-      'alfabeto'
+      'alfabeto',
     ],
   ),
   HelpTopicIds.fsaEditorAlgorithmsComplementDfa: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Complemento do AFD',
-    body: 'Complemento do AFD constrói um autômato que aceita exatamente as '
+    body:
+        'Complemento do AFD constrói um autômato que aceita exatamente as '
         'cadeias rejeitadas pelo AFD original sobre seu alfabeto. Use-o para '
         'negar uma linguagem regular. Abra Algoritmos e selecione Complemento '
         'do AFD; o comando completa internamente as transições ausentes antes '
         'de mudar a aceitação. O resultado troca estados de aceitação e não '
         'aceitação sem deixar casos de entrada indefinidos. A origem deve ser '
-        'determinística e não ter transições λ, mas não precisa ser completada '
+        'determinística e não ter transições ε, mas não precisa ser completada '
         'manualmente. Continue em Completar AFD ou Equivalência.',
     keywords: ['complemento do AFD', 'negação', 'aceitação', 'AFD completo'],
   ),
   HelpTopicIds.fsaEditorAlgorithmsUnion: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'União de AFDs',
-    body: 'União de AFDs aceita cadeias reconhecidas por qualquer um de dois '
+    body:
+        'União de AFDs aceita cadeias reconhecidas por qualquer um de dois '
         'autômatos. Use-a para combinar duas linguagens regulares com OU lógico. '
         'Abra Algoritmos, selecione União de AFDs e escolha o segundo AFD no '
         'seletor de arquivos da plataforma. No produto, um par será de '
@@ -501,7 +1151,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'união',
       'OU',
       'seletor de arquivos',
-      'produto'
+      'produto',
     ],
   ),
   HelpTopicIds.fsaEditorAlgorithmsIntersection: HelpNodeCopy(
@@ -534,7 +1184,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsPrefixClosure: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Fecho por prefixos',
-    body: 'Fecho por prefixos cria um autômato que aceita todo prefixo de uma '
+    body:
+        'Fecho por prefixos cria um autômato que aceita todo prefixo de uma '
         'cadeia da linguagem do AFD atual. Use-o quando qualquer começo válido '
         'de uma palavra aceita também deva ser aceito. Abra Algoritmos e '
         'selecione Fecho por prefixos. O resultado altera a aceitação para que '
@@ -546,13 +1197,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Fecho por prefixos',
       'prefixo',
       'linguagem regular',
-      'aceitação'
+      'aceitação',
     ],
   ),
   HelpTopicIds.fsaEditorAlgorithmsSuffixClosure: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Fecho por sufixos',
-    body: 'Fecho por sufixos cria um autômato que aceita todo sufixo de uma '
+    body:
+        'Fecho por sufixos cria um autômato que aceita todo sufixo de uma '
         'cadeia da linguagem do AFD atual. Use-o quando os finais válidos das '
         'palavras aceitas devam formar a nova linguagem. Abra Algoritmos e '
         'selecione Fecho por sufixos. O resultado introduz possibilidades '
@@ -565,7 +1217,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsFaToRegex: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'AF para expressão regular',
-    body: 'AF para expressão regular deriva uma expressão para a linguagem do '
+    body:
+        'AF para expressão regular deriva uma expressão para a linguagem do '
         'autômato finito atual. Use-o quando precisar de uma representação '
         'textual equivalente ao grafo de estados. Abra Algoritmos e selecione '
         'AF para expressão regular. O painel retorna uma expressão obtida pela '
@@ -578,7 +1231,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.fsaEditorAlgorithmsFsaToGrammar: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'AF para gramática',
-    body: 'AF para gramática converte o autômato em uma gramática linear à '
+    body:
+        'AF para gramática converte o autômato em uma gramática linear à '
         'direita equivalente. Use-o para estudar a relação entre gramáticas '
         'regulares e autômatos finitos. Abra Algoritmos e selecione AF para '
         'gramática. O resultado transforma estados em variáveis, transições '
@@ -590,13 +1244,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'AF para gramática',
       'gramática regular',
       'produção',
-      'conversão'
+      'conversão',
     ],
   ),
   HelpTopicIds.fsaEditorAlgorithmsEquivalence: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Comparar equivalência',
-    body: 'Comparar equivalência verifica se dois autômatos finitos aceitam a '
+    body:
+        'Comparar equivalência verifica se dois autômatos finitos aceitam a '
         'mesma linguagem. Use-o para validar uma conversão, simplificação ou '
         'modelo construído separadamente. Abra Algoritmos, selecione Comparar '
         'equivalência e escolha o outro autômato no seletor de arquivos da '
@@ -608,10 +1263,27 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Equivalência.',
     keywords: ['Comparar equivalência', 'mesma linguagem', 'contraexemplo'],
   ),
+  HelpTopicIds.fsaEditorAlgorithmsComparisonResults: HelpNodeCopy(
+    blocks: _languageComparisonResultsBlocks,
+    title: 'Ler resultados da comparação de linguagens',
+    body:
+        'O resultado de Comparação de linguagens separa um veredito concluído '
+        'de uma análise inconclusiva ou malsucedida. Ele também registra os '
+        'autômatos exatos usados, uma cadeia distintiva quando as linguagens '
+        'diferem e visualizações opcionais do produto e dos passos do algoritmo.',
+    keywords: [
+      'Comparação de linguagens',
+      'Cadeia distintiva encontrada',
+      'Autômato produto',
+      'Passos do algoritmo',
+      'inconclusivo',
+    ],
+  ),
   HelpTopicIds.fsaEditorAlgorithmsStepMode: HelpNodeCopy(
     blocks: _fsaAlgorithmBlocks,
     title: 'Modo passo a passo',
-    body: 'Modo passo a passo registra etapas intermediárias dos algoritmos '
+    body:
+        'Modo passo a passo registra etapas intermediárias dos algoritmos '
         'compatíveis. Use-o para aprender uma transformação ou conferir como o '
         'resultado foi produzido. Ative Modo passo a passo antes de selecionar '
         'o algoritmo e use Passo anterior, Próximo passo, Reproduzir, Pausar, '
@@ -623,10 +1295,11 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaEditorFilesAndExamples: HelpNodeCopy(
     title: 'Arquivos e exemplos de AF',
-    body: 'As ações de arquivo importam, salvam ou renderizam autômatos, e os '
+    body:
+        'As ações de arquivo importam, salvam ou renderizam autômatos, e os '
         'exemplos incluídos oferecem modelos prontos. Abra Algoritmos e '
         'selecione AFD - Termina com A, AFD - Binário divisível por 3, AFD - '
-        'Paridade AB, AFD - Contém AB ou AFNλ - A ou AB. O exemplo selecionado '
+        'Paridade AB, AFD - Contém AB ou AFNε - A ou AB. O exemplo selecionado '
         'substitui o AF atual e fica acessível mesmo com o canvas vazio. Use '
         'JFLAP ou JSON para continuar a edição e SVG ou PNG para compartilhar '
         'uma imagem. No '
@@ -645,7 +1318,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'PNG',
       'exemplos',
       'importar',
-      'exportar'
+      'exportar',
     ],
   ),
   'fsa.theory': HelpNodeCopy(
@@ -654,11 +1327,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaTheoryDfa: HelpNodeCopy(
     title: 'Autômatos finitos determinísticos (AFD)',
-    body: 'Um AFD é um autômato finito com exatamente um próximo estado para '
+    body:
+        'Um AFD é um autômato finito com exatamente um próximo estado para '
         'cada estado e símbolo de entrada. Use esse modelo em linguagens '
         'regulares cujo próximo passo não seja ambíguo. No editor de AF, crie '
         'um estado inicial, marque estados de aceitação e defina no máximo uma '
-        'transição por símbolo em cada estado, sem transições λ. Uma execução '
+        'transição por símbolo em cada estado, sem transições ε. Uma execução '
         'segue um caminho e aceita somente se terminar em estado de aceitação '
         'após consumir toda a entrada. Transições ausentes deixam o AFD '
         'incompleto, e escolhas duplicadas para um símbolo o tornam não '
@@ -667,7 +1341,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'AFD',
       'determinístico',
       'linguagem regular',
-      'função de transição'
+      'função de transição',
     ],
   ),
   HelpTopicIds.fsaTheoryNfa: HelpNodeCopy(
@@ -676,7 +1350,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Um AFN pode ter vários próximos estados para um símbolo e movimentos '
         'epsilon. Use-o quando ramificações ou uma construção compacta '
         'facilitarem a representação da linguagem regular. No editor, crie '
-        'transições concorrentes ou transições λ e simule uma entrada pelos '
+        'transições concorrentes ou transições ε e simule uma entrada pelos '
         'caminhos disponíveis. O AFN aceita quando pelo menos um caminho consome '
         'toda a entrada e chega a um estado de aceitação. Ramificações podem '
         'aumentar os traços e a busca, mas não dão ao AFN mais poder de '
@@ -685,7 +1359,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaTheoryStates: HelpNodeCopy(
     title: 'Estados',
-    body: 'Um estado registra a quantidade finita de histórico necessária em '
+    body:
+        'Um estado registra a quantidade finita de histórico necessária em '
         'um ponto da execução. Use estados distintos para situações que exigem '
         'comportamentos futuros diferentes. Adicione e rotule estados no '
         'canvas, escolha um estado inicial e marque todas as condições de '
@@ -697,10 +1372,11 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaTheoryTransitions: HelpNodeCopy(
     title: 'Transições',
-    body: 'Uma transição é uma regra direcionada entre estados, normalmente '
+    body:
+        'Uma transição é uma regra direcionada entre estados, normalmente '
         'rotulada pela entrada que consome. Use transições para definir cada '
         'próximo passo permitido. Conecte origem e destino e atribua um símbolo, '
-        'ou use λ para um movimento epsilon em AFN. A simulação percorre '
+        'ou use ε para um movimento epsilon em AFN. A simulação percorre '
         'arestas correspondentes e muda o estado ativo. Uma transição com '
         'símbolo não corresponde a outra entrada, e correspondências '
         'concorrentes introduzem não determinismo. Continue em Alfabeto e '
@@ -709,44 +1385,48 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.fsaTheoryAlphabetAndAcceptance: HelpNodeCopy(
     title: 'Alfabeto e aceitação',
-    body: 'O alfabeto é o conjunto de símbolos das transições que consomem '
+    body:
+        'O alfabeto é o conjunto de símbolos das transições que consomem '
         'entrada, e aceitação define a pertinência à linguagem. Use ambos para '
         'especificar quais entradas fazem sentido e quais têm sucesso. Rotule '
         'transições com símbolos, comece no estado inicial, consuma toda a '
         'cadeia e verifique se algum caminho termina em estado de aceitação. '
         'Aceita significa que existe ao menos um caminho completo válido; '
-        'Rejeitada significa que não existe. λ não pertence ao alfabeto, e '
+        'Rejeitada significa que não existe. ε não pertence ao alfabeto, e '
         'parar cedo em estado de aceitação não aceita uma entrada ainda não '
         'consumida. Continue em AFD, AFN ou resultados da simulação.',
     keywords: ['alfabeto', 'aceitação', 'Aceita', 'Rejeitada', 'linguagem'],
   ),
   HelpTopicIds.fsaTheoryEpsilon: HelpNodeCopy(
-    title: 'Epsilon e transições λ',
-    body: 'Epsilon, representado por ε ou λ, é a cadeia vazia, e uma transição '
-        'λ muda o estado sem consumir entrada. Use movimentos epsilon em AFNs '
+    title: 'Epsilon e transições ε',
+    body:
+        'Epsilon, representado por ε, é a cadeia vazia, e uma transição '
+        'ε muda o estado sem consumir entrada. Use movimentos epsilon em AFNs '
         'quando a construção exigir uma ramificação opcional ou espontânea. '
-        'Escolha a opção λ ao editar a transição e considere essas arestas antes '
+        'Escolha a opção ε ao editar a transição e considere essas arestas antes '
         'ou entre movimentos com símbolos. Todos os estados alcançáveis por '
         'esses movimentos tornam-se estados atuais possíveis. Um AFD não pode '
-        'ter transições λ, e ciclos epsilon não devem ser tratados como entrada '
-        'consumida. Continue em Fecho epsilon ou Remover transições λ.',
+        'ter transições ε, e ciclos epsilon não devem ser tratados como entrada '
+        'consumida. Continue em Fecho epsilon ou Remover transições ε.',
     keywords: ['epsilon', 'lambda', 'cadeia vazia', 'transição lambda'],
   ),
   HelpTopicIds.fsaTheoryEpsilonClosure: HelpNodeCopy(
     title: 'Fecho epsilon',
-    body: 'O fecho epsilon de um estado ou conjunto contém todos os estados '
-        'alcançáveis apenas por transições λ, inclusive os estados iniciais do '
-        'cálculo. Use-o para compreender simulação de AFN, remoção de lambda e '
+    body:
+        'O fecho epsilon de um estado ou conjunto contém todos os estados '
+        'alcançáveis apenas por transições ε, inclusive os estados iniciais do '
+        'cálculo. Use-o para compreender simulação de AFN, remoção de epsilon e '
         'construção de subconjuntos. Comece com o conjunto atual e percorra '
-        'repetidamente todas as arestas λ até não surgir estado novo. O conjunto '
+        'repetidamente todas as arestas ε até não surgir estado novo. O conjunto '
         'completo participa antes do consumo do próximo símbolo. Esquecer o '
-        'estado inicial ou parar após uma única aresta λ produz um fecho '
-        'incorreto. Continue em Remover transições λ ou AFN para AFD.',
+        'estado inicial ou parar após uma única aresta ε produz um fecho '
+        'incorreto. Continue em Remover transições ε ou AFN para AFD.',
     keywords: ['fecho epsilon', 'fecho lambda', 'alcançável', 'AFN'],
   ),
   HelpTopicIds.fsaTheoryEquivalence: HelpNodeCopy(
     title: 'Equivalência de linguagens',
-    body: 'Dois autômatos finitos são equivalentes quando aceitam exatamente o '
+    body:
+        'Dois autômatos finitos são equivalentes quando aceitam exatamente o '
         'mesmo conjunto de cadeias. Use equivalência para validar conversões, '
         'minimização ou dois projetos diferentes. Compare os comportamentos '
         'com Comparar equivalência ou por uma construção produto que procure '
@@ -759,12 +1439,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'equivalência',
       'mesma linguagem',
       'contraexemplo',
-      'comparação'
+      'comparação',
     ],
   ),
   HelpTopicIds.fsaTheoryClosureOperations: HelpNodeCopy(
     title: 'Operações de fecho',
-    body: 'Linguagens regulares permanecem regulares sob união, interseção, '
+    body:
+        'Linguagens regulares permanecem regulares sob união, interseção, '
         'diferença, complemento, fecho por prefixos e fecho por sufixos. Use '
         'esse fato para construir um autômato de uma linguagem derivada de '
         'outras linguagens regulares. Escolha o comando correspondente em '
@@ -774,7 +1455,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'determinísticas válidas. O complemento matemático pressupõe uma função '
         'de transição total, mas o comando atual Complemento do AFD completa '
         'internamente as transições ausentes e exige somente uma entrada '
-        'determinística válida, sem transições λ. Continue no tópico da '
+        'determinística válida, sem transições ε. Continue no tópico da '
         'operação específica ou em Equivalência.',
     keywords: ['fecho', 'união', 'interseção', 'diferença', 'complemento'],
   ),
@@ -788,7 +1469,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorOverview: HelpNodeCopy(
     title: 'Visão geral do editor de gramáticas',
-    body: 'O espaço Gramática reúne o editor de produções, o Analisador de '
+    body:
+        'O espaço Gramática reúne o editor de produções, o Analisador de '
         'gramática e a Análise da gramática. Use-o para definir uma gramática, '
         'testar uma cadeia, transformar regras ou converter o modelo. Informe '
         'Nome da gramática e Símbolo inicial, adicione regras pelos campos Lado '
@@ -805,7 +1487,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorProductionSymbols: HelpNodeCopy(
     title: 'Símbolos e símbolo inicial',
-    body: 'Os símbolos da gramática são classificados como não terminais ou '
+    body:
+        'Os símbolos da gramática são classificados como não terminais ou '
         'terminais, e Símbolo inicial indica onde começam as derivações. '
         'Defina-os antes de criar regras que o analisador e os algoritmos devam '
         'interpretar. Informe Nome da gramática, ajuste Símbolo inicial e use '
@@ -819,7 +1502,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorProductionRowsAndAlternatives: HelpNodeCopy(
     title: 'Linhas de produção e alternativas',
-    body: 'Cada linha de produção armazena um lado esquerdo e uma alternativa '
+    body:
+        'Cada linha de produção armazena um lado esquerdo e uma alternativa '
         'do lado direito. Use várias linhas para alternativas como S → aS e '
         'S → b. Preencha Lado esquerdo (variável) e Lado direito (produção), '
         'selecione Adicionar e use o menu da linha para Editar ou Excluir; '
@@ -830,16 +1514,17 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
     keywords: ['Adicionar', 'Editar', 'Excluir', 'Atualizar', 'alternativa'],
   ),
   HelpTopicIds.grammarEditorProductionLambda: HelpNodeCopy(
-    title: 'Produções vazias com λ e ε',
-    body: 'Uma produção λ ou ε deriva a cadeia vazia. Use-a quando um não '
+    title: 'Produções vazias com ε',
+    body:
+        'Uma produção ε deriva a cadeia vazia. Use-a quando um não '
         'terminal puder desaparecer ou quando a gramática precisar aceitar a '
-        'entrada vazia. Em Lado direito (produção), selecione Inserir λ ou '
-        'Inserir ε, ou digite λ, ε ou lambda, e adicione a regra. O editor '
+        'entrada vazia. Em Lado direito (produção), selecione Inserir ε ou '
+        'digite ε e adicione a regra. O editor '
         'armazena o lado direito vazio e o exibe como ε. O marcador vazio deve '
         'ser o único símbolo do lado direito; misturá-lo com outro símbolo ou '
         'repeti-lo gera uma mensagem de validação. Continue em Validação de '
         'produções.',
-    keywords: ['lambda', 'epsilon', 'Inserir λ', 'Inserir ε', 'cadeia vazia'],
+    keywords: ['lambda', 'epsilon', 'Inserir ε', 'cadeia vazia'],
   ),
   HelpTopicIds.grammarEditorProductionValidation: HelpNodeCopy(
     title: 'Validação e limpeza de produções',
@@ -847,7 +1532,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'A validação impede que linhas malformadas entrem na gramática. Use-a '
         'quando Adicionar ou Atualizar não funcionar ou uma análise apontar '
         'erros. Preencha os dois lados, coloque exatamente um símbolo à '
-        'esquerda e ao menos um símbolo comum ou um único λ/ε à direita; use '
+        'esquerda e ao menos um símbolo comum ou um único ε à direita; use '
         'Limpar para remover todas as produções após confirmar. Mensagens junto '
         'aos campos indicam o lado inválido, e a confirmação de Limpar oferece '
         'Desfazer. O editor valida a forma da linha, não propriedades da '
@@ -862,7 +1547,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorParserWorkflow: HelpNodeCopy(
     blocks: _grammarParserBlocks,
     title: 'Analisar uma cadeia',
-    body: 'O Analisador de gramática verifica se a gramática atual deriva uma '
+    body:
+        'O Analisador de gramática verifica se a gramática atual deriva uma '
         'Cadeia de teste. Use-o depois de criar ao menos uma produção e um '
         'Símbolo inicial válido. Abra Analisar, escolha um Algoritmo de análise '
         'disponível, informe somente símbolos do alfabeto terminal inferido e '
@@ -873,10 +1559,35 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'mensagens; continue em Automatic (Earley) ou CYK.',
     keywords: ['Analisador', 'Cadeia de teste', 'Analisar cadeia', 'Aceita'],
   ),
+  HelpTopicIds.grammarEditorParserUserControlledDerivation: HelpNodeCopy(
+    blocks: _userControlledDerivationBlocks,
+    title: 'Derivação controlada pelo usuário',
+    body:
+        'Iniciar derivação controlada abre uma sessão manual para a gramática '
+        'atual e a Cadeia de teste. Antes de aplicar um passo, escolha Mais à '
+        'esquerda, Mais à direita ou Qualquer ocorrência; o modo não pode ser '
+        'alterado depois do primeiro passo sem reiniciar. Selecione uma '
+        'produção e sua Posição exata, examine Visualização do passo e '
+        'selecione Aplicar este passo. O ambiente registra a forma sentencial '
+        'e o histórico, oferece Desfazer passo, Refazer passo, Ramificar aqui, '
+        'Reiniciar, busca de dica limitada e Copiar derivação estruturada, '
+        'além da árvore de derivação atual quando disponível. Um beco sem '
+        'saída local ou uma busca de dica que atinge um limite é inconclusivo. '
+        'Alterar a gramática ou o alvo invalida a sessão e exige Iniciar nova '
+        'sessão.',
+    keywords: [
+      'derivação controlada',
+      'Mais à esquerda',
+      'Mais à direita',
+      'Qualquer ocorrência',
+      'dica limitada',
+    ],
+  ),
   HelpTopicIds.grammarEditorParserAutomaticEarley: HelpNodeCopy(
     blocks: _grammarParserBlocks,
     title: 'Análise automática com Earley',
-    body: 'Automatic (Earley) é a opção disponível de reconhecimento geral de '
+    body:
+        'Automatic (Earley) é a opção disponível de reconhecimento geral de '
         'GLC. Use-a quando a gramática não se adequar claramente a um método '
         'especializado ou quando a aceitação robusta importar mais que um '
         'traço CYK detalhado. Selecione Automatic (Earley), informe a cadeia e '
@@ -889,23 +1600,33 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorParserBruteForce: HelpNodeCopy(
     blocks: _grammarParserBlocks,
-    title: 'Análise por força bruta',
+    title: 'Análise limitada por força bruta',
     body:
-        'Brute force procura recursivamente uma derivação entre as produções. '
-        'Use-a em exemplos didáticos pequenos, nos quais uma derivação simples '
-        'seja mais útil que ampla cobertura de formas gramaticais. Selecione '
-        'Brute force, informe uma Cadeia de teste curta e ative Analisar '
-        'cadeia. Uma execução aceita pode produzir uma árvore rasa, enquanto '
-        'uma busca esgotada informa Rejeitada. A estratégia recursiva é '
-        'limitada, pode crescer rapidamente e compartilha o limite de cinco '
-        'segundos; use Automatic (Earley) para reconhecimento geral ou '
-        'continue em Derivações.',
-    keywords: ['Brute force', 'força bruta', 'derivação', 'recursiva'],
+        'Brute force faz uma busca determinística em largura por derivações '
+        'de uma gramática livre de contexto. Escolha a expansão mais à '
+        'esquerda, mais à direita ou em todas as posições, defina os limites '
+        'de profundidade, fronteira, testemunhos e tempo, informe a Cadeia de '
+        'teste e ative Analisar cadeia. Execuções aceitas preservam os '
+        'testemunhos mais curtos por IDs de produção e suas árvores; gramáticas '
+        'ambíguas podem mostrar vários testemunhos. Rejeitada significa que a '
+        'fronteira finita se esgotou; Inconclusivo dentro dos limites significa '
+        'que um limite interrompeu a busca. Use estatísticas, passos, '
+        'cancelamento e o relatório JSON para inspecionar a execução. '
+        'Gramáticas irrestritas usam uma busca separada e não recebem as podas '
+        'de GLC.',
+    keywords: [
+      'Brute force',
+      'força bruta',
+      'busca em largura',
+      'busca limitada',
+      'testemunho',
+    ],
   ),
   HelpTopicIds.grammarEditorParserCyk: HelpNodeCopy(
     blocks: _grammarParserBlocks,
     title: 'Análise CYK',
-    body: 'CYK (Cocke-Younger-Kasami) reconhece a cadeia por uma tabela de '
+    body:
+        'CYK (Cocke-Younger-Kasami) reconhece a cadeia por uma tabela de '
         'programação dinâmica. Use-o para acompanhar o preenchimento '
         'determinístico da tabela ou estudar análise pela Forma Normal de '
         'Chomsky. Selecione CYK (Cocke-Younger-Kasami), informe Cadeia de '
@@ -919,7 +1640,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorParserLl1: HelpNodeCopy(
     blocks: _grammarParserBlocks,
     title: 'Analisador preditivo LL(1)',
-    body: 'A análise LL(1) escolhe uma produção com o não terminal atual e um '
+    body:
+        'A análise LL(1) escolhe uma produção com o não terminal atual e um '
         'token de antecipação. Selecione LL(1), informe a Cadeia de teste e '
         'ative Analisar cadeia. O analisador constrói a tabela FIRST/FOLLOW, '
         'recusa a execução se houver conflito e registra cada expansão, '
@@ -932,21 +1654,70 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorParserLr: HelpNodeCopy(
     blocks: _grammarParserBlocks,
-    title: 'Disponibilidade do analisador LR',
-    body: 'LR é uma família de análise ascendente para gramáticas livres de '
-        'contexto. Use este tópico para separar a teoria das opções atualmente '
-        'executáveis. LR está indisponível porque o analisador não está '
-        'implementado, então ele é filtrado do '
-        'menu Algoritmo de análise. O espaço atual não gera autômato, tabela '
-        'nem resultado LR. Construir tabela de análise produz hoje uma tabela '
-        'LL(1), embora a descrição do botão mencione LR(1); continue em Análise '
-        'preditiva ou Automatic (Earley).',
-    keywords: ['LR', 'LR(1)', 'indisponível', 'ascendente', 'tabela'],
+    title: 'Analisador LR(1) canônico',
+    body:
+        'LR(1) canônico analisa uma gramática livre de contexto de baixo para '
+        'cima. Selecione LR(1) canônico, informe a Cadeia de teste e ative '
+        'Analisar cadeia. O ambiente sincroniza produções, conjuntos canônicos '
+        'de itens, transições GOTO, tabela ACTION/GOTO, pilhas de estados e '
+        'símbolos, entrada restante, reduções e árvore parcial. Selecione um '
+        'estado ou célula, ou use anterior, próximo, reproduzir, pausar e '
+        'reiniciar. Células preservam todas as ações e itens de origem; '
+        'conflitos deslocamento/redução ou redução/redução exibem um prefixo '
+        'viável e impedem a execução. Construção e execução têm limites. A ação '
+        'Construir tabela de análise continua sendo a tabela preditiva LL(1).',
+    keywords: ['LR', 'LR(1)', 'canônico', 'ascendente', 'ACTION', 'GOTO'],
+  ),
+  HelpTopicIds.grammarEditorParserLr1Teaching: HelpNodeCopy(
+    blocks: _lr1TeachingBlocks,
+    title: 'Ambiente didático LR(1)',
+    body:
+        'O ambiente didático LR(1) canônico reúne a gramática, os conjuntos '
+        'canônicos de itens, a tabela ACTION / GOTO e um traço de deslocamento '
+        'e redução para a entrada analisada. Abra Analisador de gramática, '
+        'selecione LR(1) canônico, informe a Cadeia de teste e selecione '
+        'Analisar cadeia. Depois do resultado, use o ambiente abaixo de '
+        'Resultados da análise para examinar a construção e a reprodução.',
+    keywords: [
+      'ambiente didático LR(1)',
+      'conjuntos canônicos de itens',
+      'ACTION / GOTO',
+      'execução por deslocamento e redução',
+      'prefixo viável',
+      'árvore de derivação parcial',
+    ],
+  ),
+  HelpTopicIds.grammarEditorParserParseTableTeaching: HelpNodeCopy(
+    blocks: _parseTableTeachingBlocks,
+    title: 'Ambiente didático da tabela de análise',
+    body:
+        'O ambiente didático da tabela permite praticar entradas em uma tabela '
+        'preditiva LL(1) gerada ou em uma tabela ACTION/GOTO LR(1) canônica. '
+        'Ative o Modo didático para editar Sua entrada em uma linha e coluna. '
+        'Informe um ID de produção, uma ação shift/reduce ou um estado GOTO; '
+        'células em conflito oferecem cada ação gerada como chip de escolha. '
+        'Mantenha as respostas geradas visíveis para comparar sua tentativa ou '
+        'oculte-as antes de editar. Desfazer e Refazer revisam o histórico do '
+        'exercício, e cada célula informa entrada correta, escolha de conflito '
+        'válida, célula gerada vazia ou entrada incorreta. A tabela gerada '
+        'permanece somente leitura, portanto o exercício não altera a gramática, '
+        'o analisador nem as respostas de referência. Uma edição na origem '
+        'invalida a sessão, e um exercício salvo inválido deve ser reiniciado a '
+        'partir da tabela atual.',
+    keywords: [
+      'ambiente didático da tabela',
+      'Modo didático',
+      'Sua entrada',
+      'respostas geradas',
+      'célula em conflito',
+      'ACTION/GOTO',
+    ],
   ),
   HelpTopicIds.grammarEditorParserResultsAndSteps: HelpNodeCopy(
     blocks: _grammarParserBlocks,
     title: 'Resultados, árvores e passos do analisador',
-    body: 'Resultados da análise explica o desfecho e qualquer estrutura '
+    body:
+        'Resultados da análise explica o desfecho e qualquer estrutura '
         'registrada pelo analisador escolhido. Use-o para examinar por que uma '
         'entrada foi aceita ou até onde uma rejeição avançou. Leia Aceita ou '
         'Rejeitada e Tempo de execução; rejeições não CYK podem mostrar Posição '
@@ -955,13 +1726,36 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Passos CYK oferece anterior, próximo, controle deslizante, título, '
         'destaques da tabela e explicação do passo. Passos LL(1) usa a mesma '
         'navegação para mostrar pilha, entrada restante, antecipação e produção. '
-        'Árvores são reconstruídas por melhor esforço; continue em Árvores de '
-        'análise, CYK ou LL(1).',
+        'LR(1) canônico mostra itens, células ACTION/GOTO, ambas as pilhas e '
+        'árvore parcial sincronizados. Árvores das estratégias legadas são '
+        'reconstruídas por melhor esforço; continue em Árvores de análise, CYK, '
+        'LL(1) ou LR(1).',
     keywords: [
       'Resultados',
       'Árvore de derivação',
       'Passos CYK',
-      'Passos LL(1)'
+      'Passos LL(1)',
+      'LR(1)',
+    ],
+  ),
+  HelpTopicIds.grammarEditorParserMultipleRuns: HelpNodeCopy(
+    blocks: _grammarBatchParsingBlocks,
+    title: 'Análise em lote',
+    body:
+        'O ambiente de lotes do analisador de gramática executa uma estratégia '
+        'de análise escolhida sobre várias entradas, mantendo separados cada '
+        'caso, resultado, métrica e traço opcional. Ele reúne Automatic '
+        '(Earley), Brute force, CYK, LL(1) e LR(1) em um executor limitado. '
+        'Comece por Batch parsing depois de abrir Analisador.',
+    keywords: [
+      'análise em lote',
+      'várias entradas',
+      'Automatic (Earley)',
+      'Brute force',
+      'CYK',
+      'LL(1)',
+      'LR(1)',
+      'retenção de traços',
     ],
   ),
   'grammar.editor.algorithms': HelpNodeCopy(
@@ -971,23 +1765,36 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorAlgorithms: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Visão geral dos algoritmos de gramática',
-    body: 'Análise da gramática transforma regras e calcula dados para análise '
+    body:
+        'Análise da gramática transforma regras e calcula dados para análise '
         'preditiva. Use-a com uma gramática válida quando precisar de forma '
         'normal, reescrita estrutural, conjuntos, tabela ou verificação de '
         'conflitos LL(1). Escolha Converter para FNC, Converter para FNG, '
         'Remover recursão à esquerda, Fatorar à esquerda, Calcular conjuntos '
-        'FIRST, Calcular conjuntos FOLLOW, Construir tabela de análise ou '
-        'Verificar ambiguidade. O painel mostra texto e, em FNC/FNG, Passos de '
+        'FIRST, Calcular conjuntos FOLLOW, Construir tabela de análise, '
+        'Verificar ambiguidade ou Grafo de dependência de variáveis. O grafo '
+        'preserva a origem exata em produções e posições de tokens, alterna '
+        'relações diretas e de canto esquerdo e informa alcançabilidade, '
+        'produtividade, componentes fortemente conexos e testemunhos de '
+        'recursão sem inferir ambiguidade. O painel mostra texto e, em FNC/FNG, '
+        'Passos de '
         'transformação cujo Aplicar substitui a gramática do editor pelo '
         'resultado daquele passo. As ações ficam indisponíveis durante uma '
         'análise, e gramáticas inválidas geram relatório. Abra o tópico do '
         'algoritmo escolhido.',
-    keywords: ['Análise da gramática', 'forma normal', 'Aplicar', 'resultado'],
+    keywords: [
+      'Análise da gramática',
+      'forma normal',
+      'Grafo de dependência de variáveis',
+      'componente fortemente conexo',
+      'resultado',
+    ],
   ),
   HelpTopicIds.grammarEditorAlgorithmsCnf: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Converter para Forma Normal de Chomsky',
-    body: 'Converter para FNC reescreve uma GLC em Forma Normal de Chomsky. '
+    body:
+        'Converter para FNC reescreve uma GLC em Forma Normal de Chomsky. '
         'Use-o para estudar CYK ou obter regras A→BC e A→a, respeitada a '
         'exceção da cadeia vazia no símbolo inicial. Selecione Converter para '
         'FNC e examine Passos de transformação, Gramática original, Gramática '
@@ -997,10 +1804,42 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'na teoria de FNC ou em CYK.',
     keywords: ['Converter para FNC', 'Chomsky', 'A BC', 'passos'],
   ),
+  HelpTopicIds.grammarEditorAlgorithmsNormalizationPractice: HelpNodeCopy(
+    blocks: _grammarNormalizationPracticeBlocks,
+    title: 'Praticar normalização de gramática',
+    body:
+        'Praticar normalização de gramática é um exercício guiado para as '
+        'quatro etapas canônicas usadas antes e durante a construção da FNC. '
+        'Use-o para escrever cada gramática intermediária em vez de apenas '
+        'ler uma transformação automática. Abra Algoritmos e selecione '
+        'Praticar normalização de gramática. Escolha Remover lambda, Remover '
+        'produções unitárias, Remover produções inúteis ou Concluir FNC. Edite '
+        'uma produção por linha com -> ou →, separe símbolos com espaços e use '
+        'ε ou um lado direito vazio para uma produção vazia. Verificar etapa '
+        'informa erros de sintaxe, símbolos desconhecidos, duplicatas, regras '
+        'ausentes, regras inesperadas ou uma resposta de etapa posterior. '
+        'Desfazer e Refazer preservam o histórico do exercício, e cada etapa '
+        'mantém seu próprio rascunho. Comparar com referência revela a '
+        'gramática gerada em modo somente leitura. O verificador compara '
+        'formas exatas de produção com essa referência canônica. Ele não '
+        'decide se outra gramática gera a mesma linguagem, portanto uma falha '
+        'na verificação não prova inequivalência. Continue em Converter para '
+        'FNC ou Forma Normal de Chomsky.',
+    keywords: [
+      'normalização de gramática',
+      'Praticar normalização de gramática',
+      'Remover lambda',
+      'produções unitárias',
+      'produções inúteis',
+      'FNC',
+      'referência canônica',
+    ],
+  ),
   HelpTopicIds.grammarEditorAlgorithmsGnf: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Converter para Forma Normal de Greibach',
-    body: 'Converter para FNG reescreve produções para que o lado direito '
+    body:
+        'Converter para FNG reescreve produções para que o lado direito '
         'comece por um terminal seguido de não terminais. Use-o para estudar a '
         'Forma Normal de Greibach ou preparar a construção de AP por Greibach. '
         'Selecione Converter para FNG e examine histórico, gramáticas, '
@@ -1012,13 +1851,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Converter para FNG',
       'Greibach',
       'terminal primeiro',
-      'Aplicar'
+      'Aplicar',
     ],
   ),
   HelpTopicIds.grammarEditorAlgorithmsRemoveLeftRecursion: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Remover recursão direta e indireta à esquerda',
-    body: 'Remover recursão à esquerda trata regras diretas como A→Aα e ciclos '
+    body:
+        'Remover recursão à esquerda trata regras diretas como A→Aα e ciclos '
         'indiretos como A→Bα, B→Aβ. O algoritmo processa primeiro o símbolo '
         'inicial, depois usa a ordem das produções e desempate lexical para '
         'substituições estáveis. Examine cada etapa de substituição e de '
@@ -1030,13 +1870,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'recursão direta',
       'recursão indireta',
       'substituição ordenada',
-      'símbolo com linha'
+      'símbolo com linha',
     ],
   ),
   HelpTopicIds.grammarEditorAlgorithmsLeftFactor: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Fatorar produções à esquerda',
-    body: 'Fatorar à esquerda extrai prefixos comuns para novos não terminais. '
+    body:
+        'Fatorar à esquerda extrai prefixos comuns para novos não terminais. '
         'Use-o quando alternativas começam da mesma forma e o analisador '
         'preditivo não consegue escolher de imediato. Selecione Fatorar à '
         'esquerda e examine a Análise de fatoração à esquerda, com gramáticas '
@@ -1049,7 +1890,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorAlgorithmsFirst: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Calcular conjuntos FIRST',
-    body: 'FIRST(X) contém terminais que podem iniciar cadeias derivadas de X, '
+    body:
+        'FIRST(X) contém terminais que podem iniciar cadeias derivadas de X, '
         'inclusive ε quando X for anulável. Use-o para analisar escolhas '
         'preditivas e preparar uma tabela LL(1). Selecione Calcular conjuntos '
         'FIRST e leia cada FIRST(não terminal), as observações e as explicações '
@@ -1061,7 +1903,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorAlgorithmsFollow: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Calcular conjuntos FOLLOW',
-    body: 'FOLLOW(A) contém terminais que podem suceder A imediatamente, e \$ '
+    body:
+        'FOLLOW(A) contém terminais que podem suceder A imediatamente, e \$ '
         'marca o fim da entrada para o símbolo inicial. Use-o após FIRST quando '
         'alternativas anuláveis ou a tabela LL(1) exigirem contexto. Selecione '
         'Calcular conjuntos FOLLOW e examine cada FOLLOW(não terminal), '
@@ -1074,19 +1917,21 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorAlgorithmsParseTable: HelpNodeCopy(
     blocks: _grammarAlgorithmBlocks,
     title: 'Construir tabela LL(1)',
-    body: 'Construir tabela de análise monta a tabela preditiva LL(1) atual. '
+    body:
+        'Construir tabela de análise monta a tabela preditiva LL(1) atual. '
         'Use-a depois de FIRST e FOLLOW para ver qual produção corresponde a '
         'um não terminal e um símbolo de antecipação. Selecione Construir '
         'tabela de análise e leia as linhas tabuladas, Observações, Conflitos e '
         'Derivações em Análise da tabela LL(1). Células vazias aparecem como -, '
-        'regras ε usam FOLLOW e entradas múltiplas indicam conflito. Embora a '
-        'descrição do botão cite LL(1) ou LR(1), o resultado atual é somente '
-        'LL(1); continue em Verificar ambiguidade.',
+        'regras ε usam FOLLOW e entradas múltiplas indicam conflito. Esta ação '
+        'é somente LL(1); tabelas LR(1) canônicas são construídas no ambiente '
+        'do analisador após selecionar LR(1) canônico. Continue em Verificar '
+        'ambiguidade.',
     keywords: [
       'Construir tabela de análise',
       'LL(1)',
       'antecipação',
-      'conflito'
+      'conflito',
     ],
   ),
   HelpTopicIds.grammarEditorAlgorithmsAmbiguity: HelpNodeCopy(
@@ -1102,13 +1947,39 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'ou Earley; continue na teoria de Ambiguidade e Árvores de análise.',
     keywords: ['Verificar ambiguidade', 'LL(1)', 'conflito', 'classificação'],
   ),
+  HelpTopicIds.grammarEditorAlgorithmsDependencyGraph: HelpNodeCopy(
+    blocks: _variableDependencyGraphBlocks,
+    title: 'Grafo de dependência de variáveis',
+    body:
+        'Grafo de dependência de variáveis abre uma análise interativa das '
+        'dependências entre variáveis da gramática. Em Modo de dependência, '
+        'escolha Ocorrência direta, Canto esquerdo ou Canto esquerdo '
+        'considerando anuláveis. Depois selecione o layout Em camadas, Circular '
+        'ou Grade e use Ajustar grafo ou os controles de zoom. Os indicadores '
+        'identificam variáveis alcançáveis, inalcançáveis, não produtivas, '
+        'fontes e sumidouros e contam os componentes recursivos. Selecione uma '
+        'variável para ver um testemunho de alcançabilidade, uma aresta para '
+        'ver IDs de produções e posições de tokens, ou um testemunho de '
+        'recursão para ver variáveis, produções e arestas. Exportar SVG e '
+        'Exportar PNG salvam o grafo atual. Esses resultados não provam '
+        'ambiguidade, e uma edição na origem invalida a análise aberta até que '
+        'você a reabra.',
+    keywords: [
+      'Grafo de dependência de variáveis',
+      'canto esquerdo',
+      'alcançabilidade',
+      'origem',
+      'testemunho de recursão',
+    ],
+  ),
   'grammar.editor.conversions': HelpNodeCopy(
     title: 'Conversões',
     keywords: ['conversão', 'AF', 'AP', 'Greibach'],
   ),
   HelpTopicIds.grammarEditorConversionsRightLinearToFsa: HelpNodeCopy(
     title: 'Gramática linear à direita para AF',
-    body: 'Convert Right-Linear Grammar to FSA cria um autômato finito '
+    body:
+        'Convert Right-Linear Grammar to FSA cria um autômato finito '
         'equivalente. Use-o somente com regras A→aB, A→a ou A→ε. Adicione ao '
         'menos uma produção e selecione Convert Right-Linear Grammar to FSA em '
         'Conversões. Com sucesso, o autômato gerado é carregado e o aplicativo '
@@ -1123,7 +1994,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorConversionsPdaGeneral: HelpNodeCopy(
     title: 'Gramática para AP: construção geral',
-    body: 'Convert Grammar to PDA (General) cria um AP de três estados ao '
+    body:
+        'Convert Grammar to PDA (General) cria um AP de três estados ao '
         'expandir variáveis na pilha. Use-o para obter um autômato que reconheça '
         'a linguagem da gramática. Adicione produções e selecione Convert '
         'Grammar to PDA (General). Com sucesso, o AP é carregado, o aplicativo '
@@ -1137,7 +2009,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarEditorConversionsPdaStandard: HelpNodeCopy(
     title: 'Gramática para AP: construção padrão',
-    body: 'Convert Grammar to PDA (Standard) aplica a construção padrão de GLC '
+    body:
+        'Convert Grammar to PDA (Standard) aplica a construção padrão de GLC '
         'para AP com pilha. Use-o quando quiser a rota explicitamente chamada '
         'padrão para compará-la aos outros controles. Adicione produções e '
         'selecione Convert Grammar to PDA (Standard). A implementação atual '
@@ -1146,8 +2019,21 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'conversão já em andamento desativa este controle. Um símbolo inicial '
         'inválido ou outra falha de conversão não desativa previamente uma '
         'gramática não vazia; a falha retorna como erro após o acionamento. A '
-        'conversão tem limite de dez segundos; continue em General ou Greibach.',
-    keywords: ['Convert Grammar to PDA (Standard)', 'padrão', 'AP'],
+        'conversão tem limite de dez segundos. As ações separadas CFG to PDA '
+        '(LL) e CFG to PDA (LR) abrem prévias guiadas: LL exige uma tabela '
+        'preditiva sem conflitos, enquanto LR exige uma tabela LR(1) canônica '
+        'sem conflitos e mostra a origem de cada shift e redução. As verificações '
+        'de linguagem são evidências amostradas e limitadas, não provas. Abrir '
+        'a prévia não altera nenhum editor; Open in PDA editor substitui o AP '
+        'atual em uma única ação que pode ser desfeita. Continue em General ou '
+        'Greibach.',
+    keywords: [
+      'Convert Grammar to PDA (Standard)',
+      'CFG to PDA (LL)',
+      'CFG to PDA (LR)',
+      'padrão',
+      'AP',
+    ],
   ),
   HelpTopicIds.grammarEditorConversionsPdaGreibach: HelpNodeCopy(
     title: 'Gramática para AP pela forma de Greibach',
@@ -1165,9 +2051,36 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Continue em Converter para FNG.',
     keywords: ['Convert Grammar to PDA (Greibach)', 'FNG', 'AP'],
   ),
+  HelpTopicIds.grammarEditorConversionsPdaLlLr: HelpNodeCopy(
+    blocks: _cfgToPdaLlLrBlocks,
+    title: 'Construção guiada de GLC para AP',
+    body:
+        'Construção GLC para AP (LL) e Construção GLC para AP (LR) abrem '
+        'prévias somente leitura vinculadas à revisão atual da gramática. LL '
+        'cria um autômato de pilha descendente a partir de uma tabela preditiva '
+        'sem conflitos; LR cria transições ascendentes de deslocamento e '
+        'redução a partir de uma tabela LR(1) canônica sem conflitos. Premissas '
+        'da construção e Etapas da construção relacionam as produções de '
+        'origem, os estados e transições gerados e, quando houver, as células '
+        'LR. Executar verificação amostral compara entradas finitas dentro dos '
+        'limites exibidos; uma divergência indica um problema, mas amostras '
+        'coincidentes não provam equivalência de linguagens. Abrir ou cancelar '
+        'a prévia não altera nenhum editor. Abrir no editor de AP substitui o '
+        'AP atual em uma única ação que pode ser desfeita. Conflitos LL(1) ou '
+        'LR(1) impedem a construção correspondente, e uma edição da gramática '
+        'invalida a prévia aberta.',
+    keywords: [
+      'Construção GLC para AP (LL)',
+      'Construção GLC para AP (LR)',
+      'Etapas da construção',
+      'Executar verificação amostral',
+      'Abrir no editor de AP',
+    ],
+  ),
   HelpTopicIds.grammarEditorFilesAndExamples: HelpNodeCopy(
     title: 'Arquivos e exemplos de gramática',
-    body: 'As ações de arquivo preservam regras ou geram um diagrama '
+    body:
+        'As ações de arquivo preservam regras ou geram um diagrama '
         'compartilhável, e há cinco exemplos GLC incluídos. Abra Algoritmos e '
         'selecione GLC - Palíndromo, GLC - Parênteses balanceados, GLC - a^n '
         'b^n, GLC - Zeros em quantidade par ou GLC - Expressões aritméticas. '
@@ -1192,7 +2105,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryCfg: HelpNodeCopy(
     title: 'Gramáticas livres de contexto',
-    body: 'Uma gramática livre de contexto reúne terminais, não terminais, '
+    body:
+        'Uma gramática livre de contexto reúne terminais, não terminais, '
         'produções e símbolo inicial, com um não terminal no lado esquerdo de '
         'cada regra. Use GLCs para descrever linguagens aninhadas ou recursivas '
         'que podem não ser regulares. Defina variáveis e terminais, escolha S '
@@ -1204,7 +2118,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryProductions: HelpNodeCopy(
     title: 'Regras de produção',
-    body: 'Uma produção A→α permite substituir o não terminal A pela sequência '
+    body:
+        'Uma produção A→α permite substituir o não terminal A pela sequência '
         'α. Use produções para codificar cada expansão permitida em uma '
         'derivação. Adicione uma linha do editor para cada alternativa e use ε '
         'para a sequência vazia. Em conjunto, as linhas definem a relação usada '
@@ -1215,19 +2130,31 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryDerivations: HelpNodeCopy(
     title: 'Derivações',
-    body: 'Uma derivação aplica repetidamente produções a partir do símbolo '
+    body:
+        'Uma derivação aplica repetidamente produções a partir do símbolo '
         'inicial até alcançar uma cadeia terminal. Use-a para justificar '
-        'pertinência e comparar como analisadores formam um resultado. Escolha '
-        'um não terminal da forma sentencial atual, aplique uma alternativa '
-        'correspondente e repita até não restar variável. Uma sequência '
-        'bem-sucedida demonstra que a cadeia final pertence à linguagem. '
-        'Ordens diferentes podem levar à mesma árvore ou a árvores realmente '
-        'distintas. Continue em Árvores de análise e ambiguidade.',
-    keywords: ['derivação', 'forma sentencial', 'pertinência', 'produção'],
+        'pertinência e comparar como analisadores formam um resultado. No '
+        'painel do analisador, inicie uma derivação controlada, escolha o modo '
+        'mais à esquerda, mais à direita ou qualquer ocorrência e selecione '
+        'tanto a produção quanto sua ocorrência exata de tokens. Visualize a '
+        'substituição antes de aplicá-la; desfaça, refaça, reinicie, ramifique '
+        'pelo histórico ou solicite uma dica de busca limitada. Atingir o alvo '
+        'demonstra pertinência. Um beco sem saída local ou o limite de uma dica '
+        'não prova não pertinência. Sessões GLC mostram árvore; sessões '
+        'irrestritas mantêm a sequência em vez de fabricar uma árvore. '
+        'Continue em Árvores de análise e ambiguidade.',
+    keywords: [
+      'derivação',
+      'forma sentencial',
+      'controlada',
+      'ocorrência',
+      'dica',
+    ],
   ),
   HelpTopicIds.grammarTheoryParseTrees: HelpNodeCopy(
     title: 'Árvores de análise',
-    body: 'Uma árvore de análise coloca o símbolo inicial na raiz, os símbolos '
+    body:
+        'Uma árvore de análise coloca o símbolo inicial na raiz, os símbolos '
         'das produções sob não terminais expandidos e a cadeia derivada nas '
         'folhas. Use-a para enxergar a estrutura gramatical, não apenas a '
         'aceitação. Execute Automatic (Earley) ou Brute force e expanda Árvore '
@@ -1240,7 +2167,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryAmbiguity: HelpNodeCopy(
     title: 'Ambiguidade',
-    body: 'Uma gramática é ambígua quando ao menos uma cadeia possui duas '
+    body:
+        'Uma gramática é ambígua quando ao menos uma cadeia possui duas '
         'árvores de análise distintas. Use o conceito quando estruturas '
         'alternativas alterarem a interpretação ou a escolha do analisador. '
         'Compare derivações e árvores da mesma entrada e use Verificar '
@@ -1252,7 +2180,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryLeftRecursionAndFactoring: HelpNodeCopy(
     title: 'Recursão à esquerda e fatoração',
-    body: 'Recursão direta à esquerda começa uma alternativa com o próprio não '
+    body:
+        'Recursão direta à esquerda começa uma alternativa com o próprio não '
         'terminal. A recursão indireta retorna por um ou mais não terminais. '
         'Remover recursão à esquerda usa substituição ordenada e reescrita de '
         'recursão direta nos dois casos. Fatorar à esquerda extrai um prefixo '
@@ -1263,12 +2192,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'recursão à esquerda',
       'fatoração',
       'prefixo comum',
-      'reescrita'
+      'reescrita',
     ],
   ),
   HelpTopicIds.grammarTheoryFirstAndFollow: HelpNodeCopy(
     title: 'FIRST e FOLLOW',
-    body: 'FIRST prevê quais terminais podem iniciar uma derivação, enquanto '
+    body:
+        'FIRST prevê quais terminais podem iniciar uma derivação, enquanto '
         'FOLLOW prevê quais terminais podem aparecer após um não terminal. Use '
         'os dois para construir e diagnosticar uma tabela preditiva. Calcule '
         'FIRST de cada símbolo e sequência, propague ε pelos prefixos anuláveis '
@@ -1280,7 +2210,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryPredictiveParsing: HelpNodeCopy(
     title: 'Análise preditiva e tabelas LL(1)',
-    body: 'Um analisador LL(1) escolhe uma produção com um não terminal e um '
+    body:
+        'Um analisador LL(1) escolhe uma produção com um não terminal e um '
         'símbolo de antecipação. Use a tabela para identificar escolhas '
         'descendentes determinísticas. O Turing Lab também executa essa tabela '
         'na estratégia LL(1) e para antes da análise se uma célula tiver '
@@ -1293,7 +2224,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryCnf: HelpNodeCopy(
     title: 'Forma Normal de Chomsky',
-    body: 'A Forma Normal de Chomsky restringe regras comuns de GLC a A→BC ou '
+    body:
+        'A Forma Normal de Chomsky restringe regras comuns de GLC a A→BC ou '
         'A→a, com exceção controlada de ε no símbolo inicial. Use FNC no CYK e '
         'para raciocinar sobre derivações binárias. Execute Converter para FNC '
         'e examine cada passo antes de aplicar um resultado. A gramática '
@@ -1305,7 +2237,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryGnf: HelpNodeCopy(
     title: 'Forma Normal de Greibach',
-    body: 'A Forma Normal de Greibach faz cada produção comum começar por um '
+    body:
+        'A Forma Normal de Greibach faz cada produção comum começar por um '
         'terminal seguido de zero ou mais não terminais. Use FNG para relacionar '
         'passos de derivação ao consumo de entrada e preparar a conversão de '
         'Greibach para AP. Execute Converter para FNG, examine diagnósticos e '
@@ -1317,7 +2250,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.grammarTheoryGrammarFsaPda: HelpNodeCopy(
     title: 'Relações entre gramáticas, AF e AP',
-    body: 'Gramáticas lineares à direita e autômatos finitos descrevem '
+    body:
+        'Gramáticas lineares à direita e autômatos finitos descrevem '
         'linguagens regulares, enquanto GLCs e APs descrevem linguagens livres '
         'de contexto. Use essas relações para escolher uma conversão sem perder '
         'estrutura expressiva. Converta uma gramática linear à direita para AF '
@@ -1337,12 +2271,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorOverview: HelpNodeCopy(
     title: 'Visão geral do editor de AP',
-    body: 'O espaço de AP reúne canvas de estados, inspetor da pilha ao vivo, '
+    body:
+        'O espaço de AP reúne canvas de estados, inspetor da pilha ao vivo, '
         'simulação, análises, exemplos e exportação SVG. Use-o para construir '
         'ou examinar um autômato de pilha determinístico ou não determinístico. '
         'Adicione estados, marque os estados inicial e de aceitação, conecte-os '
         'com transições de entrada/pop/push e teste uma cadeia. O status do '
-        'canvas informa quantidades, marcadores ausentes, uso de lambda e '
+        'canvas informa quantidades, marcadores ausentes, uso de epsilon e '
         'conflitos detectados. A simulação exige estado inicial, e certas '
         'análises também exigem aceitação ou transições normalizadas; siga a '
         'mensagem visível antes de confiar em uma AP parcial. Continue em '
@@ -1355,7 +2290,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorSelectionAndStates: HelpNodeCopy(
     title: 'Selecionar e editar estados',
-    body: 'O modo Selecionar permite mover e abrir estados da AP no canvas. '
+    body:
+        'O modo Selecionar permite mover e abrir estados da AP no canvas. '
         'Use-o depois de criar um estado ou quando Adicionar transição estiver '
         'ativo. Escolha Adicionar estado, volte a Selecionar, arraste o estado '
         'para movê-lo e dê dois toques para editar Rótulo do estado, Estado '
@@ -1376,26 +2312,27 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Símbolo para desempilhar e Símbolo para empilhar e salve; selecione '
         'uma aresta existente para editar ou excluir. O canvas mostra o rótulo '
         'canônico entrada, pop/push e atualiza os alfabetos. Todo campo sem '
-        'lambda é obrigatório, e um push alterado com vários caracteres vira '
+        'epsilon é obrigatório, e um push alterado com vários caracteres vira '
         'uma sequência ordenada de caracteres. Continue em Entrada, pop e push '
-        'lambda.',
+        'epsilon.',
     keywords: [
       'AP',
       'PDA',
       'símbolo de entrada',
       'símbolo de pop',
-      'símbolo de push'
+      'símbolo de push',
     ],
   ),
   HelpTopicIds.pdaEditorLambdaSwitches: HelpNodeCopy(
-    title: 'Entrada, pop e push lambda',
-    body: 'As três chaves lambda tornam vazia, de forma independente, a parte '
-        'de entrada, pop ou push de uma transição de AP. Use λ-entrada para não '
-        'consumir entrada, λ-desempilhar para não testar nem remover o topo e '
-        'λ-empilhar para não adicionar símbolo. Ative λ-entrada, '
-        'λ-desempilhar ou λ-empilhar ao lado do campo e salve a transição. O '
-        'campo desativado é limpo e a aresta mostra λ nessa posição. Deixar '
-        'vazio um campo sem lambda impede salvar, enquanto movimentos lambda '
+    title: 'Entrada, pop e push epsilon',
+    body:
+        'As três chaves epsilon tornam vazia, de forma independente, a parte '
+        'de entrada, pop ou push de uma transição de AP. Use ε-entrada para não '
+        'consumir entrada, ε-desempilhar para não testar nem remover o topo e '
+        'ε-empilhar para não adicionar símbolo. Ative ε-entrada, '
+        'ε-desempilhar ou ε-empilhar ao lado do campo e salve a transição. O '
+        'campo desativado é limpo e a aresta mostra ε nessa posição. Deixar '
+        'vazio um campo sem epsilon impede salvar, enquanto movimentos epsilon '
         'podem criar ramificações ou ciclos sujeitos aos limites de busca. '
         'Continue em Transições de AP ou Não determinismo.',
     keywords: [
@@ -1403,14 +2340,15 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'PDA',
       'lambda',
       'epsilon',
-      'λ-entrada',
-      'λ-pop',
-      'λ-push'
+      'ε-entrada',
+      'ε-pop',
+      'ε-push',
     ],
   ),
   HelpTopicIds.pdaEditorHistoryAndClear: HelpNodeCopy(
     title: 'Desfazer, refazer e limpar',
-    body: 'Os controles de histórico revertem ou restauram edições registradas '
+    body:
+        'Os controles de histórico revertem ou restauram edições registradas '
         'da AP, enquanto Limpar canvas remove o grafo atual. Use Desfazer após '
         'uma alteração indesejada, Refazer ao voltar demais e Limpar canvas '
         'somente para recomeçar. Acione os controles da barra; a superfície '
@@ -1432,7 +2370,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorViewportZoom: HelpNodeCopy(
     title: 'Zoom e deslocamento',
-    body: 'Zoom e deslocamento mudam a visualização da AP sem alterar o '
+    body:
+        'Zoom e deslocamento mudam a visualização da AP sem alterar o '
         'autômato. Use-os para examinar estados e rótulos de transição '
         'densamente agrupados. Selecione Aumentar zoom ou Diminuir zoom, faça '
         'pinça com dois dedos em telas de toque e arraste uma área vazia para '
@@ -1445,7 +2384,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorViewportFitAndReset: HelpNodeCopy(
     title: 'Enquadrar conteúdo e redefinir visualização',
-    body: 'Enquadrar conteúdo coloca todos os estados da AP na área visível, '
+    body:
+        'Enquadrar conteúdo coloca todos os estados da AP na área visível, '
         'enquanto Redefinir visualização restaura zoom e deslocamento padrão. '
         'Use Enquadrar conteúdo quando nós saírem da tela e Redefinir '
         'visualização para voltar ao viewport neutro. Acione o comando '
@@ -1458,7 +2398,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorViewportAutoLayout: HelpNodeCopy(
     title: 'Disponibilidade de Auto Layout',
-    body: 'Auto Layout reorganizaria as coordenadas dos estados sem mudar o '
+    body:
+        'Auto Layout reorganizaria as coordenadas dos estados sem mudar o '
         'comportamento da AP. Procure-o quando um grafo carregado estiver '
         'difícil de ler, mas o espaço de AP atual não expõe Auto Layout no '
         'canvas nem nas análises. Use Selecionar para arrastar estados '
@@ -1475,7 +2416,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorStackInspector: HelpNodeCopy(
     title: 'Usar o inspetor da pilha',
-    body: 'O inspetor da pilha é a visualização compacta da pilha da AP ao '
+    body:
+        'O inspetor da pilha é a visualização compacta da pilha da AP ao '
         'vivo. Use-o ao editar transições ou reproduzir traços para ver topo, '
         'tamanho, última operação e célula destacada. No desktop ele fica '
         'abaixo do canvas; no celular, mova ou redimensione o painel flutuante '
@@ -1488,7 +2430,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorStackInitialSymbolAndAlphabet: HelpNodeCopy(
     title: 'Símbolo inicial e alfabeto da pilha',
-    body: 'O símbolo inicial da pilha é o marcador de base colocado no começo '
+    body:
+        'O símbolo inicial da pilha é o marcador de base colocado no começo '
         'da execução, e o alfabeto da pilha reúne símbolos usados por pop e '
         'push. Use-os para manter coerentes as regras de transição. O modelo do '
         'canvas começa com Z, deriva outros símbolos dos campos de transição e '
@@ -1501,11 +2444,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorStackOperationPreview: HelpNodeCopy(
     title: 'Visualizar operações da pilha',
-    body: 'A Prévia da operação ilustra o efeito na pilha da transição de AP '
+    body:
+        'A Prévia da operação ilustra o efeito na pilha da transição de AP '
         'em edição. Use-a antes de salvar uma regra de pop/push cuja ordem seja '
         'difícil de visualizar. Preencha entrada, pop e push ou suas chaves '
-        'lambda e examine Entrada, Pop, Push e Resultado abaixo dos campos. Um '
-        'pop não lambda remove o topo exibido, e um push com vários caracteres '
+        'epsilon e examine Entrada, Pop, Push e Resultado abaixo dos campos. Um '
+        'pop não epsilon remove o topo exibido, e um push com vários caracteres '
         'é empilhado da direita para a esquerda para deixar o primeiro '
         'caractere no topo; a prévia mostra no máximo cinco células. Ela é '
         'ilustrativa e não verifica se o símbolo de pop pedido coincide com o '
@@ -1520,7 +2464,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorSimulation: HelpNodeCopy(
     blocks: _pdaSimulationBlocks,
     title: 'Executar ou cancelar uma simulação de AP',
-    body: 'A Simulação de AP busca no autômato atual um caminho que aceite uma '
+    body:
+        'A Simulação de AP busca no autômato atual um caminho que aceite uma '
         'entrada. Use-a depois de definir o grafo e sempre que quiser testar '
         'pertinência à linguagem. Preencha Cadeia de entrada, deixe-a vazia '
         'para ε, informe um Símbolo inicial da pilha não vazio, escolha '
@@ -1535,7 +2480,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorSimulationTraceAndStack: HelpNodeCopy(
     blocks: _pdaSimulationBlocks,
     title: 'Traço, pilha atual e entrada restante',
-    body: 'O traço registra configurações da AP para examinar estado, pilha '
+    body:
+        'O traço registra configurações da AP para examinar estado, pilha '
         'atual, entrada restante e transição usada em cada passo. Use-o para '
         'explicar um caminho aceito ou descobrir onde todas as ramificações '
         'param. Ative Registrar traço passo a passo antes de Simular AP e '
@@ -1550,7 +2496,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorSimulationResultsAndCanvas: HelpNodeCopy(
     blocks: _pdaSimulationBlocks,
     title: 'Ler resultados e reproduzir no canvas',
-    body: 'Resultados da simulação resume se a execução da AP foi Aceita, '
+    body:
+        'Resultados da simulação resume se a execução da AP foi Aceita, '
         'Rejeitada, cancelada, encerrada por tempo ou falhou de outra forma. '
         'Use-o para confirmar a pertinência e reproduzir um traço registrado. '
         'Leia status, tempo e erro; com Registrar traço passo a passo ativo, '
@@ -1570,7 +2517,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorAlgorithmsOverview: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Visão geral dos algoritmos de AP',
-    body: 'Análise de AP reúne seis controles de conversão, simplificação e '
+    body:
+        'Análise de AP reúne seis controles de conversão, simplificação e '
         'diagnóstico. Use-a depois de desenhar ou carregar uma AP quando uma '
         'simulação não basta. Selecione Converter para GLC, Simplificar AP, '
         'Verificar determinismo, Encontrar estados alcançáveis, Análise da '
@@ -1592,14 +2540,15 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'resultado. Variáveis [p,A,q] representam uma obrigação de pilha entre '
         'estados. A AP precisa de estados, estado inicial, ao menos um estado '
         'de aceitação e cada transição deve desempilhar exatamente um símbolo '
-        'não lambda; falhas não mudam a AP. A gramática aparece no painel sem '
+        'não epsilon; falhas não mudam a AP. A gramática aparece no painel sem '
         'abrir o editor de Gramática. Continue em AP e GLC.',
     keywords: ['AP', 'PDA', 'Converter para GLC', 'gramática', '[p,A,q]'],
   ),
   HelpTopicIds.pdaEditorAlgorithmsMinimize: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Simplificar uma AP com segurança',
-    body: 'Simplificar AP aplica reduções que preservam o modo de aceitação '
+    body:
+        'Simplificar AP aplica reduções que preservam o modo de aceitação '
         'ativo. Remove estados de controle estruturalmente inalcançáveis, '
         'calcula o quociente de bissimulação forte até um ponto fixo e elimina '
         'transições exatamente duplicadas. A utilidade semântica exata ainda é '
@@ -1622,14 +2571,15 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorAlgorithmsDeterminism: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Verificar determinismo',
-    body: 'Verificar determinismo informa conflitos de transição detectados '
+    body:
+        'Verificar determinismo informa conflitos de transição detectados '
         'pelo editor da AP. Use-o para localizar ramificações com a mesma '
         'origem, condição de entrada e condição de pop. Selecione Verificar '
         'determinismo e examine o resultado determinístico ou NÃO '
         'determinístico, rótulos conflitantes, destaques, total de transições e '
-        'quantidade lambda. O modelo não muda. A verificação atual agrupa '
+        'quantidade epsilon. O modelo não muda. A verificação atual agrupa '
         'chaves exatas origem/entrada/pop; não é um teste formal completo de '
-        'AP determinística para toda interação entre entrada lambda e '
+        'AP determinística para toda interação entre entrada epsilon e '
         'movimentos consumidores. Basta existir uma AP; aceitação não é exigida '
         'para o relatório. Continue em Não determinismo.',
     keywords: ['AP', 'PDA', 'Verificar determinismo', 'conflito', 'lambda'],
@@ -1637,7 +2587,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorAlgorithmsReachableStates: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Encontrar estados alcançáveis',
-    body: 'Encontrar estados alcançáveis classifica estados da AP pela '
+    body:
+        'Encontrar estados alcançáveis classifica estados da AP pela '
         'alcançabilidade no grafo desde o estado inicial. Use-o para localizar '
         'trechos desconectados antes de simplificar. Selecione Encontrar '
         'estados alcançáveis e leia o estado inicial e os conjuntos ordenados '
@@ -1651,7 +2602,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorAlgorithmsLanguage: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Analisar a linguagem',
-    body: 'Análise da linguagem fornece uma amostra limitada da linguagem '
+    body:
+        'Análise da linguagem fornece uma amostra limitada da linguagem '
         'reconhecida pela AP. Use-a para conferir rapidamente alfabeto de '
         'entrada, símbolos da pilha, aceitação e exemplos curtos. Selecione '
         'Análise da linguagem e examine até dez cadeias aceitas e dez rejeitadas '
@@ -1666,7 +2618,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.pdaEditorAlgorithmsStackOperations: HelpNodeCopy(
     blocks: _pdaAlgorithmBlocks,
     title: 'Analisar operações da pilha',
-    body: 'Operações da pilha resume os rótulos de pilha usados pelas '
+    body:
+        'Operações da pilha resume os rótulos de pilha usados pelas '
         'transições da AP. Use-o para auditar quais regras fazem push, pop ou '
         'mencionam símbolos da pilha. Selecione Operações da pilha e examine '
         'símbolo inicial, operações únicas de push e pop, símbolos tocados e '
@@ -1679,7 +2632,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaEditorFilesAndExamples: HelpNodeCopy(
     title: 'Arquivos, SVG e exemplos de AP',
-    body: 'As áreas de exemplos e arquivos fornecem APs prontas e uma '
+    body:
+        'As áreas de exemplos e arquivos fornecem APs prontas e uma '
         'exportação visual do grafo atual. Use os exemplos visíveis APD - '
         'Parênteses Balanceados, APD - a^n b^n, APD - Palíndromo, APD - a^n '
         'b^2n ou APD - w#reverse(w) para explorar padrões da pilha, e use SVG '
@@ -1698,7 +2652,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaTheoryPda: HelpNodeCopy(
     title: 'Autômatos de pilha',
-    body: 'Um autômato de pilha é uma máquina de estados finitos ampliada por '
+    body:
+        'Um autômato de pilha é uma máquina de estados finitos ampliada por '
         'uma pilha ilimitada de último a entrar, primeiro a sair. Use uma AP '
         'quando memória finita não bastar para aninhamento ou contagens '
         'correspondentes de uma linguagem livre de contexto. Defina estados, '
@@ -1712,7 +2667,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaTheoryStack: HelpNodeCopy(
     title: 'Memória de pilha',
-    body: 'A pilha de uma AP é memória LIFO cujo topo controla quais '
+    body:
+        'A pilha de uma AP é memória LIFO cujo topo controla quais '
         'transições de pop estão disponíveis. Use-a para lembrar aberturas '
         'aninhadas, contagens ou um prefixo escolhido até chegar a entrada '
         'correspondente. Comece pelo símbolo inicial, teste e opcionalmente '
@@ -1725,20 +2681,22 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaTheoryTransitions: HelpNodeCopy(
     title: 'Transições de AP',
-    body: 'Uma transição de AP leva estado, entrada opcional e teste opcional '
+    body:
+        'Uma transição de AP leva estado, entrada opcional e teste opcional '
         'do topo a um novo estado e substituição da pilha. Use-a para codificar '
         'um passo legal da computação. No editor, escolha origem e destino, '
         'defina símbolo de entrada, símbolo de pop e símbolo de push e use as '
-        'três chaves lambda para ações omitidas. Um movimento correspondente '
+        'três chaves epsilon para ações omitidas. Um movimento correspondente '
         'consome sua entrada, remove o topo exigido e empilha a substituição '
-        'ordenada. Ele não ocorre se entrada ou pop não lambda não coincidir, '
+        'ordenada. Ele não ocorre se entrada ou pop não epsilon não coincidir, '
         'e vários movimentos disponíveis introduzem não determinismo. Continue '
-        'em Chaves lambda ou Não determinismo.',
+        'em Chaves epsilon ou Não determinismo.',
     keywords: ['AP', 'PDA', 'transição', 'entrada', 'pop', 'push'],
   ),
   HelpTopicIds.pdaTheoryAcceptance: HelpNodeCopy(
     title: 'Critérios de aceitação',
-    body: 'Aceitação define quais configurações completas da AP colocam uma '
+    body:
+        'Aceitação define quais configurações completas da AP colocam uma '
         'entrada na linguagem. Use o critério escolhido pela ferramenta ao '
         'comparar uma construção manual com a simulação. A tela de AP atual '
         'começa no estado e símbolo inicial e busca até consumir toda a entrada '
@@ -1751,11 +2709,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaTheoryNondeterminism: HelpNodeCopy(
     title: 'Não determinismo em APs',
-    body: 'Uma AP não determinística pode ter vários movimentos aplicáveis à '
+    body:
+        'Uma AP não determinística pode ter vários movimentos aplicáveis à '
         'mesma configuração, inclusive sem consumir entrada. Use ramificações '
         'quando a máquina precisar adivinhar um ponto de divisão ou estratégia '
         'de pilha, como ao reconhecer palíndromos. Crie regras entrada/pop '
-        'concorrentes ou caminhos lambda e simule; a busca percorre '
+        'concorrentes ou caminhos epsilon e simule; a busca percorre '
         'configurações até uma aceitar ou as alternativas limitadas acabarem. '
         'Um único ramo aceito basta. Ciclos e ramificações podem atingir cinco '
         'segundos, profundidade 1.000 ou 100.000 configurações, e Verificar '
@@ -1765,7 +2724,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pdaTheoryContextFreeLanguages: HelpNodeCopy(
     title: 'Linguagens livres de contexto',
-    body: 'Linguagens livres de contexto são exatamente as reconhecidas por '
+    body:
+        'Linguagens livres de contexto são exatamente as reconhecidas por '
         'APs não determinísticas nas equivalências usuais. Use essa classe para '
         'estruturas aninhadas ou recursivamente balanceadas, como parênteses e '
         'a^n b^n. Construa regras da pilha ou derive uma GLC e teste cadeias '
@@ -1779,19 +2739,20 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'PDA',
       'linguagem livre de contexto',
       'GLC',
-      'aninhamento'
+      'aninhamento',
     ],
   ),
   HelpTopicIds.pdaTheoryPdaAndCfg: HelpNodeCopy(
     title: 'AP e gramáticas livres de contexto',
-    body: 'APs não determinísticas e gramáticas livres de contexto são duas '
+    body:
+        'APs não determinísticas e gramáticas livres de contexto são duas '
         'formas equivalentes de descrever linguagens livres de contexto. Use '
         'conversão para relacionar comportamento da pilha a produções ou '
         'examinar outro modelo formal. Execute Converter para GLC numa AP '
         'adequada ou uma conversão de gramática para AP no espaço Gramática. O '
         'conversor gera variáveis [p,A,q] e exibe a GLC sem trocar de espaço. '
         'Esta implementação exige estrutura por estado final e exatamente um '
-        'pop não lambda em cada transição, então uma AP matematicamente '
+        'pop não epsilon em cada transição, então uma AP matematicamente '
         'conversível pode precisar ser normalizada. Continue em Converter para '
         'GLC ou Relações entre gramáticas, AF e AP.',
     keywords: ['AP', 'PDA', 'GLC', 'conversão', 'equivalência'],
@@ -1806,7 +2767,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorOverview: HelpNodeCopy(
     title: 'Visão geral do editor de máquinas de Turing',
-    body: 'O espaço MT reúne canvas de estados, inspetor de fita única, '
+    body:
+        'O espaço MT reúne canvas de estados, inspetores de fita sincronizados, '
         'simulação, análise estrutural, métricas, exemplos e exportação SVG. '
         'Use-o para construir e testar uma máquina cujas transições leem, '
         'escrevem e movem o cabeçote. Adicione estados, marque os estados '
@@ -1823,7 +2785,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorSelectionAndStates: HelpNodeCopy(
     title: 'Selecionar e editar estados',
-    body: 'Estados representam o controle finito da MT, e Selecionar permite '
+    body:
+        'Estados representam o controle finito da MT, e Selecionar permite '
         'movê-los ou editá-los. Use esses controles para definir onde o cálculo '
         'começa, termina com sucesso ou muda de comportamento. Ative Adicionar '
         'estado, crie um estado e selecione-o para editar rótulo, Estado '
@@ -1836,25 +2799,27 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorTransitions: HelpNodeCopy(
     title: 'Adicionar e editar transições',
     body:
-        'Uma transição da MT escolhe o próximo estado e uma operação da fita. '
-        'Use transições para definir o que a máquina faz com cada símbolo sob o '
-        'cabeçote. Ative Adicionar transição, selecione origem e destino, '
+        'Uma transição da MT escolhe o próximo estado e uma operação atômica '
+        'para cada fita. Use transições para definir o que a máquina faz com o '
+        'vetor completo de símbolos sob os cabeçotes. Ative Adicionar '
+        'transição, selecione origem e destino, '
         'preencha o editor de operação e salve; selecione uma aresta existente '
         'para editar ou excluir. O canvas exibe leitura/escrita,direção e '
         'recalcula símbolos e conflitos não determinísticos. Campos de leitura '
         'ou escrita vazios são rejeitados, e regras concorrentes para o mesmo '
-        'estado e símbolo lido tornam a máquina não determinística. Continue em '
+        'estado e vetor lido tornam a máquina não determinística. Continue em '
         'Leitura, escrita e direção.',
     keywords: ['MT', 'TM', 'Adicionar transição', 'aresta', 'operação'],
   ),
   HelpTopicIds.tmEditorReadWriteAndDirection: HelpNodeCopy(
     title: 'Leitura, escrita e direção',
-    body: 'Símbolo lido, Símbolo escrito e Direção definem uma regra da MT. '
-        'Use-os quando a transição precisar reconhecer a célula atual, '
-        'substituí-la e produzir movimento do cabeçote. Informe um símbolo lido '
-        'e um símbolo escrito não vazios, escolha Esquerda, Direita ou Parado e '
-        'ative Salvar ou pressione Enter; Escape cancela. O rótulo passa a '
-        'leitura/escrita,direção e a regra fica disponível à simulação. Espaços '
+    body:
+        'Símbolo lido, Símbolo escrito e Direção definem uma operação para '
+        'cada fita da regra. A transição combina todas as células atuais e '
+        'depois escreve e move todos os cabeçotes atomicamente. Informe '
+        'símbolos não vazios e escolha Esquerda, Direita ou Parado em cada '
+        'fita; ative Salvar ou pressione Enter. Escape cancela. O rótulo mostra '
+        'cada tupla leitura/escrita,direção. Espaços '
         'externos são removidos, campo vazio é inválido e branco é um símbolo '
         'configurado, não ausência de valor. Continue em Símbolo branco e '
         'alfabeto da fita.',
@@ -1862,7 +2827,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorHistoryAndClear: HelpNodeCopy(
     title: 'Desfazer, refazer e limpar',
-    body: 'Desfazer e Refazer restauram edições registradas no canvas da MT, '
+    body:
+        'Desfazer e Refazer restauram edições registradas no canvas da MT, '
         'enquanto Limpar canvas remove o grafo. Use o histórico após uma edição '
         'indesejada e Limpar somente para recomeçar. Ative os controles da '
         'barra ou os atalhos disponíveis e confira estados e transições '
@@ -1878,7 +2844,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorViewportZoom: HelpNodeCopy(
     title: 'Zoom e deslocamento',
-    body: 'Zoom e deslocamento alteram a área visível da MT sem mudar sua '
+    body:
+        'Zoom e deslocamento alteram a área visível da MT sem mudar sua '
         'estrutura formal. Use-os para examinar um grafo denso ou alcançar '
         'estados fora da tela. Use Ampliar ou Reduzir, roda do mouse, trackpad '
         'ou gesto de pinça com dois dedos e arraste o fundo para deslocar. A '
@@ -1889,7 +2856,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorViewportFitAndReset: HelpNodeCopy(
     title: 'Ajustar ao conteúdo e redefinir visualização',
-    body: 'Ajustar ao conteúdo enquadra o grafo da MT, enquanto Redefinir '
+    body:
+        'Ajustar ao conteúdo enquadra o grafo da MT, enquanto Redefinir '
         'visualização retorna à escala e posição padrão. Use Ajustar quando '
         'estados saírem da tela e Redefinir para uma vista neutra. Ative a ação '
         'correspondente na barra do canvas. Só a visualização muda; posições '
@@ -1900,7 +2868,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorViewportAutoLayout: HelpNodeCopy(
     title: 'Disponibilidade do Layout automático',
-    body: 'Layout automático reposicionaria os estados do grafo. Procure-o '
+    body:
+        'Layout automático reposicionaria os estados do grafo. Procure-o '
         'quando uma máquina organizada manualmente ficar difícil de ler. O '
         'espaço MT atual não expõe Layout automático, então mova estados com '
         'Selecionar e use Ajustar ao conteúdo para enquadrá-los. Arrastar '
@@ -1915,7 +2884,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorTapeInspector: HelpNodeCopy(
     title: 'Usar o inspetor da fita',
-    body: 'O inspetor mostra células visíveis e a posição do cabeçote da MT '
+    body:
+        'O inspetor mostra células visíveis e a posição do cabeçote da MT '
         'ativa. Use-o para examinar ou preparar o conteúdo da fita e acompanhar '
         'um passo da simulação. Expanda o painel, selecione uma célula editável, '
         'escolha um símbolo do alfabeto da fita ou digite um caractere e '
@@ -1928,28 +2898,70 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmEditorTapeBlankAndAlphabet: HelpNodeCopy(
     title: 'Símbolo branco e alfabeto da fita',
-    body: 'O alfabeto da fita contém todo símbolo que pode aparecer nela, '
+    body:
+        'O alfabeto da fita contém todo símbolo que pode aparecer nela, '
         'inclusive o símbolo branco usado além da entrada escrita. Use-o para '
         'ler rótulos de transição ou editar células. Informe explicitamente o '
         'branco configurado, normalmente B ou □, nas regras de leitura e '
         'escrita; o editor deriva outros símbolos das transições. A simulação '
-        'expande a fita com brancos conforme o cabeçote se move. Este é um '
-        'editor de fita única e não expõe edição de múltiplas fitas, seleção de '
-        'número da fita ou cabeçotes separados, embora o formato serializado '
-        'mantenha campos de compatibilidade. Continue em Fita e cabeçote.',
-    keywords: ['MT', 'TM', 'fita única', 'múltiplas fitas', 'símbolo branco'],
+        'expande cada fita com brancos conforme o cabeçote se move. Use os '
+        'controles da quantidade de fitas para adicionar ou remover fitas; '
+        'cada transição recebe uma operação explícita por fita. A remoção é '
+        'recusada enquanto as operações afetadas contiverem símbolo não branco '
+        'ou movimento. Continue em Fita e cabeçote.',
+    keywords: [
+      'MT',
+      'TM',
+      'quantidade de fitas',
+      'múltiplas fitas',
+      'símbolo branco',
+    ],
   ),
   HelpTopicIds.tmEditorTapeHeadAndCurrentCell: HelpNodeCopy(
     title: 'Cabeçote e célula atual',
-    body: 'O cabeçote identifica a célula lida pela próxima transição. Use o '
+    body:
+        'O cabeçote identifica a célula lida pela próxima transição. Use o '
         'marcador central e o rótulo da posição para acompanhar seu movimento '
         'durante a edição ou o traço. Selecione um passo ou use Passo anterior, '
         'Próximo passo, Reproduzir, Pausar ou Reiniciar; o inspetor projeta o '
         'passo e marca leitura, escrita e célula atual. Esquerda pode expandir '
         'o início da fita, Direita pode acrescentar um branco e Parado mantém o '
-        'índice. A faixa visível representa uma fita, não vários cabeçotes. '
-        'Continue em Traço e fita.',
+        'índice. Em execução multifitas, cada inspetor recolhível mantém '
+        'visíveis a posição do cabeçote e a operação ativa. Continue em Traço '
+        'e fita.',
     keywords: ['MT', 'TM', 'cabeçote', 'célula atual', 'Esquerda', 'Direita'],
+  ),
+  HelpTopicIds.tmEditorMultiTapeTraceAndMetrics: HelpNodeCopy(
+    blocks: _tmMultiTapeBlocks,
+    title: 'Rastro sincronizado e métricas de múltiplas fitas',
+    body:
+        'Uma MT multifitas lê um símbolo de cada fita, escolhe uma transição '
+        'pelo vetor completo de leitura e então escreve e move todos os '
+        'cabeçotes em um único passo atômico. Use Rastro sincronizado de '
+        'múltiplas fitas depois de simular uma entrada para inspecionar esse '
+        'passo comum sem tratar cada fita como uma execução separada. Selecione '
+        'uma linha do rastro para ver estado de origem, estado de destino, ID '
+        'da transição e quantidade de operações. A configuração selecionada '
+        'tem uma seção expansível para cada fita. Cada seção mostra posição do '
+        'cabeçote, operação de leitura para escrita, direção e células próximas '
+        'com a célula ativa marcada. O painel Métricas de espaço de múltiplas '
+        'fitas informa a maior extensão visitada e o máximo de células não brancas '
+        'de cada fita, além do máximo total simultâneo entre todas as fitas. '
+        'Os máximos por fita podem ocorrer em configurações diferentes, então '
+        'somá-los não recupera o total simultâneo. Um rastro vazio significa '
+        'que nenhum passo de transição foi registrado. Esses valores descrevem '
+        'a execução limitada selecionada, não o espaço assintótico nem todas '
+        'as entradas. Continue em Ler o rastro e a fita ou Perfil de espaço.',
+    keywords: [
+      'MT',
+      'TM',
+      'múltiplas fitas',
+      'Rastro sincronizado de múltiplas fitas',
+      'transição atômica',
+      'posição do cabeçote',
+      'métricas de espaço',
+      'células não brancas',
+    ],
   ),
   'tm.editor.simulation': HelpNodeCopy(
     title: 'Simulação',
@@ -1958,7 +2970,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorSimulation: HelpNodeCopy(
     blocks: _tmSimulationBlocks,
     title: 'Informar entrada e simular',
-    body: 'A simulação executa a MT atual desde o estado inicial sobre uma '
+    body:
+        'A simulação executa a MT atual desde o estado inicial sobre uma '
         'cadeia. Use-a para testar se um estado de aceitação é alcançado nessa '
         'entrada específica. Digite em Cadeia de entrada, deixe vazio para ε, '
         'preserve espaços pretendidos e ative Simular MT; durante a execução, '
@@ -1973,13 +2986,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'TM',
       'Cadeia de entrada',
       'Simular MT',
-      'Cancelar simulação'
+      'Cancelar simulação',
     ],
   ),
   HelpTopicIds.tmEditorSimulationTraceAndTape: HelpNodeCopy(
     blocks: _tmSimulationBlocks,
     title: 'Ler o traço e a fita',
-    body: 'O traço da MT registra estado, conteúdo da fita, transição aplicada '
+    body:
+        'O traço da MT registra estado, conteúdo da fita, transição aplicada '
         'e posição do cabeçote em cada passo disponível. Use-o para explicar um '
         'resultado ou localizar a primeira operação inesperada. Selecione uma '
         'linha ou posição da linha do tempo e use Passo anterior, Próximo passo, '
@@ -1993,7 +3007,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorSimulationResultsAndCanvas: HelpNodeCopy(
     blocks: _tmSimulationBlocks,
     title: 'Resultados e reprodução no canvas',
-    body: 'Os resultados distinguem aceitação de rejeição e disponibilizam o '
+    body:
+        'Os resultados distinguem aceitação de rejeição e disponibilizam o '
         'caminho gravado para reprodução. Use Visualizar no Canvas para '
         'reproduzir grafo e fita juntos. Após executar, leia Aceita ou Rejeitada '
         'e ative Visualizar no Canvas; use Passo anterior, Reproduzir ou Pausar, '
@@ -2018,7 +3033,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorAlgorithmsOverview: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Visão geral da análise de máquinas de Turing',
-    body: 'Análise da MT combina ferramentas de execução limitada com '
+    body:
+        'Análise da MT combina ferramentas de execução limitada com '
         'relatórios estruturais da máquina atual. Use-a após desenhar ou '
         'carregar um exemplo para focar estados, transições, fita, '
         'alcançabilidade, tempo ou avisos. A análise Término e ciclos classifica '
@@ -2026,16 +3042,30 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'grafo exato com execução concreta limitada. Explorador de linguagem '
         'classifica uma amostra shortlex limitada. Ative Término e ciclos, '
         'Alcançabilidade, Explorador de linguagem, Traço da fita, Perfil de '
-        'tempo ou Perfil de espaço. Os controles só ficam desativados durante '
+        'tempo, Perfil de espaço ou MT para gramática irrestrita. A prévia da '
+        'conversão aceita máquinas de fita única, preserva tokens atômicos, '
+        'mapeia cada produção à transição de origem e abre o resultado como '
+        'uma alteração reversível no editor de gramática. As amostras '
+        'diferenciais finitas são evidência, não prova de equivalência. Os '
+        'controles só ficam desativados durante '
         'outra '
         'análise; máquina ausente ou inválida gera erro após o acionamento. Abra '
         'o tópico do foco escolhido.',
-    keywords: ['MT', 'TM', 'Análise da MT', 'análise estrutural', 'resultados'],
+    keywords: [
+      'MT',
+      'TM',
+      'Análise da MT',
+      'análise estrutural',
+      'gramática irrestrita',
+      'conversão',
+      'resultados',
+    ],
   ),
   HelpTopicIds.tmEditorAlgorithmsDecidability: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Término e ciclos',
-    body: 'A análise Término e ciclos classifica uma entrada concreta com os '
+    body:
+        'A análise Término e ciclos classifica uma entrada concreta com os '
         'limites de passos, configurações e tempo exibidos. Uma execução que '
         'para é aceita ou rejeitada. A repetição de uma configuração '
         'determinística prova um ciclo e informa início e período. Atingir um '
@@ -2049,7 +3079,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorAlgorithmsReachableStates: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Alcançabilidade',
-    body: 'Alcançabilidade separa duas afirmações. A '
+    body:
+        'Alcançabilidade separa duas afirmações. A '
         'alcançabilidade estrutural percorre iterativamente as arestas de '
         'controle e prova estados desconectados. A análise semântica limitada '
         'explora configurações canônicas para o escopo de entradas separado por '
@@ -2064,7 +3095,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorAlgorithmsLanguage: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Explorador de linguagem',
-    body: 'O Explorador de linguagem enumera primeiro a cadeia vazia e depois '
+    body:
+        'O Explorador de linguagem enumera primeiro a cadeia vazia e depois '
         'as cadeias em ordem shortlex determinística até o comprimento e o limite '
         'de candidatas configurados. Defina os limites de passos, configurações '
         'e tempo por entrada, confira a estimativa e ative Explorador de '
@@ -2088,7 +3120,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorAlgorithmsTapeOperations: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Traço da fita',
-    body: 'O Traço da fita executa a máquina sobre a entrada concreta '
+    body:
+        'O Traço da fita executa a máquina sobre a entrada concreta '
         'compartilhada e mede um ramo real. O relatório mostra leituras e '
         'escritas por símbolo, células alteradas, movimentos, reversões, '
         'posições lógicas estáveis, intervalo visitado, pico de células não '
@@ -2099,14 +3132,16 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'limitado mais longo, sem combinar ramos distintos. Abra Rastreamento '
         'da execução relacionado para examinar o rastreamento produzido pela '
         'mesma execução. Entrada vazia significa epsilon; os limites de passos, '
-        'configurações e tempo continuam válidos. Somente uma fita é executada. '
-        'Continue em Fita e cabeçote.',
+        'configurações e tempo continuam válidos. Execuções multifitas mostram '
+        'instantâneos sincronizados e métricas por fita. Continue em Fita e '
+        'cabeçote.',
     keywords: ['MT', 'TM', 'Traço da fita', 'símbolo lido', 'símbolo escrito'],
   ),
   HelpTopicIds.tmEditorAlgorithmsTime: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Perfil de tempo',
-    body: 'O Perfil de tempo agrupa entradas candidatas do comprimento '
+    body:
+        'O Perfil de tempo agrupa entradas candidatas do comprimento '
         'zero até o máximo exibido e executa cada uma com orçamentos explícitos '
         'de passos de transição, configurações e tempo. As contagens de '
         'candidatos ficam visíveis antes da execução. Para uma MTD, linhas '
@@ -2131,7 +3166,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.tmEditorAlgorithmsSpace: HelpNodeCopy(
     blocks: _tmAlgorithmBlocks,
     title: 'Perfil de espaço',
-    body: 'O Perfil de espaço agrupa execuções limitadas por comprimento da '
+    body:
+        'O Perfil de espaço agrupa execuções limitadas por comprimento da '
         'entrada. O relatório mostra o maior intervalo visitado pelo cabeçote '
         'e o maior '
         'número simultâneo de células não brancas, com uma entrada testemunha '
@@ -2142,8 +3178,9 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'determinístico, e uma linha incompleta encontrou limite de enumeração, '
         'execução ou '
         'cancelamento. Para MT não determinística, os máximos cobrem todas as '
-        'configurações de ramos exploradas dentro do limite exibido. A fita '
-        'única armazena entrada e dados de trabalho. O tamanho declarado do '
+        'configurações de ramos exploradas dentro do limite exibido. Execuções '
+        'multifitas mostram o intervalo e o máximo de células não brancas de '
+        'cada fita, além do máximo combinado. O tamanho declarado do '
         'alfabeto da fita não é usado como espaço. Esse perfil limitado não '
         'prova complexidade assintótica de espaço. Continue em '
         'Complexidade de tempo e espaço.',
@@ -2155,17 +3192,82 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'células não brancas',
     ],
   ),
+  'tm.editor.building-blocks': HelpNodeCopy(
+    title: 'Blocos de construção reutilizáveis',
+    keywords: [
+      'MT',
+      'TM',
+      'blocos',
+      'submáquina',
+      'biblioteca',
+      'pilha de chamadas',
+    ],
+  ),
+  HelpTopicIds.tmEditorBuildingBlocks: HelpNodeCopy(
+    blocks: _tmBuildingBlockBlocks,
+    title: 'Criar e executar blocos reutilizáveis de MT',
+    body:
+        'Blocos de construção permitem que uma MT invoque submáquinas '
+        'nomeadas e versionadas enquanto todas as chamadas continuam nas '
+        'mesmas fitas. Use-os para examinar ou compor um projeto com operações '
+        'reutilizáveis sem expandir cada operação no grafo raiz. Abra Blocos '
+        'de construção, crie ou selecione uma definição e use Inserir para '
+        'adicionar sua âncora de invocação ao canvas raiz. Renomear e Duplicar '
+        'gerenciam definições; a navegação abre referências aninhadas, enquanto '
+        'Desfazer e Refazer se aplicam às edições da biblioteca. Durante a '
+        'simulação, os passos Entrar, Transição e Retornar mostram a pilha de '
+        'chamadas e o estado compartilhado das fitas. Dependências recursivas '
+        'ou não resolvidas impedem a execução. Excluir uma definição '
+        'referenciada exige Desvincular e excluir, que remove suas invocações. '
+        'O exemplo de blocos reutilizáveis de MT demonstra composição aninhada. '
+        'O JSON do Turing Lab e o codec dedicado de MT do JFLAP '
+        'preservam a estrutura dos blocos, mas examine as perdas de '
+        'compatibilidade informadas para metadados opcionais desconhecidos. '
+        'Continue em Simulação ou Arquivos e exemplos.',
+    keywords: [
+      'MT',
+      'TM',
+      'Blocos de construção',
+      'submáquina',
+      'Inserir',
+      'pilha de chamadas',
+      'fitas compartilhadas',
+    ],
+  ),
+  HelpTopicIds.tmEditorBuildingBlocksManageLibrary: HelpNodeCopy(
+    blocks: _tmBuildingBlockLibraryBlocks,
+    title: 'Gerenciar a biblioteca de blocos de construção',
+    body:
+        'A Biblioteca de blocos de construção gerencia definições nomeadas e '
+        'versionadas de MT e suas âncoras de invocação. Use-a para preparar '
+        'um projeto reutilizável antes de executar a máquina raiz.',
+    keywords: [
+      'MT',
+      'TM',
+      'biblioteca de blocos',
+      'Criar bloco',
+      'Inserir na tela raiz',
+      'Renomear',
+      'Duplicar',
+      'Desvincular e excluir',
+      'migalhas',
+    ],
+  ),
   HelpTopicIds.tmEditorFilesAndExamples: HelpNodeCopy(
     title: 'Arquivos e exemplos',
-    body: 'Exemplos de MT incluídos fornecem máquinas prontas, e o painel de '
-        'arquivo exporta o diagrama atual como SVG. Use MT - a^n b^n, MT - '
-        'Binário para unário, MT - Cópia de string, MT - Incremento binário ou '
-        'MT - Verificador de palíndromo para estudar uma máquina funcional. Abra '
-        'Análise da MT e selecione um exemplo, ou use Exportar SVG nas '
-        'plataformas nativas e Baixar SVG na web. Carregar exemplo substitui a '
-        'MT atual; o SVG inclui fita, cabeçote, estados, transições e legenda. O '
-        'espaço não oferece ações de importar ou salvar MT em JFLAP ou JSON, e '
-        'cancelar exportação não muda o modelo. Continue na visão geral.',
+    body:
+        'Os exemplos de MT incluídos fornecem máquinas prontas de uma ou '
+        'várias fitas: MT - a^n b^n, MT - Binário para unário, MT - Cópia de '
+        'string, MT - Incremento binário, MT - Verificador de palíndromo, MT '
+        'multifitas - Comparação, MT multifitas - Cópia em duas fitas, MT '
+        'multifitas - Palíndromo e MT multifitas - Fita de trabalho. Abra '
+        'Análise da MT para selecionar um exemplo ou use o '
+        'painel de arquivos para importar e exportar XML do JFLAP e JSON do '
+        'Turing Lab. Esses formatos preservam a quantidade de fitas e as '
+        'operações de leitura, escrita e movimento de cada fita. Exportar SVG '
+        'nas plataformas nativas vira Baixar SVG na web. Carregar exemplo ou '
+        'importar documento só substitui a MT depois da validação; cancelar uma '
+        'operação não muda o modelo. Continue na visão geral.',
     keywords: ['MT', 'TM', 'exemplos', 'Exportar SVG', 'Baixar SVG', 'JFLAP'],
   ),
   'tm.theory': HelpNodeCopy(
@@ -2174,32 +3276,36 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmTheoryTm: HelpNodeCopy(
     title: 'Máquinas de Turing',
-    body: 'Uma máquina de Turing combina controle finito com uma fita cujas '
+    body:
+        'Uma máquina de Turing combina controle finito com uma fita cujas '
         'células podem ser lidas e reescritas. Use esse modelo para algoritmos '
         'e linguagens que precisam de memória além de estados finitos ou uma '
         'pilha. Defina estados, inicial, estados de aceitação, alfabeto da fita '
         'com símbolo branco e transições de leitura, escrita e movimento. Uma '
         'execução produz configurações e aceita ao chegar a estado de aceitação. '
-        'O app executa modelo de fita única com tempo limitado, portanto timeout '
+        'O app executa modelos de uma ou várias fitas com tempo limitado, '
+        'portanto timeout '
         'não é rejeição matemática. Continue em Fita e cabeçote.',
     keywords: ['MT', 'TM', 'Máquina de Turing', 'controle finito', 'fita'],
   ),
   HelpTopicIds.tmTheoryTapeAndHead: HelpNodeCopy(
     title: 'Fita e cabeçote',
-    body: 'A fita oferece armazenamento conceitualmente ilimitado, e um '
+    body:
+        'Cada fita oferece armazenamento conceitualmente ilimitado, e seu '
         'cabeçote lê e escreve a célula atual. Use esses conceitos para '
-        'interpretar cada transição da MT. Em cada passo, combine o símbolo '
-        'lido, escreva o substituto, mova para Esquerda, Direita ou Parado e '
-        'entre no destino. A configuração seguinte contém nova fita, posição e '
-        'estado; células não escritas têm o símbolo branco. O app aumenta uma '
-        'lista finita conforme necessário e mostra uma fita, enquanto uma MT '
-        'multi-tape coordenaria várias fitas e cabeçotes por passo. Continue em '
-        'Configurações.',
+        'interpretar cada transição da MT. Em cada passo, combine o vetor '
+        'completo de leitura, aplique atomicamente todas as escritas e '
+        'movimentos para Esquerda, Direita ou Parado e entre no destino. A '
+        'configuração seguinte contém novas fitas, posições e estado; células '
+        'não escritas têm o símbolo branco. O app aumenta listas finitas '
+        'conforme necessário e mostra um inspetor sincronizado por fita. '
+        'Continue em Configurações.',
     keywords: ['MT', 'TM', 'fita', 'cabeçote', 'símbolo branco', 'multi-tape'],
   ),
   HelpTopicIds.tmTheoryConfigurations: HelpNodeCopy(
     title: 'Configurações',
-    body: 'Uma configuração é o estado instantâneo completo da MT: estado de '
+    body:
+        'Uma configuração é o estado instantâneo completo da MT: estado de '
         'controle, conteúdo da fita e posição do cabeçote. Use configurações '
         'para raciocinar sobre uma transição ou comparar linhas consecutivas do '
         'traço. Comece no estado inicial com a entrada na fita e o cabeçote na '
@@ -2211,7 +3317,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmTheoryHaltingAndAcceptance: HelpNodeCopy(
     title: 'Parada e aceitação',
-    body: 'Uma execução aceita ao chegar a estado de aceitação e rejeita ao '
+    body:
+        'Uma execução aceita ao chegar a estado de aceitação e rejeita ao '
         'parar fora dele por falta de transição compatível. Use essa distinção '
         'ao ler Aceita, Rejeitada, ciclo provado ou desconhecido por limite. '
         'Siga o traço desde '
@@ -2225,7 +3332,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmTheoryDecidableLanguages: HelpNodeCopy(
     title: 'Linguagens decidíveis',
-    body: 'Uma linguagem é decidível quando alguma MT para em toda entrada e '
+    body:
+        'Uma linguagem é decidível quando alguma MT para em toda entrada e '
         'aceita exatamente seus membros. Use a definição para separar decisões '
         'totais de reconhecedores que podem executar para sempre. Demonstre '
         'correção da pertinência e término para toda entrada possível. Um '
@@ -2237,7 +3345,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmTheoryRecursivelyEnumerable: HelpNodeCopy(
     title: 'Linguagens recursivamente enumeráveis',
-    body: 'Uma linguagem recursivamente enumerável tem um reconhecedor MT que '
+    body:
+        'Uma linguagem recursivamente enumerável tem um reconhecedor MT que '
         'aceita membros, mas pode executar para sempre em não membros. Use essa '
         'classe quando a aceitação pode ser testemunhada sem garantia total de '
         'rejeição. Descreva a máquina reconhecedora e mostre que membros acabam '
@@ -2249,7 +3358,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.tmTheoryTimeAndSpace: HelpNodeCopy(
     title: 'Complexidade de tempo e espaço',
-    body: 'Tempo de uma MT conta passos em função do tamanho da entrada, e '
+    body:
+        'Tempo de uma MT conta passos em função do tamanho da entrada, e '
         'espaço conta células distintas usadas na fita. Use essas medidas para '
         'comparar algoritmos sem depender de uma execução no dispositivo. '
         'Escolha o parâmetro de tamanho, derive limites para execuções relevantes '
@@ -2292,7 +3402,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorInput: HelpNodeCopy(
     title: 'Entrada e validação',
-    body: 'Expressão regular é o campo do padrão, e seu aviso informa se a '
+    body:
+        'Expressão regular é o campo do padrão, e seu aviso informa se a '
         'sintaxe atual pode ser usada. Valide antes de testar, converter, '
         'simplificar, analisar ou gerar amostras. Digite no campo ou acione '
         'Validar regex; a validação ocorre a cada mudança e informa a posição '
@@ -2305,7 +3416,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorAlphabet: HelpNodeCopy(
     title: 'Alfabeto',
-    body: 'Alfabeto é o conjunto de caracteres individuais usado como universo '
+    body:
+        'Alfabeto é o conjunto de caracteres individuais usado como universo '
         'pelas construções de regex que dependem de contexto. Edite-o quando o '
         'curinga . ou um atalho complementado precisar saber quais símbolos '
         'pode representar. Digite os caracteres diretamente; cada rune Unicode '
@@ -2319,7 +3431,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorTestStrings: HelpNodeCopy(
     title: 'Testar cadeias',
-    body: 'Cadeia de teste verifica se toda a entrada pertence à linguagem da '
+    body:
+        'Cadeia de teste verifica se toda a entrada pertence à linguagem da '
         'regex atual. Use-a para exemplos rápidos de pertinência depois que '
         'padrão e Alfabeto estiverem válidos. Digite em Cadeia de teste ou '
         'acione o botão de reprodução; cada edição inicia nova simulação de AFN '
@@ -2350,12 +3463,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'regex',
       'Converter para AFN',
       'Converter para AFD',
-      'AF para Regex'
+      'AF para Regex',
     ],
   ),
   HelpTopicIds.regexEditorConversionsToNfa: HelpNodeCopy(
     title: 'Converter para AFN',
-    body: 'Converter para AFN aplica a construção de Thompson à regex atual e '
+    body:
+        'Converter para AFN aplica a construção de Thompson à regex atual e '
         'produz um autômato finito não determinístico equivalente. Use-o para '
         'ver como união, concatenação e repetição viram estados e transições '
         'epsilon. Valide o padrão, mantenha Alfabeto não vazio e acione '
@@ -2367,7 +3481,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorConversionsToDfa: HelpNodeCopy(
     title: 'Converter para AFD',
-    body: 'Converter para AFD cria o AFN da regex, determiniza-o e completa '
+    body:
+        'Converter para AFD cria o AFN da regex, determiniza-o e completa '
         'transições ausentes. Use-o quando simulação ou comparação precisar de '
         'autômato determinístico total. Valide a regex, mantenha Alfabeto não '
         'vazio e acione Converter para AFD. O resultado substitui o modelo AF '
@@ -2378,7 +3493,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorConversionsFaToRegex: HelpNodeCopy(
     title: 'Resultado de AF para regex',
-    body: 'AF para Regex elimina estados do autômato finito atual e envia a '
+    body:
+        'AF para Regex elimina estados do autômato finito atual e envia a '
         'expressão resultante a este espaço. Use-o após o comando de conversão '
         'em AF para obter uma descrição textual da linguagem do autômato. '
         'Execute AF para Regex em AF, volte a Regex se necessário e use '
@@ -2390,12 +3506,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'regex',
       'AF para Regex',
       'eliminação de estados',
-      'Simplificar saída'
+      'Simplificar saída',
     ],
   ),
   HelpTopicIds.regexEditorSimplification: HelpNodeCopy(
     title: 'Passos de simplificação',
-    body: 'A simplificação aplica identidades aceitas da álgebra regular e '
+    body:
+        'A simplificação aplica identidades aceitas da álgebra regular e '
         'registra cada transformação. Use Simplificar com passos para estudar '
         'por que uma expressão válida pode ser encurtada. Execute a ação, '
         'expanda o resultado e navegue por Passo anterior, Próximo passo ou por '
@@ -2408,7 +3525,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorComplexity: HelpNodeCopy(
     title: 'Análise de complexidade',
-    body: 'Análise de complexidade resume a estrutura do padrão, não a '
+    body:
+        'Análise de complexidade resume a estrutura do padrão, não a '
         'complexidade de execução de um motor de correspondência. Use o botão '
         'visível Analyze Complexity para comparar formatos de expressões. '
         'Execute a ação e expanda os detalhes para ver Star Height (altura de '
@@ -2434,7 +3552,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorEquivalence: HelpNodeCopy(
     title: 'Comparar equivalência',
-    body: 'Comparar equivalência verifica se duas regexes descrevem a mesma '
+    body:
+        'Comparar equivalência verifica se duas regexes descrevem a mesma '
         'linguagem sobre o Alfabeto atual. Use-o quando padrões diferentes '
         'devem aceitar exatamente as mesmas cadeias. Mantenha a expressão '
         'principal em Expressão regular, digite a outra no campo de comparação '
@@ -2448,7 +3567,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexEditorEmbeddedFsaPanels: HelpNodeCopy(
     title: 'Painéis de AF incorporados',
-    body: 'Layouts desktop e tablet de Regex reutilizam Painel de algoritmos e '
+    body:
+        'Layouts desktop e tablet de Regex reutilizam Painel de algoritmos e '
         'Painel de simulação de AF ao lado do formulário. Use-os como atalhos '
         'para Regex para AFN, AFN para AFD, limpar entradas ou simular uma '
         'cadeia. Acione um comando disponível, que delega aos mesmos handlers '
@@ -2461,7 +3581,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'regex',
       'Painel de algoritmos',
       'Painel de simulação',
-      'desktop'
+      'desktop',
     ],
   ),
   'regex.theory': HelpNodeCopy(
@@ -2470,7 +3590,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryRegex: HelpNodeCopy(
     title: 'Expressões regulares',
-    body: 'Uma expressão regular denota uma linguagem regular combinando '
+    body:
+        'Uma expressão regular denota uma linguagem regular combinando '
         'símbolos atômicos com escolha finita, sequência e repetição. Use esse '
         'modelo para descrever exatamente as linguagens reconhecíveis por '
         'autômatos finitos. Monte um padrão com literal, agrupamento ( ), '
@@ -2484,7 +3605,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryLiteralsAndGrouping: HelpNodeCopy(
     title: 'Literais, conjuntos e agrupamento',
-    body: 'Um literal corresponde a si mesmo, enquanto agrupamento ( ) faz uma '
+    body:
+        'Um literal corresponde a si mesmo, enquanto agrupamento ( ) faz uma '
         'subexpressão agir como um operando. Use grupos para controlar o escopo '
         'e classe de caracteres [ ] ou intervalo como [a-c] para escolher um '
         'símbolo de um conjunto. Digite metacaracteres após barra invertida '
@@ -2499,7 +3621,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'literal',
       'agrupamento',
       'classe de caracteres',
-      'curinga'
+      'curinga',
     ],
   ),
   HelpTopicIds.regexTheoryConcatenationAndUnion: HelpNodeCopy(
@@ -2517,7 +3639,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryKleeneStarAndPlus: HelpNodeCopy(
     title: 'Estrela de Kleene e mais',
-    body: 'Estrela de Kleene * repete a expressão anterior zero ou mais vezes, '
+    body:
+        'Estrela de Kleene * repete a expressão anterior zero ou mais vezes, '
         'e mais + a repete uma ou mais vezes. Use * quando a palavra vazia for '
         'permitida e + quando pelo menos uma cópia for exigida. Coloque o '
         'operador pós-fixo logo após literal, classe, atalho ou expressão '
@@ -2529,7 +3652,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryOptional: HelpNodeCopy(
     title: 'Operador opcional',
-    body: 'O operador opcional ? permite zero ou uma cópia da expressão '
+    body:
+        'O operador opcional ? permite zero ou uma cópia da expressão '
         'anterior. Use-o para símbolo ou trecho agrupado opcional, como a? ou '
         '(ab)?. Digite o ? literal depois do operando; o ícone de interrogação '
         'exibido ao lado de Opcional (?) na Análise de complexidade é '
@@ -2553,7 +3677,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryLambda: HelpNodeCopy(
     title: 'Lambda e epsilon',
-    body: 'Lambda e epsilon são nomes comuns para a palavra vazia, que tem '
+    body:
+        'Lambda e epsilon são nomes comuns para a palavra vazia, que tem '
         'comprimento zero. Use a palavra vazia quando a linguagem contiver uma '
         'cadeia sem símbolos ou o autômato se mover sem consumir entrada. No '
         'campo Regex, digite epsilon ε para criar o nó de palavra vazia '
@@ -2566,7 +3691,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryRegularLanguages: HelpNodeCopy(
     title: 'Linguagens regulares',
-    body: 'Uma linguagem regular é qualquer linguagem denotada por regex ou '
+    body:
+        'Uma linguagem regular é qualquer linguagem denotada por regex ou '
         'reconhecida por autômato finito. Use essa classe para padrões que '
         'precisam somente de memória de estados finitos. Construa regex, AF ou '
         'ambos e raciocine sobre todas as cadeias aceitas pela representação. '
@@ -2578,7 +3704,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.regexTheoryEquivalenceWithFsa: HelpNodeCopy(
     title: 'Equivalência com autômatos finitos',
-    body: 'Regexes e autômatos finitos têm o mesmo poder expressivo sobre '
+    body:
+        'Regexes e autômatos finitos têm o mesmo poder expressivo sobre '
         'linguagens regulares. Use essa equivalência para alternar entre notação '
         'algébrica compacta e grafo operacional de estados. A construção de '
         'Thompson leva regex a AFN, a construção de subconjuntos leva AFN a AFD '
@@ -2596,9 +3723,26 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
     title: 'Jogo e progresso',
     keywords: ['lema do bombeamento', 'jogo', 'desafio', 'progresso'],
   ),
+  HelpTopicIds.pumpingEditorEnvironmentChoice: HelpNodeCopy(
+    blocks: _pumpingEnvironmentChoiceBlocks,
+    title: 'Escolha um ambiente de lema do bombeamento',
+    body:
+        'O seletor de compatibilidade separa os jogos de lema do bombeamento '
+        'regular e livre de contexto. Escolha o ambiente do teorema antes de '
+        'começar para que o jogo use a decomposição, as restrições, os exemplos '
+        'e o progresso correspondentes.',
+    keywords: [
+      'ambiente de lema do bombeamento',
+      'Bombeamento regular',
+      'Bombeamento livre de contexto',
+      'decomposição',
+      'restrições de prova',
+    ],
+  ),
   HelpTopicIds.pumpingEditorOverview: HelpNodeCopy(
     title: 'Visão geral do espaço de bombeamento',
-    body: 'O espaço Bombeamento reúne um jogo de classificação, painel teórico '
+    body:
+        'O espaço Bombeamento reúne um jogo de classificação, painel teórico '
         'com três abas e painel de progresso. Use-o para praticar o '
         'reconhecimento de linguagens regulares e não regulares enquanto '
         'consulta o método de prova. Inicie o jogo, responda cada desafio, leia '
@@ -2611,7 +3755,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingEditorGame: HelpNodeCopy(
     title: 'Fluxo do jogo',
-    body: 'Jogo do Lema do Bombeamento apresenta em sequência oito desafios '
+    body:
+        'Jogo do Lema do Bombeamento apresenta em sequência oito desafios '
         'fixos de classificação de linguagens. Use-o para testar o entendimento '
         'após ler o teorema ou revisar exemplos comuns. Acione Start Game, '
         'inspecione Language, descrição e Examples, escolha uma resposta de '
@@ -2623,7 +3768,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingEditorDifficultyAndChallenges: HelpNodeCopy(
     title: 'Dificuldade e desafios',
-    body: 'Os desafios são agrupados nos níveis 1 a 4 e rotulados EASY, MEDIUM '
+    body:
+        'Os desafios são agrupados nos níveis 1 a 4 e rotulados EASY, MEDIUM '
         'ou HARD. Use o selo e os exemplos para estimar quanto raciocínio '
         'sobre contagem, cópia, paridade ou fechamento será necessário. Avance '
         'pelos oito desafios incluídos com Next Challenge após enviar cada '
@@ -2638,7 +3784,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingEditorRegularityChoice: HelpNodeCopy(
     title: 'Escolher regular ou não regular',
-    body: 'O jogo pergunta Is this language regular? e oferece Yes, it is '
+    body:
+        'O jogo pergunta Is this language regular? e oferece Yes, it is '
         'regular ou No, it is not regular. Use a escolha para classificar toda '
         'a linguagem '
         'exibida, não apenas os exemplos listados. Selecione um cartão e acione '
@@ -2651,12 +3798,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'lema do bombeamento',
       'regular',
       'não regular',
-      'classificação'
+      'classificação',
     ],
   ),
   HelpTopicIds.pumpingEditorWitnessAndDecomposition: HelpNodeCopy(
     title: 'Testemunha e decomposição no jogo',
-    body: 'Uma prova pelo lema normalmente escolhe uma cadeia testemunha e '
+    body:
+        'Uma prova pelo lema normalmente escolhe uma cadeia testemunha e '
         'raciocina sobre toda decomposição permitida s = xyz. Use essas ideias '
         'mentalmente ao decidir um desafio não regular. Leia a linguagem, os '
         'exemplos e a aba Steps do painel Help, identifique testemunha de comprimento '
@@ -2669,7 +3817,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingEditorPumpingChoiceAndSubmit: HelpNodeCopy(
     title: 'Escolha de bombeamento e envio',
-    body: 'Uma prova por contradição escolhe o expoente de bombeamento somente '
+    body:
+        'Uma prova por contradição escolhe o expoente de bombeamento somente '
         'depois de considerar a decomposição do oponente. Use esse raciocínio '
         'antes de enviar uma classificação não regular. No jogo atual, escolha '
         'apenas o cartão de regularidade e acione Submit Answer; não existe '
@@ -2699,12 +3848,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Correct',
       'Incorrect',
       'Retry',
-      'Practice Again'
+      'Practice Again',
     ],
   ),
   HelpTopicIds.pumpingEditorProgress: HelpNodeCopy(
     title: 'Progresso e estatísticas',
-    body: 'Progresso resume desafios concluídos e o histórico cronológico de '
+    body:
+        'Progresso resume desafios concluídos e o histórico cronológico de '
         'tentativas e repetições da sessão atual. Use-o para revisar resultados '
         'separadamente do total de pontos do cabeçalho do jogo. Leia Overall '
         'Progress, Precisão (Accuracy), respostas corretas (Correct), Tentativas '
@@ -2720,12 +3870,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Precisão',
       'Corretas',
       'Tentativas',
-      'Pontuação'
+      'Pontuação',
     ],
   ),
   HelpTopicIds.pumpingEditorResponsiveLayout: HelpNodeCopy(
     title: 'Layout responsivo',
-    body: 'O espaço Bombeamento reorganiza Jogo, Ajuda e Progresso conforme a '
+    body:
+        'O espaço Bombeamento reorganiza Jogo, Ajuda e Progresso conforme a '
         'largura disponível. Use os controles visíveis em vez de esperar um '
         'painel em posição fixa. Abaixo de 1.024 pixels lógicos, os controles '
         'Show ou Hide Game, Help e Progress revelam seções empilhadas; de 1.024 a '
@@ -2738,7 +3889,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'celular',
       'tablet',
       'desktop',
-      'Show Progress'
+      'Show Progress',
     ],
   ),
   'pumping.theory': HelpNodeCopy(
@@ -2747,7 +3898,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryStatement: HelpNodeCopy(
     title: 'Enunciado do Lema do Bombeamento',
-    body: 'O Lema do Bombeamento dá uma propriedade necessária de repetição '
+    body:
+        'O Lema do Bombeamento dá uma propriedade necessária de repetição '
         'para toda linguagem regular. Use-o principalmente para obter '
         'contradição quando uma linguagem não pode ser regular. Suponha L '
         'regular, obtenha comprimento de bombeamento p, tome s suficientemente '
@@ -2760,7 +3912,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryQuantifiers: HelpNodeCopy(
     title: 'Ordem dos quantificadores',
-    body: 'A ordem dos quantificadores determina quem escolhe cada objeto no '
+    body:
+        'A ordem dos quantificadores determina quem escolhe cada objeto no '
         'Lema do Bombeamento e não pode ser rearranjada. Use a ordem para não '
         'provar somente uma decomposição favorável. Para toda linguagem regular '
         'L, existe p ≥ 1 tal que, para toda s ∈ L com |s| ≥ p, existe uma '
@@ -2773,7 +3926,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryProofStrategy: HelpNodeCopy(
     title: 'Estratégia de prova',
-    body: 'A estratégia padrão é uma prova por contradição contra a condição '
+    body:
+        'A estratégia padrão é uma prova por contradição contra a condição '
         'necessária do lema. Use-a quando a linguagem parecer exigir contagem, '
         'cópia ou simetria sem limite. Suponha L regular, tome p como seu '
         'comprimento de bombeamento, escolha s ∈ L com |s| ≥ p, cubra toda '
@@ -2785,12 +3939,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'lema do bombeamento',
       'contradição',
       'estratégia',
-      'não regular'
+      'não regular',
     ],
   ),
   HelpTopicIds.pumpingTheoryChooseWitness: HelpNodeCopy(
     title: 'Escolher uma testemunha',
-    body: 'A testemunha é uma cadeia s em L cuja estrutura expõe a memória '
+    body:
+        'A testemunha é uma cadeia s em L cuja estrutura expõe a memória '
         'exigida pela linguagem. Use-a após receber um comprimento de '
         'bombeamento p arbitrário. Defina s em função de p, verifique s ∈ L e '
         '|s| ≥ p e posicione os primeiros p símbolos de modo a restringir todo '
@@ -2801,12 +3956,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'lema do bombeamento',
       'testemunha',
       'cadeia s',
-      'comprimento p'
+      'comprimento p',
     ],
   ),
   HelpTopicIds.pumpingTheoryAllDecompositions: HelpNodeCopy(
     title: 'Cobrir todas as decomposições',
-    body: 'A alegação do lado regular pode escolher qualquer decomposição '
+    body:
+        'A alegação do lado regular pode escolher qualquer decomposição '
         's = xyz que satisfaça |xy| ≤ p e |y| > 0. Use análise de casos quando '
         'y puder ocupar partes diferentes da testemunha. Receba uma '
         'decomposição válida arbitrária, derive o que as restrições impõem a y '
@@ -2818,7 +3974,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryContradiction: HelpNodeCopy(
     title: 'Encontrar uma contradição',
-    body: 'Uma contradição é um expoente k ≥ 0 para o qual xyᵏz não pertence a '
+    body:
+        'Uma contradição é um expoente k ≥ 0 para o qual xyᵏz não pertence a '
         'L. Use bombeamento para baixo com k = 0 ou para cima com k = 2 quando '
         'um deles quebrar a propriedade definidora. Para uma decomposição legal '
         'arbitrária, calcule a cadeia bombeada e mostre exatamente qual condição '
@@ -2844,7 +4001,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryRegularExample: HelpNodeCopy(
     title: 'Exemplo regular: a*',
-    body: 'A linguagem L = {aⁿ | n ≥ 0} é regular e é denotada por a*. Use-a '
+    body:
+        'A linguagem L = {aⁿ | n ≥ 0} é regular e é denotada por a*. Use-a '
         'para ver como uma linguagem regular satisfaz a condição de bombeamento '
         'sem confundir essa demonstração com uma prova de regularidade. Para '
         'todo p e aⁿ suficientemente longa, uma decomposição possível é '
@@ -2857,7 +4015,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.pumpingTheoryNonregularAnbn: HelpNodeCopy(
     title: 'Exemplo não regular: aⁿbⁿ',
-    body: 'A linguagem L = {aⁿbⁿ | n ≥ 0} não é regular porque exige duas '
+    body:
+        'A linguagem L = {aⁿbⁿ | n ≥ 0} não é regular porque exige duas '
         'contagens iguais e ilimitadas em blocos. Use-a como padrão clássico de '
         'testemunha e decomposição. Dado p, escolha s = aᵖbᵖ; toda decomposição '
         'com |xy| ≤ p e |y| > 0 coloca y não vazio inteiramente entre os '
@@ -2869,12 +4028,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'lema do bombeamento',
       'não regular',
       'a^n b^n',
-      'contagens iguais'
+      'contagens iguais',
     ],
   ),
   HelpTopicIds.pumpingTheoryNonregularWw: HelpNodeCopy(
     title: 'Exemplo não regular: ww',
-    body: 'A linguagem L = {ww | w ∈ {a,b}*} contém duas cópias consecutivas '
+    body:
+        'A linguagem L = {ww | w ∈ {a,b}*} contém duas cópias consecutivas '
         'idênticas e não é a linguagem dos palíndromos. Use uma testemunha '
         'estruturada como s = aᵖbaᵖb, onde w = aᵖb. Todo y legal nas primeiras '
         'p posições contém somente símbolos a da primeira cópia; bombear altera '
@@ -2887,7 +4047,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'lema do bombeamento',
       'não regular',
       'ww',
-      'cadeias duplicadas'
+      'cadeias duplicadas',
     ],
   ),
   'shortcuts': HelpNodeCopy(
@@ -2896,7 +4056,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.shortcutsCanvas: HelpNodeCopy(
     title: 'Atalhos do canvas',
-    body: 'Os atalhos do canvas operam o canvas editável de autômato que está '
+    body:
+        'Os atalhos do canvas operam o canvas editável de autômato que está '
         'com foco. Use-os quando houver um teclado físico e o foco estiver fora '
         'de um campo de texto. Pressione A para adicionar um estado no centro '
         'da área visível e manter o modo de adição ativo, T para o modo de '
@@ -2928,7 +4089,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.shortcutsDialogsAndForms: HelpNodeCopy(
     title: 'Diálogos e formulários',
-    body: 'Os atalhos de diálogos e formulários confirmam, cancelam ou '
+    body:
+        'Os atalhos de diálogos e formulários confirmam, cancelam ou '
         'percorrem um editor ativo. Use-os nos editores de transição, no '
         'diálogo de atalhos de teclado e em outros controles com ações padrão '
         'de teclado. Pressione Enter ou Enter do teclado numérico para enviar '
@@ -2942,7 +4104,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.shortcutsFocusNavigation: HelpNodeCopy(
     title: 'Navegação por foco',
-    body: 'O foco de teclado identifica qual controle recebe a próxima ação de '
+    body:
+        'O foco de teclado identifica qual controle recebe a próxima ação de '
         'teclado. Use a navegação por foco quando um ponteiro ou gesto de toque '
         'não for conveniente. Pressione Tab para seguir a ordem de leitura ou '
         'a ordem explícita do formulário, Shift+Tab para voltar e Enter ou '
@@ -2955,7 +4118,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.shortcutsPlatformModifiers: HelpNodeCopy(
     title: 'Modificadores por plataforma',
-    body: 'Os atalhos com modificadores têm variantes equivalentes com Control '
+    body:
+        'Os atalhos com modificadores têm variantes equivalentes com Control '
         'e Command quando o canvas registra ambas. Consulte este tópico ao '
         'alternar entre Windows, Linux, Web, macOS, iPadOS ou iOS com teclado '
         'físico. Use Ctrl+Z, Ctrl+Y ou Ctrl+Shift+Z em teclados orientados a '
@@ -2968,7 +4132,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.shortcutsCancelAndClose: HelpNodeCopy(
     title: 'Cancelar e fechar',
-    body: 'Escape cancela o contexto de teclado que possui a tecla naquele '
+    body:
+        'Escape cancela o contexto de teclado que possui a tecla naquele '
         'momento. Use-o para sair de um editor de transição, fechar um diálogo '
         'de atalhos ou devolver um canvas editável ao modo de seleção. '
         'Pressione Escape uma vez com o foco dentro do editor, diálogo ou '
@@ -2985,7 +4150,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.troubleshootingInvalidAutomata: HelpNodeCopy(
     title: 'Autômatos inválidos',
-    body: 'Um autômato inválido não tem uma estrutura obrigatória ou contém '
+    body:
+        'Um autômato inválido não tem uma estrutura obrigatória ou contém '
         'uma transição que a operação atual não pode usar. Abra este tópico '
         'quando uma simulação ou algoritmo estiver desativado ou retornar uma '
         'mensagem de validação. Leia o estado do espaço, adicione um estado '
@@ -3000,11 +4166,12 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.troubleshootingGrammarInput: HelpNodeCopy(
     title: 'Erros na entrada da gramática',
-    body: 'Os erros da entrada da gramática identificam uma produção ou campo '
+    body:
+        'Os erros da entrada da gramática identificam uma produção ou campo '
         'que não pode formar a gramática solicitada. Use este tópico quando uma '
         'linha de produção mostrar erro ou a análise e as conversões rejeitarem '
         'o modelo. Mantenha um não terminal à esquerda, informe símbolos ou '
-        'alternativas válidos à direita, use λ ou ε para a palavra vazia e '
+        'alternativas válidos à direita, use ε para a palavra vazia e '
         'selecione um símbolo inicial declarado pela gramática. As linhas '
         'corretas permanecem no editor, e o estado ou resultado do comando '
         'informa se a gramática pode prosseguir. Produções vazias, símbolos não '
@@ -3015,7 +4182,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.troubleshootingRegexInput: HelpNodeCopy(
     title: 'Erros na entrada da expressão regular',
-    body: 'Um diagnóstico de expressão regular aponta uma sintaxe que o parser '
+    body:
+        'Um diagnóstico de expressão regular aponta uma sintaxe que o parser '
         'atual não aceita. Use este tópico quando a validação marcar a expressão '
         'como inválida ou os controles de conversão e teste permanecerem '
         'indisponíveis. Leia a posição do diagnóstico, feche grupos e classes '
@@ -3031,12 +4199,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'diagnóstico',
       'sintaxe',
       'alfabeto',
-      'epsilon'
+      'epsilon',
     ],
   ),
   HelpTopicIds.troubleshootingSimulationLimits: HelpNodeCopy(
     title: 'Limites de simulação',
-    body: 'Os limites de simulação encerram uma busca que demora demais ou '
+    body:
+        'Os limites de simulação encerram uma busca que demora demais ou '
         'explora configurações demais. Use este tópico após um timeout, limite '
         'de configurações ou resultado semelhante a laço. Encurte a entrada, '
         'remova ramificações ou laços desnecessários e tente um equivalente '
@@ -3054,7 +4223,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.troubleshootingParserStrategies: HelpNodeCopy(
     title: 'Estratégias de análise',
-    body: 'As estratégias de análise usam algoritmos e requisitos de gramática '
+    body:
+        'As estratégias de análise usam algoritmos e requisitos de gramática '
         'diferentes para testar uma cadeia. Use este tópico quando uma '
         'estratégia estiver indisponível, atingir timeout ou contrariar uma '
         'suposição sobre a forma da gramática. Comece com Automatic (Earley) '
@@ -3062,7 +4232,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'escolha CYK (Cocke-Younger-Kasami) quando sua tabela e seus passos '
         'forem úteis. O painel retorna aceitação, diagnósticos e qualquer '
         'derivação ou passo disponível. LL(1) está disponível para gramáticas '
-        'preditivas sem conflitos; LR continua indisponível. Toda estratégia '
+        'preditivas sem conflitos, e LR(1) canônico para gramáticas LR canônicas '
+        'sem conflitos. Toda estratégia '
         'continua sujeita ao limite de 5 segundos. Continue no tópico do parser '
         'selecionado.',
     keywords: [
@@ -3071,12 +4242,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Brute force',
       'CYK',
       'LL',
-      'LR'
+      'LR',
     ],
   ),
   HelpTopicIds.troubleshootingFileImportExport: HelpNodeCopy(
     title: 'Importação e exportação de arquivos',
-    body: 'Erros de arquivo ocorrem quando o arquivo ou a ação escolhida não '
+    body:
+        'Erros de arquivo ocorrem quando o arquivo ou a ação escolhida não '
         'corresponde ao espaço e à plataforma atuais. Use este tópico quando o '
         'carregamento falhar, uma ação de exportação não existir ou o seletor '
         'da plataforma não retornar arquivo. Abra o espaço correspondente, '
@@ -3089,9 +4261,27 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'Continue em Arquivos e exemplos do espaço atual.',
     keywords: ['erro de arquivo', 'importar', 'exportar', 'JFLAP', 'SVG'],
   ),
+  HelpTopicIds.troubleshootingInteroperabilityReview: HelpNodeCopy(
+    blocks: _interoperabilityReviewBlocks,
+    title: 'Revisar a fidelidade da interoperabilidade',
+    body:
+        'O diálogo de revisão de interoperabilidade torna visíveis as mudanças '
+        'do codec antes que uma importação ou exportação seja confirmada. Use-o '
+        'para distinguir representações exatas, normalizadas e com perda de '
+        'dados, examinar diagnósticos por campo e decidir entre continuar ou '
+        'cancelar.',
+    keywords: [
+      'interoperabilidade',
+      'fidelidade',
+      'normalizada',
+      'perda de dados',
+      'relatório por campo',
+    ],
+  ),
   HelpTopicIds.troubleshootingMissingStateMarkers: HelpNodeCopy(
     title: 'Marcadores de estado ausentes',
-    body: 'Os marcadores de estado informam onde o autômato começa e quais '
+    body:
+        'Os marcadores de estado informam onde o autômato começa e quais '
         'estados aceitam. Use este tópico quando a validação informar ausência '
         'de estado inicial, ausência de estado de aceitação ou mais de um '
         'marcador inicial. Selecione um estado, ative Estado inicial em '
@@ -3105,12 +4295,13 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'estado inicial',
       'estado de aceitação',
       'marcador',
-      'validação'
+      'validação',
     ],
   ),
   HelpTopicIds.troubleshootingNondeterminism: HelpNodeCopy(
     title: 'Não determinismo inesperado',
-    body: 'Não determinismo significa que mais de uma próxima configuração '
+    body:
+        'Não determinismo significa que mais de uma próxima configuração '
         'pode ser aplicada à mesma situação atual. Use este tópico quando uma '
         'operação exigir AFD ou o indicador de determinismo informar conflitos. '
         'Inspecione as transições destacadas ou relatadas, remova um movimento '
@@ -3125,7 +4316,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.troubleshootingLostCanvasView: HelpNodeCopy(
     title: 'Visualização perdida no canvas',
-    body: 'Uma visualização perdida significa que o modelo ainda existe, mas o '
+    body:
+        'Uma visualização perdida significa que o modelo ainda existe, mas o '
         'zoom ou deslocamento o levou para fora da área útil. Use este tópico '
         'quando o canvas parecer vazio ou os estados estiverem pequenos demais '
         'para selecionar. Escolha Ajustar ao conteúdo para enquadrar todos os '
@@ -3139,7 +4331,7 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
       'Ajustar ao conteúdo',
       'Redefinir visualização',
       'zoom',
-      'canvas vazio'
+      'canvas vazio',
     ],
   ),
   'about': HelpNodeCopy(
@@ -3148,25 +4340,21 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.aboutDeveloperAndProject: HelpNodeCopy(
     title: 'Desenvolvedor e projeto',
-    body: 'O Turing Lab é desenvolvido por Thales Matheus Mendonça Santos. Use '
-        'este tópico para identificar o projeto e localizar seu repositório '
-        'público de código-fonte. Abra Licenças e use o controle Repositório do '
-        'projeto para abrir https://github.com/ThalesMMS/Turing-Lab. O link '
-        'sai do aplicativo para o navegador da plataforma quando ela consegue '
-        'abri-lo. A falta de rede ou de associação com um '
-        'navegador pode impedir a abertura sem alterar o trabalho local. '
-        'Continue em Licenças ou Agradecimentos.',
+    body:
+        'O Turing Lab é desenvolvido por Thales Matheus Mendonça Santos. '
+        'Código-fonte: https://github.com/ThalesMMS/Turing-Lab.',
     keywords: [
       'desenvolvedor',
       'Thales',
       'repositório',
       'GitHub',
-      'Turing-Lab'
+      'Turing-Lab',
     ],
   ),
   HelpTopicIds.aboutLicenses: HelpNodeCopy(
     title: 'Licenças',
-    body: 'O Turing Lab é uma reimplementação em Flutter inspirada no JFLAP e '
+    body:
+        'O Turing Lab é uma reimplementação em Flutter inspirada no JFLAP e '
         'compatível com ele, não uma versão oficial do JFLAP. Use este tópico '
         'para inspecionar os termos e avisos incluídos no aplicativo. Expanda '
         'Apache License 2.0 para o código Flutter original do Turing Lab, '
@@ -3182,7 +4370,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.aboutAcknowledgments: HelpNodeCopy(
     title: 'Agradecimentos',
-    body: 'Os agradecimentos creditam as pessoas e projetos cujo trabalho está '
+    body:
+        'Os agradecimentos creditam as pessoas e projetos cujo trabalho está '
         'representado no Turing Lab. Use este tópico para as atribuições de '
         'JFLAP e GraphView que acompanham os avisos de licença. Ele cita Susan '
         'H. Rodger, da Duke University; Thomas Finley, Ryan Cavalcante, Stephen '
@@ -3196,7 +4385,8 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   ),
   HelpTopicIds.aboutDistribution: HelpNodeCopy(
     title: 'Distribuição',
-    body: 'A distribuição descreve como esta versão é oferecida enquanto '
+    body:
+        'A distribuição descreve como esta versão é oferecida enquanto '
         'contém material derivado do JFLAP. Consulte-a antes de descrever ou '
         'redistribuir o aplicativo. O Turing Lab é distribuído como um '
         'aplicativo educacional gratuito e não monetizado enquanto incluir '
@@ -3206,5 +4396,248 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'nenhum aviso Apache, JFLAP, MIT, de pacote ou de plataforma. Continue '
         'em Licenças.',
     keywords: ['distribuição', 'gratuito', 'não monetizado', 'educacional'],
+  ),
+  HelpTopicIds.mealyEditorOverview: HelpNodeCopy(
+    title: 'Transdutores Mealy',
+    body:
+        'Uma máquina Mealy emite saída ao percorrer uma transição. Seu espaço '
+        'de trabalho reúne editor de grafo, alfabetos explícitos de entrada e '
+        'saída, reprodução do traço, execução em lote, comparação de saídas, '
+        'exemplos e exportação de arquivos ou imagens. Comece por Estados e '
+        'transições Mealy e siga os tópicos compartilhados do espaço de trabalho.',
+    keywords: [
+      'Mealy',
+      'transdutor',
+      'saída na transição',
+      'espaço de trabalho',
+    ],
+  ),
+  HelpTopicIds.mealyEditorStatesAndTransitions: HelpNodeCopy(
+    title: 'Estados e transições Mealy',
+    body:
+        'Um estado Mealy armazena identidade, rótulo, posição e a indicação de '
+        'estado inicial. Cada transição consome um símbolo de entrada e emite '
+        'uma sequência ordenada de tokens de saída.',
+    keywords: ['Mealy', 'estado', 'transição', 'tokens de saída'],
+    blocks: _mealyEditingBlocks,
+  ),
+  HelpTopicIds.mooreEditorOverview: HelpNodeCopy(
+    title: 'Transdutores Moore',
+    body:
+        'Uma máquina Moore emite saída nos estados, inclusive no estado inicial '
+        'antes de consumir qualquer entrada. Seu espaço de trabalho reúne '
+        'editor de grafo, alfabetos explícitos, reprodução do traço, execução '
+        'em lote, comparação de saídas, exemplos e exportação de arquivos ou '
+        'imagens. Comece por Estados e transições Moore para conhecer as regras '
+        'específicas de edição.',
+    keywords: ['Moore', 'transdutor', 'saída no estado', 'espaço de trabalho'],
+  ),
+  HelpTopicIds.mooreEditorStatesAndTransitions: HelpNodeCopy(
+    title: 'Estados e transições Moore',
+    body:
+        'Um estado Moore armazena seus tokens de saída ordenados. Cada '
+        'transição consome somente um símbolo de entrada, e a entrada em um '
+        'estado determina a saída emitida naquele passo.',
+    keywords: ['Moore', 'estado', 'transição', 'saída inicial'],
+    blocks: _mooreEditingBlocks,
+  ),
+  HelpTopicIds.transducerEditorCanvasAndAlphabets: HelpNodeCopy(
+    title: 'Canvas e alfabetos',
+    body:
+        'Mealy e Moore compartilham o mesmo canvas responsivo e a superfície '
+        'Detalhes da máquina. Defina os limites dos tokens nos alfabetos antes '
+        'de construir o grafo e use os diagnósticos para conferir a máquina.',
+    keywords: ['canvas', 'alfabeto', 'detalhes da máquina', 'diagnósticos'],
+    blocks: _transducerCanvasBlocks,
+  ),
+  HelpTopicIds.transducerEditorCanvasEditingGestures: HelpNodeCopy(
+    title: 'Gestos de edição no canvas',
+    body:
+        'Mealy e Moore usam modos persistentes para Adicionar estado e '
+        'Adicionar transição. Adicionar estado só cria um estado depois que '
+        'você escolhe um ponto vazio do canvas. Adicionar transição espera a '
+        'origem e o destino antes de abrir o editor específico da máquina. O '
+        'modo Selecionar move estados, enquanto toque duplo, pressão longa, '
+        'botão secundário e gestos sobre rótulos de transição abrem o editor '
+        'correspondente. Deslocamento e zoom continuam disponíveis durante um '
+        'modo de posicionamento.',
+    keywords: [
+      'Adicionar estado',
+      'Adicionar transição',
+      'Selecionar',
+      'toque para posicionar',
+      'laço',
+      'rótulo de transição',
+    ],
+    blocks: _transducerCanvasEditingGestureBlocks,
+  ),
+  HelpTopicIds.transducerEditorSimulationAndPlayback: HelpNodeCopy(
+    title: 'Simulação e reprodução',
+    body:
+        'A simulação consome uma lista ordenada de tokens de entrada e registra '
+        'a saída e o traço de transições. O painel e a reprodução no canvas '
+        'mostram os mesmos passos mantidos da execução.',
+    keywords: ['simulação', 'traço', 'reprodução', 'saída'],
+    blocks: _transducerSimulationBlocks,
+  ),
+  HelpTopicIds.transducerEditorCompactCanvasPlayback: HelpNodeCopy(
+    title: 'Reprodução compacta no canvas',
+    body:
+        'Um resultado Mealy ou Moore com traço mantido oferece Visualizar no '
+        'Canvas em layouts compactos. A ação fecha a folha '
+        'Simulação e abre uma barra de reprodução sobre o canvas. Os controles '
+        'percorrem o mesmo traço, atualizam a faixa de tokens de entrada e '
+        'destacam o estado de destino e a transição do passo selecionado. '
+        'Layouts amplos mantêm o traço no painel Simulação. Fechar remove a '
+        'barra e os destaques. Editar, limpar ou substituir a máquina, ou '
+        'ampliar a visualização, descarta a reprodução compacta que deixou de '
+        'corresponder ao modelo.',
+    keywords: [
+      'Visualizar no Canvas',
+      'layout compacto',
+      'barra de reprodução',
+      'Passo anterior',
+      'Reproduzir',
+      'Próximo passo',
+      'destaque do traço',
+    ],
+    blocks: _transducerCompactCanvasPlaybackBlocks,
+  ),
+  HelpTopicIds.transducerEditorBatchComparisonAndExamples: HelpNodeCopy(
+    title: 'Lote, comparação e exemplos',
+    body:
+        'A execução em lote aplica vários vetores de tokens à máquina atual. '
+        'A comparação verifica a máquina atual contra um exemplo selecionado '
+        'com semântica exata ou explicitamente limitada.',
+    keywords: ['lote', 'comparação', 'exemplos', 'entrada testemunha'],
+    blocks: _transducerBatchBlocks,
+  ),
+  HelpTopicIds.transducerEditorFilesAndExport: HelpNodeCopy(
+    title: 'Arquivos e exportação',
+    body:
+        'O espaço de trabalho pode carregar exemplos offline, trocar documentos '
+        'de máquina compatíveis e exportar uma representação visual. Operações '
+        'de documento permanecem separadas da exportação de imagens.',
+    keywords: ['arquivos', 'XML JFLAP', 'JSON', 'SVG', 'PNG', 'exemplos'],
+    blocks: _transducerFilesBlocks,
+  ),
+  HelpTopicIds.unrestrictedGrammarEditorOverview: HelpNodeCopy(
+    title: 'Gramáticas irrestritas',
+    body:
+        'O espaço de trabalho de gramática irrestrita edita produções de '
+        'estrutura de frase cujos dois lados são sequências ordenadas de '
+        'símbolos. Ele também classifica as regras escritas, busca ou constrói '
+        'derivações, mostra dependências entre variáveis, carrega exemplos e '
+        'troca arquivos compatíveis. Comece por Edição e classificação para '
+        'conhecer o formato de entrada.',
+    keywords: [
+      'gramática irrestrita',
+      'estrutura de frase',
+      'espaço de trabalho',
+    ],
+  ),
+  HelpTopicIds.unrestrictedGrammarEditingAndClassification: HelpNodeCopy(
+    title: 'Edição e classificação',
+    body:
+        'O editor mantém terminais, não terminais e lados de produção como '
+        'sequências explícitas de tokens. O classificador informa a classe '
+        'mais forte atendida pelo conjunto atual e nomeia as regras violadas.',
+    keywords: ['produção', 'classificação', 'não terminal', 'JSON'],
+    blocks: _unrestrictedGrammarEditingBlocks,
+  ),
+  HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph: HelpNodeCopy(
+    title: 'Derivações e dependências entre variáveis',
+    body:
+        'O espaço de trabalho pode buscar uma derivação dentro de um orçamento '
+        'definido ou permitir que você escolha manualmente cada ocorrência de '
+        'produção. O grafo de dependência resume quais variáveis podem '
+        'introduzir outras variáveis.',
+    keywords: [
+      'derivação',
+      'busca limitada',
+      'grafo de dependência',
+      'testemunho',
+    ],
+    blocks: _unrestrictedGrammarDerivationBlocks,
+  ),
+  HelpTopicIds.unrestrictedGrammarExamplesFilesAndLimits: HelpNodeCopy(
+    title: 'Exemplos, arquivos e limites',
+    body:
+        'Os exemplos offline fornecem gramáticas completas e entradas '
+        'sugeridas. O painel Informações contém a troca de arquivos e, quando '
+        'disponível, a proveniência de uma conversão de máquina de Turing.',
+    keywords: ['exemplos', 'XML JFLAP', 'JSON', 'limites', 'proveniência'],
+    blocks: _unrestrictedGrammarFilesBlocks,
+  ),
+  HelpTopicIds.unrestrictedGrammarTmToGrammarConstruction: HelpNodeCopy(
+    title: 'Construção de MT para gramática irrestrita',
+    body:
+        'O espaço de trabalho de MT para gramática irrestrita transforma uma '
+        'máquina de Turing de fita única compatível em uma prévia de gramática '
+        'irrestrita com proveniência das produções, limites de token preservados '
+        'e uma verificação diferencial limitada. Comece pela prévia da '
+        'construção antes de editar a gramática gerada.',
+    keywords: [
+      'MT',
+      'máquina de Turing',
+      'gramática irrestrita',
+      'construção',
+      'proveniência',
+      'fita única',
+      '50.000',
+    ],
+    blocks: _tmToUnrestrictedGrammarBlocks,
+  ),
+  HelpTopicIds.lSystemEditorOverview: HelpNodeCopy(
+    title: 'Sistemas L',
+    body:
+        'O espaço de trabalho de sistema L aplica reescrita paralela a um '
+        'axioma e renderiza a geração escolhida como tokens e geometria de '
+        'tartaruga. Ele aceita regras contextuais e ponderadas, escolhas com '
+        'semente, reprodução, exemplos offline, troca de arquivos e exportação '
+        'em SVG ou PNG. Comece por Definição e regras para conhecer a sintaxe '
+        'do editor.',
+    keywords: ['sistema L', 'reescrita paralela', 'gráficos de tartaruga'],
+  ),
+  HelpTopicIds.lSystemDefinitionAndRules: HelpNodeCopy(
+    title: 'Definição e regras',
+    body:
+        'Um documento de sistema L armazena axioma, produções paralelas, número '
+        'de iterações, associação de comandos de tartaruga, configurações de '
+        'desenho e uma semente aleatória. Os espaços preservam os limites dos '
+        'tokens no editor.',
+    keywords: ['axioma', 'produção', 'contexto', 'peso', 'semente aleatória'],
+    blocks: _lSystemDefinitionBlocks,
+  ),
+  HelpTopicIds.lSystemGenerationsAndTurtleView: HelpNodeCopy(
+    title: 'Gerações e visualização de tartaruga',
+    body:
+        'A expansão produz uma geração ordenada de tokens. O interpretador de '
+        'tartaruga converte esses tokens em geometria, e os controles de '
+        'geração mantêm o resultado textual e o desenho no mesmo passo.',
+    keywords: ['geração', 'tartaruga', 'reprodução', 'SVG', 'PNG'],
+    blocks: _lSystemGenerationBlocks,
+  ),
+  HelpTopicIds.lSystemExamplesFilesAndLimits: HelpNodeCopy(
+    title: 'Exemplos, arquivos e limites',
+    body:
+        'Os exemplos offline combinam um sistema L formal com objetivo de '
+        'aprendizagem, limitação e descrição visual. O painel Arquivos troca '
+        'documentos compatíveis separadamente da exportação de imagens.',
+    keywords: ['exemplos', 'XML JFLAP', 'JSON', 'limites', 'fidelidade'],
+    blocks: _lSystemFilesBlocks,
+  ),
+  'extended-formal-systems': HelpNodeCopy(
+    title: 'Sistemas formais estendidos',
+    body: 'Explore gramáticas irrestritas e reescrita paralela com sistemas L.',
+    keywords: ['gramática', 'sistema L', 'reescrita'],
+  ),
+  'transducers': HelpNodeCopy(
+    title: 'Transdutores',
+    body:
+        'Crie máquinas determinísticas que emitem saída enquanto consomem '
+        'a entrada. Use Mealy para saída nas transições ou Moore para saída '
+        'nos estados, incluindo a saída do estado inicial.',
+    keywords: ['transdutor', 'Mealy', 'Moore', 'saída'],
   ),
 });

@@ -1,0 +1,4 @@
+final catalog = HelpTopicDefinition(
+  id: HelpTopicIds.topic,
+  icon: 'help',
+);

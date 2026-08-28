@@ -10,6 +10,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -245,10 +246,14 @@ class _GraphHistoryEntry {
   const _GraphHistoryEntry({
     required this.serializedSnapshot,
     required this.highlight,
+    this.companion,
+    this.domainDocument,
   });
 
   final Uint8List serializedSnapshot;
   final SimulationHighlight highlight;
+  final GraphViewHistoryCompanion? companion;
+  final Object? domainDocument;
 
   GraphViewAutomatonSnapshot? decodeSnapshot(
     Codec<List<int>, List<int>> codec,
@@ -263,6 +268,36 @@ class _GraphHistoryEntry {
       return null;
     }
   }
+}
+
+/// Keeps sidecar state aligned with one canvas history mutation.
+///
+/// The canvas snapshot remains the authority for the graph. A companion is
+/// used only for state that intentionally lives outside graph models, such as
+/// document annotations.
+abstract interface class GraphViewHistoryCompanion {
+  void undo();
+
+  void redo();
+}
+
+/// Binds sidecar callbacks to the same undo/redo entry as a graph mutation.
+final class CallbackGraphViewHistoryCompanion
+    implements GraphViewHistoryCompanion {
+  const CallbackGraphViewHistoryCompanion({
+    required VoidCallback onUndo,
+    required VoidCallback onRedo,
+  })  : _onUndo = onUndo,
+        _onRedo = onRedo;
+
+  final VoidCallback _onUndo;
+  final VoidCallback _onRedo;
+
+  @override
+  void redo() => _onRedo();
+
+  @override
+  void undo() => _onUndo();
 }
 
 /// Base controller that coordinates GraphView interactions with domain notifiers.
@@ -528,13 +563,16 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
     final matrix = Matrix4.copy(transformation.value);
     final determinant = matrix.invert();
-    if (determinant == 0) {
+    if (determinant == 0 || !determinant.isFinite) {
       return viewportOffset;
     }
 
     final vector = matrix.transform3(
       vmath.Vector3(viewportOffset.dx, viewportOffset.dy, 0),
     );
+    if (!vector.x.isFinite || !vector.y.isFinite) {
+      return viewportOffset;
+    }
     return Offset(vector.x, vector.y);
   }
 
@@ -593,6 +631,54 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   @protected
   void applySnapshotToDomain(GraphViewAutomatonSnapshot snapshot);
 
+  /// Replaces the complete typed domain document without routing it through a
+  /// visual snapshot that may omit model-specific metadata.
+  @protected
+  void replaceDomainDocument(TSnapshot document);
+
+  /// Applies one complete domain replacement as a single history mutation.
+  ///
+  /// [document] is runtime-checked so generic callers can use the shared
+  /// canvas contract without weakening the typed implementations.
+  void replaceDocumentAsMutation(
+    Object document, {
+    GraphViewHistoryCompanion? companion,
+  }) {
+    if (document is! TSnapshot) {
+      throw ArgumentError.value(
+        document,
+        'document',
+        'Document type does not match this canvas controller.',
+      );
+    }
+    performMutation(
+      () => replaceDomainDocument(document as TSnapshot),
+      companion: companion,
+      preserveTypedDomain: true,
+    );
+  }
+
+  /// World-space center of the currently safe, visible canvas viewport.
+  Offset get viewportCenterWorld => resolveViewportCenterWorld();
+
+  /// Safe visible viewport converted to world-space coordinates.
+  Rect? get safeViewportWorldRect {
+    final viewport = currentSafeViewportRect;
+    if (viewport == null) return null;
+    final corners = <Offset>[
+      toWorldOffset(viewport.topLeft),
+      toWorldOffset(viewport.topRight),
+      toWorldOffset(viewport.bottomLeft),
+      toWorldOffset(viewport.bottomRight),
+    ];
+    return Rect.fromLTRB(
+      corners.map((point) => point.dx).reduce(math.min),
+      corners.map((point) => point.dy).reduce(math.min),
+      corners.map((point) => point.dx).reduce(math.max),
+      corners.map((point) => point.dy).reduce(math.max),
+    );
+  }
+
   /// Creates a GraphView node for the provided canvas [node].
   @protected
   Node buildGraphNode(GraphViewCanvasNode node) {
@@ -624,14 +710,21 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
 
   /// Records the current canvas state before invoking [mutation].
   @protected
-  void performMutation(VoidCallback mutation) {
+  void performMutation(
+    VoidCallback mutation, {
+    GraphViewHistoryCompanion? companion,
+    bool preserveTypedDomain = false,
+  }) {
     if (_isSynchronizing) {
       _logGraphViewBase('performMutation invoked during synchronization');
       mutation();
       return;
     }
 
-    final entry = _captureHistoryEntry();
+    final entry = _captureHistoryEntry(
+      companion: companion,
+      preserveTypedDomain: preserveTypedDomain,
+    );
     if (entry != null) {
       _updateHistory(_undoHistory, entry, clearRedo: true);
       _logGraphViewBase(
@@ -655,7 +748,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       return false;
     }
 
-    final currentEntry = _captureHistoryEntry();
+    final currentEntry = _captureHistoryEntry(
+      preserveTypedDomain: _undoHistory.last.domainDocument != null,
+    );
     if (currentEntry == null) {
       _logGraphViewBase('Undo skipped (current history snapshot failed)');
       return false;
@@ -670,7 +765,16 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       );
       return false;
     }
-    _updateHistory(_redoHistory, currentEntry);
+    _invokeHistoryCompanion(entry.companion?.undo, 'undo');
+    _updateHistory(
+      _redoHistory,
+      _GraphHistoryEntry(
+        serializedSnapshot: currentEntry.serializedSnapshot,
+        highlight: currentEntry.highlight,
+        companion: entry.companion,
+        domainDocument: currentEntry.domainDocument,
+      ),
+    );
     _logGraphViewBase(
       'Undo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
@@ -684,7 +788,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       return false;
     }
 
-    final currentEntry = _captureHistoryEntry();
+    final currentEntry = _captureHistoryEntry(
+      preserveTypedDomain: _redoHistory.last.domainDocument != null,
+    );
     if (currentEntry == null) {
       _logGraphViewBase('Redo skipped (current history snapshot failed)');
       return false;
@@ -699,11 +805,29 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       );
       return false;
     }
-    _updateHistory(_undoHistory, currentEntry);
+    _invokeHistoryCompanion(entry.companion?.redo, 'redo');
+    _updateHistory(
+      _undoHistory,
+      _GraphHistoryEntry(
+        serializedSnapshot: currentEntry.serializedSnapshot,
+        highlight: currentEntry.highlight,
+        companion: entry.companion,
+        domainDocument: currentEntry.domainDocument,
+      ),
+    );
     _logGraphViewBase(
       'Redo applied (#undo=${_undoHistory.length}, #redo=${_redoHistory.length})',
     );
     return true;
+  }
+
+  void _invokeHistoryCompanion(VoidCallback? callback, String operation) {
+    if (callback == null) return;
+    try {
+      callback();
+    } catch (error) {
+      _logGraphViewBase('History companion $operation failed: $error');
+    }
   }
 
   void _updateHistory(
@@ -972,7 +1096,10 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     }
   }
 
-  _GraphHistoryEntry? _captureHistoryEntry() {
+  _GraphHistoryEntry? _captureHistoryEntry({
+    GraphViewHistoryCompanion? companion,
+    bool preserveTypedDomain = false,
+  }) {
     try {
       final snapshot = toSnapshot(currentDomainData);
       final serialized = jsonEncode(snapshot.toJson());
@@ -989,6 +1116,8 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       return _GraphHistoryEntry(
         serializedSnapshot: compressed,
         highlight: highlight,
+        companion: companion,
+        domainDocument: preserveTypedDomain ? currentDomainData : null,
       );
     } catch (_) {
       return null;
@@ -1029,6 +1158,22 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   }
 
   bool _applyHistoryEntry(_GraphHistoryEntry entry) {
+    final domainDocument = entry.domainDocument;
+    if (domainDocument != null) {
+      if (domainDocument is! TSnapshot) {
+        _logGraphViewBase('History entry has an incompatible typed document');
+        return false;
+      }
+      try {
+        replaceDomainDocument(domainDocument as TSnapshot);
+        synchronizeGraph(currentDomainData);
+      } catch (error) {
+        _logGraphViewBase('Failed to apply typed history entry: $error');
+        return false;
+      }
+      _restoreHistoryHighlight(entry);
+      return true;
+    }
     final snapshot = entry.decodeSnapshot(_historyCodec);
     if (snapshot == null) {
       _logGraphViewBase('Failed to decode history entry');
@@ -1056,6 +1201,11 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       return false;
     }
 
+    _restoreHistoryHighlight(entry);
+    return true;
+  }
+
+  void _restoreHistoryHighlight(_GraphHistoryEntry entry) {
     final highlight = SimulationHighlight(
       stateIds: Set<String>.from(entry.highlight.stateIds),
       transitionIds: Set<String>.from(entry.highlight.transitionIds),
@@ -1068,7 +1218,6 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     _logGraphViewBase(
       'History entry applied (states=${highlight.stateIds.length}, transitions=${highlight.transitionIds.length})',
     );
-    return true;
   }
 
   void _trimHistory(List<_GraphHistoryEntry> history) {

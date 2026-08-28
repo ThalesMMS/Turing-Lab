@@ -131,14 +131,15 @@ class _GraphViewState extends State<GraphView> with TickerProviderStateMixin {
     final nextTransformationController =
         nextController?.transformationController;
 
-    previousController?._detach(this);
-
     _transformationController = nextTransformationController ??
         TransformationController(previousMatrix);
     if (nextTransformationController != null) {
       nextTransformationController.value = previousMatrix;
     }
+    // Bind the replacement before releasing the previous controller. This
+    // keeps controller-driven viewport commands connected throughout a swap.
     nextController?._attach(this);
+    previousController?._detach(this);
 
     // Same single-owner rule as dispose(): a previous external controller
     // keeps ownership of its TransformationController.

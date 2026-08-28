@@ -1,0 +1,159 @@
+{
+  "expectedOutcome": "accepted",
+  "id": "pda-shortest-bfs-witness-337",
+  "input": "a",
+  "mode": "finalState",
+  "pda": {
+    "id": "shortest-bfs-witness",
+    "name": "shortest-bfs-witness",
+    "type": "PDA",
+    "states": [
+      {
+        "id": "w0",
+        "label": "w0",
+        "position": {
+          "x": 0.0,
+          "y": 100.0
+        },
+        "isInitial": true,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "w1",
+        "label": "w1",
+        "position": {
+          "x": 120.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "w2",
+        "label": "w2",
+        "position": {
+          "x": 240.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "transitions": [
+      {
+        "id": "a-long-first",
+        "fromState": "w0",
+        "toState": "w1",
+        "label": "ε, ε/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "",
+        "popSymbol": "",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": true,
+        "isLambdaPop": true,
+        "isLambdaPush": true
+      },
+      {
+        "id": "b-long-second",
+        "fromState": "w1",
+        "toState": "w2",
+        "label": "a, ε/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "a",
+        "popSymbol": "",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": false,
+        "isLambdaPop": true,
+        "isLambdaPush": true
+      },
+      {
+        "id": "z-short",
+        "fromState": "w0",
+        "toState": "w2",
+        "label": "a, ε/ε",
+        "controlPoint": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "type": "deterministic",
+        "transitionType": "pda",
+        "inputSymbol": "a",
+        "popSymbol": "",
+        "pushSymbol": "",
+        "pushSymbols": [],
+        "isLambdaInput": false,
+        "isLambdaPop": true,
+        "isLambdaPush": true
+      }
+    ],
+    "alphabet": [
+      "a"
+    ],
+    "initialState": {
+      "id": "w0",
+      "label": "w0",
+      "position": {
+        "x": 0.0,
+        "y": 100.0
+      },
+      "isInitial": true,
+      "isAccepting": false,
+      "type": "normal",
+      "properties": {}
+    },
+    "acceptingStates": [
+      {
+        "id": "w2",
+        "label": "w2",
+        "position": {
+          "x": 240.0,
+          "y": 100.0
+        },
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "created": "2026-08-26T00:00:00.000Z",
+    "modified": "2026-08-26T00:00:00.000Z",
+    "bounds": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 400.0,
+      "height": 300.0
+    },
+    "zoomLevel": 1.0,
+    "panOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "stackAlphabet": [
+      "bottom"
+    ],
+    "initialStackSymbol": "bottom",
+    "acceptanceMode": "finalState"
+  },
+  "property": "shortest-bfs-witness",
+  "propertyPayload": {},
+  "schema": "turing-lab.hard-edge.pda-fixture.v1",
+  "seed": 337
+}

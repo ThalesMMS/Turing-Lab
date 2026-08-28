@@ -34,9 +34,14 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
   }) async {
     _pendingRetry = retryOperation;
 
-    final errorType = _resolveImportErrorType(errorMessage);
+    final inaccessible = isPlatformFileInaccessibleError(errorMessage);
+    final errorType = inaccessible
+        ? ImportErrorType.inaccessibleFile
+        : _resolveImportErrorType(errorMessage);
     final friendlyMessage = _friendlyMessageFor(errorType);
-    final technicalDetails = _composeTechnicalDetails(errorMessage, stackTrace);
+    final technicalDetails = inaccessible
+        ? null
+        : _composeTechnicalDetails(errorMessage, stackTrace);
 
     if (!mounted) return;
 
@@ -53,7 +58,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
           errorType: errorType,
           detailedMessage: friendlyMessage,
           technicalDetails: technicalDetails,
-          showTechnicalDetails: technicalDetails != null,
+          showTechnicalDetails: false,
           onRetry: () {
             Navigator.of(dialogContext).pop();
             _retryLastOperation();
@@ -126,6 +131,7 @@ extension _FileOperationsPanelFeedback on _FileOperationsPanelState {
   }
 
   bool _isCriticalImportError(String message) {
+    if (isPlatformFileInaccessibleError(message)) return true;
     final normalized = message.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     return normalized.contains('xml') ||
         normalized.contains('json') ||

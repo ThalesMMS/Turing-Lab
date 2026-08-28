@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>context-free pumping lemma</type>
+  <name>Equal a, b, and c blocks</name>
+  <first_player>Human</first_player>
+  <m>2</m>
+  <w>aabbcc</w>
+  <i>0</i>
+  <uLength>0</uLength>
+  <vLength>1</vLength>
+  <xLength>0</xLength>
+  <yLength>1</yLength>
+</structure>

@@ -248,7 +248,7 @@ void main() {
       expect(result.isSuccess, isTrue);
       final steps = result.data!.steps;
       expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
+      expect(steps.last.explanation?.title, 'Accepted by final state');
 
       final epsilonStep = steps.firstWhere(
         (step) =>
@@ -291,7 +291,7 @@ void main() {
       expect(result.isSuccess, isTrue);
       final steps = result.data!.steps;
       expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
+      expect(steps.last.explanation?.title, 'Accepted by final state');
 
       final epsilonStep = steps.firstWhere(
         (step) =>

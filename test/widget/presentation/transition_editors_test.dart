@@ -95,11 +95,11 @@ void main() {
 
       for (final label in <String>[
         'Símbolo de entrada',
-        'λ-entrada',
+        'ε-entrada',
         'Símbolo para desempilhar',
-        'λ-desempilhar',
+        'ε-desempilhar',
         'Símbolo para empilhar',
-        'λ-empilhar',
+        'ε-empilhar',
         'Cancelar',
         'Excluir',
         'Salvar',
@@ -111,15 +111,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Insira um símbolo ou ative λ-entrada'),
+        find.text('Insira um símbolo ou ative ε-entrada'),
         findsOneWidget,
       );
       expect(
-        find.text('Insira um símbolo ou ative λ-desempilhar'),
+        find.text('Insira um símbolo ou ative ε-desempilhar'),
         findsOneWidget,
       );
       expect(
-        find.text('Insira um símbolo ou ative λ-empilhar'),
+        find.text('Insira um símbolo ou ative ε-empilhar'),
         findsOneWidget,
       );
     });
@@ -242,9 +242,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(submitted, isFalse);
-      expect(find.text('Enter a symbol or enable λ-input'), findsOneWidget);
-      expect(find.text('Enter a symbol or enable λ-pop'), findsOneWidget);
-      expect(find.text('Enter a symbol or enable λ-push'), findsOneWidget);
+      expect(find.text('Enter a symbol or enable ε-input'), findsOneWidget);
+      expect(find.text('Enter a symbol or enable ε-pop'), findsOneWidget);
+      expect(find.text('Enter a symbol or enable ε-push'), findsOneWidget);
     });
 
     testWidgets('renders the supplied stack in the operation preview', (
@@ -352,7 +352,7 @@ void main() {
       final inputField = tester.widget<TextField>(inputFieldFinder);
       expect(inputField.enabled, isTrue);
 
-      await tester.tap(find.text('λ-input'));
+      await tester.tap(find.text('ε-input'));
       await tester.pumpAndSettle();
 
       final disabledInputFieldFinder = find.ancestor(
@@ -396,7 +396,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('λ-pop'));
+      await tester.tap(find.text('ε-pop'));
       await tester.pumpAndSettle();
 
       final disabledPopFieldFinder = find.ancestor(
@@ -438,7 +438,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('λ-push'));
+      await tester.tap(find.text('ε-push'));
       await tester.pumpAndSettle();
 
       final disabledPushFieldFinder = find.ancestor(

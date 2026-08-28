@@ -14,26 +14,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/simulation_highlight.dart';
 import '../../core/constants/help_topic_ids.dart';
+import '../../core/formal_systems/formal_systems.dart';
 import '../../core/models/simulation_step.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_transition.dart';
 import '../../core/services/canvas_highlight_coordinator.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../localization/locale_value_formatter.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
+import '../widgets/automaton_diagnostic_highlight_bar.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/canvas_simulation_playback_bar.dart';
 import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
 import '../providers/tm_editor_provider.dart';
+import '../providers/tm_block_library_provider.dart';
 import '../widgets/tm_canvas_graphview.dart';
 import '../widgets/tm_algorithm_panel.dart';
 import '../widgets/tm_simulation_panel.dart';
 import '../widgets/tm/tape_drawer.dart';
+import '../widgets/tm/tm_block_library_panel.dart';
 import '../widgets/common/workspace_helpers.dart';
 import '../widgets/common/workspace_help.dart';
 import '../widgets/graphview_canvas_toolbar.dart';
 import '../widgets/automaton_canvas_tool.dart';
+import '../widgets/automaton_canvas_document_actions.dart';
 import '../../core/services/simulation_highlight_service.dart';
+import '../../core/services/highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../features/canvas/graphview/graphview_tm_canvas_controller.dart';
 
@@ -65,13 +72,15 @@ class _TMPageState extends ConsumerState<TMPage>
   EdgeInsets _canvasToolbarInsets = EdgeInsets.zero;
   late final GraphViewTmCanvasController _canvasController;
   late final CanvasHighlightCoordinator _highlightCoordinator;
-  late final CanvasHighlightSourceHandle _validationHighlights;
+  late final CanvasHighlightSourceHandle _diagnosticHighlights;
   late final CanvasHighlightSourceHandle _simulationHighlights;
   late final SimulationHighlightService _highlightService;
   late final AutomatonCanvasToolController _toolController;
+  final AutomatonCanvasDocumentActionsController _documentActions =
+      AutomatonCanvasDocumentActionsController();
   late final Listenable _canvasListenable;
   int _highlightRevision = 0;
-  int _highlightSyncGeneration = 0;
+  AutomatonDiagnosticHighlightKind? _activeDiagnosticHighlight;
 
   bool get _isMachineReady =>
       _currentTM != null && _hasInitialState && _hasAcceptingState;
@@ -114,9 +123,11 @@ class _TMPageState extends ConsumerState<TMPage>
   void initState() {
     super.initState();
     final initialEditorState = ref.read(tmEditorProvider);
+    _scheduleBlockLibrarySynchronization();
     _currentTape = TapeState.initial(
       blankSymbol: initialEditorState.tm?.blankSymbol ?? '□',
     );
+    _syncMachineSummary(initialEditorState.tm);
     _canvasController = GraphViewTmCanvasController(
       editorNotifier: ref.read(tmEditorProvider.notifier),
     );
@@ -125,14 +136,18 @@ class _TMPageState extends ConsumerState<TMPage>
       target: _highlightTarget(initialEditorState.tm),
       output: GraphViewSimulationHighlightChannel(_canvasController),
     );
-    _validationHighlights =
-        _highlightCoordinator.source(CanvasHighlightSource.validation);
-    _simulationHighlights =
-        _highlightCoordinator.source(CanvasHighlightSource.simulation);
-    _highlightService = SimulationHighlightService(
-      channel: _simulationHighlights,
+    _diagnosticHighlights = _highlightCoordinator.source(
+      CanvasHighlightSource.diagnostic,
     );
-    _scheduleEditorHighlights(initialEditorState);
+    _simulationHighlights = _highlightCoordinator.source(
+      CanvasHighlightSource.simulation,
+    );
+    _highlightService = SimulationHighlightService(
+      channel: InterceptingHighlightChannel(
+        delegate: _simulationHighlights,
+        beforeActivity: _handleSimulationHighlightActivity,
+      ),
+    );
     _toolController = AutomatonCanvasToolController();
     _canvasListenable = Listenable.merge([
       _toolController,
@@ -147,10 +162,19 @@ class _TMPageState extends ConsumerState<TMPage>
       final tmChanged = !identical(previous?.tm, next.tm);
       final machineWasRemoved = next.tm == null && _currentTM != null;
       if (tmChanged) {
+        _scheduleBlockLibrarySynchronization();
         _highlightRevision++;
         _highlightCoordinator.retarget(_highlightTarget(next.tm));
+        final target = _highlightCoordinator.target;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && target == _highlightCoordinator.target) {
+            _canvasController.clearHighlight();
+          }
+        });
+        if (_activeDiagnosticHighlight != null) {
+          _activeDiagnosticHighlight = null;
+        }
       }
-      _scheduleEditorHighlights(next);
       if (tmChanged || machineWasRemoved) {
         if (_canvasSimulationSteps != null) {
           _stopCanvasSimulation();
@@ -160,6 +184,7 @@ class _TMPageState extends ConsumerState<TMPage>
             _currentTape = TapeState.initial(
               blankSymbol: next.tm?.blankSymbol ?? '□',
             );
+            _syncMachineSummary(next.tm);
           }
           if (machineWasRemoved) {
             _currentTM = null;
@@ -176,11 +201,22 @@ class _TMPageState extends ConsumerState<TMPage>
     });
   }
 
+  int _blockLibrarySyncGeneration = 0;
+
+  void _scheduleBlockLibrarySynchronization() {
+    final generation = ++_blockLibrarySyncGeneration;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _blockLibrarySyncGeneration) return;
+      ref
+          .read(tmBlockLibraryProvider.notifier)
+          .synchronize(ref.read(tmEditorProvider).tm);
+    });
+  }
+
   void _handleAddStatePressed() {
-    if (_toolController.activeTool != AutomatonCanvasTool.addState) {
-      _toolController.setActiveTool(AutomatonCanvasTool.addState);
-    }
-    _canvasController.addStateAtCenter();
+    // Pure placement toggle: states are added by tapping the canvas while
+    // the tool is active, never as a side effect of pressing the button.
+    _toolController.toggleTool(AutomatonCanvasTool.addState);
   }
 
   void _handleCanvasToolbarInsetsChanged(EdgeInsets insets) {
@@ -200,17 +236,14 @@ class _TMPageState extends ConsumerState<TMPage>
       topicId = HelpTopicIds.tmTheoryTm;
     }
 
-    showWorkspaceHelp(
-      context: context,
-      topicId: topicId,
-    );
+    showWorkspaceHelp(context: context, topicId: topicId);
   }
 
   @override
   void dispose() {
     _tmEditorSub?.close();
-    _highlightService.clear();
-    _validationHighlights.dispose();
+    _simulationHighlights.clear();
+    _diagnosticHighlights.dispose();
     _simulationHighlights.dispose();
     _highlightCoordinator.dispose();
     _canvasController.dispose();
@@ -223,11 +256,9 @@ class _TMPageState extends ConsumerState<TMPage>
   /// Applied both to the page subtree and to every modal sheet, since sheets
   /// are hosted by the Navigator and would otherwise miss them.
   List<Override> get _canvasHighlightOverrides => [
-        canvasHighlightServiceProvider.overrideWithValue(_highlightService),
-        canvasHighlightCoordinatorProvider.overrideWithValue(
-          _highlightCoordinator,
-        ),
-      ];
+    canvasHighlightServiceProvider.overrideWithValue(_highlightService),
+    canvasHighlightCoordinatorProvider.overrideWithValue(_highlightCoordinator),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -239,30 +270,28 @@ class _TMPageState extends ConsumerState<TMPage>
       child: AutomatonWorkspaceScaffold(
         canvasWithToolbar: _buildCanvasWithToolbar,
         algorithmPanel: const TMAlgorithmPanel(useExpanded: false),
+        algorithmTabTitle: appLocalizationsOf(context).algorithmsAndExamples,
         simulationPanel: _buildSimulationPanel(),
         infoPanel: _buildInfoPanel(context),
-        mobileFloatingPanelBuilder: (
-          context, {
-          required onDragDelta,
-          required onPanelSizeChanged,
-        }) =>
-            CollapsibleCanvasPanel(
-          label: appLocalizationsOf(context).traceTape,
-          icon: Icons.horizontal_rule,
-          onDragDelta: onDragDelta,
-          onPanelSizeChanged: onPanelSizeChanged,
-          child: TMTapePanel(
-            tapeState: _currentTape,
-            tapeAlphabet: tm?.tapeAlphabet ?? const <String>{},
-            onClear: () {
-              setState(() {
-                _currentTape = TapeState.initial(
-                  blankSymbol: tm?.blankSymbol ?? '□',
-                );
-              });
-            },
-          ),
-        ),
+        mobileFloatingPanelBuilder:
+            (context, {required onDragDelta, required onPanelSizeChanged}) =>
+                CollapsibleCanvasPanel(
+                  label: appLocalizationsOf(context).traceTape,
+                  icon: Icons.horizontal_rule,
+                  onDragDelta: onDragDelta,
+                  onPanelSizeChanged: onPanelSizeChanged,
+                  child: TMTapePanel(
+                    tapeState: _currentTape,
+                    tapeAlphabet: tm?.tapeAlphabet ?? const <String>{},
+                    onClear: () {
+                      setState(() {
+                        _currentTape = TapeState.initial(
+                          blankSymbol: tm?.blankSymbol ?? '□',
+                        );
+                      });
+                    },
+                  ),
+                ),
       ),
     );
   }
@@ -276,20 +305,66 @@ class _TMPageState extends ConsumerState<TMPage>
     );
   }
 
-  void _scheduleEditorHighlights(TMEditorState editorState) {
-    final generation = ++_highlightSyncGeneration;
-    final target = _highlightCoordinator.target;
-    final highlight = SimulationHighlight(
-      transitionIds: editorState.nondeterministicTransitionIds,
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          generation != _highlightSyncGeneration ||
-          target != _highlightCoordinator.target) {
-        return;
-      }
-      _validationHighlights.sendFor(target, highlight);
+  void _setDiagnosticHighlight(bool selected, TMEditorState editorState) {
+    if (!selected) {
+      _clearDiagnosticHighlight();
+      return;
+    }
+
+    _stopCanvasSimulation();
+    setState(() {
+      _activeDiagnosticHighlight = AutomatonDiagnosticHighlightKind.conflicts;
     });
+    _diagnosticHighlights.send(
+      SimulationHighlight(
+        transitionIds: editorState.nondeterministicTransitionIds,
+      ),
+    );
+  }
+
+  void _clearDiagnosticHighlight() {
+    if (_activeDiagnosticHighlight != null && mounted) {
+      setState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+    _diagnosticHighlights.clear();
+  }
+
+  void _handleSimulationHighlightActivity() {
+    _diagnosticHighlights.clear();
+    if (_activeDiagnosticHighlight != null && mounted) {
+      setState(() {
+        _activeDiagnosticHighlight = null;
+      });
+    }
+  }
+
+  Widget _buildDiagnosticHighlightBar(
+    TMEditorState editorState, {
+    required bool isMobile,
+  }) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SafeArea(
+        minimum: EdgeInsets.fromLTRB(
+          12,
+          isMobile
+              ? 12
+              : (_canvasToolbarInsets.top > 0
+                    ? _canvasToolbarInsets.top + 8
+                    : 88),
+          12,
+          12,
+        ),
+        child: AutomatonDiagnosticHighlightBar(
+          activeKind: _activeDiagnosticHighlight,
+          conflictCount: editorState.nondeterministicTransitionIds.length,
+          onConflictSelected: (selected) =>
+              _setDiagnosticHighlight(selected, editorState),
+        ),
+      ),
+    );
   }
 
   Widget _buildCanvasWithToolbar({required bool isMobile}) {
@@ -299,15 +374,19 @@ class _TMPageState extends ConsumerState<TMPage>
     final canvas = TMCanvasGraphView(
       controller: _canvasController,
       toolController: _toolController,
+      documentActionsController: _documentActions,
       onTmModified: _handleTMUpdate,
     );
-    publishWorkspaceQuickActions(
+    publishWorkspaceQuickActionsForKey(
       ref,
-      WorkspaceTab.tm,
+      DefaultFormalSystemIds.tm,
       WorkspaceQuickActions(
         onHelp: _showContextualHelp,
         onSimulate: _openSimulationSheet,
         onAlgorithms: _openAlgorithmSheet,
+        algorithmsTooltip: appLocalizationsOf(
+          context,
+        ).workspaceAlgorithmsAndExamplesTooltip,
         onMetrics: _openMetricsSheet,
         simulateEnabled: hasMachine,
         metricsEnabled: hasMachine,
@@ -318,6 +397,7 @@ class _TMPageState extends ConsumerState<TMPage>
       return Stack(
         children: [
           Positioned.fill(child: canvas),
+          _buildDiagnosticHighlightBar(editorState, isMobile: true),
           if (_canvasSimulationSteps case final steps?)
             Positioned(
               left: 16,
@@ -341,11 +421,17 @@ class _TMPageState extends ConsumerState<TMPage>
                 enableToolSelection: true,
                 showSelectionTool: true,
                 activeTool: _toolController.activeTool,
-                onSelectTool: () => _toolController
-                    .setActiveTool(AutomatonCanvasTool.selection),
+                onSelectTool: () => _toolController.setActiveTool(
+                  AutomatonCanvasTool.selection,
+                ),
                 onAddState: _handleAddStatePressed,
                 onAddTransition: () =>
                     _toolController.toggleTool(AutomatonCanvasTool.transition),
+                onManageBlocks: _openBlockLibrarySheet,
+                onArrangeAutomaton: _documentActions.arrange,
+                onImportAutomaton: _documentActions.importAutomaton,
+                onDocumentNotes: _documentActions.showDocumentNotes,
+                documentActionsEnabled: editorState.tm != null,
                 onHelp: _showContextualHelp,
                 onClear: _clearCanvasMachine,
                 statusMessage: statusMessage,
@@ -359,6 +445,7 @@ class _TMPageState extends ConsumerState<TMPage>
     final canvasWithChrome = Stack(
       children: [
         Positioned.fill(child: canvas),
+        _buildDiagnosticHighlightBar(editorState, isMobile: false),
         AnimatedBuilder(
           animation: _canvasListenable,
           builder: (context, _) {
@@ -374,6 +461,11 @@ class _TMPageState extends ConsumerState<TMPage>
               onHelp: _showContextualHelp,
               onAddTransition: () =>
                   _toolController.toggleTool(AutomatonCanvasTool.transition),
+              onManageBlocks: _openBlockLibrarySheet,
+              onArrangeAutomaton: _documentActions.arrange,
+              onImportAutomaton: _documentActions.importAutomaton,
+              onDocumentNotes: _documentActions.showDocumentNotes,
+              documentActionsEnabled: editorState.tm != null,
               onClear: _clearCanvasMachine,
               statusMessage: statusMessage,
             );
@@ -420,27 +512,32 @@ class _TMPageState extends ConsumerState<TMPage>
   }
 
   void _handleTMUpdate(TM tm) {
-    final transitions = tm.tmTransitions;
-    final nondeterministic = _findNondeterministicTransitions(transitions);
-    final hasInitial = tm.initialState != null;
-    final hasAccepting = tm.acceptingStates.isNotEmpty;
-
     setState(() {
-      _currentTM = tm;
-      _stateCount = tm.states.length;
-      _transitionCount = transitions.length;
-      _tapeSymbols = Set<String>.unmodifiable(tm.tapeAlphabet);
-      _moveDirections = Set<String>.unmodifiable(
-        transitions.map((t) => t.direction.name.toUpperCase()),
-      );
-      _nondeterministicTransitionIds = nondeterministic;
-      _hasInitialState = hasInitial;
-      _hasAcceptingState = hasAccepting;
+      _syncMachineSummary(tm);
     });
+  }
+
+  void _syncMachineSummary(TM? tm) {
+    final transitions = tm?.tmTransitions ?? const <TMTransition>{};
+    _currentTM = tm;
+    _stateCount = tm?.states.length ?? 0;
+    _transitionCount = transitions.length;
+    _tapeSymbols = Set<String>.unmodifiable(tm?.tapeAlphabet ?? const {});
+    _moveDirections = Set<String>.unmodifiable(
+      transitions
+          .expand((transition) => transition.directions)
+          .map((direction) => direction.name.toUpperCase()),
+    );
+    _nondeterministicTransitionIds = _findNondeterministicTransitions(
+      transitions,
+    );
+    _hasInitialState = tm?.initialState != null;
+    _hasAcceptingState = tm?.acceptingStates.isNotEmpty ?? false;
   }
 
   void _openSimulationSheet() {
     if (!_hasMachine) return;
+    _clearDiagnosticHighlight();
     _stopCanvasSimulation();
 
     _showDraggableSheet(
@@ -461,8 +558,8 @@ class _TMPageState extends ConsumerState<TMPage>
       onTapeChanged: _handleTapeChanged,
       onViewOnCanvas:
           allowCanvasPlayback && supportsCanvasSimulationPlayback(context)
-              ? _startCanvasSimulation
-              : null,
+          ? _startCanvasSimulation
+          : null,
     );
   }
 
@@ -482,10 +579,7 @@ class _TMPageState extends ConsumerState<TMPage>
     final blankSymbol = ref.read(tmEditorProvider).tm?.blankSymbol ?? '□';
     _highlightService.emitFromSteps(steps, stepIndex);
     _handleTapeChanged(
-      projectTmTapeStep(
-        steps[stepIndex],
-        blankSymbol: blankSymbol,
-      ),
+      projectTmTapeStep(steps[stepIndex], blankSymbol: blankSymbol),
     );
   }
 
@@ -511,6 +605,14 @@ class _TMPageState extends ConsumerState<TMPage>
     );
   }
 
+  void _openBlockLibrarySheet() {
+    _showDraggableSheet(
+      builder: (context, controller) =>
+          TMBlockLibraryPanel(scrollController: controller),
+      initialChildSize: 0.72,
+    );
+  }
+
   void _openMetricsSheet() {
     _showDraggableSheet(
       builder: (context, controller) {
@@ -527,7 +629,7 @@ class _TMPageState extends ConsumerState<TMPage>
 
   Future<void> _showDraggableSheet({
     required Widget Function(BuildContext context, ScrollController controller)
-        builder,
+    builder,
     double initialChildSize = 0.6,
     double minChildSize = 0.3,
     double maxChildSize = 0.9,
@@ -573,6 +675,8 @@ class _TMPageState extends ConsumerState<TMPage>
 
   Widget _buildInfoPanel(BuildContext context, {EdgeInsetsGeometry? margin}) {
     final theme = Theme.of(context);
+    final tm = ref.watch(tmEditorProvider).tm;
+    final formatter = LocaleValueFormatter.of(context);
     return Container(
       margin: margin,
       padding: const EdgeInsets.all(16),
@@ -597,14 +701,55 @@ class _TMPageState extends ConsumerState<TMPage>
           const SizedBox(height: 12),
           _buildInfoRow(
             appLocalizationsOf(context).states,
-            '$_stateCount',
+            formatter.integer(_stateCount),
             theme,
           ),
           _buildInfoRow(
             appLocalizationsOf(context).transitions,
-            '$_transitionCount',
+            formatter.integer(_transitionCount),
             theme,
           ),
+          if (tm != null)
+            Semantics(
+              label: appLocalizationsOf(context).tmTapeCount,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      appLocalizationsOf(context).tmTapeCount,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('tm-tape-count-decrease'),
+                    tooltip: appLocalizationsOf(context).tmDecreaseTapeCount,
+                    onPressed: tm.tapeCount == 1
+                        ? null
+                        : () => _changeTapeCount(tm.tapeCount - 1),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  Semantics(
+                    liveRegion: true,
+                    label:
+                        '${appLocalizationsOf(context).tmTapeCount}: '
+                        '${formatter.integer(tm.tapeCount)}',
+                    child: Text(
+                      formatter.integer(tm.tapeCount),
+                      key: const Key('tm-tape-count-value'),
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('tm-tape-count-increase'),
+                    tooltip: appLocalizationsOf(context).tmIncreaseTapeCount,
+                    onPressed: () => _changeTapeCount(tm.tapeCount + 1),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+            ),
           _buildInfoRow(
             appLocalizationsOf(context).tapeSymbols,
             _formatSet(_tapeSymbols),
@@ -638,9 +783,7 @@ class _TMPageState extends ConsumerState<TMPage>
           ),
           _buildInfoRow(
             appLocalizationsOf(context).nondeterministicTransitions,
-            _nondeterministicTransitionIds.isEmpty
-                ? '0'
-                : '${_nondeterministicTransitionIds.length}',
+            formatter.integer(_nondeterministicTransitionIds.length),
             theme,
           ),
           if (_nondeterministicTransitionIds.isNotEmpty) ...[
@@ -666,6 +809,17 @@ class _TMPageState extends ConsumerState<TMPage>
     );
   }
 
+  void _changeTapeCount(int count) {
+    final changed = ref.read(tmEditorProvider.notifier).setTapeCount(count);
+    if (!changed && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(appLocalizationsOf(context).tmTapeCountShrinkBlocked),
+        ),
+      );
+    }
+  }
+
   String _formatSet(Set<String> values) {
     if (values.isEmpty) {
       return '-';
@@ -680,8 +834,7 @@ class _TMPageState extends ConsumerState<TMPage>
     for (final transition in transitions) {
       final key = [
         transition.fromState.id,
-        transition.readSymbol,
-        transition.tapeNumber.toString(),
+        ...transition.readSymbols.map((symbol) => '${symbol.length}:$symbol'),
       ].join('|');
 
       grouped.putIfAbsent(key, () => <TMTransition>[]).add(transition);

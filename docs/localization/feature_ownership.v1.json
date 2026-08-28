@@ -1,0 +1,440 @@
+{
+  "schemaVersion": 1,
+  "ownerIssues": {
+    "sharedChrome": 163,
+    "structuredMessages": 210,
+    "featureInterface": 343,
+    "helpTutorialExamples": 344
+  },
+  "registryAssembly": "lib/data/formal_systems/default_formal_system_registry.dart",
+  "arbFiles": {
+    "en": "lib/l10n/app_en.arb",
+    "pt": "lib/l10n/app_pt.arb"
+  },
+  "parityRoot": "docs/jflap-parity",
+  "descriptorEntries": [
+    {
+      "id": "fsa-standard",
+      "formalSystemKey": "fsa:standard",
+      "localizationNamespace": "formal.fsa",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationFsaLabel", "homeNavigationFsaDescription"], "portugueseKeys": ["homeNavigationFsaLabel", "homeNavigationFsaDescription"], "keyPrefixes": ["homeNavigationFsa"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/workflow_localization_test.dart"],
+      "parityCoverage": {"registry-fsa-standard": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "grammar-standard",
+      "formalSystemKey": "grammar:standard",
+      "localizationNamespace": "formal.grammar",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationGrammarLabel", "homeNavigationGrammarDescription"], "portugueseKeys": ["homeNavigationGrammarLabel", "homeNavigationGrammarDescription"], "keyPrefixes": ["homeNavigationGrammar"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/workflow_localization_test.dart"],
+      "parityCoverage": {"registry-grammar-standard": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "pda-single-stack",
+      "formalSystemKey": "pda:single-stack",
+      "localizationNamespace": "formal.pda",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationPdaLabel", "homeNavigationPdaDescription"], "portugueseKeys": ["homeNavigationPdaLabel", "homeNavigationPdaDescription"], "keyPrefixes": ["homeNavigationPda"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/workflow_localization_test.dart"],
+      "parityCoverage": {"registry-pda-single-stack": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "tm-single-tape",
+      "formalSystemKey": "tm:single-tape",
+      "localizationNamespace": "formal.tm",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationTmLabel", "homeNavigationTmDescription"], "portugueseKeys": ["homeNavigationTmLabel", "homeNavigationTmDescription"], "keyPrefixes": ["homeNavigationTm"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/workflow_localization_test.dart"],
+      "parityCoverage": {"registry-tm-single-tape": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "regex-standard",
+      "formalSystemKey": "regex:standard",
+      "localizationNamespace": "formal.regex",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationRegexLabel", "homeNavigationRegexDescription"], "portugueseKeys": ["homeNavigationRegexLabel", "homeNavigationRegexDescription"], "keyPrefixes": ["homeNavigationRegex"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/workflow_localization_test.dart"],
+      "parityCoverage": {"registry-regex-standard": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "pumping-lemma-regular",
+      "formalSystemKey": "pumping-lemma:regular",
+      "localizationNamespace": "formal.pumping.regular",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationRegularPumpingLabel", "homeNavigationRegularPumpingDescription"], "portugueseKeys": ["homeNavigationRegularPumpingLabel", "homeNavigationRegularPumpingDescription"], "keyPrefixes": ["homeNavigationRegularPumping"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/pumping_lemma_page_test.dart"],
+      "parityCoverage": {"registry-pumping-regular": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "pumping-lemma-context-free",
+      "formalSystemKey": "pumping-lemma:context-free",
+      "localizationNamespace": "formal.pumping.context-free",
+      "sourcePaths": ["lib/core/formal_systems/default_formal_system_modules.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationContextFreePumpingLabel", "homeNavigationContextFreePumpingDescription"], "portugueseKeys": ["homeNavigationContextFreePumpingLabel", "homeNavigationContextFreePumpingDescription"], "keyPrefixes": ["homeNavigationContextFreePumping"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/pumping_lemma_page_test.dart"],
+      "parityCoverage": {"registry-pumping-context-free": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration"
+    },
+    {
+      "id": "transducer-mealy",
+      "formalSystemKey": "transducer:mealy",
+      "localizationNamespace": "formal.transducer.mealy",
+      "sourcePaths": ["lib/core/transducers/transducer_formal_system_module.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationMealyLabel", "homeNavigationMealyDescription"], "portugueseKeys": ["homeNavigationMealyLabel", "homeNavigationMealyDescription"], "keyPrefixes": ["homeNavigationMealy", "transducer", "mealyExample"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/mealy_localization_test.dart"],
+      "parityCoverage": {"registry-transducer-mealy": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration-and-workspace",
+      "runtimeEvidence": {
+        "contractId": "transducer-mealy",
+        "testPath": "test/widget/presentation/mealy_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "comparison", "interoperability", "examples", "locale-state", "formal-content"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-comparison-result", "localized-import-export", "locale-switch-state-preservation", "localized-example-metadata", "formal-content-preservation"]
+      }
+    },
+    {
+      "id": "transducer-moore",
+      "formalSystemKey": "transducer:moore",
+      "localizationNamespace": "formal.transducer.moore",
+      "sourcePaths": ["lib/core/transducers/transducer_formal_system_module.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationMooreLabel", "homeNavigationMooreDescription"], "portugueseKeys": ["homeNavigationMooreLabel", "homeNavigationMooreDescription"], "keyPrefixes": ["transducer", "mooreExample"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/home_page_test.dart", "test/widget/presentation/moore_localization_test.dart"],
+      "parityCoverage": {"registry-transducer-moore": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration-and-workspace",
+      "runtimeEvidence": {
+        "contractId": "transducer-moore",
+        "testPath": "test/widget/presentation/moore_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "comparison", "interoperability", "examples", "locale-state", "formal-content"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-comparison-result", "localized-import-export", "locale-switch-state-preservation", "localized-example-metadata", "formal-content-preservation"]
+      }
+    },
+    {
+      "id": "grammar-unrestricted",
+      "formalSystemKey": "grammar:unrestricted",
+      "localizationNamespace": "formal.grammar.unrestricted",
+      "sourcePaths": ["lib/core/grammar/phrase_structure/unrestricted_grammar_capabilities.dart", "lib/data/grammar/unrestricted_grammar_module.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationUnrestrictedGrammarLabel", "homeNavigationUnrestrictedGrammarDescription"], "portugueseKeys": ["homeNavigationUnrestrictedGrammarLabel", "homeNavigationUnrestrictedGrammarDescription"], "keyPrefixes": ["homeNavigationUnrestrictedGrammar"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/unrestricted_grammar_workspace_test.dart", "test/widget/presentation/unrestricted_grammar_localization_test.dart"],
+      "parityCoverage": {"registry-grammar-unrestricted": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration-and-workspace",
+      "runtimeEvidence": {
+        "contractId": "grammar-unrestricted",
+        "testPath": "test/widget/presentation/unrestricted_grammar_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "analysis", "trace", "interoperability", "examples", "help", "session", "locale-state", "formal-content"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-import-export", "locale-switch-state-preservation", "localized-example-metadata", "formal-content-preservation", "localized-classification-analysis", "localized-bounded-derivation", "localized-manual-derivation", "localized-derivation-trace", "accessible-controls-and-status", "contextual-help-registration", "production-interoperability", "production-session-persistence", "all-declared-document-formats"]
+      }
+    },
+    {
+      "id": "l-system-deterministic-context-free",
+      "formalSystemKey": "l-system:deterministic-context-free",
+      "localizationNamespace": "formal.l-system",
+      "sourcePaths": ["lib/core/l_systems/l_system_formal_system.dart"],
+      "arbCoverage": {"englishKeys": ["homeNavigationLSystemLabel", "homeNavigationLSystemDescription"], "portugueseKeys": ["homeNavigationLSystemLabel", "homeNavigationLSystemDescription"], "keyPrefixes": ["homeNavigationLSystem"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/l_system_page_test.dart", "test/widget/presentation/l_system_localization_test.dart"],
+      "parityCoverage": {"registry-l-system": "covered"},
+      "completionStatus": "covered",
+      "scope": "descriptor-registration-and-workspace",
+      "runtimeEvidence": {
+        "contractId": "l-system-deterministic-context-free",
+        "testPath": "test/widget/presentation/l_system_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "interoperability", "examples", "locale-state", "formal-content", "deterministic-expansion", "turtle-rendering", "advanced-rewriting"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-import-export", "locale-switch-state-preservation", "localized-example-metadata", "formal-content-preservation", "localized-lsystem-settings", "localized-production-and-command-editing", "bounded-expansion-feedback", "turtle-rendering", "viewport-state-preservation", "production-interoperability"]
+      }
+    }
+  ],
+  "workflowEntries": [
+    {
+      "id": "automata-diagnostics-and-equivalence",
+      "scope": "workspace",
+      "capabilityIds": ["simulation.computation-tree", "simulation.nondeterminism-highlight", "simulation.epsilon-highlight", "analysis.dfa-equivalence"],
+      "localizationNamespaces": ["formal.fsa", "formal.pda", "formal.tm"],
+      "arbCoverage": {"englishKeys": ["automataDiagnosticsCanvas", "computationBranchesTitle", "languageComparisonStatusSemantic"], "portugueseKeys": ["automataDiagnosticsCanvas", "computationBranchesTitle", "languageComparisonStatusSemantic"], "keyPrefixes": ["automataDiagnostics", "computationBranches", "languageComparison"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart"],
+      "evidenceTests": ["test/widget/presentation/automaton_diagnostic_highlight_bar_test.dart", "test/widget/presentation/computation_branch_inspector_test.dart", "test/widget/presentation/language_comparison_viewer_test.dart", "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart"],
+      "parityCoverage": {"simulation.computation-tree": "covered", "simulation.nondeterminism-highlight": "covered", "simulation.epsilon-highlight": "covered", "analysis.dfa-equivalence": "covered"},
+      "completionStatus": "covered",
+      "runtimeEvidence": {
+        "contractId": "automata-diagnostics-and-equivalence",
+        "testPath": "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["simulation.computation-tree", "simulation.nondeterminism-highlight", "simulation.epsilon-highlight", "analysis.dfa-equivalence", "validation", "bounded-results", "locale-state", "formal-content", "accessibility"],
+        "assertions": ["localized-computation-tree", "localized-nondeterminism-highlight", "localized-epsilon-highlight", "localized-dfa-equivalence", "localized-error", "localized-bounded-result", "locale-switch-state-preservation", "formal-content-preservation", "responsive-accessibility", "selection-highlight-result-viewport-preservation"]
+      },
+      "capabilityEvidence": {
+        "simulation.computation-tree": {"testPath": "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart", "assertions": ["localized-computation-tree", "locale-switch-state-preservation", "formal-content-preservation", "selection-highlight-result-viewport-preservation", "responsive-accessibility"]},
+        "simulation.nondeterminism-highlight": {"testPath": "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart", "assertions": ["localized-nondeterminism-highlight", "locale-switch-state-preservation", "selection-highlight-result-viewport-preservation", "responsive-accessibility"]},
+        "simulation.epsilon-highlight": {"testPath": "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart", "assertions": ["localized-epsilon-highlight", "locale-switch-state-preservation", "formal-content-preservation", "responsive-accessibility"]},
+        "analysis.dfa-equivalence": {"testPath": "test/widget/presentation/automata_diagnostics_equivalence_localization_test.dart", "assertions": ["localized-dfa-equivalence", "localized-error", "localized-bounded-result", "locale-switch-state-preservation", "formal-content-preservation", "selection-highlight-result-viewport-preservation", "responsive-accessibility"]}
+      }
+    },
+    {
+      "id": "automata-conversions-and-fragments",
+      "capabilityIds": ["conversion.fa-regex-grammar", "conversion.pda-cfg", "conversion.combine-import-fragment", "document-fragment-combination"],
+      "localizationNamespaces": ["formal.fsa", "formal.grammar", "formal.pda", "formal.tm", "formal.regex", "formal.transducer.mealy", "formal.transducer.moore"],
+      "arbCoverage": {"englishKeys": ["conversionReplaceTitle"], "portugueseKeys": ["conversionReplaceTitle"], "keyPrefixes": ["conversion"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/fa_to_regex_requirement_editor_test.dart", "test/widget/presentation/automaton_fragment_import_test.dart", "test/widget/presentation/cfg_to_pda_construction_workspace_test.dart", "test/widget/presentation/pda_algorithm_panel_test.dart", "test/widget/presentation/regex_to_fa_fragment_editor_localization_test.dart"],
+      "evidenceTests": ["test/widget/presentation/automaton_fragment_import_test.dart", "test/widget/presentation/manual_conversion_workspace_test.dart", "test/widget/presentation/cfg_to_pda_construction_workspace_test.dart", "test/widget/presentation/pda_algorithm_panel_test.dart", "test/widget/presentation/fa_to_regex_requirement_editor_test.dart", "test/widget/presentation/regex_to_fa_fragment_editor_localization_test.dart"],
+      "parityCoverage": {"conversion.fa-regex-grammar": "covered", "conversion.pda-cfg": "covered", "conversion.combine-import-fragment": "covered", "document-fragment-combination": "covered"},
+      "completionStatus": "covered"
+    },
+    {
+      "id": "automata-layout",
+      "scope": "workspace",
+      "capabilityIds": ["layout.constructive", "layout.transforms", "layout.restore"],
+      "localizationNamespaces": ["formal.fsa", "formal.pda", "formal.tm", "formal.transducer.mealy", "formal.transducer.moore"],
+      "arbCoverage": {"englishKeys": ["automatonLayoutButtonSemantics", "automatonLayoutResultSummary"], "portugueseKeys": ["automatonLayoutButtonSemantics", "automatonLayoutResultSummary"], "keyPrefixes": ["automatonLayout"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/automaton_layout_localization_test.dart"],
+      "evidenceTests": ["test/unit/core/graph_layout/graph_layout_engine_test.dart", "test/widget/presentation/automaton_graphview_canvas_test.dart", "test/widget/presentation/automaton_layout_localization_test.dart"],
+      "parityCoverage": {"layout.constructive": "covered", "layout.transforms": "covered", "layout.restore": "covered"},
+      "completionStatus": "covered",
+      "runtimeEvidence": {
+        "contractId": "automata-layout",
+        "testPath": "test/widget/presentation/automaton_layout_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["layout.constructive", "layout.transforms", "layout.restore", "validation", "locale-state", "formal-content", "accessibility"],
+        "assertions": ["localized-layout-controls", "localized-layout-constructive", "localized-layout-transforms", "localized-layout-restore", "localized-layout-confirmation", "localized-error", "localized-layout-empty-validation", "localized-layout-diagnostics", "locale-switch-state-preservation", "formal-content-preservation", "preview-selection-viewport-preservation", "undo-redo-preservation", "responsive-accessibility"]
+      },
+      "capabilityEvidence": {
+        "layout.constructive": {"testPath": "test/widget/presentation/automaton_layout_localization_test.dart", "assertions": ["localized-layout-controls", "localized-layout-constructive", "localized-layout-confirmation", "locale-switch-state-preservation", "formal-content-preservation", "responsive-accessibility"]},
+        "layout.transforms": {"testPath": "test/widget/presentation/automaton_layout_localization_test.dart", "assertions": ["localized-layout-transforms", "formal-content-preservation", "preview-selection-viewport-preservation", "undo-redo-preservation"]},
+        "layout.restore": {"testPath": "test/widget/presentation/automaton_layout_localization_test.dart", "assertions": ["localized-layout-restore", "preview-selection-viewport-preservation", "undo-redo-preservation"]}
+      }
+    },
+    {
+      "id": "interoperability-notes-and-export",
+      "capabilityIds": ["document-jflap-notes", "export-print"],
+      "localizationNamespaces": ["formal.fsa", "formal.grammar", "formal.pda", "formal.tm", "formal.regex"],
+      "arbCoverage": {"englishKeys": ["exportSvg"], "portugueseKeys": ["exportSvg"], "keyPrefixes": ["export"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/unit/presentation/svg_and_workflow_localization_test.dart", "test/widget/presentation/document_annotations_test.dart", "test/widget/presentation/file_operations_panel_test.dart", "test/widget/presentation/batch_execution_panel_test.dart", "test/widget/presentation/variable_dependency_graph_workspace_test.dart"],
+      "evidenceTests": ["test/widget/presentation/document_annotations_test.dart", "test/widget/presentation/document_interoperability_dialog_test.dart", "test/widget/presentation/file_operations_panel_test.dart", "test/widget/presentation/batch_execution_panel_test.dart", "test/widget/presentation/variable_dependency_graph_workspace_test.dart"],
+      "parityCoverage": {"document-jflap-notes": "covered", "export-print": "covered"},
+      "completionStatus": "covered",
+      "capabilityEvidence": {
+        "export-print": {"testPath": "test/widget/presentation/file_operations_panel_test.dart", "assertions": ["localized-import-export"]}
+      }
+    },
+    {
+      "id": "grammar-analysis-parsing-and-teaching",
+      "capabilityIds": ["grammar.classification.normal-forms", "grammar.analysis.first-follow-ll1", "grammar.transform.automatic-normal-forms", "grammar.transform.interactive-hypotheses", "parsing.cyk.single", "parsing.brute-force.single", "parsing.ll1.execution-teaching", "parsing.lr.execution-teaching", "parsing.multiple-runs", "parsing.user-controlled-derivation", "parsing.table-conflict-editing"],
+      "localizationNamespaces": ["formal.grammar", "formal.grammar.unrestricted"],
+      "arbCoverage": {"englishKeys": ["grammarAnalysisTitle", "parseString"], "portugueseKeys": ["grammarAnalysisTitle", "parseString"], "keyPrefixes": ["grammar"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/workflow_localization_test.dart", "test/widget/presentation/grammar_page_controls_test.dart", "test/widget/presentation/grammar_teaching_workspaces_test.dart", "test/widget/presentation/grammar_normalization_teaching_workspace_localization_test.dart", "test/widget/presentation/grammar_simulation_panel_localization_test.dart", "test/widget/presentation/algorithm_step_viewer_localization_test.dart", "test/widget/presentation/batch_execution_panel_test.dart", "test/widget/presentation/lr1_teaching_workspace_localization_test.dart"],
+      "evidenceTests": ["test/widget/presentation/grammar_simulation_panel_test.dart", "test/widget/presentation/user_derivation_workspace_test.dart", "test/widget/presentation/variable_dependency_graph_workspace_test.dart", "test/widget/presentation/grammar_transformation_history_localization_test.dart", "test/widget/presentation/grammar_normalization_teaching_workspace_localization_test.dart", "test/widget/presentation/grammar_simulation_panel_localization_test.dart", "test/widget/presentation/algorithm_step_viewer_localization_test.dart", "test/widget/presentation/batch_execution_panel_test.dart", "test/widget/presentation/lr1_teaching_workspace_localization_test.dart"],
+      "parityCoverage": {"grammar.classification.normal-forms": "covered", "grammar.analysis.first-follow-ll1": "covered", "grammar.transform.automatic-normal-forms": "covered", "grammar.transform.interactive-hypotheses": "covered", "parsing.cyk.single": "covered", "parsing.brute-force.single": "covered", "parsing.ll1.execution-teaching": "covered", "parsing.lr.execution-teaching": "covered", "parsing.multiple-runs": "covered", "parsing.user-controlled-derivation": "covered", "parsing.table-conflict-editing": "covered"},
+      "completionStatus": "covered"
+    },
+    {
+      "id": "pumping-lemma-workspaces",
+      "capabilityIds": ["pumping.regular-game", "pumping.context-free-game", "pumping.persistence-interoperability", "pumping.curated-problem-catalog"],
+      "localizationNamespaces": ["formal.pumping.regular", "formal.pumping.context-free"],
+      "arbCoverage": {"englishKeys": ["pumpingLemmaGameTitle"], "portugueseKeys": ["pumpingLemmaGameTitle"], "keyPrefixes": ["pumping"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/pumping_lemma_page_test.dart", "test/widget/presentation/pumping_lemma_progress_test.dart", "test/widget/presentation/pumping_lemma_localization_test.dart"],
+      "evidenceTests": ["test/widget/presentation/pumping_lemma_workspace_test.dart", "test/widget/presentation/pumping_lemma_localization_test.dart"],
+      "parityCoverage": {"pumping.regular-game": "covered", "pumping.context-free-game": "covered", "pumping.persistence-interoperability": "covered", "pumping.curated-problem-catalog": "covered"},
+      "completionStatus": "covered",
+      "scope": "workspace",
+      "runtimeEvidence": {
+        "contractId": "pumping-lemma-workspaces",
+        "testPath": "test/widget/presentation/pumping_lemma_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "interoperability", "examples", "locale-state", "formal-content", "accessibility"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-import-export", "localized-example-metadata", "locale-switch-state-preservation", "formal-content-preservation", "responsive-accessibility"]
+      }
+    },
+    {
+      "id": "l-system-workspace",
+      "capabilityIds": ["lsystem.deterministic-expansion", "lsystem.turtle-rendering", "lsystem.advanced-rewriting", "lsystem.persistence-examples"],
+      "localizationNamespaces": ["formal.l-system"],
+      "arbCoverage": {"englishKeys": ["homeNavigationLSystemLabel", "homeNavigationLSystemDescription"], "portugueseKeys": ["homeNavigationLSystemLabel", "homeNavigationLSystemDescription"], "keyPrefixes": ["homeNavigationLSystem"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/l_system_page_test.dart", "test/widget/presentation/l_system_localization_test.dart"],
+      "evidenceTests": ["test/widget/presentation/l_system_workspace_test.dart", "test/widget/presentation/l_system_localization_test.dart"],
+      "parityCoverage": {"lsystem.deterministic-expansion": "covered", "lsystem.turtle-rendering": "covered", "lsystem.advanced-rewriting": "covered", "lsystem.persistence-examples": "covered"},
+      "completionStatus": "covered",
+      "scope": "workspace",
+      "runtimeEvidence": {
+        "contractId": "l-system-workspace",
+        "testPath": "test/widget/presentation/l_system_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["editing", "validation", "simulation", "interoperability", "examples", "locale-state", "formal-content", "deterministic-expansion", "turtle-rendering", "advanced-rewriting", "persistence"],
+        "assertions": ["localized-editor-fields", "localized-error", "localized-valid-simulation", "localized-import-export", "locale-switch-state-preservation", "localized-example-metadata", "formal-content-preservation", "localized-lsystem-settings", "localized-production-and-command-editing", "bounded-expansion-feedback", "turtle-rendering", "viewport-state-preservation", "production-interoperability"]
+      },
+      "capabilityEvidence": {
+        "lsystem.deterministic-expansion": {"testPath": "test/widget/presentation/l_system_localization_test.dart", "assertions": ["localized-production-and-command-editing", "bounded-expansion-feedback", "formal-content-preservation"]},
+        "lsystem.turtle-rendering": {"testPath": "test/widget/presentation/l_system_localization_test.dart", "assertions": ["turtle-rendering", "viewport-state-preservation", "locale-switch-state-preservation"]},
+        "lsystem.advanced-rewriting": {"testPath": "test/widget/presentation/l_system_localization_test.dart", "assertions": ["localized-lsystem-settings", "localized-production-and-command-editing", "formal-content-preservation"]},
+        "lsystem.persistence-examples": {"testPath": "test/widget/presentation/l_system_localization_test.dart", "assertions": ["localized-example-metadata", "production-interoperability", "localized-import-export"]}
+      }
+    },
+    {
+      "id": "tm-acceptance-preference",
+      "scope": "workspace",
+      "capabilityIds": ["preference.tm-acceptance"],
+      "localizationNamespaces": ["formal.tm"],
+      "arbCoverage": {"englishKeys": ["tmTrace"], "portugueseKeys": ["tmTrace"], "keyPrefixes": ["tm"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/tm_acceptance_policy_localization_test.dart"],
+      "evidenceTests": ["test/unit/core/tm/tm_acceptance_policy_test.dart", "test/unit/data/tm_acceptance_policy_codecs_test.dart", "test/widget/presentation/tm_acceptance_policy_control_test.dart", "test/widget/presentation/tm_acceptance_policy_localization_test.dart"],
+      "parityCoverage": {"preference.tm-acceptance": "covered"},
+      "completionStatus": "covered",
+      "runtimeEvidence": {
+        "contractId": "tm-acceptance-preference",
+        "testPath": "test/widget/presentation/tm_acceptance_policy_localization_test.dart",
+        "locales": ["en", "pt"],
+        "viewportProfiles": ["phone-320x700-text-200"],
+        "capabilities": ["preference", "simulation", "persistence", "locale-state", "formal-content", "accessibility"],
+        "assertions": ["localized-preference-control", "localized-policy-explanations", "localized-valid-simulation", "localized-bounded-outcome", "production-session-persistence", "locale-switch-state-preservation", "formal-content-preservation", "semantic-code-preservation", "tape-and-result-preservation", "responsive-accessibility"]
+      },
+      "capabilityEvidence": {
+        "preference.tm-acceptance": {"testPath": "test/widget/presentation/tm_acceptance_policy_localization_test.dart", "assertions": ["localized-preference-control", "localized-policy-explanations", "localized-valid-simulation", "localized-bounded-outcome", "production-session-persistence", "locale-switch-state-preservation", "formal-content-preservation", "semantic-code-preservation", "tape-and-result-preservation", "responsive-accessibility"]}
+      }
+    },
+    {
+      "id": "transducer-workspaces",
+      "capabilityIds": ["capability:transducer:mealy:editing", "capability:transducer:mealy:simulation", "capability:transducer:mealy:analysis", "capability:transducer:mealy:trace", "capability:transducer:moore:editing", "capability:transducer:moore:simulation", "capability:transducer:moore:analysis", "capability:transducer:moore:trace"],
+      "localizationNamespaces": ["formal.transducer.mealy", "formal.transducer.moore"],
+      "arbCoverage": {"englishKeys": ["transducerSimulationTitle"], "portugueseKeys": ["transducerSimulationTitle"], "keyPrefixes": ["transducer"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": ["test/widget/presentation/mealy_localization_test.dart", "test/widget/presentation/moore_localization_test.dart"],
+      "evidenceTests": ["test/unit/data/mealy_document_codecs_test.dart", "test/unit/data/moore_registered_module_test.dart", "test/widget/presentation/mealy_workspace_test.dart", "test/widget/presentation/moore_workspace_test.dart"],
+      "parityCoverage": {},
+      "completionStatus": "covered"
+    },
+    {
+      "id": "advanced-tm-workspaces",
+      "capabilityIds": ["workspace:tm:multi-tape", "workspace:tm:building-blocks", "conversion:tm-to-unrestricted-grammar"],
+      "localizationNamespaces": ["formal.tm", "formal.grammar.unrestricted"],
+      "arbCoverage": {"englishKeys": ["homeNavigationTmLabel"], "portugueseKeys": ["homeNavigationTmLabel"], "keyPrefixes": ["tm"]},
+      "featureOwnerIssue": 343,
+      "helpContentOwnerIssue": 344,
+      "sharedChromeOwnerIssue": 163,
+      "structuredMessagesOwnerIssue": 210,
+      "representativeBilingualTests": [
+        "test/widget/presentation/tm_multi_tape_workspace_test.dart",
+        "test/widget/presentation/tm_block_example_localization_test.dart",
+        "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart",
+        "test/widget/presentation/tm_reachability_result_localization_test.dart"
+      ],
+      "evidenceTests": [
+        "test/widget/presentation/tm_multi_tape_workspace_test.dart",
+        "test/widget/presentation/tm_block_library_panel_test.dart",
+        "test/widget/presentation/tm_block_example_localization_test.dart",
+        "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart",
+        "test/widget/presentation/tm_reachability_result_localization_test.dart"
+      ],
+      "parityCoverage": {},
+      "completionStatus": "covered",
+      "capabilityEvidence": {
+        "workspace:tm:multi-tape": {"testPath": "test/widget/presentation/tm_multi_tape_workspace_test.dart", "assertions": ["localized-multi-tape-workspace"]},
+        "workspace:tm:building-blocks": {"testPath": "test/widget/presentation/tm_block_example_localization_test.dart", "assertions": ["localized-building-block-workspace"]},
+        "conversion:tm-to-unrestricted-grammar": {"testPath": "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart", "assertions": ["localized-tm-to-unrestricted-grammar-workspace"]}
+      }
+    }
+  ]
+}

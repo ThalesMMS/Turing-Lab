@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -26,11 +27,7 @@ void main() {
             label: 'a,b',
             inputSymbols: const {'a', 'b'},
           ),
-          FSATransition.epsilon(
-            id: 't1',
-            fromState: q1,
-            toState: q0,
-          ),
+          FSATransition.epsilon(id: 't1', fromState: q1, toState: q0),
         },
         alphabet: const {'a', 'b'},
         initialState: q0,
@@ -74,16 +71,18 @@ void main() {
       final result = codec.decodeFsaXml(xml);
 
       expect(result.isSuccess, isTrue);
-      final transition =
-          result.data!.transitions.whereType<FSATransition>().single;
+      final transition = result.data!.transitions
+          .whereType<FSATransition>()
+          .single;
       expect(transition.fromState.id, equals('0'));
       expect(transition.toState.id, equals('1'));
       expect(transition.label, equals('a'));
     });
 
-    test('rejects FSA transitions that reference state labels instead of ids',
-        () {
-      const xml = '''<?xml version="1.0" encoding="UTF-8"?>
+    test(
+      'rejects FSA transitions that reference state labels instead of ids',
+      () {
+        const xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <structure type="fa">
   <automaton>
     <state id="0" name="q0">
@@ -100,11 +99,22 @@ void main() {
   </automaton>
 </structure>''';
 
-      final result = codec.decodeFsaXml(xml);
+        final result = codec.decodeFsaXml(xml);
 
-      expect(result.isFailure, isTrue);
-      expect(result.error, contains('unknown state'));
-    });
+        expect(result.isFailure, isTrue);
+        expect(result.error, 'parser.jflap-xml.unknown-transition-endpoints');
+        expect(result.structuredError?.arguments, {
+          'from': StructuredMessageArgument.identifier(
+            'q0',
+            role: 'source-state',
+          ),
+          'to': StructuredMessageArgument.identifier(
+            'q1',
+            role: 'target-state',
+          ),
+        });
+      },
+    );
 
     test('does not fabricate an initial state when marker is absent', () {
       const xml = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -121,10 +131,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.data!.initialState, isNull);
-      expect(
-        result.data!.states.where((state) => state.isInitial),
-        isEmpty,
-      );
+      expect(result.data!.states.where((state) => state.isInitial), isEmpty);
     });
 
     test('resolves ambiguous FSA transition endpoints by id only', () {
@@ -148,14 +155,14 @@ void main() {
       final result = codec.decodeFsaXml(xml);
 
       expect(result.isSuccess, isTrue);
-      final transition =
-          result.data!.transitions.whereType<FSATransition>().single;
+      final transition = result.data!.transitions
+          .whereType<FSATransition>()
+          .single;
       expect(transition.fromState.id, equals('q0'));
       expect(transition.toState.id, equals('q1'));
     });
 
-    test('rejects empty FSA imports with the existing file-service message',
-        () {
+    test('rejects empty FSA imports with a stable parser code', () {
       const xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <structure type="fa">
   <automaton>
@@ -165,7 +172,7 @@ void main() {
       final result = codec.decodeFsaXml(xml);
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('does not contain any states'));
+      expect(result.error, 'parser.jflap-xml.empty-automaton');
     });
 
     test('keeps empty serializable automata round-trippable', () {
@@ -205,7 +212,7 @@ void main() {
       final result = codec.decodeSerializableAutomaton(xml);
 
       expect(result.isFailure, isTrue);
-      expect(result.error, contains('unknown state'));
+      expect(result.error, 'parser.jflap-xml.unknown-transition-endpoints');
     });
 
     test('decodes serializable transitions by id when names conflict', () {
@@ -233,6 +240,30 @@ void main() {
       final transitions =
           result.data!['transitions'] as Map<String, List<String>>;
       expect(transitions['q0|a'], equals(['q1']));
+    });
+
+    test('malformed XML and unexpected roots have distinct stable codes', () {
+      final malformed = codec.decodeFsaXml('<not-xml');
+      final wrongRoot = codec.decodeSerializableAutomaton('<automaton/>');
+
+      expect(malformed.error, 'parser.jflap-xml.malformed-document');
+      expect(wrongRoot.error, 'parser.jflap-xml.unexpected-root-element');
+      expect(
+        wrongRoot.structuredError?.arguments['actual'],
+        StructuredMessageArgument.identifier('automaton', role: 'xml-element'),
+      );
+    });
+
+    test('uses generated document identity as the imported name', () {
+      const xml = '''
+<structure type="fa">
+  <automaton><state id="q0" name="q0"><initial/></state></automaton>
+</structure>''';
+
+      final automaton = codec.decodeFsaXml(xml).data!;
+
+      expect(automaton.name, automaton.id);
+      expect(automaton.name, startsWith('imported_'));
     });
   });
 }

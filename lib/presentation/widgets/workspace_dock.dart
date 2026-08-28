@@ -15,6 +15,59 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_help.dart';
 
+/// Controls the panel currently exposed by a [WorkspaceDock].
+///
+/// Callers that open a panel from outside the dock can provide the triggering
+/// [FocusNode]. Closing the panel then restores focus after the dock rebuilds.
+/// The controller never owns or disposes that focus node.
+class WorkspaceDockController extends ChangeNotifier {
+  WorkspaceDockController({String? openPanelId}) : _openPanelId = openPanelId;
+
+  String? _openPanelId;
+  FocusNode? _returnFocusNode;
+
+  /// Identifier of the panel requested by the latest interaction.
+  String? get openPanelId => _openPanelId;
+
+  /// Opens [panelId], optionally remembering where focus should return.
+  void openPanel(String panelId, {FocusNode? returnFocusTo}) {
+    if (_openPanelId == panelId && _returnFocusNode == returnFocusTo) {
+      return;
+    }
+    _openPanelId = panelId;
+    _returnFocusNode = returnFocusTo;
+    notifyListeners();
+  }
+
+  /// Opens [panelId], or closes it when it is already open.
+  void togglePanel(String panelId, {FocusNode? returnFocusTo}) {
+    if (_openPanelId == panelId) {
+      closePanel();
+      return;
+    }
+    openPanel(panelId, returnFocusTo: returnFocusTo);
+  }
+
+  /// Closes the current panel and optionally restores its trigger focus.
+  void closePanel({bool restoreFocus = true}) {
+    if (_openPanelId == null) {
+      return;
+    }
+    final returnFocusNode = _returnFocusNode;
+    _openPanelId = null;
+    _returnFocusNode = null;
+    notifyListeners();
+
+    if (restoreFocus && returnFocusNode != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (returnFocusNode.canRequestFocus) {
+          returnFocusNode.requestFocus();
+        }
+      });
+    }
+  }
+}
+
 /// One collapsible panel hosted by [WorkspaceDock].
 ///
 /// The [child] widget is created eagerly by the page but only inflated while
@@ -27,6 +80,7 @@ class WorkspaceDockPanel {
     required this.label,
     required this.icon,
     required this.child,
+    this.scrollable,
   });
 
   /// Stable identifier used to remember which panel is open.
@@ -38,9 +92,14 @@ class WorkspaceDockPanel {
   /// Rail button icon.
   final IconData icon;
 
-  /// Panel body. Rendered inside a scroll view, so it must not expand to
-  /// infinite height.
+  /// Panel body.
   final Widget child;
+
+  /// Overrides [WorkspaceDock.scrollPanels] for this panel.
+  ///
+  /// Panels that own a viewport set this to false so their child keeps the
+  /// bounded height supplied by the dock.
+  final bool? scrollable;
 }
 
 /// Canvas-first layout for wide viewports.
@@ -55,6 +114,7 @@ class WorkspaceDock extends StatefulWidget {
     required this.content,
     required this.panels,
     this.initialPanelId,
+    this.controller,
     this.initialPanelWidth = defaultPanelWidth,
     this.contentPadding = const EdgeInsets.fromLTRB(12, 12, 0, 12),
     this.scrollPanels = true,
@@ -96,6 +156,13 @@ class WorkspaceDock extends StatefulWidget {
   /// Panel opened on first build. Defaults to none, keeping the canvas clear.
   final String? initialPanelId;
 
+  /// Optional controller for opening and closing panels outside the dock.
+  ///
+  /// Without one, the dock owns an internal controller and preserves its
+  /// original autonomous behavior. When provided, [initialPanelId] is ignored
+  /// because the external controller is the source of truth.
+  final WorkspaceDockController? controller;
+
   /// Starting width for an open panel.
   final double initialPanelWidth;
 
@@ -111,23 +178,49 @@ class WorkspaceDock extends StatefulWidget {
 }
 
 class _WorkspaceDockState extends State<WorkspaceDock> {
-  String? _openPanelId;
+  late final WorkspaceDockController _internalController;
   late double _panelWidth;
+
+  WorkspaceDockController get _controller =>
+      widget.controller ?? _internalController;
 
   @override
   void initState() {
     super.initState();
-    _openPanelId = _resolveInitialPanelId();
+    _internalController = WorkspaceDockController(
+      openPanelId: widget.controller == null ? _resolveInitialPanelId() : null,
+    );
+    _controller.addListener(_handleControllerChanged);
     _panelWidth = widget.initialPanelWidth;
   }
 
   @override
   void didUpdateWidget(covariant WorkspaceDock oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      (oldWidget.controller ?? _internalController).removeListener(
+        _handleControllerChanged,
+      );
+      _controller.addListener(_handleControllerChanged);
+    }
     // A page can stop offering a panel (for example when the info panel
     // depends on the loaded machine). Collapse instead of rendering a hole.
-    if (_openPanelId != null && _panelById(_openPanelId!) == null) {
-      _openPanelId = null;
+    final openPanelId = _controller.openPanelId;
+    if (openPanelId != null && _panelById(openPanelId) == null) {
+      _controller.closePanel(restoreFocus: false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleControllerChanged);
+    _internalController.dispose();
+    super.dispose();
+  }
+
+  void _handleControllerChanged() {
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -148,16 +241,12 @@ class _WorkspaceDockState extends State<WorkspaceDock> {
     return null;
   }
 
-  void _togglePanel(String id) {
-    setState(() {
-      _openPanelId = _openPanelId == id ? null : id;
-    });
+  void _togglePanel(String id, FocusNode returnFocusNode) {
+    _controller.togglePanel(id, returnFocusTo: returnFocusNode);
   }
 
   void _closePanel() {
-    setState(() {
-      _openPanelId = null;
-    });
+    _controller.closePanel();
   }
 
   void _resizePanel(double delta, double maxWidth) {
@@ -173,15 +262,17 @@ class _WorkspaceDockState extends State<WorkspaceDock> {
   Widget build(BuildContext context) {
     if (widget.panels.isEmpty) {
       return Padding(
-        padding:
-            widget.contentPadding.copyWith(right: widget.contentPadding.left),
+        padding: widget.contentPadding.copyWith(
+          right: widget.contentPadding.left,
+        ),
         child: widget.content,
       );
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final available = constraints.maxWidth -
+        final available =
+            constraints.maxWidth -
             WorkspaceDock.railWidth -
             WorkspaceDock.dividerWidth -
             WorkspaceDock.minContentWidth;
@@ -190,8 +281,9 @@ class _WorkspaceDockState extends State<WorkspaceDock> {
           available.isFinite ? available : WorkspaceDock.maxPanelWidth,
         );
         final canHostPanel = maxPanelWidth >= WorkspaceDock.minPanelWidth;
-        final openPanel = canHostPanel && _openPanelId != null
-            ? _panelById(_openPanelId!)
+        final openPanelId = _controller.openPanelId;
+        final openPanel = canHostPanel && openPanelId != null
+            ? _panelById(openPanelId)
             : null;
         final panelWidth = _panelWidth
             .clamp(
@@ -218,7 +310,7 @@ class _WorkspaceDockState extends State<WorkspaceDock> {
                 width: panelWidth,
                 child: _DockPanelBody(
                   panel: openPanel,
-                  scrollable: widget.scrollPanels,
+                  scrollable: openPanel.scrollable ?? widget.scrollPanels,
                   onClose: _closePanel,
                 ),
               ),
@@ -246,7 +338,7 @@ class _DockRail extends StatelessWidget {
 
   final List<WorkspaceDockPanel> panels;
   final String? openPanelId;
-  final ValueChanged<String>? onToggle;
+  final void Function(String panelId, FocusNode returnFocusNode)? onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -274,8 +366,10 @@ class _DockRail extends StatelessWidget {
                   tooltip: panel.id == openPanelId
                       ? l10n.workspaceDockHidePanel(panel.label)
                       : l10n.workspaceDockShowPanel(panel.label),
-                  onPressed:
-                      onToggle == null ? null : () => onToggle!(panel.id),
+                  onPressed: onToggle == null
+                      ? null
+                      : (returnFocusNode) =>
+                            onToggle!(panel.id, returnFocusNode),
                 ),
               ),
           ],
@@ -285,7 +379,7 @@ class _DockRail extends StatelessWidget {
   }
 }
 
-class _DockRailButton extends StatelessWidget {
+class _DockRailButton extends StatefulWidget {
   const _DockRailButton({
     super.key,
     required this.panel,
@@ -297,29 +391,53 @@ class _DockRailButton extends StatelessWidget {
   final WorkspaceDockPanel panel;
   final bool selected;
   final String tooltip;
-  final VoidCallback? onPressed;
+  final ValueChanged<FocusNode>? onPressed;
+
+  @override
+  State<_DockRailButton> createState() => _DockRailButtonState();
+}
+
+class _DockRailButtonState extends State<_DockRailButton> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode(debugLabel: 'Workspace dock rail button');
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final onPressed = widget.onPressed == null
+        ? null
+        : () => widget.onPressed!(_focusNode);
 
     return Semantics(
-      label: tooltip,
+      label: widget.tooltip,
       button: true,
-      enabled: onPressed != null,
-      selected: selected,
+      enabled: widget.onPressed != null,
+      selected: widget.selected,
+      onTap: onPressed,
       excludeSemantics: true,
       child: IconButton(
+        focusNode: _focusNode,
         onPressed: onPressed,
-        isSelected: selected,
-        tooltip: tooltip,
-        icon: Icon(panel.icon),
+        isSelected: widget.selected,
+        tooltip: widget.tooltip,
+        icon: Icon(widget.panel.icon),
         style: IconButton.styleFrom(
           foregroundColor: colorScheme.onSurfaceVariant,
           backgroundColor: Colors.transparent,
           highlightColor: colorScheme.primary.withValues(alpha: 0.12),
         ),
-        selectedIcon: Icon(panel.icon, color: colorScheme.primary),
+        selectedIcon: Icon(widget.panel.icon, color: colorScheme.primary),
       ),
     );
   }

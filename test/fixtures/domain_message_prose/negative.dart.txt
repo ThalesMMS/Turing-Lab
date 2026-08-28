@@ -1,0 +1,6 @@
+import 'package:example/domain.dart';
+
+const namespace = 'simulation.tm';
+const code = 'bounded-unknown';
+const state = 'q0';
+const notation = 'a→b';

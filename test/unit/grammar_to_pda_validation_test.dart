@@ -60,6 +60,11 @@ void main() {
             simpleGrammar.terminals,
             reason: 'PDA alphabet should match grammar terminals',
           );
+          expect(
+            pda.validate(),
+            isEmpty,
+            reason: 'Converted PDA should satisfy canonical model validation',
+          );
         }
       });
 

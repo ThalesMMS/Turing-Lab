@@ -13,21 +13,30 @@
 import '../../models/grammar.dart';
 import '../../models/cyk_step.dart';
 import '../../result.dart';
+import '../../models/grammar_parse_report.dart';
+import '../../messages/structured_message.dart';
 import '../grammar_cnf_transformer.dart';
 import '../grammar_input_tokenizer.dart';
+import 'cyk_parser_messages.dart';
 
 /// CYK parser for CFGs in CNF. Builds parse table and derivation tree.
 class CYKParser {
-  static Result<CYKResult> parse(
-    Grammar g,
-    String input, {
-    Duration? timeout,
-  }) {
+  static Result<CYKResult> parse(Grammar g, String input, {Duration? timeout}) {
     final stopwatch = Stopwatch()..start();
 
     Result<CYKResult>? timeoutFailure() {
       if (timeout != null && stopwatch.elapsed >= timeout) {
-        return ResultFactory.failure('CYK parsing timed out');
+        final message = CykParserMessages.timedOut();
+        return ResultFactory.success(
+          CYKResult(
+            accepted: false,
+            table: [],
+            derivation: null,
+            outcome: GrammarParseOutcome.timedOut,
+            message: 'CYK parsing timed out',
+            structuredMessage: message,
+          ),
+        );
       }
       return null;
     }
@@ -39,7 +48,14 @@ class CYKParser {
       final tokenResult = GrammarInputTokenizer.tokenize(g, input);
       if (tokenResult.isFailure) {
         return ResultFactory.success(
-          const CYKResult(accepted: false, table: [], derivation: null),
+          CYKResult(
+            accepted: false,
+            table: const [],
+            derivation: null,
+            outcome: GrammarParseOutcome.tokenizationFailure,
+            message: tokenResult.error,
+            structuredMessage: tokenResult.structuredError,
+          ),
         );
       }
       final tokens = tokenResult.data!;
@@ -47,12 +63,17 @@ class CYKParser {
       // Handle empty string using nullable analysis (original grammar)
       if (tokens.isEmpty) {
         final acceptsEmpty = g.nullableNonterminals.contains(g.startSymbol);
+        final message = acceptsEmpty
+            ? null
+            : CykParserMessages.inputRejected(input);
         return ResultFactory.success(
           CYKResult(
             accepted: acceptsEmpty,
             table: const [],
-            derivation:
-                acceptsEmpty ? CYKDerivation.node(g.startSymbol, []) : null,
+            derivation: acceptsEmpty
+                ? CYKDerivation.node(g.startSymbol, [])
+                : null,
+            structuredMessage: message,
           ),
         );
       }
@@ -153,10 +174,18 @@ class CYKParser {
       final resultAssemblyTimeout = timeoutFailure();
       if (resultAssemblyTimeout != null) return resultAssemblyTimeout;
       return ResultFactory.success(
-        CYKResult(accepted: accepted, table: table, derivation: tree),
+        CYKResult(
+          accepted: accepted,
+          table: table,
+          derivation: tree,
+          structuredMessage: accepted
+              ? null
+              : CykParserMessages.inputRejected(input),
+        ),
       );
     } catch (e) {
-      return ResultFactory.failure('CYK parse error: $e');
+      final message = CykParserMessages.parseFailed();
+      return Failure('CYK parse error: $e', structuredMessage: message);
     }
   }
 
@@ -170,7 +199,20 @@ class CYKParser {
 
     Result<CYKParseResult>? timeoutFailure() {
       if (timeout != null && stopwatch.elapsed >= timeout) {
-        return ResultFactory.failure('CYK parsing timed out');
+        stopwatch.stop();
+        final message = CykParserMessages.timedOut();
+        return ResultFactory.success(
+          CYKParseResult(
+            accepted: false,
+            table: const [],
+            derivation: null,
+            steps: const [],
+            executionTime: stopwatch.elapsed,
+            outcome: GrammarParseOutcome.timedOut,
+            message: 'CYK parsing timed out',
+            structuredMessage: message,
+          ),
+        );
       }
       return null;
     }
@@ -189,6 +231,9 @@ class CYKParser {
             derivation: null,
             steps: const [],
             executionTime: stopwatch.elapsed,
+            outcome: GrammarParseOutcome.tokenizationFailure,
+            message: tokenResult.error,
+            structuredMessage: tokenResult.structuredError,
           ),
         );
       }
@@ -200,6 +245,9 @@ class CYKParser {
       // Handle empty string using nullable analysis (original grammar)
       if (tokens.isEmpty) {
         final acceptsEmpty = g.nullableNonterminals.contains(g.startSymbol);
+        final message = acceptsEmpty
+            ? null
+            : CykParserMessages.inputRejected(input);
         steps.add(
           CYKStep.initialize(
             id: 'step_$stepCounter',
@@ -224,10 +272,12 @@ class CYKParser {
           CYKParseResult(
             accepted: acceptsEmpty,
             table: const [],
-            derivation:
-                acceptsEmpty ? CYKDerivation.node(g.startSymbol, []) : null,
+            derivation: acceptsEmpty
+                ? CYKDerivation.node(g.startSymbol, [])
+                : null,
             steps: steps,
             executionTime: stopwatch.elapsed,
+            structuredMessage: message,
           ),
         );
       }
@@ -307,8 +357,10 @@ class CYKParser {
           final cellTimeout = timeoutFailure();
           if (cellTimeout != null) return cellTimeout;
           final j = len - 1; // column width
-          final substring =
-              tokens.sublist(i, i + len).map((token) => token.lexeme).join();
+          final substring = tokens
+              .sublist(i, i + len)
+              .map((token) => token.lexeme)
+              .join();
 
           // Capture process cell step
           steps.add(
@@ -466,10 +518,14 @@ class CYKParser {
           derivation: tree,
           steps: steps,
           executionTime: stopwatch.elapsed,
+          structuredMessage: accepted
+              ? null
+              : CykParserMessages.inputRejected(input),
         ),
       );
     } catch (e) {
-      return ResultFactory.failure('CYK parse error: $e');
+      final message = CykParserMessages.parseFailed();
+      return Failure('CYK parse error: $e', structuredMessage: message);
     }
   }
 
@@ -505,15 +561,25 @@ class CYKParser {
 class CYKResult {
   final bool accepted;
   final List<List<Set<String>>>
-      table; // upper triangular table; table[i][len-1]
+  table; // upper triangular table; table[i][len-1]
   final CYKDerivation? derivation;
   final List<CYKStep>? steps;
+  final GrammarParseOutcome outcome;
+  final String? message;
+  final StructuredMessage? structuredMessage;
   const CYKResult({
     required this.accepted,
     required this.table,
     required this.derivation,
     this.steps,
-  });
+    GrammarParseOutcome? outcome,
+    this.message,
+    this.structuredMessage,
+  }) : outcome =
+           outcome ??
+           (accepted
+               ? GrammarParseOutcome.accepted
+               : GrammarParseOutcome.rejected);
 }
 
 class CYKDerivation {
@@ -536,8 +602,7 @@ class CYKBackptr {
   factory CYKBackptr.internal({
     required (int, int, String) left,
     required (int, int, String) right,
-  }) =>
-      CYKBackptr._(false, null, left, right);
+  }) => CYKBackptr._(false, null, left, right);
 }
 
 /// Result of CYK parsing with step-by-step information
@@ -557,13 +622,25 @@ class CYKParseResult {
   /// Execution time
   final Duration executionTime;
 
+  final GrammarParseOutcome outcome;
+
+  final String? message;
+  final StructuredMessage? structuredMessage;
+
   const CYKParseResult({
     required this.accepted,
     required this.table,
     required this.derivation,
     required this.steps,
     required this.executionTime,
-  });
+    GrammarParseOutcome? outcome,
+    this.message,
+    this.structuredMessage,
+  }) : outcome =
+           outcome ??
+           (accepted
+               ? GrammarParseOutcome.accepted
+               : GrammarParseOutcome.rejected);
 
   /// Gets the number of steps
   int get stepCount => steps.length;

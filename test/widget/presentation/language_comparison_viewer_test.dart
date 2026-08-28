@@ -23,6 +23,7 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/language_comparison_outcome.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
+import 'package:turing_lab/core/algorithms/language_comparison_messages.dart';
 import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
@@ -97,7 +98,9 @@ FSA _createTestFSA({
 }
 
 /// Helper function to create an equivalent comparison result
-EquivalenceComparisonResult _createEquivalentResult() {
+EquivalenceComparisonResult _createEquivalentResult({
+  int executionTimeMs = 42,
+}) {
   final automatonA = _createTestFSA(
     id: 'test-a',
     name: 'Automaton A',
@@ -118,7 +121,7 @@ EquivalenceComparisonResult _createEquivalentResult() {
     distinguishingString: null,
     productAutomaton: null,
     steps: [],
-    executionTimeMs: 42,
+    executionTimeMs: executionTimeMs,
     timestamp: DateTime(2025, 1, 25),
   );
 }
@@ -157,10 +160,15 @@ EquivalenceComparisonResult _createNonEquivalentResult({
             'type': 'initialization',
             'description': 'Initialize product automaton construction',
           },
-          {'type': 'bfs_exploration', 'description': 'Exploring state (q0,p0)'},
+          {
+            'type': 'bfs_exploration',
+            'description': 'Exploring state (q0,p0)',
+            'data': {'stateA': 'q0', 'stateB': 'p0'},
+          },
           {
             'type': 'counterexample_found',
             'description': 'Found distinguishing string: ab',
+            'data': {'distinguishingString': 'ab'},
           },
         ]
       : <Map<String, dynamic>>[];
@@ -286,10 +294,7 @@ void main() {
       ) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(
           find.byKey(
@@ -309,13 +314,23 @@ void main() {
       ) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text('42ms'), findsOneWidget);
         expect(find.byIcon(Icons.access_time), findsOneWidget);
+      });
+
+      testWidgets('formats execution time in Portuguese', (tester) async {
+        final result = _createEquivalentResult(executionTimeMs: 1234);
+
+        await _pumpLanguageComparisonViewer(
+          tester,
+          comparisonResult: result,
+          locale: const Locale('pt'),
+        );
+
+        expect(find.text('1.234ms'), findsOneWidget);
+        expect(find.text('1234ms'), findsNothing);
       });
 
       testWidgets('does not display counterexample section when equivalent', (
@@ -323,10 +338,7 @@ void main() {
       ) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.distinguishingStringFound), findsNothing);
         expect(find.byIcon(Icons.warning_amber), findsNothing);
@@ -335,10 +347,7 @@ void main() {
       testWidgets('displays statistics for both automata', (tester) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.statesA), findsOneWidget);
         expect(find.text(_en.statesB), findsOneWidget);
@@ -351,10 +360,7 @@ void main() {
       testWidgets('displays default titles for automata', (tester) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.automatonA), findsOneWidget);
         expect(find.text(_en.automatonB), findsOneWidget);
@@ -385,10 +391,7 @@ void main() {
       ) async {
         final result = _createNonEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(
           find.byKey(
@@ -403,35 +406,29 @@ void main() {
         expect(find.text(_en.equivalent), findsNothing);
       });
 
-      testWidgets('displays counterexample section with distinguishing string',
-          (
-        tester,
-      ) async {
-        final result = _createNonEquivalentResult(distinguishingString: 'ab');
+      testWidgets(
+        'displays counterexample section with distinguishing string',
+        (tester) async {
+          final result = _createNonEquivalentResult(distinguishingString: 'ab');
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+          await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
-        expect(find.text(_en.distinguishingStringFound), findsOneWidget);
-        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
-        expect(find.text('"ab"'), findsOneWidget);
-        expect(
-          find.text(_en.distinguishingStringExplanation),
-          findsOneWidget,
-        );
-      });
+          expect(find.text(_en.distinguishingStringFound), findsOneWidget);
+          expect(find.byIcon(Icons.warning_amber), findsOneWidget);
+          expect(find.text('"ab"'), findsOneWidget);
+          expect(
+            find.text(_en.distinguishingStringExplanation),
+            findsOneWidget,
+          );
+        },
+      );
 
       testWidgets('displays empty string counterexample correctly', (
         tester,
       ) async {
         final result = _createNonEquivalentResult(distinguishingString: '');
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.distinguishingStringFound), findsOneWidget);
         expect(find.text(_en.emptyStringEpsilon), findsOneWidget);
@@ -442,10 +439,7 @@ void main() {
       ) async {
         final result = _createNonEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text('87ms'), findsOneWidget);
       });
@@ -455,10 +449,7 @@ void main() {
       ) async {
         final result = _createNonEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         // Automaton A has 2 states, B has 4 states
         expect(find.text(_en.statesA), findsOneWidget);
@@ -476,10 +467,7 @@ void main() {
             includeProductAutomaton: false,
           );
 
-          await _pumpLanguageComparisonViewer(
-            tester,
-            comparisonResult: result,
-          );
+          await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
           expect(find.text(_en.productAutomaton), findsNothing);
         },
@@ -529,10 +517,7 @@ void main() {
           includeProductAutomaton: true,
         );
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         await _tapSectionToggle(tester, _en.productAutomaton);
 
@@ -553,9 +538,7 @@ void main() {
             .toList();
         expect(innerCanvases, hasLength(3));
         expect(
-          innerCanvases.map(
-            (canvas) => canvas.customization!.edgeRenderMode,
-          ),
+          innerCanvases.map((canvas) => canvas.customization!.edgeRenderMode),
           everyElement(TuringLabEdgeRenderMode.groupedFsa),
         );
         final canvasKeys = canvases.map((canvas) => canvas.canvasKey).toSet();
@@ -600,10 +583,7 @@ void main() {
           includeProductAutomaton: true,
         );
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         await _tapSectionToggle(tester, _en.productAutomaton);
 
@@ -625,10 +605,7 @@ void main() {
       ) async {
         final result = _createNonEquivalentResult(includeSteps: false);
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.algorithmSteps), findsNothing);
       });
@@ -699,7 +676,10 @@ void main() {
         await _tapStepButton(tester, LanguageComparisonSemantics.nextStep);
         expect(find.text(_en.stepOf(2, 3)), findsOneWidget);
         expect(find.text('State Pair Visit'), findsOneWidget);
-        expect(find.text('Exploring state (q0,p0)'), findsOneWidget);
+        expect(
+          find.text(_en.languageComparisonDescriptionExplorePair('q0', 'p0')),
+          findsOneWidget,
+        );
         expect(find.text('Initialization'), findsNothing);
 
         await _tapStepButton(tester, LanguageComparisonSemantics.nextStep);
@@ -721,9 +701,8 @@ void main() {
           showSteps: true,
         );
 
-        IconButton buttonFor(String identifier) => tester.widget<IconButton>(
-              find.byKey(ValueKey<String>(identifier)),
-            );
+        IconButton buttonFor(String identifier) =>
+            tester.widget<IconButton>(find.byKey(ValueKey<String>(identifier)));
 
         expect(
           buttonFor(LanguageComparisonSemantics.previousStep).onPressed,
@@ -799,9 +778,12 @@ void main() {
 
         expect(find.text('Counterexample Found'), findsOneWidget);
         expect(find.text('Distinguishing string'), findsOneWidget);
-        expect(find.text('"ab"'), findsAtLeastNWidgets(1));
+        expect(find.text('ab'), findsAtLeastNWidgets(1));
         expect(find.text('Acceptance'), findsOneWidget);
-        expect(find.text('A accepts, B rejects'), findsOneWidget);
+        expect(
+          find.text(_en.languageComparisonValueAcceptance('true', 'false')),
+          findsOneWidget,
+        );
       });
 
       testWidgets('renders a product-state payload with its state pair', (
@@ -851,7 +833,7 @@ void main() {
 
         expect(find.text('Comparison Result'), findsOneWidget);
         expect(find.text('Equivalent'), findsOneWidget);
-        expect(find.text('yes'), findsOneWidget);
+        expect(find.text(_en.yes), findsOneWidget);
       });
 
       testWidgets('renders an error payload as an error step', (tester) async {
@@ -964,7 +946,7 @@ void main() {
         }
       });
 
-      testWidgets('shows the engine detail next to the localized headline', (
+      testWidgets('shows a localized explanation next to the headline', (
         tester,
       ) async {
         await _pumpLanguageComparisonViewer(
@@ -976,11 +958,10 @@ void main() {
         );
 
         expect(
-          find.text(
-            _en.analysisFailedPrefix('Automaton A could not be determinized'),
-          ),
+          find.text(_en.languageComparisonFailureDeterminizationExplanation),
           findsOneWidget,
         );
+        expect(find.textContaining('could not be determinized'), findsNothing);
       });
 
       testWidgets('renders without an engine detail message', (tester) async {
@@ -1001,6 +982,27 @@ void main() {
         );
         expect(find.text(_en.timeout), findsAtLeastNWidgets(1));
       });
+
+      testWidgets(
+        'renders a structured validation detail in the active locale',
+        (tester) async {
+          await _pumpLanguageComparisonViewer(
+            tester,
+            failure: LanguageComparisonFailure(
+              reason: LanguageComparisonFailureReason.malformedInput,
+              structuredMessage: LanguageComparisonMessages.missingInitialState(
+                'B',
+              ),
+            ),
+          );
+
+          expect(
+            find.text('Automaton B must have an initial state'),
+            findsOneWidget,
+          );
+          expect(find.text(_en.languageComparisonInvalidInput), findsOneWidget);
+        },
+      );
     });
 
     group('Responsive Presentation', () {
@@ -1013,9 +1015,7 @@ void main() {
         );
 
         expect(
-          find.byKey(
-            LanguageComparisonSemantics.layoutKey(isStacked: false),
-          ),
+          find.byKey(LanguageComparisonSemantics.layoutKey(isStacked: false)),
           findsOneWidget,
         );
         expect(
@@ -1036,9 +1036,7 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.byKey(
-            LanguageComparisonSemantics.layoutKey(isStacked: false),
-          ),
+          find.byKey(LanguageComparisonSemantics.layoutKey(isStacked: false)),
           findsNothing,
         );
         expect(find.byType(ReadOnlyFsaGraphViewCanvas), findsNWidgets(2));
@@ -1056,9 +1054,7 @@ void main() {
           await _tapStepButton(tester, LanguageComparisonSemantics.nextStep);
           expect(find.text(_en.stepOf(2, 3)), findsOneWidget);
           expect(
-            find.byKey(
-              LanguageComparisonSemantics.layoutKey(isStacked: false),
-            ),
+            find.byKey(LanguageComparisonSemantics.layoutKey(isStacked: false)),
             findsOneWidget,
           );
 
@@ -1136,9 +1132,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(
-          find.byKey(
-            LanguageComparisonSemantics.layoutKey(isStacked: false),
-          ),
+          find.byKey(LanguageComparisonSemantics.layoutKey(isStacked: false)),
           findsOneWidget,
         );
       });
@@ -1222,11 +1216,11 @@ void main() {
 
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.status),
-          '${_en.languageComparisonTitle}: ${_en.notEquivalent}',
+          _en.languageComparisonStatusSemantic(_en.notEquivalent),
         );
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.witness),
-          '${_en.distinguishingStringFound}: "ab"',
+          _en.languageComparisonWitnessSemantic('"ab"'),
         );
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.stepNavigation),
@@ -1253,11 +1247,11 @@ void main() {
 
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.status),
-          '${_pt.languageComparisonTitle}: ${_pt.notEquivalent}',
+          _pt.languageComparisonStatusSemantic(_pt.notEquivalent),
         );
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.witness),
-          '${_pt.distinguishingStringFound}: "ab"',
+          _pt.languageComparisonWitnessSemantic('"ab"'),
         );
         expect(
           _semanticsLabel(tester, LanguageComparisonSemantics.stepNavigation),
@@ -1285,8 +1279,10 @@ void main() {
         );
 
         await _pumpLanguageComparisonViewer(tester, failure: failure);
-        final englishLabel =
-            _semanticsLabel(tester, LanguageComparisonSemantics.error);
+        final englishLabel = _semanticsLabel(
+          tester,
+          LanguageComparisonSemantics.error,
+        );
         expect(englishLabel, contains(_en.timeout));
 
         await _pumpLanguageComparisonViewer(
@@ -1294,8 +1290,10 @@ void main() {
           failure: failure,
           locale: const Locale('pt'),
         );
-        final portugueseLabel =
-            _semanticsLabel(tester, LanguageComparisonSemantics.error);
+        final portugueseLabel = _semanticsLabel(
+          tester,
+          LanguageComparisonSemantics.error,
+        );
         expect(portugueseLabel, contains(_pt.timeout));
         expect(portugueseLabel, isNot(englishLabel));
         handle.dispose();
@@ -1325,10 +1323,7 @@ void main() {
           includeSteps: true,
         );
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         // Automaton section icons
         expect(find.byIcon(Icons.account_tree), findsNWidgets(2));
@@ -1347,10 +1342,7 @@ void main() {
       testWidgets('renders within a Card widget', (tester) async {
         final result = _createEquivalentResult();
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.byType(Card), findsOneWidget);
       });
@@ -1381,10 +1373,7 @@ void main() {
           executionTimeMs: 50,
         );
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         // Should not crash and should still report the verdict.
         expect(
@@ -1420,10 +1409,7 @@ void main() {
           executionTimeMs: 10,
         );
 
-        await _pumpLanguageComparisonViewer(
-          tester,
-          comparisonResult: result,
-        );
+        await _pumpLanguageComparisonViewer(tester, comparisonResult: result);
 
         expect(find.text(_en.equivalent), findsOneWidget);
         expect(find.text('0'), findsNWidgets(2)); // 0 transitions in each
@@ -1489,7 +1475,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(_en.stepOf(1, 1)), findsOneWidget);
-        expect(find.text('only step'), findsOneWidget);
+        expect(
+          find.text(_en.languageComparisonDescriptionInitialization),
+          findsOneWidget,
+        );
       });
     });
   });

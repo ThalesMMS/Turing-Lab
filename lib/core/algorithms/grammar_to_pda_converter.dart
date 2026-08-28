@@ -16,8 +16,10 @@ import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/state.dart';
 import '../models/pda_transition.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import 'cfg/cfg_toolkit.dart';
+import 'grammar_to_pda_messages.dart';
 
 /// Converts context-free grammars to pushdown automata
 class GrammarToPDAConverter {
@@ -68,7 +70,10 @@ class GrammarToPDAConverter {
 
       return ResultFactory.success(analysis);
     } catch (e) {
-      return ResultFactory.failure('Error analyzing conversion: $e');
+      return _failure(
+        'Error analyzing conversion: $e',
+        GrammarToPdaMessages.analysisFailed(),
+      );
     }
   }
 
@@ -83,17 +88,26 @@ class GrammarToPDAConverter {
       // Validate input
       final validationResult = _validateInput(grammar);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _failure(
+          validationResult.error!,
+          validationResult.structuredError!,
+        );
       }
 
       // Handle empty grammar
       if (grammar.productions.isEmpty) {
-        return ResultFactory.failure('Cannot convert empty grammar to PDA');
+        return _failure(
+          'Cannot convert empty grammar to PDA',
+          GrammarToPdaMessages.emptyGrammar(),
+        );
       }
 
       // Check if grammar has start symbol
       if (grammar.startSymbol.isEmpty) {
-        return ResultFactory.failure('Grammar must have a start symbol');
+        return _failure(
+          'Grammar must have a start symbol',
+          GrammarToPdaMessages.missingStartSymbol(),
+        );
       }
 
       // Create a simple PDA
@@ -101,12 +115,18 @@ class GrammarToPDAConverter {
 
       stopwatch.stop();
       if (stopwatch.elapsed > timeout) {
-        return ResultFactory.failure('Conversion timed out');
+        return _failure(
+          'Conversion timed out',
+          GrammarToPdaMessages.conversionTimedOut(timeout),
+        );
       }
 
       return ResultFactory.success(result);
     } catch (e) {
-      return ResultFactory.failure('Error converting grammar to PDA: $e');
+      return _failure(
+        'Error converting grammar to PDA: $e',
+        GrammarToPdaMessages.internalConversionFailure(),
+      );
     }
   }
 
@@ -175,8 +195,9 @@ class GrammarToPDAConverter {
         // Create transition: (q1, ε, A) → (q1, α^R)
         // Handle both non-empty and empty right sides
         final isLambdaProduction = rightSide.isEmpty || production.isLambda;
-        final inputSymbol =
-            greibach && !isLambdaProduction ? rightSide.first : '';
+        final inputSymbol = greibach && !isLambdaProduction
+            ? rightSide.first
+            : '';
         final pushSymbols = isLambdaProduction
             ? const <String>[]
             : (greibach ? rightSide.skip(1).toList() : rightSide);
@@ -193,6 +214,8 @@ class GrammarToPDAConverter {
             id: 't${transitionId++}',
             fromState: q1,
             toState: q1,
+            controlPoint:
+                q1.position + Vector2(0, -80 - transitions.length * 8),
             label:
                 '${inputSymbol.isEmpty ? 'ε' : inputSymbol},$leftSide/$pushString',
             inputSymbol: inputSymbol,
@@ -214,6 +237,8 @@ class GrammarToPDAConverter {
             id: 't${transitionId++}',
             fromState: q1,
             toState: q1,
+            controlPoint:
+                q1.position + Vector2(0, -80 - transitions.length * 8),
             label: '$terminal,$terminal/ε',
             inputSymbol: terminal,
             popSymbol: terminal,
@@ -262,15 +287,34 @@ class GrammarToPDAConverter {
   /// Validates input grammar
   static Result<void> _validateInput(Grammar grammar) {
     if (grammar.productions.isEmpty) {
-      return ResultFactory.failure('Grammar must have at least one production');
+      return _failure(
+        'Grammar must have at least one production',
+        GrammarToPdaMessages.emptyGrammar(),
+      );
     }
 
     if (grammar.startSymbol.isEmpty) {
-      return ResultFactory.failure('Grammar must have a start symbol');
+      return _failure(
+        'Grammar must have a start symbol',
+        GrammarToPdaMessages.missingStartSymbol(),
+      );
     }
 
     if (!grammar.nonTerminals.contains(grammar.startSymbol)) {
-      return ResultFactory.failure('Start symbol must be a non-terminal');
+      return _failure(
+        'Start symbol must be a non-terminal',
+        GrammarToPdaMessages.undeclaredStartSymbol(grammar.startSymbol),
+      );
+    }
+
+    final productionIds = <String>{};
+    for (final production in grammar.productions) {
+      if (!productionIds.add(production.id)) {
+        return _failure(
+          'Duplicate production ID: ${production.id}',
+          GrammarToPdaMessages.duplicateProductionId(production.id),
+        );
+      }
     }
 
     return ResultFactory.success(null);
@@ -287,30 +331,43 @@ class GrammarToPDAConverter {
       // Validate input
       final validationResult = _validateInput(grammar);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _failure(
+          validationResult.error!,
+          validationResult.structuredError!,
+        );
       }
 
       // Handle empty grammar
       if (grammar.productions.isEmpty) {
-        return ResultFactory.failure('Cannot convert empty grammar to PDA');
+        return _failure(
+          'Cannot convert empty grammar to PDA',
+          GrammarToPdaMessages.emptyGrammar(),
+        );
       }
 
       // Check if grammar has start symbol
       if (grammar.startSymbol.isEmpty) {
-        return ResultFactory.failure('Grammar must have a start symbol');
+        return _failure(
+          'Grammar must have a start symbol',
+          GrammarToPdaMessages.missingStartSymbol(),
+        );
       }
 
       final result = _createStandardPDA(grammar);
 
       stopwatch.stop();
       if (stopwatch.elapsed > timeout) {
-        return ResultFactory.failure('Conversion timed out');
+        return _failure(
+          'Conversion timed out',
+          GrammarToPdaMessages.conversionTimedOut(timeout),
+        );
       }
 
       return ResultFactory.success(result);
     } catch (e) {
-      return ResultFactory.failure(
+      return _failure(
         'Error converting grammar to PDA (standard): $e',
+        GrammarToPdaMessages.internalConversionFailure(),
       );
     }
   }
@@ -326,30 +383,41 @@ class GrammarToPDAConverter {
       // Validate input
       final validationResult = _validateInput(grammar);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _failure(
+          validationResult.error!,
+          validationResult.structuredError!,
+        );
       }
 
       // Handle empty grammar
       if (grammar.productions.isEmpty) {
-        return ResultFactory.failure('Cannot convert empty grammar to PDA');
+        return _failure(
+          'Cannot convert empty grammar to PDA',
+          GrammarToPdaMessages.emptyGrammar(),
+        );
       }
 
       // Check if grammar has start symbol
       if (grammar.startSymbol.isEmpty) {
-        return ResultFactory.failure('Grammar must have a start symbol');
+        return _failure(
+          'Grammar must have a start symbol',
+          GrammarToPdaMessages.missingStartSymbol(),
+        );
       }
 
       final gnfResult = CFGToolkit.toGNF(grammar);
       if (!gnfResult.isSuccess || gnfResult.data == null) {
-        return ResultFactory.failure(
+        return _failure(
           gnfResult.error ??
               'Failed to convert grammar to Greibach normal form',
+          GrammarToPdaMessages.gnfConversionFailed(),
         );
       }
       final gnfGrammar = gnfResult.data!;
       if (!CFGToolkit.isGNF(gnfGrammar)) {
-        return ResultFactory.failure(
+        return _failure(
           'Greibach conversion did not produce a valid GNF grammar',
+          GrammarToPdaMessages.invalidGnfResult(),
         );
       }
 
@@ -357,13 +425,17 @@ class GrammarToPDAConverter {
 
       stopwatch.stop();
       if (stopwatch.elapsed > timeout) {
-        return ResultFactory.failure('Conversion timed out');
+        return _failure(
+          'Conversion timed out',
+          GrammarToPdaMessages.conversionTimedOut(timeout),
+        );
       }
 
       return ResultFactory.success(result);
     } catch (e) {
-      return ResultFactory.failure(
+      return _failure(
         'Error converting grammar to PDA (Greibach): $e',
+        GrammarToPdaMessages.internalConversionFailure(),
       );
     }
   }
@@ -374,26 +446,39 @@ class GrammarToPDAConverter {
       // Validate input
       final validationResult = _validateInput(grammar);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _failure(
+          validationResult.error!,
+          validationResult.structuredError!,
+        );
       }
 
       // Check if grammar is context-free
       if (grammar.productions.any((p) => p.leftSide.length > 1)) {
-        return ResultFactory.failure('Grammar is not context-free');
+        return _failure(
+          'Grammar is not context-free',
+          GrammarToPdaMessages.notContextFree(),
+        );
       }
 
       if (grammar.startSymbol.isEmpty) {
-        return ResultFactory.failure('Grammar must have a start symbol');
+        return _failure(
+          'Grammar must have a start symbol',
+          GrammarToPdaMessages.missingStartSymbol(),
+        );
       }
 
       if (!grammar.nonTerminals.contains(grammar.startSymbol)) {
-        return ResultFactory.failure('Start symbol must be a non-terminal');
+        return _failure(
+          'Start symbol must be a non-terminal',
+          GrammarToPdaMessages.undeclaredStartSymbol(grammar.startSymbol),
+        );
       }
 
       return ResultFactory.success(true);
     } catch (e) {
-      return ResultFactory.failure(
+      return _failure(
         'Error checking if grammar can be converted to PDA: $e',
+        GrammarToPdaMessages.internalConversionFailure(),
       );
     }
   }
@@ -409,19 +494,26 @@ class GrammarToPDAConverter {
       // Validate input
       final validationResult = _validateInput(grammar);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return _failure(
+          validationResult.error!,
+          validationResult.structuredError!,
+        );
       }
 
       // Handle empty grammar
       if (grammar.productions.isEmpty) {
-        return ResultFactory.failure(
+        return _failure(
           'Cannot analyze conversion of empty grammar',
+          GrammarToPdaMessages.emptyGrammar(),
         );
       }
 
       // Check if grammar has start symbol
       if (grammar.startSymbol.isEmpty) {
-        return ResultFactory.failure('Grammar must have a start symbol');
+        return _failure(
+          'Grammar must have a start symbol',
+          GrammarToPdaMessages.missingStartSymbol(),
+        );
       }
 
       // Create analysis result
@@ -436,22 +528,36 @@ class GrammarToPDAConverter {
           'Create accepting state',
           'Add transitions',
         ],
+        'structuredSteps': [
+          GrammarToPdaMessages.validateGrammarStep().toJson(),
+          GrammarToPdaMessages.createInitialStateStep().toJson(),
+          GrammarToPdaMessages.createProcessingStateStep().toJson(),
+          GrammarToPdaMessages.createAcceptingStateStep().toJson(),
+          GrammarToPdaMessages.addTransitionsStep().toJson(),
+        ],
         'timeout': timeout.inMilliseconds,
         'timestamp': DateTime.now().toIso8601String(),
       };
 
       stopwatch.stop();
       if (stopwatch.elapsed > timeout) {
-        return ResultFactory.failure('Analysis timed out');
+        return _failure(
+          'Analysis timed out',
+          GrammarToPdaMessages.analysisTimedOut(timeout),
+        );
       }
 
       return ResultFactory.success(finalResult);
     } catch (e) {
-      return ResultFactory.failure(
+      return _failure(
         'Error analyzing grammar to PDA conversion: $e',
+        GrammarToPdaMessages.analysisFailed(),
       );
     }
   }
+
+  static Result<T> _failure<T>(String message, StructuredMessage structured) =>
+      Failure<T>(message, structuredMessage: structured);
 }
 
 /// Analysis result for grammar to PDA conversion

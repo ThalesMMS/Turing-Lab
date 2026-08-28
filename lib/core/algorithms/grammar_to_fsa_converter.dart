@@ -18,8 +18,10 @@ import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
 import '../models/grammar.dart';
 import '../models/state.dart';
+import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'grammar_to_fsa_messages.dart';
 
 /// Converter that builds a finite automaton from a right-linear grammar.
 class GrammarToFSAConverter {
@@ -31,10 +33,18 @@ class GrammarToFSAConverter {
   static Result<FSA> convert(Grammar grammar) {
     final validationError = _validateGrammar(grammar);
     if (validationError != null) {
-      return ResultFactory.failure(validationError);
+      return Failure(
+        validationError.text,
+        structuredMessage: validationError.structured,
+      );
     }
 
-    final nonTerminalList = grammar.nonterminals.toList();
+    final nonTerminalList = grammar.nonterminals.toList()
+      ..sort((left, right) {
+        if (left == grammar.startSymbol) return -1;
+        if (right == grammar.startSymbol) return 1;
+        return left.compareTo(right);
+      });
     final statePositions = _computeStatePositions(
       nonTerminalList.length + (_needsFinalState(grammar) ? 1 : 0),
     );
@@ -73,7 +83,13 @@ class GrammarToFSAConverter {
 
     var transitionCounter = 0;
 
-    for (final production in grammar.productions) {
+    final orderedProductions = grammar.productions.toList()
+      ..sort((left, right) {
+        final orderComparison = left.order.compareTo(right.order);
+        if (orderComparison != 0) return orderComparison;
+        return left.id.compareTo(right.id);
+      });
+    for (final production in orderedProductions) {
       final fromSymbol = production.leftSide.first;
       final originalFromState = stateMap[fromSymbol];
       if (originalFromState == null) {
@@ -102,6 +118,19 @@ class GrammarToFSAConverter {
         continue;
       }
 
+      if (rightSide.length == 1 && grammar.nonterminals.contains(inputSymbol)) {
+        final targetState = stateMap[inputSymbol]!;
+        transitionCounter += 1;
+        transitions.add(
+          FSATransition.epsilon(
+            id: 't$transitionCounter',
+            fromState: stateMap[fromSymbol]!,
+            toState: targetState,
+          ),
+        );
+        continue;
+      }
+
       State targetState;
       if (rightSide.length == 1) {
         if (finalState != null) {
@@ -118,8 +147,12 @@ class GrammarToFSAConverter {
         final nextSymbol = rightSide.last;
         final mappedTarget = stateMap[nextSymbol];
         if (mappedTarget == null) {
-          return ResultFactory.failure(
+          return _failure(
             'Production ${production.id} references undefined non-terminal $nextSymbol.',
+            GrammarToFsaMessages.unknownRightNonterminal(
+              production.id,
+              nextSymbol,
+            ),
           );
         }
         targetState = mappedTarget;
@@ -168,19 +201,37 @@ class GrammarToFSAConverter {
     return ResultFactory.success(automaton);
   }
 
-  static String? _validateGrammar(Grammar grammar) {
-    if (grammar.productions.isEmpty) {
-      return 'Grammar must contain at least one production rule.';
+  static _GrammarToFsaValidation? _validateGrammar(Grammar grammar) {
+    if (grammar.nonterminals.isEmpty) {
+      return _validation(
+        'Grammar must declare at least one non-terminal.',
+        GrammarToFsaMessages.missingNonterminals(),
+      );
+    }
+    if (!grammar.nonterminals.contains(grammar.startSymbol)) {
+      return _validation(
+        'The start symbol must be a declared non-terminal.',
+        GrammarToFsaMessages.undeclaredStartSymbol(),
+      );
     }
 
     for (final production in grammar.productions) {
       if (production.leftSide.length != 1) {
-        return 'Production ${production.id} must have exactly one non-terminal on the left side.';
+        return _validation(
+          'Production ${production.id} must have exactly one non-terminal on the left side.',
+          GrammarToFsaMessages.leftSideNotSingle(production.id),
+        );
       }
 
       final leftSymbol = production.leftSide.first;
       if (!grammar.nonterminals.contains(leftSymbol)) {
-        return 'Production ${production.id} uses unknown non-terminal $leftSymbol.';
+        return _validation(
+          'Production ${production.id} uses unknown non-terminal $leftSymbol.',
+          GrammarToFsaMessages.unknownLeftNonterminal(
+            production.id,
+            leftSymbol,
+          ),
+        );
       }
 
       if (production.isLambda || production.rightSide.isEmpty) {
@@ -188,7 +239,10 @@ class GrammarToFSAConverter {
       }
 
       if (production.rightSide.length > 2) {
-        return 'Production ${production.id} is not right-linear (too many symbols on the right side).';
+        return _validation(
+          'Production ${production.id} is not right-linear (too many symbols on the right side).',
+          GrammarToFsaMessages.tooManyRightSymbols(production.id),
+        );
       }
 
       final firstSymbol = production.rightSide.first;
@@ -196,22 +250,34 @@ class GrammarToFSAConverter {
         continue;
       }
 
+      if (production.rightSide.length == 1 &&
+          grammar.nonterminals.contains(firstSymbol)) {
+        continue;
+      }
+
       if (!_isTerminalSymbol(firstSymbol, grammar)) {
-        return 'Production ${production.id} must start with a terminal symbol.';
+        return _validation(
+          'Production ${production.id} must start with a terminal symbol.',
+          GrammarToFsaMessages.firstSymbolNotTerminal(production.id),
+        );
       }
 
       if (production.rightSide.length == 2) {
         final secondSymbol = production.rightSide.last;
         if (!grammar.nonterminals.contains(secondSymbol)) {
-          return 'Production ${production.id} must end with a non-terminal symbol.';
+          return _validation(
+            'Production ${production.id} must end with a non-terminal symbol.',
+            GrammarToFsaMessages.lastSymbolNotNonterminal(production.id),
+          );
         }
-      } else if (grammar.nonterminals.contains(firstSymbol)) {
-        return 'Production ${production.id} cannot produce only a non-terminal in a right-linear grammar.';
       }
     }
 
     return null;
   }
+
+  static Result<T> _failure<T>(String text, StructuredMessage message) =>
+      Failure<T>(text, structuredMessage: message);
 
   static bool _needsFinalState(Grammar grammar) {
     return grammar.productions.any((production) {
@@ -266,3 +332,14 @@ class GrammarToFSAConverter {
     return positions;
   }
 }
+
+final class _GrammarToFsaValidation {
+  const _GrammarToFsaValidation(this.text, this.structured);
+
+  final String text;
+
+  final StructuredMessage structured;
+}
+
+_GrammarToFsaValidation _validation(String text, StructuredMessage message) =>
+    _GrammarToFsaValidation(text, message);

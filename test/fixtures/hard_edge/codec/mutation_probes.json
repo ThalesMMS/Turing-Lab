@@ -1,0 +1,14 @@
+{
+  "schema": "turing-lab.hard-edge.codec-mutations.v1",
+  "threshold": {
+    "killed": 4,
+    "survivors": 0,
+    "total": 4
+  },
+  "operators": [
+    "accept-future-schema",
+    "drop-extension-sidecar",
+    "corrupt-transport-copy",
+    "escalate-fidelity"
+  ]
+}

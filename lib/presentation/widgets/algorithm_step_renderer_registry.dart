@@ -15,14 +15,15 @@ import '../../core/models/regex_to_nfa_step.dart';
 import '../../core/models/state.dart' as automata;
 import '../../core/models/transition.dart';
 import '../../core/models/typed_algorithm_step.dart';
+import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
+import '../../l10n/app_localizations_workflows.dart';
 import 'grammar_sentential_form_card.dart';
 import 'step_explanation_card.dart';
 
-typedef AlgorithmStepRenderer = Widget Function(
-  BuildContext context,
-  AlgorithmStep step,
-  Object payload,
-);
+typedef AlgorithmStepRenderer =
+    Widget Function(BuildContext context, AlgorithmStep step, Object payload);
 
 class AlgorithmStepRendererRegistry {
   final Map<Type, AlgorithmStepRenderer> _renderers = {};
@@ -155,10 +156,13 @@ Widget _renderRegexToNfaStep(
   Object payload,
 ) {
   final typedStep = payload as RegexToNFAStep;
+  final l10n = appLocalizationsOf(context);
   return _TypedStepData(
     title: 'Typed Step Data',
     rows: _compactRows({
-      'Operation': typedStep.stepType.displayName,
+      'Operation': l10n.resolveStructuredMessage(
+        typedStep.stepType.labelMessage,
+      ),
       'Regex fragment': typedStep.regexFragment,
       'Regex position': typedStep.regexPosition,
       'Processed symbol': typedStep.processedSymbol,
@@ -215,6 +219,7 @@ class _TypedStepData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -232,11 +237,13 @@ class _TypedStepData extends StatelessWidget {
             children: [
               Icon(Icons.data_object, size: 18, color: colorScheme.tertiary),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.tertiary,
+              Expanded(
+                child: Text(
+                  l10n.localizeWorkflowText(title),
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.tertiary,
+                  ),
                 ),
               ),
             ],
@@ -251,7 +258,7 @@ class _TypedStepData extends StatelessWidget {
                   SizedBox(
                     width: 140,
                     child: Text(
-                      row.label,
+                      l10n.localizeWorkflowText(row.label),
                       style: textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurfaceVariant,
@@ -261,7 +268,7 @@ class _TypedStepData extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      row.value,
+                      _localizeTypedValue(l10n, row.value),
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurface,
                       ),
@@ -275,4 +282,10 @@ class _TypedStepData extends StatelessWidget {
       ),
     );
   }
+}
+
+String _localizeTypedValue(AppLocalizations l10n, String value) {
+  if (value == 'Yes') return l10n.yes;
+  if (value == 'No') return l10n.no;
+  return l10n.localizeWorkflowText(value);
 }

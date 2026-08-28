@@ -1,0 +1,13 @@
+{
+  "codecId": "unrestricted-grammar.jflap-xml.v1",
+  "id": "codec-unrestricted-grammar.jflap-xml.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "unrestricted_grammar_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT5ncmFtbWFyPC90eXBlPgogIDxwcm9kdWN0aW9uPgogICAgPGxlZnQ+UzwvbGVmdD4KICAgIDxyaWdodD5hUzwvcmlnaHQ+CiAgPC9wcm9kdWN0aW9uPgogIDxwcm9kdWN0aW9uPgogICAgPGxlZnQ+UzwvbGVmdD4KICAgIDxyaWdodD5iPC9yaWdodD4KICA8L3Byb2R1Y3Rpb24+Cjwvc3RydWN0dXJlPgo="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

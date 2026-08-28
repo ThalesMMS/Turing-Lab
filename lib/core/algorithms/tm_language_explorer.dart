@@ -1,11 +1,13 @@
+import '../messages/structured_message.dart';
 import '../models/tm.dart';
 import '../models/tm_execution_analysis.dart';
 import '../models/tm_language_explorer_models.dart';
 import '../result.dart';
 import 'tm_execution_analyzer.dart';
+import 'tm_messages.dart';
 
-typedef TMLanguageProgressCallback = void Function(
-    TMLanguageExplorerProgress progress);
+typedef TMLanguageProgressCallback =
+    void Function(TMLanguageExplorerProgress progress);
 
 /// Enumerates a bounded shortlex prefix of a TM language.
 class TMLanguageExplorer {
@@ -34,7 +36,10 @@ class TMLanguageExplorer {
   }) async {
     final validationError = _validateLimits(limits);
     if (validationError != null) {
-      return ResultFactory.failure(validationError);
+      return Failure(
+        validationError.legacy,
+        structuredMessage: validationError.structured,
+      );
     }
 
     final alphabet = tm.alphabet.toSet().toList()..sort();
@@ -109,24 +114,44 @@ class TMLanguageExplorer {
     );
   }
 
-  static String? _validateLimits(TMLanguageExplorerLimits limits) {
+  static ({String legacy, StructuredMessage structured})? _validateLimits(
+    TMLanguageExplorerLimits limits,
+  ) {
     if (limits.maxInputLength < 0) {
-      return 'Maximum input length must be non-negative.';
+      return (
+        legacy: 'Maximum input length must be non-negative.',
+        structured: TmLanguageExplorerMessages.maxInputLengthInvalid(),
+      );
     }
     if (limits.maxCandidates <= 0) {
-      return 'Candidate cap must be greater than zero.';
+      return (
+        legacy: 'Candidate cap must be greater than zero.',
+        structured: TmLanguageExplorerMessages.candidateCapInvalid(),
+      );
     }
     if (limits.maxStepsPerInput <= 0) {
-      return 'Step limit must be greater than zero.';
+      return (
+        legacy: 'Step limit must be greater than zero.',
+        structured: TmLanguageExplorerMessages.stepLimitInvalid(),
+      );
     }
     if (limits.maxConfigurationsPerInput <= 0) {
-      return 'Configuration limit must be greater than zero.';
+      return (
+        legacy: 'Configuration limit must be greater than zero.',
+        structured: TmLanguageExplorerMessages.configurationLimitInvalid(),
+      );
     }
     if (limits.timeoutPerInput <= Duration.zero) {
-      return 'Timeout must be greater than zero.';
+      return (
+        legacy: 'Timeout must be greater than zero.',
+        structured: TmLanguageExplorerMessages.timeoutInvalid(),
+      );
     }
     if (limits.operationsPerBatch <= 0) {
-      return 'Operations per batch must be greater than zero.';
+      return (
+        legacy: 'Operations per batch must be greater than zero.',
+        structured: TmLanguageExplorerMessages.operationsPerBatchInvalid(),
+      );
     }
     return null;
   }
@@ -148,8 +173,7 @@ class TMLanguageExplorer {
       TMExecutionOutcome.provenCycle => TMLanguageOutcome.provenCycle,
       TMExecutionOutcome.boundedUnknown ||
       TMExecutionOutcome.cancelled ||
-      TMExecutionOutcome.invalidMachine =>
-        TMLanguageOutcome.inconclusive,
+      TMExecutionOutcome.invalidMachine => TMLanguageOutcome.inconclusive,
     };
   }
 

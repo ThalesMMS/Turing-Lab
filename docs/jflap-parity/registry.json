@@ -1,0 +1,523 @@
+{
+  "fragment": "live-formal-system-registry",
+  "rows": [
+    {
+      "id": "registry-fsa-standard",
+      "area": "Registered workspaces",
+      "capability": "Finite automaton workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes finite automata as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:191"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:89"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, not every behavior behind each declared capability.",
+      "registryCapabilities": [
+        "workspace:fsa:standard",
+        "capability:fsa:standard:editing",
+        "capability:fsa:standard:simulation",
+        "capability:fsa:standard:analysis",
+        "capability:fsa:standard:trace",
+        "capability:fsa:standard:examples",
+        "capability:fsa:standard:help",
+        "capability:fsa:standard:session",
+        "format:fsa:standard:jflap-xml:importDocument",
+        "format:fsa:standard:jflap-xml:exportDocument",
+        "format:fsa:standard:turing-lab-json:importDocument",
+        "format:fsa:standard:turing-lab-json:exportDocument",
+        "format:fsa:standard:svg:exportDocument",
+        "format:fsa:standard:png:exportDocument",
+        "conversion:fsa-to-regex",
+        "conversion:fsa-to-grammar",
+        "codec:fsa.jflap-xml.v1",
+        "codec:fsa.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-grammar-standard",
+      "area": "Registered workspaces",
+      "capability": "Context-free grammar workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes context-free grammars as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:272"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:120"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, not every behavior behind each declared capability.",
+      "registryCapabilities": [
+        "workspace:grammar:standard",
+        "capability:grammar:standard:editing",
+        "capability:grammar:standard:simulation",
+        "capability:grammar:standard:analysis",
+        "capability:grammar:standard:trace",
+        "capability:grammar:standard:examples",
+        "capability:grammar:standard:help",
+        "capability:grammar:standard:session",
+        "format:grammar:standard:jflap-xml:importDocument",
+        "format:grammar:standard:jflap-xml:exportDocument",
+        "format:grammar:standard:turing-lab-json:importDocument",
+        "format:grammar:standard:turing-lab-json:exportDocument",
+        "format:grammar:standard:svg:exportDocument",
+        "conversion:right-linear-grammar-to-fsa",
+        "conversion:grammar-to-pda-general",
+        "conversion:grammar-to-pda-standard",
+        "conversion:grammar-to-pda-greibach",
+        "codec:grammar.jflap-xml.v1",
+        "codec:grammar.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-pda-single-stack",
+      "area": "Registered workspaces",
+      "capability": "Single-stack pushdown automaton workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes pushdown automata with selectable input-token semantics.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:218"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:159"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration; input-mode parity is classified separately.",
+      "registryCapabilities": [
+        "workspace:pda:single-stack",
+        "capability:pda:single-stack:editing",
+        "capability:pda:single-stack:simulation",
+        "capability:pda:single-stack:analysis",
+        "capability:pda:single-stack:trace",
+        "capability:pda:single-stack:examples",
+        "capability:pda:single-stack:help",
+        "capability:pda:single-stack:session",
+        "format:pda:single-stack:jflap-xml:importDocument",
+        "format:pda:single-stack:jflap-xml:exportDocument",
+        "format:pda:single-stack:turing-lab-json:importDocument",
+        "format:pda:single-stack:turing-lab-json:exportDocument",
+        "format:pda:single-stack:svg:exportDocument",
+        "conversion:pda-to-grammar",
+        "codec:pda.jflap-xml.v1",
+        "codec:pda.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-tm-single-tape",
+      "area": "Registered workspaces",
+      "capability": "Single-tape Turing machine workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes single-tape Turing machines as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:235"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:180"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live single-tape registry declaration; multi-tape and building-block parity are classified separately.",
+      "registryCapabilities": [
+        "workspace:tm:single-tape",
+        "capability:tm:single-tape:editing",
+        "capability:tm:single-tape:simulation",
+        "capability:tm:single-tape:analysis",
+        "capability:tm:single-tape:trace",
+        "capability:tm:single-tape:examples",
+        "capability:tm:single-tape:help",
+        "capability:tm:single-tape:session",
+        "format:tm:single-tape:jflap-xml:importDocument",
+        "format:tm:single-tape:jflap-xml:exportDocument",
+        "format:tm:single-tape:turing-lab-json:importDocument",
+        "format:tm:single-tape:turing-lab-json:exportDocument",
+        "format:tm:single-tape:svg:exportDocument",
+        "codec:tm.jflap-xml.v1",
+        "codec:tm.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-regex-standard",
+      "area": "Registered workspaces",
+      "capability": "Regular expression workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes regular expressions as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:288"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:194"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, not every behavior behind each declared capability.",
+      "registryCapabilities": [
+        "workspace:regex:standard",
+        "capability:regex:standard:editing",
+        "capability:regex:standard:simulation",
+        "capability:regex:standard:analysis",
+        "capability:regex:standard:trace",
+        "capability:regex:standard:examples",
+        "capability:regex:standard:help",
+        "capability:regex:standard:session",
+        "format:regex:standard:jflap-xml:importDocument",
+        "format:regex:standard:jflap-xml:exportDocument",
+        "format:regex:standard:turing-lab-json:importDocument",
+        "format:regex:standard:turing-lab-json:exportDocument",
+        "conversion:regex-to-fsa",
+        "codec:regex.jflap.v1",
+        "codec:regex.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-pumping-regular",
+      "area": "Registered workspaces",
+      "capability": "Regular pumping-lemma workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes a regular-language pumping-lemma exercise workspace.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:296"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:218"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, not every exercise interaction.",
+      "registryCapabilities": [
+        "workspace:pumping-lemma:regular",
+        "capability:pumping-lemma:regular:editing",
+        "capability:pumping-lemma:regular:analysis",
+        "capability:pumping-lemma:regular:examples",
+        "capability:pumping-lemma:regular:help",
+        "capability:pumping-lemma:regular:session",
+        "format:pumping-lemma:regular:jflap-xml:importDocument",
+        "format:pumping-lemma:regular:jflap-xml:exportDocument",
+        "format:pumping-lemma:regular:turing-lab-json:importDocument",
+        "format:pumping-lemma:regular:turing-lab-json:exportDocument",
+        "codec:pumping-lemma.regular.jflap.v1",
+        "codec:pumping-lemma.regular.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-pumping-context-free",
+      "area": "Registered workspaces",
+      "capability": "Context-free pumping-lemma workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes a context-free pumping-lemma exercise workspace.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:306"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/formal_systems/default_formal_system_modules.dart:243"],
+        "tests": ["test/unit/core/formal_systems/formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, not every exercise interaction.",
+      "registryCapabilities": [
+        "workspace:pumping-lemma:context-free",
+        "capability:pumping-lemma:context-free:editing",
+        "capability:pumping-lemma:context-free:analysis",
+        "capability:pumping-lemma:context-free:examples",
+        "capability:pumping-lemma:context-free:help",
+        "capability:pumping-lemma:context-free:session",
+        "format:pumping-lemma:context-free:jflap-xml:importDocument",
+        "format:pumping-lemma:context-free:jflap-xml:exportDocument",
+        "format:pumping-lemma:context-free:turing-lab-json:importDocument",
+        "format:pumping-lemma:context-free:turing-lab-json:exportDocument",
+        "codec:pumping-lemma.context-free.jflap.v1",
+        "codec:pumping-lemma.context-free.turing-lab-json.v1"
+      ]
+    },
+    {
+      "id": "registry-transducer-mealy",
+      "area": "Registered workspaces",
+      "capability": "Mealy transducer workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes Mealy machines as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:199"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/transducers/transducer_formal_system_module.dart:42"],
+        "tests": ["test/unit/data/mealy_document_codecs_test.dart:19"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, codecs, examples, and session adapters.",
+      "registryCapabilities": [
+        "workspace:transducer:mealy",
+        "capability:transducer:mealy:editing",
+        "capability:transducer:mealy:simulation",
+        "capability:transducer:mealy:analysis",
+        "capability:transducer:mealy:trace",
+        "capability:transducer:mealy:examples",
+        "capability:transducer:mealy:help",
+        "capability:transducer:mealy:session",
+        "format:transducer:mealy:jflap-xml:importDocument",
+        "format:transducer:mealy:jflap-xml:exportDocument",
+        "format:transducer:mealy:turing-lab-json:importDocument",
+        "format:transducer:mealy:turing-lab-json:exportDocument",
+        "format:transducer:mealy:svg:exportDocument",
+        "format:transducer:mealy:png:exportDocument",
+        "codec:mealy.jflap-xml.v1",
+        "codec:mealy.turing-lab-json.v1",
+        "adapter:transducer:mealy:examples",
+        "adapter:transducer:mealy:session"
+      ]
+    },
+    {
+      "id": "registry-transducer-moore",
+      "area": "Registered workspaces",
+      "capability": "Moore transducer workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes Moore machines as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:208"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/core/transducers/transducer_formal_system_module.dart:66"],
+        "tests": ["test/unit/data/moore_registered_module_test.dart:79"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, codecs, examples, and session adapters.",
+      "registryCapabilities": [
+        "workspace:transducer:moore",
+        "capability:transducer:moore:editing",
+        "capability:transducer:moore:simulation",
+        "capability:transducer:moore:analysis",
+        "capability:transducer:moore:trace",
+        "capability:transducer:moore:examples",
+        "capability:transducer:moore:help",
+        "capability:transducer:moore:session",
+        "format:transducer:moore:jflap-xml:importDocument",
+        "format:transducer:moore:jflap-xml:exportDocument",
+        "format:transducer:moore:turing-lab-json:importDocument",
+        "format:transducer:moore:turing-lab-json:exportDocument",
+        "format:transducer:moore:svg:exportDocument",
+        "format:transducer:moore:png:exportDocument",
+        "codec:moore.jflap-xml.v1",
+        "codec:moore.turing-lab-json.v1",
+        "adapter:transducer:moore:examples",
+        "adapter:transducer:moore:session"
+      ]
+    },
+    {
+      "id": "registry-grammar-unrestricted",
+      "area": "Registered workspaces",
+      "capability": "Unrestricted grammar workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP's grammar document opens a context-free grammar editor; Turing Lab registers unrestricted grammars separately.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:272"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/data/formal_systems/default_formal_system_registry.dart:17"],
+        "tests": ["test/unit/data/default_formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies Turing Lab's separately registered extension and its live adapters.",
+      "registryCapabilities": [
+        "workspace:grammar:unrestricted",
+        "capability:grammar:unrestricted:editing",
+        "capability:grammar:unrestricted:simulation",
+        "capability:grammar:unrestricted:analysis",
+        "capability:grammar:unrestricted:trace",
+        "capability:grammar:unrestricted:examples",
+        "capability:grammar:unrestricted:help",
+        "capability:grammar:unrestricted:session",
+        "format:grammar:unrestricted:jflap-xml:importDocument",
+        "format:grammar:unrestricted:jflap-xml:exportDocument",
+        "format:grammar:unrestricted:turing-lab-json:importDocument",
+        "format:grammar:unrestricted:turing-lab-json:exportDocument",
+        "codec:unrestricted-grammar.jflap-xml.v1",
+        "codec:unrestricted-grammar.turing-lab-json.v1",
+        "adapter:grammar:unrestricted:examples",
+        "adapter:grammar:unrestricted:session"
+      ]
+    },
+    {
+      "id": "registry-l-system",
+      "area": "Registered workspaces",
+      "capability": "Deterministic context-free L-system workspace registration contract",
+      "jflap": {
+        "summary": "JFLAP exposes L-systems as a first-class document type.",
+        "evidence": ["../JFLAP/gui/action/NewAction.java:280"]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": ["lib/data/formal_systems/default_formal_system_registry.dart:18"],
+        "tests": ["test/unit/data/default_formal_system_registry_test.dart:9"],
+        "issues": [333],
+        "decision": ""
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "notApplicable"
+      },
+      "notes": "This row verifies the live registry declaration, codecs, exports, examples, and session adapter.",
+      "registryCapabilities": [
+        "workspace:l-system:deterministic-context-free",
+        "capability:l-system:deterministic-context-free:editing",
+        "capability:l-system:deterministic-context-free:simulation",
+        "capability:l-system:deterministic-context-free:analysis",
+        "capability:l-system:deterministic-context-free:trace",
+        "capability:l-system:deterministic-context-free:examples",
+        "capability:l-system:deterministic-context-free:help",
+        "capability:l-system:deterministic-context-free:session",
+        "format:l-system:deterministic-context-free:jflap-xml:importDocument",
+        "format:l-system:deterministic-context-free:jflap-xml:exportDocument",
+        "format:l-system:deterministic-context-free:turing-lab-json:importDocument",
+        "format:l-system:deterministic-context-free:turing-lab-json:exportDocument",
+        "format:l-system:deterministic-context-free:svg:exportDocument",
+        "format:l-system:deterministic-context-free:png:exportDocument",
+        "codec:l-system.jflap-xml.v1",
+        "codec:l-system.turing-lab-json.v1",
+        "adapter:l-system:deterministic-context-free:examples",
+        "adapter:l-system:deterministic-context-free:session"
+      ]
+    }
+  ]
+}

@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:collection';
 
+import '../messages/structured_message.dart';
 import '../models/state.dart';
 import '../models/tm.dart';
 import '../models/tm_execution_analysis.dart';
 import '../models/tm_reachability_report.dart';
 import '../models/tm_transition.dart';
 import 'tm_execution_kernel.dart';
+import 'tm_messages.dart';
 
-typedef TMReachabilityProgressCallback = void Function(
-    int transitionsExplored, int configurationsExplored);
+typedef TMReachabilityProgressCallback =
+    void Function(int transitionsExplored, int configurationsExplored);
 
 /// Compares exact control-graph reachability with bounded concrete execution.
 class TMReachabilityAnalyzer {
@@ -43,7 +45,7 @@ class TMReachabilityAnalyzer {
         inputs: scope,
         structural: structural,
         status: TMReachabilityStatus.invalidMachine,
-        message: invalidMessage,
+        message: invalidMessage.legacy,
         witnesses: const {},
         configurationsExplored: 0,
         transitionsExplored: 0,
@@ -51,6 +53,7 @@ class TMReachabilityAnalyzer {
         maxConfigurations: maxConfigurations,
         timeout: timeout,
         executionTime: stopwatch.elapsed,
+        structuredMessage: invalidMessage.structured,
       );
     }
 
@@ -68,6 +71,7 @@ class TMReachabilityAnalyzer {
         return search.finish(
           TMReachabilityStatus.cancelled,
           'Reachability analysis cancelled.',
+          structuredMessage: TmReachabilityMessages.cancelled(),
         );
       }
       final result = search.runBatch(operationsPerBatch);
@@ -105,7 +109,7 @@ class TMReachabilityAnalyzer {
     return reached;
   }
 
-  static String? _validate(
+  static ({String legacy, StructuredMessage structured})? _validate(
     TM tm,
     List<String> inputs, {
     required int maxSteps,
@@ -114,33 +118,76 @@ class TMReachabilityAnalyzer {
     required int operationsPerBatch,
   }) {
     if (tm.states.isEmpty) {
-      return 'Turing machine must have at least one state.';
+      return (
+        legacy: 'Turing machine must have at least one state.',
+        structured: TmReachabilityMessages.emptyMachine(),
+      );
     }
     if (tm.initialState == null || !tm.states.contains(tm.initialState)) {
-      return 'Turing machine must define a valid initial state.';
+      return (
+        legacy: 'Turing machine must define a valid initial state.',
+        structured: TmReachabilityMessages.invalidInitialState(),
+      );
     }
-    if (inputs.isEmpty) return 'At least one explicit input is required.';
-    if (maxSteps <= 0) return 'Step limit must be greater than zero.';
+    if (inputs.isEmpty) {
+      return (
+        legacy: 'At least one explicit input is required.',
+        structured: TmReachabilityMessages.inputsRequired(),
+      );
+    }
+    if (maxSteps <= 0) {
+      return (
+        legacy: 'Step limit must be greater than zero.',
+        structured: TmReachabilityMessages.stepLimitInvalid(),
+      );
+    }
     if (maxConfigurations <= 0) {
-      return 'Configuration limit must be greater than zero.';
+      return (
+        legacy: 'Configuration limit must be greater than zero.',
+        structured: TmReachabilityMessages.configurationLimitInvalid(),
+      );
     }
-    if (timeout <= Duration.zero) return 'Timeout must be greater than zero.';
+    if (timeout <= Duration.zero) {
+      return (
+        legacy: 'Timeout must be greater than zero.',
+        structured: TmReachabilityMessages.timeoutInvalid(),
+      );
+    }
     if (operationsPerBatch <= 0) {
-      return 'Operations per batch must be greater than zero.';
+      return (
+        legacy: 'Operations per batch must be greater than zero.',
+        structured: TmReachabilityMessages.operationsPerBatchInvalid(),
+      );
     }
     for (final transition in tm.transitions) {
       if (transition is! TMTransition) {
-        return 'Turing machine contains a non-TM transition.';
+        return (
+          legacy: 'Turing machine contains a non-TM transition.',
+          structured: TmReachabilityMessages.nonTmTransition(),
+        );
       }
       if (!tm.states.contains(transition.fromState) ||
           !tm.states.contains(transition.toState)) {
-        return 'Transition ${transition.id} references a state outside the machine.';
+        return (
+          legacy:
+              'Transition ${transition.id} references a state outside the machine.',
+          structured: TmReachabilityMessages.transitionEndpointOutsideSet(
+            transition.id,
+          ),
+        );
       }
     }
     for (final input in inputs) {
       for (final symbol in input.split('')) {
         if (!tm.alphabet.contains(symbol)) {
-          return 'Input "$input" contains symbol outside the TM alphabet: $symbol';
+          return (
+            legacy:
+                'Input "$input" contains symbol outside the TM alphabet: $symbol',
+            structured: TmReachabilityMessages.inputSymbolOutsideAlphabet(
+              input: input,
+              symbol: symbol,
+            ),
+          );
         }
       }
     }
@@ -161,6 +208,7 @@ class TMReachabilityAnalyzer {
     required Duration timeout,
     required Duration executionTime,
     TMExecutionLimit? limit,
+    StructuredMessage? structuredMessage,
   }) {
     final allStateIds = tm.states.map((state) => state.id).toSet();
     return TMReachabilityReport(
@@ -177,6 +225,7 @@ class TMReachabilityAnalyzer {
       timeout: timeout,
       executionTime: executionTime,
       limit: limit,
+      structuredMessage: structuredMessage,
     );
   }
 }
@@ -205,12 +254,7 @@ class _ReachabilityNode {
   final TMTransition? incomingTransition;
 
   String configurationKey(String blankSymbol) =>
-      '$inputIndex\u0000${TMExecutionKernel.snapshot(
-        stateId: state.id,
-        headPosition: head,
-        tape: tape,
-        blankSymbol: blankSymbol,
-      ).key}';
+      '$inputIndex\u0000${TMExecutionKernel.snapshot(stateId: state.id, headPosition: head, tape: tape, blankSymbol: blankSymbol).key}';
 
   TMReachabilityWitness witness() {
     final states = <String>[];
@@ -290,6 +334,7 @@ class _SemanticReachabilitySearch {
           TMReachabilityStatus.boundedIncomplete,
           'The timeout stopped semantic exploration.',
           limit: TMExecutionLimit.timeout,
+          structuredMessage: TmReachabilityMessages.timeout(),
         );
       }
       if (seedLimitReached) {
@@ -297,6 +342,7 @@ class _SemanticReachabilitySearch {
           TMReachabilityStatus.boundedIncomplete,
           'The configuration limit stopped semantic exploration.',
           limit: TMExecutionLimit.configurations,
+          structuredMessage: TmReachabilityMessages.configurationLimit(),
         );
       }
       if (queue.isEmpty) {
@@ -305,11 +351,13 @@ class _SemanticReachabilitySearch {
             TMReachabilityStatus.boundedIncomplete,
             'At least one execution branch reached the step limit.',
             limit: TMExecutionLimit.steps,
+            structuredMessage: TmReachabilityMessages.stepLimit(),
           );
         }
         return finish(
           TMReachabilityStatus.complete,
           'All configurations reachable for the selected input scope were explored.',
+          structuredMessage: TmReachabilityMessages.complete(),
         );
       }
       if (configurationsExplored >= maxConfigurations) {
@@ -317,6 +365,7 @@ class _SemanticReachabilitySearch {
           TMReachabilityStatus.boundedIncomplete,
           'The configuration limit stopped semantic exploration.',
           limit: TMExecutionLimit.configurations,
+          structuredMessage: TmReachabilityMessages.configurationLimit(),
         );
       }
 
@@ -362,6 +411,7 @@ class _SemanticReachabilitySearch {
             TMReachabilityStatus.boundedIncomplete,
             'The configuration limit stopped semantic exploration.',
             limit: TMExecutionLimit.configurations,
+            structuredMessage: TmReachabilityMessages.configurationLimit(),
           );
         }
         seen.add(key);
@@ -376,6 +426,7 @@ class _SemanticReachabilitySearch {
     TMReachabilityStatus status,
     String message, {
     TMExecutionLimit? limit,
+    StructuredMessage? structuredMessage,
   }) {
     stopwatch.stop();
     return TMReachabilityAnalyzer._report(
@@ -392,6 +443,7 @@ class _SemanticReachabilitySearch {
       timeout: timeout,
       executionTime: stopwatch.elapsed,
       limit: limit,
+      structuredMessage: structuredMessage,
     );
   }
 }

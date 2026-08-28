@@ -22,7 +22,9 @@ import '../../core/models/language_comparison_outcome.dart';
 import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
-import '../../l10n/app_localizations_workflows.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
+import '../../l10n/automata_diagnostics_localizations.dart';
+import '../localization/locale_value_formatter.dart';
 import 'language_comparison_semantics.dart';
 import 'language_comparison_step_view_model.dart';
 import 'read_only_fsa_graphview_canvas.dart';
@@ -48,9 +50,39 @@ class LanguageComparisonViewer extends StatefulWidget {
     this.showProductAutomaton = false,
     this.showSteps = false,
   }) : assert(
-          (comparisonResult == null) != (failure == null),
-          'Supply exactly one of comparisonResult or failure.',
-        );
+         (comparisonResult == null) != (failure == null),
+         'Supply exactly one of comparisonResult or failure.',
+       );
+
+  /// Builds the decided or stopped surface from one typed controller outcome.
+  factory LanguageComparisonViewer.fromOutcome({
+    Key? key,
+    required LanguageComparisonOutcome outcome,
+    String? automatonATitle,
+    String? automatonBTitle,
+    bool showProductAutomaton = false,
+    bool showSteps = false,
+  }) {
+    return switch (outcome) {
+      LanguageComparisonCompleted(:final result) => LanguageComparisonViewer(
+        key: key,
+        comparisonResult: result,
+        automatonATitle: automatonATitle,
+        automatonBTitle: automatonBTitle,
+        showProductAutomaton: showProductAutomaton,
+        showSteps: showSteps,
+      ),
+      final LanguageComparisonFailure failure => LanguageComparisonViewer(
+        key: key,
+        comparisonResult: null,
+        failure: failure,
+        automatonATitle: automatonATitle,
+        automatonBTitle: automatonBTitle,
+        showProductAutomaton: showProductAutomaton,
+        showSteps: showSteps,
+      ),
+    };
+  }
 
   /// Renders the stopped-comparison surface for [failure].
   const LanguageComparisonViewer.unavailable({
@@ -227,10 +259,11 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     };
     final badgeText = _statusText(l10n, status);
     final executionTimeMs = widget.comparisonResult?.executionTimeMs;
+    final formatter = LocaleValueFormatter.of(context);
 
     return Semantics(
       identifier: LanguageComparisonSemantics.status,
-      label: '${l10n.languageComparisonTitle}: $badgeText',
+      label: l10n.languageComparisonStatusSemantic(badgeText),
       container: true,
       explicitChildNodes: true,
       child: Container(
@@ -278,7 +311,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      '${executionTimeMs}ms',
+                      '${formatter.integer(executionTimeMs)}ms',
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
@@ -293,14 +326,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
   }
 
   String _statusText(AppLocalizations l10n, LanguageComparisonStatus status) {
-    return switch (status) {
-      LanguageComparisonStatus.equivalent => l10n.equivalent,
-      LanguageComparisonStatus.notEquivalent => l10n.notEquivalent,
-      LanguageComparisonStatus.inconclusive =>
-        l10n.localizeWorkflowText('Inconclusive within limits'),
-      LanguageComparisonStatus.error =>
-        l10n.localizeWorkflowText('Analysis failed'),
-    };
+    return l10n.languageComparisonStatus(status);
   }
 
   Widget _buildFailureSection(
@@ -310,14 +336,19 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     TextTheme textTheme,
   ) {
     final reasonText = _failureReasonText(l10n, failure.reason);
-    final message = failure.message;
+    final explanation = l10n.languageComparisonFailureExplanation(
+      failure.reason,
+    );
+    final structuredDetail = failure.structuredMessage == null
+        ? null
+        : l10n.resolveStructuredMessage(failure.structuredMessage!);
     final accent = failure.reason.isInconclusive
         ? colorScheme.tertiary
         : colorScheme.error;
 
     return Semantics(
       identifier: LanguageComparisonSemantics.error,
-      label: message == null ? reasonText : '$reasonText. $message',
+      label: l10n.languageComparisonFailureSemantic(reasonText, explanation),
       container: true,
       explicitChildNodes: true,
       child: Container(
@@ -348,10 +379,18 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
                 ),
               ],
             ),
-            if (message != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              explanation,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
+            ),
+            if (structuredDetail != null &&
+                structuredDetail != explanation) ...[
               const SizedBox(height: 8),
               Text(
-                l10n.analysisFailedPrefix(message),
+                structuredDetail,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurface.withValues(alpha: 0.8),
                 ),
@@ -367,19 +406,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     AppLocalizations l10n,
     LanguageComparisonFailureReason reason,
   ) {
-    return switch (reason) {
-      LanguageComparisonFailureReason.malformedInput =>
-        l10n.localizeWorkflowText('Invalid machine or input'),
-      LanguageComparisonFailureReason.determinization ||
-      LanguageComparisonFailureReason.normalization ||
-      LanguageComparisonFailureReason.productConstruction =>
-        l10n.localizeWorkflowText('Conversion failed'),
-      LanguageComparisonFailureReason.timeout => l10n.timeout,
-      LanguageComparisonFailureReason.stateLimit =>
-        l10n.localizeWorkflowText('Limit reached'),
-      LanguageComparisonFailureReason.internalError =>
-        l10n.localizeWorkflowText('Analysis failed'),
-    };
+    return l10n.languageComparisonFailureReason(reason);
   }
 
   Widget _buildCounterexampleSection(
@@ -395,7 +422,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
 
     return Semantics(
       identifier: LanguageComparisonSemantics.witness,
-      label: '${l10n.distinguishingStringFound}: $displayString',
+      label: l10n.languageComparisonWitnessSemantic(displayString),
       container: true,
       explicitChildNodes: true,
       child: Container(
@@ -477,6 +504,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
   ) {
     final automatonA = result.originalAutomaton;
     final automatonB = result.comparedAutomaton;
+    final formatter = LocaleValueFormatter.of(context);
     final entries = <(String, int)>[
       (l10n.statesA, automatonA.states.length),
       (l10n.statesB, automatonB.states.length),
@@ -486,7 +514,14 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
 
     return Semantics(
       identifier: LanguageComparisonSemantics.statistics,
-      label: entries.map((entry) => '${entry.$1} ${entry.$2}').join(', '),
+      label: _localizedStatisticsSemantic(
+        l10n,
+        formatter,
+        statesA: automatonA.states.length,
+        statesB: automatonB.states.length,
+        transitionsA: automatonA.transitions.length,
+        transitionsB: automatonB.transitions.length,
+      ),
       container: true,
       explicitChildNodes: true,
       child: Container(
@@ -512,6 +547,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
               _buildStatItem(
                 label: entry.$1,
                 value: entry.$2,
+                formatter: formatter,
                 colorScheme: colorScheme,
                 textTheme: textTheme,
               ),
@@ -524,6 +560,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
   Widget _buildStatItem({
     required String label,
     required int value,
+    required LocaleValueFormatter formatter,
     required ColorScheme colorScheme,
     required TextTheme textTheme,
   }) {
@@ -540,7 +577,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
         ),
         const SizedBox(height: 4),
         Text(
-          value.toString(),
+          formatter.integer(value),
           style: textTheme.titleLarge?.copyWith(
             color: colorScheme.primary,
             fontWeight: FontWeight.bold,
@@ -589,11 +626,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
         key: LanguageComparisonSemantics.layoutKey(isStacked: true),
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          sectionA,
-          const SizedBox(height: 16),
-          sectionB,
-        ],
+        children: [sectionA, const SizedBox(height: 16), sectionB],
       );
     }
 
@@ -687,10 +720,11 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     String title,
     FSA automaton,
   ) {
-    final states = l10n.localizeWorkflowText('Total states');
-    final transitions = l10n.localizeWorkflowText('Total transitions');
-    return '$title. $states ${automaton.states.length}, '
-        '$transitions ${automaton.transitions.length}';
+    return l10n.languageComparisonCanvasSemantic(
+      title,
+      automaton.states.length,
+      automaton.transitions.length,
+    );
   }
 
   Widget _buildProductAutomatonSection(
@@ -761,6 +795,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     TextTheme textTheme,
   ) {
     final steps = _steps;
+    final formatter = LocaleValueFormatter.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -773,7 +808,10 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
           icon: Icons.list_alt,
           iconColor: colorScheme.primary,
           title: l10n.algorithmSteps,
-          badgeText: l10n.stepsCount(steps.length),
+          badgeText: formatter.inLocalizedTemplate(
+            l10n.stepsCount,
+            steps.length,
+          ),
           badgeColor: colorScheme.primary,
           backgroundColor: colorScheme.primaryContainer.withValues(alpha: 0.3),
           colorScheme: colorScheme,
@@ -842,9 +880,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
             identifier: LanguageComparisonSemantics.nextStep,
             container: true,
             child: IconButton(
-              key: const ValueKey<String>(
-                LanguageComparisonSemantics.nextStep,
-              ),
+              key: const ValueKey<String>(LanguageComparisonSemantics.nextStep),
               icon: const Icon(Icons.chevron_right),
               tooltip: l10n.nextStepLower,
               onPressed: canGoForward
@@ -876,9 +912,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -928,14 +962,17 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
     TextTheme textTheme,
   ) {
     final accentColor = step.accentColor(colorScheme);
-    final title = l10n.localizeWorkflowText(step.title);
-    final description = step.description.isEmpty
-        ? ''
-        : l10n.localizeWorkflowText(step.description);
+    final formatter = LocaleValueFormatter.of(context);
+    final localizedStep = l10n.localizeLanguageComparisonStep(step);
+    final title = localizedStep.title;
+    final description = localizedStep.description;
 
     return Semantics(
       identifier: LanguageComparisonSemantics.selectedStep,
-      label: '${l10n.stepLabel} ${step.stepNumber}: $title',
+      label: formatter.inLocalizedTemplate(
+        (value) => l10n.languageComparisonStepSemantic(value, title),
+        step.stepNumber,
+      ),
       container: true,
       explicitChildNodes: true,
       child: Card(
@@ -950,7 +987,7 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
                 radius: 16,
                 backgroundColor: accentColor,
                 child: Text(
-                  '${step.stepNumber}',
+                  formatter.integer(step.stepNumber),
                   style: textTheme.labelMedium?.copyWith(
                     color: colorScheme.onPrimary,
                     fontWeight: FontWeight.w700,
@@ -982,13 +1019,13 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
                       const SizedBox(height: 6),
                       Text(description, style: textTheme.bodySmall),
                     ],
-                    if (step.details.isNotEmpty) ...[
+                    if (localizedStep.details.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          for (final detail in step.details)
+                          for (final detail in localizedStep.details)
                             _buildStepDetailChip(
                               detail,
                               l10n,
@@ -1020,16 +1057,14 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            l10n.localizeWorkflowText(detail.label),
+            detail.label,
             style: textTheme.labelSmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
@@ -1047,6 +1082,32 @@ class _LanguageComparisonViewerState extends State<LanguageComparisonViewer> {
       ),
     );
   }
+}
+
+String _localizedStatisticsSemantic(
+  AppLocalizations l10n,
+  LocaleValueFormatter formatter, {
+  required int statesA,
+  required int statesB,
+  required int transitionsA,
+  required int transitionsB,
+}) {
+  var text = l10n.languageComparisonStatisticsSemantic(
+    statesA,
+    statesB,
+    transitionsA,
+    transitionsB,
+  );
+  for (final value in [statesA, statesB, transitionsA, transitionsB]) {
+    final raw = value.toString();
+    final localized = formatter.integer(value);
+    if (raw == localized) continue;
+    final index = text.indexOf(raw);
+    if (index >= 0) {
+      text = text.replaceRange(index, index + raw.length, localized);
+    }
+  }
+  return text;
 }
 
 /// Layout decisions the comparison surface derives from its incoming box.
@@ -1069,8 +1130,9 @@ class _ComparisonLayoutMetrics {
   final double canvasHeight;
 
   factory _ComparisonLayoutMetrics.resolve(BoxConstraints constraints) {
-    final width =
-        constraints.hasBoundedWidth ? constraints.maxWidth : stackBreakpoint;
+    final width = constraints.hasBoundedWidth
+        ? constraints.maxWidth
+        : stackBreakpoint;
     final isStacked = width < stackBreakpoint;
     final height = constraints.hasBoundedHeight
         ? constraints.maxHeight

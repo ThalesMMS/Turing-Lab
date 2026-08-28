@@ -19,8 +19,9 @@ int _computeStarHeight(String regex) {
         parenDepth--;
         if (parenDepth > 0) {
           final parentHeight = starHeightAtDepth[parenDepth] ?? 0;
-          starHeightAtDepth[parenDepth] =
-              parentHeight > heightInParen ? parentHeight : heightInParen;
+          starHeightAtDepth[parenDepth] = parentHeight > heightInParen
+              ? parentHeight
+              : heightInParen;
         } else {
           maxHeight = maxHeight > heightInParen ? maxHeight : heightInParen;
         }
@@ -84,7 +85,8 @@ int _countOperators(String regex) {
 /// preventing runtime errors and providing clear error messages.
 Result<void> _validateInput(String regex) {
   if (regex.isEmpty) {
-    return ResultFactory.failure('Regex cannot be empty');
+    final message = RegexSimplificationMessages.emptyInput();
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   // Check for balanced parentheses
@@ -114,17 +116,19 @@ Result<void> _checkBalancedParentheses(String regex) {
     } else if (regex[i] == ')') {
       count--;
       if (count < 0) {
-        return ResultFactory.failure(
-          'Unbalanced parentheses: closing parenthesis at position $i has no matching opening parenthesis',
+        final message = RegexSimplificationMessages.unmatchedClosingParenthesis(
+          i,
         );
+        return Failure(message.stableCode, structuredMessage: message);
       }
     }
   }
 
   if (count != 0) {
-    return ResultFactory.failure(
-      'Unbalanced parentheses: $count unclosed opening parenthesis(es)',
+    final message = RegexSimplificationMessages.unclosedOpeningParentheses(
+      count,
     );
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   return ResultFactory.success(null);
@@ -247,7 +251,8 @@ String _removeSingleSymbolParentheses(String regex) {
       final content = regex.substring(i + 1, closeIndex);
 
       // Check if followed by an operator
-      final hasOperatorAfter = closeIndex + 1 < regex.length &&
+      final hasOperatorAfter =
+          closeIndex + 1 < regex.length &&
           (regex[closeIndex + 1] == '*' ||
               regex[closeIndex + 1] == '+' ||
               regex[closeIndex + 1] == '?');

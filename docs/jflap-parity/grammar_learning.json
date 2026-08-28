@@ -1,0 +1,1043 @@
+{
+  "fragment": "grammar_learning",
+  "rows": [
+    {
+      "id": "grammar.classification.normal-forms",
+      "area": "Grammar analysis",
+      "capability": "Classify the Chomsky grammar type and recognize regular orientation, CNF, and GNF",
+      "groups": ["teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "Test Grammar reports unrestricted, context-sensitive, context-free, right- or left-linear regular, CNF, and GNF classifications.",
+        "evidence": [
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:71",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:115",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:130",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:164",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:196",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:224"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/grammar/phrase_structure/grammar_classification.dart:149",
+          "lib/core/grammar/phrase_structure/grammar_classification.dart:416",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:230"
+        ],
+        "tests": [
+          "test/unit/core/grammar/phrase_structure_grammar_test.dart:31",
+          "test/unit/core/grammar/phrase_structure_grammar_test.dart:171",
+          "test/unit/core/grammar/phrase_structure_grammar_test.dart:229",
+          "test/widget/presentation/grammar_algorithm_panel_test.dart:519"
+        ],
+        "issues": [336, 343],
+        "decision": "Retain the typed classifier and explicit confirmation before changing the grammar's declared type."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "partial",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+  "notes": "Classification is stronger than a single modal result because it preserves predicates and diagnostics. Widget coverage verifies localized classification details in Portuguese alongside the default English workflow."
+    },
+    {
+      "id": "grammar.analysis.first-follow-ll1",
+      "area": "Grammar analysis",
+      "capability": "Diagnose grammar structure and calculate FIRST, FOLLOW, and an LL(1) table with conflicts",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "The LL(1) derivation pane exposes FIRST/FOLLOW work and a parse table, including a warning when the grammar is not LL(1).",
+        "evidence": [
+          "../JFLAP/gui/action/LLParseTableAction.java:62",
+          "../JFLAP/gui/action/LLParseTableAction.java:66",
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:50",
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:84"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/algorithms/grammar_analyzer.dart:45",
+          "lib/core/algorithms/grammar_analyzer.dart:84",
+          "lib/core/algorithms/grammar_analyzer.dart:91",
+          "lib/core/algorithms/grammar_analyzer.dart:97",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:1315"
+        ],
+        "tests": [
+          "test/unit/core/algorithms/grammar_analyzer_characterization_test.dart:167",
+          "test/unit/core/algorithms/grammar_analyzer_characterization_test.dart:233",
+          "test/unit/core/algorithms/grammar_analyzer_characterization_test.dart:418",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:279"
+        ],
+        "issues": [336, 343],
+        "decision": "Keep typed FIRST/FOLLOW provenance and conflict kinds visible in the parser workspace."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The table is inspectable and conflict cells are selectable; editing is audited separately."
+    },
+    {
+      "id": "grammar.transform.automatic-normal-forms",
+      "area": "Grammar transformation",
+      "capability": "Remove epsilon, unit, and useless productions and convert to CNF or GNF with an inspectable history",
+      "groups": ["teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "Transform Grammar chains Lambda, Unit, Useless, and Chomsky panes; Grammar Type Test separately recognizes GNF.",
+        "evidence": [
+          "../JFLAP/gui/action/GrammarTransformAction.java:70",
+          "../JFLAP/gui/action/GrammarTransformAction.java:77",
+          "../JFLAP/gui/action/GrammarTransformAction.java:97",
+          "../JFLAP/gui/action/GrammarTransformAction.java:109",
+          "../JFLAP/gui/action/GrammarTransformAction.java:132",
+          "../JFLAP/gui/action/GrammarTypeTestAction.java:196"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/algorithms/grammar_cnf_transformer.dart:44",
+          "lib/core/algorithms/grammar_gnf_transformer.dart:20",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:256",
+          "lib/presentation/widgets/grammar_algorithm_panel.dart:267",
+          "lib/presentation/widgets/grammar_transformation_history.dart:41"
+        ],
+        "tests": [
+          "test/unit/grammar_cnf_transformer_test.dart:31",
+          "test/unit/grammar_cnf_transformer_test.dart:147",
+          "test/unit/grammar_cnf_transformer_test.dart:194",
+          "test/unit/core/cfg/gnf_conversion_test.dart:109",
+          "test/widget/presentation/grammar_algorithm_panel_test.dart:1259"
+        ],
+        "issues": [336, 343],
+        "decision": "Retain deterministic automatic transforms, rationale-bearing steps, and explicit apply-to-editor actions."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "partial",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Automatic results and intermediate grammars are available; learner-authored hypothesis steps are audited separately."
+    },
+    {
+      "id": "grammar.transform.interactive-hypotheses",
+      "area": "Grammar teaching",
+      "capability": "Let learners complete transformation substeps and receive immediate validation",
+      "groups": ["teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "JFLAP's Lambda, Unit, and Useless panes expose Do Step and Complete Selected controls, and the Chomsky pane requires productions to be completed.",
+        "evidence": [
+          "../JFLAP/gui/grammar/transform/LambdaPane.java:95",
+          "../JFLAP/gui/grammar/transform/LambdaPane.java:303",
+          "../JFLAP/gui/grammar/transform/UnitPane.java:119",
+          "../JFLAP/gui/grammar/transform/UselessPane.java:305",
+          "../JFLAP/gui/grammar/transform/ChomskyPane.java:154"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/grammar/teaching/grammar_teaching_sessions.dart:129",
+          "lib/core/grammar/teaching/grammar_teaching_sessions.dart:235",
+          "lib/data/services/grammar_teaching_session_store.dart:11",
+          "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart:12"
+        ],
+        "tests": [
+          "test/unit/core/grammar/grammar_teaching_sessions_test.dart:8",
+          "test/unit/core/grammar/grammar_teaching_sessions_test.dart:59",
+          "test/unit/data/services/grammar_teaching_session_store_test.dart:9",
+          "test/widget/presentation/grammar_teaching_workspaces_test.dart:10"
+        ],
+        "issues": [350],
+        "decision": "Keep automatic normalization immutable and add a persisted learner draft layer with stage-aware validation, feedback, and undo/redo."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Lambda, unit, useless-production, and CNF stages distinguish equivalent steps, duplicates, invalid symbols, out-of-order work, and missing or unexpected productions without discarding the draft."
+    },
+    {
+      "id": "parsing.cyk.single",
+      "area": "Grammar parsing",
+      "capability": "Run CYK on one input and inspect table-building steps",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "CYK Parse converts as needed to CNF, opens a table/tree pane, and can trace the derivation.",
+        "evidence": [
+          "../JFLAP/gui/action/CYKParseAction.java:102",
+          "../JFLAP/gui/action/CYKParseAction.java:118",
+          "../JFLAP/gui/grammar/parse/CYKParsePane.java:128",
+          "../JFLAP/gui/grammar/parse/CYKParsePane.java:213"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:334",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:752",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:1079"
+        ],
+        "tests": [
+          "test/unit/grammar_input_tokenization_test.dart:98",
+          "test/unit/grammar_parser_lr_capability_test.dart:109",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:26"
+        ],
+        "issues": [336, 343],
+        "decision": "Keep explicit CYK selection, bounded execution, and navigable typed steps."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab reports timeout as a bounded outcome rather than allowing an unbounded UI operation."
+    },
+    {
+      "id": "parsing.brute-force.single",
+      "area": "Grammar parsing",
+      "capability": "Run bounded brute-force parsing with derivation witnesses, pause or cancellation semantics, and ambiguity inspection",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "Brute Force Parse runs in the background, exposes pause/resume, node counts, parse trees, and stepwise derivations.",
+        "evidence": [
+          "../JFLAP/gui/grammar/parse/BruteParsePane.java:151",
+          "../JFLAP/gui/grammar/parse/BruteParsePane.java:173",
+          "../JFLAP/gui/grammar/parse/BruteParsePane.java:269",
+          "../JFLAP/gui/grammar/parse/BruteParsePane.java:309"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:714",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:725",
+          "lib/presentation/widgets/brute_force_teaching_workspace.dart:52",
+          "lib/presentation/widgets/brute_force_teaching_workspace.dart:267"
+        ],
+        "tests": [
+          "test/widget/presentation/grammar_simulation_panel_test.dart:448",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:592",
+          "test/unit/grammar_parser_ll1_test.dart:427"
+        ],
+        "issues": [336, 343],
+        "decision": "Prefer explicit search limits and cooperative cancellation to an unbounded parser thread."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Cancellation replaces JFLAP's pause/resume control but preserves a responsive escape from expensive search."
+    },
+    {
+      "id": "parsing.ll1.execution-teaching",
+      "area": "Grammar parsing",
+      "capability": "Execute LL(1), inspect FIRST/FOLLOW, the predictive table, conflicts, and synchronized stack steps",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "Build LL(1) Parse Table opens an interactive derivation pane and can continue into parsing even after a non-LL(1) warning.",
+        "evidence": [
+          "../JFLAP/gui/action/LLParseTableAction.java:66",
+          "../JFLAP/gui/action/LLParseTableAction.java:73",
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:64",
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:114"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:798",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:1164",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:1315",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:1466"
+        ],
+        "tests": [
+          "test/unit/grammar_parser_ll1_test.dart:42",
+          "test/unit/grammar_parser_ll1_test.dart:294",
+          "test/unit/grammar_parser_ll1_test.dart:385",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:201",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:374"
+        ],
+        "issues": [336, 343],
+        "decision": "Keep conflict-safe execution and synchronize each parser step with its table cell and production provenance."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The parser refuses to reinterpret a conflict as a deterministic choice; editing a resolution is audited separately."
+    },
+    {
+      "id": "parsing.lr.execution-teaching",
+      "area": "Grammar parsing",
+      "capability": "Build a bottom-up table, expose item sets and conflicts, and execute a synchronized LR trace",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "JFLAP labels the action Build SLR(1) Parse Table and derives its item automaton and parse table before parsing.",
+        "evidence": [
+          "../JFLAP/gui/action/LRParseTableAction.java:49",
+          "../JFLAP/gui/action/LRParseTableAction.java:58",
+          "../JFLAP/gui/grammar/parse/LRParseTableDerivationPane.java:56",
+          "../JFLAP/gui/grammar/parse/LRParseTableDerivationPane.java:78"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:831",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:584",
+          "lib/presentation/widgets/lr1_teaching_workspace.dart:59",
+          "lib/presentation/widgets/lr1_teaching_workspace.dart:243"
+        ],
+        "tests": [
+          "test/unit/grammar_parser_lr_capability_test.dart:23",
+          "test/unit/grammar_parser_lr_capability_test.dart:43",
+          "test/unit/lr1_parser_test.dart:66",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:33",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:89"
+        ],
+        "issues": [336, 343],
+        "decision": "Use canonical LR(1), not JFLAP's SLR(1), and label the distinction everywhere."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The stronger canonical LR(1) construction intentionally accepts LR(1)-but-not-SLR grammars; it is not presented as result-equivalent to JFLAP SLR(1)."
+    },
+    {
+      "id": "parsing.multiple-runs",
+      "area": "Grammar parsing",
+      "capability": "Execute ordered multiple-input runs for CYK, brute force, LL, and LR",
+      "groups": ["parsing"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "Separate Multiple CYK Parse and Multiple Brute Force Parse actions run tables of input strings.",
+        "evidence": [
+          "../JFLAP/gui/action/MultipleCYKParseAction.java:64",
+          "../JFLAP/gui/action/MultipleCYKParseAction.java:80",
+          "../JFLAP/gui/action/MultipleBruteParseAction.java:61",
+          "../JFLAP/gui/grammar/parse/BruteParsePane.java:126"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:260",
+          "lib/presentation/widgets/grammar_simulation_panel.dart:272",
+          "lib/core/batch_execution/canonical_batch_executors.dart:418",
+          "lib/core/batch_execution/canonical_batch_executors.dart:438"
+        ],
+        "tests": [
+          "test/unit/core/batch_execution/canonical_batch_executors_test.dart:131",
+          "test/unit/core/batch_execution/canonical_batch_executors_test.dart:147",
+          "test/unit/core/batch_execution/canonical_batch_executors_test.dart:162",
+          "test/widget/presentation/batch_execution_panel_test.dart:9"
+        ],
+        "issues": [336, 343],
+        "decision": "Use one reusable batch surface with strategy selection, limits, cancellation, filtering, and report export."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "partial",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab also includes Earley and LR/LL batch strategies beyond JFLAP's two dedicated multiple-parse actions."
+    },
+    {
+      "id": "parsing.user-controlled-derivation",
+      "area": "Grammar teaching",
+      "capability": "Let the learner choose a production and occurrence, preview the sentential form, undo, restart, and inspect history",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "User Control Parse lets a learner select productions, choose substitutions, step forward, and revisit a prior derivation.",
+        "evidence": [
+          "../JFLAP/gui/action/UserControlParseAction.java:71",
+          "../JFLAP/gui/grammar/parse/UserControlParsePane.java:220",
+          "../JFLAP/gui/grammar/parse/UserControlParsePane.java:226",
+          "../JFLAP/gui/grammar/parse/UserControlParsePane.java:292"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/presentation/widgets/grammar_simulation_panel.dart:418",
+          "lib/presentation/widgets/user_derivation_workspace.dart:183",
+          "lib/presentation/widgets/user_derivation_workspace.dart:390",
+          "lib/presentation/widgets/user_derivation_workspace.dart:411",
+          "lib/core/grammar/phrase_structure/user_derivation_session.dart:419"
+        ],
+        "tests": [
+          "test/unit/core/grammar/user_derivation_session_test.dart:22",
+          "test/unit/core/grammar/user_derivation_session_test.dart:204",
+          "test/unit/core/grammar/user_derivation_session_test.dart:291",
+          "test/widget/presentation/grammar_simulation_panel_test.dart:684"
+        ],
+        "issues": [336, 343],
+        "decision": "Keep source-revision invalidation, typed diagnostics, optional hints, and serializable history."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The core session restores from JSON and invalidates stale grammar revisions; the currently visible run remains workspace-local like JFLAP's pane."
+    },
+    {
+      "id": "parsing.table-conflict-editing",
+      "area": "Grammar teaching",
+      "capability": "Edit LL/LR parse-table cells and choose a conflict resolution before executing the table",
+      "groups": ["parsing", "teaching"],
+      "jflapNewTypes": ["context-free-grammar"],
+      "jflap": {
+        "summary": "LL cells are editable during derivation, and the LR conflict chooser installs a combo-box editor for competing directives.",
+        "evidence": [
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:64",
+          "../JFLAP/gui/grammar/parse/LLParseTableDerivationPane.java:70",
+          "../JFLAP/gui/grammar/parse/LRParseTableChooserPane.java:67",
+          "../JFLAP/gui/grammar/parse/LRParseTableChooserPane.java:82",
+          "../JFLAP/grammar/parse/LRParseTable.java:370"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/grammar/teaching/grammar_teaching_sessions.dart:411",
+          "lib/core/grammar/teaching/grammar_teaching_sessions.dart:520",
+          "lib/presentation/widgets/parse_table_teaching_workspace.dart:13",
+          "lib/presentation/widgets/parse_table_teaching_workspace.dart:269"
+        ],
+        "tests": [
+          "test/unit/core/grammar/grammar_teaching_sessions_test.dart:87",
+          "test/unit/core/grammar/grammar_teaching_sessions_test.dart:111",
+          "test/widget/presentation/grammar_teaching_workspaces_test.dart:53"
+        ],
+        "issues": [350],
+        "decision": "Store editable LL/LR teaching cells and explicit conflict choices in a separate persisted layer; generated reference tables remain immutable."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+      "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Keyboard-accessible LL/LR drafts support explicit competing-action selection, live validation, compact layouts, session restoration, and undo/redo without mutating parser reference output."
+    },
+    {
+      "id": "pumping.regular-game",
+      "area": "Pumping Lemma",
+      "capability": "Practice the regular-language pumping lemma through adversarial quantified turns",
+      "groups": ["teaching"],
+      "jflapNewTypes": ["pumping-lemma-regular"],
+      "jflap": {
+        "summary": "Human-first and computer-first panes alternate choices of m, w, xyz, and i and record attempts and pumped outcomes.",
+        "evidence": [
+          "../JFLAP/gui/pumping/HumanFirstPane.java:32",
+          "../JFLAP/gui/pumping/HumanFirstPane.java:228",
+          "../JFLAP/gui/pumping/ComputerFirstPane.java:31",
+          "../JFLAP/gui/pumping/ComputerFirstPane.java:130"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:32",
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:72",
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:95",
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:124",
+          "lib/presentation/widgets/pumping_lemma_workspace.dart:948"
+        ],
+        "tests": [
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:6",
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:109",
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:261",
+          "test/widget/presentation/pumping_lemma_workspace_test.dart:51"
+        ],
+        "issues": [339, 343, 344],
+        "decision": "Model the theorem's quantifiers explicitly and never present finite sampled evidence as a universal proof."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The mode names differ from JFLAP's first-player labels, but the adversarial turn order and retry semantics are explicit."
+    },
+    {
+      "id": "pumping.context-free-game",
+      "area": "Pumping Lemma",
+      "capability": "Practice the context-free pumping lemma with uvxyz decompositions and bounded evidence",
+      "groups": ["teaching"],
+      "jflapNewTypes": ["pumping-lemma-context-free"],
+      "jflap": {
+        "summary": "The context-free game persists u, v, x, y lengths, cases, attempts, and player choices around uvxyz pumping.",
+        "evidence": [
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:88",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:102",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:117",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:146"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/pumping_lemma/pumping_decomposition.dart:267",
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:124",
+          "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:181",
+          "lib/presentation/widgets/pumping_lemma_workspace.dart:644"
+        ],
+        "tests": [
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:30",
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:49",
+          "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:164",
+          "test/widget/presentation/pumping_lemma_workspace_test.dart:51"
+        ],
+        "issues": [339, 343, 344],
+        "decision": "Keep regular and context-free documents as distinct runtime types and validate decomposition constraints over tokens."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Token-aware decomposition avoids JFLAP's Java-character boundary limitation."
+    },
+    {
+      "id": "pumping.persistence-interoperability",
+      "area": "Pumping Lemma",
+      "capability": "Open and save regular and context-free Pumping Lemma state in JFLAP XML and local JSON",
+      "groups": ["document", "teaching"],
+      "jflapXmlFamilies": ["pumping-lemma-regular", "pumping-lemma-context-free"],
+      "jflap": {
+        "summary": "Separate XML transducers persist first player, current values, decompositions, attempts, and context-free cases.",
+        "evidence": [
+          "../JFLAP/file/xml/RegPumpingLemmaTransducer.java:55",
+          "../JFLAP/file/xml/RegPumpingLemmaTransducer.java:81",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:88",
+          "../JFLAP/file/xml/CFPumpingLemmaTransducer.java:146"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:122",
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:147",
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:232",
+          "lib/data/codecs/pumping_lemma_jflap_codec.dart:248",
+          "lib/core/pumping_lemma/pumping_lemma_document.dart:49",
+          "lib/presentation/widgets/pumping_lemma_workspace.dart:689"
+        ],
+        "tests": [
+          "test/unit/data/pumping_lemma_codecs_test.dart:14",
+          "test/unit/data/pumping_lemma_codecs_test.dart:58",
+          "test/unit/data/pumping_lemma_codecs_test.dart:73",
+          "test/unit/data/pumping_lemma_codecs_test.dart:90",
+          "test/unit/data/pumping_lemma_codecs_test.dart:97",
+          "test/unit/data/pumping_lemma_codecs_test.dart:99"
+        ],
+        "issues": [339, 343],
+        "decision": "Preserve full progress in local JSON extensions and disclose lossy JFLAP normalization. Treat JFLAP's inability to represent free-form predicates, complete local history, and multi-token boundaries as an intentional format deviation; #343 owns only the remaining localized disclosure copy."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "partial",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "JFLAP XML cannot port free-form language predicates, complete local history, or multi-token boundaries; docs/JFLAP_COMPATIBILITY.md:102 records these losses."
+    },
+    {
+      "id": "pumping.curated-problem-catalog",
+      "area": "Pumping Lemma examples",
+      "capability": "Offer a broad built-in catalog of regular and context-free proof challenges",
+      "groups": ["teaching", "example"],
+      "jflapNewTypes": ["pumping-lemma-regular", "pumping-lemma-context-free"],
+      "jflap": {
+        "summary": "JFLAP registers 13 regular and 13 context-free built-in languages in its two choosers.",
+        "evidence": [
+          "../JFLAP/gui/pumping/RegPumpingLemmaChooser.java:46",
+          "../JFLAP/gui/pumping/RegPumpingLemmaChooser.java:49",
+          "../JFLAP/gui/pumping/RegPumpingLemmaChooser.java:63",
+          "../JFLAP/gui/pumping/CFPumpingLemmaChooser.java:48",
+          "../JFLAP/gui/pumping/CFPumpingLemmaChooser.java:51",
+          "../JFLAP/gui/pumping/CFPumpingLemmaChooser.java:65"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/pumping_lemma/pumping_lemma_problem.dart:235",
+          "lib/core/pumping_lemma/pumping_lemma_problem.dart:435",
+          "lib/core/pumping_lemma/pumping_lemma_problem.dart:704",
+          "lib/presentation/widgets/pumping_lemma_workspace.dart:726"
+        ],
+        "tests": [
+          "test/unit/core/pumping_lemma/pumping_lemma_problem_catalog_test.dart:12",
+          "test/unit/core/pumping_lemma/pumping_lemma_problem_catalog_test.dart:48",
+          "test/widget/presentation/pumping_lemma_workspace_test.dart:131"
+        ],
+        "issues": [351],
+        "decision": "Keep 13 independently authored challenges per theorem family with stable IDs, deterministic membership witnesses, explicit objectives, and validated expected outcomes."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "notApplicable",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The responsive chooser exposes all 26 challenges at 320 px and 200% text scaling. Catalog validation rejects duplicate IDs, incomplete learning metadata, and inconsistent membership examples."
+    },
+    {
+      "id": "lsystem.deterministic-expansion",
+      "area": "L-systems",
+      "capability": "Edit an axiom and replacement rules and inspect deterministic parallel generations",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["l-system"],
+      "jflap": {
+        "summary": "The L-system input pane edits the axiom and grammar rules, while Expander caches and returns generation levels.",
+        "evidence": [
+          "../JFLAP/gui/lsystem/LSystemInputPane.java:75",
+          "../JFLAP/gui/lsystem/LSystemInputPane.java:166",
+          "../JFLAP/grammar/lsystem/Expander.java:71",
+          "../JFLAP/grammar/lsystem/Expander.java:104"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/l_systems/l_system_expander.dart:149",
+          "lib/presentation/l_systems/l_system_workspace.dart:109",
+          "lib/presentation/l_systems/l_system_workspace.dart:417",
+          "lib/presentation/l_systems/l_system_workspace.dart:584"
+        ],
+        "tests": [
+          "test/unit/core/l_systems/l_system_core_contract_test.dart:8",
+          "test/unit/core/l_systems/l_system_core_contract_test.dart:49",
+          "test/unit/core/l_systems/l_system_core_contract_test.dart:89",
+          "test/widget/presentation/l_system_workspace_test.dart:12"
+        ],
+        "issues": [339, 343, 344],
+        "decision": "Retain token-preserving simultaneous rewriting with growth, elapsed-time, retention, and cancellation bounds."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "This row is limited to deterministic context-free rewriting; advanced JFLAP variants are audited separately."
+    },
+    {
+      "id": "lsystem.turtle-rendering",
+      "area": "L-systems",
+      "capability": "Interpret turtle commands, navigate generations, and export rendered geometry",
+      "groups": ["simulation", "export", "teaching"],
+      "jflapNewTypes": ["l-system"],
+      "jflap": {
+        "summary": "Renderer supports movement, turn/pitch/roll, branching, width, colors, polygons, reverse, distance, and angle parameters.",
+        "evidence": [
+          "../JFLAP/gui/lsystem/Renderer.java:74",
+          "../JFLAP/gui/lsystem/Renderer.java:87",
+          "../JFLAP/gui/lsystem/Renderer.java:419",
+          "../JFLAP/gui/lsystem/Renderer.java:484",
+          "../JFLAP/gui/lsystem/Renderer.java:628",
+          "../JFLAP/gui/lsystem/Renderer.java:661"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/l_systems/l_system_model.dart:96",
+          "lib/core/l_systems/l_system_turtle.dart:211",
+          "lib/core/l_systems/l_system_export.dart:47",
+          "lib/presentation/l_systems/l_system_png_rasterizer.dart:7",
+          "lib/presentation/l_systems/l_system_workspace.dart:827"
+        ],
+        "tests": [
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:129",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:145",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:178",
+          "test/widget/presentation/l_system_workspace_test.dart:76",
+          "test/widget/presentation/l_system_workspace_test.dart:145"
+        ],
+        "issues": [352],
+        "decision": "Project immutable 3D turtle orientation onto the bounded accessible 2D viewport and retain width, hue, color, and polygon styles in canvas, SVG, and PNG output."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Pitch and roll use a deterministic orthographic projection rather than JFLAP's renderer camera. Invalid arguments, stack and polygon balance, segment growth, and non-finite geometry fail as typed outcomes."
+    },
+    {
+      "id": "lsystem.advanced-rewriting",
+      "area": "L-systems",
+      "capability": "Expand stochastic and context-sensitive replacement rules",
+      "groups": ["simulation", "teaching"],
+      "jflapNewTypes": ["l-system"],
+      "jflap": {
+        "summary": "Expander randomly selects among duplicate replacements and matches left/right context rules before replacement.",
+        "evidence": [
+          "../JFLAP/grammar/lsystem/LSystem.java:173",
+          "../JFLAP/grammar/lsystem/Expander.java:90",
+          "../JFLAP/grammar/lsystem/Expander.java:104",
+          "../JFLAP/grammar/lsystem/Expander.java:142",
+          "../JFLAP/grammar/lsystem/Expander.java:163"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/l_systems/l_system_expander.dart:174",
+          "lib/core/l_systems/l_system_expander.dart:388",
+          "lib/data/codecs/l_system_jflap_codec.dart:93",
+          "lib/presentation/l_systems/l_system_workspace.dart:944"
+        ],
+        "tests": [
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:8",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:30",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:49",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:72",
+          "test/unit/data/l_system_codecs_test.dart:46",
+          "test/unit/data/l_system_codecs_test.dart:112"
+        ],
+        "issues": [352],
+        "decision": "Use seed-reproducible weighted alternatives and source-generation context matching; preserve and block parametric expressions until a safe portable evaluator exists."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "JFLAP alternatives are uniform by default; positive local weights, seed, and ignored context symbols round-trip through diagnosed XML parameters. Parametric syntax is preserved and rejected explicitly as the signed-off #352 boundary."
+    },
+    {
+      "id": "lsystem.persistence-examples",
+      "area": "L-systems",
+      "capability": "Round-trip deterministic JFLAP documents and local sessions and offer bundled fractal examples",
+      "groups": ["document", "example"],
+      "jflapXmlFamilies": ["l-system"],
+      "jflap": {
+        "summary": "The XML transducer reads and writes the axiom, replacement alternatives, and renderer parameters.",
+        "evidence": [
+          "../JFLAP/file/xml/LSystemTransducer.java:75",
+          "../JFLAP/file/xml/LSystemTransducer.java:120",
+          "../JFLAP/file/xml/LSystemTransducer.java:158",
+          "../JFLAP/file/xml/LSystemTransducer.java:183",
+          "../JFLAP/file/xml/LSystemTransducer.java:198"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/l_systems/l_system_formal_system.dart:18",
+          "lib/core/l_systems/l_system_formal_system.dart:38",
+          "lib/data/l_systems/l_system_examples.dart:23",
+          "lib/data/l_systems/l_system_examples.dart:59",
+          "lib/data/l_systems/l_system_examples.dart:80",
+          "lib/data/codecs/l_system_jflap_codec.dart:11"
+        ],
+        "tests": [
+          "test/unit/data/l_system_codecs_test.dart:14",
+          "test/unit/data/l_system_codecs_test.dart:31",
+          "test/unit/data/l_system_codecs_test.dart:46",
+          "test/unit/core/l_systems/l_system_advanced_semantics_test.dart:130",
+          "test/unit/data/default_formal_system_registry_test.dart:9",
+          "test/unit/data/default_formal_system_registry_test.dart:29"
+        ],
+        "issues": [339, 343, 344, 352],
+        "decision": "Keep two typed codecs, session restoration, six bundled examples including an advanced seeded/context system, and explicit diagnostics for local XML extensions and parametric rules."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Supported advanced rules round-trip as typed productions. Parametric rules remain preserved unsupported metadata and are covered by the preceding row."
+    },
+    {
+      "id": "preference.empty-string-glyph",
+      "area": "Semantic preferences",
+      "capability": "Choose lambda or epsilon as the displayed empty-string symbol and persist that choice",
+      "groups": ["preference"],
+      "jflap": {
+        "summary": "JFLAP's Preferences action selects Lambda or Epsilon, stores it in Profile, and saves the value to jflapPreferences.xml.",
+        "evidence": [
+          "../JFLAP/gui/action/EmptyStringCharacterAction.java:70",
+          "../JFLAP/gui/action/EmptyStringCharacterAction.java:72",
+          "../JFLAP/gui/action/EmptyStringCharacterAction.java:80",
+          "../JFLAP/gui/environment/Profile.java:168",
+          "../JFLAP/gui/environment/Profile.java:274",
+          "../JFLAP/gui/environment/Profile.java:296"
+        ]
+      },
+      "turingLab": {
+        "status": "intentionalDeviation",
+        "production": [
+          "lib/core/utils/epsilon_utils.dart:12",
+          "lib/core/utils/epsilon_utils.dart:39",
+          "lib/data/repositories/settings_repository_impl.dart:23",
+          "lib/data/repositories/settings_repository_impl.dart:78"
+        ],
+        "tests": [
+          "test/unit/data/settings_persistence_test.dart:153",
+          "test/widget/presentation/settings_page_test.dart:155",
+          "test/goldens/pages/settings_page_goldens_test.dart:74"
+        ],
+        "issues": [],
+        "decision": "Use ε as the single canonical product glyph, accept legacy aliases at parsing/import boundaries, and remove the global λ/ε preference because it never changed semantic data or production rendering."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "notApplicable",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "notApplicable",
+        "responsiveAccessibility": "notApplicable",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Turing Lab intentionally standardizes presentation on ε instead of reproducing JFLAP's global visual preference. Loading or saving settings removes both obsolete persisted keys without blocking the remaining settings, while existing parsers continue to normalize legacy lambda/epsilon aliases."
+    },
+    {
+      "id": "preference.pda-acceptance",
+      "area": "Semantic preferences",
+      "capability": "Choose PDA acceptance by final state or empty stack for an interactive run",
+      "groups": ["preference", "simulation"],
+      "jflapNewTypes": ["pda-single-character-input", "pda-multiple-character-input"],
+      "jflap": {
+        "summary": "PDAStepByStateSimulator prompts Accept by Final State or Empty Stack and applies the selected criterion to configurations.",
+        "evidence": [
+          "../JFLAP/automata/pda/PDAStepByStateSimulator.java:53",
+          "../JFLAP/automata/pda/PDAStepByStateSimulator.java:61",
+          "../JFLAP/automata/pda/PDAStepByStateSimulator.java:64",
+          "../JFLAP/automata/pda/PDAStepByStateSimulator.java:153"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/pda_acceptance_mode.dart:5",
+          "lib/presentation/widgets/pda_acceptance_mode_control.dart:7",
+          "lib/presentation/providers/pda_editor_provider.dart:424",
+          "lib/core/batch_execution/canonical_batch_executors.dart:222"
+        ],
+        "tests": [
+          "test/unit/core/pda/pda_acceptance_policy_test.dart:14",
+          "test/unit/presentation/pda_acceptance_persistence_test.dart:16",
+          "test/widget/presentation/pda_acceptance_mode_control_test.dart:11",
+          "test/widget/presentation/pda_acceptance_mode_panel_test.dart:15"
+        ],
+        "issues": [],
+        "decision": "Store the acceptance rule with the PDA document, expose final-state, empty-stack, and combined modes in the simulation workspace, and use the same stored rule for single and batch execution."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "The active document stores finalState, emptyStack, or both; the responsive control explains the selected rule, invalidates stale results, and persists through the active session. JFLAP standard XML does not store its per-run choice, so Turing Lab preserves the mode in its existing loss-reported XML extension and canonical JSON."
+    },
+    {
+      "id": "preference.tm-acceptance",
+      "area": "Semantic preferences",
+      "capability": "Configure TM acceptance by final state and/or halting",
+      "groups": ["preference", "simulation"],
+      "jflapNewTypes": ["tm-single-tape", "tm-multi-tape", "tm-building-blocks"],
+      "jflap": {
+        "summary": "Profile exposes independent Accept by Final State and Accept by Halting checkboxes, persists both, and injects the selected filters into deterministic and nondeterministic simulators.",
+        "evidence": [
+          "../JFLAP/gui/environment/Profile.java:127",
+          "../JFLAP/gui/environment/Profile.java:138",
+          "../JFLAP/gui/environment/Profile.java:209",
+          "../JFLAP/gui/environment/Profile.java:302",
+          "../JFLAP/automata/turing/TMSimulator.java:81",
+          "../JFLAP/automata/turing/NDTMSimulator.java:74"
+        ]
+      },
+      "turingLab": {
+        "status": "complete",
+        "production": [
+          "lib/core/models/tm_acceptance.dart:2",
+          "lib/core/models/tm_acceptance.dart:25",
+          "lib/core/models/tm.dart:44",
+          "lib/presentation/widgets/tm_simulation_panel.dart:218"
+        ],
+        "tests": [
+          "test/unit/core/tm/tm_acceptance_policy_test.dart:18",
+          "test/unit/data/tm_acceptance_policy_codecs_test.dart:16",
+          "test/widget/presentation/tm_acceptance_policy_control_test.dart:10"
+        ],
+        "issues": [],
+        "decision": "Use a typed per-document final-state, halting, or final-state-or-halting policy across every TM execution engine; canonical JSON and a loss-reported JFLAP extension preserve it, while standard JFLAP imports default explicitly to final-state acceptance."
+      },
+      "dimensions": {
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
+        "interoperability": "covered",
+        "examplesHelp": "covered",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "covered",
+        "testsEdgeCases": "covered",
+        "localization": "covered",
+        "platform": "covered"
+      },
+      "notes": "Accepted, halted-rejected, exhausted, proven-cycle, bounded-unknown, cancelled, and invalid outcomes remain distinct and carry a typed policy/reason. DTM, NTM, multi-tape, building-block, legacy, cooperative, and batch paths share the same policy contract."
+    }
+  ]
+}

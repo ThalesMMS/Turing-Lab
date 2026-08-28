@@ -16,6 +16,7 @@ import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/transition.dart';
+import 'package:turing_lab/core/simulation_cancelled_exception.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 part 'pda_simulator_extended/anbn_fixture.dart';

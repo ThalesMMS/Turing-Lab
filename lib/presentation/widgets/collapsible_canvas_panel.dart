@@ -12,6 +12,28 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
 
+/// Controls whether a [CollapsibleCanvasPanel] exposes its panel body.
+class CollapsibleCanvasPanelController extends ChangeNotifier {
+  CollapsibleCanvasPanelController({bool expanded = false})
+    : _expanded = expanded;
+
+  bool _expanded;
+
+  bool get expanded => _expanded;
+
+  void open() => _setExpanded(true);
+
+  void close() => _setExpanded(false);
+
+  void toggle() => _setExpanded(!_expanded);
+
+  void _setExpanded(bool value) {
+    if (_expanded == value) return;
+    _expanded = value;
+    notifyListeners();
+  }
+}
+
 class CollapsibleCanvasPanel extends StatefulWidget {
   const CollapsibleCanvasPanel({
     super.key,
@@ -19,6 +41,7 @@ class CollapsibleCanvasPanel extends StatefulWidget {
     required this.label,
     required this.icon,
     this.initiallyExpanded = true,
+    this.controller,
     this.onDragDelta,
     this.onPanelSizeChanged,
   });
@@ -27,6 +50,7 @@ class CollapsibleCanvasPanel extends StatefulWidget {
   final String label;
   final IconData icon;
   final bool initiallyExpanded;
+  final CollapsibleCanvasPanelController? controller;
   final ValueChanged<Offset>? onDragDelta;
   final VoidCallback? onPanelSizeChanged;
 
@@ -35,21 +59,48 @@ class CollapsibleCanvasPanel extends StatefulWidget {
 }
 
 class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
-  late bool _expanded;
+  late final CollapsibleCanvasPanelController _internalController;
+
+  CollapsibleCanvasPanelController get _controller =>
+      widget.controller ?? _internalController;
 
   @override
   void initState() {
     super.initState();
-    _expanded = widget.initiallyExpanded;
+    _internalController = CollapsibleCanvasPanelController(
+      expanded: widget.initiallyExpanded,
+    );
+    _controller.addListener(_handleControllerChanged);
   }
 
-  void _toggleExpanded() {
-    setState(() => _expanded = !_expanded);
+  @override
+  void didUpdateWidget(covariant CollapsibleCanvasPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      (oldWidget.controller ?? _internalController).removeListener(
+        _handleControllerChanged,
+      );
+      _controller.addListener(_handleControllerChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleControllerChanged);
+    _internalController.dispose();
+    super.dispose();
+  }
+
+  void _handleControllerChanged() {
+    if (!mounted) return;
+    setState(() {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       widget.onPanelSizeChanged?.call();
     });
   }
+
+  void _toggleExpanded() => _controller.toggle();
 
   @override
   Widget build(BuildContext context) {
@@ -58,8 +109,8 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
     final collapseTooltip = l10n.collapseCanvasPanel(widget.label);
     final void Function(DragUpdateDetails)? onPanUpdate =
         widget.onDragDelta == null
-            ? null
-            : (details) => widget.onDragDelta!(details.delta);
+        ? null
+        : (details) => widget.onDragDelta!(details.delta);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -67,7 +118,7 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
       children: [
         // Collapsed: only the toggle button is visible.
         Offstage(
-          offstage: _expanded,
+          offstage: _controller.expanded,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onPanUpdate: onPanUpdate,
@@ -92,7 +143,7 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
         // non-interactive spot collapses it (interactive children such as
         // Clear win the gesture arena); dragging moves the panel.
         Offstage(
-          offstage: !_expanded,
+          offstage: !_controller.expanded,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _toggleExpanded,

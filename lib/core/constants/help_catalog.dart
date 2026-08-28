@@ -22,15 +22,70 @@ final kHelpCatalog = HelpCatalog(
           icon: 'dashboard',
           relatedTopicIds: [HelpTopicIds.fsaEditorOverview],
         ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedSettings,
+          icon: 'settings',
+          relatedTopicIds: [
+            HelpTopicIds.gettingStartedNavigation,
+            HelpTopicIds.gettingStartedChooseWorkspace,
+          ],
+        ),
         HelpTopicDefinition(
           id: HelpTopicIds.gettingStartedFilesAndExamples,
           icon: 'folder_open',
           relatedTopicIds: [HelpTopicIds.fsaEditorFilesAndExamples],
         ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedSuggestedSimulations,
+          icon: 'school_outlined',
+          relatedTopicIds: [
+            HelpTopicIds.gettingStartedFilesAndExamples,
+            HelpTopicIds.gettingStartedFirstInput,
+            HelpTopicIds.transducerEditorBatchComparisonAndExamples,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedImportAutomatonFragments,
+          icon: 'account_tree',
+          relatedTopicIds: [
+            HelpTopicIds.gettingStartedFilesAndExamples,
+            HelpTopicIds.fsaEditorFilesAndExamples,
+            HelpTopicIds.pdaEditorFilesAndExamples,
+            HelpTopicIds.tmEditorFilesAndExamples,
+            HelpTopicIds.troubleshootingFileImportExport,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedManualConversions,
+          icon: 'school_outlined',
+          relatedTopicIds: [
+            HelpTopicIds.fsaEditorAlgorithmsFaToRegex,
+            HelpTopicIds.fsaEditorAlgorithmsFsaToGrammar,
+            HelpTopicIds.grammarEditorConversionsRightLinearToFsa,
+            HelpTopicIds.regexEditorConversions,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedDocumentNotes,
+          icon: 'edit_note',
+          relatedTopicIds: [
+            HelpTopicIds.gettingStartedFilesAndExamples,
+            HelpTopicIds.shortcutsCanvas,
+          ],
+        ),
         HelpTopicDefinition(
           id: HelpTopicIds.gettingStartedFirstInput,
           icon: 'play_arrow',
           relatedTopicIds: [HelpTopicIds.fsaEditorSimulationInputAndRun],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.gettingStartedMultipleInputBatches,
+          icon: 'playlist_play',
+          relatedTopicIds: [
+            HelpTopicIds.gettingStartedFirstInput,
+            HelpTopicIds.troubleshootingSimulationLimits,
+            HelpTopicIds.transducerEditorBatchComparisonAndExamples,
+          ],
         ),
         HelpTopicDefinition(
           id: HelpTopicIds.gettingStartedFindHelp,
@@ -97,16 +152,12 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.fsaEditorViewportZoom,
                   icon: 'zoom_in',
-                  relatedTopicIds: [
-                    HelpTopicIds.fsaEditorViewportFitAndReset,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.fsaEditorViewportFitAndReset],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.fsaEditorViewportFitAndReset,
                   icon: 'fit_screen',
-                  relatedTopicIds: [
-                    HelpTopicIds.fsaEditorViewportAutoLayout,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.fsaEditorViewportAutoLayout],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.fsaEditorViewportAutoLayout,
@@ -130,7 +181,7 @@ final kHelpCatalog = HelpCatalog(
                   id: HelpTopicIds.fsaEditorSimulationResultsAndPlayback,
                   icon: 'slow_motion_video',
                   relatedTopicIds: [
-                    HelpTopicIds.fsaTheoryAlphabetAndAcceptance
+                    HelpTopicIds.fsaTheoryAlphabetAndAcceptance,
                   ],
                 ),
               ],
@@ -142,9 +193,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.fsaEditorAlgorithmsOverview,
                   icon: 'hub',
-                  relatedTopicIds: [
-                    HelpTopicIds.fsaEditorAlgorithmsStepMode,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.fsaEditorAlgorithmsStepMode],
                 ),
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.fsaEditorAlgorithmsRegexToNfa,
@@ -218,7 +267,19 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.fsaEditorAlgorithmsEquivalence,
                   icon: 'compare_arrows',
-                  relatedTopicIds: [HelpTopicIds.fsaTheoryEquivalence],
+                  relatedTopicIds: [
+                    HelpTopicIds.fsaEditorAlgorithmsComparisonResults,
+                    HelpTopicIds.fsaTheoryEquivalence,
+                  ],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.fsaEditorAlgorithmsComparisonResults,
+                  icon: 'compare_arrows',
+                  relatedTopicIds: [
+                    HelpTopicIds.fsaEditorAlgorithmsEquivalence,
+                    HelpTopicIds.fsaEditorAlgorithmsStepMode,
+                    HelpTopicIds.fsaTheoryEquivalence,
+                  ],
                 ),
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.fsaEditorAlgorithmsStepMode,
@@ -256,9 +317,7 @@ final kHelpCatalog = HelpCatalog(
             HelpTopicDefinition(
               id: HelpTopicIds.fsaTheoryTransitions,
               icon: 'trending_flat',
-              relatedTopicIds: [
-                HelpTopicIds.fsaTheoryAlphabetAndAcceptance,
-              ],
+              relatedTopicIds: [HelpTopicIds.fsaTheoryAlphabetAndAcceptance],
             ),
             HelpTopicDefinition(
               id: HelpTopicIds.fsaTheoryAlphabetAndAcceptance,
@@ -278,9 +337,7 @@ final kHelpCatalog = HelpCatalog(
             HelpTopicDefinition(
               id: HelpTopicIds.fsaTheoryEquivalence,
               icon: 'compare_arrows',
-              relatedTopicIds: [
-                HelpTopicIds.fsaEditorAlgorithmsEquivalence,
-              ],
+              relatedTopicIds: [HelpTopicIds.fsaEditorAlgorithmsEquivalence],
             ),
             HelpTopicDefinition(
               id: HelpTopicIds.fsaTheoryClosureOperations,
@@ -342,6 +399,11 @@ final kHelpCatalog = HelpCatalog(
                   ],
                 ),
                 HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorParserUserControlledDerivation,
+                  icon: 'edit_note',
+                  relatedTopicIds: [HelpTopicIds.grammarTheoryDerivations],
+                ),
+                HelpTopicDefinition.structured(
                   id: HelpTopicIds.grammarEditorParserAutomaticEarley,
                   icon: 'auto_awesome',
                   relatedTopicIds: [HelpTopicIds.grammarTheoryCfg],
@@ -371,9 +433,45 @@ final kHelpCatalog = HelpCatalog(
                   ],
                 ),
                 HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorParserLr1Teaching,
+                  icon: 'school_outlined',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorParserWorkflow,
+                    HelpTopicIds.grammarEditorParserLr,
+                    HelpTopicIds.grammarEditorParserResultsAndSteps,
+                    HelpTopicIds.grammarEditorParserParseTableTeaching,
+                    HelpTopicIds.grammarTheoryPredictiveParsing,
+                    HelpTopicIds.troubleshootingSimulationLimits,
+                  ],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorParserParseTableTeaching,
+                  icon: 'table_view',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorParserLl1,
+                    HelpTopicIds.grammarEditorParserLr,
+                    HelpTopicIds.grammarEditorAlgorithmsParseTable,
+                  ],
+                ),
+                HelpTopicDefinition.structured(
                   id: HelpTopicIds.grammarEditorParserResultsAndSteps,
                   icon: 'format_list_numbered',
                   relatedTopicIds: [HelpTopicIds.grammarTheoryParseTrees],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorParserMultipleRuns,
+                  icon: 'playlist_play',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorParserWorkflow,
+                    HelpTopicIds.grammarEditorParserResultsAndSteps,
+                    HelpTopicIds.grammarEditorParserAutomaticEarley,
+                    HelpTopicIds.grammarEditorParserBruteForce,
+                    HelpTopicIds.grammarEditorParserCyk,
+                    HelpTopicIds.grammarEditorParserLl1,
+                    HelpTopicIds.grammarEditorParserLr,
+                    HelpTopicIds.gettingStartedMultipleInputBatches,
+                    HelpTopicIds.troubleshootingSimulationLimits,
+                  ],
                 ),
               ],
             ),
@@ -389,7 +487,18 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.grammarEditorAlgorithmsCnf,
                   icon: 'filter_list',
-                  relatedTopicIds: [HelpTopicIds.grammarTheoryCnf],
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorAlgorithmsNormalizationPractice,
+                    HelpTopicIds.grammarTheoryCnf,
+                  ],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorAlgorithmsNormalizationPractice,
+                  icon: 'school_outlined',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorAlgorithmsCnf,
+                    HelpTopicIds.grammarTheoryCnf,
+                  ],
                 ),
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.grammarEditorAlgorithmsGnf,
@@ -432,6 +541,14 @@ final kHelpCatalog = HelpCatalog(
                   icon: 'help_outline',
                   relatedTopicIds: [HelpTopicIds.grammarTheoryAmbiguity],
                 ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorAlgorithmsDependencyGraph,
+                  icon: 'account_tree',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarTheoryDerivations,
+                    HelpTopicIds.grammarEditorAlgorithmsAmbiguity,
+                  ],
+                ),
               ],
             ),
             HelpSubsectionDefinition(
@@ -457,6 +574,15 @@ final kHelpCatalog = HelpCatalog(
                   id: HelpTopicIds.grammarEditorConversionsPdaGreibach,
                   icon: 'stacked_bar_chart',
                   relatedTopicIds: [HelpTopicIds.grammarTheoryGnf],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.grammarEditorConversionsPdaLlLr,
+                  icon: 'vertical_align_center',
+                  relatedTopicIds: [
+                    HelpTopicIds.grammarEditorConversionsPdaStandard,
+                    HelpTopicIds.grammarEditorParserLl1,
+                    HelpTopicIds.grammarEditorParserLr,
+                  ],
                 ),
               ],
             ),
@@ -580,16 +706,12 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.pdaEditorViewportZoom,
                   icon: 'zoom_in',
-                  relatedTopicIds: [
-                    HelpTopicIds.pdaEditorViewportFitAndReset,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.pdaEditorViewportFitAndReset],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.pdaEditorViewportFitAndReset,
                   icon: 'fit_screen',
-                  relatedTopicIds: [
-                    HelpTopicIds.pdaEditorViewportAutoLayout,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.pdaEditorViewportAutoLayout],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.pdaEditorViewportAutoLayout,
@@ -680,9 +802,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.pdaEditorAlgorithmsLanguage,
                   icon: 'analytics',
-                  relatedTopicIds: [
-                    HelpTopicIds.pdaTheoryContextFreeLanguages,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.pdaTheoryContextFreeLanguages],
                 ),
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.pdaEditorAlgorithmsStackOperations,
@@ -752,7 +872,10 @@ final kHelpCatalog = HelpCatalog(
             HelpTopicDefinition(
               id: HelpTopicIds.tmEditorOverview,
               icon: 'space_dashboard',
-              relatedTopicIds: [HelpTopicIds.tmEditorSelectionAndStates],
+              relatedTopicIds: [
+                HelpTopicIds.tmEditorSelectionAndStates,
+                HelpTopicIds.tmEditorBuildingBlocks,
+              ],
             ),
             HelpSubsectionDefinition(
               id: 'tm.editor.editing',
@@ -766,9 +889,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.tmEditorTransitions,
                   icon: 'trending_flat',
-                  relatedTopicIds: [
-                    HelpTopicIds.tmEditorReadWriteAndDirection,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.tmEditorReadWriteAndDirection],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.tmEditorReadWriteAndDirection,
@@ -810,9 +931,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.tmEditorTapeInspector,
                   icon: 'view_agenda',
-                  relatedTopicIds: [
-                    HelpTopicIds.tmEditorTapeBlankAndAlphabet,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.tmEditorTapeBlankAndAlphabet],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.tmEditorTapeBlankAndAlphabet,
@@ -823,9 +942,18 @@ final kHelpCatalog = HelpCatalog(
                   id: HelpTopicIds.tmEditorTapeHeadAndCurrentCell,
                   icon: 'vertical_align_center',
                   relatedTopicIds: [
-                    HelpTopicIds.tmEditorSimulationTraceAndTape
+                    HelpTopicIds.tmEditorSimulationTraceAndTape,
                   ],
                 ),
+              ],
+            ),
+            HelpTopicDefinition.structured(
+              id: HelpTopicIds.tmEditorMultiTapeTraceAndMetrics,
+              icon: 'view_week',
+              relatedTopicIds: [
+                HelpTopicIds.tmEditorTapeHeadAndCurrentCell,
+                HelpTopicIds.tmEditorSimulationTraceAndTape,
+                HelpTopicIds.tmEditorAlgorithmsSpace,
               ],
             ),
             HelpSubsectionDefinition(
@@ -877,9 +1005,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.tmEditorAlgorithmsLanguage,
                   icon: 'analytics',
-                  relatedTopicIds: [
-                    HelpTopicIds.tmTheoryRecursivelyEnumerable,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.tmTheoryRecursivelyEnumerable],
                 ),
                 HelpTopicDefinition.structured(
                   id: HelpTopicIds.tmEditorAlgorithmsTapeOperations,
@@ -895,6 +1021,29 @@ final kHelpCatalog = HelpCatalog(
                   id: HelpTopicIds.tmEditorAlgorithmsSpace,
                   icon: 'memory',
                   relatedTopicIds: [HelpTopicIds.tmTheoryTimeAndSpace],
+                ),
+              ],
+            ),
+            HelpSubsectionDefinition(
+              id: 'tm.editor.building-blocks',
+              icon: 'account_tree',
+              children: [
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.tmEditorBuildingBlocks,
+                  icon: 'hub',
+                  relatedTopicIds: [
+                    HelpTopicIds.tmEditorSimulation,
+                    HelpTopicIds.tmEditorFilesAndExamples,
+                  ],
+                ),
+                HelpTopicDefinition.structured(
+                  id: HelpTopicIds.tmEditorBuildingBlocksManageLibrary,
+                  icon: 'folder_open',
+                  relatedTopicIds: [
+                    HelpTopicIds.tmEditorBuildingBlocks,
+                    HelpTopicIds.tmEditorOverview,
+                    HelpTopicIds.tmEditorFilesAndExamples,
+                  ],
                 ),
               ],
             ),
@@ -988,9 +1137,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.regexEditorConversionsToNfa,
                   icon: 'account_tree',
-                  relatedTopicIds: [
-                    HelpTopicIds.fsaEditorAlgorithmsRegexToNfa,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.fsaEditorAlgorithmsRegexToNfa],
                 ),
                 HelpTopicDefinition(
                   id: HelpTopicIds.regexEditorConversionsToDfa,
@@ -1000,9 +1147,7 @@ final kHelpCatalog = HelpCatalog(
                 HelpTopicDefinition(
                   id: HelpTopicIds.regexEditorConversionsFaToRegex,
                   icon: 'text_fields',
-                  relatedTopicIds: [
-                    HelpTopicIds.fsaEditorAlgorithmsFaToRegex,
-                  ],
+                  relatedTopicIds: [HelpTopicIds.fsaEditorAlgorithmsFaToRegex],
                 ),
               ],
             ),
@@ -1045,9 +1190,7 @@ final kHelpCatalog = HelpCatalog(
             HelpTopicDefinition(
               id: HelpTopicIds.regexTheoryLiteralsAndGrouping,
               icon: 'data_object',
-              relatedTopicIds: [
-                HelpTopicIds.regexTheoryConcatenationAndUnion,
-              ],
+              relatedTopicIds: [HelpTopicIds.regexTheoryConcatenationAndUnion],
             ),
             HelpTopicDefinition(
               id: HelpTopicIds.regexTheoryConcatenationAndUnion,
@@ -1096,6 +1239,16 @@ final kHelpCatalog = HelpCatalog(
           id: 'pumping.editor',
           icon: 'sports_esports',
           children: [
+            HelpTopicDefinition.structured(
+              id: HelpTopicIds.pumpingEditorEnvironmentChoice,
+              icon: 'call_split',
+              relatedTopicIds: [
+                HelpTopicIds.pumpingEditorOverview,
+                HelpTopicIds.pumpingEditorGame,
+                HelpTopicIds.pumpingTheoryStatement,
+                HelpTopicIds.pumpingTheoryQuantifiers,
+              ],
+            ),
             HelpTopicDefinition(
               id: HelpTopicIds.pumpingEditorOverview,
               icon: 'space_dashboard',
@@ -1208,6 +1361,178 @@ final kHelpCatalog = HelpCatalog(
       ],
     ),
     HelpCategoryDefinition(
+      id: 'transducers',
+      icon: 'swap_horiz',
+      children: [
+        HelpTopicDefinition(
+          id: HelpTopicIds.mealyEditorOverview,
+          icon: 'swap_horiz',
+          relatedTopicIds: [
+            HelpTopicIds.mealyEditorStatesAndTransitions,
+            HelpTopicIds.mooreEditorOverview,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.mealyEditorStatesAndTransitions,
+          icon: 'compare_arrows',
+          relatedTopicIds: [
+            HelpTopicIds.mealyEditorOverview,
+            HelpTopicIds.transducerEditorCanvasAndAlphabets,
+          ],
+        ),
+        HelpTopicDefinition(
+          id: HelpTopicIds.mooreEditorOverview,
+          icon: 'swap_calls',
+          relatedTopicIds: [
+            HelpTopicIds.mooreEditorStatesAndTransitions,
+            HelpTopicIds.mealyEditorOverview,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.mooreEditorStatesAndTransitions,
+          icon: 'account_tree',
+          relatedTopicIds: [
+            HelpTopicIds.mooreEditorOverview,
+            HelpTopicIds.transducerEditorCanvasAndAlphabets,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorCanvasAndAlphabets,
+          icon: 'edit',
+          relatedTopicIds: [
+            HelpTopicIds.mealyEditorStatesAndTransitions,
+            HelpTopicIds.mooreEditorStatesAndTransitions,
+            HelpTopicIds.transducerEditorCanvasEditingGestures,
+            HelpTopicIds.transducerEditorSimulationAndPlayback,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorCanvasEditingGestures,
+          icon: 'near_me',
+          relatedTopicIds: [
+            HelpTopicIds.transducerEditorCanvasAndAlphabets,
+            HelpTopicIds.mealyEditorStatesAndTransitions,
+            HelpTopicIds.mooreEditorStatesAndTransitions,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorSimulationAndPlayback,
+          icon: 'slow_motion_video',
+          relatedTopicIds: [
+            HelpTopicIds.transducerEditorCanvasAndAlphabets,
+            HelpTopicIds.transducerEditorCompactCanvasPlayback,
+            HelpTopicIds.transducerEditorBatchComparisonAndExamples,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorCompactCanvasPlayback,
+          icon: 'play_circle',
+          relatedTopicIds: [
+            HelpTopicIds.transducerEditorSimulationAndPlayback,
+            HelpTopicIds.transducerEditorCanvasEditingGestures,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorBatchComparisonAndExamples,
+          icon: 'balance',
+          relatedTopicIds: [
+            HelpTopicIds.transducerEditorSimulationAndPlayback,
+            HelpTopicIds.transducerEditorFilesAndExport,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.transducerEditorFilesAndExport,
+          icon: 'folder_open',
+          relatedTopicIds: [
+            HelpTopicIds.transducerEditorBatchComparisonAndExamples,
+            HelpTopicIds.troubleshootingFileImportExport,
+          ],
+        ),
+      ],
+    ),
+    HelpCategoryDefinition(
+      id: 'extended-formal-systems',
+      icon: 'hub',
+      children: [
+        HelpTopicDefinition(
+          id: HelpTopicIds.unrestrictedGrammarEditorOverview,
+          icon: 'schema',
+          relatedTopicIds: [
+            HelpTopicIds.unrestrictedGrammarEditingAndClassification,
+            HelpTopicIds.grammarEditorOverview,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.unrestrictedGrammarEditingAndClassification,
+          icon: 'edit_note',
+          relatedTopicIds: [
+            HelpTopicIds.unrestrictedGrammarEditorOverview,
+            HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph,
+          icon: 'account_tree',
+          relatedTopicIds: [
+            HelpTopicIds.unrestrictedGrammarEditingAndClassification,
+            HelpTopicIds.unrestrictedGrammarExamplesFilesAndLimits,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.unrestrictedGrammarExamplesFilesAndLimits,
+          icon: 'folder_open',
+          relatedTopicIds: [
+            HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph,
+            HelpTopicIds.troubleshootingFileImportExport,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.unrestrictedGrammarTmToGrammarConstruction,
+          icon: 'swap_horiz',
+          relatedTopicIds: [
+            HelpTopicIds.tmEditorOverview,
+            HelpTopicIds.tmEditorBuildingBlocks,
+            HelpTopicIds.tmEditorMultiTapeTraceAndMetrics,
+            HelpTopicIds.unrestrictedGrammarEditorOverview,
+            HelpTopicIds.unrestrictedGrammarEditingAndClassification,
+            HelpTopicIds.unrestrictedGrammarExamplesFilesAndLimits,
+          ],
+        ),
+        HelpTopicDefinition(
+          id: HelpTopicIds.lSystemEditorOverview,
+          icon: 'park',
+          relatedTopicIds: [
+            HelpTopicIds.lSystemDefinitionAndRules,
+            HelpTopicIds.grammarTheoryDerivations,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.lSystemDefinitionAndRules,
+          icon: 'format_list_bulleted',
+          relatedTopicIds: [
+            HelpTopicIds.lSystemEditorOverview,
+            HelpTopicIds.lSystemGenerationsAndTurtleView,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.lSystemGenerationsAndTurtleView,
+          icon: 'park',
+          relatedTopicIds: [
+            HelpTopicIds.lSystemDefinitionAndRules,
+            HelpTopicIds.lSystemExamplesFilesAndLimits,
+          ],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.lSystemExamplesFilesAndLimits,
+          icon: 'folder_open',
+          relatedTopicIds: [
+            HelpTopicIds.lSystemGenerationsAndTurtleView,
+            HelpTopicIds.troubleshootingFileImportExport,
+          ],
+        ),
+      ],
+    ),
+    HelpCategoryDefinition(
       id: 'shortcuts',
       icon: 'keyboard',
       children: [
@@ -1282,6 +1607,14 @@ final kHelpCatalog = HelpCatalog(
           id: HelpTopicIds.troubleshootingFileImportExport,
           icon: 'folder_off',
           relatedTopicIds: [HelpTopicIds.gettingStartedFilesAndExamples],
+        ),
+        HelpTopicDefinition.structured(
+          id: HelpTopicIds.troubleshootingInteroperabilityReview,
+          icon: 'fact_check',
+          relatedTopicIds: [
+            HelpTopicIds.troubleshootingFileImportExport,
+            HelpTopicIds.gettingStartedFilesAndExamples,
+          ],
         ),
         HelpTopicDefinition(
           id: HelpTopicIds.troubleshootingMissingStateMarkers,

@@ -12,6 +12,7 @@
 //
 
 import 'fsa.dart';
+import '../messages/structured_message.dart';
 
 /// Represents the result of comparing two automata for language equivalence
 class EquivalenceComparisonResult {
@@ -36,6 +37,12 @@ class EquivalenceComparisonResult {
   /// Each step contains metadata about the algorithm's progress
   final List<Map<String, dynamic>> steps;
 
+  /// Locale-neutral descriptions aligned one-to-one with [steps].
+  ///
+  /// The legacy map trace remains the source-compatible and JSON-friendly
+  /// representation; callers can resolve these messages at the active locale.
+  final List<StructuredMessage> structuredSteps;
+
   /// Time taken to execute the comparison algorithm in milliseconds
   final int executionTimeMs;
 
@@ -49,6 +56,7 @@ class EquivalenceComparisonResult {
     this.distinguishingString,
     this.productAutomaton,
     this.steps = const [],
+    this.structuredSteps = const [],
     required this.executionTimeMs,
     this.timestamp,
   });
@@ -59,6 +67,7 @@ class EquivalenceComparisonResult {
     required FSA comparedAutomaton,
     FSA? productAutomaton,
     List<Map<String, dynamic>> steps = const [],
+    List<StructuredMessage> structuredSteps = const [],
     required int executionTimeMs,
     DateTime? timestamp,
   }) {
@@ -69,6 +78,7 @@ class EquivalenceComparisonResult {
       distinguishingString: null,
       productAutomaton: productAutomaton,
       steps: steps,
+      structuredSteps: structuredSteps,
       executionTimeMs: executionTimeMs,
       timestamp: timestamp,
     );
@@ -81,6 +91,7 @@ class EquivalenceComparisonResult {
     required String distinguishingString,
     FSA? productAutomaton,
     List<Map<String, dynamic>> steps = const [],
+    List<StructuredMessage> structuredSteps = const [],
     required int executionTimeMs,
     DateTime? timestamp,
   }) {
@@ -91,6 +102,7 @@ class EquivalenceComparisonResult {
       distinguishingString: distinguishingString,
       productAutomaton: productAutomaton,
       steps: steps,
+      structuredSteps: structuredSteps,
       executionTimeMs: executionTimeMs,
       timestamp: timestamp,
     );

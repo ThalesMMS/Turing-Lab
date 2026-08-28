@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+  <type>mealy</type>
+  <automaton>
+    <state id="q0" name="start"><x>0</x><y>0</y><label>start</label><initial/></state>
+    <state id="q1" name="seen"><x>160</x><y>0</y><label>seen</label></state>
+    <transition><from>q0</from><to>q1</to><read>a</read><transout>x</transout></transition>
+    <transition><from>q1</from><to>q0</to><read>b</read><transout/></transition>
+  </automaton>
+</structure>

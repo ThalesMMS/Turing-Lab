@@ -37,6 +37,25 @@ void main() {
       expect(received, equals([highlight, SimulationHighlight.empty]));
     });
 
+    test('interceptor resets related state before send and clear', () {
+      final events = <String>[];
+      final received = <SimulationHighlight>[];
+      final channel = InterceptingHighlightChannel(
+        delegate: FunctionHighlightChannel((highlight) {
+          events.add('forward');
+          received.add(highlight);
+        }),
+        beforeActivity: () => events.add('reset'),
+      );
+      final highlight = SimulationHighlight(transitionIds: {'t0'});
+
+      channel.send(highlight);
+      channel.clear();
+
+      expect(events, ['reset', 'forward', 'reset', 'forward']);
+      expect(received, [highlight, SimulationHighlight.empty]);
+    });
+
     test('rejects simultaneous channel and dispatcher', () {
       final channel = FunctionHighlightChannel((_) {});
 

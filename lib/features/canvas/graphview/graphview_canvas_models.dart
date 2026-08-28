@@ -13,6 +13,7 @@ import 'package:collection/collection.dart';
 
 import '../../../core/models/pda_transition.dart';
 import '../../../core/models/tm_transition.dart';
+import '../../../core/transducers/transducer_symbols.dart';
 
 /// Metadata describing the current automaton rendered in the GraphView canvas.
 class GraphViewAutomatonMetadata {
@@ -22,6 +23,7 @@ class GraphViewAutomatonMetadata {
     required this.id,
     required this.name,
     required this.alphabet,
+    this.outputAlphabet = const <String>[],
     this.stackAlphabet = const <String>[],
     this.initialStackSymbol,
     this.tapeAlphabet = const <String>[],
@@ -33,6 +35,7 @@ class GraphViewAutomatonMetadata {
       : id = null,
         name = null,
         alphabet = const <String>[],
+        outputAlphabet = const <String>[],
         stackAlphabet = const <String>[],
         initialStackSymbol = null,
         tapeAlphabet = const <String>[],
@@ -42,6 +45,7 @@ class GraphViewAutomatonMetadata {
   final String? id;
   final String? name;
   final List<String> alphabet;
+  final List<String> outputAlphabet;
   final List<String> stackAlphabet;
   final String? initialStackSymbol;
   final List<String> tapeAlphabet;
@@ -52,6 +56,7 @@ class GraphViewAutomatonMetadata {
     String? id,
     String? name,
     List<String>? alphabet,
+    List<String>? outputAlphabet,
     List<String>? stackAlphabet,
     Object? initialStackSymbol = _unset,
     List<String>? tapeAlphabet,
@@ -62,6 +67,7 @@ class GraphViewAutomatonMetadata {
       id: id ?? this.id,
       name: name ?? this.name,
       alphabet: alphabet ?? this.alphabet,
+      outputAlphabet: outputAlphabet ?? this.outputAlphabet,
       stackAlphabet: stackAlphabet ?? this.stackAlphabet,
       initialStackSymbol: initialStackSymbol == _unset
           ? this.initialStackSymbol
@@ -78,6 +84,7 @@ class GraphViewAutomatonMetadata {
       'id': id,
       'name': name,
       'alphabet': alphabet,
+      'outputAlphabet': outputAlphabet,
       'stackAlphabet': stackAlphabet,
       'initialStackSymbol': initialStackSymbol,
       'tapeAlphabet': tapeAlphabet,
@@ -94,6 +101,10 @@ class GraphViewAutomatonMetadata {
     final alphabet =
         rawAlphabet is List ? rawAlphabet.cast<String>() : const <String>[];
     final rawStackAlphabet = json['stackAlphabet'];
+    final rawOutputAlphabet = json['outputAlphabet'];
+    final outputAlphabet = rawOutputAlphabet is List
+        ? rawOutputAlphabet.cast<String>()
+        : const <String>[];
     final stackAlphabet = rawStackAlphabet is List
         ? rawStackAlphabet.cast<String>()
         : const <String>[];
@@ -105,6 +116,7 @@ class GraphViewAutomatonMetadata {
       id: json['id'] as String?,
       name: json['name'] as String?,
       alphabet: alphabet,
+      outputAlphabet: outputAlphabet,
       stackAlphabet: stackAlphabet,
       initialStackSymbol: json['initialStackSymbol'] as String?,
       tapeAlphabet: tapeAlphabet,
@@ -116,6 +128,8 @@ class GraphViewAutomatonMetadata {
 
 /// Node rendered inside the GraphView canvas.
 class GraphViewCanvasNode {
+  static const Object _unset = Object();
+
   const GraphViewCanvasNode({
     required this.id,
     required this.label,
@@ -123,6 +137,8 @@ class GraphViewCanvasNode {
     required this.y,
     required this.isInitial,
     required this.isAccepting,
+    this.secondaryLabel,
+    this.transducerOutput,
   });
 
   final String id;
@@ -131,6 +147,8 @@ class GraphViewCanvasNode {
   final double y;
   final bool isInitial;
   final bool isAccepting;
+  final String? secondaryLabel;
+  final TransducerOutputWord? transducerOutput;
 
   GraphViewCanvasNode copyWith({
     String? id,
@@ -139,6 +157,8 @@ class GraphViewCanvasNode {
     double? y,
     bool? isInitial,
     bool? isAccepting,
+    Object? secondaryLabel = _unset,
+    Object? transducerOutput = _unset,
   }) {
     return GraphViewCanvasNode(
       id: id ?? this.id,
@@ -147,6 +167,12 @@ class GraphViewCanvasNode {
       y: y ?? this.y,
       isInitial: isInitial ?? this.isInitial,
       isAccepting: isAccepting ?? this.isAccepting,
+      secondaryLabel: secondaryLabel == _unset
+          ? this.secondaryLabel
+          : secondaryLabel as String?,
+      transducerOutput: transducerOutput == _unset
+          ? this.transducerOutput
+          : transducerOutput as TransducerOutputWord?,
     );
   }
 
@@ -158,6 +184,8 @@ class GraphViewCanvasNode {
       'y': y,
       'isInitial': isInitial,
       'isAccepting': isAccepting,
+      'secondaryLabel': secondaryLabel,
+      'transducerOutput': transducerOutput?.values,
     };
   }
 
@@ -169,6 +197,12 @@ class GraphViewCanvasNode {
       y: (json['y'] as num?)?.toDouble() ?? 0,
       isInitial: json['isInitial'] as bool? ?? false,
       isAccepting: json['isAccepting'] as bool? ?? false,
+      secondaryLabel: json['secondaryLabel'] as String?,
+      transducerOutput: switch (json['transducerOutput']) {
+        final List<dynamic> values =>
+          TransducerOutputWord.fromValues(values.cast<String>()),
+        _ => null,
+      },
     );
   }
 
@@ -180,11 +214,71 @@ class GraphViewCanvasNode {
         other.x == x &&
         other.y == y &&
         other.isInitial == isInitial &&
-        other.isAccepting == isAccepting;
+        other.isAccepting == isAccepting &&
+        other.secondaryLabel == secondaryLabel &&
+        other.transducerOutput == transducerOutput;
   }
 
   @override
-  int get hashCode => Object.hash(id, label, x, y, isInitial, isAccepting);
+  int get hashCode => Object.hash(
+        id,
+        label,
+        x,
+        y,
+        isInitial,
+        isAccepting,
+        secondaryLabel,
+        transducerOutput,
+      );
+}
+
+/// Immutable TM operation vectors stored as one atomic canvas payload.
+final class TmGraphViewOperationVectors {
+  factory TmGraphViewOperationVectors({
+    required Iterable<String> readSymbols,
+    required Iterable<String> writeSymbols,
+    required Iterable<TapeDirection> directions,
+  }) {
+    final reads = List<String>.unmodifiable(readSymbols);
+    final writes = List<String>.unmodifiable(writeSymbols);
+    final moves = List<TapeDirection>.unmodifiable(directions);
+    if (reads.isEmpty ||
+        reads.length != writes.length ||
+        reads.length != moves.length) {
+      throw ArgumentError.value(
+        [reads.length, writes.length, moves.length],
+        'operationVectors',
+        'TM operation vectors must have the same non-zero length.',
+      );
+    }
+    return TmGraphViewOperationVectors._(reads, writes, moves);
+  }
+
+  const TmGraphViewOperationVectors._(
+    this.readSymbols,
+    this.writeSymbols,
+    this.directions,
+  );
+
+  final List<String> readSymbols;
+  final List<String> writeSymbols;
+  final List<TapeDirection> directions;
+
+  @override
+  bool operator ==(Object other) {
+    return other is TmGraphViewOperationVectors &&
+        const ListEquality<String>().equals(other.readSymbols, readSymbols) &&
+        const ListEquality<String>().equals(other.writeSymbols, writeSymbols) &&
+        const ListEquality<TapeDirection>()
+            .equals(other.directions, directions);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        const ListEquality<String>().hash(readSymbols),
+        const ListEquality<String>().hash(writeSymbols),
+        const ListEquality<TapeDirection>().hash(directions),
+      );
 }
 
 /// Directed edge rendered inside the GraphView canvas.
@@ -202,6 +296,7 @@ class GraphViewCanvasEdge {
     this.readSymbol,
     this.writeSymbol,
     this.direction,
+    this.tmOperations,
     this.tapeNumber,
     this.popSymbol,
     this.pushSymbol,
@@ -209,6 +304,7 @@ class GraphViewCanvasEdge {
     this.isLambdaInput,
     this.isLambdaPop,
     this.isLambdaPush,
+    this.transducerOutput,
   });
 
   final String id;
@@ -221,6 +317,11 @@ class GraphViewCanvasEdge {
   final String? readSymbol;
   final String? writeSymbol;
   final TapeDirection? direction;
+  final TmGraphViewOperationVectors? tmOperations;
+
+  List<String>? get tmReadSymbols => tmOperations?.readSymbols;
+  List<String>? get tmWriteSymbols => tmOperations?.writeSymbols;
+  List<TapeDirection>? get tmDirections => tmOperations?.directions;
   final int? tapeNumber;
   final String? popSymbol;
   final String? pushSymbol;
@@ -228,6 +329,7 @@ class GraphViewCanvasEdge {
   final bool? isLambdaInput;
   final bool? isLambdaPop;
   final bool? isLambdaPush;
+  final TransducerOutputWord? transducerOutput;
 
   /// Whether this transition is an epsilon transition (for FSA).
   bool get isEpsilonTransition {
@@ -235,6 +337,13 @@ class GraphViewCanvasEdge {
   }
 
   String get label {
+    if (transducerOutput != null) {
+      final input = readSymbol ?? symbols.join(',');
+      final output = transducerOutput!.symbols.isEmpty
+          ? '[]'
+          : transducerOutput!.values.join(' · ');
+      return '$input / $output';
+    }
     final hasPdaMetadata = popSymbol != null ||
         pushSymbol != null ||
         isLambdaInput != null ||
@@ -259,6 +368,21 @@ class GraphViewCanvasEdge {
     if (lambdaSymbol != null && lambdaSymbol!.isNotEmpty) {
       return lambdaSymbol!;
     }
+    if (tmReadSymbols != null ||
+        tmWriteSymbols != null ||
+        tmDirections != null) {
+      final reads = tmReadSymbols ?? const <String>[];
+      final writes = tmWriteSymbols ?? const <String>[];
+      final moves = tmDirections ?? const <TapeDirection>[];
+      if (reads.length == writes.length && reads.length == moves.length) {
+        return List<String>.generate(
+          reads.length,
+          (index) =>
+              'T${index + 1}: ${reads[index]}/${writes[index]},${moves[index].symbol}',
+          growable: false,
+        ).join(' | ');
+      }
+    }
     if (readSymbol != null || writeSymbol != null || direction != null) {
       return TMTransition.formatLabel(
         readSymbol: readSymbol ?? '',
@@ -281,6 +405,9 @@ class GraphViewCanvasEdge {
     Object? readSymbol = _unset,
     Object? writeSymbol = _unset,
     Object? direction = _unset,
+    Object? tmReadSymbols = _unset,
+    Object? tmWriteSymbols = _unset,
+    Object? tmDirections = _unset,
     Object? tapeNumber = _unset,
     Object? popSymbol = _unset,
     Object? pushSymbol = _unset,
@@ -288,12 +415,33 @@ class GraphViewCanvasEdge {
     Object? isLambdaInput = _unset,
     Object? isLambdaPop = _unset,
     Object? isLambdaPush = _unset,
+    Object? transducerOutput = _unset,
   }) {
     final resolvedPushSymbols = pushSymbols != _unset
         ? pushSymbols as List<String>?
         : pushSymbol == _unset
             ? this.pushSymbols
             : null;
+    final resolvedReads = tmReadSymbols == _unset
+        ? this.tmReadSymbols
+        : tmReadSymbols as List<String>?;
+    final resolvedWrites = tmWriteSymbols == _unset
+        ? this.tmWriteSymbols
+        : tmWriteSymbols as List<String>?;
+    final resolvedDirections = tmDirections == _unset
+        ? this.tmDirections
+        : tmDirections as List<TapeDirection>?;
+    final hasAnyTmVector = resolvedReads != null ||
+        resolvedWrites != null ||
+        resolvedDirections != null;
+    if (hasAnyTmVector &&
+        (resolvedReads == null ||
+            resolvedWrites == null ||
+            resolvedDirections == null)) {
+      throw ArgumentError(
+        'TM read, write, and direction vectors must be changed together.',
+      );
+    }
     return GraphViewCanvasEdge(
       id: id ?? this.id,
       fromStateId: fromStateId ?? this.fromStateId,
@@ -313,6 +461,13 @@ class GraphViewCanvasEdge {
           writeSymbol == _unset ? this.writeSymbol : writeSymbol as String?,
       direction:
           direction == _unset ? this.direction : direction as TapeDirection?,
+      tmOperations: hasAnyTmVector
+          ? TmGraphViewOperationVectors(
+              readSymbols: resolvedReads!,
+              writeSymbols: resolvedWrites!,
+              directions: resolvedDirections!,
+            )
+          : null,
       tapeNumber: tapeNumber == _unset ? this.tapeNumber : tapeNumber as int?,
       popSymbol: popSymbol == _unset ? this.popSymbol : popSymbol as String?,
       pushSymbol:
@@ -324,6 +479,9 @@ class GraphViewCanvasEdge {
           isLambdaPop == _unset ? this.isLambdaPop : isLambdaPop as bool?,
       isLambdaPush:
           isLambdaPush == _unset ? this.isLambdaPush : isLambdaPush as bool?,
+      transducerOutput: transducerOutput == _unset
+          ? this.transducerOutput
+          : transducerOutput as TransducerOutputWord?,
     );
   }
 
@@ -339,6 +497,9 @@ class GraphViewCanvasEdge {
       'readSymbol': readSymbol,
       'writeSymbol': writeSymbol,
       'direction': direction?.name,
+      'tmReadSymbols': tmReadSymbols,
+      'tmWriteSymbols': tmWriteSymbols,
+      'tmDirections': tmDirections?.map((value) => value.name).toList(),
       'tapeNumber': tapeNumber,
       'popSymbol': popSymbol,
       'pushSymbol': pushSymbol,
@@ -346,6 +507,7 @@ class GraphViewCanvasEdge {
       'isLambdaInput': isLambdaInput,
       'isLambdaPop': isLambdaPop,
       'isLambdaPush': isLambdaPush,
+      'transducerOutput': transducerOutput?.values,
     };
   }
 
@@ -372,6 +534,7 @@ class GraphViewCanvasEdge {
               orElse: () => TapeDirection.right,
             )
           : null,
+      tmOperations: _tmOperationsFromJson(json),
       tapeNumber: json['tapeNumber'] as int?,
       popSymbol: json['popSymbol'] as String?,
       pushSymbol: json['pushSymbol'] as String?,
@@ -379,6 +542,11 @@ class GraphViewCanvasEdge {
       isLambdaInput: json['isLambdaInput'] as bool?,
       isLambdaPop: json['isLambdaPop'] as bool?,
       isLambdaPush: json['isLambdaPush'] as bool?,
+      transducerOutput: json['transducerOutput'] is List
+          ? TransducerOutputWord.fromValues(
+              (json['transducerOutput'] as List).cast<String>(),
+            )
+          : null,
     );
   }
 
@@ -395,17 +563,24 @@ class GraphViewCanvasEdge {
         other.readSymbol == readSymbol &&
         other.writeSymbol == writeSymbol &&
         other.direction == direction &&
+        const ListEquality<String>()
+            .equals(other.tmReadSymbols, tmReadSymbols) &&
+        const ListEquality<String>()
+            .equals(other.tmWriteSymbols, tmWriteSymbols) &&
+        const ListEquality<TapeDirection>()
+            .equals(other.tmDirections, tmDirections) &&
         other.tapeNumber == tapeNumber &&
         other.popSymbol == popSymbol &&
         other.pushSymbol == pushSymbol &&
         const ListEquality<String>().equals(other.pushSymbols, pushSymbols) &&
         other.isLambdaInput == isLambdaInput &&
         other.isLambdaPop == isLambdaPop &&
-        other.isLambdaPush == isLambdaPush;
+        other.isLambdaPush == isLambdaPush &&
+        other.transducerOutput == transducerOutput;
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
         id,
         fromStateId,
         toStateId,
@@ -416,6 +591,7 @@ class GraphViewCanvasEdge {
         readSymbol,
         writeSymbol,
         direction,
+        tmOperations,
         tapeNumber,
         popSymbol,
         pushSymbol,
@@ -423,7 +599,40 @@ class GraphViewCanvasEdge {
         isLambdaInput,
         isLambdaPop,
         isLambdaPush,
-      );
+        transducerOutput,
+      ]);
+}
+
+TmGraphViewOperationVectors? _tmOperationsFromJson(
+  Map<String, dynamic> json,
+) {
+  final reads = (json['tmReadSymbols'] as List?)?.cast<String>();
+  final writes = (json['tmWriteSymbols'] as List?)?.cast<String>();
+  final rawDirections = (json['tmDirections'] as List?)?.cast<String>();
+  final hasAny = reads != null || writes != null || rawDirections != null;
+  if (!hasAny) {
+    return null;
+  }
+  if (reads == null || writes == null || rawDirections == null) {
+    throw const FormatException(
+      'TM read, write, and direction vectors must all be present.',
+    );
+  }
+  try {
+    return TmGraphViewOperationVectors(
+      readSymbols: reads,
+      writeSymbols: writes,
+      directions: rawDirections.map(
+        (name) => TapeDirection.values.firstWhere(
+          (value) => value.name == name,
+        ),
+      ),
+    );
+  } on StateError catch (error) {
+    throw FormatException('Unknown TM tape direction.', error);
+  } on ArgumentError catch (error) {
+    throw FormatException('Invalid TM operation vectors.', error);
+  }
 }
 
 /// Snapshot of nodes, edges and metadata rendered in the GraphView canvas.

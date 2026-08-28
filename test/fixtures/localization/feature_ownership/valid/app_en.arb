@@ -1,0 +1,8 @@
+{
+  "featureLabel": "Feature {count}",
+  "@featureLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
+}

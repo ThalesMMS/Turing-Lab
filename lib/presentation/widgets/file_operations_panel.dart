@@ -12,11 +12,16 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/entities/turing_machine_entity.dart';
+import '../../core/annotations/document_annotation_collection.dart';
+import '../../core/formal_systems/formal_systems.dart';
+import '../../core/interoperability/interoperability.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
@@ -27,64 +32,29 @@ import '../../core/services/file_operations_gateway.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import 'utils/platform_file_loader.dart';
 import 'error_banner.dart';
+import 'document_interoperability_binding.dart';
+import 'document_interoperability_failure_dialog.dart';
+import 'document_interoperability_preview.dart';
+import 'document_interoperability_review_dialog.dart';
 import 'import_error_dialog.dart';
+import 'interoperability_presentation_labels.dart';
+import 'registered_file_operation.dart';
+import 'visual_export_binding.dart';
 
 part 'file_operations/file_operations_panel_picker_helpers.dart';
 part 'file_operations/file_operations_panel_fsa_actions.dart';
 part 'file_operations/file_operations_panel_machine_actions.dart';
 part 'file_operations/file_operations_panel_converters.dart';
 part 'file_operations/file_operations_panel_feedback.dart';
+part 'file_operations/file_operations_panel_interoperability.dart';
+part 'file_operations/file_operations_panel_visual_export.dart';
 
-class _FileOperationCapabilities {
-  const _FileOperationCapabilities({
-    this.supportsJflapImport = false,
-    this.supportsJflapExport = false,
-    this.supportsJsonImport = false,
-    this.supportsJsonExport = false,
-    this.supportsSvgExport = false,
-    this.supportsPngExport = false,
-  });
-
-  final bool supportsJflapImport;
-  final bool supportsJflapExport;
-  final bool supportsJsonImport;
-  final bool supportsJsonExport;
-  final bool supportsSvgExport;
-  final bool supportsPngExport;
-}
-
-const _fsaCapabilities = _FileOperationCapabilities(
-  supportsJflapImport: true,
-  supportsJflapExport: true,
-  supportsJsonImport: true,
-  supportsJsonExport: true,
-  supportsSvgExport: true,
-  supportsPngExport: true,
-);
-
-const _grammarCapabilities = _FileOperationCapabilities(
-  supportsJflapImport: true,
-  supportsJflapExport: true,
-  supportsSvgExport: true,
-);
-
-const _pdaCapabilities = _FileOperationCapabilities(
-  supportsSvgExport: true,
-);
-
-const _tmCapabilities = _FileOperationCapabilities(
-  supportsSvgExport: true,
-);
-
-const _kFsaJflapExportButtonKey = ValueKey<String>(
-  'fsa_jflap_export_button',
-);
-const _kFsaJflapImportButtonKey = ValueKey<String>(
-  'fsa_jflap_import_button',
-);
+const _kFsaJflapExportButtonKey = ValueKey<String>('fsa_jflap_export_button');
+const _kFsaJflapImportButtonKey = ValueKey<String>('fsa_jflap_import_button');
 const _kFsaJsonExportButtonKey = ValueKey<String>('fsa_json_export_button');
 const _kFsaJsonImportButtonKey = ValueKey<String>('fsa_json_import_button');
 const _kFsaSvgExportButtonKey = ValueKey<String>('fsa_svg_export_button');
@@ -108,6 +78,14 @@ class FileOperationsPanel extends StatefulWidget {
   final ValueChanged<FSA>? onAutomatonLoaded;
   final ValueChanged<Grammar>? onGrammarLoaded;
   final FileOperationsGateway? fileService;
+  final FormalSystemRegistry? formalSystemRegistry;
+  final FormalSystemKey automatonSystemKey;
+  final FormalSystemKey? registeredSystemKey;
+  final String? registeredSectionLabel;
+  final List<RegisteredFileOperation> registeredOperations;
+  final DocumentInteroperabilityBinding? interoperability;
+  final VisualExportBinding? visualExport;
+  final DocumentAnnotationCollection? annotations;
 
   const FileOperationsPanel({
     super.key,
@@ -118,6 +96,14 @@ class FileOperationsPanel extends StatefulWidget {
     this.onAutomatonLoaded,
     this.onGrammarLoaded,
     this.fileService,
+    this.formalSystemRegistry,
+    this.automatonSystemKey = DefaultFormalSystemIds.fsa,
+    this.registeredSystemKey,
+    this.registeredSectionLabel,
+    this.registeredOperations = const [],
+    this.interoperability,
+    this.visualExport,
+    this.annotations,
   });
 
   @override
@@ -137,6 +123,7 @@ class _PanelFeedback {
 }
 
 class _FileOperationsPanelState extends State<FileOperationsPanel> {
+  bool _includeAnnotationsInVisualExports = false;
   late final FileOperationsGateway _fileService;
   bool _isLoading = false;
   _PanelFeedback? _feedback;
@@ -144,9 +131,39 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
 
   AppLocalizations get _l10n => appLocalizationsOf(context);
 
+  String _localizedFailure<T>(Result<T> result) {
+    final structuredMessage = result.structuredError;
+    if (structuredMessage != null) {
+      return _l10n.resolveStructuredMessage(structuredMessage);
+    }
+    return result.error ?? _l10n.unknownError;
+  }
+
+  String _localizedException(Object error) {
+    if (error case CodecOperationException(:final structuredMessage)) {
+      return _l10n.resolveStructuredMessage(structuredMessage);
+    }
+    return _l10n.localizeWorkflowText('$error');
+  }
+
   String get _svgEmptyAutomatonLabel => _l10n.svgNoStatesDefined;
 
   String get _svgTmLegendLabel => _l10n.svgTmLegend;
+
+  FormalSystemRegistry get _registry =>
+      widget.formalSystemRegistry ?? FormalSystemRegistry.defaultRegistry;
+
+  bool _supports(
+    FormalSystemKey key,
+    DocumentFormatId format,
+    DocumentFormatDirection direction,
+  ) {
+    return _registry
+            .descriptorFor(key)
+            ?.formatSupport(format)
+            ?.supports(direction) ??
+        false;
+  }
 
   @override
   void initState() {
@@ -164,6 +181,19 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final registeredSystemKey = widget.registeredSystemKey;
+    final visibleRegisteredOperations = registeredSystemKey == null
+        ? const <RegisteredFileOperation>[]
+        : widget.registeredOperations
+              .where(
+                (operation) => _supports(
+                  registeredSystemKey,
+                  operation.format,
+                  operation.direction,
+                ),
+              )
+              .toList(growable: false);
+    final interoperability = widget.interoperability;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -188,50 +218,94 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
             ),
             const SizedBox(height: 16),
 
+            if (interoperability != null) ...[
+              _buildInteroperabilitySection(interoperability),
+              const SizedBox(height: 16),
+            ],
+
+            if (widget.visualExport case final visualExport?) ...[
+              _buildVisualExportSection(
+                visualExport,
+                showTitle: interoperability == null,
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // FSA operations
-            if (widget.automaton != null) ...[
+            if ((widget.automaton != null ||
+                    widget.onAutomatonLoaded != null) &&
+                interoperability?.systemKey != widget.automatonSystemKey) ...[
               _buildSectionTitle(l10n.fileSectionFsa),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (_fsaCapabilities.supportsJflapExport)
+                  if (widget.automaton != null &&
+                      _supports(
+                        widget.automatonSystemKey,
+                        DefaultFormalSystemIds.jflapXmlFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ))
                     _buildButton(
                       kIsWeb ? l10n.downloadJflap : l10n.saveAsJflap,
                       Icons.save,
                       () => _saveAutomatonAsJFLAP(),
                       key: _kFsaJflapExportButtonKey,
                     ),
-                  if (_fsaCapabilities.supportsJflapImport)
+                  if (_supports(
+                    widget.automatonSystemKey,
+                    DefaultFormalSystemIds.jflapXmlFormat,
+                    DocumentFormatDirection.importDocument,
+                  ))
                     _buildButton(
                       l10n.loadJflap,
                       Icons.folder_open,
                       () => _loadAutomatonFromJFLAP(),
                       key: _kFsaJflapImportButtonKey,
                     ),
-                  if (_fsaCapabilities.supportsJsonExport)
+                  if (widget.automaton != null &&
+                      _supports(
+                        widget.automatonSystemKey,
+                        DefaultFormalSystemIds.turingLabJsonFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ))
                     _buildButton(
                       kIsWeb ? l10n.downloadJson : l10n.saveAsJson,
                       Icons.data_object,
                       () => _saveAutomatonAsJson(),
                       key: _kFsaJsonExportButtonKey,
                     ),
-                  if (_fsaCapabilities.supportsJsonImport)
+                  if (_supports(
+                    widget.automatonSystemKey,
+                    DefaultFormalSystemIds.turingLabJsonFormat,
+                    DocumentFormatDirection.importDocument,
+                  ))
                     _buildButton(
                       l10n.loadJson,
                       Icons.upload_file,
                       () => _loadAutomatonFromJson(),
                       key: _kFsaJsonImportButtonKey,
                     ),
-                  if (_fsaCapabilities.supportsSvgExport)
+                  if (widget.automaton != null &&
+                      _supports(
+                        widget.automatonSystemKey,
+                        DefaultFormalSystemIds.svgFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ))
                     _buildButton(
                       kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportAutomatonAsSVG(),
                       key: _kFsaSvgExportButtonKey,
                     ),
-                  if (_fsaCapabilities.supportsPngExport && !kIsWeb)
+                  if (widget.automaton != null &&
+                      _supports(
+                        widget.automatonSystemKey,
+                        DefaultFormalSystemIds.pngFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ) &&
+                      !kIsWeb)
                     _buildButton(
                       l10n.exportPng,
                       Icons.photo,
@@ -244,26 +318,40 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
             ],
 
             // Grammar operations
-            if (widget.grammar != null) ...[
+            if (widget.grammar != null &&
+                interoperability?.systemKey !=
+                    DefaultFormalSystemIds.grammar) ...[
               _buildSectionTitle(l10n.fileSectionGrammar),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (_grammarCapabilities.supportsJflapExport)
+                  if (_supports(
+                    DefaultFormalSystemIds.grammar,
+                    DefaultFormalSystemIds.jflapXmlFormat,
+                    DocumentFormatDirection.exportDocument,
+                  ))
                     _buildButton(
                       kIsWeb ? l10n.downloadJflap : l10n.saveAsJflap,
                       Icons.save,
                       () => _saveGrammarAsJFLAP(),
                     ),
-                  if (_grammarCapabilities.supportsJflapImport)
+                  if (_supports(
+                    DefaultFormalSystemIds.grammar,
+                    DefaultFormalSystemIds.jflapXmlFormat,
+                    DocumentFormatDirection.importDocument,
+                  ))
                     _buildButton(
                       l10n.loadJflap,
                       Icons.folder_open,
                       () => _loadGrammarFromJFLAP(),
                     ),
-                  if (_grammarCapabilities.supportsSvgExport)
+                  if (_supports(
+                    DefaultFormalSystemIds.grammar,
+                    DefaultFormalSystemIds.svgFormat,
+                    DocumentFormatDirection.exportDocument,
+                  ))
                     _buildButton(
                       kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
@@ -281,7 +369,11 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (_pdaCapabilities.supportsSvgExport)
+                  if (_supports(
+                    DefaultFormalSystemIds.pda,
+                    DefaultFormalSystemIds.svgFormat,
+                    DocumentFormatDirection.exportDocument,
+                  ))
                     _buildButton(
                       kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
@@ -299,7 +391,11 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (_tmCapabilities.supportsSvgExport)
+                  if (_supports(
+                    DefaultFormalSystemIds.tm,
+                    DefaultFormalSystemIds.svgFormat,
+                    DocumentFormatDirection.exportDocument,
+                  ))
                     _buildButton(
                       kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
@@ -308,6 +404,41 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                 ],
               ),
               const SizedBox(height: 16),
+            ],
+
+            if (visibleRegisteredOperations.isNotEmpty) ...[
+              if (widget.registeredSectionLabel case final label?) ...[
+                _buildSectionTitle(label),
+                const SizedBox(height: 8),
+              ],
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final operation in visibleRegisteredOperations)
+                    _buildButton(
+                      operation.label,
+                      operation.icon,
+                      operation.onPressed,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (widget.annotations?.annotations.isNotEmpty ?? false) ...[
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: Text(_l10n.includeNotesInVisualExports),
+                subtitle: Text(_l10n.includeNotesInVisualExportsDescription),
+                value: _includeAnnotationsInVisualExports,
+                onChanged: _isLoading
+                    ? null
+                    : (value) => setState(
+                        () => _includeAnnotationsInVisualExports = value,
+                      ),
+              ),
+              const SizedBox(height: 8),
             ],
 
             // Loading indicator

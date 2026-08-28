@@ -1,0 +1,32 @@
+{
+  "id": "tm_multitape_comparison",
+  "name": "MT multifitas - Comparação",
+  "type": "tm",
+  "alphabet": ["0", "1", "#"],
+  "tapeAlphabet": ["0", "1", "#", "B"],
+  "blankSymbol": "B",
+  "tapeCount": 2,
+  "states": [
+    {"id": "copy", "name": "copy", "x": 80.0, "y": 180.0, "isInitial": true, "isFinal": false},
+    {"id": "rewind", "name": "rewind", "x": 280.0, "y": 180.0, "isInitial": false, "isFinal": false},
+    {"id": "compare", "name": "compare", "x": 480.0, "y": 180.0, "isInitial": false, "isFinal": false},
+    {"id": "qa", "name": "accept", "x": 680.0, "y": 180.0, "isInitial": false, "isFinal": true}
+  ],
+  "initialId": "copy",
+  "finalStates": ["qa"],
+  "transitions": [
+    {"id": "copy-0", "fromState": "copy", "toState": "copy", "label": "T1: 0/0R | T2: B/0R", "controlPoint": {"x": 80.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["0", "B"], "writeSymbols": ["0", "0"], "directions": ["right", "right"]},
+    {"id": "copy-1", "fromState": "copy", "toState": "copy", "label": "T1: 1/1R | T2: B/1R", "controlPoint": {"x": 120.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "B"], "writeSymbols": ["1", "1"], "directions": ["right", "right"]},
+    {"id": "separator", "fromState": "copy", "toState": "rewind", "label": "T1: #/#R | T2: B/BL", "type": "deterministic", "readSymbols": ["#", "B"], "writeSymbols": ["#", "B"], "directions": ["right", "left"]},
+    {"id": "rewind-00", "fromState": "rewind", "toState": "rewind", "label": "T1: 0/0S | T2: 0/0L", "controlPoint": {"x": 260.0, "y": 70.0}, "type": "deterministic", "readSymbols": ["0", "0"], "writeSymbols": ["0", "0"], "directions": ["stay", "left"]},
+    {"id": "rewind-01", "fromState": "rewind", "toState": "rewind", "label": "T1: 0/0S | T2: 1/1L", "controlPoint": {"x": 280.0, "y": 60.0}, "type": "deterministic", "readSymbols": ["0", "1"], "writeSymbols": ["0", "1"], "directions": ["stay", "left"]},
+    {"id": "rewind-10", "fromState": "rewind", "toState": "rewind", "label": "T1: 1/1S | T2: 0/0L", "controlPoint": {"x": 300.0, "y": 60.0}, "type": "deterministic", "readSymbols": ["1", "0"], "writeSymbols": ["1", "0"], "directions": ["stay", "left"]},
+    {"id": "rewind-11", "fromState": "rewind", "toState": "rewind", "label": "T1: 1/1S | T2: 1/1L", "controlPoint": {"x": 320.0, "y": 70.0}, "type": "deterministic", "readSymbols": ["1", "1"], "writeSymbols": ["1", "1"], "directions": ["stay", "left"]},
+    {"id": "begin-compare-0", "fromState": "rewind", "toState": "compare", "label": "T1: 0/0S | T2: B/BR", "type": "deterministic", "readSymbols": ["0", "B"], "writeSymbols": ["0", "B"], "directions": ["stay", "right"]},
+    {"id": "begin-compare-1", "fromState": "rewind", "toState": "compare", "label": "T1: 1/1S | T2: B/BR", "type": "deterministic", "readSymbols": ["1", "B"], "writeSymbols": ["1", "B"], "directions": ["stay", "right"]},
+    {"id": "compare-0", "fromState": "compare", "toState": "compare", "label": "T1: 0/0R | T2: 0/0R", "controlPoint": {"x": 480.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["0", "0"], "writeSymbols": ["0", "0"], "directions": ["right", "right"]},
+    {"id": "compare-1", "fromState": "compare", "toState": "compare", "label": "T1: 1/1R | T2: 1/1R", "controlPoint": {"x": 520.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "1"], "writeSymbols": ["1", "1"], "directions": ["right", "right"]},
+    {"id": "equal", "fromState": "compare", "toState": "qa", "label": "T1: B/BS | T2: B/BS", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["stay", "stay"]}
+  ],
+  "description": "Accepts exactly the words w#w by copying the first block to tape 1 and comparing both blocks in lockstep."
+}

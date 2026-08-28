@@ -28,6 +28,7 @@ linter:
     prefer_const_declarations: true
     prefer_final_fields: true
     prefer_final_locals: true
+    unnecessary_underscores: false
     
     # Documentation rules
     public_member_api_docs: false  # Disabled for internal project
@@ -69,3 +70,9 @@ linter:
 analyzer:
   exclude:
     - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**

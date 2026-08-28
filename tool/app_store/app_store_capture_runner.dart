@@ -115,6 +115,7 @@ class AppStoreCaptureRunner {
       ],
       workingDirectory: repoRoot,
       environment: environment,
+      runInShell: Platform.isWindows,
     );
 
     final tail = <String>[];

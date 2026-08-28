@@ -9,6 +9,7 @@ import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
 import 'package:turing_lab/presentation/providers/settings_provider.dart';
+import 'package:turing_lab/presentation/localization/app_locale_policy.dart';
 
 class _FakeSettingsRepository implements SettingsRepository {
   _FakeSettingsRepository({
@@ -35,27 +36,31 @@ Future<void> _pumpSettingsPage(
   WidgetTester tester, {
   required _FakeSettingsRepository repository,
   Size size = const Size(430, 932),
+  List<Locale> platformLocales = const [Locale('en', 'US')],
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
+  tester.platformDispatcher.localesTestValue = platformLocales;
 
   addTearDown(() {
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
+    tester.platformDispatcher.clearLocalesTestValue();
   });
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        settingsRepositoryProvider.overrideWithValue(repository),
-      ],
+      overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
       child: Consumer(
         builder: (context, ref, child) {
           final localeCode = ref.watch(settingsProvider).localeCode;
           return MaterialApp(
-            locale: localeCode == null ? null : Locale(localeCode),
+            locale: AppLocalePolicy.resolve(
+              persistedLocaleCode: localeCode,
+              platformLocales: platformLocales,
+            ),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
+            supportedLocales: AppLocalePolicy.supportedLocales,
             home: MediaQuery(
               data: MediaQueryData(size: size),
               child: SettingsPage(repository: repository),
@@ -103,10 +108,7 @@ void main() {
 
       expect(repository.savedSettings.last.localeCode, 'pt');
       expect(find.text('Configurações'), findsOneWidget);
-      expect(
-        tester.widget<FilterChip>(portugueseOption).selected,
-        isTrue,
-      );
+      expect(tester.widget<FilterChip>(portugueseOption).selected, isTrue);
     });
 
     testWidgets('selecting English applies and persists the locale', (
@@ -117,9 +119,7 @@ void main() {
       );
       await _pumpSettingsPage(tester, repository: repository);
 
-      final englishOption = find.byKey(
-        const ValueKey('settings_language_en'),
-      );
+      final englishOption = find.byKey(const ValueKey('settings_language_en'));
       await _ensureVisibleAndTap(tester, englishOption);
 
       expect(repository.savedSettings.last.localeCode, 'en');
@@ -139,10 +139,8 @@ void main() {
 
       for (final text in [
         'Configurações',
-        'Símbolos',
         'Tema',
         'Idioma',
-        'Símbolo da cadeia vazia',
         'Modo do tema',
         'Idioma do aplicativo',
         'Mostrar grade',
@@ -154,17 +152,19 @@ void main() {
       }
     });
 
-    testWidgets('does not advertise an unused epsilon symbol preference', (
+    testWidgets('does not advertise an empty-string symbol preference', (
       tester,
     ) async {
-      await _pumpSettingsPage(
-        tester,
-        repository: _FakeSettingsRepository(),
-      );
+      await _pumpSettingsPage(tester, repository: _FakeSettingsRepository());
 
-      expect(find.text('Epsilon Symbol'), findsNothing);
+      expect(find.text('Symbols'), findsNothing);
+      expect(find.text('Empty String Symbol'), findsNothing);
       expect(
-        find.byKey(const ValueKey('settings_epsilon_lambda')),
+        find.byKey(const ValueKey('settings_empty_string_lambda')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('settings_empty_string_epsilon')),
         findsNothing,
       );
     });
@@ -222,7 +222,6 @@ void main() {
     ) async {
       final repository = _FakeSettingsRepository(
         initialSettings: const SettingsModel(
-          emptyStringSymbol: 'ε',
           themeMode: 'dark',
           localeCode: 'pt',
           showGrid: false,
@@ -248,7 +247,8 @@ void main() {
       expect(
         tester
             .widget<Switch>(
-                find.byKey(const ValueKey('settings_show_grid_switch')))
+              find.byKey(const ValueKey('settings_show_grid_switch')),
+            )
             .value,
         isTrue,
       );
@@ -271,7 +271,8 @@ void main() {
       expect(
         tester
             .widget<Switch>(
-                find.byKey(const ValueKey('settings_auto_save_switch')))
+              find.byKey(const ValueKey('settings_auto_save_switch')),
+            )
             .value,
         isTrue,
       );
@@ -286,7 +287,49 @@ void main() {
       expect(
         tester
             .widget<FilterChip>(
-                find.byKey(const ValueKey('settings_theme_system')))
+              find.byKey(const ValueKey('settings_theme_light')),
+            )
+            .selected,
+        isTrue,
+      );
+    });
+
+    testWidgets('reset returns language selection to automatic resolution', (
+      tester,
+    ) async {
+      final repository = _FakeSettingsRepository(
+        initialSettings: const SettingsModel(localeCode: 'en'),
+      );
+      await _pumpSettingsPage(
+        tester,
+        repository: repository,
+        platformLocales: const [Locale('pt', 'BR')],
+      );
+
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_language_en')),
+            )
+            .selected,
+        isTrue,
+      );
+
+      await _ensureVisibleAndTap(
+        tester,
+        find.byKey(const ValueKey('settings_reset_button')),
+      );
+
+      expect(repository.savedSettings.single.localeCode, isNull);
+      expect(
+        Localizations.localeOf(tester.element(find.byType(SettingsPage))),
+        const Locale('pt', 'BR'),
+      );
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_language_pt')),
+            )
             .selected,
         isTrue,
       );
@@ -355,7 +398,8 @@ void main() {
       expect(
         tester
             .widget<Switch>(
-                find.byKey(const ValueKey('settings_show_grid_switch')))
+              find.byKey(const ValueKey('settings_show_grid_switch')),
+            )
             .value,
         isFalse,
       );
@@ -370,7 +414,8 @@ void main() {
       expect(
         tester
             .widget<Switch>(
-                find.byKey(const ValueKey('settings_auto_save_switch')))
+              find.byKey(const ValueKey('settings_auto_save_switch')),
+            )
             .value,
         isFalse,
       );
@@ -404,37 +449,34 @@ void main() {
       expect(
         tester
             .widget<Slider>(
-                find.byKey(const ValueKey('settings_grid_size_slider')))
+              find.byKey(const ValueKey('settings_grid_size_slider')),
+            )
             .value,
         40,
       );
       expect(
         tester
             .widget<Slider>(
-                find.byKey(const ValueKey('settings_node_size_slider')))
+              find.byKey(const ValueKey('settings_node_size_slider')),
+            )
             .value,
         55,
       );
       expect(
         tester
             .widget<Slider>(
-                find.byKey(const ValueKey('settings_font_size_slider')))
+              find.byKey(const ValueKey('settings_font_size_slider')),
+            )
             .value,
         18,
       );
     });
 
-    testWidgets('filter chip selections update the active options', (
-      tester,
-    ) async {
+    testWidgets('theme filter chips update the active option', (tester) async {
       final repository = _FakeSettingsRepository();
 
       await _pumpSettingsPage(tester, repository: repository);
 
-      await _ensureVisibleAndTap(
-        tester,
-        find.byKey(const ValueKey('settings_empty_string_epsilon')),
-      );
       await _ensureVisibleAndTap(
         tester,
         find.byKey(const ValueKey('settings_theme_dark')),
@@ -443,7 +485,7 @@ void main() {
       expect(
         tester
             .widget<FilterChip>(
-              find.byKey(const ValueKey('settings_empty_string_epsilon')),
+              find.byKey(const ValueKey('settings_theme_dark')),
             )
             .selected,
         isTrue,
@@ -451,22 +493,8 @@ void main() {
       expect(
         tester
             .widget<FilterChip>(
-              find.byKey(const ValueKey('settings_empty_string_lambda')),
+              find.byKey(const ValueKey('settings_theme_system')),
             )
-            .selected,
-        isFalse,
-      );
-      expect(
-        tester
-            .widget<FilterChip>(
-                find.byKey(const ValueKey('settings_theme_dark')))
-            .selected,
-        isTrue,
-      );
-      expect(
-        tester
-            .widget<FilterChip>(
-                find.byKey(const ValueKey('settings_theme_system')))
             .selected,
         isFalse,
       );

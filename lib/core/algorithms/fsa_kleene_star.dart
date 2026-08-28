@@ -13,9 +13,11 @@ import 'package:vector_math/vector_math_64.dart';
 import '../models/algorithm_step.dart';
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
+import '../messages/structured_message.dart';
 import '../models/state.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
+import 'fsa_kleene_star_messages.dart';
 
 class FSAKleeneStarResult {
   final FSA resultNFA;
@@ -36,10 +38,10 @@ class FSAKleeneStarResult {
     required Set<FSATransition> repeatTransitions,
     required Set<FSATransition> exitTransitions,
     required List<AlgorithmStep> steps,
-  })  : stateClones = Map.unmodifiable(stateClones),
-        repeatTransitions = Set.unmodifiable(repeatTransitions),
-        exitTransitions = Set.unmodifiable(exitTransitions),
-        steps = List.unmodifiable(steps);
+  }) : stateClones = Map.unmodifiable(stateClones),
+       repeatTransitions = Set.unmodifiable(repeatTransitions),
+       exitTransitions = Set.unmodifiable(exitTransitions),
+       steps = List.unmodifiable(steps);
 }
 
 /// Constructs an epsilon-NFA that recognizes `L(operand)*`.
@@ -50,17 +52,22 @@ class FSAKleeneStar {
     try {
       final validationError = _validateOperand(operand);
       if (validationError != null) {
-        return ResultFactory.failure(validationError);
+        return Failure(
+          validationError.stableCode,
+          structuredMessage: validationError,
+        );
       }
 
       final sortedStates = [...operand.states]
         ..sort((first, second) => first.id.compareTo(second.id));
       final namespace = 'star_${_stableHash(operand.id)}';
-      final minX =
-          sortedStates.map((state) => state.position.x).reduce(math.min);
+      final minX = sortedStates
+          .map((state) => state.position.x)
+          .reduce(math.min);
       final cloneOffset = Vector2(40 + _horizontalGap - minX, 0);
-      final acceptingIds =
-          operand.acceptingStates.map((state) => state.id).toSet();
+      final acceptingIds = operand.acceptingStates
+          .map((state) => state.id)
+          .toSet();
       final stateClones = <String, State>{
         for (var index = 0; index < sortedStates.length; index++)
           sortedStates[index].id: sortedStates[index].copyWith(
@@ -80,12 +87,14 @@ class FSAKleeneStar {
       final clonedInitial = stateClones[operand.initialState!.id]!;
       final clonedAccepting = [...acceptingIds]
         ..sort((first, second) => first.compareTo(second));
-      final centerY = sortedStates
+      final centerY =
+          sortedStates
               .map((state) => state.position.y + cloneOffset.y)
               .reduce((first, second) => first + second) /
           sortedStates.length;
-      final clonedMaxX =
-          stateClones.values.map((state) => state.position.x).reduce(math.max);
+      final clonedMaxX = stateClones.values
+          .map((state) => state.position.x)
+          .reduce(math.max);
 
       final newInitial = State(
         id: '${namespace}_entry',
@@ -152,7 +161,7 @@ class FSAKleeneStar {
 
       final resultError = _validateResult(result);
       if (resultError != null) {
-        return ResultFactory.failure(resultError);
+        return Failure(resultError.stableCode, structuredMessage: resultError);
       }
 
       return ResultFactory.success(
@@ -175,33 +184,34 @@ class FSAKleeneStar {
         ),
       );
     } catch (error) {
-      return ResultFactory.failure('Could not apply Kleene star: $error');
+      final message = FsaKleeneStarMessages.internalFailure();
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
-  static String? _validateOperand(FSA operand) {
+  static StructuredMessage? _validateOperand(FSA operand) {
     if (operand.states.isEmpty) {
-      return 'Kleene-star operand must contain at least one state.';
+      return FsaKleeneStarMessages.emptyOperand();
     }
     final initial = operand.initialState;
     if (initial == null) {
-      return 'Kleene-star operand must have an initial state.';
+      return FsaKleeneStarMessages.missingInitialState();
     }
     if (!operand.states.contains(initial)) {
-      return 'Kleene-star operand has an initial state outside its state set.';
+      return FsaKleeneStarMessages.initialStateOutsideSet();
     }
     for (final accepting in operand.acceptingStates) {
       if (!operand.states.contains(accepting)) {
-        return 'Kleene-star operand has an accepting state outside its state set.';
+        return FsaKleeneStarMessages.acceptingStateOutsideSet();
       }
     }
     for (final transition in operand.transitions) {
       if (transition is! FSATransition) {
-        return 'Kleene-star operand contains a non-FSA transition.';
+        return FsaKleeneStarMessages.nonFsaTransition();
       }
       if (!operand.states.contains(transition.fromState) ||
           !operand.states.contains(transition.toState)) {
-        return 'Kleene-star operand contains a transition with an unknown endpoint.';
+        return FsaKleeneStarMessages.unknownTransitionEndpoint();
       }
       final errors = transition
           .validate()
@@ -211,8 +221,7 @@ class FSAKleeneStar {
           )
           .toList(growable: false);
       if (errors.isNotEmpty) {
-        return 'Kleene-star operand contains an invalid transition '
-            '${transition.id}: ${errors.join(', ')}';
+        return FsaKleeneStarMessages.invalidTransition(transition.id);
       }
     }
     return null;
@@ -224,7 +233,8 @@ class FSAKleeneStar {
     Vector2 offset,
     String namespace,
   ) {
-    final sortedTransitions = [...operand.fsaTransitions]..sort(
+    final sortedTransitions = [...operand.fsaTransitions]
+      ..sort(
         (first, second) =>
             _transitionSortKey(first).compareTo(_transitionSortKey(second)),
       );
@@ -278,21 +288,22 @@ class FSAKleeneStar {
     );
   }
 
-  static String? _validateResult(FSA result) {
+  static StructuredMessage? _validateResult(FSA result) {
     final stateIds = result.states.map((state) => state.id).toList();
     if (stateIds.toSet().length != stateIds.length) {
-      return 'Kleene star produced duplicate state IDs.';
+      return FsaKleeneStarMessages.duplicateStateIds();
     }
-    final transitionIds =
-        result.fsaTransitions.map((transition) => transition.id).toList();
+    final transitionIds = result.fsaTransitions
+        .map((transition) => transition.id)
+        .toList();
     if (transitionIds.toSet().length != transitionIds.length) {
-      return 'Kleene star produced duplicate transition IDs.';
+      return FsaKleeneStarMessages.duplicateTransitionIds();
     }
     final errors = result.validate().where(
-          (error) => !error.startsWith('Non-deterministic transition from'),
-        );
+      (error) => !error.startsWith('Non-deterministic transition from'),
+    );
     if (errors.isNotEmpty) {
-      return 'Kleene star produced an invalid FSA: ${errors.join(', ')}';
+      return FsaKleeneStarMessages.invalidResult();
     }
     return null;
   }
@@ -311,15 +322,21 @@ class FSAKleeneStar {
       ..sort((first, second) => first.id.compareTo(second.id));
     final sortedExits = [...exitTransitions]
       ..sort((first, second) => first.id.compareTo(second.id));
+    final cloneTitle = FsaKleeneStarMessages.stepTitle('clone');
+    final entryTitle = FsaKleeneStarMessages.stepTitle('entry');
+    final repeatTitle = FsaKleeneStarMessages.stepTitle('repeat');
+    final exitTitle = FsaKleeneStarMessages.stepTitle('exit');
     return [
       AlgorithmStep(
         id: 'fsa_star_step_0',
         stepNumber: 0,
-        title: 'Clone the operand',
-        explanation:
-            'Copy every operand state into a separate, deterministic ID namespace.',
+        title: cloneTitle.stableCode,
+        explanation: FsaKleeneStarMessages.cloneExplanation().stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
+          fsaKleeneStarTitleMessageProperty: cloneTitle.toJson(),
+          fsaKleeneStarExplanationMessageProperty:
+              FsaKleeneStarMessages.cloneExplanation().toJson(),
           'clonedStates': [
             for (final clone in sortedClones)
               '${clone.key} → ${clone.value.id}',
@@ -330,11 +347,13 @@ class FSAKleeneStar {
       AlgorithmStep(
         id: 'fsa_star_step_1',
         stepNumber: 1,
-        title: 'Add the epsilon entry',
-        explanation:
-            'Create an accepting initial state so the result accepts epsilon, then connect it to the cloned operand.',
+        title: entryTitle.stableCode,
+        explanation: FsaKleeneStarMessages.entryExplanation().stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
+          fsaKleeneStarTitleMessageProperty: entryTitle.toJson(),
+          fsaKleeneStarExplanationMessageProperty:
+              FsaKleeneStarMessages.entryExplanation().toJson(),
           'createdStateIds': [newInitial.id],
           'entryTransition':
               '${entryTransition.fromState.id} → ${entryTransition.toState.id}',
@@ -344,12 +363,17 @@ class FSAKleeneStar {
       AlgorithmStep(
         id: 'fsa_star_step_2',
         stepNumber: 2,
-        title: 'Add repeat transitions',
-        explanation: sortedRepeats.isEmpty
-            ? 'The operand language is empty, so there are no accepting states to repeat.'
-            : 'Connect every former accepting state back to the cloned initial state with epsilon.',
+        title: repeatTitle.stableCode,
+        explanation: FsaKleeneStarMessages.repeatExplanation(
+          hasAcceptingStates: sortedRepeats.isNotEmpty,
+        ).stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
+          fsaKleeneStarTitleMessageProperty: repeatTitle.toJson(),
+          fsaKleeneStarExplanationMessageProperty:
+              FsaKleeneStarMessages.repeatExplanation(
+                hasAcceptingStates: sortedRepeats.isNotEmpty,
+              ).toJson(),
           'repeatTransitions': [
             for (final transition in sortedRepeats)
               '${transition.fromState.id} → ${transition.toState.id}',
@@ -362,12 +386,17 @@ class FSAKleeneStar {
       AlgorithmStep(
         id: 'fsa_star_step_3',
         stepNumber: 3,
-        title: 'Add exit transitions',
-        explanation: sortedExits.isEmpty
-            ? 'The distinct accepting exit remains unreachable because the operand language is empty.'
-            : 'Create a distinct accepting exit and connect every former accepting state to it with epsilon.',
+        title: exitTitle.stableCode,
+        explanation: FsaKleeneStarMessages.exitExplanation(
+          hasAcceptingStates: sortedExits.isNotEmpty,
+        ).stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
+          fsaKleeneStarTitleMessageProperty: exitTitle.toJson(),
+          fsaKleeneStarExplanationMessageProperty:
+              FsaKleeneStarMessages.exitExplanation(
+                hasAcceptingStates: sortedExits.isNotEmpty,
+              ).toJson(),
           'createdStateIds': [newAccepting.id],
           'exitTransitions': [
             for (final transition in sortedExits)

@@ -3,20 +3,24 @@ part of 'pda_simulator.dart';
 /// Validates the input PDA and string
 Result<void> _validateInput(PDA pda, String inputString) {
   if (pda.states.isEmpty) {
-    return const Failure('PDA must have at least one state');
+    final message = PDASimulationMessages.emptyStateSet();
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   if (pda.initialState == null) {
-    return const Failure('PDA must have an initial state');
+    final message = PDASimulationMessages.missingInitialState();
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   if (!pda.states.contains(pda.initialState)) {
-    return const Failure('Initial state must be in the states set');
+    final message = PDASimulationMessages.initialStateOutsideSet();
+    return Failure(message.stableCode, structuredMessage: message);
   }
 
   for (final acceptingState in pda.acceptingStates) {
     if (!pda.states.contains(acceptingState)) {
-      return const Failure('Accepting state must be in the states set');
+      final message = PDASimulationMessages.acceptingStateOutsideSet();
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 

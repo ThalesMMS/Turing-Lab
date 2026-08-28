@@ -20,6 +20,7 @@ import '../../../core/models/simulation_result.dart';
 import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../localization/locale_value_formatter.dart';
 import '../common/simulation_speed_control.dart';
 import '../common/timer_playback_controller.dart';
 import 'timeline_scrubber.dart';
@@ -30,7 +31,7 @@ class BaseTraceViewer extends StatefulWidget {
   final String title;
   final Widget Function(SimulationStep step, int index) buildStepLine;
   final Widget? Function(BuildContext context, SimulationStep step, int index)?
-      detailsBuilder;
+  detailsBuilder;
   final SimulationHighlightService? highlightService;
   final double animationSpeed;
   final ValueChanged<int>? onStepChanged;
@@ -86,7 +87,7 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
   @override
   void didUpdateWidget(covariant BaseTraceViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.result != oldWidget.result ||
+    if (!identical(widget.result, oldWidget.result) ||
         widget.highlightService != oldWidget.highlightService) {
       _cancelPlaybackTimer();
       setState(() {
@@ -184,10 +185,9 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
     if (!fromPlayback) {
       SemanticsService.sendAnnouncement(
         View.of(context),
-        appLocalizationsOf(context).stepOf(
-          index + 1,
-          widget.result.steps.length,
-        ),
+        appLocalizationsOf(
+          context,
+        ).stepOf(index + 1, widget.result.steps.length),
         Directionality.of(context),
       );
     }
@@ -246,8 +246,45 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
 
   Widget _buildNavigationControls(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
     final current = _selectedIndex ?? 0;
     final maxIndex = widget.result.steps.length - 1;
+    final previousButton = IconButton(
+      onPressed: current > 0 ? _previousStep : null,
+      icon: const Icon(Icons.skip_previous),
+      tooltip: l10n.previousStep,
+      iconSize: 20,
+    );
+    final playButton = IconButton(
+      onPressed: _isPlaying ? _pauseSteps : _playSteps,
+      icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+      tooltip: _isPlaying ? l10n.pause : l10n.play,
+      iconSize: 20,
+    );
+    final nextButton = IconButton(
+      onPressed: current < maxIndex ? _nextStep : null,
+      icon: const Icon(Icons.skip_next),
+      tooltip: l10n.nextStep,
+      iconSize: 20,
+    );
+    final stepCounter = Text(
+      '${formatter.integer(current + 1)} / '
+      '${formatter.integer(widget.result.steps.length)}',
+      style: Theme.of(context).textTheme.bodySmall,
+    );
+    final resetButton = IconButton(
+      onPressed: _resetSteps,
+      icon: const Icon(Icons.refresh),
+      tooltip: l10n.reset,
+      iconSize: 20,
+    );
+    final leadingControls = <Widget>[
+      previousButton,
+      playButton,
+      nextButton,
+      const SizedBox(width: 8),
+      stepCounter,
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -261,40 +298,20 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
             enabled: _highlightEnabled,
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: current > 0 ? _previousStep : null,
-                icon: const Icon(Icons.skip_previous),
-                tooltip: l10n.previousStep,
-                iconSize: 20,
-              ),
-              IconButton(
-                onPressed: _isPlaying ? _pauseSteps : _playSteps,
-                icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                tooltip: _isPlaying ? l10n.pause : l10n.play,
-                iconSize: 20,
-              ),
-              IconButton(
-                onPressed: current < maxIndex ? _nextStep : null,
-                icon: const Icon(Icons.skip_next),
-                tooltip: l10n.nextStep,
-                iconSize: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${current + 1} / ${widget.result.steps.length}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: _resetSteps,
-                icon: const Icon(Icons.refresh),
-                tooltip: l10n.reset,
-                iconSize: 20,
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 280) {
+                return Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [...leadingControls, resetButton],
+                );
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [...leadingControls, const Spacer(), resetButton],
+              );
+            },
           ),
           if (widget.onSpeedChanged != null) ...[
             const SizedBox(height: 8),
@@ -311,6 +328,7 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
     final steps = widget.result.steps;
     final isAccepted = widget.result.accepted;
     final color = isAccepted ? Colors.green : Colors.red;
@@ -331,14 +349,17 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
               size: 18,
             ),
             const SizedBox(width: 6),
-            Text(
-              widget.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
+            Expanded(
+              child: Text(
+                widget.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
             ),
-            const Spacer(),
             if (steps.length > defaultFoldSize)
               TextButton.icon(
                 onPressed: _toggleFolded,
@@ -376,7 +397,10 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
                   key: isSelected ? _selectedRowKey : null,
                   selected: isSelected,
                   label: isSelected
-                      ? l10n.activeStepOf(index + 1, steps.length)
+                      ? formatter.integersInLocalizedText(
+                          l10n.activeStepOf(index + 1, steps.length),
+                          [index + 1, steps.length],
+                        )
                       : null,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 4),
@@ -393,14 +417,14 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
                               ? BoxDecoration(
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     width: 1.2,
                                   ),
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.08),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.08),
                                 )
                               : const BoxDecoration(),
                           child: widget.buildStepLine(step, index),
@@ -416,15 +440,18 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
-              l10n.hiddenStepsSummary(
-                visibleStart,
-                steps.length - visibleStart - visibleCount,
+              formatter.integersInLocalizedText(
+                l10n.hiddenStepsSummary(
+                  visibleStart,
+                  steps.length - visibleStart - visibleCount,
+                ),
+                [visibleStart, steps.length - visibleStart - visibleCount],
               ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ),
         if (_highlightEnabled && widget.detailsBuilder != null) ...[

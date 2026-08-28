@@ -1,0 +1,10 @@
+{
+  "family": "regular",
+  "expectedStatus": "passed",
+  "operators": [
+    "flip-initial-acceptance",
+    "ignore-epsilon-reachability",
+    "skip-dfa-completion"
+  ],
+  "property": "regular.mutations"
+}

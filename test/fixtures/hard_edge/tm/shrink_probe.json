@@ -1,0 +1,100 @@
+{
+  "family": "tm",
+  "scenario": "shrink",
+  "seed": 338,
+  "cases": 1,
+  "expectedStatus": "passed",
+  "operator": "partial-multi-tape-read-match",
+  "inputTokens": ["a", "a"],
+  "machine": {
+    "id": "two-tape-shrink-counterexample",
+    "name": "two-tape-shrink-counterexample",
+    "type": "TM",
+    "states": [
+      {
+        "id": "q0",
+        "label": "q0",
+        "position": {"x": 0.0, "y": 0.0},
+        "isInitial": true,
+        "isAccepting": false,
+        "type": "normal",
+        "properties": {}
+      },
+      {
+        "id": "accept",
+        "label": "accept",
+        "position": {"x": 0.0, "y": 0.0},
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "transitions": [
+      {
+        "id": "transfer",
+        "fromState": "q0",
+        "toState": "accept",
+        "label": "transfer",
+        "controlPoint": {"x": 0.0, "y": 0.0},
+        "type": "deterministic",
+        "transitionType": "tm",
+        "readSymbol": "a",
+        "writeSymbol": "B",
+        "direction": "right",
+        "tapeNumber": 0,
+        "readSymbols": ["a", "B"],
+        "writeSymbols": ["B", "a"],
+        "directions": ["right", "left"]
+      },
+      {
+        "id": "irrelevant-decoy",
+        "fromState": "q0",
+        "toState": "accept",
+        "label": "irrelevant-decoy",
+        "controlPoint": {"x": 0.0, "y": 0.0},
+        "type": "deterministic",
+        "transitionType": "tm",
+        "readSymbol": "x",
+        "writeSymbol": "x",
+        "direction": "stay",
+        "tapeNumber": 0,
+        "readSymbols": ["x", "B"],
+        "writeSymbols": ["x", "B"],
+        "directions": ["stay", "stay"]
+      }
+    ],
+    "alphabet": ["a", "x"],
+    "initialState": {
+      "id": "q0",
+      "label": "q0",
+      "position": {"x": 0.0, "y": 0.0},
+      "isInitial": true,
+      "isAccepting": false,
+      "type": "normal",
+      "properties": {}
+    },
+    "acceptingStates": [
+      {
+        "id": "accept",
+        "label": "accept",
+        "position": {"x": 0.0, "y": 0.0},
+        "isInitial": false,
+        "isAccepting": true,
+        "type": "normal",
+        "properties": {}
+      }
+    ],
+    "created": "2026-08-26T00:00:00.000Z",
+    "modified": "2026-08-26T00:00:00.000Z",
+    "bounds": {"x": 0.0, "y": 0.0, "width": 640.0, "height": 480.0},
+    "zoomLevel": 1.0,
+    "panOffset": {"x": 0.0, "y": 0.0},
+    "tapeAlphabet": ["a", "x", "B"],
+    "blankSymbol": "B",
+    "tapeCount": 2,
+    "acceptancePolicy": "finalState",
+    "blockDefinitions": [],
+    "blockInvocations": []
+  }
+}

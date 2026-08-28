@@ -112,6 +112,18 @@ run_case unit_fail 1 "QA_STATUS unit=failed reason=command_failed" \
     env FAKE_TEST_EXIT=24 "$QA" --flutter "$FAKE_FLUTTER" --dart "$FAKE_DART" \
     --skip-l10n --only unit --no-report
 
+run_case properties_pass 0 "QA_STATUS properties=passed" \
+    fake_qa --only properties --no-report
+assert_output_contains properties_pass "tool/hard_edge_cases.dart run --profile qa"
+
+run_case properties_fail 1 "QA_STATUS properties=failed reason=command_failed" \
+    env FAKE_PROPERTIES_EXIT=25 "$QA" --flutter "$FAKE_FLUTTER" --dart "$FAKE_DART" \
+    --skip-l10n --only properties --no-report
+assert_output_contains properties_fail "exit_code=25"
+
+run_case code_excludes_properties 0 "QA_STATUS properties=not_run reason=not_selected" \
+    fake_qa --preset code --base HEAD --no-report
+
 run_case pub_get_fail 1 "QA_STATUS prereqs=failed reason=command_failed" \
     env FAKE_PUB_EXIT=22 "$QA" --flutter "$FAKE_FLUTTER" --dart "$FAKE_DART" \
     --skip-l10n --only analyze --no-report
@@ -119,6 +131,40 @@ run_case pub_get_fail 1 "QA_STATUS prereqs=failed reason=command_failed" \
 run_case format_fail 1 "QA_STATUS format=failed reason=command_failed" \
     env FAKE_FORMAT_EXIT=31 "$QA" --flutter "$FAKE_FLUTTER" --dart "$FAKE_DART" \
     --skip-l10n --format-all --only format --no-report
+assert_output_contains format_fail \
+    "QA_STATUS format.native-shell-localization=passed"
+assert_output_contains format_fail \
+    "python3 test/tool/native_shell_localization_contract_test.py"
+assert_output_contains format_fail \
+    "QA_STATUS format.pseudo-localization=passed"
+assert_output_contains format_fail \
+    "run tool/localization/check_pseudo_localization.dart"
+assert_output_contains format_fail \
+    "QA_STATUS format.educational-content=passed"
+assert_output_contains format_fail \
+    "python3 tool/check_educational_content.py"
+assert_output_contains format_fail \
+    "QA_STATUS format.localization-validator-tests=passed"
+assert_output_contains format_fail \
+    "python3 -m unittest discover -s test/tool -p '*_test.py'"
+
+FORMAT_REPORT_DIR="$TMP_DIR/format-report"
+run_case format_report 0 "QA_STATUS format.arb-resources=passed" \
+    fake_qa --only format --base HEAD --report-dir "$FORMAT_REPORT_DIR"
+if [ ! -f "$FORMAT_REPORT_DIR/arb-resources.json" ]; then
+    echo "expected ARB resource report at $FORMAT_REPORT_DIR/arb-resources.json" >&2
+    exit 1
+fi
+if [ ! -f "$FORMAT_REPORT_DIR/domain-message-prose.json" ]; then
+    echo "expected domain-message report at $FORMAT_REPORT_DIR/domain-message-prose.json" >&2
+    exit 1
+fi
+if command -v python3 >/dev/null 2>&1; then
+    python3 -c "import json,sys; report=json.load(open(sys.argv[1])); assert report['status'] == 'passed'" \
+        "$FORMAT_REPORT_DIR/arb-resources.json"
+    python3 -c "import json,sys; report=json.load(open(sys.argv[1])); assert report['violationCount'] == 0" \
+        "$FORMAT_REPORT_DIR/domain-message-prose.json"
+fi
 
 # --- Skipped is never a pass -------------------------------------------------
 
@@ -138,16 +184,30 @@ run_case focused_subset 0 "QA_STATUS widget=not_run reason=not_selected" \
 assert_output_contains focused_subset "QA_STATUS unit=passed"
 assert_output_contains focused_subset "QA_STATUS golden=not_run reason=not_selected"
 
+SHADOW_FIND_DIR="$TMP_DIR/shadow-find"
+mkdir -p "$SHADOW_FIND_DIR"
+printf '#!/bin/sh\nexit 99\n' >"$SHADOW_FIND_DIR/find"
+chmod +x "$SHADOW_FIND_DIR/find"
 run_case preset_grammar 0 "QA_STATUS integration=not_run reason=not_selected" \
-    fake_qa --preset grammar --no-report
+    env PATH="$SHADOW_FIND_DIR:$PATH" "$QA" --flutter "$FAKE_FLUTTER" \
+    --dart "$FAKE_DART" --skip-l10n --preset grammar --no-report
 assert_output_contains preset_grammar "grammar_cnf_transformer_test.dart"
 
 run_case preset_tm 0 "QA_STATUS unit=passed" fake_qa --preset tm --no-report
 assert_output_contains preset_tm "tm_validation_test.dart"
 
+run_case preset_localization 0 "QA_STATUS responsive=passed" \
+    fake_qa --preset localization --no-report
+assert_output_contains preset_localization "QA_STATUS golden=not_run reason=not_selected"
+assert_output_contains preset_localization "QA_STATUS graphview=not_run reason=not_selected"
+
 run_case preset_canvas 0 "QA_STATUS graphview=passed" \
     fake_qa --preset canvas --no-report
 assert_output_contains preset_canvas "automaton_canvas_goldens_test.dart"
+
+run_case default_widget_scope 0 "Widget suites (scope: all)" \
+    fake_qa --only widget --no-report
+assert_output_contains default_widget_scope "test/widget/"
 
 # --- Unmet prerequisites are incomplete, not a pass --------------------------
 
@@ -170,6 +230,7 @@ run_case apple_opted_out 0 "QA_STATUS apple=skipped reason=explicit_opt_in" \
 
 run_case dry_run 0 "QA_RESULT plan" "$QA" --preset all --dry-run
 assert_output_contains dry_run "PLAN ONLY"
+assert_output_contains dry_run "properties.framework"
 
 # --- Summary artifact --------------------------------------------------------
 

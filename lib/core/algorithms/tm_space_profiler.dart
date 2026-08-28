@@ -1,11 +1,13 @@
+import '../messages/structured_message.dart';
 import '../models/tm.dart';
 import '../models/tm_execution_analysis.dart';
 import '../models/tm_space_profile.dart';
 import '../result.dart';
 import 'tm_execution_analyzer.dart';
+import 'tm_messages.dart';
 
-typedef TMSpaceProfileProgressCallback = void Function(
-    TMSpaceProfileProgress progress);
+typedef TMSpaceProfileProgressCallback =
+    void Function(TMSpaceProfileProgress progress);
 
 /// Profiles observed single-tape space over bounded groups of input words.
 class TMSpaceProfiler {
@@ -51,8 +53,9 @@ class TMSpaceProfiler {
     final cap = BigInt.from(limits.maxCandidatesPerLength);
     for (var length = 0; length <= limits.maxInputLength; length++) {
       final requested = countCandidatesForLength(alphabet, length);
-      total +=
-          requested > cap ? limits.maxCandidatesPerLength : requested.toInt();
+      total += requested > cap
+          ? limits.maxCandidatesPerLength
+          : requested.toInt();
     }
     return total;
   }
@@ -65,7 +68,10 @@ class TMSpaceProfiler {
   }) async {
     final validationError = _validate(tm, limits);
     if (validationError != null) {
-      return ResultFactory.failure(validationError);
+      return Failure(
+        validationError.legacy,
+        structuredMessage: validationError.structured,
+      );
     }
 
     final alphabet = tm.alphabet.toSet().toList()..sort();
@@ -124,13 +130,18 @@ class TMSpaceProfiler {
         );
         if (analysis.outcome == TMExecutionOutcome.invalidMachine) {
           stopwatch.stop();
-          return ResultFactory.failure(analysis.message);
+          return Failure(
+            analysis.message,
+            structuredMessage: analysis.structuredMessage,
+          );
         }
         final metrics = analysis.spaceMetrics;
         if (metrics == null) {
           stopwatch.stop();
-          return ResultFactory.failure(
+          final message = TmSpaceProfileMessages.missingSpaceMetrics();
+          return Failure(
             'Bounded execution did not return tape-space metrics.',
+            structuredMessage: message,
           );
         }
         inputs.add(
@@ -181,30 +192,57 @@ class TMSpaceProfiler {
     );
   }
 
-  static String? _validate(TM tm, TMSpaceProfileLimits limits) {
+  static ({String legacy, StructuredMessage structured})? _validate(
+    TM tm,
+    TMSpaceProfileLimits limits,
+  ) {
     if (tm.states.isEmpty) {
-      return 'Turing machine must have at least one state.';
+      return (
+        legacy: 'Turing machine must have at least one state.',
+        structured: TmSpaceProfileMessages.emptyMachine(),
+      );
     }
     if (tm.initialState == null || !tm.states.contains(tm.initialState)) {
-      return 'Turing machine must define a valid initial state.';
+      return (
+        legacy: 'Turing machine must define a valid initial state.',
+        structured: TmSpaceProfileMessages.missingInitialState(),
+      );
     }
     if (limits.maxInputLength < 0) {
-      return 'Maximum input length must be non-negative.';
+      return (
+        legacy: 'Maximum input length must be non-negative.',
+        structured: TmSpaceProfileMessages.maxInputLengthInvalid(),
+      );
     }
     if (limits.maxCandidatesPerLength <= 0) {
-      return 'Candidate cap per length must be greater than zero.';
+      return (
+        legacy: 'Candidate cap per length must be greater than zero.',
+        structured: TmSpaceProfileMessages.candidateCapInvalid(),
+      );
     }
     if (limits.maxStepsPerInput <= 0) {
-      return 'Step limit must be greater than zero.';
+      return (
+        legacy: 'Step limit must be greater than zero.',
+        structured: TmSpaceProfileMessages.stepLimitInvalid(),
+      );
     }
     if (limits.maxConfigurationsPerInput <= 0) {
-      return 'Configuration limit must be greater than zero.';
+      return (
+        legacy: 'Configuration limit must be greater than zero.',
+        structured: TmSpaceProfileMessages.configurationLimitInvalid(),
+      );
     }
     if (limits.timeoutPerInput <= Duration.zero) {
-      return 'Timeout must be greater than zero.';
+      return (
+        legacy: 'Timeout must be greater than zero.',
+        structured: TmSpaceProfileMessages.timeoutInvalid(),
+      );
     }
     if (limits.operationsPerBatch <= 0) {
-      return 'Operations per batch must be greater than zero.';
+      return (
+        legacy: 'Operations per batch must be greater than zero.',
+        structured: TmSpaceProfileMessages.operationsPerBatchInvalid(),
+      );
     }
     return null;
   }

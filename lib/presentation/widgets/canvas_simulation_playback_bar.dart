@@ -7,9 +7,10 @@ import 'automaton_workspace_scaffold.dart';
 import '../../core/constants/monospace_typography.dart';
 
 bool supportsCanvasSimulationPlayback(BuildContext context) {
-  return Theme.of(context).platform == TargetPlatform.iOS &&
-      MediaQuery.sizeOf(context).width <
-          AutomatonWorkspaceScaffold.mobileBreakpoint;
+  // Compact layouts on every platform offer the on-canvas playback; wide
+  // layouts keep the side-panel trace as their primary simulation surface.
+  return MediaQuery.sizeOf(context).width <
+      AutomatonWorkspaceScaffold.mobileBreakpoint;
 }
 
 /// How one symbol of the simulated input word relates to the current step.
@@ -35,9 +36,9 @@ class CanvasSimulationPlaybackBar extends StatefulWidget {
     this.initialStep = 0,
     this.stepDuration = const Duration(seconds: 1),
     this.words,
-  })  : assert(stepCount > 0),
-        assert(initialStep >= 0 && initialStep < stepCount),
-        assert(words == null || words.length == stepCount);
+  }) : assert(stepCount > 0),
+       assert(initialStep >= 0 && initialStep < stepCount),
+       assert(words == null || words.length == stepCount);
 
   final int stepCount;
   final int initialStep;
@@ -114,9 +115,9 @@ class _CanvasSimulationPlaybackBarState
   Widget _buildWordStrip(BuildContext context, CanvasSimulationWord word) {
     final colorScheme = Theme.of(context).colorScheme;
     final baseStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontFamilyFallback: kMonospaceFontFamilyFallback,
-          letterSpacing: 2,
-        );
+      fontFamilyFallback: kMonospaceFontFamilyFallback,
+      letterSpacing: 2,
+    );
     if (word.isEmpty) {
       return Text(
         'ε',
@@ -137,20 +138,21 @@ class _CanvasSimulationPlaybackBarState
                   text: symbol.symbol,
                   style: switch (symbol.status) {
                     CanvasWordSymbolStatus.consumed => baseStyle?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.35),
-                        decoration: TextDecoration.lineThrough,
-                        decorationColor:
-                            colorScheme.onSurface.withValues(alpha: 0.35),
+                      color: colorScheme.onSurface.withValues(alpha: 0.35),
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: colorScheme.onSurface.withValues(
+                        alpha: 0.35,
                       ),
+                    ),
                     CanvasWordSymbolStatus.current => baseStyle?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.primary,
-                      ),
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.underline,
+                      decorationColor: colorScheme.primary,
+                    ),
                     CanvasWordSymbolStatus.pending => baseStyle?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
+                      color: colorScheme.onSurface,
+                    ),
                   },
                 ),
             ],

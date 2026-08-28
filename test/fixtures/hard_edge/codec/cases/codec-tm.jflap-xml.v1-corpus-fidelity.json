@@ -1,0 +1,13 @@
+{
+  "codecId": "tm.jflap-xml.v1",
+  "id": "codec-tm.jflap-xml.v1-corpus-fidelity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "caseOffset": 2,
+    "sourceFilename": "tm_multi_canonical.jff",
+    "sourcePayloadBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN0cnVjdHVyZT4KICA8dHlwZT50dXJpbmc8L3R5cGU+CiAgPHRhcGVzPjI8L3RhcGVzPgogIDxhdXRvbWF0b24+CiAgICA8c3RhdGUgaWQ9InEwIiBuYW1lPSJxMCI+CiAgICAgIDx4PjA8L3g+CiAgICAgIDx5PjA8L3k+CiAgICAgIDxpbml0aWFsLz4KICAgIDwvc3RhdGU+CiAgICA8c3RhdGUgaWQ9InExIiBuYW1lPSJxMSI+CiAgICAgIDx4PjEwMDwveD4KICAgICAgPHk+MDwveT4KICAgICAgPGZpbmFsLz4KICAgIDwvc3RhdGU+CiAgICA8dHJhbnNpdGlvbj4KICAgICAgPGZyb20+cTA8L2Zyb20+CiAgICAgIDx0bz5xMTwvdG8+CiAgICAgIDxyZWFkIHRhcGU9IjEiPmE8L3JlYWQ+CiAgICAgIDx3cml0ZSB0YXBlPSIxIj5hPC93cml0ZT4KICAgICAgPG1vdmUgdGFwZT0iMSI+UjwvbW92ZT4KICAgICAgPHJlYWQgdGFwZT0iMiIvPgogICAgICA8d3JpdGUgdGFwZT0iMiIvPgogICAgICA8bW92ZSB0YXBlPSIyIj5TPC9tb3ZlPgogICAgPC90cmFuc2l0aW9uPgogIDwvYXV0b21hdG9uPgo8L3N0cnVjdHVyZT4K"
+  },
+  "property": "corpus-fidelity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

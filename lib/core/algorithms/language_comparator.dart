@@ -20,6 +20,8 @@ import '../result.dart';
 import '../utils/epsilon_utils.dart';
 import 'dfa_completer.dart';
 import 'fsa_determinizer.dart';
+import 'language_comparison_messages.dart';
+import 'language_comparison_step_messages.dart';
 
 /// Compares two automata to determine if they recognize the same language
 class LanguageComparator {
@@ -48,7 +50,10 @@ class LanguageComparator {
 
       final validationResult = _validateInputs(automatonA, automatonB);
       if (!validationResult.isSuccess) {
-        return ResultFactory.failure(validationResult.error!);
+        return Failure(
+          validationResult.error!,
+          structuredMessage: validationResult.structuredError,
+        );
       }
 
       // Normalize alphabets - combine both alphabets
@@ -74,7 +79,10 @@ class LanguageComparator {
         'A',
       );
       if (dfaAResult.isFailure) {
-        return ResultFactory.failure(dfaAResult.error!);
+        return Failure(
+          dfaAResult.error!,
+          structuredMessage: dfaAResult.structuredError,
+        );
       }
       final dfaA = dfaAResult.data!;
 
@@ -96,7 +104,10 @@ class LanguageComparator {
         'B',
       );
       if (dfaBResult.isFailure) {
-        return ResultFactory.failure(dfaBResult.error!);
+        return Failure(
+          dfaBResult.error!,
+          structuredMessage: dfaBResult.structuredError,
+        );
       }
       final dfaB = dfaBResult.data!;
 
@@ -194,6 +205,10 @@ class LanguageComparator {
 
       stopwatch.stop();
 
+      final structuredSteps = steps
+          .map(LanguageComparisonStepMessages.fromLegacyStep)
+          .toList(growable: false);
+
       return ResultFactory.success(
         EquivalenceComparisonResult(
           originalAutomaton: automatonA,
@@ -202,12 +217,14 @@ class LanguageComparator {
           distinguishingString: comparisonResult.distinguishingString,
           productAutomaton: productResult,
           steps: steps,
+          structuredSteps: structuredSteps,
           executionTimeMs: stopwatch.elapsedMilliseconds,
           timestamp: DateTime.now(),
         ),
       );
     } catch (e) {
-      return ResultFactory.failure('Error comparing languages: $e');
+      final message = LanguageComparisonMessages.internalFailure();
+      return Failure(message.stableCode, structuredMessage: message);
     }
   }
 
@@ -215,28 +232,30 @@ class LanguageComparator {
   static Result<void> _validateInputs(FSA automatonA, FSA automatonB) {
     // Check automaton A
     if (automatonA.states.isEmpty) {
-      return ResultFactory.failure('Automaton A must have at least one state');
+      final message = LanguageComparisonMessages.emptyStateSet('A');
+      return Failure(message.stableCode, structuredMessage: message);
     }
     if (automatonA.initialState == null) {
-      return ResultFactory.failure('Automaton A must have an initial state');
+      final message = LanguageComparisonMessages.missingInitialState('A');
+      return Failure(message.stableCode, structuredMessage: message);
     }
     if (!automatonA.states.contains(automatonA.initialState)) {
-      return ResultFactory.failure(
-        'Initial state of automaton A must be in the states set',
-      );
+      final message = LanguageComparisonMessages.initialStateOutsideSet('A');
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     // Check automaton B
     if (automatonB.states.isEmpty) {
-      return ResultFactory.failure('Automaton B must have at least one state');
+      final message = LanguageComparisonMessages.emptyStateSet('B');
+      return Failure(message.stableCode, structuredMessage: message);
     }
     if (automatonB.initialState == null) {
-      return ResultFactory.failure('Automaton B must have an initial state');
+      final message = LanguageComparisonMessages.missingInitialState('B');
+      return Failure(message.stableCode, structuredMessage: message);
     }
     if (!automatonB.states.contains(automatonB.initialState)) {
-      return ResultFactory.failure(
-        'Initial state of automaton B must be in the states set',
-      );
+      final message = LanguageComparisonMessages.initialStateOutsideSet('B');
+      return Failure(message.stableCode, structuredMessage: message);
     }
 
     return ResultFactory.success(null);
@@ -430,9 +449,7 @@ class LanguageComparator {
 
     // BFS queue: each entry is a state pair and the path to reach it
     final queue = Queue<_StatePairWithPath>()
-      ..add(
-        _StatePairWithPath(stateA: initialA, stateB: initialB, path: []),
-      );
+      ..add(_StatePairWithPath(stateA: initialA, stateB: initialB, path: []));
 
     // Track visited state pairs to avoid cycles
     final visited = <String>{'${initialA.id},${initialB.id}'};

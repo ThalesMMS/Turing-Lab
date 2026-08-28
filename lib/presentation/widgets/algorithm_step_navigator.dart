@@ -143,10 +143,9 @@ class AlgorithmStepNavigator extends ConsumerWidget {
         Icon(Icons.pin_drop, size: 18, color: colorScheme.primary),
         const SizedBox(width: 8),
         Text(
-          appLocalizationsOf(context).stepOf(
-            stepState.currentStepNumber,
-            stepState.totalSteps,
-          ),
+          appLocalizationsOf(
+            context,
+          ).stepOf(stepState.currentStepNumber, stepState.totalSteps),
           style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -172,8 +171,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           backgroundColor: colorScheme.secondaryContainer,
           foregroundColor: colorScheme.onSecondaryContainer,
-          disabledBackgroundColor:
-              colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          disabledBackgroundColor: colorScheme.surfaceContainerHighest
+              .withValues(alpha: 0.3),
           disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.3),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -214,8 +213,8 @@ class AlgorithmStepNavigator extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           backgroundColor: colorScheme.primaryContainer,
           foregroundColor: colorScheme.onPrimaryContainer,
-          disabledBackgroundColor:
-              colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          disabledBackgroundColor: colorScheme.surfaceContainerHighest
+              .withValues(alpha: 0.3),
           disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.3),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -263,23 +262,33 @@ class AlgorithmStepNavigator extends ConsumerWidget {
               valueIndicatorTextStyle:
                   (Theme.of(context).textTheme.labelMedium ?? const TextStyle())
                       .copyWith(
-                color: colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
             ),
-            child: Slider(
-              value: stepState.currentStepIndex.toDouble(),
-              min: 0,
-              max: (stepState.totalSteps - 1).toDouble(),
-              divisions:
-                  stepState.totalSteps > 1 ? stepState.totalSteps - 1 : 1,
-              label: appLocalizationsOf(context)
-                  .stepNumberLabel(stepState.currentStepNumber),
-              onChanged: (value) {
-                final newIndex = value.toInt();
-                stepNotifier.jumpToStep(newIndex);
-                _notifyStepChange(newIndex);
-              },
+            child: Semantics(
+              slider: true,
+              label: appLocalizationsOf(context).timelineScrubber,
+              value: appLocalizationsOf(
+                context,
+              ).stepOf(stepState.currentStepNumber, stepState.totalSteps),
+              hint: appLocalizationsOf(context).timelineNavigationHint,
+              child: Slider(
+                value: stepState.currentStepIndex.toDouble(),
+                min: 0,
+                max: (stepState.totalSteps - 1).toDouble(),
+                divisions: stepState.totalSteps > 1
+                    ? stepState.totalSteps - 1
+                    : 1,
+                label: appLocalizationsOf(
+                  context,
+                ).stepNumberLabel(stepState.currentStepNumber),
+                onChanged: (value) {
+                  final newIndex = value.toInt();
+                  stepNotifier.jumpToStep(newIndex);
+                  _notifyStepChange(newIndex);
+                },
+              ),
             ),
           ),
         ),

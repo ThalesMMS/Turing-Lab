@@ -10,6 +10,7 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/algorithms/dfa_completer.dart';
 import '../../core/algorithms/dfa_minimizer.dart';
 import '../../core/algorithms/dfa_operations.dart';
@@ -39,6 +40,7 @@ class AlgorithmOperationState {
   final String? equivalenceDetails;
   final bool isLoading;
   final String? error;
+  final StructuredMessage? structuredError;
 
   // Step-by-step execution results
   final NFAToDFAConversionResult? nfaToDfaStepResult;
@@ -58,6 +60,7 @@ class AlgorithmOperationState {
     this.equivalenceDetails,
     this.isLoading = false,
     this.error,
+    this.structuredError,
     this.nfaToDfaStepResult,
     this.dfaMinimizationStepResult,
     this.faToRegexStepResult,
@@ -78,6 +81,7 @@ class AlgorithmOperationState {
     Object? equivalenceDetails = _unset,
     bool? isLoading,
     Object? error = _unset,
+    Object? structuredError = _unset,
     Object? nfaToDfaStepResult = _unset,
     Object? dfaMinimizationStepResult = _unset,
     Object? faToRegexStepResult = _unset,
@@ -86,9 +90,14 @@ class AlgorithmOperationState {
     Object? fsaKleeneStarResult = _unset,
     Object? fsaReversalResult = _unset,
   }) {
+    final nextError = error == _unset ? this.error : error as String?;
+    final nextStructuredError = structuredError == _unset
+        ? (error == _unset ? this.structuredError : null)
+        : structuredError as StructuredMessage?;
     return AlgorithmOperationState(
-      regexResult:
-          regexResult == _unset ? this.regexResult : regexResult as String?,
+      regexResult: regexResult == _unset
+          ? this.regexResult
+          : regexResult as String?,
       rawRegexResult: rawRegexResult == _unset
           ? this.rawRegexResult
           : rawRegexResult as String?,
@@ -105,7 +114,8 @@ class AlgorithmOperationState {
           ? this.equivalenceDetails
           : equivalenceDetails as String?,
       isLoading: isLoading ?? this.isLoading,
-      error: error == _unset ? this.error : error as String?,
+      error: nextError,
+      structuredError: nextStructuredError,
       nfaToDfaStepResult: nfaToDfaStepResult == _unset
           ? this.nfaToDfaStepResult
           : nfaToDfaStepResult as NFAToDFAConversionResult?,
@@ -137,7 +147,7 @@ class AlgorithmOperationState {
 
   /// Clear only error state
   AlgorithmOperationState clearError() {
-    return copyWith(error: null);
+    return copyWith(error: null, structuredError: null);
   }
 }
 
@@ -147,7 +157,7 @@ class AutomatonAlgorithmNotifier
   final Ref ref;
 
   AutomatonAlgorithmNotifier(this.ref)
-      : super(const AlgorithmOperationState()) {
+    : super(const AlgorithmOperationState()) {
     // Listen to automaton state changes and clear results when automaton changes
     ref.listen<AutomatonStateProviderState>(automatonStateProvider, (
       previous,
@@ -170,6 +180,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       equivalenceResult: null,
       equivalenceDetails: null,
     );
@@ -184,7 +195,9 @@ class AutomatonAlgorithmNotifier
           finalAutomaton: result.data!,
         );
         // Update the automaton in the state provider
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -205,6 +218,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       equivalenceResult: null,
       equivalenceDetails: null,
       nfaToDfaStepResult: null,
@@ -220,7 +234,7 @@ class AutomatonAlgorithmNotifier
         // Update the automaton in the state provider
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(conversionResult.resultDFA);
+            .replaceAutomaton(conversionResult.resultDFA);
 
         // Store the step result in state
         state = state.copyWith(
@@ -230,8 +244,9 @@ class AutomatonAlgorithmNotifier
 
         // Initialize step provider with algorithm steps
         final algorithmSteps = conversionResult.steps
-            .map((step) =>
-                step.baseStep.copyWith(properties: step.toProperties()))
+            .map(
+              (step) => step.baseStep.copyWith(properties: step.toProperties()),
+            )
             .toList();
 
         ref
@@ -288,7 +303,9 @@ class AutomatonAlgorithmNotifier
 
       if (result.isSuccess) {
         // Update the automaton in the state provider
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -319,7 +336,9 @@ class AutomatonAlgorithmNotifier
       final result = FSAOperations.removeLambdaTransitions(currentAutomaton);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -327,7 +346,7 @@ class AutomatonAlgorithmNotifier
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Error removing λ-transitions: $e',
+        error: 'Error removing ε-transitions: $e',
       );
     }
   }
@@ -348,7 +367,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.complement(currentAutomaton);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -377,7 +398,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.union(currentAutomaton, other);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -398,6 +421,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       equivalenceResult: null,
       equivalenceDetails: null,
       fsaConcatenationResult: null,
@@ -410,7 +434,7 @@ class AutomatonAlgorithmNotifier
         final concatenation = result.data!;
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(concatenation.resultNFA);
+            .replaceAutomaton(concatenation.resultNFA);
         if (withSteps) {
           ref
               .read(algorithmStepProvider.notifier)
@@ -421,12 +445,17 @@ class AutomatonAlgorithmNotifier
           fsaConcatenationResult: concatenation,
         );
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
       }
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error concatenating FSAs: $error',
+        structuredError: null,
       );
     }
   }
@@ -439,6 +468,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       equivalenceResult: null,
       equivalenceDetails: null,
       fsaKleeneStarResult: null,
@@ -451,21 +481,23 @@ class AutomatonAlgorithmNotifier
         final star = result.data!;
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(star.resultNFA);
+            .replaceAutomaton(star.resultNFA);
         if (withSteps) {
           ref.read(algorithmStepProvider.notifier).initializeSteps(star.steps);
         }
+        state = state.copyWith(isLoading: false, fsaKleeneStarResult: star);
+      } else {
         state = state.copyWith(
           isLoading: false,
-          fsaKleeneStarResult: star,
+          error: result.error,
+          structuredError: result.structuredError,
         );
-      } else {
-        state = state.copyWith(isLoading: false, error: result.error);
       }
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error applying Kleene star: $error',
+        structuredError: null,
       );
     }
   }
@@ -478,6 +510,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       equivalenceResult: null,
       equivalenceDetails: null,
       fsaReversalResult: null,
@@ -490,23 +523,25 @@ class AutomatonAlgorithmNotifier
         final reversal = result.data!;
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(reversal.resultNFA);
+            .replaceAutomaton(reversal.resultNFA);
         if (withSteps) {
           ref
               .read(algorithmStepProvider.notifier)
               .initializeSteps(reversal.steps);
         }
+        state = state.copyWith(isLoading: false, fsaReversalResult: reversal);
+      } else {
         state = state.copyWith(
           isLoading: false,
-          fsaReversalResult: reversal,
+          error: result.error,
+          structuredError: result.structuredError,
         );
-      } else {
-        state = state.copyWith(isLoading: false, error: result.error);
       }
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error reversing FSA: $error',
+        structuredError: null,
       );
     }
   }
@@ -527,7 +562,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.intersection(currentAutomaton, other);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -556,7 +593,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.difference(currentAutomaton, other);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -585,7 +624,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.prefixClosure(currentAutomaton);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -614,7 +655,9 @@ class AutomatonAlgorithmNotifier
       final result = DFAOperations.suffixClosure(currentAutomaton);
 
       if (result.isSuccess) {
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -650,7 +693,7 @@ class AutomatonAlgorithmNotifier
         // Update the automaton in the state provider
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(minimizationResult.resultDFA);
+            .replaceAutomaton(minimizationResult.resultDFA);
 
         // Store the step result in state
         state = state.copyWith(
@@ -660,8 +703,9 @@ class AutomatonAlgorithmNotifier
 
         // Initialize step provider with algorithm steps
         final algorithmSteps = minimizationResult.steps
-            .map((step) =>
-                step.baseStep.copyWith(properties: step.toProperties()))
+            .map(
+              (step) => step.baseStep.copyWith(properties: step.toProperties()),
+            )
             .toList();
 
         ref
@@ -693,7 +737,7 @@ class AutomatonAlgorithmNotifier
     try {
       final result = DFACompleter.complete(currentAutomaton);
       // Update the automaton in the state provider
-      ref.read(automatonStateProvider.notifier).updateAutomaton(result);
+      ref.read(automatonStateProvider.notifier).replaceAutomaton(result);
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -708,16 +752,25 @@ class AutomatonAlgorithmNotifier
     final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
     if (currentAutomaton == null) return null;
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, structuredError: null);
 
     try {
-      final result = FSAToGrammarConverter.convert(currentAutomaton);
-      state = state.copyWith(isLoading: false, grammarResult: result);
-      return result;
+      final result = FSAToGrammarConverter.tryConvert(currentAutomaton);
+      if (!result.isSuccess) {
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
+        return null;
+      }
+      state = state.copyWith(isLoading: false, grammarResult: result.data);
+      return result.data;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error converting FSA to Grammar: $e',
+        structuredError: null,
       );
       return null;
     }
@@ -738,7 +791,9 @@ class AutomatonAlgorithmNotifier
 
       if (result.isSuccess) {
         // Update the automaton in the state provider
-        ref.read(automatonStateProvider.notifier).updateAutomaton(result.data!);
+        ref
+            .read(automatonStateProvider.notifier)
+            .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -771,7 +826,7 @@ class AutomatonAlgorithmNotifier
         // Update the automaton in the state provider
         ref
             .read(automatonStateProvider.notifier)
-            .updateAutomaton(conversionResult.resultNFA);
+            .replaceAutomaton(conversionResult.resultNFA);
 
         // Store the step result in state
         state = state.copyWith(
@@ -781,8 +836,9 @@ class AutomatonAlgorithmNotifier
 
         // Initialize step provider with algorithm steps
         final algorithmSteps = conversionResult.steps
-            .map((step) =>
-                step.baseStep.copyWith(properties: step.toProperties()))
+            .map(
+              (step) => step.baseStep.copyWith(properties: step.toProperties()),
+            )
             .toList();
 
         ref
@@ -804,14 +860,18 @@ class AutomatonAlgorithmNotifier
     final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
     if (currentAutomaton == null) return null;
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, structuredError: null);
 
     try {
       // Generate raw regex (without simplification)
       final rawResult = FAToRegexConverter.convert(currentAutomaton);
 
       if (!rawResult.isSuccess || rawResult.data == null) {
-        state = state.copyWith(isLoading: false, error: rawResult.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: rawResult.error,
+          structuredError: rawResult.structuredError,
+        );
         return null;
       }
 
@@ -821,8 +881,8 @@ class AutomatonAlgorithmNotifier
       final simplifyResult = RegexSimplifier.simplify(rawRegex);
       final simplifiedRegex =
           simplifyResult.isSuccess && simplifyResult.data != null
-              ? simplifyResult.data!
-              : rawRegex; // Fall back to raw if simplification fails
+          ? simplifyResult.data!
+          : rawRegex; // Fall back to raw if simplification fails
 
       // Store both versions in state
       state = state.copyWith(
@@ -837,6 +897,7 @@ class AutomatonAlgorithmNotifier
       state = state.copyWith(
         isLoading: false,
         error: 'Error converting FA to regex: $e',
+        structuredError: null,
       );
       return null;
     }
@@ -850,6 +911,7 @@ class AutomatonAlgorithmNotifier
     state = state.copyWith(
       isLoading: true,
       error: null,
+      structuredError: null,
       faToRegexStepResult: null,
     );
 
@@ -868,8 +930,9 @@ class AutomatonAlgorithmNotifier
         );
 
         // Initialize step provider with algorithm steps
-        final algorithmSteps =
-            conversionResult.steps.map((step) => step.baseStep).toList();
+        final algorithmSteps = conversionResult.steps
+            .map((step) => step.baseStep)
+            .toList();
 
         ref
             .read(algorithmStepProvider.notifier)
@@ -877,13 +940,18 @@ class AutomatonAlgorithmNotifier
 
         return conversionResult.resultRegex;
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
         return null;
       }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error converting FA to regex with steps: $e',
+        structuredError: null,
       );
       return null;
     }
@@ -983,5 +1051,5 @@ class AutomatonAlgorithmNotifier
 /// Provider registration for automaton algorithm operations
 final automatonAlgorithmProvider =
     StateNotifierProvider<AutomatonAlgorithmNotifier, AlgorithmOperationState>(
-  (ref) => AutomatonAlgorithmNotifier(ref),
-);
+      (ref) => AutomatonAlgorithmNotifier(ref),
+    );

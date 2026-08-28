@@ -2,6 +2,8 @@ import '../models/fsa.dart';
 import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/tm.dart';
+import '../formal_systems/formal_systems.dart';
+import '../annotations/document_annotation_collection.dart';
 
 abstract interface class ActiveSessionRepository {
   bool get autoSaveEnabled;
@@ -11,89 +13,69 @@ abstract interface class ActiveSessionRepository {
 }
 
 class ActiveSessionSnapshot {
-  const ActiveSessionSnapshot({
-    required this.activeWorkspaceIndex,
+  ActiveSessionSnapshot({
+    FormalSystemKey? activeWorkspaceKey,
+    int? activeWorkspaceIndex,
     required this.savedAt,
     this.fsa,
     this.grammar,
     this.pda,
     this.tm,
     this.regex,
-  });
+    Map<FormalSystemKey, Object> documents = const {},
+    Map<FormalSystemKey, DocumentAnnotationCollection> annotations = const {},
+  })  : assert(activeWorkspaceKey != null || activeWorkspaceIndex != null),
+        activeWorkspaceKey = activeWorkspaceKey ??
+            _keyForHistoricalIndex(activeWorkspaceIndex ?? 0),
+        documents = Map<FormalSystemKey, Object>.unmodifiable({
+          ...documents,
+          if (fsa != null) DefaultFormalSystemIds.fsa: fsa,
+          if (grammar != null) DefaultFormalSystemIds.grammar: grammar,
+          if (pda != null) DefaultFormalSystemIds.pda: pda,
+          if (tm != null) DefaultFormalSystemIds.tm: tm,
+          if (regex != null) DefaultFormalSystemIds.regex: regex,
+        }),
+        annotations =
+            Map<FormalSystemKey, DocumentAnnotationCollection>.unmodifiable(
+                annotations);
 
-  static const int currentVersion = 1;
+  static const int currentVersion = 3;
 
-  final int activeWorkspaceIndex;
+  final FormalSystemKey activeWorkspaceKey;
   final DateTime savedAt;
   final FSA? fsa;
   final Grammar? grammar;
   final PDA? pda;
   final TM? tm;
   final RegexSessionSnapshot? regex;
+  final Map<FormalSystemKey, Object> documents;
+  final Map<FormalSystemKey, DocumentAnnotationCollection> annotations;
 
-  Map<String, dynamic> toJson() => {
-        'version': currentVersion,
-        'savedAt': savedAt.toIso8601String(),
-        'activeWorkspaceIndex': activeWorkspaceIndex,
-        if (fsa != null) 'fsa': fsa!.toJson(),
-        if (grammar != null) 'grammar': grammar!.toJson(),
-        if (pda != null) 'pda': pda!.toJson(),
-        if (tm != null) 'tm': tm!.toJson(),
-        if (regex != null) 'regex': regex!.toJson(),
-      };
-
-  factory ActiveSessionSnapshot.fromJson(Map<String, dynamic> json) {
-    final migratedJson = _migrateToCurrentVersion(json);
-    return ActiveSessionSnapshot(
-      activeWorkspaceIndex: migratedJson['activeWorkspaceIndex'] as int? ?? 0,
-      savedAt: DateTime.parse(migratedJson['savedAt'] as String),
-      fsa: _decodeModel(migratedJson['fsa'], FSA.fromJson),
-      grammar: _decodeModel(migratedJson['grammar'], Grammar.fromJson),
-      pda: _decodeModel(migratedJson['pda'], PDA.fromJson),
-      tm: _decodeModel(migratedJson['tm'], TM.fromJson),
-      regex: _decodeModel(
-        migratedJson['regex'],
-        RegexSessionSnapshot.fromJson,
-      ),
-    );
+  /// Compatibility view for callers that still display the historical order.
+  int get activeWorkspaceIndex {
+    final index = _historicalWorkspaceKeys.indexOf(activeWorkspaceKey);
+    return index < 0 ? 0 : index;
   }
 
-  static Map<String, dynamic> _migrateToCurrentVersion(
-    Map<String, dynamic> json,
-  ) {
-    final rawVersion = json['version'];
-    if (rawVersion != null && rawVersion is! int) {
-      throw const FormatException('Active session version must be an integer');
-    }
-    final version = rawVersion as int? ?? 0;
-    if (version < 0 || version > currentVersion) {
-      throw UnsupportedActiveSessionVersionException(
-        version: version,
-        supportedVersion: currentVersion,
-      );
-    }
-    final migrated = Map<String, dynamic>.from(json);
-    var migratedVersion = version;
-    while (migratedVersion < currentVersion) {
-      switch (migratedVersion) {
-        case 0:
-          migrated['version'] = 1;
-          migratedVersion = 1;
-        default:
-          throw UnsupportedActiveSessionVersionException(
-            version: migratedVersion,
-            supportedVersion: currentVersion,
-          );
-      }
-    }
-    return migrated;
+  T? documentFor<T extends Object>(FormalSystemKey key) {
+    final document = documents[key];
+    return document is T ? document : null;
   }
 
-  static T? _decodeModel<T>(
-    Object? value,
-    T Function(Map<String, dynamic>) decode,
-  ) {
-    return value is Map ? decode(value.cast<String, dynamic>()) : null;
+  static const _historicalWorkspaceKeys = [
+    DefaultFormalSystemIds.fsa,
+    DefaultFormalSystemIds.grammar,
+    DefaultFormalSystemIds.pda,
+    DefaultFormalSystemIds.tm,
+    DefaultFormalSystemIds.regex,
+    DefaultFormalSystemIds.pumping,
+  ];
+
+  static FormalSystemKey _keyForHistoricalIndex(int index) {
+    if (index < 0 || index >= _historicalWorkspaceKeys.length) {
+      return DefaultFormalSystemIds.fsa;
+    }
+    return _historicalWorkspaceKeys[index];
   }
 }
 
@@ -103,6 +85,8 @@ class RegexSessionSnapshot {
     required this.testString,
     required this.simplifyOutput,
     this.alphabet = defaultAlphabet,
+    this.documentId = 'regex-workspace',
+    this.documentName = 'Regular expression',
   });
 
   static const defaultAlphabet =
@@ -112,18 +96,24 @@ class RegexSessionSnapshot {
   final String testString;
   final bool simplifyOutput;
   final String alphabet;
+  final String documentId;
+  final String documentName;
 
   bool get hasContent =>
       currentRegex.isNotEmpty ||
       testString.isNotEmpty ||
       !simplifyOutput ||
-      alphabet != defaultAlphabet;
+      alphabet != defaultAlphabet ||
+      documentId != 'regex-workspace' ||
+      documentName != 'Regular expression';
 
   Map<String, dynamic> toJson() => {
         'currentRegex': currentRegex,
         'testString': testString,
         'simplifyOutput': simplifyOutput,
         'alphabet': alphabet,
+        'documentId': documentId,
+        'documentName': documentName,
       };
 
   factory RegexSessionSnapshot.fromJson(Map<String, dynamic> json) {
@@ -132,6 +122,8 @@ class RegexSessionSnapshot {
       testString: json['testString'] as String? ?? '',
       simplifyOutput: json['simplifyOutput'] as bool? ?? true,
       alphabet: json['alphabet'] as String? ?? defaultAlphabet,
+      documentId: json['documentId'] as String? ?? 'regex-workspace',
+      documentName: json['documentName'] as String? ?? 'Regular expression',
     );
   }
 }
@@ -148,6 +140,24 @@ class UnsupportedActiveSessionVersionException implements Exception {
   @override
   String toString() =>
       'Unsupported active session version $version; this app supports version $supportedVersion. The saved session was preserved for recovery.';
+}
+
+class UnsupportedActiveSessionSchemaVersionException implements Exception {
+  const UnsupportedActiveSessionSchemaVersionException({
+    required this.systemKey,
+    required this.version,
+    required this.supportedVersion,
+  });
+
+  final FormalSystemKey systemKey;
+  final int version;
+  final int supportedVersion;
+
+  @override
+  String toString() =>
+      'Unsupported ${systemKey.value} session schema version $version; '
+      'this app supports version $supportedVersion. The saved session was '
+      'preserved for recovery.';
 }
 
 class ActiveSessionPersistenceException implements Exception {

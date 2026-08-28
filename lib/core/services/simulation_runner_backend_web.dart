@@ -6,6 +6,7 @@ import '../models/pda.dart';
 import '../models/tm.dart';
 import '../simulation_cancelled_exception.dart';
 import 'simulation_runner_models.dart';
+import 'simulation_runner_messages.dart';
 
 SimulationRunnerBackend createSimulationRunnerBackend() =>
     createWebSimulationRunnerBackend();
@@ -27,6 +28,7 @@ class _WebSimulationRunnerBackend implements SimulationRunnerBackend {
         inputString,
         stepByStep: stepByStep,
         timeout: timeout,
+        mode: pda.acceptanceMode,
         isCancelled: isCancelled,
       );
       return result.isSuccess
@@ -34,6 +36,9 @@ class _WebSimulationRunnerBackend implements SimulationRunnerBackend {
           : SimulationOutcome(
               kind: SimulationOutcomeKind.failed,
               message: result.error,
+              structuredMessage:
+                  result.structuredError ??
+                  SimulationRunnerMessages.executionFailed(),
             );
     });
   }
@@ -58,6 +63,9 @@ class _WebSimulationRunnerBackend implements SimulationRunnerBackend {
           : SimulationOutcome(
               kind: SimulationOutcomeKind.failed,
               message: result.error,
+              structuredMessage:
+                  result.structuredError ??
+                  SimulationRunnerMessages.executionFailed(),
             );
     });
   }
@@ -83,7 +91,8 @@ class _WebSimulationTask<T> implements SimulationTask<T> {
           _completer.complete(
             SimulationOutcome(
               kind: SimulationOutcomeKind.failed,
-              message: 'Simulation failed: $error',
+              message: error.toString(),
+              structuredMessage: SimulationRunnerMessages.executionFailed(),
             ),
           );
         }

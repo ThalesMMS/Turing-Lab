@@ -1,0 +1,36 @@
+{
+  "schema": {"id": "turing-lab.pumping-lemma", "version": 1},
+  "problem": {
+    "id": "regular.equal-blocks",
+    "title": "Equal a and b blocks",
+    "theorem": "regular",
+    "languageDescription": "L = {a^n b^n | n >= 0}",
+    "representationKind": "curatedPredicate",
+    "representation": "equal-a-b-blocks",
+    "sourceRevision": "2026-08-25",
+    "suggestedPumpingLength": 2,
+    "suggestedWitness": ["a", "a", "b", "b"],
+    "hint": "Track the theorem quantifiers before testing a pump exponent.",
+    "explanation": "Pumping a nonempty part of the first block breaks equal counts."
+  },
+  "session": {
+    "sessionId": "regular-canonical",
+    "challengeId": "regular.equal-blocks",
+    "sourceRevision": "2026-08-25",
+    "theorem": "regular",
+    "mode": "guidedPractice",
+    "role": "learner",
+    "targetLanguage": "L = {a^n b^n | n >= 0}",
+    "pumpingLength": null,
+    "witness": [],
+    "decomposition": null,
+    "pumpExponent": null,
+    "evidence": null,
+    "history": [],
+    "outcome": "inProgress",
+    "score": 0,
+    "revision": 0,
+    "stage": "awaitingPumpingLength"
+  },
+  "progress": {"challengeScores": {}}
+}

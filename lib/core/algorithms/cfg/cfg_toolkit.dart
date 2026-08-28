@@ -12,8 +12,10 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import '../../models/grammar.dart';
+import '../../grammar/phrase_structure/phrase_structure.dart';
 import '../../models/production.dart';
 import '../../result.dart';
+import '../cfg_toolkit_messages.dart';
 
 /// Toolkit for context-free grammars: CNF and GNF normalization and checks
 class CFGToolkit {
@@ -26,7 +28,8 @@ class CFGToolkit {
       final reduced = _removeUselessSymbols(noUnit);
       return ResultFactory.success(reduced);
     } catch (e) {
-      return ResultFactory.failure('CFG reduce error: $e');
+      final message = CfgToolkitMessages.reduceFailed();
+      return Failure('CFG reduce error: $e', structuredMessage: message);
     }
   }
 
@@ -41,13 +44,17 @@ class CFGToolkit {
       final needsAugment = reduced.productions.any(
         (p) => p.rightSide.contains(reduced.startSymbol),
       );
-      final start =
-          needsAugment ? '${reduced.startSymbol}0' : reduced.startSymbol;
+      final start = needsAugment
+          ? '${reduced.startSymbol}0'
+          : reduced.startSymbol;
       final nonterminals = {...reduced.nonterminals, if (needsAugment) start};
+      final productionIds = _FreshProductionIds(
+        reduced.productions.map((production) => production.id),
+      );
       final productions = <Production>{
         if (needsAugment)
           Production.unit(
-            id: 'aug',
+            id: productionIds.allocate('aug'),
             leftSide: start,
             rightSide: reduced.startSymbol,
           ),
@@ -67,7 +74,8 @@ class CFGToolkit {
 
       return ResultFactory.success(current);
     } catch (e) {
-      return ResultFactory.failure('CFG toCNF error: $e');
+      final message = CfgToolkitMessages.toCnfFailed();
+      return Failure('CFG toCNF error: $e', structuredMessage: message);
     }
   }
 
@@ -90,56 +98,20 @@ class CFGToolkit {
 
       return ResultFactory.success(current);
     } catch (e) {
-      return ResultFactory.failure('CFG toGNF error: $e');
+      final message = CfgToolkitMessages.toGnfFailed();
+      return Failure('CFG toGNF error: $e', structuredMessage: message);
     }
   }
 
   /// Check if grammar is in CNF: A→BC or A→a, and S→ε optionally
-  static bool isCNF(Grammar g) {
-    for (final p in g.productions) {
-      if (p.isLambda) {
-        if (g.startSymbol != p.leftSide.first) return false;
-        continue;
-      }
-      if (p.rightSide.length == 1) {
-        // must be terminal
-        final a = p.rightSide.first;
-        if (!g.terminals.contains(a)) return false;
-      } else if (p.rightSide.length == 2) {
-        // both must be nonterminals
-        final b = p.rightSide[0];
-        final c = p.rightSide[1];
-        if (!g.nonterminals.contains(b) || !g.nonterminals.contains(c)) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    return true;
-  }
+  static bool isCNF(Grammar g) => PhraseGrammarClassifier.classifyLegacy(
+    g,
+  ).normalForms.contains(PhraseGrammarNormalForm.weakChomsky);
 
   /// Check if grammar is in GNF: A→aα where a is terminal and α is nonterminals*
-  static bool isGNF(Grammar g) {
-    for (final p in g.productions) {
-      if (p.isLambda) {
-        // Only start symbol can have lambda production
-        if (g.startSymbol != p.leftSide.first) return false;
-        continue;
-      }
-      if (p.rightSide.isEmpty) return false;
-
-      // First symbol must be terminal
-      final first = p.rightSide.first;
-      if (!g.terminals.contains(first)) return false;
-
-      // Remaining symbols must all be nonterminals
-      for (var i = 1; i < p.rightSide.length; i++) {
-        if (!g.nonterminals.contains(p.rightSide[i])) return false;
-      }
-    }
-    return true;
-  }
+  static bool isGNF(Grammar g) => PhraseGrammarClassifier.classifyLegacy(
+    g,
+  ).normalForms.contains(PhraseGrammarNormalForm.greibach);
 
   static Grammar _removeLambdaProductions(Grammar g) {
     final nullable = g.nullableNonterminals;
@@ -151,6 +123,10 @@ class CFGToolkit {
       final positions = <int>[];
       for (var i = 0; i < rhs.length; i++) {
         if (nullable.contains(rhs[i])) positions.add(i);
+      }
+      if (positions.isEmpty) {
+        newProductions.add(p);
+        continue;
       }
       final total = 1 << positions.length;
       for (int mask = 0; mask < total; mask++) {
@@ -182,57 +158,87 @@ class CFGToolkit {
   }
 
   static Grammar _removeUnitProductions(Grammar g) {
-    final prods = Set<Production>.from(g.productions);
-    bool changed = true;
-    while (changed) {
-      changed = false;
-      final toAdd = <Production>{};
-      final toRemove = <Production>{};
-      for (final p in prods) {
-        if (p.rightSide.length == 1 &&
-            g.nonterminals.contains(p.rightSide.first) &&
-            !p.isLambda) {
-          // unit A→B; replace by A→α for all B→α
-          final a = p.leftSide.first;
-          final b = p.rightSide.first;
-          for (final q in prods.where((q) => q.leftSide.first == b)) {
-            if (q.isLambda) {
-              toAdd.add(
-                Production.lambda(id: '${p.id}_${q.id}_lift', leftSide: a),
-              );
-            } else {
-              toAdd.add(
-                Production(
-                  id: '${p.id}_${q.id}_lift',
-                  leftSide: [a],
-                  rightSide: q.rightSide,
-                ),
-              );
-            }
+    bool isUnit(Production production) =>
+        !production.isLambda &&
+        production.leftSide.length == 1 &&
+        production.rightSide.length == 1 &&
+        g.nonterminals.contains(production.rightSide.single);
+
+    final byLeft = <String, List<Production>>{};
+    for (final production in g.productions) {
+      if (production.leftSide.length != 1) continue;
+      byLeft.putIfAbsent(production.leftSide.single, () => []).add(production);
+    }
+    for (final productions in byLeft.values) {
+      productions.sort((left, right) => left.id.compareTo(right.id));
+    }
+
+    final output = <Production>{};
+    final shapes = <String>{};
+    final productionIds = _FreshProductionIds(
+      g.productions.map((production) => production.id),
+    );
+    final nonterminals = g.nonterminals.toList()..sort();
+    for (final source in nonterminals) {
+      final closure = <String>{source};
+      final queue = <String>[source];
+      while (queue.isNotEmpty) {
+        final current = queue.removeAt(0);
+        for (final production in byLeft[current] ?? const []) {
+          if (isUnit(production) && closure.add(production.rightSide.single)) {
+            queue.add(production.rightSide.single);
           }
-          toRemove.add(p);
         }
       }
-      if (toAdd.isNotEmpty || toRemove.isNotEmpty) {
-        prods.removeAll(toRemove);
-        prods.addAll(toAdd);
-        changed = true;
+      final targets = closure.toList()..sort();
+      for (final target in targets) {
+        for (final production in byLeft[target] ?? const []) {
+          if (isUnit(production)) continue;
+          final shape =
+              '$source\u0001${production.rightSide.join('\u0000')}'
+              '\u0001${production.isLambda}';
+          if (!shapes.add(shape)) continue;
+          output.add(
+            production.copyWith(
+              id: target == source
+                  ? production.id
+                  : productionIds.allocate('${production.id}_unit_$source'),
+              leftSide: [source],
+            ),
+          );
+        }
       }
     }
-    return g.copyWith(productions: prods);
+    return g.copyWith(productions: output);
   }
 
   static Grammar _removeUselessSymbols(Grammar g) {
     final useful = g.usefulNonterminals;
-    final newProds =
-        g.productions.where((p) => useful.contains(p.leftSide.first)).toSet();
+    final newProds = g.productions
+        .where((p) => useful.contains(p.leftSide.first))
+        .toSet();
     final newNon = g.nonterminals.intersection(useful);
     return g.copyWith(nonterminals: newNon, productions: newProds);
   }
 
   static Grammar _binarize(Grammar g) {
     final prods = <Production>{};
-    int fresh = 0;
+    final used = <String>{...g.terminals, ...g.nonterminals};
+    final generated = <String>{};
+    final productionIds = _FreshProductionIds(
+      g.productions.map((production) => production.id),
+    );
+    var fresh = 0;
+    String allocate() {
+      while (used.contains('N$fresh')) {
+        fresh++;
+      }
+      final value = 'N${fresh++}';
+      used.add(value);
+      generated.add(value);
+      return value;
+    }
+
     for (final p in g.productions) {
       if (p.isLambda || p.rightSide.length <= 2) {
         prods.add(p);
@@ -242,10 +248,10 @@ class CFGToolkit {
       String left = p.leftSide.first;
       final rhs = List<String>.from(p.rightSide);
       while (rhs.length > 2) {
-        final n = 'N${fresh++}';
+        final n = allocate();
         prods.add(
           Production(
-            id: '${p.id}_b_$fresh',
+            id: productionIds.allocate('${p.id}_b_$n'),
             leftSide: [left],
             rightSide: [rhs.removeAt(0), n],
           ),
@@ -253,37 +259,51 @@ class CFGToolkit {
         left = n;
       }
       prods.add(
-        Production(id: '${p.id}_b_end', leftSide: [left], rightSide: rhs),
+        Production(
+          id: productionIds.allocate('${p.id}_b_end'),
+          leftSide: [left],
+          rightSide: rhs,
+        ),
       );
     }
-    final nonterminals = {
-      ...g.nonterminals,
-      ...prods
-          .map((p) => p.rightSide)
-          .expand((e) => e)
-          .where((s) => s.startsWith('N'))
-          .toSet(),
-    };
+    final nonterminals = {...g.nonterminals, ...generated};
     return g.copyWith(nonterminals: nonterminals, productions: prods);
   }
 
   static Grammar _terminalizeBinary(Grammar g) {
     final prods = <Production>{};
     final mapping = <String, String>{};
-    int k = 0;
+    final used = <String>{...g.terminals, ...g.nonterminals};
+    final productionIds = _FreshProductionIds(
+      g.productions.map((production) => production.id),
+    );
+    var k = 0;
+    String allocate() {
+      while (used.contains('T$k')) {
+        k++;
+      }
+      final value = 'T${k++}';
+      used.add(value);
+      return value;
+    }
+
     for (final p in g.productions) {
       if (p.rightSide.length == 2) {
         final rhs = <String>[];
         for (final sym in p.rightSide) {
           if (g.terminals.contains(sym)) {
-            final t = mapping.putIfAbsent(sym, () => 'T${k++}');
+            final t = mapping.putIfAbsent(sym, allocate);
             rhs.add(t);
           } else {
             rhs.add(sym);
           }
         }
         prods.add(
-          Production(id: '${p.id}_tb', leftSide: p.leftSide, rightSide: rhs),
+          Production(
+            id: productionIds.allocate('${p.id}_tb'),
+            leftSide: p.leftSide,
+            rightSide: rhs,
+          ),
         );
       } else {
         prods.add(p);
@@ -292,7 +312,7 @@ class CFGToolkit {
     final extraNon = mapping.values.toSet();
     final extraProds = mapping.entries.map(
       (e) => Production.terminal(
-        id: 'm_${e.key}',
+        id: productionIds.allocate('m_${e.key}'),
         leftSide: e.value,
         terminal: e.key,
       ),
@@ -315,6 +335,7 @@ class CFGToolkit {
     for (final p in g.productions) {
       if (p.rightSide.length == 1 &&
           terminals.contains(p.rightSide.first) &&
+          p.leftSide.first != g.startSymbol &&
           !terminals.contains(p.leftSide.first) &&
           nonterminals.contains(p.leftSide.first)) {
         terminalWrapperMap[p.leftSide.first] = p.rightSide.first;
@@ -443,8 +464,9 @@ class CFGToolkit {
     // Build the processing order: the original ordered list reversed,
     // then any additional nonterminals (from left-recursion elimination).
     final backOrder = orderedNonterminals.reversed.toList();
-    final extraNonterminals =
-        allNonterminalsInProds.difference(orderedNonterminals.toSet());
+    final extraNonterminals = allNonterminalsInProds.difference(
+      orderedNonterminals.toSet(),
+    );
     backOrder.addAll(extraNonterminals);
 
     // Iterative back-substitution until all productions start with a terminal.
@@ -553,10 +575,7 @@ class CFGToolkit {
           Production(
             id: freshId('${p.id}_tw'),
             leftSide: p.leftSide,
-            rightSide: [
-              terminalWrapperMap[first]!,
-              ...p.rightSide.sublist(1),
-            ],
+            rightSide: [terminalWrapperMap[first]!, ...p.rightSide.sublist(1)],
           ),
         );
       } else {
@@ -596,5 +615,20 @@ class CFGToolkit {
     // terminal set (they should already be from the original grammar).
     // Also ensure all tail nonterminals are in the nonterminals set.
     return g.copyWith(nonterminals: nonterminals, productions: cleanedProds);
+  }
+}
+
+final class _FreshProductionIds {
+  _FreshProductionIds(Iterable<String> ids) : _used = ids.toSet();
+
+  final Set<String> _used;
+
+  String allocate(String preferred) {
+    if (_used.add(preferred)) return preferred;
+    var suffix = 1;
+    while (!_used.add('$preferred-$suffix')) {
+      suffix++;
+    }
+    return '$preferred-$suffix';
   }
 }

@@ -1,0 +1,3 @@
+final copy = {
+  HelpTopicIds.topic: HelpNodeCopy(title: 'Help', body: 'English help'),
+};

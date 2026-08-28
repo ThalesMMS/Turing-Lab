@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:collection';
 
+import '../messages/structured_message.dart';
 import '../models/simulation_step.dart';
 import '../models/state.dart';
 import '../models/tm.dart';
+import '../models/tm_acceptance.dart';
 import '../models/tm_execution_analysis.dart';
+import 'tm_messages.dart';
 import 'tm_execution_kernel.dart';
+import 'tm_multi_tape_execution_analyzer.dart';
 
-typedef TMExecutionProgressCallback = void Function(
-    int transitionSteps, int configurationsExplored);
+typedef TMExecutionProgressCallback =
+    void Function(int transitionSteps, int configurationsExplored);
 
 /// Executes one TM/input pair without making global halting claims.
 class TMExecutionAnalyzer {
@@ -24,10 +28,62 @@ class TMExecutionAnalyzer {
     bool includeTrace = true,
     bool Function()? isCancelled,
     TMExecutionProgressCallback? onProgress,
+  }) => _analyze(
+    tm,
+    input,
+    input.split(''),
+    maxSteps: maxSteps,
+    maxConfigurations: maxConfigurations,
+    timeout: timeout,
+    operationsPerBatch: operationsPerBatch,
+    includeTrace: includeTrace,
+    isCancelled: isCancelled,
+    onProgress: onProgress,
+  );
+
+  /// Executes a TM with input symbols that are already tokenized.
+  ///
+  /// This preserves multi-character and Unicode alphabet symbols without
+  /// guessing token boundaries from a display string.
+  static Future<TMExecutionAnalysis> analyzeTokens(
+    TM tm,
+    List<String> inputTokens, {
+    int maxSteps = 10000,
+    int maxConfigurations = 100000,
+    Duration timeout = const Duration(seconds: 5),
+    int operationsPerBatch = 250,
+    bool includeTrace = true,
+    bool Function()? isCancelled,
+    TMExecutionProgressCallback? onProgress,
+  }) => _analyze(
+    tm,
+    inputTokens.join(),
+    List<String>.unmodifiable(inputTokens),
+    maxSteps: maxSteps,
+    maxConfigurations: maxConfigurations,
+    timeout: timeout,
+    operationsPerBatch: operationsPerBatch,
+    includeTrace: includeTrace,
+    isCancelled: isCancelled,
+    onProgress: onProgress,
+  );
+
+  static Future<TMExecutionAnalysis> _analyze(
+    TM tm,
+    String input,
+    List<String> inputTokens, {
+    required int maxSteps,
+    required int maxConfigurations,
+    required Duration timeout,
+    required int operationsPerBatch,
+    required bool includeTrace,
+    bool Function()? isCancelled,
+    TMExecutionProgressCallback? onProgress,
   }) async {
     final invalid = _validate(
       tm,
       input,
+      inputTokens: inputTokens,
       maxSteps: maxSteps,
       maxConfigurations: maxConfigurations,
       timeout: timeout,
@@ -35,10 +91,43 @@ class TMExecutionAnalyzer {
     );
     if (invalid != null) return invalid;
 
+    if (tm.tapeCount > 1) {
+      final errors = tm.validate();
+      if (errors.isNotEmpty) {
+        return TMExecutionAnalysis(
+          input: input,
+          outcome: TMExecutionOutcome.invalidMachine,
+          message: errors.first,
+          stepsExecuted: 0,
+          configurationsExplored: 0,
+          maxSteps: maxSteps,
+          maxConfigurations: maxConfigurations,
+          timeout: timeout,
+          executionTime: Duration.zero,
+          acceptancePolicy: tm.acceptancePolicy,
+          acceptanceReason: TMAcceptanceReason.invalidMachine,
+          structuredMessage: TmExecutionMessages.invalidMachine(errors.first),
+        );
+      }
+      return TMMultiTapeExecutionAnalyzer.analyzeTokens(
+        tm,
+        input,
+        inputTokens,
+        maxSteps: maxSteps,
+        maxConfigurations: maxConfigurations,
+        timeout: timeout,
+        operationsPerBatch: operationsPerBatch,
+        includeTrace: includeTrace,
+        isCancelled: isCancelled,
+        onProgress: onProgress,
+      );
+    }
+
     final search = tm.isNondeterministic
         ? _NtmExecutionSearch(
             tm,
             input,
+            inputTokens,
             maxSteps: maxSteps,
             maxConfigurations: maxConfigurations,
             timeout: timeout,
@@ -47,6 +136,7 @@ class TMExecutionAnalyzer {
         : _DtmExecutionSearch(
             tm,
             input,
+            inputTokens,
             maxSteps: maxSteps,
             maxConfigurations: maxConfigurations,
             timeout: timeout,
@@ -65,29 +155,38 @@ class TMExecutionAnalyzer {
   static TMExecutionAnalysis? _validate(
     TM tm,
     String input, {
+    required List<String> inputTokens,
     required int maxSteps,
     required int maxConfigurations,
     required Duration timeout,
     required int operationsPerBatch,
   }) {
     String? message;
+    StructuredMessage? structuredMessage;
     if (tm.states.isEmpty) {
       message = 'Turing machine must have at least one state.';
+      structuredMessage = TmExecutionMessages.emptyMachine();
     } else if (tm.initialState == null ||
         !tm.states.contains(tm.initialState)) {
       message = 'Turing machine must define a valid initial state.';
+      structuredMessage = TmExecutionMessages.missingInitialState();
     } else if (maxSteps <= 0) {
       message = 'Step limit must be greater than zero.';
+      structuredMessage = TmExecutionMessages.stepLimitInvalid();
     } else if (maxConfigurations <= 0) {
       message = 'Configuration limit must be greater than zero.';
+      structuredMessage = TmExecutionMessages.configurationLimitInvalid();
     } else if (timeout <= Duration.zero) {
       message = 'Timeout must be greater than zero.';
+      structuredMessage = TmExecutionMessages.timeoutInvalid();
     } else if (operationsPerBatch <= 0) {
       message = 'Operations per batch must be greater than zero.';
+      structuredMessage = TmExecutionMessages.operationsPerBatchInvalid();
     } else {
-      for (final symbol in input.split('')) {
+      for (final symbol in inputTokens) {
         if (!tm.alphabet.contains(symbol)) {
           message = 'Input contains symbol outside the TM alphabet: $symbol';
+          structuredMessage = TmExecutionMessages.invalidInputSymbol(symbol);
           break;
         }
       }
@@ -103,6 +202,9 @@ class TMExecutionAnalyzer {
       maxConfigurations: maxConfigurations,
       timeout: timeout,
       executionTime: Duration.zero,
+      acceptancePolicy: tm.acceptancePolicy,
+      acceptanceReason: TMAcceptanceReason.invalidMachine,
+      structuredMessage: structuredMessage,
     );
   }
 }
@@ -134,14 +236,19 @@ abstract class _ExecutionSearch {
   TMTraceMetrics buildTraceMetrics(TMExecutionOutcome outcome);
   TMExecutionSpaceMetrics buildSpaceMetrics();
 
-  TMExecutionAnalysis cancelled() =>
-      _result(TMExecutionOutcome.cancelled, 'Analysis cancelled.');
+  TMExecutionAnalysis cancelled() => _result(
+    TMExecutionOutcome.cancelled,
+    'Analysis cancelled.',
+    structuredMessage: TmExecutionMessages.cancelled(),
+  );
 
   TMExecutionAnalysis _result(
     TMExecutionOutcome outcome,
     String message, {
     TMExecutionLimit? limit,
     TMCycleWitness? cycle,
+    TMAcceptanceReason? acceptanceReason,
+    StructuredMessage? structuredMessage,
   }) {
     stopwatch.stop();
     return TMExecutionAnalysis(
@@ -160,6 +267,9 @@ abstract class _ExecutionSearch {
       trace: trace,
       traceMetrics: buildTraceMetrics(outcome),
       spaceMetrics: buildSpaceMetrics(),
+      acceptancePolicy: tm.acceptancePolicy,
+      acceptanceReason: acceptanceReason,
+      structuredMessage: structuredMessage,
     );
   }
 
@@ -169,6 +279,7 @@ abstract class _ExecutionSearch {
         TMExecutionOutcome.boundedUnknown,
         'The timeout was reached before the execution was resolved.',
         limit: TMExecutionLimit.timeout,
+        structuredMessage: TmExecutionMessages.timeoutBeforeResolution(),
       );
     }
     return null;
@@ -178,13 +289,14 @@ abstract class _ExecutionSearch {
 class _DtmExecutionSearch extends _ExecutionSearch {
   _DtmExecutionSearch(
     super.tm,
-    super.input, {
+    super.input,
+    List<String> inputTokens, {
     required super.maxSteps,
     required super.maxConfigurations,
     required super.timeout,
     required super.includeTrace,
-  })  : state = tm.initialState!,
-        tape = TMExecutionKernel.initialTape(input, tm.blankSymbol) {
+  }) : state = tm.initialState!,
+       tape = TMExecutionKernel.initialTapeTokens(inputTokens, tm.blankSymbol) {
     metrics = TMTraceMetricsAccumulator(
       blankSymbol: tm.blankSymbol,
       initialTape: tape,
@@ -225,11 +337,11 @@ class _DtmExecutionSearch extends _ExecutionSearch {
       '${state.id.length}:${state.id}|$head|$_tapeKey';
 
   TMConfigurationSnapshot get snapshot => TMExecutionKernel.snapshot(
-        stateId: state.id,
-        headPosition: head,
-        tape: tape,
-        blankSymbol: tm.blankSymbol,
-      );
+    stateId: state.id,
+    headPosition: head,
+    tape: tape,
+    blankSymbol: tm.blankSymbol,
+  );
 
   @override
   int get stepsExecuted => _stepsExecuted;
@@ -253,10 +365,10 @@ class _DtmExecutionSearch extends _ExecutionSearch {
 
   @override
   TMExecutionSpaceMetrics buildSpaceMetrics() => TMExecutionSpaceMetrics(
-        maximumVisitedSpan: metrics.visitedSpan,
-        maximumNonBlankCells: metrics.maximumSimultaneousNonBlankCells,
-        aggregatesNondeterministicBranches: false,
-      );
+    maximumVisitedSpan: metrics.visitedSpan,
+    maximumNonBlankCells: metrics.maximumSimultaneousNonBlankCells,
+    aggregatesNondeterministicBranches: false,
+  );
 
   @override
   TMExecutionAnalysis? runBatch(int operations) {
@@ -264,10 +376,21 @@ class _DtmExecutionSearch extends _ExecutionSearch {
       final limit = resourceLimit();
       if (limit != null) return limit;
       if (tm.acceptingStates.contains(state)) {
-        return _result(
-          TMExecutionOutcome.accepted,
-          'The machine entered an accepting state.',
+        final decision = TMAcceptancePolicyEvaluator.evaluate(
+          policy: tm.acceptancePolicy,
+          isFinalState: true,
+          isHalted: false,
         );
+        if (decision != null) {
+          return _result(
+            TMExecutionOutcome.accepted,
+            'The machine entered a final state under the ${tm.acceptancePolicy.name} policy.',
+            acceptanceReason: decision.reason,
+            structuredMessage: TmExecutionMessages.enteredFinalState(
+              tm.acceptancePolicy.name,
+            ),
+          );
+        }
       }
       final readSymbol = tape[head] ?? tm.blankSymbol;
       final transitions = TMExecutionKernel.transitionsFor(
@@ -276,9 +399,22 @@ class _DtmExecutionSearch extends _ExecutionSearch {
         readSymbol,
       );
       if (transitions.isEmpty) {
+        final decision = TMAcceptancePolicyEvaluator.evaluate(
+          policy: tm.acceptancePolicy,
+          isFinalState: tm.acceptingStates.contains(state),
+          isHalted: true,
+        )!;
         return _result(
-          TMExecutionOutcome.haltedRejected,
-          'The machine halted outside an accepting state.',
+          decision.accepted
+              ? TMExecutionOutcome.accepted
+              : TMExecutionOutcome.haltedRejected,
+          decision.accepted
+              ? 'The machine halted under the ${tm.acceptancePolicy.name} policy.'
+              : 'The machine halted outside a final state.',
+          acceptanceReason: decision.reason,
+          structuredMessage: decision.accepted
+              ? TmExecutionMessages.haltedAccepted(tm.acceptancePolicy.name)
+              : TmExecutionMessages.haltedRejected(),
         );
       }
       if (transitions.length > 1) {
@@ -286,6 +422,11 @@ class _DtmExecutionSearch extends _ExecutionSearch {
           TMExecutionOutcome.invalidMachine,
           'The deterministic machine has multiple transitions for '
           '${state.id} on $readSymbol.',
+          structuredMessage: TmExecutionMessages.deterministicConflict(
+            count: transitions.length,
+            state: state.id,
+            symbol: readSymbol,
+          ),
         );
       }
       if (_stepsExecuted >= maxSteps) {
@@ -293,6 +434,8 @@ class _DtmExecutionSearch extends _ExecutionSearch {
           TMExecutionOutcome.boundedUnknown,
           'The step limit was reached without a halting or repeated configuration.',
           limit: TMExecutionLimit.steps,
+          acceptanceReason: TMAcceptanceReason.stepLimit,
+          structuredMessage: TmExecutionMessages.deterministicStepLimit(),
         );
       }
 
@@ -343,6 +486,8 @@ class _DtmExecutionSearch extends _ExecutionSearch {
             period: _stepsExecuted - firstStep,
             configuration: current,
           ),
+          acceptanceReason: TMAcceptanceReason.deterministicCycle,
+          structuredMessage: TmExecutionMessages.deterministicCycle(),
         );
       }
       if (firstSeenAt.length >= maxConfigurations) {
@@ -350,6 +495,8 @@ class _DtmExecutionSearch extends _ExecutionSearch {
           TMExecutionOutcome.boundedUnknown,
           'The configuration limit was reached without a resolved outcome.',
           limit: TMExecutionLimit.configurations,
+          acceptanceReason: TMAcceptanceReason.configurationLimit,
+          structuredMessage: TmExecutionMessages.configurationLimit(),
         );
       }
       firstSeenAt[configurationKey] = _stepsExecuted;
@@ -379,13 +526,17 @@ class _NtmNode {
 class _NtmExecutionSearch extends _ExecutionSearch {
   _NtmExecutionSearch(
     super.tm,
-    super.input, {
+    super.input,
+    List<String> inputTokens, {
     required super.maxSteps,
     required super.maxConfigurations,
     required super.timeout,
     required super.includeTrace,
   }) {
-    final tape = TMExecutionKernel.initialTape(input, tm.blankSymbol);
+    final tape = TMExecutionKernel.initialTapeTokens(
+      inputTokens,
+      tm.blankSymbol,
+    );
     final initialTrace = includeTrace
         ? [
             SimulationStep.tm(
@@ -462,8 +613,7 @@ class _NtmExecutionSearch extends _ExecutionSearch {
   TMTraceMetrics buildTraceMetrics(TMExecutionOutcome outcome) {
     final branchSelection = switch (outcome) {
       TMExecutionOutcome.accepted => TMExecutionBranchSelection.acceptingBranch,
-      TMExecutionOutcome.boundedUnknown ||
-      TMExecutionOutcome.cancelled =>
+      TMExecutionOutcome.boundedUnknown || TMExecutionOutcome.cancelled =>
         TMExecutionBranchSelection.longestBoundedBranch,
       _ => selection,
     };
@@ -476,10 +626,10 @@ class _NtmExecutionSearch extends _ExecutionSearch {
 
   @override
   TMExecutionSpaceMetrics buildSpaceMetrics() => TMExecutionSpaceMetrics(
-        maximumVisitedSpan: maximumVisitedSpan,
-        maximumNonBlankCells: maximumNonBlankCells,
-        aggregatesNondeterministicBranches: true,
-      );
+    maximumVisitedSpan: maximumVisitedSpan,
+    maximumNonBlankCells: maximumNonBlankCells,
+    aggregatesNondeterministicBranches: true,
+  );
 
   @override
   TMExecutionAnalysis? runBatch(int operations) {
@@ -492,6 +642,8 @@ class _NtmExecutionSearch extends _ExecutionSearch {
             TMExecutionOutcome.boundedUnknown,
             'At least one branch reached the step limit.',
             limit: TMExecutionLimit.steps,
+            acceptanceReason: TMAcceptanceReason.stepLimit,
+            structuredMessage: TmExecutionMessages.branchStepLimit(),
           );
         }
         if (deepestHaltedNode != null) {
@@ -506,6 +658,12 @@ class _NtmExecutionSearch extends _ExecutionSearch {
           revisited == 0
               ? 'Every reachable branch halted without acceptance.'
               : 'The finite explored configuration graph contains no accepting configuration.',
+          acceptanceReason: revisited == 0 && deepestHaltedNode != null
+              ? TMAcceptanceReason.haltedOutsideFinalState
+              : TMAcceptanceReason.reachableConfigurationsExhausted,
+          structuredMessage: revisited == 0
+              ? TmExecutionMessages.everyBranchRejected()
+              : TmExecutionMessages.exploredGraphRejected(),
         );
       }
       if (explored >= maxConfigurations) {
@@ -513,6 +671,8 @@ class _NtmExecutionSearch extends _ExecutionSearch {
           TMExecutionOutcome.boundedUnknown,
           'The configuration limit stopped exploration.',
           limit: TMExecutionLimit.configurations,
+          acceptanceReason: TMAcceptanceReason.configurationLimit,
+          structuredMessage: TmExecutionMessages.configurationLimit(),
         );
       }
 
@@ -523,13 +683,24 @@ class _NtmExecutionSearch extends _ExecutionSearch {
       if (node.trace.length > longestTrace.length) longestTrace = node.trace;
       if (node.depth > maxDepth) maxDepth = node.depth;
       if (tm.acceptingStates.contains(node.state)) {
-        selectedNode = node;
-        selection = TMExecutionBranchSelection.acceptingBranch;
-        longestTrace = node.trace;
-        return _result(
-          TMExecutionOutcome.accepted,
-          'An accepting branch was found.',
+        final decision = TMAcceptancePolicyEvaluator.evaluate(
+          policy: tm.acceptancePolicy,
+          isFinalState: true,
+          isHalted: false,
         );
+        if (decision != null) {
+          selectedNode = node;
+          selection = TMExecutionBranchSelection.acceptingBranch;
+          longestTrace = node.trace;
+          return _result(
+            TMExecutionOutcome.accepted,
+            'A branch entered a final state under the ${tm.acceptancePolicy.name} policy.',
+            acceptanceReason: decision.reason,
+            structuredMessage: TmExecutionMessages.enteredFinalState(
+              tm.acceptancePolicy.name,
+            ),
+          );
+        }
       }
 
       final readSymbol = node.tape[node.head] ?? tm.blankSymbol;
@@ -538,10 +709,28 @@ class _NtmExecutionSearch extends _ExecutionSearch {
         node.state,
         readSymbol,
       );
-      if (transitions.isEmpty &&
-          (deepestHaltedNode == null ||
-              node.depth > deepestHaltedNode!.depth)) {
-        deepestHaltedNode = node;
+      if (transitions.isEmpty) {
+        final decision = TMAcceptancePolicyEvaluator.evaluate(
+          policy: tm.acceptancePolicy,
+          isFinalState: tm.acceptingStates.contains(node.state),
+          isHalted: true,
+        )!;
+        if (decision.accepted) {
+          selectedNode = node;
+          selection = TMExecutionBranchSelection.acceptingBranch;
+          return _result(
+            TMExecutionOutcome.accepted,
+            'A branch halted under the ${tm.acceptancePolicy.name} policy.',
+            acceptanceReason: decision.reason,
+            structuredMessage: TmExecutionMessages.haltedAccepted(
+              tm.acceptancePolicy.name,
+            ),
+          );
+        }
+        if (deepestHaltedNode == null ||
+            node.depth > deepestHaltedNode!.depth) {
+          deepestHaltedNode = node;
+        }
       }
       for (final transition in transitions) {
         if (node.depth >= maxSteps) {

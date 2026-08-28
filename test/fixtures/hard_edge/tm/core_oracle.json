@@ -1,0 +1,7 @@
+{
+  "family": "tm",
+  "scenario": "core-oracle",
+  "seed": 338,
+  "cases": 12,
+  "expectedStatus": "passed"
+}

@@ -89,7 +89,7 @@ void main() {
       );
     }
 
-    test('fitToContent uses the shared 1.75 scale cap', () {
+    test('fitToContent uses the shared natural-size cap', () {
       controller.dispose();
       final transformation = TransformationController();
       addTearDown(transformation.dispose);

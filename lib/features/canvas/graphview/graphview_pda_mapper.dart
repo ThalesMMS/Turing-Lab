@@ -39,7 +39,7 @@ class GraphViewPdaMapper {
   }
 
   /// Formats a PDA transition label in the format: input, pop/push
-  /// Lambda transitions are represented as λ
+  /// Empty-string operations are represented as ε.
   static String formatPdaTransitionLabel({
     required String inputSymbol,
     required String popSymbol,

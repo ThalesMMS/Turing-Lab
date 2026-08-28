@@ -4,7 +4,7 @@
 //
 //  Visual regression golden tests for Home page components (navigation and
 //  layout), capturing snapshots of critical states: wide/mobile layouts, the
-//  app-bar workspace selector, the bottom bar, and different tab selections.
+//  app-bar workspace selector and different tab selections.
 //  Guards visual consistency of the main navigation UI across changes and
 //  catches automatic regressions.
 //
@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
-import 'package:turing_lab/presentation/widgets/mobile_navigation.dart';
+import 'package:turing_lab/presentation/widgets/navigation_item.dart';
 import 'package:turing_lab/presentation/widgets/workspace_selector.dart';
 
 // Widget that composes navigation + content area like Home page does
@@ -23,10 +23,7 @@ class _HomePageTestWidget extends StatefulWidget {
   final bool isMobile;
   final int selectedIndex;
 
-  const _HomePageTestWidget({
-    this.isMobile = false,
-    this.selectedIndex = 0,
-  });
+  const _HomePageTestWidget({this.isMobile = false, this.selectedIndex = 0});
 
   @override
   State<_HomePageTestWidget> createState() => _HomePageTestWidgetState();
@@ -67,10 +64,6 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
   void initState() {
     super.initState();
     _currentIndex = widget.selectedIndex;
-  }
-
-  String _getCurrentPageTitle() {
-    return _navigationItems[_currentIndex].label;
   }
 
   String _getCurrentPageDescription() {
@@ -119,17 +112,15 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
                 },
               ),
         title: widget.isMobile
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_getCurrentPageTitle()),
-                  Text(
-                    _getCurrentPageDescription(),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
+            ? WorkspaceSelector(
+                items: _navigationItems,
+                currentIndex: _currentIndex,
+                onSelected: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                compact: true,
               )
             // The selector already names the workspace, so the title only
             // carries the longer description.
@@ -154,17 +145,6 @@ class _HomePageTestWidgetState extends State<_HomePageTestWidget> {
         ],
       ),
       body: contentArea,
-      bottomNavigationBar: widget.isMobile
-          ? MobileNavigation(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              items: _navigationItems,
-            )
-          : null,
     );
   }
 }
@@ -285,7 +265,7 @@ void main() {
       await screenMatchesGolden(tester, 'home_page_tablet');
     });
 
-    testGoldens('renders mobile layout with bottom navigation - FSA selected', (
+    testGoldens('renders mobile layout with title selector - FSA selected', (
       tester,
     ) async {
       addTearDown(() {
@@ -304,7 +284,7 @@ void main() {
     });
 
     testGoldens(
-      'renders mobile layout with bottom navigation - Grammar selected',
+      'renders mobile layout with title selector - Grammar selected',
       (tester) async {
         addTearDown(() {
           tester.view.resetPhysicalSize();
@@ -322,23 +302,22 @@ void main() {
       },
     );
 
-    testGoldens(
-      'renders mobile layout with bottom navigation - Regex selected',
-      (tester) async {
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testGoldens('renders mobile layout with title selector - Regex selected', (
+      tester,
+    ) async {
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        await _pumpHomePageComponents(
-          tester,
-          size: const Size(430, 932),
-          isMobile: true,
-          selectedIndex: 4,
-        );
+      await _pumpHomePageComponents(
+        tester,
+        size: const Size(430, 932),
+        isMobile: true,
+        selectedIndex: 4,
+      );
 
-        await screenMatchesGolden(tester, 'home_page_mobile_regex');
-      },
-    );
+      await screenMatchesGolden(tester, 'home_page_mobile_regex');
+    });
   });
 }

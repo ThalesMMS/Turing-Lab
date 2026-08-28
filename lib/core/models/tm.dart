@@ -11,11 +11,21 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'dart:math' as math;
+import 'package:collection/collection.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'state.dart';
 import 'transition.dart';
 import 'tm_transition.dart';
+import 'tm_building_blocks.dart';
+import 'tm_acceptance.dart';
 import 'automaton.dart';
+
+/// Structural TM document variants supported by persistence and interchange.
+enum TMDocumentVariant {
+  singleTape,
+  multiTape,
+  buildingBlocks,
+}
 
 const Object _unset = Object();
 
@@ -27,8 +37,27 @@ class TM extends Automaton {
   /// Blank symbol
   final String blankSymbol;
 
-  /// Number of tapes (always 1 for single-tape TM)
+  /// Number of tapes operated on atomically by every transition.
   final int tapeCount;
+
+  /// Acceptance criterion persisted with this document.
+  final TMAcceptancePolicy acceptancePolicy;
+
+  /// First-class reusable submachine definitions owned by this document.
+  final Map<String, TMBlockDefinition> blockDefinitions;
+
+  /// Building-block invocation nodes anchored in this machine's graph.
+  final List<TMBlockInvocationNode> blockInvocations;
+
+  /// Variant derived from semantic document structure, not from UI state.
+  TMDocumentVariant get documentVariant {
+    if (blockDefinitions.isNotEmpty || blockInvocations.isNotEmpty) {
+      return TMDocumentVariant.buildingBlocks;
+    }
+    return tapeCount > 1
+        ? TMDocumentVariant.multiTape
+        : TMDocumentVariant.singleTape;
+  }
 
   TM({
     required super.id,
@@ -45,8 +74,16 @@ class TM extends Automaton {
     super.panOffset,
     required Set<String> tapeAlphabet,
     this.blankSymbol = 'B',
-    this.tapeCount = 1, // Always 1 for single-tape TM
+    this.tapeCount = 1,
+    this.acceptancePolicy = TMAcceptancePolicy.finalState,
+    Map<String, TMBlockDefinition> blockDefinitions = const {},
+    Iterable<TMBlockInvocationNode> blockInvocations = const [],
   })  : tapeAlphabet = Set<String>.unmodifiable(tapeAlphabet),
+        blockDefinitions = Map<String, TMBlockDefinition>.unmodifiable(
+          blockDefinitions,
+        ),
+        blockInvocations =
+            List<TMBlockInvocationNode>.unmodifiable(blockInvocations),
         super(type: AutomatonType.tm);
 
   /// Creates a copy of this TM with updated properties
@@ -68,6 +105,9 @@ class TM extends Automaton {
     Set<String>? tapeAlphabet,
     String? blankSymbol,
     int? tapeCount,
+    TMAcceptancePolicy? acceptancePolicy,
+    Map<String, TMBlockDefinition>? blockDefinitions,
+    Iterable<TMBlockInvocationNode>? blockInvocations,
   }) {
     return TM(
       id: id ?? this.id,
@@ -88,6 +128,9 @@ class TM extends Automaton {
           : this.tapeAlphabet,
       blankSymbol: blankSymbol ?? this.blankSymbol,
       tapeCount: tapeCount ?? this.tapeCount,
+      acceptancePolicy: acceptancePolicy ?? this.acceptancePolicy,
+      blockDefinitions: blockDefinitions ?? this.blockDefinitions,
+      blockInvocations: blockInvocations ?? this.blockInvocations,
     );
   }
 
@@ -116,6 +159,12 @@ class TM extends Automaton {
       'tapeAlphabet': tapeAlphabet.toList(),
       'blankSymbol': blankSymbol,
       'tapeCount': tapeCount,
+      'acceptancePolicy': acceptancePolicy.name,
+      'blockDefinitions': blockDefinitions.values
+          .map((definition) => definition.toJson())
+          .toList(),
+      'blockInvocations':
+          blockInvocations.map((invocation) => invocation.toJson()).toList(),
     };
   }
 
@@ -163,6 +212,23 @@ class TM extends Automaton {
       tapeAlphabet: Set<String>.from(json['tapeAlphabet'] as List),
       blankSymbol: json['blankSymbol'] as String? ?? 'B',
       tapeCount: json['tapeCount'] as int? ?? 1,
+      acceptancePolicy: TMAcceptancePolicy.parse(json['acceptancePolicy']),
+      blockDefinitions: {
+        for (final definition
+            in (json['blockDefinitions'] as List? ?? const []).map(
+          (value) => TMBlockDefinition.fromJson(
+            (value as Map).cast<String, dynamic>(),
+          ),
+        ))
+          definition.id: definition,
+      },
+      blockInvocations: (json['blockInvocations'] as List? ?? const [])
+          .map(
+            (value) => TMBlockInvocationNode.fromJson(
+              (value as Map).cast<String, dynamic>(),
+            ),
+          )
+          .toList(growable: false),
     );
   }
 
@@ -188,6 +254,24 @@ class TM extends Automaton {
       errors.add('TM must have at least one tape');
     }
 
+    final invocationIds = <String>{};
+    final invocationStateIds = <String>{};
+    for (final invocation in blockInvocations) {
+      if (!invocationIds.add(invocation.id)) {
+        errors.add('Duplicate building-block invocation ID: ${invocation.id}');
+      }
+      if (!invocationStateIds.add(invocation.stateId)) {
+        errors.add(
+          'State ${invocation.stateId} has more than one building-block invocation',
+        );
+      }
+      if (!states.any((state) => state.id == invocation.stateId)) {
+        errors.add(
+          'Building-block invocation ${invocation.id} references a missing state',
+        );
+      }
+    }
+
     for (final transition in transitions) {
       if (transition is! TMTransition) {
         errors.add('TM can only contain TM transitions');
@@ -198,24 +282,31 @@ class TM extends Automaton {
           transitionErrors.map((e) => 'Transition ${tmTransition.id}: $e'),
         );
 
-        // Validate tape symbols
-        if (!tapeAlphabet.contains(tmTransition.readSymbol)) {
+        final isMigratableLegacy = tmTransition.operationCount == 1 &&
+            tmTransition.tapeNumber >= 0 &&
+            tmTransition.tapeNumber < tapeCount;
+        if (tmTransition.operationCount != tapeCount && !isMigratableLegacy) {
           errors.add(
-            'Transition ${tmTransition.id} references invalid read symbol',
+            'Transition ${tmTransition.id} operation vector length '
+            '${tmTransition.operationCount} does not match tape count $tapeCount',
           );
+          continue;
         }
-
-        if (!tapeAlphabet.contains(tmTransition.writeSymbol)) {
-          errors.add(
-            'Transition ${tmTransition.id} references invalid write symbol',
-          );
-        }
-
-        // Validate tape number
-        if (tmTransition.tapeNumber >= tapeCount) {
-          errors.add(
-            'Transition ${tmTransition.id} references invalid tape number',
-          );
+        final operations = tmTransition.operationsForTapeCount(
+          tapeCount,
+          blankSymbol,
+        );
+        for (var tape = 0; tape < tapeCount; tape++) {
+          if (!tapeAlphabet.contains(operations.readSymbols[tape])) {
+            errors.add(
+              'Transition ${tmTransition.id} references invalid read symbol on tape $tape',
+            );
+          }
+          if (!tapeAlphabet.contains(operations.writeSymbols[tape])) {
+            errors.add(
+              'Transition ${tmTransition.id} references invalid write symbol on tape $tape',
+            );
+          }
         }
       }
     }
@@ -230,7 +321,25 @@ class TM extends Automaton {
 
   /// Gets all transitions for a specific tape
   Set<TMTransition> getTransitionsForTape(int tapeNumber) {
-    return tmTransitions.where((t) => t.tapeNumber == tapeNumber).toSet();
+    if (tapeNumber < 0 || tapeNumber >= tapeCount) return {};
+    return tmTransitions.where((t) => tapeNumber < t.operationCount).toSet();
+  }
+
+  Set<TMTransition> getTransitionsFromStateOnSymbols(
+    State state,
+    List<String> symbols,
+  ) {
+    return tmTransitions.where((transition) {
+      if (transition.fromState != state || symbols.length != tapeCount) {
+        return false;
+      }
+      final operations = transition.operationsForTapeCount(
+        tapeCount,
+        blankSymbol,
+      );
+      return const ListEquality<String>()
+          .equals(operations.readSymbols, symbols);
+    }).toSet();
   }
 
   /// Gets all transitions from a state that can read a specific symbol
@@ -282,7 +391,11 @@ class TM extends Automaton {
 
       for (final transition in outgoingTransitions) {
         if (transition is TMTransition) {
-          final key = '${transition.readSymbol}_${transition.tapeNumber}';
+          final key = transition
+              .operationsForTapeCount(tapeCount, blankSymbol)
+              .readSymbols
+              .map((symbol) => '${symbol.length}:$symbol')
+              .join('|');
           tapeSymbols[key] = (tapeSymbols[key] ?? 0) + 1;
         }
       }
@@ -302,12 +415,24 @@ class TM extends Automaton {
 
   /// Gets all symbols that can be read from the tape
   Set<String> get readableSymbols {
-    return tmTransitions.map((t) => t.readSymbol).toSet();
+    return tmTransitions
+        .expand(
+          (transition) => transition
+              .operationsForTapeCount(tapeCount, blankSymbol)
+              .readSymbols,
+        )
+        .toSet();
   }
 
   /// Gets all symbols that can be written to the tape
   Set<String> get writableSymbols {
-    return tmTransitions.map((t) => t.writeSymbol).toSet();
+    return tmTransitions
+        .expand(
+          (transition) => transition
+              .operationsForTapeCount(tapeCount, blankSymbol)
+              .writeSymbols,
+        )
+        .toSet();
   }
 
   /// Creates an empty TM

@@ -31,8 +31,11 @@ class HomeNavigationNotifier extends StateNotifier<int> {
   /// Index for the Regular Expression workspace.
   static const int regexIndex = 4;
 
-  /// Index for the Pumping Lemma workspace.
+  /// Index for the regular Pumping Lemma workspace.
   static const int pumpingLemmaIndex = 5;
+
+  /// Index for the context-free Pumping Lemma workspace.
+  static const int contextFreePumpingLemmaIndex = 6;
 
   /// Updates the currently visible workspace.
   void setIndex(int index) {

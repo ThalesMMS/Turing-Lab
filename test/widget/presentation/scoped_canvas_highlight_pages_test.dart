@@ -161,7 +161,11 @@ Future<void> _pumpUntilStateHighlights(
   fail('Timed out waiting for canvas state highlights.');
 }
 
-PDA _pda({required String id, required bool nondeterministic}) {
+PDA _pda({
+  required String id,
+  required bool nondeterministic,
+  bool epsilon = false,
+}) {
   final start = automaton_models.State(
     id: 'shared-state-id',
     label: 'PDA start label',
@@ -184,10 +188,13 @@ PDA _pda({required String id, required bool nondeterministic}) {
       id: 'opaque/pda-edge-a',
       fromState: start,
       toState: firstTarget,
-      label: 'a, Z/Z',
-      inputSymbol: 'a',
-      popSymbol: 'Z',
-      pushSymbol: 'Z',
+      label: epsilon ? 'ε, ε/ε' : 'a, Z/Z',
+      inputSymbol: epsilon ? '' : 'a',
+      popSymbol: epsilon ? '' : 'Z',
+      pushSymbol: epsilon ? '' : 'Z',
+      isLambdaInput: epsilon,
+      isLambdaPop: epsilon,
+      isLambdaPush: epsilon,
     ),
     if (nondeterministic)
       PDATransition(
@@ -287,6 +294,12 @@ void main() {
         'opaque/pda-edge-a',
         ' opaque/pda-edge-b ',
       };
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+
+      await tester.tap(
+        find.byKey(const ValueKey('highlight-conflicting-transitions')),
+      );
+      await tester.pump();
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
       await openWorkspaceSimulationPanel(tester);
@@ -300,7 +313,7 @@ void main() {
       expect(controller.highlightNotifier.value, runtime);
 
       simulationService.clear();
-      expect(controller.highlightNotifier.value.transitionIds, warningIds);
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
 
       final container = ProviderScope.containerOf(
         tester.element(find.byType(PDAPage)),
@@ -319,7 +332,7 @@ void main() {
         ),
       ]);
       await tester.pump();
-      expect(controller.highlightNotifier.value.transitionIds, warningIds);
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
 
       await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Find Reachable States'));
@@ -357,6 +370,12 @@ void main() {
         'opaque/tm-edge-a',
         ' opaque/tm-edge-b ',
       };
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+
+      await tester.tap(
+        find.byKey(const ValueKey('highlight-conflicting-transitions')),
+      );
+      await tester.pump();
       expect(controller.highlightNotifier.value.transitionIds, warningIds);
 
       await openWorkspaceSimulationPanel(tester);
@@ -370,7 +389,7 @@ void main() {
       expect(controller.highlightNotifier.value, runtime);
 
       simulationService.clear();
-      expect(controller.highlightNotifier.value.transitionIds, warningIds);
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
 
       await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Reachability'));
@@ -389,6 +408,50 @@ void main() {
       expect(controller.highlightNotifier.value.errorStateIds, isEmpty);
 
       notifier.setTm(_tm(id: 'replacement-tm', nondeterministic: false));
+      await tester.pump();
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+    },
+  );
+
+  testWidgets(
+    'PDA epsilon diagnostic toggles and stays cleared through edit history',
+    (tester) async {
+      final pda = _pda(
+        id: 'pda-epsilon-document',
+        nondeterministic: false,
+        epsilon: true,
+      );
+      final notifier = PDAEditorNotifier()..setPda(pda);
+      await _pumpPdaPage(tester, notifier);
+
+      final controller = tester
+          .widget<PDACanvasGraphView>(find.byType(PDACanvasGraphView))
+          .controller!;
+      final epsilonAction =
+          find.byKey(const ValueKey('highlight-epsilon-transitions'));
+
+      await tester.tap(epsilonAction);
+      await tester.pump();
+      expect(
+        controller.highlightNotifier.value.transitionIds,
+        {'opaque/pda-edge-a'},
+      );
+      expect(notifier.currentPda, same(pda));
+
+      await tester.tap(epsilonAction);
+      await tester.pump();
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+
+      await tester.tap(epsilonAction);
+      await tester.pump();
+      controller.addStateAtCenter();
+      await tester.pump();
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+
+      controller.undo();
+      await tester.pump();
+      expect(controller.highlightNotifier.value, SimulationHighlight.empty);
+      controller.redo();
       await tester.pump();
       expect(controller.highlightNotifier.value, SimulationHighlight.empty);
     },

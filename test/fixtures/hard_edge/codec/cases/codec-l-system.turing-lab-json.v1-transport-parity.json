@@ -1,0 +1,13 @@
+{
+  "codecId": "l-system.turing-lab-json.v1",
+  "id": "codec-l-system.turing-lab-json.v1-transport-parity-340-0",
+  "payload": {
+    "caseIndex": 0,
+    "copyCount": 2,
+    "sourceFilename": "l_system_canonical.json",
+    "sourcePayloadBase64": "eyJkb2N1bWVudCI6eyJwYXlsb2FkIjp7ImF4aW9tIjpbIkYiXSwiY29tbWFuZE1hcHBpbmciOnsiJSI6InJldmVyc2VIZWFkaW5nIiwiKyI6InR1cm5MZWZ0IiwiLSI6InR1cm5SaWdodCIsIkYiOiJkcmF3Rm9yd2FyZCIsIkciOiJkcmF3Rm9yd2FyZCIsIlsiOiJwdXNoIiwiXSI6InBvcCIsImYiOiJtb3ZlRm9yd2FyZCJ9LCJpZCI6ImtvY2giLCJpdGVyYXRpb25zIjoyLCJuYW1lIjoiS29jaCBjdXJ2ZSIsInByb2R1Y3Rpb25zIjpbeyJpZCI6ImtvY2gtZiIsInByZWRlY2Vzc29yIjoiRiIsInN1Y2Nlc3NvciI6WyJGIiwiKyIsIkYiLCItIiwiRiIsIi0iLCJGIiwiKyIsIkYiXX1dLCJyZXZpc2lvbiI6MSwic2NoZW1hIjp7ImlkIjoidHVyaW5nLWxhYi5sLXN5c3RlbSIsInZlcnNpb24iOjF9LCJ0dXJ0bGUiOnsiYW5nbGVEZWdyZWVzIjo5MC4wLCJpbml0aWFsSGVhZGluZ0RlZ3JlZXMiOjkwLjAsImluaXRpYWxYIjowLjAsImluaXRpYWxZIjowLjAsImxpbmVXaWR0aCI6MS4wLCJzY2FsZSI6MS4wLCJzdGVwTGVuZ3RoIjo1LjB9LCJ1bnN1cHBvcnRlZFZhcmlhbnRzIjpbXX0sInNjaGVtYSI6eyJpZCI6InR1cmluZy1sYWIubC1zeXN0ZW0iLCJ2ZXJzaW9uIjoxfSwidHlwZSI6Imwtc3lzdGVtIiwidmFyaWFudCI6ImRldGVybWluaXN0aWMtY29udGV4dC1mcmVlIn0sImVudmVsb3BlVmVyc2lvbiI6MSwiZXh0ZW5zaW9ucyI6e30sImZvcm1hdCI6InR1cmluZy1sYWIuZG9jdW1lbnQiLCJzb3VyY2UiOnsiYXBwbGljYXRpb24iOiJUdXJpbmcgTGFiIn19Cg=="
+  },
+  "property": "transport-parity",
+  "schema": "turing-lab.hard-edge.codec-fixture.v1",
+  "seed": 340
+}

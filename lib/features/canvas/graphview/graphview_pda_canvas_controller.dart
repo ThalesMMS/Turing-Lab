@@ -180,4 +180,9 @@ class GraphViewPdaCanvasController
     _notifier.setPda(merged);
     synchronize(merged);
   }
+
+  @override
+  void replaceDomainDocument(PDA document) {
+    _notifier.setPda(document);
+  }
 }

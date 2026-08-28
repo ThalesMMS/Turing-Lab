@@ -24,8 +24,8 @@ class ResponsiveBreakpoints {
   /// at or above it the desktop layout takes over.
   static const double tablet = AutomatonWorkspaceScaffold.tabletBreakpoint;
 
-  /// Width at which the home shell switches from the bottom navigation bar to
-  /// the app-bar workspace selector.
+  /// Width at which the home shell moves the app-bar workspace selector from
+  /// the title to the leading slot.
   static const double homeWorkspaceSelector = 1024;
 }
 
@@ -76,9 +76,9 @@ class ResponsiveViewport {
 
   /// Window size in physical pixels, the unit `TestFlutterView` expects.
   Size get physicalSize => Size(
-        logicalSize.width * devicePixelRatio,
-        logicalSize.height * devicePixelRatio,
-      );
+    logicalSize.width * devicePixelRatio,
+    logicalSize.height * devicePixelRatio,
+  );
 
   /// Width actually available to the page's own layout.
   double get layoutWidth => paneWidth ?? logicalSize.width;

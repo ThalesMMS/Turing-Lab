@@ -11,6 +11,7 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 
+import '../messages/structured_message.dart';
 import 'algorithm_step.dart';
 
 /// Represents a single step in regex simplification using algebraic identities
@@ -124,8 +125,9 @@ class RegexSimplificationStep {
       nestingDepth: nestingDepth,
       alphabetSize: alphabetSize,
       operatorCount: operatorCount,
-      sampleStrings:
-          sampleStrings != null ? List.unmodifiable(sampleStrings) : null,
+      sampleStrings: sampleStrings != null
+          ? List.unmodifiable(sampleStrings)
+          : null,
       reducesComplexity: reducesComplexity,
       charactersSaved: charactersSaved,
       isFinalForm: isFinalForm,
@@ -146,11 +148,8 @@ class RegexSimplificationStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Begin regex simplification',
-        explanation: 'Starting simplification of regular expression "$regex". '
-            'Current complexity metrics: star height = $starHeight, '
-            'nesting depth = $nestingDepth, operator count = $operatorCount. '
-            'Will apply algebraic identities to find an equivalent simpler form.',
+        title: _regexStepMessage('start-title').stableCode,
+        explanation: _regexStepMessage('start-explanation').stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.start,
@@ -176,12 +175,8 @@ class RegexSimplificationStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Analyze regex complexity',
-        explanation: 'Analyzing complexity of "$regex". '
-            'Star height: $starHeight (maximum nesting of Kleene stars). '
-            'Nesting depth: $nestingDepth (maximum depth of parentheses). '
-            'Alphabet size: $alphabetSize distinct symbol(s). '
-            'Operator count: $operatorCount (union, concatenation, star operators).',
+        title: _regexStepMessage('analyze-title').stableCode,
+        explanation: _regexStepMessage('analyze-explanation').stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.analyze,
@@ -211,19 +206,15 @@ class RegexSimplificationStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Apply ${rule.displayName}',
-        explanation: 'Applying rule: ${rule.displayName}. '
-            'Matched subexpression "$matchedSubexpression" at position ${position ?? "N/A"}. '
-            'Replacing with "$replacementSubexpression". '
-            '${rule.description}. '
-            '${charactersSaved > 0 ? "Saved $charactersSaved character(s)." : "Expression length unchanged."}',
+        title: _regexStepMessage('apply-title').stableCode,
+        explanation: _regexStepMessage('apply-explanation').stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.applyRule,
       originalRegex: originalRegex,
       simplifiedRegex: simplifiedRegex,
       ruleApplied: rule,
-      ruleExplanation: rule.description,
+      ruleExplanation: rule.descriptionMessage.stableCode,
       position: position,
       matchedSubexpression: matchedSubexpression,
       replacementSubexpression: replacementSubexpression,
@@ -240,17 +231,14 @@ class RegexSimplificationStep {
     required String regex,
     required List<String> samples,
   }) {
-    final sampleDisplay = samples.isEmpty
-        ? 'No strings generated (regex may accept empty language).'
-        : 'Generated ${samples.length} sample string(s): ${samples.map((s) => s.isEmpty ? "ε (empty string)" : "\"$s\"").join(", ")}.';
     return RegexSimplificationStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Generate sample strings',
-        explanation:
-            'Generating strings that match the regex "$regex". $sampleDisplay '
-            'These strings demonstrate the language accepted by the expression.',
+        title: _regexStepMessage('generate-samples-title').stableCode,
+        explanation: _regexStepMessage(
+          'generate-samples-explanation',
+        ).stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.generateSamples,
@@ -271,11 +259,8 @@ class RegexSimplificationStep {
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'No further simplification',
-        explanation: 'Checked all simplification rules against "$regex". '
-            'No applicable rules found. '
-            'The expression is in its simplest form achievable by algebraic identities. '
-            'Total rules applied: $totalRulesApplied.',
+        title: _regexStepMessage('no-rule-title').stableCode,
+        explanation: _regexStepMessage('no-rule-explanation').stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.noRuleApplicable,
@@ -297,19 +282,12 @@ class RegexSimplificationStep {
     required int operatorCount,
   }) {
     final charactersSaved = originalRegex.length - finalRegex.length;
-    final improvement = originalRegex.isNotEmpty
-        ? ((charactersSaved / originalRegex.length) * 100).toStringAsFixed(1)
-        : '0';
     return RegexSimplificationStep(
       baseStep: AlgorithmStep(
         id: id,
         stepNumber: stepNumber,
-        title: 'Simplification complete',
-        explanation: 'Regex simplification completed. '
-            'Original: "$originalRegex" (${originalRegex.length} chars). '
-            'Simplified: "$finalRegex" (${finalRegex.length} chars). '
-            'Reduction: $improvement%. Rules applied: $totalRulesApplied. '
-            'Final metrics: star height = $starHeight, nesting depth = $nestingDepth, operators = $operatorCount.',
+        title: _regexStepMessage('completion-title').stableCode,
+        explanation: _regexStepMessage('completion-explanation').stableCode,
         type: AlgorithmType.regexSimplification,
       ),
       stepType: RegexSimplificationStepType.completion,
@@ -419,8 +397,9 @@ class RegexSimplificationStep {
       nestingDepth: json['nestingDepth'] as int?,
       alphabetSize: json['alphabetSize'] as int?,
       operatorCount: json['operatorCount'] as int?,
-      sampleStrings:
-          (json['sampleStrings'] as List?)?.map((s) => s as String).toList(),
+      sampleStrings: (json['sampleStrings'] as List?)
+          ?.map((s) => s as String)
+          .toList(),
       reducesComplexity: json['reducesComplexity'] as bool? ?? false,
       charactersSaved: json['charactersSaved'] as int?,
       isFinalForm: json['isFinalForm'] as bool? ?? false,
@@ -469,6 +448,126 @@ class RegexSimplificationStep {
   /// Gets the step explanation
   String get explanation => baseStep.explanation;
 
+  /// Locale-neutral contract for the step title.
+  StructuredMessage get titleMessage => switch (stepType) {
+    RegexSimplificationStepType.start => _regexStepMessage('start-title'),
+    RegexSimplificationStepType.analyze => _regexStepMessage('analyze-title'),
+    RegexSimplificationStepType.applyRule => _regexStepMessage(
+      'apply-title',
+      arguments: {
+        'rule': StructuredMessageArgument.outcome(
+          (ruleApplied ?? SimplificationRule.emptyUnion).name,
+          role: 'simplification-rule',
+        ),
+      },
+    ),
+    RegexSimplificationStepType.generateSamples => _regexStepMessage(
+      'generate-samples-title',
+    ),
+    RegexSimplificationStepType.noRuleApplicable => _regexStepMessage(
+      'no-rule-title',
+    ),
+    RegexSimplificationStepType.completion => _regexStepMessage(
+      'completion-title',
+    ),
+  };
+
+  /// Locale-neutral contract for the detailed step explanation.
+  StructuredMessage get explanationMessage => switch (stepType) {
+    RegexSimplificationStepType.start => _regexStepMessage(
+      'start-explanation',
+      arguments: {
+        'regex': _regexArgument(originalRegex),
+        'star-height': StructuredMessageArgument.integer(starHeight ?? 0),
+        'nesting-depth': StructuredMessageArgument.integer(nestingDepth ?? 0),
+        'operator-count': StructuredMessageArgument.count(operatorCount ?? 0),
+      },
+    ),
+    RegexSimplificationStepType.analyze => _regexStepMessage(
+      'analyze-explanation',
+      arguments: {
+        'regex': _regexArgument(originalRegex),
+        'star-height': StructuredMessageArgument.integer(starHeight ?? 0),
+        'nesting-depth': StructuredMessageArgument.integer(nestingDepth ?? 0),
+        'alphabet-size': StructuredMessageArgument.count(alphabetSize ?? 0),
+        'operator-count': StructuredMessageArgument.count(operatorCount ?? 0),
+      },
+    ),
+    RegexSimplificationStepType.applyRule => _regexStepMessage(
+      'apply-explanation',
+      arguments: {
+        'rule': StructuredMessageArgument.outcome(
+          (ruleApplied ?? SimplificationRule.emptyUnion).name,
+          role: 'simplification-rule',
+        ),
+        'matched': StructuredMessageArgument.literal(
+          matchedSubexpression ?? '',
+          role: 'regex-subexpression',
+        ),
+        'replacement': StructuredMessageArgument.literal(
+          replacementSubexpression ?? '',
+          role: 'regex-subexpression',
+        ),
+        'position': StructuredMessageArgument.integer(
+          position ?? -1,
+          role: 'regex-position',
+        ),
+        'length-delta': StructuredMessageArgument.integer(
+          charactersSaved ?? 0,
+          role: 'character-delta',
+        ),
+      },
+    ),
+    RegexSimplificationStepType.generateSamples => _regexStepMessage(
+      'generate-samples-explanation',
+      arguments: {
+        'regex': _regexArgument(originalRegex),
+        'sample-count': StructuredMessageArgument.count(sampleCount),
+        'samples': StructuredMessageArgument.literal(
+          (sampleStrings ?? const <String>[])
+              .map((sample) => sample.isEmpty ? 'ε' : sample)
+              .join(' | '),
+          role: 'regex-samples',
+        ),
+      },
+    ),
+    RegexSimplificationStepType.noRuleApplicable => _regexStepMessage(
+      'no-rule-explanation',
+      arguments: {
+        'regex': _regexArgument(originalRegex),
+        'rule-count': StructuredMessageArgument.count(totalRulesApplied ?? 0),
+      },
+    ),
+    RegexSimplificationStepType.completion => _regexStepMessage(
+      'completion-explanation',
+      arguments: {
+        'original': _regexArgument(originalRegex, role: 'original-regex'),
+        'simplified': _regexArgument(simplifiedRegex, role: 'simplified-regex'),
+        'original-length': StructuredMessageArgument.count(
+          originalRegex?.length ?? 0,
+        ),
+        'simplified-length': StructuredMessageArgument.count(
+          simplifiedRegex?.length ?? 0,
+        ),
+        'reduction-percent': StructuredMessageArgument.number(
+          (originalRegex?.isNotEmpty ?? false)
+              ? ((originalRegex!.length - (simplifiedRegex?.length ?? 0)) /
+                        originalRegex!.length) *
+                    100
+              : 0,
+          role: 'length-reduction-percent',
+        ),
+        'rule-count': StructuredMessageArgument.count(totalRulesApplied ?? 0),
+        'star-height': StructuredMessageArgument.integer(starHeight ?? 0),
+        'nesting-depth': StructuredMessageArgument.integer(nestingDepth ?? 0),
+        'operator-count': StructuredMessageArgument.count(operatorCount ?? 0),
+      },
+    ),
+  };
+
+  StructuredMessage? get ruleExplanationMessage =>
+      ruleApplied?.descriptionMessage;
+
   /// Checks if this step applies a simplification rule
   bool get appliesRule => stepType == RegexSimplificationStepType.applyRule;
 
@@ -494,11 +593,44 @@ class RegexSimplificationStep {
   bool get madeProgress => charactersSaved != null && charactersSaved! > 0;
 
   /// Gets a summary of the rule application
-  String get ruleSummary {
-    if (ruleApplied == null) return 'No rule applied';
-    return '${ruleApplied!.displayName}: "$matchedSubexpression" → "$replacementSubexpression"';
-  }
+  String get ruleSummary => ruleSummaryMessage.stableCode;
+
+  StructuredMessage get ruleSummaryMessage => ruleApplied == null
+      ? _regexStepMessage('no-rule-summary')
+      : _regexStepMessage(
+          'rule-summary',
+          arguments: {
+            'rule': StructuredMessageArgument.outcome(
+              ruleApplied!.name,
+              role: 'simplification-rule',
+            ),
+            'matched': StructuredMessageArgument.literal(
+              matchedSubexpression ?? '',
+              role: 'regex-subexpression',
+            ),
+            'replacement': StructuredMessageArgument.literal(
+              replacementSubexpression ?? '',
+              role: 'regex-subexpression',
+            ),
+          },
+        );
 }
+
+StructuredMessage _regexStepMessage(
+  String code, {
+  Map<String, StructuredMessageArgument> arguments = const {},
+}) => StructuredMessage(
+  namespace: 'regex.simplification.step',
+  code: code,
+  category: StructuredMessageCategory.transformation,
+  severity: StructuredMessageSeverity.information,
+  arguments: arguments,
+);
+
+StructuredMessageArgument _regexArgument(
+  String? value, {
+  String role = 'regex',
+}) => StructuredMessageArgument.literal(value ?? '', role: role);
 
 /// Types of steps in regex simplification
 enum RegexSimplificationStepType {
@@ -523,42 +655,33 @@ enum RegexSimplificationStepType {
 
 /// Extension methods for RegexSimplificationStepType
 extension RegexSimplificationStepTypeExtension on RegexSimplificationStepType {
-  /// Gets a human-readable name for the step type
-  String get displayName {
-    switch (this) {
-      case RegexSimplificationStepType.start:
-        return 'Start';
-      case RegexSimplificationStepType.analyze:
-        return 'Analyze';
-      case RegexSimplificationStepType.applyRule:
-        return 'Apply Rule';
-      case RegexSimplificationStepType.noRuleApplicable:
-        return 'No Rule Applicable';
-      case RegexSimplificationStepType.generateSamples:
-        return 'Generate Samples';
-      case RegexSimplificationStepType.completion:
-        return 'Completion';
-    }
-  }
+  /// Compatibility code for callers that have not adopted presentation
+  /// resolution yet.
+  String get displayName => labelMessage.stableCode;
 
-  /// Gets a short description of what this step type does
-  String get description {
-    switch (this) {
-      case RegexSimplificationStepType.start:
-        return 'Initialize the regex simplification process';
-      case RegexSimplificationStepType.analyze:
-        return 'Analyze complexity metrics of the regex';
-      case RegexSimplificationStepType.applyRule:
-        return 'Apply an algebraic simplification rule';
-      case RegexSimplificationStepType.noRuleApplicable:
-        return 'No further simplification rules can be applied';
-      case RegexSimplificationStepType.generateSamples:
-        return 'Generate sample strings matching the regex';
-      case RegexSimplificationStepType.completion:
-        return 'Complete the simplification process';
-    }
-  }
+  String get description => descriptionMessage.stableCode;
+
+  StructuredMessage get labelMessage => _regexStepTypeMessage('label', this);
+
+  StructuredMessage get descriptionMessage =>
+      _regexStepTypeMessage('description', this);
 }
+
+StructuredMessage _regexStepTypeMessage(
+  String code,
+  RegexSimplificationStepType type,
+) => StructuredMessage(
+  namespace: 'regex.simplification.step-type',
+  code: code,
+  category: StructuredMessageCategory.transformation,
+  severity: StructuredMessageSeverity.information,
+  arguments: {
+    'type': StructuredMessageArgument.outcome(
+      type.name,
+      role: 'simplification-step-type',
+    ),
+  },
+);
 
 /// Simplification rules for regular expressions
 enum SimplificationRule {
@@ -625,97 +748,16 @@ enum SimplificationRule {
 
 /// Extension methods for SimplificationRule
 extension SimplificationRuleExtension on SimplificationRule {
-  /// Gets a human-readable name for the rule
-  String get displayName {
-    switch (this) {
-      case SimplificationRule.emptyUnion:
-        return 'Empty Union (r|∅ → r)';
-      case SimplificationRule.emptyUnionLeft:
-        return 'Empty Union Left (∅|r → r)';
-      case SimplificationRule.emptySetConcatenation:
-        return 'Empty Set Concatenation (r∅ → ∅)';
-      case SimplificationRule.emptySetConcatenationLeft:
-        return 'Empty Set Concatenation Left (∅r → ∅)';
-      case SimplificationRule.emptyStringConcatenation:
-        return 'Empty String Concatenation (rε → r)';
-      case SimplificationRule.emptyStringConcatenationLeft:
-        return 'Empty String Concatenation Left (εr → r)';
-      case SimplificationRule.starIdempotence:
-        return 'Star Idempotence (r** → r*)';
-      case SimplificationRule.emptySetStar:
-        return 'Empty Set Star (∅* → ε)';
-      case SimplificationRule.emptyStringStar:
-        return 'Empty String Star (ε* → ε)';
-      case SimplificationRule.unionIdempotence:
-        return 'Union Idempotence (r|r → r)';
-      case SimplificationRule.doubleStar:
-        return 'Double Star ((r*)* → r*)';
-      case SimplificationRule.plusToStar:
-        return 'Plus to Star (ε|rr* → r*)';
-      case SimplificationRule.plusToStarAlt:
-        return 'Plus to Star Alt (ε|r*r → r*)';
-      case SimplificationRule.plusExpansion:
-        return 'Plus Expansion (r+ → rr*)';
-      case SimplificationRule.optionalExpansion:
-        return 'Optional Expansion (r? → ε|r)';
-      case SimplificationRule.optionalStarSimplification:
-        return 'Optional Star ((ε|r)* → r*)';
-      case SimplificationRule.starConcatenationIdempotence:
-        return 'Star Concat Idempotence (r*r* → r*)';
-      case SimplificationRule.unionStarDistribution:
-        return 'Union Star Distribution';
-      case SimplificationRule.redundantParentheses:
-        return 'Remove Redundant Parentheses';
-      case SimplificationRule.characterClassCreation:
-        return 'Character Class Creation';
-    }
-  }
+  /// Compatibility code for callers that have not adopted presentation
+  /// resolution yet.
+  String get displayName => nameMessage.stableCode;
 
-  /// Gets a detailed description of the rule
-  String get description {
-    switch (this) {
-      case SimplificationRule.emptyUnion:
-        return 'Union with the empty set has no effect; the result is the other operand';
-      case SimplificationRule.emptyUnionLeft:
-        return 'Empty set on the left of union has no effect';
-      case SimplificationRule.emptySetConcatenation:
-        return 'Concatenation with the empty set produces the empty set';
-      case SimplificationRule.emptySetConcatenationLeft:
-        return 'Empty set on the left of concatenation produces empty set';
-      case SimplificationRule.emptyStringConcatenation:
-        return 'Concatenation with the empty string has no effect';
-      case SimplificationRule.emptyStringConcatenationLeft:
-        return 'Empty string on the left of concatenation has no effect';
-      case SimplificationRule.starIdempotence:
-        return 'Applying Kleene star twice is equivalent to applying it once';
-      case SimplificationRule.emptySetStar:
-        return 'The Kleene star of the empty set is the empty string';
-      case SimplificationRule.emptyStringStar:
-        return 'The Kleene star of the empty string is the empty string';
-      case SimplificationRule.unionIdempotence:
-        return 'Union of identical expressions simplifies to one copy';
-      case SimplificationRule.doubleStar:
-        return 'Star of a starred expression simplifies to single star';
-      case SimplificationRule.plusToStar:
-        return 'Empty string union with one-or-more equals zero-or-more';
-      case SimplificationRule.plusToStarAlt:
-        return 'Empty string union with one-or-more (alt) equals zero-or-more';
-      case SimplificationRule.plusExpansion:
-        return 'Plus operator expands to concatenation with star';
-      case SimplificationRule.optionalExpansion:
-        return 'Optional operator expands to union with empty string';
-      case SimplificationRule.optionalStarSimplification:
-        return 'Star of optional expression simplifies to just star';
-      case SimplificationRule.starConcatenationIdempotence:
-        return 'Concatenation of identical stars simplifies to single star';
-      case SimplificationRule.unionStarDistribution:
-        return 'Star distributes over union in specific patterns';
-      case SimplificationRule.redundantParentheses:
-        return 'Parentheses that do not affect precedence can be removed';
-      case SimplificationRule.characterClassCreation:
-        return 'Multiple single-character alternatives can form a character class';
-    }
-  }
+  String get description => descriptionMessage.stableCode;
+
+  StructuredMessage get nameMessage => _regexRuleMessage('name', this);
+
+  StructuredMessage get descriptionMessage =>
+      _regexRuleMessage('description', this);
 
   /// Gets the formal notation of the rule
   String get formalNotation {
@@ -763,3 +805,17 @@ extension SimplificationRuleExtension on SimplificationRule {
     }
   }
 }
+
+StructuredMessage _regexRuleMessage(String code, SimplificationRule rule) =>
+    StructuredMessage(
+      namespace: 'regex.simplification.rule',
+      code: code,
+      category: StructuredMessageCategory.transformation,
+      severity: StructuredMessageSeverity.information,
+      arguments: {
+        'rule': StructuredMessageArgument.outcome(
+          rule.name,
+          role: 'simplification-rule',
+        ),
+      },
+    );

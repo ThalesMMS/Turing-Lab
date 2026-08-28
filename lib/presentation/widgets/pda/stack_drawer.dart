@@ -355,6 +355,7 @@ class _PDAStackPanelState extends State<PDAStackPanel>
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11, // Compact font size
                           color: theme.colorScheme.outline,
+                          fontFamilyFallback: kMonospaceFontFamilyFallback,
                         ),
                       ),
                     )

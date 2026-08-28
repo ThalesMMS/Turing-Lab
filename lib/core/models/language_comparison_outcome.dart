@@ -11,6 +11,7 @@
 //  Thales Matheus Mendonça Santos - August 2026
 //
 import 'equivalence_comparison_result.dart';
+import '../messages/structured_message.dart';
 
 /// Why a language comparison did not produce a verdict.
 enum LanguageComparisonFailureReason {
@@ -54,11 +55,11 @@ enum LanguageComparisonStatus {
 
   /// Stable, locale-independent key used by semantic identifiers and tests.
   String get semanticsValue => switch (this) {
-        LanguageComparisonStatus.equivalent => 'equivalent',
-        LanguageComparisonStatus.notEquivalent => 'not-equivalent',
-        LanguageComparisonStatus.inconclusive => 'inconclusive',
-        LanguageComparisonStatus.error => 'error',
-      };
+    LanguageComparisonStatus.equivalent => 'equivalent',
+    LanguageComparisonStatus.notEquivalent => 'not-equivalent',
+    LanguageComparisonStatus.inconclusive => 'inconclusive',
+    LanguageComparisonStatus.error => 'error',
+  };
 }
 
 /// Result of running a language comparison to completion or to a stop.
@@ -73,11 +74,11 @@ sealed class LanguageComparisonOutcome {
   /// refuses to, which is what keeps a stopped comparison from being read as
   /// an equivalence verdict.
   bool? get isEquivalent => switch (status) {
-        LanguageComparisonStatus.equivalent => true,
-        LanguageComparisonStatus.notEquivalent => false,
-        LanguageComparisonStatus.inconclusive => null,
-        LanguageComparisonStatus.error => null,
-      };
+    LanguageComparisonStatus.equivalent => true,
+    LanguageComparisonStatus.notEquivalent => false,
+    LanguageComparisonStatus.inconclusive => null,
+    LanguageComparisonStatus.error => null,
+  };
 }
 
 /// A comparison that ran to completion and decided the question.
@@ -96,12 +97,22 @@ final class LanguageComparisonCompleted extends LanguageComparisonOutcome {
 
 /// A comparison that stopped without deciding the question.
 final class LanguageComparisonFailure extends LanguageComparisonOutcome {
-  const LanguageComparisonFailure({required this.reason, this.message});
+  const LanguageComparisonFailure({
+    required this.reason,
+    this.message,
+    this.structuredMessage,
+  });
 
   final LanguageComparisonFailureReason reason;
 
-  /// Engine-supplied detail, shown verbatim next to the localized headline.
+  /// Legacy engine detail retained for logs and compatibility callers.
   final String? message;
+
+  /// Locale-neutral detail emitted by the comparison engine, when available.
+  ///
+  /// The presentation layer resolves this identity for the active locale;
+  /// formal automaton labels carried as typed arguments remain unchanged.
+  final StructuredMessage? structuredMessage;
 
   @override
   LanguageComparisonStatus get status => reason.isInconclusive

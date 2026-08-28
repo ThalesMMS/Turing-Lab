@@ -60,8 +60,8 @@ tool/qa.sh            # the default `code` preset
 `tool/qa.sh` orchestrates the existing suites and scripts and reports each
 category independently:
 
-`prereqs`, `format`, `analyze`, `unit`, `widget`, `integration`, `graphview`,
-`responsive`, `golden`, `screenshots`, `apple`.
+`prereqs`, `format`, `analyze`, `unit`, `widget`, `integration`, `properties`,
+`graphview`, `responsive`, `golden`, `screenshots`, `apple`.
 
 Each category ends in exactly one of four states, and only the first is a pass:
 
@@ -91,6 +91,7 @@ tool/qa.sh --preset golden                 # golden comparison
 tool/qa.sh --preset screenshots            # App Store capture and validation
 tool/qa.sh --preset apple --apple-target macos --apple-device macos
 tool/qa.sh --only analyze,unit             # any explicit category list
+tool/qa.sh --only properties               # bounded deterministic property profile
 tool/qa.sh --dry-run --all                 # print the plan, execute nothing
 ```
 
@@ -106,9 +107,27 @@ flutter test test/unit/
 flutter test test/widget/path_to_changed_feature_test.dart
 ```
 
-The broad `flutter test` run includes work-in-progress cases outside the scope
-of most contributions and takes over an hour; `AGENTS.md` records the current
-baseline for every suite.
+Changes to document codecs, JFLAP mappings, canonical JSON, or compatibility
+fixtures must also run the offline corpus:
+
+```bash
+dart run tool/compatibility_corpus.dart
+```
+
+Report its exact `CORPUS_RESULT`, disclose `notRun` cases, and include any
+approved loss with its linked issue. Regenerate `docs/JFLAP_COMPATIBILITY.md`
+with `--update-public` whenever the versioned manifest changes.
+
+Algorithm property, fuzzing, oracle, or edge-case changes must use the shared
+framework documented in [docs/ALGORITHM_TESTING.md](docs/ALGORITHM_TESTING.md).
+Report the exact family, property, seed or seed range, generator/oracle version,
+and `PROPERTY_RESULT`. Preserve the emitted reproduction command for failures,
+and promote only reviewed minimized fixtures with explicit provenance and a
+regression issue. A bounded or inapplicable oracle result is incomplete, not a
+pass.
+
+The broad `flutter test` run executes the complete test tree. `AGENTS.md`
+records its current result and elapsed-time baseline.
 
 ## Pull Requests
 

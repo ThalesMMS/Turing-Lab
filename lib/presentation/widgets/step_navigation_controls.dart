@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
 import '../../core/constants/monospace_typography.dart';
+import '../localization/locale_value_formatter.dart';
 
 /// Widget for step-by-step navigation controls
 class StepNavigationControls extends StatelessWidget {
@@ -44,6 +45,11 @@ class StepNavigationControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final canGoPrevious = currentStepIndex > 0 && onPrevious != null;
     final canGoNext = currentStepIndex < totalSteps - 1 && onNext != null;
+    final l10n = appLocalizationsOf(context);
+    final valueFormatter = LocaleValueFormatter.of(context);
+    String formatPlaybackSpeed(double value) =>
+        '${valueFormatter.decimal(value)}x';
+    final formattedPlaybackSpeed = formatPlaybackSpeed(playbackSpeed);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,13 +103,14 @@ class StepNavigationControls extends StatelessWidget {
                 ),
               ),
               child: Text(
-                totalSteps > 0
-                    ? '${currentStepIndex + 1} / $totalSteps'
-                    : '0 / 0',
+                appLocalizationsOf(context).stepNavigationPosition(
+                  totalSteps > 0 ? currentStepIndex + 1 : 0,
+                  totalSteps,
+                ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
             ),
 
@@ -137,32 +144,38 @@ class StepNavigationControls extends StatelessWidget {
               Text(
                 appLocalizationsOf(context).speed,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
               Expanded(
-                child: Slider(
-                  value: playbackSpeed,
-                  min: 0.25,
-                  max: 4.0,
-                  divisions: 15,
-                  label: '${playbackSpeed.toStringAsFixed(2)}x',
-                  onChanged: onSpeedChanged,
+                child: MergeSemantics(
+                  child: Semantics(
+                    label: l10n.selectPlaybackSpeed,
+                    child: Slider(
+                      value: playbackSpeed,
+                      min: 0.25,
+                      max: 4.0,
+                      divisions: 15,
+                      label: formattedPlaybackSpeed,
+                      semanticFormatterCallback: formatPlaybackSpeed,
+                      onChanged: onSpeedChanged,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
                 width: 40,
                 child: Text(
-                  '${playbackSpeed.toStringAsFixed(2)}x',
+                  formattedPlaybackSpeed,
                   textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontFamilyFallback: kMonospaceFontFamilyFallback,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
               ),
             ],

@@ -17,7 +17,8 @@ enum AppleReleaseModule {
   pda('pda'),
   tm('tm'),
   regex('regex'),
-  pumpingLemma('pumping');
+  regularPumpingLemma('regularPumping'),
+  contextFreePumpingLemma('contextFreePumping');
 
   const AppleReleaseModule(this.id);
 

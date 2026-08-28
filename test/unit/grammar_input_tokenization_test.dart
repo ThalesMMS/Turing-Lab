@@ -3,23 +3,26 @@ import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
 import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive.dart';
+import 'package:turing_lab/core/algorithms/grammar_input_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar_input_tokenizer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
+import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/production.dart';
 
 void main() {
   final now = DateTime(2026);
 
   Grammar grammar(Set<Production> productions) => Grammar(
-        id: 'tokenization-test',
-        name: 'Overlapping terminals',
-        terminals: const {'i', 'id', 'd'},
-        nonterminals: const {'S', 'A', 'D'},
-        startSymbol: 'S',
-        productions: productions,
-        type: GrammarType.contextFree,
-        created: now,
-        modified: now,
-      );
+    id: 'tokenization-test',
+    name: 'Overlapping terminals',
+    terminals: const {'i', 'id', 'd'},
+    nonterminals: const {'S', 'A', 'D'},
+    startSymbol: 'S',
+    productions: productions,
+    type: GrammarType.contextFree,
+    created: now,
+    modified: now,
+  );
 
   final longestTokenGrammar = grammar({
     const Production(id: 'p1', leftSide: ['S'], rightSide: ['id']),
@@ -65,27 +68,25 @@ void main() {
       );
     });
 
-    test('Earley reports raw offsets after consuming a multi-character token',
-        () {
-      final report = EarleyRecognizer(
-        grammar({
-          const Production(
-            id: 'p1',
-            leftSide: ['S'],
-            rightSide: ['id', 'd'],
-          ),
-        }),
-      ).recognizeWithReport('id');
+    test(
+      'Earley reports raw offsets after consuming a multi-character token',
+      () {
+        final report = EarleyRecognizer(
+          grammar({
+            const Production(id: 'p1', leftSide: ['S'], rightSide: ['id', 'd']),
+          }),
+        ).recognizeWithReport('id');
 
-      expect(report.accepted, isFalse);
-      expect(report.farthestPosition, 2);
-      expect(report.expectedSymbols, {'d'});
-    });
+        expect(report.accepted, isFalse);
+        expect(report.farthestPosition, 2);
+        expect(report.expectedSymbols, {'d'});
+      },
+    );
 
     test('direct recursive parsing accepts a multi-character terminal', () {
-      final longest = SimpleRecursiveDescentParser(longestTokenGrammar).parse(
-        'id',
-      );
+      final longest = SimpleRecursiveDescentParser(
+        longestTokenGrammar,
+      ).parse('id');
       final shorter = SimpleRecursiveDescentParser(
         shorterTokenSequenceGrammar,
       ).parse('id');
@@ -115,6 +116,37 @@ void main() {
         result.data!.steps.where((step) => step.terminal == 'id'),
         hasLength(1),
       );
+    });
+
+    test('invalid symbols preserve a typed diagnostic and source offset', () {
+      final result = GrammarInputTokenizer.tokenize(longestTokenGrammar, 'i?');
+
+      expect(result.isFailure, isTrue);
+      expect(result.structuredError, isNotNull);
+      expect(
+        result.structuredError,
+        GrammarInputMessages.invalidSymbol(symbol: '?', position: 1),
+      );
+      expect(result.error, result.structuredError!.stableCode);
+
+      final offsets = GrammarInputTokenizer.splitOffsets(
+        longestTokenGrammar,
+        'i?',
+      );
+      expect(offsets.structuredError, result.structuredError);
+
+      final report = GrammarParser.parseWithReport(
+        longestTokenGrammar,
+        'i?',
+        strategyHint: ParsingStrategyHint.ll,
+      ).data!;
+      expect(report.outcome, GrammarParseOutcome.tokenizationFailure);
+      expect(report.structuredMessage, result.structuredError);
+
+      final earleyReport = EarleyRecognizer(
+        longestTokenGrammar,
+      ).recognizeWithReport('i?');
+      expect(earleyReport.structuredMessage, result.structuredError);
     });
   });
 }

@@ -13,8 +13,10 @@
 import 'package:flutter/material.dart';
 import '../../core/models/fsa.dart';
 import '../../features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../localization/locale_value_formatter.dart';
 import 'read_only_fsa_graphview_canvas.dart';
 
 /// Widget for side-by-side comparison of automata before and after algorithm execution
@@ -62,6 +64,8 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
 
     return Card(
       elevation: 2,
@@ -79,7 +83,7 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
 
             // Statistics comparison
             if (widget.showStatistics) ...[
-              _buildStatistics(colorScheme, textTheme),
+              _buildStatistics(colorScheme, textTheme, l10n, formatter),
               const SizedBox(height: 16),
             ],
 
@@ -92,10 +96,12 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
                     child: _buildAutomatonSection(
                       context: context,
                       automaton: widget.beforeAutomaton,
-                      title: widget.beforeTitle ?? 'Before',
+                      title: widget.beforeTitle ?? l10n.before,
                       canvasKey: _beforeCanvasKey,
                       colorScheme: colorScheme,
                       textTheme: textTheme,
+                      l10n: l10n,
+                      formatter: formatter,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -105,10 +111,12 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
                     child: _buildAutomatonSection(
                       context: context,
                       automaton: widget.afterAutomaton,
-                      title: widget.afterTitle ?? 'After',
+                      title: widget.afterTitle ?? l10n.after,
                       canvasKey: _afterCanvasKey,
                       colorScheme: colorScheme,
                       textTheme: textTheme,
+                      l10n: l10n,
+                      formatter: formatter,
                       isResult: true,
                     ),
                   ),
@@ -150,45 +158,72 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
     );
   }
 
-  Widget _buildStatistics(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildStatistics(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    AppLocalizations l10n,
+    LocaleValueFormatter formatter,
+  ) {
     final beforeStates = widget.beforeAutomaton.states.length;
     final afterStates = widget.afterAutomaton.states.length;
     final beforeTransitions = widget.beforeAutomaton.transitions.length;
     final afterTransitions = widget.afterAutomaton.transitions.length;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            label: 'States',
-            before: beforeStates,
-            after: afterStates,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          Container(
-            width: 1,
-            height: 40,
+    final beforeSemantic = _localizedCanvasSemantic(
+      l10n,
+      formatter,
+      l10n.before,
+      beforeStates,
+      beforeTransitions,
+    );
+    final afterSemantic = _localizedCanvasSemantic(
+      l10n,
+      formatter,
+      l10n.after,
+      afterStates,
+      afterTransitions,
+    );
+
+    return Semantics(
+      label: '$beforeSemantic. $afterSemantic',
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
             color: colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
           ),
-          _buildStatItem(
-            label: 'Transitions',
-            before: beforeTransitions,
-            after: afterTransitions,
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-        ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildStatItem(
+              label: l10n.states,
+              before: beforeStates,
+              after: afterStates,
+              formatter: formatter,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            Container(
+              width: 1,
+              height: 40,
+              color: colorScheme.outline.withValues(alpha: 0.2),
+            ),
+            _buildStatItem(
+              label: l10n.transitions,
+              before: beforeTransitions,
+              after: afterTransitions,
+              formatter: formatter,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -197,11 +232,14 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
     required String label,
     required int before,
     required int after,
+    required LocaleValueFormatter formatter,
     required ColorScheme colorScheme,
     required TextTheme textTheme,
   }) {
     final change = after - before;
-    final changeText = change > 0 ? '+$change' : '$change';
+    final changeText = change > 0
+        ? '+${formatter.integer(change)}'
+        : formatter.integer(change);
     final changeColor = change > 0
         ? colorScheme.error
         : (change < 0 ? colorScheme.primary : colorScheme.onSurfaceVariant);
@@ -221,7 +259,7 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '$before',
+              formatter.integer(before),
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.7),
               ),
@@ -235,7 +273,7 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
               ),
             ),
             Text(
-              '$after',
+              formatter.integer(after),
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
@@ -264,8 +302,18 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
     required GlobalKey canvasKey,
     required ColorScheme colorScheme,
     required TextTheme textTheme,
+    required AppLocalizations l10n,
+    required LocaleValueFormatter formatter,
     bool isResult = false,
   }) {
+    final canvasSemantic = _localizedCanvasSemantic(
+      l10n,
+      formatter,
+      title,
+      automaton.states.length,
+      automaton.transitions.length,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -309,21 +357,26 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
 
         // Automaton canvas (read-only)
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.2),
-                width: 1,
+          child: Semantics(
+            label: canvasSemantic,
+            container: true,
+            explicitChildNodes: true,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: ReadOnlyFsaGraphViewCanvas(
-                automaton: automaton,
-                canvasKey: canvasKey,
-                edgeRenderMode: TuringLabEdgeRenderMode.standard,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ReadOnlyFsaGraphViewCanvas(
+                  automaton: automaton,
+                  canvasKey: canvasKey,
+                  edgeRenderMode: TuringLabEdgeRenderMode.standard,
+                ),
               ),
             ),
           ),
@@ -344,4 +397,24 @@ class _BeforeAfterComparisonState extends State<BeforeAfterComparison> {
       ],
     );
   }
+}
+
+String _localizedCanvasSemantic(
+  AppLocalizations l10n,
+  LocaleValueFormatter formatter,
+  String title,
+  int states,
+  int transitions,
+) {
+  var text = l10n.languageComparisonCanvasSemantic(title, states, transitions);
+  for (final value in [states, transitions]) {
+    final raw = value.toString();
+    final localized = formatter.integer(value);
+    if (raw == localized) continue;
+    final index = text.indexOf(raw);
+    if (index >= 0) {
+      text = text.replaceRange(index, index + raw.length, localized);
+    }
+  }
+  return text;
 }

@@ -16,6 +16,7 @@ import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_building_blocks.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/features/canvas/graphview/graphview_canvas_models.dart';
@@ -95,7 +96,79 @@ void main() {
       expect(edge.readSymbol, equals('a'));
       expect(edge.writeSymbol, equals('b'));
       expect(edge.direction, equals(TapeDirection.right));
+      expect(edge.tmReadSymbols, ['a']);
+      expect(edge.tmWriteSymbols, ['b']);
+      expect(edge.tmDirections, [TapeDirection.right]);
       expect(edge.tapeNumber, 0);
+    });
+
+    test('renders typed block names and revision validity distinctly', () {
+      final blockMachine = machine.copyWith(
+        id: 'scan-machine',
+        name: 'Scan machine',
+        blockDefinitions: const {},
+        blockInvocations: const [],
+      );
+      final project = machine.copyWith(
+        blockDefinitions: {
+          'scan': TMBlockDefinition(
+            id: 'scan',
+            name: 'Scan right',
+            revision: 2,
+            machine: blockMachine,
+          ),
+        },
+        blockInvocations: const [
+          TMBlockInvocationNode(
+            id: 'call-scan',
+            stateId: 'q0',
+            reference: TMBlockReference(blockId: 'scan', revision: 1),
+          ),
+        ],
+      );
+
+      final node = GraphViewTmMapper.toSnapshot(project).nodes.singleWhere(
+            (candidate) => candidate.id == 'q0',
+          );
+
+      expect(node.label, 'Block: Scan right');
+      expect(node.secondaryLabel, 'Revision mismatch');
+    });
+
+    test('round-trips ordered multi-tape operations through the snapshot', () {
+      final multiTransition = transition.copyWith(
+        readSymbols: ['a', 'B'],
+        writeSymbols: ['B', 'a'],
+        directions: [TapeDirection.right, TapeDirection.stay],
+      );
+      final multiMachine = machine.copyWith(
+        transitions: {multiTransition},
+        tapeCount: 2,
+      );
+
+      final snapshot = GraphViewTmMapper.toSnapshot(multiMachine);
+      final edge = snapshot.edges.single;
+      final encoded = edge.toJson();
+      final decodedEdge = GraphViewCanvasEdge.fromJson(encoded);
+      final restored = GraphViewTmMapper.mergeIntoTemplate(
+        snapshot.copyWith(edges: [decodedEdge]),
+        multiMachine,
+      );
+
+      expect(decodedEdge.tmReadSymbols, ['a', 'B']);
+      expect(decodedEdge.tmWriteSymbols, ['B', 'a']);
+      expect(
+        decodedEdge.tmDirections,
+        [TapeDirection.right, TapeDirection.stay],
+      );
+      expect(decodedEdge.label, 'T1: a/B,R | T2: B/a,S');
+      expect(restored.tapeCount, 2);
+      expect(restored.tmTransitions.single.readSymbols, ['a', 'B']);
+      expect(restored.tmTransitions.single.writeSymbols, ['B', 'a']);
+      expect(
+        restored.tmTransitions.single.directions,
+        [TapeDirection.right, TapeDirection.stay],
+      );
     });
 
     test('round-trips legacy control-point metadata unchanged', () {

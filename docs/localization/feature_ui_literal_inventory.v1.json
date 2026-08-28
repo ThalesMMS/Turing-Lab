@@ -1,0 +1,693 @@
+{
+  "schemaVersion": 1,
+  "qaOwnerIssue": 346,
+  "migrationOwnerIssue": 343,
+  "status": "migration-in-progress",
+  "zeroUserVisibleProseClaim": false,
+  "scope": "tool/localization/feature_ui_scope.v1.json",
+  "summary": {
+    "fileCount": 292,
+    "legacyViolationFileCount": 113,
+    "legacyViolationCount": 2039
+  },
+  "entries": [
+    {
+      "path": "lib/features/canvas/graphview/graphview_canvas_controller.dart",
+      "sourceDigestSha256": "cf7de275674cc30514c0f9b4d2e915bd7271944d0332653f82462fd7c6f5681e",
+      "violationDigestSha256": "f9d15a576165520c35452f9ad49e09ea1804f31b80898c5c4d0904b837536255",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_canvas_models.dart",
+      "sourceDigestSha256": "4e0b8fda343b7812762ff4ccf93c1fed77271fd577d9ec5b2279c55ea33bab6a",
+      "violationDigestSha256": "5817df4d2e5c27334d17a8430b7e52d5f84956d5b661764149b660d313d13e6e",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_pda_canvas_controller.dart",
+      "sourceDigestSha256": "a06f58cab497574de9d6610280360683d9431731e4da582012fc622c11038508",
+      "violationDigestSha256": "0107ef0d51125a123f2db71947d58eb1f455801655ee69855d9159b3330ef898",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_tm_canvas_controller.dart",
+      "sourceDigestSha256": "a0a342d3405e65fbe33da32733512d36aeac17569f0e5c455547b6c8895f10b2",
+      "violationDigestSha256": "e1c1a71eb000ae199ace0a4b22661a921c7773515e96eec29f290b21f2f8b666",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_tm_mapper.dart",
+      "sourceDigestSha256": "6a958e8a785192d5abf1d0158d58ea5ade1e12ffb624dc518174517f3f0ee107",
+      "violationDigestSha256": "7967e29a369df62c7a80b4d2c00c06f6d167ccde9114dd20693140fc2b3f5670",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/content/asset_example_content_copy.dart",
+      "sourceDigestSha256": "45e188219f168be56b331113a7419632e22d2acfe42c2d2b98c400eb3ea532f9",
+      "violationDigestSha256": "9d6d4b8c9324e986304e4ee215d17bc4168c808f42530d40daf59be173079a10",
+      "violationCount": 290
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "sourceDigestSha256": "e571bf5e03176a6d256a67745f39466db159c02c2c2e1bbe860058a2575198fc",
+      "violationDigestSha256": "01346852b1947e971fa0c9d89311badb8394a87b6deec6e3a940846b8948c634",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/content/grammar_teaching_content_copy.dart",
+      "sourceDigestSha256": "95120bf8d78af1bb12824e58e82dd12eaa18aa8ac05f66c76e690c388508d7c2",
+      "violationDigestSha256": "d3740bad9a660ac1b877bfb56e54343da4a6f5d295a8a40d5c5435d1b9b62be0",
+      "violationCount": 54
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "sourceDigestSha256": "2b1d79dcef2f1fd3e1699fa9fa3e754562de2662d03a2ec1a9d1cb2ba7aa9d43",
+      "violationDigestSha256": "7b7873f25b98c0c9cbc5a01c97d20f50f9521e5f3521ca8828850c54e745b717",
+      "violationCount": 60
+    },
+    {
+      "path": "lib/presentation/content/manual_conversion_content_copy.dart",
+      "sourceDigestSha256": "f497caaf50102b285af3b81e30dfb2dd78fe21890b6c643a0253c9909876b163",
+      "violationDigestSha256": "acbdc0f1a9ecbdf8bf288ef3f481142320ac907e8f8b8d21b5c8bee1ab503269",
+      "violationCount": 127
+    },
+    {
+      "path": "lib/presentation/content/pumping_lemma_problem_content_copy.dart",
+      "sourceDigestSha256": "c886b17dfb69fef6ea6a507cbf600255803c91dcc66cecfda838f004c80d7d89",
+      "violationDigestSha256": "12e5fdc86a0b545964178bc8286e3c1ea078fc5624c3748fc175f309c2b8fdec",
+      "violationCount": 165
+    },
+    {
+      "path": "lib/presentation/content/tm_block_example_content_copy.dart",
+      "sourceDigestSha256": "5073cc44c1a6b13326524e8a3be78d7bb096296af2de11ef738597e866584bdd",
+      "violationDigestSha256": "e9a4e4e2067c2b3070287c03a174b6b93f09a8ebd7386f00fe051309af0db530",
+      "violationCount": 10
+    },
+    {
+      "path": "lib/presentation/content/unrestricted_grammar_example_content_copy.dart",
+      "sourceDigestSha256": "f045e65c4764e8d35dc20d1b45b7589b65a3f5074956a9ec406f031a9a04d733",
+      "violationDigestSha256": "f8fa21bc97be3dd2806bc3c7ec6b490415567e2b84e182746e63c4d30be16da5",
+      "violationCount": 30
+    },
+    {
+      "path": "lib/presentation/l_systems/l_system_workspace.dart",
+      "sourceDigestSha256": "1bcc31dcffe0637b602a4b400fcdd867273950d7e78cbc16767776ed4e558e8e",
+      "violationDigestSha256": "14d52b97d1f0dc8b0dae1adf0ffa1045e5ac349466e8310d1ebdbb3c31253df7",
+      "violationCount": 49
+    },
+    {
+      "path": "lib/presentation/localization/locale_value_formatter.dart",
+      "sourceDigestSha256": "a4efeb85e49f6bd2e7c873acd74967b30227b3965a9c5fa4dd21b063369fe62c",
+      "violationDigestSha256": "be8b41195c196192347f44d11168c3f845e02da275c628f828c65180e5c6ea7e",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/localization/manual_conversion_localizations.dart",
+      "sourceDigestSha256": "b523ae530d7e545b275a5ce5b9a1362b979a5a9456ac1b3f421092807461601a",
+      "violationDigestSha256": "c45114bad28a39fee6ca875ff664ce748658cd7243bbb1bafe22564fe6e46102",
+      "violationCount": 131
+    },
+    {
+      "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
+      "sourceDigestSha256": "ef2dca79a30fafab34ed2c1620598673945156971e2c36468d3a4101a74271ff",
+      "violationDigestSha256": "2e75208c155bd885de9a593eee471c6d266a345e68b2390d7e6b7151e12c9a93",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/pages/l_system_page.dart",
+      "sourceDigestSha256": "9bced9f49f1fe32c50d1cf696063ec047c20a898d23efdcd09ac5bfcf23ceda8",
+      "violationDigestSha256": "77b9b62027018f55feeb91681ae864448273668e3d88a4b97b7d2b0c57f58d23",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/pda_page.dart",
+      "sourceDigestSha256": "a63ac5a376ae48290bf63d9517d5c68471ae02e276f797480e9398f052a82496",
+      "violationDigestSha256": "80ad9a59685cb9d53ebd7a1b42eaf9660612d295f4b03834dba506fd3cf8a522",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/regex_page.dart",
+      "sourceDigestSha256": "ee8ad596f3e78d8b7c506271cbdd68678d4e32f39fa417d80b674c0d79286b9e",
+      "violationDigestSha256": "469232b052bcdd866d03fc467a9e24f62ff9d37322ee2383701382ee0f219a79",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/pages/regex_page_complexity.dart",
+      "sourceDigestSha256": "46339d167eea306c02f6652056cc1dc40585413e349f88df6145491952deb392",
+      "violationDigestSha256": "ecd620bd535ee9e2375f06782bbbebea3440e78ffe7cce322b30cd05625a5d0d",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/regex_page_layout.dart",
+      "sourceDigestSha256": "fd46bc7a6e6d8bb29de2517a84cec5a54b348216023db67b0cc2700dfc8d4ca3",
+      "violationDigestSha256": "a12d0042978724687695188ff4ab4f97389ee55c3e6d1f0eccb41648a6302c32",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/regex_page_samples.dart",
+      "sourceDigestSha256": "8dea42cd79875420ff3381c2f267e4a3bbdd214349c40b3d476ba67a82b6c1d0",
+      "violationDigestSha256": "1e9807c59f913f3a78b45964525754837342735a41711e4e03ee0356a2fcd83e",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/regex_page_simplification.dart",
+      "sourceDigestSha256": "9cfb75f97e8ff437a81173460f7f6ee1232e38a7eb65cb3638615567c5e74703",
+      "violationDigestSha256": "1355535682ac04253122f4e8587c173b9264b3e4a60d6c9ae8ceb9eb1e30f7a4",
+      "violationCount": 8
+    },
+    {
+      "path": "lib/presentation/pages/tm_page.dart",
+      "sourceDigestSha256": "dc79452c3b4857710898dea27ae5514911dfaf23600d1f0ebdb7bb2942496d9f",
+      "violationDigestSha256": "aa4b75ecfd6898371454688241be1e0923ac9e13215d4a0b4df978430b3d7839",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/pages/unrestricted_grammar_page.dart",
+      "sourceDigestSha256": "82b9c22fe14c297b9dca3818ebeea9235f431c7fe4deb5df21411cb19b954747",
+      "violationDigestSha256": "7d39f4180d746e25f1e8ed47e29c66754db87d810fb22c43f06f257146b68fc5",
+      "violationCount": 8
+    },
+    {
+      "path": "lib/presentation/providers/algorithm_step_provider.dart",
+      "sourceDigestSha256": "834d5c8e3767fddac5292c75aa4b175f9fd766d53c10456da1df87561094b7c9",
+      "violationDigestSha256": "b2cc8043c544065cdc522786bbc601597817e9a78864cdada78dbb9033a62802",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/providers/automaton_algorithm_provider.dart",
+      "sourceDigestSha256": "bdf7206be47e6c9c8705a75f90789b20c9bc31ae4a2f6d0bad0b05fbe2098c93",
+      "violationDigestSha256": "3cf27d350b329c88ec6b9eb1d4e95174448807ef931f9f867f527f48b7a5b794",
+      "violationCount": 24
+    },
+    {
+      "path": "lib/presentation/providers/automaton_layout_provider.dart",
+      "sourceDigestSha256": "c7145934f5c0f60c9438d79532ec35f5495acd46cdc841bd4c9fae382e2f3353",
+      "violationDigestSha256": "03faddb1e6f150efaf8a330ea9150db57feee0a281deab48f402bca067edcd0f",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/providers/automaton_simulation_provider.dart",
+      "sourceDigestSha256": "56f37e3e4e0d2a50545a4217a40c99413ec3dc85ebd9cfb5c78c57b8b2713ee9",
+      "violationDigestSha256": "16438ee94053b41695b9c429c85bd0073ea0643f99def9424329f47757c4f04b",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/providers/automaton_state_provider.dart",
+      "sourceDigestSha256": "1e0ce8497b4756ec85ae9662ec64ccc3332f63ca5a43b19ba8b135f0b863a265",
+      "violationDigestSha256": "685fe16dbc0dee8a9f27c8875e87af3776e7255e9eba8f09fa3b518c93809b4d",
+      "violationCount": 11
+    },
+    {
+      "path": "lib/presentation/providers/formal_extension_editor_providers.dart",
+      "sourceDigestSha256": "3e5e477c2dac6c930f9034afe6f79ae492e7dc23729ac3b0f795e731f9f769f8",
+      "violationDigestSha256": "b9fba3e923b047267d91322f15722edb8267e046b39c429e87521eb7c7dfe71f",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/providers/grammar_provider.dart",
+      "sourceDigestSha256": "e344554497aa60517fd6a80122563005047f80547e8b9970bcede5786f946a02",
+      "violationDigestSha256": "6dc0f58ac64a2d45c6f3ed46d001b61f488d18f291cbc2b2de6bc0e80e8d188a",
+      "violationCount": 4
+    },
+    {
+      "path": "lib/presentation/providers/pda_editor_provider.dart",
+      "sourceDigestSha256": "a56c4fdc610cd6a8008e2f70db60a2fc803ea735e44eb7a0d9ffe476b09c05cb",
+      "violationDigestSha256": "40802db848b8bd5a5078f5866c248578e8f6a6654dacfc0566075ab196b97cdc",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/providers/pda_simulation_provider.dart",
+      "sourceDigestSha256": "770a81be399ba1fc4d3dedba8cc97ae8e98ab97159a1505fe896580e8a8ba9a5",
+      "violationDigestSha256": "9979ce7df687cdc8eefe38bd851f433d314724373a4d16ad26ba2438ca741056",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/providers/regex_editor_provider.dart",
+      "sourceDigestSha256": "47655f7ba9e7c595b6ec5b9cb49393930520d3bb4f3521d7b3fe2476440be8ec",
+      "violationDigestSha256": "12a87d60b82bf87a1f51d56c2b4ca85b550a17a1d1d51a0f4ff789c8e09f8a67",
+      "violationCount": 18
+    },
+    {
+      "path": "lib/presentation/providers/tm_block_library_provider.dart",
+      "sourceDigestSha256": "ac712aa95d1c94f85ce2b239bcc66200eacd08345cde7a160601a776f976608c",
+      "violationDigestSha256": "6605c960c3bc1fe02d88f23ea5e7489568cc8bb9705e0f237308f0abf5c9967d",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/providers/tm_editor_provider.dart",
+      "sourceDigestSha256": "df3f18415c9cb64255c7afb70fd0a8417dc69f5cfbb92c298cca6534c133e4f7",
+      "violationDigestSha256": "3a9eb246c916d24b4490c662e17aec69ae6493daaca3b96b714a7e1d8c371469",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/providers/unified_trace_provider.dart",
+      "sourceDigestSha256": "26f5d69cf7b9585bfe7fcfed15d6ca43b89de326dc38d1f1d20d3463ffd803f7",
+      "violationDigestSha256": "2d076b09cb6b8a713447fa6dc8e9d51e5581e7a90604a3664d8d522b7c446576",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/transducers/mealy_workspace_definition.dart",
+      "sourceDigestSha256": "8466c3c6c9aef238e7ac7e84eff121d458a0c58f8420971d10b45a1f89b00e7f",
+      "violationDigestSha256": "f969698993a43ef82e9e9f9a8422abd5a119ab6c258cd465d21c4951f4109632",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/transducers/moore_workspace_definition.dart",
+      "sourceDigestSha256": "1dd054b6d83aaa1442cfd49ac76f1fd11bbc285a35d02f9987fac5a3e8798be5",
+      "violationDigestSha256": "559cc5f32ac0b3ca6127f46daff4975884eb0aa496673e4f31ddfb44439e91bb",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/transducers/transducer_batch_comparison_panel.dart",
+      "sourceDigestSha256": "e188964e851b879716274ae751704767182b391563841072d1ac297cffb21b1e",
+      "violationDigestSha256": "dac4a7400db92bf0691ea200e82341220c0ad1584d62009a8e5a01ee9f7e1edd",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/transducers/transducer_simulation_panel.dart",
+      "sourceDigestSha256": "54757e76e39a364a027fcbaa8b88f2af4fafd4a03f4da1bdc9485a5422aa66d8",
+      "violationDigestSha256": "24ad518f15a6cc19e7f1492410333f32bedc5b3868fdb02380938d03baa3d7f0",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace.dart",
+      "sourceDigestSha256": "1a121b9d3f4b61ff3bc3d77ec3354d34cf6cea89fb435ad25fc90fc977c36a69",
+      "violationDigestSha256": "804a2324f26814ce05d025876fb99faf2c4121cd3a22cac7f2cc32c47b0a4c92",
+      "violationCount": 11
+    },
+    {
+      "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace_strings.dart",
+      "sourceDigestSha256": "bcded8d973d0395320168f4f12e9388d53b34a635cd79bf891e418ea727ac8f3",
+      "violationDigestSha256": "6b24bb08fec36cf900510e43ee6bb339c945993a7b1ae993556a52981fcb61c9",
+      "violationCount": 159
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_examples_section.dart",
+      "sourceDigestSha256": "0517a61df0ed0f9a91763eb96eee6dd9cce8f4c89a599a9587d8c88426e0d4f1",
+      "violationDigestSha256": "b38d4fae7636c5c9661048f3c8324bfaa02132a203f92b8c3b9a118e39c1598b",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "sourceDigestSha256": "ab464ec9737a972d87a14d9fa7c0995a45453a048bdcfd18f5345798eab0b9ad",
+      "violationDigestSha256": "fa4b00a5e5c493792a07048c7d51891366fb74d2b431759fff14ba2331e6e934",
+      "violationCount": 102
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_results_section.dart",
+      "sourceDigestSha256": "e7d8fe67288394e6adb75e94bdce3fb46f95a35fed51975720ef31dae6d56aff",
+      "violationDigestSha256": "66ccd38bcd080bbf69d7ed77d9672b10bcd5c71a768cb5174f05dd9ad74cde56",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
+      "sourceDigestSha256": "c479c34a66f3bc22b509de77b7355e5c9cacbc3e7d7af35aaae2e7f3d89dc43d",
+      "violationDigestSha256": "4cf039dc361c0b27611958d34a21ef8c772cbbbd593827a7abf6d52316d74ef1",
+      "violationCount": 27
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_step_viewer.dart",
+      "sourceDigestSha256": "b3562e9467ffe1c48b3591a145d8205d4f66bb7f19920e5c3f9b846cc54d749e",
+      "violationDigestSha256": "7386e72e46cadc0de3fd2d31d6fcc5017dcab044feb7e9a02cf9282da35616ce",
+      "violationCount": 6
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
+      "sourceDigestSha256": "f96bb1401ef478adb77d01901a71042b4b3811be9619059f62c952d9856c99b0",
+      "violationDigestSha256": "f4c912bf57aba43020fab0dee1ddf4a950ef8bbfd8886b9370c843add6b7aaf1",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_graphview_canvas_overlay.dart",
+      "sourceDigestSha256": "b9816a76dbf118876b07477e751548e836b5b64a4c2ef2928f0aa3cd4948db99",
+      "violationDigestSha256": "f7df8073b5fe3abfea1fb687982d46255b133fbe3c3011ded8fbfc890b26a15f",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_graphview_canvas_rendering.dart",
+      "sourceDigestSha256": "01d14c26da5e3a1188046f12bc204746af7af34cff3aca6c7acaf32f20e74544",
+      "violationDigestSha256": "ea78279213d1865700201f9930ae7c8111ced84462705e6868618247b8186889",
+      "violationCount": 6
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_layout.dart",
+      "sourceDigestSha256": "854bc9c180fe375108abf6a36dc8951717bdad78d43687aedaa78a5065053163",
+      "violationDigestSha256": "b68c092ce7a0e363a8c36544c65762ee564816beac62b6abb7c3faa133f0fd7f",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/base_simulation_panel.dart",
+      "sourceDigestSha256": "52711d41b772df0bb4efefa71d7fe14dfc47bda52b176d7db3d29eb61bdbe639",
+      "violationDigestSha256": "83828449df51d85ac8cb7b66638e084f8ab574e95c87ae1adae244600c3ea37d",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "sourceDigestSha256": "cbc503ccda94b255016502543b161bc21b93359f743992fb73f3a881d0a6e6d4",
+      "violationDigestSha256": "4e6f5a57c63c527ac1ab21b806a88cfdfc178fba8ca53a077bace51a1b749760",
+      "violationCount": 49
+    },
+    {
+      "path": "lib/presentation/widgets/before_after_comparison.dart",
+      "sourceDigestSha256": "5659b04444c5387071fa6c930fce7f6f2806580da89799c5de9773084f0ee703",
+      "violationDigestSha256": "f64446347dcbdf52d38fcc2e378043ec97fc358cccf3f400c746fa7eead84cc4",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/brute_force_teaching_workspace.dart",
+      "sourceDigestSha256": "539b546b9108c713bddf1b0956d5624be637f18625ff5f75f54d4517447c5c0e",
+      "violationDigestSha256": "167ca10a661cf628a75a9d8f6afb04228c7a4e56214b8f836b0ff7fd66b3bd36",
+      "violationCount": 12
+    },
+    {
+      "path": "lib/presentation/widgets/canvas_simulation_step_projection.dart",
+      "sourceDigestSha256": "63d83d0cd0d6fd86be5a7fd0717e3ac2932df48adc7c4943f20b42f2b45ba3ef",
+      "violationDigestSha256": "2d088ba684f1dc853e7958a3a4efe506b788a78154c6972199d34b8814834704",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/cfg_to_pda_construction_workspace.dart",
+      "sourceDigestSha256": "fa0146192c3fecc247b978c1996742cb746496b8a220b79ff6fb9145425ad06e",
+      "violationDigestSha256": "95017730d2ea5c8bb29d4b451bd34c1092ba6017765e3f55c4ceaae63723e5e6",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/common/simulation_result_card.dart",
+      "sourceDigestSha256": "e6159c3489ed567b23ff0e2d379cbaafbf69b90b8ddcef1f11666419e00ae4ab",
+      "violationDigestSha256": "e46b84897112b6f15928e3348f86007623db9b9ae553590c6426ca151c05f53d",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/computation_branch_inspector.dart",
+      "sourceDigestSha256": "a5093c7386c46e61118343427a2dfed17bcba54f5c61980882c562f0773994da",
+      "violationDigestSha256": "0cb69764303d9e433d9ae9db107ca7c6c39ad561f55f16565e8aaf5b9e430ec9",
+      "violationCount": 32
+    },
+    {
+      "path": "lib/presentation/widgets/derivation_tree_view.dart",
+      "sourceDigestSha256": "57a55bce5d545a94fa44bb5c1c9070803e662b53498f093b5214cfb1bc67b5cf",
+      "violationDigestSha256": "0f11dc813f179fdac5d584b6add45ada9613fda68421dc6c6698dbdd308ff8bf",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg_exporter.dart",
+      "sourceDigestSha256": "ccf349cf47926bb29dfc7c0ab1a7a6d2a4561fbbcafde79676065c5a690b5f7d",
+      "violationDigestSha256": "a609fbd25235cfc0b851970a14d919ce729358049d1df494cbcfeb7a3b9ff1b4",
+      "violationCount": 50
+    },
+    {
+      "path": "lib/presentation/widgets/export/transducer_visual_exporter.dart",
+      "sourceDigestSha256": "8887b454885f9730d84a59076fec24ec36a9a558bba40428392c35a486a1c2d2",
+      "violationDigestSha256": "5c3bca9a061dad6c6e4c09ac259bcdcd2e5f9f3f2f2d6688a36cf8fe4dc045cd",
+      "violationCount": 4
+    },
+    {
+      "path": "lib/presentation/widgets/export/variable_dependency_export_service_io.dart",
+      "sourceDigestSha256": "fc6fe0fb52683e43bd0555fb4fd802867e33b4f79dc28be8140a1b671a856bc5",
+      "violationDigestSha256": "434800402c0d14e7b29f7767cf234705688548b1501b85bdcfae3b9c17c11528",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/export/variable_dependency_export_service_web.dart",
+      "sourceDigestSha256": "f4aaf2914df7c6abfffcdf030fc3772e511f07729ea8066c49b335b170b84385",
+      "violationDigestSha256": "0f8f6311cc2c8767ca69b6be4fd5027c47697402fb731c561436b45766d30d9a",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/export/variable_dependency_graph_exporter.dart",
+      "sourceDigestSha256": "57924703c5f468b3d1f9abcddb55425dfd34ff5338c0cb753af67d502c7b31ee",
+      "violationDigestSha256": "5fe706b21923441e5a45e6e09685ea2d4a87ebf07709882b53c730fbff807794",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
+      "sourceDigestSha256": "918e4dc8cf827a10cecebb98ac5a4c685b407063f149165e1fd078b81b8cf348",
+      "violationDigestSha256": "aedeee36cfbd7e17f89d62730c9f506b2ec90af0ccd58d4090742236bd99f221",
+      "violationCount": 37
+    },
+    {
+      "path": "lib/presentation/widgets/fa_to_regex_requirement_editor.dart",
+      "sourceDigestSha256": "7cbf242d524f898faebe370355c45a4e0ca983c6d4f003c42a5566c005f3a7ef",
+      "violationDigestSha256": "158df937b985a9c6345423916265ba9d7878bf4eb42c53633b20030efcb75da6",
+      "violationCount": 27
+    },
+    {
+      "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
+      "sourceDigestSha256": "ecce644028e6c365f8a88ae30940fa9a7fe1655fc90fd44ac9fb29ffe16e186b",
+      "violationDigestSha256": "594ee2dd6d74041e7dce614c73c291e21033b9ad3be69d8aa8370068b345d4c3",
+      "violationCount": 4
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm_panel.dart",
+      "sourceDigestSha256": "508bb43b89f7764aa30a658955c0c4a1ec564e19140c5a3f6cfeebcb72232da2",
+      "violationDigestSha256": "77436b9b8321a71087304691c11b88b65ac2f5af6c523297df1ee47fa7689371",
+      "violationCount": 28
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_editor.dart",
+      "sourceDigestSha256": "4a60311ff0a742f4fc096dbd3dc1d548778dfe7ebf195a782af8b6e27533a310",
+      "violationDigestSha256": "833e0a9d707d6328a69d0929d2251efacbc96f7059aca9effcea33152c264004",
+      "violationCount": 10
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
+      "sourceDigestSha256": "52762a955292bc4833338b56e95f60f176fce900f2522dd7996696938aa10b45",
+      "violationDigestSha256": "6f8e6bfd59e4025e4905ec6e3e8eee564b22d9058a38186f57e8180ed3860526",
+      "violationCount": 11
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_simulation_panel.dart",
+      "sourceDigestSha256": "8a2b847d270982c389b93391ec465e30c8808c9d63d77ef0af967613f795b60a",
+      "violationDigestSha256": "72154ff7e2ab0e2093d30075f063fb3e7e3a4cdb08a6b554508047f6bc7428ca",
+      "violationCount": 15
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_transformation_history.dart",
+      "sourceDigestSha256": "4a1c13bb3b8e725122c0d710853f838aa5a79d3ddc30ee44fda8ed7de0ef390a",
+      "violationDigestSha256": "b66c69493cbbb37a3f38dc724e56bd248e15a22011f380fd5ac859a0a171b9c6",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_controller.dart",
+      "sourceDigestSha256": "8f24dd377875721826dc5f2cf31e05fa3776234b2f86425adb95f2e7b4a8dc05",
+      "violationDigestSha256": "81c1c8fcdafb537cb61de69137ae3cd77ad5f1487f30f2ad2b81fe2d06a8254d",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_step_view_model.dart",
+      "sourceDigestSha256": "6bc91a9015809d45ecda0fe9330dee5d8c0b92cd07e1384ee1bbf28c7dbdc08a",
+      "violationDigestSha256": "1617909323d51e36427b2e811f2aa25fd914727262add1a996d9671db32c11f1",
+      "violationCount": 41
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_viewer.dart",
+      "sourceDigestSha256": "a61f243a59d70e9a2a35e7b865cb8627deb7c76b88822eb0b4cc7344f28cc9ff",
+      "violationDigestSha256": "916fd6aa2ee13a3f80d47c0a931c10028bbeb2a3fdd3d89f97a798afa8644c7d",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/lr1_teaching_workspace.dart",
+      "sourceDigestSha256": "114f20292754c76c0433c2218b914116f0e37db60dd61ed2a10329be6d370d2b",
+      "violationDigestSha256": "a476fb8a24f41e80e37f4238792e55c11a8a40c0c4a3708544a9782a0be8c24c",
+      "violationCount": 14
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "sourceDigestSha256": "f3af60379ee4df8bb683f1462bb81110f17bebb930f451541b255171a2897b48",
+      "violationDigestSha256": "bcff69df7ce483a44156c93fb18187cab633654255fd536e89afdc798f3ce54a",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_workspace.dart",
+      "sourceDigestSha256": "a54ceb60a285cb00aeb19617560e904a7ebe2e01b9ce67ba510e47638e52de3b",
+      "violationDigestSha256": "83f89cd6a6261f429cdab926b520ae79c0f6e38aad007960ca6a7d7b11307acf",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/parse_table_teaching_workspace.dart",
+      "sourceDigestSha256": "3941137a4d345bc7b007b0f646499db9a54219fd62146c7b597baa12a6f8cd74",
+      "violationDigestSha256": "9b0da59e1c23c921f9cca730d306ad74a77bbbe9cf211cb87680e3a7133ca6e4",
+      "violationCount": 7
+    },
+    {
+      "path": "lib/presentation/widgets/pda/stack_drawer.dart",
+      "sourceDigestSha256": "3aea6f4c2ed9caae6695bc74e95feb2b470e6ee05f6803bc821883235f9b0fea",
+      "violationDigestSha256": "5d44f28734a5a836e6092d08511928905a69aa4f179256510885784237237757",
+      "violationCount": 4
+    },
+    {
+      "path": "lib/presentation/widgets/pda/stack_operation_preview.dart",
+      "sourceDigestSha256": "3f1b7fd6dc83abbdbc975372e4e09e2d7636295c4cdabae37f426aeca7d5335d",
+      "violationDigestSha256": "715ddbf8717013021a88b5d83df7ae9c4d00bf1dedf930d41ad9bb92f7b03625",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/pda_algorithm_panel.dart",
+      "sourceDigestSha256": "4c5a42ac1598aaca408cf3b290f84cf6596ef055c2ba183d8809acf451c3e7f3",
+      "violationDigestSha256": "7a908ed7fc2972fac739a6b329151b82f47d91f8c0adb958b63a97de7da15d88",
+      "violationCount": 15
+    },
+    {
+      "path": "lib/presentation/widgets/pda_simulation_panel.dart",
+      "sourceDigestSha256": "6b3cecc49d31218aa369b2df4352bdcbb60faae1fe1e50d187a346f7a278985c",
+      "violationDigestSha256": "2b3c5e3cef45cc9183c5b9a2d217477858682ac6694404aa555e612b0d7ca7fc",
+      "violationCount": 14
+    },
+    {
+      "path": "lib/presentation/widgets/pumping_lemma_workspace.dart",
+      "sourceDigestSha256": "418c409a65d7fbb6f82fae5d14a4d465ec7d7997764e2b616aba6c4f4691e5bc",
+      "violationDigestSha256": "2c80ffd98180a0ec921b1e01dbc4deff9b8cc292de24af874e324ac45b8c9aa4",
+      "violationCount": 9
+    },
+    {
+      "path": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
+      "sourceDigestSha256": "1d8a383e3181ad642891a52ee4ad745dbf74cac3bde511738f42a591b116e70d",
+      "violationDigestSha256": "0963efa449955913997c4a24070d366ff67cab4257a2e01e7b657e33751e83e3",
+      "violationCount": 25
+    },
+    {
+      "path": "lib/presentation/widgets/simulation_panel.dart",
+      "sourceDigestSha256": "03d35779a254a4d9990ebdc012df3a6636bbd1f6519c738c42eb6f900005589a",
+      "violationDigestSha256": "ebea62e2ed20f97fc8d4c84ad52f60666284c30f87091546b641d3b09c2f89e8",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/tm/direction_icon.dart",
+      "sourceDigestSha256": "25c06b10d53f242b04b57632060bd24a80ef55b527470d9b9ea3456b491555be",
+      "violationDigestSha256": "90ff31dc2f43f7076982a68d3319e3ac802ceff199a2506eafd74605acad981b",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_block_library_panel.dart",
+      "sourceDigestSha256": "314f59bc4c0b753b68b38bf81c0c7c92199a33b9746c14578875e25036bbe893",
+      "violationDigestSha256": "e3f19b2bd362987f61003ee72ffc466e7ee63742b0a4314a340f15fde662a99e",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_language_controls.dart",
+      "sourceDigestSha256": "c83aa68eb93183217812830a7e5f304210dd1997d84c0e7380b14af0dc9faa36",
+      "violationDigestSha256": "8e51ffdbbf13d1d43d62bf276b8176b656c86d253bc4108306bded5557a5b801",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_panel.dart",
+      "sourceDigestSha256": "7dafa56022cbf960ee03798e7e4a271240377ee4909f56f040a901de0aa7240d",
+      "violationDigestSha256": "07fcec5f05eb4bfffda19788f1e2c12e40489af1119924e7d4996e24d3e49e52",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_presentation_primitives.dart",
+      "sourceDigestSha256": "cd565371fa1a6256fe674b382e951b2affd3516586a9b12201440dea3b8f7ee2",
+      "violationDigestSha256": "d69449db464bb6540a1003f157e44f37768e535b2c2335f5b775eb964d051d97",
+      "violationCount": 10
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_reachability_controls.dart",
+      "sourceDigestSha256": "131f6811baa8bcebe77acb039458cf1286d3439d5d2e258a2072724491a0719a",
+      "violationDigestSha256": "aa9fee96f6639268c94b8010a94abb322740a02f5ebb402f9351a5530090903c",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_runner.dart",
+      "sourceDigestSha256": "d853f69a8e8360685f69540bc3a21b02cdf0e546e76ea4d552e9ab5c5bfa453f",
+      "violationDigestSha256": "9151cf040a5c548e2944d1267068019dedec25905e8bbc999fdad310e70e0696",
+      "violationCount": 6
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_space_controls.dart",
+      "sourceDigestSha256": "4231b453bdf1b787da1d3e2b73f5b1c6cc5eb91bbd6da228d245fea6d7444778",
+      "violationDigestSha256": "9ab3e0fc24022589bdb9c4d8379579c8fcceb3c30887d3d1d22029e6971b60b8",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_time_controls.dart",
+      "sourceDigestSha256": "e9615168e592ac890bc88fe3866ea47a0eafd405f914140efa6cfddfbae34bcb",
+      "violationDigestSha256": "0252bd2d25a518abffeee9ca8528916a82052392d38936699027c53a81bb2a09",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/tm_language_result_view.dart",
+      "sourceDigestSha256": "ce4b83fe76ce84dc0647eaafb7fc2d1fc7b9d4108f8cb2ff7f9494d26a790ada",
+      "violationDigestSha256": "8bb702a35f9faa2359c92bf8db13504eddf7fd1808f5d484cc5cc26f9f1444db",
+      "violationCount": 26
+    },
+    {
+      "path": "lib/presentation/widgets/tm_reachability_result_view.dart",
+      "sourceDigestSha256": "2b370715d6bb51e85368c2951fa5ab64a8d079f94100c2fd534716b826f0e709",
+      "violationDigestSha256": "8ff25dd0192b2eb80291094000f62ebdfc44d7440ca75f95efdbcd7816fe49b8",
+      "violationCount": 22
+    },
+    {
+      "path": "lib/presentation/widgets/tm_simulation_panel.dart",
+      "sourceDigestSha256": "9849e5e571e737994fa323a79926e2b20e7b319eeba6db6cc63a8ffddd995e6e",
+      "violationDigestSha256": "625a34ac5646fc079c67cccf1824c2a70070a4c07556c90fff3eebc127e8847d",
+      "violationCount": 32
+    },
+    {
+      "path": "lib/presentation/widgets/tm_space_result_view.dart",
+      "sourceDigestSha256": "911d32ad91c85c37e47a7b43837f92b252bf793c104f459da5b8fc08505bee3c",
+      "violationDigestSha256": "6d8a39dde56ec7a14fe90f0c65c098803fbe7c09d2c14aa060f7687fc934896e",
+      "violationCount": 20
+    },
+    {
+      "path": "lib/presentation/widgets/tm_termination_result_view.dart",
+      "sourceDigestSha256": "70971e9cfef5ecdf81dd23f8df093306f29b0847d34499265c4959d95efff8ac",
+      "violationDigestSha256": "e9e1130c33cd30a99a60a6d0b2dd795b00ca6cf0816d01df9fc80d0c038279fa",
+      "violationCount": 22
+    },
+    {
+      "path": "lib/presentation/widgets/tm_time_result_view.dart",
+      "sourceDigestSha256": "e09a693a478f0eea1365d37e7996cb1cdd1d1c67ce95dc2619260e176d357341",
+      "violationDigestSha256": "8d88b9216708da4704231d9dc891406350bda749329e6f8037f89ee44da46f43",
+      "violationCount": 28
+    },
+    {
+      "path": "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart",
+      "sourceDigestSha256": "e48274517113b54deecf40f54f218e53003261419d18fd79ca9591c2207e4762",
+      "violationDigestSha256": "7344ba5c78e2a6121f82f18dc128a1272f13c00636f3e2a2cd7dc2ca792c282e",
+      "violationCount": 6
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/base_trace_viewer.dart",
+      "sourceDigestSha256": "bf24367d08a0b30c0b1a791521e61c803e0e5cf4f7b17ddfe159011447dc6c87",
+      "violationDigestSha256": "8deb4c51d155388d5d413bef446ec6cb91e8e05346f0084ea76cf69eb9fef207",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/fsa_trace_viewer.dart",
+      "sourceDigestSha256": "dfe2b14ae53ac12c4525637bd68b3315fb32cc9a1d5c101501433838e47484cb",
+      "violationDigestSha256": "87db1036f50f7cc79b450618ebedebc90e7c4d26e72cabb571282899c0aa73f1",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/pda_trace_viewer.dart",
+      "sourceDigestSha256": "36b78630592ea6b35c0f10df147d2802093ef25f33cf02edbb5b900987763437",
+      "violationDigestSha256": "4a460ce26eb6d885ac12b1bedb2847b3202af5ef12aa846e1cec9cbab2e43ef6",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/tm_trace_viewer.dart",
+      "sourceDigestSha256": "ebfdd3d0d3ae8b5cca299a5dbadab61b2d234b76ecf46488e442d9b0f72d22c8",
+      "violationDigestSha256": "0ccd1738499f4027ab571480ee775f6170714c745f017a22850a884a76a54ce5",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/transition_editors/tm_transition_operations_editor.dart",
+      "sourceDigestSha256": "11d038df5ea83bd562f1c61b3946639a78bbc4c14660f79a2e6045e87cf717cc",
+      "violationDigestSha256": "3df6efa87e2dd7d261d7ea377dea7ad6c9193a8bb589232f8c581eb3518abecc",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/user_derivation_workspace.dart",
+      "sourceDigestSha256": "a1221a848e9d8ea835ad029ba2faa376e4c258d2c3b8622df97655a1803561a2",
+      "violationDigestSha256": "6a25e9c45e8d955957b86ff2e4f7d1e59438a06620c2cb9326a2aa026cd5c43a",
+      "violationCount": 26
+    },
+    {
+      "path": "lib/presentation/widgets/variable_dependency_graph_workspace.dart",
+      "sourceDigestSha256": "d5d349515a8ca7969360c4a8fabe18575ee711b38695665ffb2a2202c95d1628",
+      "violationDigestSha256": "19fda6733a292b67aa69988da7d5a44725de9e6ff14bc1046471d844969d8710",
+      "violationCount": 2
+    }
+  ]
+}

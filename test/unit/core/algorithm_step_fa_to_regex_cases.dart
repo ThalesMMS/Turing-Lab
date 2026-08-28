@@ -52,9 +52,9 @@ void _registerFaToRegexStepTests() {
 
       expect(step.stepType, FAToRegexStepType.validation);
       expect(step.currentStateCount, 3);
-      expect(step.title.contains('Validate'), true);
-      expect(step.explanation.contains('3 state'), true);
-      expect(step.explanation.contains('5 transition'), true);
+      expect(step.title, 'automaton.fa-to-regex.step.title');
+      expect(step.explanationMessage!.arguments['state-count']!.value, 3);
+      expect(step.explanationMessage!.arguments['transition-count']!.value, 5);
     });
 
     test('validation should detect missing initial state', () {
@@ -67,8 +67,10 @@ void _registerFaToRegexStepTests() {
         hasAcceptingStates: true,
       );
 
-      expect(step.explanation.contains('ERROR'), true);
-      expect(step.explanation.contains('No initial'), true);
+      expect(
+        step.explanationMessage!.arguments['has-initial-state']!.value,
+        false,
+      );
     });
 
     test('addInitialState factory should create correct step', () {
@@ -88,8 +90,8 @@ void _registerFaToRegexStepTests() {
 
       expect(step.stepType, FAToRegexStepType.addInitialState);
       expect(step.addedInitialState, newInit);
-      expect(step.explanation.contains('qI'), true);
-      expect(step.explanation.contains('q0'), true);
+      expect(step.explanationMessage!.arguments['new-state']!.value, 'qI');
+      expect(step.explanationMessage!.arguments['old-state']!.value, 'q0');
     });
 
     test('addFinalState factory should create correct step', () {
@@ -109,7 +111,7 @@ void _registerFaToRegexStepTests() {
 
       expect(step.stepType, FAToRegexStepType.addFinalState);
       expect(step.addedFinalState, newFinal);
-      expect(step.explanation.contains('qF'), true);
+      expect(step.explanationMessage!.arguments['new-state']!.value, 'qF');
     });
 
     test('selectStateToEliminate factory should create correct step', () {
@@ -124,7 +126,7 @@ void _registerFaToRegexStepTests() {
       expect(step.eliminatedState, q1);
       expect(step.remainingStateCount, 2);
       expect(step.currentStateCount, 3);
-      expect(step.title.contains('q1'), true);
+      expect(step.titleMessage!.arguments['state']!.value, 'q1');
     });
 
     test('findIncomingTransitions factory should create correct step', () {
@@ -140,7 +142,7 @@ void _registerFaToRegexStepTests() {
       expect(step.eliminatedState, q1);
       expect(step.incomingStates, {q0});
       expect(step.incomingTransitions, {t01});
-      expect(step.explanation.contains('1 incoming'), true);
+      expect(step.explanationMessage!.arguments['transition-count']!.value, 1);
     });
 
     test('findOutgoingTransitions factory should create correct step', () {
@@ -171,7 +173,7 @@ void _registerFaToRegexStepTests() {
       expect(step.eliminatedState, q0);
       expect(step.selfLoopTransitions, {t00});
       expect(step.selfLoopRegex, 'c*');
-      expect(step.title.contains('self-loop'), true);
+      expect(step.titleMessage!.arguments['type']!.value, 'findSelfLoop');
     });
 
     test('findSelfLoop factory should handle no loop', () {
@@ -184,7 +186,7 @@ void _registerFaToRegexStepTests() {
       );
 
       expect(step.selfLoopTransitions, isEmpty);
-      expect(step.explanation.contains('No self-loop'), true);
+      expect(step.explanationMessage!.arguments['has-loop']!.value, false);
     });
 
     test('createBypassTransitions factory should create correct step', () {
@@ -207,7 +209,7 @@ void _registerFaToRegexStepTests() {
       expect(step.eliminatedState, q1);
       expect(step.newTransitions, {newTrans});
       expect(step.resultingRegex, 'a·b');
-      expect(step.explanation.contains('1 new transition'), true);
+      expect(step.explanationMessage!.arguments['transition-count']!.value, 1);
     });
 
     test('combineTransitions factory should create correct step', () {
@@ -223,7 +225,7 @@ void _registerFaToRegexStepTests() {
       expect(step.stepType, FAToRegexStepType.combineTransitions);
       expect(step.combinedRegexes, ['a', 'b', 'c']);
       expect(step.resultingRegex, '(a|b|c)');
-      expect(step.explanation.contains('3 regex'), true);
+      expect(step.explanationMessage!.arguments['regex-count']!.value, 3);
     });
 
     test('completeElimination factory should create correct step', () {
@@ -237,7 +239,7 @@ void _registerFaToRegexStepTests() {
       expect(step.stepType, FAToRegexStepType.completeElimination);
       expect(step.eliminatedState, q1);
       expect(step.remainingStateCount, 2);
-      expect(step.explanation.contains('Successfully eliminated'), true);
+      expect(step.explanationMessage!.arguments['state']!.value, 'q1');
     });
 
     test('extractRegex factory should create correct step', () {
@@ -252,7 +254,7 @@ void _registerFaToRegexStepTests() {
       expect(step.stepType, FAToRegexStepType.extractRegex);
       expect(step.finalRegex, 'a*b+');
       expect(step.resultingRegex, 'a*b+');
-      expect(step.explanation.contains('a*b+'), true);
+      expect(step.explanationMessage!.arguments['regex']!.value, 'a*b+');
     });
 
     test('completion factory should create correct step', () {
@@ -267,9 +269,12 @@ void _registerFaToRegexStepTests() {
       expect(step.stepType, FAToRegexStepType.completion);
       expect(step.finalRegex, '(a|b)*');
       expect(step.resultingRegex, '(a|b)*');
-      expect(step.title.contains('complete'), true);
-      expect(step.explanation.contains('5 state'), true);
-      expect(step.explanation.contains('15'), true);
+      expect(step.titleMessage!.arguments['type']!.value, 'completion');
+      expect(
+        step.explanationMessage!.arguments['original-state-count']!.value,
+        5,
+      );
+      expect(step.explanationMessage!.arguments['step-count']!.value, 15);
     });
 
     test('State and transition sets should be unmodifiable', () {
@@ -462,7 +467,7 @@ void _registerFaToRegexStepTests() {
       expect(step.stateCountChange, -1); // 2 - 3 = -1
     });
 
-    test('eliminationSummary should provide readable summary', () {
+    test('eliminationSummary exposes a locale-neutral message', () {
       final step = FAToRegexStep.findIncomingTransitions(
         id: 'step-summary',
         stepNumber: 0,
@@ -471,11 +476,15 @@ void _registerFaToRegexStepTests() {
         incomingTransitions: {t01},
       );
 
-      final summary = step.eliminationSummary;
-
-      expect(summary.contains('Eliminating'), true);
-      expect(summary.contains('q1'), true);
-      expect(summary.contains('1 incoming'), true);
+      expect(
+        step.eliminationSummary,
+        step.eliminationSummaryMessage.stableCode,
+      );
+      expect(step.eliminationSummaryMessage.arguments['state']?.value, 'q1');
+      expect(
+        step.eliminationSummaryMessage.arguments['incoming-state-count']?.value,
+        1,
+      );
     });
   });
 }

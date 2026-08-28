@@ -26,8 +26,11 @@ final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsModel>(
 
 /// State notifier responsible for reading and persisting [SettingsModel].
 class SettingsNotifier extends StateNotifier<SettingsModel> {
-  SettingsNotifier(this._repository) : super(const SettingsModel()) {
-    _loadFromRepository();
+  SettingsNotifier(this._repository, {SettingsModel? initialSettings})
+    : super(initialSettings ?? const SettingsModel()) {
+    if (initialSettings == null) {
+      _loadFromRepository();
+    }
   }
 
   final SettingsRepository _repository;

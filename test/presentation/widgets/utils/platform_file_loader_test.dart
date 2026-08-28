@@ -79,10 +79,8 @@ void main() {
       final result = await loadAutomatonFromPlatformFile(service, file);
 
       expect(result, isA<Failure<FSA>>());
-      expect(
-        result.error,
-        contains('could not access the selected file data'),
-      );
+      expect(result.error, platformFileInaccessibleErrorCode);
+      expect(isPlatformFileInaccessibleError(result.error), isTrue);
       expect(service.bytesCalls, 0);
       expect(service.pathCalls, 0);
     });
@@ -149,10 +147,8 @@ void main() {
       final result = await loadGrammarFromPlatformFile(service, file);
 
       expect(result, isA<Failure<Grammar>>());
-      expect(
-        result.error,
-        contains('could not access the selected file data'),
-      );
+      expect(result.error, platformFileInaccessibleErrorCode);
+      expect(isPlatformFileInaccessibleError(result.error), isTrue);
       expect(service.grammarBytesCalls, 0);
       expect(service.grammarPathCalls, 0);
     });
@@ -161,8 +157,8 @@ void main() {
 
 class _RecordingFileOperationsService extends FileOperationsService {
   _RecordingFileOperationsService({FSA? automaton, Grammar? grammar})
-      : _automaton = automaton,
-        _grammar = grammar;
+    : _automaton = automaton,
+      _grammar = grammar;
 
   final FSA? _automaton;
   final Grammar? _grammar;

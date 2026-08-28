@@ -10,12 +10,18 @@
 import 'dart:collection';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/algorithms/tm_block_dependency_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/regex_preset.dart';
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_building_blocks.dart';
+import 'package:turing_lab/core/models/tm_execution_analysis.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 
@@ -58,8 +64,9 @@ bool _runPda(PDA pda, String input) {
   final initialState = pda.initialState;
   expect(initialState, isNotNull);
 
-  final acceptingStateIds =
-      pda.acceptingStates.map((state) => state.id).toSet();
+  final acceptingStateIds = pda.acceptingStates
+      .map((state) => state.id)
+      .toSet();
   final queue = ListQueue<_PdaConfiguration>()
     ..add(
       _PdaConfiguration(
@@ -133,6 +140,7 @@ void main() {
       );
 
       expect(example.name, 'AFD - Termina com A');
+      expect(example.id, 'asset/afd_ends_with_a');
       expect(example.category, ExampleCategory.dfa);
       expect(example.difficultyLevel, DifficultyLevel.easy);
       expect(example.complexityLevel, ExampleComplexityLevel.low);
@@ -149,6 +157,65 @@ void main() {
       expect(fsa.isDeterministic, isTrue);
       expect(fsa.validate(), isEmpty);
     });
+
+    test(
+      'stable asset id and legacy display-name lookups are compatible',
+      () async {
+        final byLegacyName = await _expectLoaded<FSA>(
+          dataSource.loadTypedFsaExample('AFD - Termina com A'),
+        );
+        final byStableId = await _expectLoaded<FSA>(
+          dataSource.loadTypedFsaExample('asset/afd_ends_with_a'),
+        );
+
+        expect(byStableId.id, byLegacyName.id);
+        expect(byStableId.name, byLegacyName.name);
+        expect(byStableId.payload.id, byLegacyName.payload.id);
+        expect(
+          byStableId.payload.states.map((state) => state.id).toSet(),
+          byLegacyName.payload.states.map((state) => state.id).toSet(),
+        );
+        expect(
+          byStableId.payload.transitions
+              .map((transition) => transition.id)
+              .toSet(),
+          byLegacyName.payload.transitions
+              .map((transition) => transition.id)
+              .toSet(),
+        );
+      },
+    );
+
+    test(
+      'all legacy asset examples publish unique locale-neutral ids',
+      () async {
+        final examples = <AssetExample<Object>>[
+          ...(await _expectLoadedList<FSA>(
+            dataSource.loadAllTypedFsaExamples(),
+          )).cast<AssetExample<Object>>(),
+          ...(await _expectLoadedList<Grammar>(
+            dataSource.loadAllTypedCfgExamples(),
+          )).cast<AssetExample<Object>>(),
+          ...(await _expectLoadedList<PDA>(
+            dataSource.loadAllTypedPdaExamples(),
+          )).cast<AssetExample<Object>>(),
+          ...(await _expectLoadedList<TM>(dataSource.loadAllTypedTmExamples()))
+              .where((example) => example.id.startsWith('asset/'))
+              .cast<AssetExample<Object>>(),
+          ...(await _expectLoadedList<RegexPreset>(
+            dataSource.loadAllTypedRegexExamples(),
+          )).cast<AssetExample<Object>>(),
+        ];
+
+        expect(examples, hasLength(29));
+        expect(examples.map((example) => example.id).toSet(), hasLength(29));
+        expect(
+          examples.every((example) => example.id.startsWith('asset/')),
+          isTrue,
+        );
+        expect(examples.every((example) => example.id != example.name), isTrue);
+      },
+    );
 
     test('loads lambda NFA examples as typed FSA payloads', () async {
       final example = await _expectLoaded<FSA>(
@@ -254,12 +321,10 @@ void main() {
     test('new PDA examples recognize their intended languages', () async {
       final anb2n = (await _expectLoaded<PDA>(
         dataSource.loadTypedPdaExample('APD - a^n b^2n'),
-      ))
-          .payload;
+      )).payload;
       final mirrored = (await _expectLoaded<PDA>(
         dataSource.loadTypedPdaExample('APD - w#reverse(w)'),
-      ))
-          .payload;
+      )).payload;
 
       for (final word in ['', 'abb', 'aabbbb', 'aaabbbbbb']) {
         expect(_runPda(anb2n, word), isTrue, reason: word);
@@ -359,7 +424,7 @@ void main() {
         dataSource.loadAllTypedTmExamples(),
       );
 
-      expect(examples, hasLength(5));
+      expect(examples, hasLength(10));
       expect(
         examples.map((example) => example.name),
         containsAll([
@@ -368,6 +433,11 @@ void main() {
           'MT - Cópia de string',
           'MT - Incremento binário',
           'MT - Verificador de palíndromo',
+          'MT multifitas - Cópia em duas fitas',
+          'MT multifitas - Comparação',
+          'MT multifitas - Palíndromo',
+          'MT multifitas - Fita de trabalho',
+          'TM - Reusable building blocks',
         ]),
       );
 
@@ -395,6 +465,139 @@ void main() {
         examples.every((example) => example.payload.validate().isEmpty),
         isTrue,
       );
+
+      final blocks = examples
+          .firstWhere(
+            (example) => example.name == 'TM - Reusable building blocks',
+          )
+          .payload;
+      expect(
+        blocks.blockDefinitions.keys,
+        containsAll(['scan', 'rewind', 'copy', 'compare', 'composition']),
+      );
+      final project = TMBlockProject.fromFlatMachine(blocks);
+      expect(TMBlockDependencyAnalyzer.analyze(project).isValid, isTrue);
+      final execution = TMBlockExecutionEngine.execute(project, '010');
+      expect(execution.outcome, TMExecutionOutcome.accepted);
+      expect(execution.metrics.maximumCallDepth, 2);
     });
+
+    test('multi-tape examples recognize representative inputs', () async {
+      final examples = await _expectLoadedList<TM>(
+        dataSource.loadAllTypedTmExamples(),
+      );
+      TM named(String name) =>
+          examples.firstWhere((example) => example.name == name).payload;
+      Future<TMExecutionOutcome> run(String name, String input) async =>
+          (await TMExecutionAnalyzer.analyze(
+            named(name),
+            input,
+            maxSteps: 200,
+            maxConfigurations: 1000,
+          )).outcome;
+
+      expect(
+        await run('MT multifitas - Cópia em duas fitas', '0101'),
+        TMExecutionOutcome.accepted,
+      );
+      expect(
+        await run('MT multifitas - Comparação', '01#01'),
+        TMExecutionOutcome.accepted,
+      );
+      expect(
+        await run('MT multifitas - Comparação', '01#10'),
+        TMExecutionOutcome.haltedRejected,
+      );
+      expect(
+        await run('MT multifitas - Palíndromo', '0110'),
+        TMExecutionOutcome.accepted,
+      );
+      expect(
+        await run('MT multifitas - Palíndromo', '0100'),
+        TMExecutionOutcome.haltedRejected,
+      );
+      expect(
+        await run('MT multifitas - Fita de trabalho', '111'),
+        TMExecutionOutcome.accepted,
+      );
+    });
+
+    test(
+      'loads a test-only module example catalog without central dispatch',
+      () async {
+        final registry = FormalSystemRegistry(
+          modules: const [_ExampleSampleModule()],
+          formats: const [],
+        );
+        final examples = await ExamplesAssetDataSource(
+          registry: registry,
+        ).loadRegisteredExamples(_exampleSampleKey);
+
+        expect(examples, hasLength(1));
+        expect(examples.single.name, 'Registered sample');
+        expect(examples.single.payload, 'sample payload');
+      },
+    );
   });
+}
+
+const _exampleSampleKey = FormalSystemKey(
+  type: FormalSystemTypeId('example-sample'),
+  variant: FormalSystemVariantId('standard'),
+);
+
+class _ExampleSampleModule implements FormalSystemModule<Object> {
+  const _ExampleSampleModule();
+
+  @override
+  FormalSystemDescriptor get descriptor => FormalSystemDescriptor(
+    key: _exampleSampleKey,
+    schema: const DocumentSchemaDescriptor(
+      id: DocumentSchemaId('test.example-sample'),
+      version: DocumentSchemaVersion(1),
+    ),
+    route: const WorkspaceRouteId('/example-sample'),
+    category: FormalSystemCategory.learning,
+    localizationNamespace: const CapabilityNamespaceId('test.example-sample'),
+    semanticsNamespace: const CapabilityNamespaceId(
+      'semantics.test.example-sample',
+    ),
+    capabilities: const FormalSystemCapabilities(
+      examples: SupportedCapability(),
+    ),
+  );
+
+  @override
+  List<DocumentCodecCapability<Object>> get codecs => const [];
+
+  @override
+  List<ConversionCapability<Object, Object>> get conversions => const [];
+
+  @override
+  ExampleCatalogCapability<Object> get examples =>
+      const _ExampleSampleCatalog();
+
+  @override
+  SessionCapability<Object>? get session => null;
+}
+
+class _ExampleSampleCatalog implements ExampleCatalogCapability<Object> {
+  const _ExampleSampleCatalog();
+
+  @override
+  CapabilityNamespaceId get namespace =>
+      const CapabilityNamespaceId('examples.test.example-sample');
+
+  @override
+  Future<List<AssetExample<Object>>> loadExamples() async => [
+    AssetExample<Object>(
+      name: 'Registered sample',
+      description: 'A test-only registered example.',
+      category: ExampleCategory.regex,
+      difficultyLevel: DifficultyLevel.easy,
+      complexityLevel: ExampleComplexityLevel.low,
+      tags: ['test'],
+      payload: 'sample payload',
+    ),
+  ];
 }
