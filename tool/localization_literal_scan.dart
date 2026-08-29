@@ -568,7 +568,10 @@ String _relativePath(Directory root, File file) {
 
 String _normalizePath(String path) => path.replaceAll('\\', '/');
 
-Future<void> main(List<String> arguments) async {
+Future<void> main(List<String> arguments) =>
+    runLocalizationLiteralScan(arguments);
+
+Future<void> runLocalizationLiteralScan(List<String> arguments) async {
   final root = Directory(_option(arguments, '--root') ?? '.').absolute;
   final scopePath =
       _option(arguments, '--scope') ??
@@ -634,9 +637,8 @@ Future<void> main(List<String> arguments) async {
   }
 
   LocalizationLiteralInventoryAudit? inventoryAudit;
-  if (inventoryPath != null || writeInventoryPath != null) {
-    final effectiveInventoryPath = inventoryPath ?? writeInventoryPath!;
-    final inventoryJson = _readJsonObject(root, effectiveInventoryPath);
+  if (inventoryPath != null) {
+    final inventoryJson = _readJsonObject(root, inventoryPath);
     final rawEntries = inventoryJson['entries'];
     if (rawEntries is! List<Object?> ||
         rawEntries.any((entry) => entry is! Map<String, Object?>)) {
@@ -664,8 +666,7 @@ Future<void> main(List<String> arguments) async {
     'status': blockingIssueCount == 0 ? 'passed' : 'failed',
     'scope': _normalizePath(scopePath),
     'allowlist': _normalizePath(allowlistPath),
-    if (inventoryPath != null || writeInventoryPath != null)
-      'inventory': _normalizePath(inventoryPath ?? writeInventoryPath!),
+    if (inventoryPath != null) 'inventory': _normalizePath(inventoryPath),
     'filesScanned': files.length,
     'findingCount': findings.length,
     'violationCount': violations.length,

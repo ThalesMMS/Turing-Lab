@@ -231,7 +231,7 @@ def _string_list_map(
     body = text[open_brace + 1 : close_brace]
     cursor = 0
     while cursor < len(body):
-        while cursor < len(body) and (body[cursor].isspace() or body[cursor] == ","):
+        while cursor < len(body) and body[cursor].isspace():
             cursor += 1
         if cursor >= len(body):
             break
@@ -261,6 +261,13 @@ def _string_list_map(
             errors.append(f"duplicate {label} id: {key}")
         else:
             result[key] = values
+        while cursor < len(body) and body[cursor].isspace():
+            cursor += 1
+        if cursor < len(body):
+            if body[cursor] != ",":
+                errors.append(f"{label} entry {key!r} has no separator")
+                break
+            cursor += 1
     return result
 
 

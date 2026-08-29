@@ -5,11 +5,35 @@ import 'pseudo_localization_catalog.dart';
 import 'pseudo_localizer.dart';
 
 void main() {
+  Map<String, Object?>? readCatalog(File file, List<String> errors) {
+    try {
+      final value = jsonDecode(file.readAsStringSync());
+      if (value is Map<String, Object?>) return value;
+      errors.add('${file.path} must contain a JSON object');
+    } on Object catch (error) {
+      errors.add('cannot read ${file.path}: $error');
+    }
+    return null;
+  }
+
+  bool sameKeys(Map<String, Object?> left, Map<String, Object?> right) {
+    return left.length == right.length && left.keys.every(right.containsKey);
+  }
+
+  Never finish(List<String> errors) {
+    if (errors.isEmpty) exit(0);
+    stderr.writeln('Pseudo-localization contract failed:');
+    for (final error in errors) {
+      stderr.writeln('- $error');
+    }
+    exit(1);
+  }
+
   final errors = <String>[];
   final sourceFile = File('lib/l10n/app_en.arb');
-  final source = _readCatalog(sourceFile, errors);
+  final source = readCatalog(sourceFile, errors);
   if (source == null) {
-    _finish(errors);
+    finish(errors);
   }
 
   Map<String, Object?> transformed;
@@ -17,14 +41,14 @@ void main() {
     transformed = PseudoLocalizationCatalog.transform(source);
   } on Object catch (error) {
     errors.add('cannot pseudo-localize ${sourceFile.path}: $error');
-    _finish(errors);
+    finish(errors);
   }
 
   final repeated = PseudoLocalizationCatalog.transform(source);
   if (jsonEncode(transformed) != jsonEncode(repeated)) {
     errors.add('catalog transformation is not deterministic');
   }
-  if (!_sameKeys(source, transformed)) {
+  if (!sameKeys(source, transformed)) {
     errors.add('catalog keys changed during pseudo-localization');
   }
   for (final entry in source.entries) {
@@ -86,29 +110,5 @@ void main() {
       'Pseudo-localization contract passed for $messageCount messages.',
     );
   }
-  _finish(errors);
-}
-
-Map<String, Object?>? _readCatalog(File file, List<String> errors) {
-  try {
-    final value = jsonDecode(file.readAsStringSync());
-    if (value is Map<String, Object?>) return value;
-    errors.add('${file.path} must contain a JSON object');
-  } on Object catch (error) {
-    errors.add('cannot read ${file.path}: $error');
-  }
-  return null;
-}
-
-bool _sameKeys(Map<String, Object?> left, Map<String, Object?> right) {
-  return left.length == right.length && left.keys.every(right.containsKey);
-}
-
-Never _finish(List<String> errors) {
-  if (errors.isEmpty) exit(0);
-  stderr.writeln('Pseudo-localization contract failed:');
-  for (final error in errors) {
-    stderr.writeln('- $error');
-  }
-  exit(1);
+  finish(errors);
 }

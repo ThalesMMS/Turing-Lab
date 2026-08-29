@@ -112,7 +112,7 @@ Options:
       --screenshots-output D Capture directory (default: REPORT_DIR/screenshots).
                              Never defaults to the tracked screenshots/ tree.
       --report-dir DIR       Summary and log directory (default: build/qa)
-      --no-report            Do not write the summary artifact
+      --no-report            Do not write report artifacts
       --quiet                Send step output to the log files only
       --dry-run              Print the plan without executing anything
       --flutter PATH         Flutter executable (env: FLUTTER_BIN)
@@ -532,12 +532,39 @@ git_diff_generated_l10n() {
   git diff --exit-code -- $GENERATED_L10N
 }
 
+feature_ui_literal_scan() {
+  local args=(
+    run tool/localization_literal_scan.dart
+    --scope tool/localization/feature_ui_scope.v1.json
+    --inventory docs/localization/feature_ui_literal_inventory.v1.json
+  )
+  if [[ "$WRITE_REPORT" -eq 1 ]]; then
+    args+=(--json "$REPORT_DIR/feature-ui-literals.json")
+  fi
+  "$DART" "${args[@]}"
+}
+
 domain_message_report() {
-  python3 tool/check_domain_message_prose.py \
-    --scope tool/localization/domain_message_scope.v1.json \
-    --allowlist tool/localization/domain_message_allowlist.v1.json \
-    --inventory docs/localization/domain_message_inventory.v1.json \
-    --json >"$REPORT_DIR/domain-message-prose.json"
+  local args=(
+    tool/check_domain_message_prose.py
+    --scope tool/localization/domain_message_scope.v1.json
+    --allowlist tool/localization/domain_message_allowlist.v1.json
+    --inventory docs/localization/domain_message_inventory.v1.json
+  )
+  if [[ "$WRITE_REPORT" -eq 1 ]]; then
+    python3 "${args[@]}" --json >"$REPORT_DIR/domain-message-prose.json"
+    return
+  fi
+  python3 "${args[@]}"
+}
+
+arb_resource_report() {
+  if [[ "$WRITE_REPORT" -eq 1 ]]; then
+    python3 tool/check_arb_resources.py \
+      --json-output "$REPORT_DIR/arb-resources.json"
+    return
+  fi
+  python3 tool/check_arb_resources.py
 }
 
 format_changed() {
@@ -676,6 +703,15 @@ category_prereqs() {
 }
 
 category_format() {
+  local feature_ui_command="$DART run tool/localization_literal_scan.dart --scope tool/localization/feature_ui_scope.v1.json --inventory docs/localization/feature_ui_literal_inventory.v1.json"
+  local domain_message_command="python3 tool/check_domain_message_prose.py --scope tool/localization/domain_message_scope.v1.json --allowlist tool/localization/domain_message_allowlist.v1.json --inventory docs/localization/domain_message_inventory.v1.json"
+  local arb_resource_command="python3 tool/check_arb_resources.py"
+  if [[ "$WRITE_REPORT" -eq 1 ]]; then
+    feature_ui_command="$feature_ui_command --json $REPORT_DIR/feature-ui-literals.json"
+    domain_message_command="$domain_message_command --json > $REPORT_DIR/domain-message-prose.json"
+    arb_resource_command="$arb_resource_command --json-output $REPORT_DIR/arb-resources.json"
+  fi
+
   if [[ "$FORMAT_ALL" -eq 1 ]]; then
     exec_step format dart-format "Format check for the whole tree" \
       "$DART format --output=none --set-exit-if-changed ." -- \
@@ -687,11 +723,7 @@ category_format() {
 
   exec_step format feature-ui-literals \
     "Feature-interface literal inventory and unapproved prose" \
-    "$DART run tool/localization_literal_scan.dart --scope tool/localization/feature_ui_scope.v1.json --inventory docs/localization/feature_ui_literal_inventory.v1.json --json $REPORT_DIR/feature-ui-literals.json" -- \
-    "$DART" run tool/localization_literal_scan.dart \
-      --scope tool/localization/feature_ui_scope.v1.json \
-      --inventory docs/localization/feature_ui_literal_inventory.v1.json \
-      --json "$REPORT_DIR/feature-ui-literals.json"
+    "$feature_ui_command" -- feature_ui_literal_scan
 
   exec_step format pseudo-localization \
     "Deterministic nonshipping pseudo-localization contract" \
@@ -717,7 +749,7 @@ category_format() {
       python3 tool/check_feature_localization.py
     exec_step format domain-message-prose \
       "Domain-message prose inventory and unapproved diagnostics" \
-      "python3 tool/check_domain_message_prose.py --scope tool/localization/domain_message_scope.v1.json --allowlist tool/localization/domain_message_allowlist.v1.json --inventory docs/localization/domain_message_inventory.v1.json --json > $REPORT_DIR/domain-message-prose.json" -- \
+      "$domain_message_command" -- \
       domain_message_report
     exec_step format educational-content \
       "Educational content inventory and evidence" \
@@ -725,9 +757,7 @@ category_format() {
       python3 tool/check_educational_content.py
     exec_step format arb-resources \
       "ARB JSON, ICU syntax, parity, and placeholder contracts" \
-      "python3 tool/check_arb_resources.py --json-output $REPORT_DIR/arb-resources.json" -- \
-      python3 tool/check_arb_resources.py \
-      --json-output "$REPORT_DIR/arb-resources.json"
+      "$arb_resource_command" -- arb_resource_report
     exec_step format native-shell-localization \
       "Native shell branding and macOS English/Portuguese menu resources" \
       "python3 test/tool/native_shell_localization_contract_test.py" -- \

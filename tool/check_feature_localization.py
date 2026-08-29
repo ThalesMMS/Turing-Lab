@@ -11,6 +11,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+_TOOL_DIRECTORY = str(Path(__file__).resolve().parent)
+if _TOOL_DIRECTORY not in sys.path:
+    sys.path.insert(0, _TOOL_DIRECTORY)
+
+from icu_message_parser import IcuMessageParser, IcuSyntaxError  # noqa: E402
+
 
 EXPECTED_OWNERS = {
     "sharedChrome": 163,
@@ -228,15 +234,21 @@ def _validate_arb_parity(
                 f"placeholder metadata differs for {key}: "
                 f"en={en_contract}, pt={pt_contract}"
             )
-        declared_placeholders = set(en_contract) | set(pt_contract)
-        en_used = set(PLACEHOLDER_PATTERN.findall(en_message)) & declared_placeholders
-        pt_used = set(PLACEHOLDER_PATTERN.findall(pt_message)) & declared_placeholders
+        en_used = _icu_argument_names(en_message)
+        pt_used = _icu_argument_names(pt_message)
         if en_used != pt_used:
             errors.append(
                 f"message placeholders differ for {key}: "
                 f"en={sorted(en_used)}, pt={sorted(pt_used)}"
             )
     return en_keys, pt_keys
+
+
+def _icu_argument_names(message: str) -> set[str]:
+    try:
+        return {use.name for use in IcuMessageParser(message).parse()}
+    except IcuSyntaxError:
+        return set(PLACEHOLDER_PATTERN.findall(message))
 
 
 def _load_parity_rows(parity_root: Path, errors: list[str]) -> dict[str, str]:
