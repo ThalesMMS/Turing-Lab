@@ -312,8 +312,10 @@ class FSAReverser {
         explanation: cloneExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
-          fsaReversalTitleMessageProperty: cloneTitle.toJson(),
-          fsaReversalExplanationMessageProperty: cloneExplanation.toJson(),
+          FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY: cloneTitle
+              .toJson(),
+          FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY:
+              cloneExplanation.toJson(),
           'clonedStates': [
             for (final clone in sortedClones)
               '${clone.key} → ${clone.value.id}',
@@ -328,8 +330,10 @@ class FSAReverser {
         explanation: reverseExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
-          fsaReversalTitleMessageProperty: reverseTitle.toJson(),
-          fsaReversalExplanationMessageProperty: reverseExplanation.toJson(),
+          FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY: reverseTitle
+              .toJson(),
+          FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY:
+              reverseExplanation.toJson(),
           'reversedTransitions': [
             for (final transition in sortedReversed)
               _reversedTransitionDescription(transition),
@@ -346,8 +350,10 @@ class FSAReverser {
         explanation: entryExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
-          fsaReversalTitleMessageProperty: entryTitle.toJson(),
-          fsaReversalExplanationMessageProperty: entryExplanation.toJson(),
+          FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY: entryTitle
+              .toJson(),
+          FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY:
+              entryExplanation.toJson(),
           'createdStateIds': [newInitial.id],
           'entryTransitions': [
             for (final transition in sortedEntries)
@@ -365,8 +371,10 @@ class FSAReverser {
         explanation: acceptingExplanation.stableCode,
         type: AlgorithmType.fsaReversal,
         properties: {
-          fsaReversalTitleMessageProperty: acceptingTitle.toJson(),
-          fsaReversalExplanationMessageProperty: acceptingExplanation.toJson(),
+          FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY:
+              acceptingTitle.toJson(),
+          FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY:
+              acceptingExplanation.toJson(),
           'acceptingStateId': newAccepting.id,
         },
       ),

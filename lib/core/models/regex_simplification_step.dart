@@ -214,7 +214,7 @@ class RegexSimplificationStep {
       originalRegex: originalRegex,
       simplifiedRegex: simplifiedRegex,
       ruleApplied: rule,
-      ruleExplanation: rule.descriptionMessage.stableCode,
+      ruleExplanation: rule.description,
       position: position,
       matchedSubexpression: matchedSubexpression,
       replacementSubexpression: replacementSubexpression,
@@ -593,7 +593,9 @@ class RegexSimplificationStep {
   bool get madeProgress => charactersSaved != null && charactersSaved! > 0;
 
   /// Gets a summary of the rule application
-  String get ruleSummary => ruleSummaryMessage.stableCode;
+  String get ruleSummary => ruleApplied == null
+      ? ruleSummaryMessage.stableCode
+      : '${ruleSummaryMessage.stableCode}.${ruleApplied!.name}';
 
   StructuredMessage get ruleSummaryMessage => ruleApplied == null
       ? _regexStepMessage('no-rule-summary')
@@ -614,23 +616,23 @@ class RegexSimplificationStep {
             ),
           },
         );
+
+  static StructuredMessage _regexStepMessage(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'regex.simplification.step',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
+    arguments: arguments,
+  );
+
+  static StructuredMessageArgument _regexArgument(
+    String? value, {
+    String role = 'regex',
+  }) => StructuredMessageArgument.literal(value ?? '', role: role);
 }
-
-StructuredMessage _regexStepMessage(
-  String code, {
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => StructuredMessage(
-  namespace: 'regex.simplification.step',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: arguments,
-);
-
-StructuredMessageArgument _regexArgument(
-  String? value, {
-  String role = 'regex',
-}) => StructuredMessageArgument.literal(value ?? '', role: role);
 
 /// Types of steps in regex simplification
 enum RegexSimplificationStepType {
@@ -657,31 +659,27 @@ enum RegexSimplificationStepType {
 extension RegexSimplificationStepTypeExtension on RegexSimplificationStepType {
   /// Compatibility code for callers that have not adopted presentation
   /// resolution yet.
-  String get displayName => labelMessage.stableCode;
+  String get displayName => '${labelMessage.stableCode}.$name';
 
-  String get description => descriptionMessage.stableCode;
+  String get description => '${descriptionMessage.stableCode}.$name';
 
-  StructuredMessage get labelMessage => _regexStepTypeMessage('label', this);
+  StructuredMessage get labelMessage => _message('label');
 
-  StructuredMessage get descriptionMessage =>
-      _regexStepTypeMessage('description', this);
+  StructuredMessage get descriptionMessage => _message('description');
+
+  StructuredMessage _message(String code) => StructuredMessage(
+    namespace: 'regex.simplification.step-type',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
+    arguments: {
+      'type': StructuredMessageArgument.outcome(
+        name,
+        role: 'simplification-step-type',
+      ),
+    },
+  );
 }
-
-StructuredMessage _regexStepTypeMessage(
-  String code,
-  RegexSimplificationStepType type,
-) => StructuredMessage(
-  namespace: 'regex.simplification.step-type',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: {
-    'type': StructuredMessageArgument.outcome(
-      type.name,
-      role: 'simplification-step-type',
-    ),
-  },
-);
 
 /// Simplification rules for regular expressions
 enum SimplificationRule {
@@ -750,14 +748,13 @@ enum SimplificationRule {
 extension SimplificationRuleExtension on SimplificationRule {
   /// Compatibility code for callers that have not adopted presentation
   /// resolution yet.
-  String get displayName => nameMessage.stableCode;
+  String get displayName => '${nameMessage.stableCode}.$name';
 
-  String get description => descriptionMessage.stableCode;
+  String get description => '${descriptionMessage.stableCode}.$name';
 
-  StructuredMessage get nameMessage => _regexRuleMessage('name', this);
+  StructuredMessage get nameMessage => _message('name');
 
-  StructuredMessage get descriptionMessage =>
-      _regexRuleMessage('description', this);
+  StructuredMessage get descriptionMessage => _message('description');
 
   /// Gets the formal notation of the rule
   String get formalNotation {
@@ -804,18 +801,17 @@ extension SimplificationRuleExtension on SimplificationRule {
         return 'a|b|c → [abc]';
     }
   }
-}
 
-StructuredMessage _regexRuleMessage(String code, SimplificationRule rule) =>
-    StructuredMessage(
-      namespace: 'regex.simplification.rule',
-      code: code,
-      category: StructuredMessageCategory.transformation,
-      severity: StructuredMessageSeverity.information,
-      arguments: {
-        'rule': StructuredMessageArgument.outcome(
-          rule.name,
-          role: 'simplification-rule',
-        ),
-      },
-    );
+  StructuredMessage _message(String code) => StructuredMessage(
+    namespace: 'regex.simplification.rule',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
+    arguments: {
+      'rule': StructuredMessageArgument.outcome(
+        name,
+        role: 'simplification-rule',
+      ),
+    },
+  );
+}

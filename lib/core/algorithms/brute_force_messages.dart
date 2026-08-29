@@ -2,6 +2,19 @@ import '../messages/structured_message.dart';
 
 /// Locale-neutral messages emitted by the bounded CFG brute-force parser.
 abstract final class BruteForceMessages {
+  static StructuredMessage _message(
+    String code, {
+    StructuredMessageCategory category = StructuredMessageCategory.validation,
+    StructuredMessageSeverity severity = StructuredMessageSeverity.error,
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'grammar.brute-force',
+    code: code,
+    category: category,
+    severity: severity,
+    arguments: arguments,
+  );
+
   static StructuredMessage invalidLimitNonNegative(String limit) => _message(
     'invalid-limit-non-negative',
     arguments: {
@@ -100,16 +113,3 @@ abstract final class BruteForceMessages {
     },
   );
 }
-
-StructuredMessage _message(
-  String code, {
-  StructuredMessageCategory category = StructuredMessageCategory.validation,
-  StructuredMessageSeverity severity = StructuredMessageSeverity.error,
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => StructuredMessage(
-  namespace: 'grammar.brute-force',
-  code: code,
-  category: category,
-  severity: severity,
-  arguments: arguments,
-);

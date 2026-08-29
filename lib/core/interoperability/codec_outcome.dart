@@ -5,6 +5,8 @@ import '../formal_systems/formal_system_ids.dart';
 import '../messages/structured_message.dart';
 import 'codec_source.dart';
 
+export 'codec_operation_exception.dart';
+
 enum DocumentFidelity { exact, normalized, lossy }
 
 enum CodecDiagnosticDisposition { preserved, normalized, dropped }
@@ -164,20 +166,6 @@ final class CodecInternalFailure<T> extends CodecOutcome<T> {
   final String message;
   final Object? cause;
   final StructuredMessage? structuredMessage;
-}
-
-/// Locale-neutral exception bridge for synchronous codec APIs.
-final class CodecOperationException implements Exception {
-  const CodecOperationException({
-    required this.compatibilityCode,
-    required this.structuredMessage,
-  });
-
-  final String compatibilityCode;
-  final StructuredMessage structuredMessage;
-
-  @override
-  String toString() => compatibilityCode;
 }
 
 final class InteroperableDocument<T extends Object> {

@@ -1,11 +1,12 @@
 import '../messages/structured_message.dart';
 
-const fsaConcatenationTitleMessageProperty = 'fsaConcatenationTitleMessage';
-const fsaConcatenationExplanationMessageProperty =
-    'fsaConcatenationExplanationMessage';
-
 /// Locale-neutral messages emitted by the FSA concatenation construction.
 abstract final class FsaConcatenationMessages {
+  static const String FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY =
+      'fsaConcatenationTitleMessage';
+  static const String FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY =
+      'fsaConcatenationExplanationMessage';
+
   static StructuredMessage emptyOperand(String operand) =>
       _validation('empty-operand', arguments: {'operand': _operand(operand)});
 

@@ -15,11 +15,13 @@ import '../messages/structured_message.dart';
 import 'state.dart';
 import 'fsa_transition.dart';
 
-const faToRegexTitleMessageProperty = 'faToRegexTitleMessage';
-const faToRegexExplanationMessageProperty = 'faToRegexExplanationMessage';
+part 'fa_to_regex_step_type.dart';
 
 /// Represents a single step in FA to Regex conversion using state elimination
 class FAToRegexStep {
+  static const _titleMessageProperty = 'faToRegexTitleMessage';
+  static const _explanationMessageProperty = 'faToRegexExplanationMessage';
+
   /// Base algorithm step information
   final AlgorithmStep baseStep;
 
@@ -686,15 +688,17 @@ class FAToRegexStep {
 
   /// Locale-neutral title contract resolved at the presentation boundary.
   StructuredMessage? get titleMessage =>
-      _faToRegexMessageProperty(baseStep, faToRegexTitleMessageProperty);
+      _faToRegexMessageProperty(baseStep, _titleMessageProperty);
 
   /// Locale-neutral explanation contract resolved at the presentation
   /// boundary.
   StructuredMessage? get explanationMessage =>
-      _faToRegexMessageProperty(baseStep, faToRegexExplanationMessageProperty);
+      _faToRegexMessageProperty(baseStep, _explanationMessageProperty);
 
   /// Compatibility code for callers awaiting presentation resolution.
-  String get eliminationSummary => eliminationSummaryMessage.stableCode;
+  String get eliminationSummary =>
+      '${eliminationSummaryMessage.stableCode}.'
+      '${eliminatedState == null ? 'no-state' : 'with-state'}';
 
   /// Locale-neutral summary of the state elimination operation.
   StructuredMessage get eliminationSummaryMessage => _faToRegexStepMessage(
@@ -761,153 +765,88 @@ class FAToRegexStep {
     }
     return null;
   }
-}
 
-AlgorithmStep _faToRegexBaseStep({
-  required String id,
-  required int stepNumber,
-  required FAToRegexStepType stepType,
-  String titleState = '',
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) {
-  final titleMessage = _faToRegexStepMessage(
-    'title',
-    arguments: {
-      'type': StructuredMessageArgument.outcome(
-        stepType.name,
-        role: 'fa-to-regex-step-type',
-      ),
-      'state': _faToRegexLiteral(titleState, 'state-label'),
-    },
-  );
-  final explanationMessage = _faToRegexStepMessage(
-    '${_faToRegexStepCode(stepType)}-explanation',
+  static AlgorithmStep _faToRegexBaseStep({
+    required String id,
+    required int stepNumber,
+    required FAToRegexStepType stepType,
+    String titleState = '',
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) {
+    final titleMessage = _faToRegexStepMessage(
+      'title',
+      arguments: {
+        'type': StructuredMessageArgument.outcome(
+          stepType.name,
+          role: 'fa-to-regex-step-type',
+        ),
+        'state': _faToRegexLiteral(titleState, 'state-label'),
+      },
+    );
+    final explanationMessage = _faToRegexStepMessage(
+      '${_faToRegexStepCode(stepType)}-explanation',
+      arguments: arguments,
+    );
+    return AlgorithmStep(
+      id: id,
+      stepNumber: stepNumber,
+      title: titleMessage.stableCode,
+      explanation: explanationMessage.stableCode,
+      type: AlgorithmType.faToRegex,
+      properties: {
+        _titleMessageProperty: titleMessage.toJson(),
+        _explanationMessageProperty: explanationMessage.toJson(),
+      },
+    );
+  }
+
+  static StructuredMessage _faToRegexStepMessage(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'automaton.fa-to-regex.step',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
     arguments: arguments,
   );
-  return AlgorithmStep(
-    id: id,
-    stepNumber: stepNumber,
-    title: titleMessage.stableCode,
-    explanation: explanationMessage.stableCode,
-    type: AlgorithmType.faToRegex,
-    properties: {
-      faToRegexTitleMessageProperty: titleMessage.toJson(),
-      faToRegexExplanationMessageProperty: explanationMessage.toJson(),
-    },
-  );
-}
 
-StructuredMessage _faToRegexStepMessage(
-  String code, {
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => StructuredMessage(
-  namespace: 'automaton.fa-to-regex.step',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: arguments,
-);
+  static StructuredMessageArgument _faToRegexLiteral(
+    String value,
+    String role,
+  ) => StructuredMessageArgument.literal(value, role: role);
 
-StructuredMessageArgument _faToRegexLiteral(String value, String role) =>
-    StructuredMessageArgument.literal(value, role: role);
-
-String _faToRegexStateLabels(Set<State> states) {
-  if (states.isEmpty) return '∅';
-  final labels = states.map((state) => state.label).toList()..sort();
-  return labels.join(', ');
-}
-
-StructuredMessage? _faToRegexMessageProperty(AlgorithmStep step, String key) {
-  final raw = step.properties[key];
-  if (raw is! Map) return null;
-  try {
-    return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
-  } on FormatException {
-    return null;
+  static String _faToRegexStateLabels(Set<State> states) {
+    if (states.isEmpty) return '∅';
+    final labels = states.map((state) => state.label).toList()..sort();
+    return labels.join(', ');
   }
+
+  static StructuredMessage? _faToRegexMessageProperty(
+    AlgorithmStep step,
+    String key,
+  ) {
+    final raw = step.properties[key];
+    if (raw is! Map) return null;
+    try {
+      return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
+    } on FormatException {
+      return null;
+    }
+  }
+
+  static String _faToRegexStepCode(FAToRegexStepType type) => switch (type) {
+    FAToRegexStepType.validation => 'validation',
+    FAToRegexStepType.addInitialState => 'add-initial-state',
+    FAToRegexStepType.addFinalState => 'add-final-state',
+    FAToRegexStepType.selectState => 'select-state',
+    FAToRegexStepType.findIncoming => 'find-incoming',
+    FAToRegexStepType.findOutgoing => 'find-outgoing',
+    FAToRegexStepType.findSelfLoop => 'find-self-loop',
+    FAToRegexStepType.createBypass => 'create-bypass',
+    FAToRegexStepType.combineTransitions => 'combine-transitions',
+    FAToRegexStepType.completeElimination => 'complete-elimination',
+    FAToRegexStepType.extractRegex => 'extract-regex',
+    FAToRegexStepType.completion => 'completion',
+  };
 }
-
-String _faToRegexStepCode(FAToRegexStepType type) => switch (type) {
-  FAToRegexStepType.validation => 'validation',
-  FAToRegexStepType.addInitialState => 'add-initial-state',
-  FAToRegexStepType.addFinalState => 'add-final-state',
-  FAToRegexStepType.selectState => 'select-state',
-  FAToRegexStepType.findIncoming => 'find-incoming',
-  FAToRegexStepType.findOutgoing => 'find-outgoing',
-  FAToRegexStepType.findSelfLoop => 'find-self-loop',
-  FAToRegexStepType.createBypass => 'create-bypass',
-  FAToRegexStepType.combineTransitions => 'combine-transitions',
-  FAToRegexStepType.completeElimination => 'complete-elimination',
-  FAToRegexStepType.extractRegex => 'extract-regex',
-  FAToRegexStepType.completion => 'completion',
-};
-
-/// Types of steps in FA to Regex conversion
-enum FAToRegexStepType {
-  /// Validating the input automaton
-  validation,
-
-  /// Adding a new unique initial state
-  addInitialState,
-
-  /// Adding a new unique final state
-  addFinalState,
-
-  /// Selecting a state to eliminate
-  selectState,
-
-  /// Finding incoming transitions to the state
-  findIncoming,
-
-  /// Finding outgoing transitions from the state
-  findOutgoing,
-
-  /// Finding and processing self-loop transitions
-  findSelfLoop,
-
-  /// Creating bypass transitions
-  createBypass,
-
-  /// Combining parallel transitions
-  combineTransitions,
-
-  /// Completing the elimination of a state
-  completeElimination,
-
-  /// Extracting the final regex
-  extractRegex,
-
-  /// Conversion completion
-  completion,
-}
-
-/// Extension methods for FAToRegexStepType
-extension FAToRegexStepTypeExtension on FAToRegexStepType {
-  /// Compatibility code for callers awaiting presentation resolution.
-  String get displayName => labelMessage.stableCode;
-
-  /// Compatibility code for callers awaiting presentation resolution.
-  String get description => descriptionMessage.stableCode;
-
-  StructuredMessage get labelMessage =>
-      _faToRegexStepTypeMessage('label', this);
-
-  StructuredMessage get descriptionMessage =>
-      _faToRegexStepTypeMessage('description', this);
-}
-
-StructuredMessage _faToRegexStepTypeMessage(
-  String code,
-  FAToRegexStepType type,
-) => StructuredMessage(
-  namespace: 'automaton.fa-to-regex.step-type',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: {
-    'type': StructuredMessageArgument.outcome(
-      type.name,
-      role: 'fa-to-regex-step-type',
-    ),
-  },
-);

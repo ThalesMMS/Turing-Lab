@@ -334,8 +334,9 @@ class FSAKleeneStar {
         explanation: FsaKleeneStarMessages.cloneExplanation().stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
-          fsaKleeneStarTitleMessageProperty: cloneTitle.toJson(),
-          fsaKleeneStarExplanationMessageProperty:
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY:
+              cloneTitle.toJson(),
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY:
               FsaKleeneStarMessages.cloneExplanation().toJson(),
           'clonedStates': [
             for (final clone in sortedClones)
@@ -351,8 +352,9 @@ class FSAKleeneStar {
         explanation: FsaKleeneStarMessages.entryExplanation().stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
-          fsaKleeneStarTitleMessageProperty: entryTitle.toJson(),
-          fsaKleeneStarExplanationMessageProperty:
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY:
+              entryTitle.toJson(),
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY:
               FsaKleeneStarMessages.entryExplanation().toJson(),
           'createdStateIds': [newInitial.id],
           'entryTransition':
@@ -369,8 +371,9 @@ class FSAKleeneStar {
         ).stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
-          fsaKleeneStarTitleMessageProperty: repeatTitle.toJson(),
-          fsaKleeneStarExplanationMessageProperty:
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY:
+              repeatTitle.toJson(),
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY:
               FsaKleeneStarMessages.repeatExplanation(
                 hasAcceptingStates: sortedRepeats.isNotEmpty,
               ).toJson(),
@@ -392,8 +395,9 @@ class FSAKleeneStar {
         ).stableCode,
         type: AlgorithmType.fsaKleeneStar,
         properties: {
-          fsaKleeneStarTitleMessageProperty: exitTitle.toJson(),
-          fsaKleeneStarExplanationMessageProperty:
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY:
+              exitTitle.toJson(),
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY:
               FsaKleeneStarMessages.exitExplanation(
                 hasAcceptingStates: sortedExits.isNotEmpty,
               ).toJson(),

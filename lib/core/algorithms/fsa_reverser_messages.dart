@@ -1,10 +1,12 @@
 import '../messages/structured_message.dart';
 
-const fsaReversalTitleMessageProperty = 'fsaReversalTitleMessage';
-const fsaReversalExplanationMessageProperty = 'fsaReversalExplanationMessage';
-
 /// Locale-neutral messages emitted by the finite-automaton reversal.
 abstract final class FsaReversalMessages {
+  static const String FSA_REVERSAL_TITLE_MESSAGE_PROPERTY =
+      'fsaReversalTitleMessage';
+  static const String FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY =
+      'fsaReversalExplanationMessage';
+
   static StructuredMessage emptyOperand() => _validation('empty-operand');
 
   static StructuredMessage missingInitialState() =>

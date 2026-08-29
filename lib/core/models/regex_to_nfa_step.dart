@@ -670,39 +670,41 @@ class RegexToNFAStep {
       properties[key] = value;
     }
   }
+
+  static StructuredMessage _regexToNfaStepMessage(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'regex.to-nfa.step',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
+    arguments: arguments,
+  );
+
+  static StructuredMessageArgument _regexToNfaLiteral(
+    String value,
+    String role,
+  ) => StructuredMessageArgument.literal(value, role: role);
+
+  static StructuredMessageArgument _regexToNfaPosition(int? position) =>
+      StructuredMessageArgument.integer(position ?? -1, role: 'regex-position');
+
+  static String _displayRegexSymbol(String? symbol) =>
+      symbol == null || symbol.isEmpty ? 'ε' : symbol;
+
+  static String _regexToNfaStepCode(RegexToNFAStepType type, String suffix) =>
+      '${switch (type) {
+        RegexToNFAStepType.start => 'start',
+        RegexToNFAStepType.basicSymbol => 'basic-symbol',
+        RegexToNFAStepType.concatenation => 'concatenation',
+        RegexToNFAStepType.union => 'union',
+        RegexToNFAStepType.kleeneStar => 'kleene-star',
+        RegexToNFAStepType.plus => 'plus',
+        RegexToNFAStepType.optional => 'optional',
+        RegexToNFAStepType.complete => 'complete',
+      }}-$suffix';
 }
-
-StructuredMessage _regexToNfaStepMessage(
-  String code, {
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => StructuredMessage(
-  namespace: 'regex.to-nfa.step',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: arguments,
-);
-
-StructuredMessageArgument _regexToNfaLiteral(String value, String role) =>
-    StructuredMessageArgument.literal(value, role: role);
-
-StructuredMessageArgument _regexToNfaPosition(int? position) =>
-    StructuredMessageArgument.integer(position ?? -1, role: 'regex-position');
-
-String _displayRegexSymbol(String? symbol) =>
-    symbol == null || symbol.isEmpty ? 'ε' : symbol;
-
-String _regexToNfaStepCode(RegexToNFAStepType type, String suffix) =>
-    '${switch (type) {
-      RegexToNFAStepType.start => 'start',
-      RegexToNFAStepType.basicSymbol => 'basic-symbol',
-      RegexToNFAStepType.concatenation => 'concatenation',
-      RegexToNFAStepType.union => 'union',
-      RegexToNFAStepType.kleeneStar => 'kleene-star',
-      RegexToNFAStepType.plus => 'plus',
-      RegexToNFAStepType.optional => 'optional',
-      RegexToNFAStepType.complete => 'complete',
-    }}-$suffix';
 
 /// Types of steps in regex to NFA conversion
 enum RegexToNFAStepType {
@@ -752,25 +754,20 @@ extension RegexToNFAStepTypeExtension on RegexToNFAStepType {
     RegexToNFAStepType.complete => 'Complete',
   };
 
-  StructuredMessage get labelMessage =>
-      _regexToNfaStepTypeMessage('label', this);
+  StructuredMessage get labelMessage => _message('label');
 
-  StructuredMessage get descriptionMessage =>
-      _regexToNfaStepTypeMessage('description', this);
+  StructuredMessage get descriptionMessage => _message('description');
+
+  StructuredMessage _message(String code) => StructuredMessage(
+    namespace: 'regex.to-nfa.step-type',
+    code: code,
+    category: StructuredMessageCategory.transformation,
+    severity: StructuredMessageSeverity.information,
+    arguments: {
+      'type': StructuredMessageArgument.outcome(
+        name,
+        role: 'regex-to-nfa-step-type',
+      ),
+    },
+  );
 }
-
-StructuredMessage _regexToNfaStepTypeMessage(
-  String code,
-  RegexToNFAStepType type,
-) => StructuredMessage(
-  namespace: 'regex.to-nfa.step-type',
-  code: code,
-  category: StructuredMessageCategory.transformation,
-  severity: StructuredMessageSeverity.information,
-  arguments: {
-    'type': StructuredMessageArgument.outcome(
-      type.name,
-      role: 'regex-to-nfa-step-type',
-    ),
-  },
-);

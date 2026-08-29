@@ -101,30 +101,48 @@ abstract final class LanguageComparisonStepMessages {
       'validation' => validation(),
       'initialization' => initialization(),
       'alphabet_normalization' => alphabetNormalization(),
-      'nfa_to_dfa' => nfaToDfa(_string(data, 'automaton')),
-      'dfa_completion' => dfaCompletion(_string(data, 'automaton')),
+      'nfa_to_dfa' =>
+        _hasStrings(data, const ['automaton'])
+            ? nfaToDfa(_string(data, 'automaton'))
+            : unknown(type),
+      'dfa_completion' =>
+        _hasStrings(data, const ['automaton'])
+            ? dfaCompletion(_string(data, 'automaton'))
+            : unknown(type),
       'product_construction_start' => productConstructionStart(),
-      'product_state_created' => productStateCreated(
-        _string(data, 'productState'),
-      ),
-      'product_transition_created' => productTransitionCreated(
-        _string(data, 'symbol'),
-      ),
+      'product_state_created' =>
+        _hasStrings(data, const ['productState'])
+            ? productStateCreated(_string(data, 'productState'))
+            : unknown(type),
+      'product_transition_created' =>
+        _hasStrings(data, const ['symbol'])
+            ? productTransitionCreated(_string(data, 'symbol'))
+            : unknown(type),
       'product_construction_complete' => productConstructionComplete(),
       'bfs_search_start' => bfsSearchStart(),
-      'bfs_initial_check' => bfsInitialCheck(
-        acceptsA: _bool(data, 'acceptsA'),
-        acceptsB: _bool(data, 'acceptsB'),
-      ),
-      'bfs_explore_pair' => bfsExplorePair(
-        stateA: _string(data, 'stateA'),
-        stateB: _string(data, 'stateB'),
-      ),
-      'bfs_distinguishing_found' => bfsDistinguishingFound(
-        _string(data, 'distinguishingString'),
-      ),
+      'bfs_initial_check' =>
+        _hasBools(data, const ['acceptsA', 'acceptsB'])
+            ? bfsInitialCheck(
+                acceptsA: _bool(data, 'acceptsA'),
+                acceptsB: _bool(data, 'acceptsB'),
+              )
+            : unknown(type),
+      'bfs_explore_pair' =>
+        _hasStrings(data, const ['stateA', 'stateB'])
+            ? bfsExplorePair(
+                stateA: _string(data, 'stateA'),
+                stateB: _string(data, 'stateB'),
+              )
+            : unknown(type),
+      'bfs_distinguishing_found' =>
+        _hasStrings(data, const ['distinguishingString'])
+            ? bfsDistinguishingFound(_string(data, 'distinguishingString'))
+            : unknown(type),
       'bfs_complete' => bfsComplete(),
-      'result' => result(isEquivalent: _bool(data, 'isEquivalent')),
+      'result' =>
+        _hasBools(data, const ['isEquivalent'])
+            ? result(isEquivalent: _bool(data, 'isEquivalent'))
+            : unknown(type),
       'error' || 'comparison_error' => error(),
       _ => unknown(type),
     };
@@ -164,4 +182,10 @@ abstract final class LanguageComparisonStepMessages {
       data[key]?.toString() ?? '';
 
   static bool _bool(Map<String, dynamic> data, String key) => data[key] == true;
+
+  static bool _hasStrings(Map<String, dynamic> data, List<String> keys) =>
+      keys.every((key) => data[key] is String);
+
+  static bool _hasBools(Map<String, dynamic> data, List<String> keys) =>
+      keys.every((key) => data[key] is bool);
 }

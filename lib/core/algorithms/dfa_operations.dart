@@ -25,17 +25,21 @@ import 'dfa_completer.dart';
 import 'dfa_operations_messages.dart';
 import 'nfa_to_dfa_converter.dart';
 
-Result<T> _failure<T>(String legacy, StructuredMessage message) =>
-    Failure<T>(legacy, structuredMessage: message);
-
-Result<T> _propagateFailure<T>(Result<dynamic> result) =>
-    Failure<T>(result.error!, structuredMessage: result.structuredError);
-
 /// Algorithms for high-level DFA and FSA manipulations used by the repository.
 class DFAOperations {
+  static Result<T> _failure<T>(String legacy, StructuredMessage message) =>
+      Failure<T>(legacy, structuredMessage: message);
+
+  static Result<T> _propagateFailure<T>(Result<dynamic> result) =>
+      Failure<T>(result.error!, structuredMessage: result.structuredError);
+
   /// Validates that the provided automaton is a proper DFA for operations
   /// that assume determinism and no epsilon transitions.
-  static Result<void> _validateDfa(FSA dfa, {String context = 'DFA'}) {
+  static Result<void> _validateDfa(
+    FSA dfa, {
+    String context = 'DFA',
+    bool validateTransitionSymbols = true,
+  }) {
     if (dfa.initialState == null) {
       return _failure(
         '$context must have a defined initial state.',
@@ -54,6 +58,11 @@ class DFAOperations {
         DfaOperationsMessages.epsilonTransitionsNotAllowed(context),
       );
     }
+    if (!validateTransitionSymbols) return ResultFactory.success(null);
+    return _validateTransitionSymbols(dfa, context);
+  }
+
+  static Result<void> _validateTransitionSymbols(FSA dfa, String context) {
     // Validate transitions symbols are part of alphabet
     for (final t in dfa.fsaTransitions) {
       if (t.isEpsilonTransition) continue;
@@ -70,9 +79,17 @@ class DFAOperations {
   }
 
   static Result<void> _validateBinaryOperands(FSA a, FSA b, String opLabel) {
-    final va = _validateDfa(a, context: 'Operand A');
+    final va = _validateDfa(
+      a,
+      context: 'Operand A',
+      validateTransitionSymbols: false,
+    );
     if (va.isFailure) return va;
-    final vb = _validateDfa(b, context: 'Operand B');
+    final vb = _validateDfa(
+      b,
+      context: 'Operand B',
+      validateTransitionSymbols: false,
+    );
     if (vb.isFailure) return vb;
     // Alphabets may differ; we normalize via completion on the union, but we still
     // validate that no operand has empty alphabet while having labeled transitions.
@@ -90,6 +107,10 @@ class DFAOperations {
         DfaOperationsMessages.emptyAlphabetWithLabeledTransitions('Operand B'),
       );
     }
+    final symbolsA = _validateTransitionSymbols(a, 'Operand A');
+    if (symbolsA.isFailure) return symbolsA;
+    final symbolsB = _validateTransitionSymbols(b, 'Operand B');
+    if (symbolsB.isFailure) return symbolsB;
     return ResultFactory.success(null);
   }
 
@@ -476,6 +497,9 @@ class DFAOperations {
 
 /// Algorithms for NFA manipulation.
 class FSAOperations {
+  static Result<T> _failure<T>(String legacy, StructuredMessage message) =>
+      Failure<T>(legacy, structuredMessage: message);
+
   /// Removes lambda (epsilon) transitions from an FSA, producing an equivalent
   /// automaton without lambda transitions.
   static Result<FSA> removeLambdaTransitions(FSA automaton) {

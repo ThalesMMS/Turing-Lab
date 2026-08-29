@@ -1,14 +1,14 @@
 import '../messages/structured_message.dart';
 
-const cykStepTitleMessageProperty = 'cykStepTitleMessage';
-const cykStepExplanationMessageProperty = 'cykStepExplanationMessage';
-
-// Short aliases match the naming used by other algorithm-step companions.
-const cykTitleMessageProperty = cykStepTitleMessageProperty;
-const cykExplanationMessageProperty = cykStepExplanationMessageProperty;
-
 /// Locale-neutral messages emitted by the educational CYK step model.
 abstract final class CykStepMessages {
+  static const stepTitleMessageProperty = 'cykStepTitleMessage';
+  static const stepExplanationMessageProperty = 'cykStepExplanationMessage';
+
+  // Short aliases match the naming used by other algorithm-step companions.
+  static const titleMessageProperty = stepTitleMessageProperty;
+  static const explanationMessageProperty = stepExplanationMessageProperty;
+
   static StructuredMessage initializeTitle() => _step('initialize-title');
 
   static StructuredMessage initializeExplanation({
@@ -48,7 +48,6 @@ abstract final class CykStepMessages {
     required int position,
     required String terminal,
     required String derivingVariables,
-    required bool hasDerivingVariables,
   }) => _step(
     'fill-base-case-explanation',
     arguments: {
@@ -56,7 +55,7 @@ abstract final class CykStepMessages {
       'terminal': _terminal(terminal),
       'variables': _nonterminalList(derivingVariables),
       'has-variables': _boolean(
-        hasDerivingVariables,
+        derivingVariables.isNotEmpty,
         'deriving-variable-presence',
       ),
     },
@@ -321,7 +320,6 @@ abstract final class CykStepMessages {
     required int col,
     required String substring,
     required String nonTerminals,
-    required bool hasNonTerminals,
   }) => _step(
     'complete-cell-explanation',
     arguments: {
@@ -329,7 +327,10 @@ abstract final class CykStepMessages {
       'column': _index(col, 'table-column'),
       'substring': _substring(substring),
       'nonterminals': _nonterminalList(nonTerminals),
-      'has-nonterminals': _boolean(hasNonTerminals, 'nonterminal-presence'),
+      'has-nonterminals': _boolean(
+        nonTerminals.isNotEmpty,
+        'nonterminal-presence',
+      ),
     },
   );
 

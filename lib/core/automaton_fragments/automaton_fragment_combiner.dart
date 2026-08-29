@@ -48,11 +48,17 @@ final class AutomatonFragmentDiagnostic {
     required this.code,
     required this.severity,
     required this.message,
+    this.normalized,
+    this.transitionId,
+    this.connectorKind,
   });
 
   final AutomatonFragmentDiagnosticCode code;
   final AutomatonFragmentDiagnosticSeverity severity;
   final String message;
+  final bool? normalized;
+  final String? transitionId;
+  final AutomatonFragmentKind? connectorKind;
 
   bool get isBlocking =>
       severity == AutomatonFragmentDiagnosticSeverity.blocking;
@@ -130,17 +136,19 @@ final class AutomatonFragmentPlan {
     required Iterable<String> importedStateIds,
     required Iterable<String> importedTransitionIds,
     this.annotations,
-  })  : stateSourceMap = Map<String, String>.unmodifiable(stateSourceMap),
-        transitionSourceMap =
-            Map<String, String>.unmodifiable(transitionSourceMap),
-        annotationSourceMap =
-            Map<String, String>.unmodifiable(annotationSourceMap),
-        blockSourceMap = Map<String, String>.unmodifiable(blockSourceMap),
-        diagnostics = List<AutomatonFragmentDiagnostic>.unmodifiable(
-          diagnostics,
-        ),
-        importedStateIds = Set<String>.unmodifiable(importedStateIds),
-        importedTransitionIds = Set<String>.unmodifiable(importedTransitionIds);
+  }) : stateSourceMap = Map<String, String>.unmodifiable(stateSourceMap),
+       transitionSourceMap = Map<String, String>.unmodifiable(
+         transitionSourceMap,
+       ),
+       annotationSourceMap = Map<String, String>.unmodifiable(
+         annotationSourceMap,
+       ),
+       blockSourceMap = Map<String, String>.unmodifiable(blockSourceMap),
+       diagnostics = List<AutomatonFragmentDiagnostic>.unmodifiable(
+         diagnostics,
+       ),
+       importedStateIds = Set<String>.unmodifiable(importedStateIds),
+       importedTransitionIds = Set<String>.unmodifiable(importedTransitionIds);
 
   final AutomatonFragmentKind kind;
   final String destinationDocumentId;
@@ -247,8 +255,9 @@ AutomatonFragmentPlan _combineFsa(
     final connector = request.fsaConnector;
     final from = prepared.statesById[connector?.destinationStateId];
     final importedTarget = prepared.stateSourceMap[connector?.sourceStateId];
-    final to =
-        importedTarget == null ? null : prepared.statesById[importedTarget];
+    final to = importedTarget == null
+        ? null
+        : prepared.statesById[importedTarget];
     if (connector == null || from == null || to == null) {
       diagnostics.add(
         const AutomatonFragmentDiagnostic(
@@ -315,11 +324,13 @@ AutomatonFragmentPlan _combinePda(
         message: resolved
             ? 'Imported PDA acceptance is explicitly normalized to the destination mode.'
             : 'PDA acceptance modes differ and require an explicit conversion plan.',
+        normalized: resolved,
       ),
     );
   }
   if (destination.initialStackSymbol != source.initialStackSymbol) {
-    final resolved = request.pdaInitialStackResolution ==
+    final resolved =
+        request.pdaInitialStackResolution ==
         PdaConflictResolution.useDestination;
     semanticDiagnostics.add(
       AutomatonFragmentDiagnostic(
@@ -330,6 +341,7 @@ AutomatonFragmentPlan _combinePda(
         message: resolved
             ? 'Imported PDA stack initialization is explicitly normalized to the destination symbol.'
             : 'PDA initial stack symbols differ and require an explicit conversion plan.',
+        normalized: resolved,
       ),
     );
   }
@@ -347,6 +359,7 @@ AutomatonFragmentPlan _combinePda(
       destinationId: destination.id,
       sourceId: source.id,
       code: AutomatonFragmentDiagnosticCode.connectorUnsupported,
+      connectorKind: AutomatonFragmentKind.pda,
       message:
           'PDA connector transitions require a typed stack-operation plan.',
     );
@@ -431,6 +444,7 @@ AutomatonFragmentPlan _combineTm(
       destinationId: destination.id,
       sourceId: source.id,
       code: AutomatonFragmentDiagnosticCode.connectorUnsupported,
+      connectorKind: AutomatonFragmentKind.tm,
       message:
           'TM connector transitions require one operation vector per tape.',
     );
@@ -508,6 +522,7 @@ AutomatonFragmentPlan _combineMealy(
       destinationId: destination.id.value,
       sourceId: source.id.value,
       code: AutomatonFragmentDiagnosticCode.connectorUnsupported,
+      connectorKind: AutomatonFragmentKind.mealy,
       message: 'Mealy connectors require an explicit input/output rule.',
     );
   }
@@ -518,12 +533,16 @@ AutomatonFragmentPlan _combineMealy(
     request.insertionAnchor,
   );
   final stateMap = <String, String>{};
-  final reservedStates =
-      destination.states.map((state) => state.id.value).toSet();
+  final reservedStates = destination.states
+      .map((state) => state.id.value)
+      .toSet();
   final importedStates = <MealyState>[];
   for (final state in selected) {
-    final id =
-        _allocateImportedId(source.id.value, state.id.value, reservedStates);
+    final id = _allocateImportedId(
+      source.id.value,
+      state.id.value,
+      reservedStates,
+    );
     stateMap[state.id.value] = id;
     importedStates.add(
       state.copyWith(
@@ -534,8 +553,9 @@ AutomatonFragmentPlan _combineMealy(
         ),
         isInitial: _importedInitial(
           sourceInitial: state.isInitial,
-          destinationHasInitial:
-              destination.states.any((item) => item.isInitial),
+          destinationHasInitial: destination.states.any(
+            (item) => item.isInitial,
+          ),
           policy: request.initialStatePolicy,
         ),
       ),
@@ -556,12 +576,13 @@ AutomatonFragmentPlan _combineMealy(
   }
   final destinationStates =
       request.initialStatePolicy == ImportedInitialStatePolicy.useImported &&
-              importedStates.any((state) => state.isInitial)
-          ? destination.states.map((state) => state.copyWith(isInitial: false))
-          : destination.states;
+          importedStates.any((state) => state.isInitial)
+      ? destination.states.map((state) => state.copyWith(isInitial: false))
+      : destination.states;
   final transitionMap = <String, String>{};
-  final reservedTransitions =
-      destination.transitions.map((transition) => transition.id.value).toSet();
+  final reservedTransitions = destination.transitions
+      .map((transition) => transition.id.value)
+      .toSet();
   final selectedTransitionIds = request.selectedTransitionIds;
   final importedTransitions = <MealyTransition>[];
   for (final transition in source.transitions) {
@@ -628,6 +649,7 @@ AutomatonFragmentPlan _combineMoore(
       destinationId: destination.id.value,
       sourceId: source.id.value,
       code: AutomatonFragmentDiagnosticCode.connectorUnsupported,
+      connectorKind: AutomatonFragmentKind.moore,
       message: 'Moore connectors require an explicit input rule.',
     );
   }
@@ -651,12 +673,16 @@ AutomatonFragmentPlan _combineMoore(
     );
   }
   final stateMap = <String, String>{};
-  final reservedStates =
-      destination.states.map((state) => state.id.value).toSet();
+  final reservedStates = destination.states
+      .map((state) => state.id.value)
+      .toSet();
   final importedStates = <MooreState>[];
   for (final state in selected) {
-    final id =
-        _allocateImportedId(source.id.value, state.id.value, reservedStates);
+    final id = _allocateImportedId(
+      source.id.value,
+      state.id.value,
+      reservedStates,
+    );
     stateMap[state.id.value] = id;
     importedStates.add(
       state.copyWith(
@@ -667,8 +693,9 @@ AutomatonFragmentPlan _combineMoore(
         ),
         isInitial: _importedInitial(
           sourceInitial: state.isInitial,
-          destinationHasInitial:
-              destination.states.any((item) => item.isInitial),
+          destinationHasInitial: destination.states.any(
+            (item) => item.isInitial,
+          ),
           policy: request.initialStatePolicy,
         ),
       ),
@@ -676,12 +703,13 @@ AutomatonFragmentPlan _combineMoore(
   }
   final destinationStates =
       request.initialStatePolicy == ImportedInitialStatePolicy.useImported &&
-              importedStates.any((state) => state.isInitial)
-          ? destination.states.map((state) => state.copyWith(isInitial: false))
-          : destination.states;
+          importedStates.any((state) => state.isInitial)
+      ? destination.states.map((state) => state.copyWith(isInitial: false))
+      : destination.states;
   final transitionMap = <String, String>{};
-  final reservedTransitions =
-      destination.transitions.map((transition) => transition.id.value).toSet();
+  final reservedTransitions = destination.transitions
+      .map((transition) => transition.id.value)
+      .toSet();
   final selectedTransitionIds = request.selectedTransitionIds;
   final importedTransitions = <MooreTransition>[];
   for (final transition in source.transitions) {
@@ -725,13 +753,8 @@ AutomatonFragmentPlan _combineMoore(
   );
 }
 
-typedef _TransitionCloner<T extends Transition> = T Function(
-  T transition,
-  String id,
-  State from,
-  State to,
-  Vector2 delta,
-);
+typedef _TransitionCloner<T extends Transition> =
+    T Function(T transition, String id, State from, State to, Vector2 delta);
 
 final class _PreparedAutomatonGraph<T extends Transition> {
   _PreparedAutomatonGraph({
@@ -764,11 +787,11 @@ final class _PreparedAutomatonGraph<T extends Transition> {
       diagnostics.every((diagnostic) => !diagnostic.isBlocking);
 
   AutomatonFragmentPlan get blockedPlan => _blockedWithDiagnostics(
-        kind: kind,
-        destinationId: destinationId,
-        sourceId: sourceId,
-        diagnostics: diagnostics,
-      );
+    kind: kind,
+    destinationId: destinationId,
+    sourceId: sourceId,
+    diagnostics: diagnostics,
+  );
 
   AutomatonFragmentPlan finish({
     required Object preview,
@@ -858,7 +881,8 @@ _PreparedAutomatonGraph<T> _prepareAutomatonGraph<T extends Transition>({
   );
   final statesById = <String, State>{
     for (final state in destinationList)
-      state.id: request.initialStatePolicy ==
+      state.id:
+          request.initialStatePolicy ==
                   ImportedInitialStatePolicy.useImported &&
               selected.any((candidate) => candidate.isInitial)
           ? state.copyWith(isInitial: false)
@@ -883,8 +907,9 @@ _PreparedAutomatonGraph<T> _prepareAutomatonGraph<T extends Transition>({
 
   final transitions = <T>{};
   final transitionMap = <String, String>{};
-  final reservedTransitionIds =
-      destinationTransitions.map((transition) => transition.id).toSet();
+  final reservedTransitionIds = destinationTransitions
+      .map((transition) => transition.id)
+      .toSet();
   final selectedTransitionIds = request.selectedTransitionIds;
   for (final transition in sourceTransitions) {
     final fromId = stateMap[transition.fromState.id];
@@ -903,12 +928,16 @@ _PreparedAutomatonGraph<T> _prepareAutomatonGraph<T extends Transition>({
           severity: AutomatonFragmentDiagnosticSeverity.blocking,
           message:
               'Transition ${transition.id} has an endpoint outside the selected fragment.',
+          transitionId: transition.id,
         ),
       );
       continue;
     }
-    final id =
-        _allocateImportedId(sourceId, transition.id, reservedTransitionIds);
+    final id = _allocateImportedId(
+      sourceId,
+      transition.id,
+      reservedTransitionIds,
+    );
     transitionMap[transition.id] = id;
     transitions.add(cloneTransition(transition, id, from, to, delta));
   }
@@ -965,7 +994,8 @@ Vector2 _placement(
   if (source.isEmpty) return Vector2.zero();
   final sourceMinX = source.map((point) => point.x).reduce(math.min);
   final sourceMinY = source.map((point) => point.y).reduce(math.min);
-  final anchor = insertionAnchor ??
+  final anchor =
+      insertionAnchor ??
       (destination.isEmpty
           ? Vector2(80, 80)
           : Vector2(
@@ -998,7 +1028,10 @@ bool _overlaps(List<Vector2> destination, List<Vector2> source, Vector2 delta) {
 }
 
 String _allocateImportedId(
-    String documentId, String sourceId, Set<String> used) {
+  String documentId,
+  String sourceId,
+  Set<String> used,
+) {
   final prefix = _safeId(documentId);
   return _allocateId('import_${prefix}_${_safeId(sourceId)}', used);
 }
@@ -1054,7 +1087,8 @@ math.Rectangle<double> _automatonBounds(
   Map<String, TMBlockDefinition> definitions,
   List<TMBlockInvocationNode> invocations,
   Map<String, String> sourceMap,
-}) _cloneTmBlocks({
+})
+_cloneTmBlocks({
   required TM destination,
   required TM source,
   required Map<String, String> importedStateMap,
@@ -1087,7 +1121,8 @@ math.Rectangle<double> _automatonBounds(
       invocations: definition.invocations.map(
         (invocation) => invocation.copyWith(
           reference: TMBlockReference(
-            blockId: sourceMap[invocation.reference.blockId] ??
+            blockId:
+                sourceMap[invocation.reference.blockId] ??
                 invocation.reference.blockId,
             revision: invocation.reference.revision,
           ),
@@ -1095,8 +1130,9 @@ math.Rectangle<double> _automatonBounds(
       ),
     );
   }
-  final usedInvocationIds =
-      destination.blockInvocations.map((invocation) => invocation.id).toSet();
+  final usedInvocationIds = destination.blockInvocations
+      .map((invocation) => invocation.id)
+      .toSet();
   final invocations = <TMBlockInvocationNode>[];
   for (final invocation in selectedInvocations) {
     final stateId = importedStateMap[invocation.stateId]!;
@@ -1105,7 +1141,8 @@ math.Rectangle<double> _automatonBounds(
         id: _allocateImportedId(source.id, invocation.id, usedInvocationIds),
         stateId: stateId,
         reference: TMBlockReference(
-          blockId: sourceMap[invocation.reference.blockId] ??
+          blockId:
+              sourceMap[invocation.reference.blockId] ??
               invocation.reference.blockId,
           revision: invocation.reference.revision,
         ),
@@ -1142,14 +1179,13 @@ Set<String> _requiredTmBlockIds(
 List<T> _selectedTransducerStates<T extends TransducerState>(
   AutomatonFragmentRequest request,
   Iterable<T> states,
-) =>
-    states
-        .where(
-          (state) =>
-              request.selectedStateIds == null ||
-              request.selectedStateIds!.contains(state.id.value),
-        )
-        .toList(growable: false);
+) => states
+    .where(
+      (state) =>
+          request.selectedStateIds == null ||
+          request.selectedStateIds!.contains(state.id.value),
+    )
+    .toList(growable: false);
 
 AutomatonFragmentPlan _finishTransducer({
   required AutomatonFragmentRequest request,
@@ -1199,7 +1235,8 @@ AutomatonFragmentPlan _finishTransducer({
   DocumentAnnotationCollection? collection,
   Map<String, String> sourceMap,
   List<AutomatonFragmentDiagnostic> diagnostics,
-}) _mergeAnnotations({
+})
+_mergeAnnotations({
   required AutomatonFragmentRequest request,
   required String destinationId,
   required Map<String, String> stateMap,
@@ -1212,10 +1249,11 @@ AutomatonFragmentPlan _finishTransducer({
     return (
       collection: destination,
       sourceMap: const {},
-      diagnostics: const []
+      diagnostics: const [],
     );
   }
-  final revision = request.destinationRevision ??
+  final revision =
+      request.destinationRevision ??
       destination?.documentRevision ??
       'fragment-combine';
   final existing = destination == null
@@ -1224,19 +1262,24 @@ AutomatonFragmentPlan _finishTransducer({
           documentRevision: revision,
         )
       : destination.documentRevision == revision
-          ? destination
-          : destination.rebindRevision(revision);
+      ? destination
+      : destination.rebindRevision(revision);
   final wholeDocument = request.selectedStateIds == null;
-  final selected = source.annotations.where((annotation) {
-    final attachment = annotation.attachment;
-    if (attachment == null) return true;
-    return switch (attachment.type) {
-      AnnotationTargetType.state => stateMap.containsKey(attachment.targetId),
-      AnnotationTargetType.transition =>
-        transitionMap.containsKey(attachment.targetId),
-      _ => wholeDocument,
-    };
-  }).toList(growable: false);
+  final selected = source.annotations
+      .where((annotation) {
+        final attachment = annotation.attachment;
+        if (attachment == null) return true;
+        return switch (attachment.type) {
+          AnnotationTargetType.state => stateMap.containsKey(
+            attachment.targetId,
+          ),
+          AnnotationTargetType.transition => transitionMap.containsKey(
+            attachment.targetId,
+          ),
+          _ => wholeDocument,
+        };
+      })
+      .toList(growable: false);
   if (existing.annotations.length + selected.length >
       DocumentAnnotationCollection.maximumAnnotations) {
     return (
@@ -1251,16 +1294,17 @@ AutomatonFragmentPlan _finishTransducer({
       ],
     );
   }
-  final usedIds =
-      existing.annotations.map((annotation) => annotation.id).toSet();
+  final usedIds = existing.annotations
+      .map((annotation) => annotation.id)
+      .toSet();
   final sourceMap = <String, String>{};
   final imported = <DocumentAnnotation>[];
   final baseLayer = existing.annotations.isEmpty
       ? 0
       : existing.annotations
-              .map((annotation) => annotation.zIndex)
-              .reduce(math.max) +
-          1;
+                .map((annotation) => annotation.zIndex)
+                .reduce(math.max) +
+            1;
   for (var index = 0; index < selected.length; index++) {
     final annotation = selected[index];
     final id = _allocateImportedId(source.documentId, annotation.id, usedIds);
@@ -1302,54 +1346,54 @@ AutomatonFragmentPlan _blocked({
   required String sourceId,
   required AutomatonFragmentDiagnosticCode code,
   required String message,
-}) =>
-    _blockedWithDiagnostics(
-      kind: kind,
-      destinationId: destinationId,
-      sourceId: sourceId,
-      diagnostics: [
-        AutomatonFragmentDiagnostic(
-          code: code,
-          severity: AutomatonFragmentDiagnosticSeverity.blocking,
-          message: message,
-        ),
-      ],
-    );
+  AutomatonFragmentKind? connectorKind,
+}) => _blockedWithDiagnostics(
+  kind: kind,
+  destinationId: destinationId,
+  sourceId: sourceId,
+  diagnostics: [
+    AutomatonFragmentDiagnostic(
+      code: code,
+      severity: AutomatonFragmentDiagnosticSeverity.blocking,
+      message: message,
+      connectorKind: connectorKind,
+    ),
+  ],
+);
 
 AutomatonFragmentPlan _blockedWithDiagnostics({
   required AutomatonFragmentKind kind,
   required String destinationId,
   required String sourceId,
   required Iterable<AutomatonFragmentDiagnostic> diagnostics,
-}) =>
-    AutomatonFragmentPlan(
-      kind: kind,
-      destinationDocumentId: destinationId,
-      sourceDocumentId: sourceId,
-      preview: null,
-      stateSourceMap: const {},
-      transitionSourceMap: const {},
-      annotationSourceMap: const {},
-      blockSourceMap: const {},
-      diagnostics: diagnostics,
-      importedStateIds: const {},
-      importedTransitionIds: const {},
-    );
+}) => AutomatonFragmentPlan(
+  kind: kind,
+  destinationDocumentId: destinationId,
+  sourceDocumentId: sourceId,
+  preview: null,
+  stateSourceMap: const {},
+  transitionSourceMap: const {},
+  annotationSourceMap: const {},
+  blockSourceMap: const {},
+  diagnostics: diagnostics,
+  importedStateIds: const {},
+  importedTransitionIds: const {},
+);
 
 AutomatonFragmentKind? _kindOf(Object value) => switch (value) {
-      FSA() => AutomatonFragmentKind.fsa,
-      PDA() => AutomatonFragmentKind.pda,
-      TM() => AutomatonFragmentKind.tm,
-      MealyMachine() => AutomatonFragmentKind.mealy,
-      MooreMachine() => AutomatonFragmentKind.moore,
-      _ => null,
-    };
+  FSA() => AutomatonFragmentKind.fsa,
+  PDA() => AutomatonFragmentKind.pda,
+  TM() => AutomatonFragmentKind.tm,
+  MealyMachine() => AutomatonFragmentKind.mealy,
+  MooreMachine() => AutomatonFragmentKind.moore,
+  _ => null,
+};
 
 String _documentId(Object value) => switch (value) {
-      FSA(:final id) || PDA(:final id) || TM(:final id) => id,
-      MealyMachine(:final id) || MooreMachine(:final id) => id.value,
-      _ => 'unknown',
-    };
+  FSA(:final id) || PDA(:final id) || TM(:final id) => id,
+  MealyMachine(:final id) || MooreMachine(:final id) => id.value,
+  _ => 'unknown',
+};
 
 extension<T> on Iterable<T> {
   T? get firstOrNull {

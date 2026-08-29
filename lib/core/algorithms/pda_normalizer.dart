@@ -104,11 +104,11 @@ class PDANormalizer {
     required PDAAcceptanceMode sourceMode,
     required PDANormalForm targetForm,
   }) {
-    final validationError = _validateSource(pda, sourceMode);
-    if (validationError != null) {
+    final validationMessage = _validateSource(pda, sourceMode);
+    if (validationMessage != null) {
       return Failure(
-        validationError.message.stableCode,
-        structuredMessage: validationError.message,
+        validationMessage.stableCode,
+        structuredMessage: validationMessage,
       );
     }
 
@@ -116,60 +116,48 @@ class PDANormalizer {
     return Success(builder.build());
   }
 
-  static _PdaNormalizationValidation? _validateSource(
+  static StructuredMessage? _validateSource(
     PDA pda,
     PDAAcceptanceMode sourceMode,
   ) {
     if (pda.states.isEmpty) {
-      return _PdaNormalizationValidation(PdaNormalizationMessages.emptyPda());
+      return PdaNormalizationMessages.emptyPda();
     }
     final initialState = pda.initialState;
     if (initialState == null || !pda.states.contains(initialState)) {
-      return _PdaNormalizationValidation(
-        initialState == null
-            ? PdaNormalizationMessages.missingInitialState()
-            : PdaNormalizationMessages.initialStateOutsideSet(),
-      );
+      return initialState == null
+          ? PdaNormalizationMessages.missingInitialState()
+          : PdaNormalizationMessages.initialStateOutsideSet();
     }
     if (pda.initialStackSymbol.isEmpty ||
         !pda.stackAlphabet.contains(pda.initialStackSymbol)) {
-      return _PdaNormalizationValidation(
-        PdaNormalizationMessages.invalidInitialStackSymbol(
-          pda.initialStackSymbol,
-        ),
+      return PdaNormalizationMessages.invalidInitialStackSymbol(
+        pda.initialStackSymbol,
       );
     }
     if (sourceMode != PDAAcceptanceMode.emptyStack &&
         pda.acceptingStates.isEmpty) {
-      return _PdaNormalizationValidation(
-        PdaNormalizationMessages.missingAcceptingState(),
-      );
+      return PdaNormalizationMessages.missingAcceptingState();
     }
     if (pda.acceptingStates.any((state) => !pda.states.contains(state))) {
-      return _PdaNormalizationValidation(
-        PdaNormalizationMessages.acceptingStateOutsideSet(),
-      );
+      return PdaNormalizationMessages.acceptingStateOutsideSet();
     }
 
     for (final transition in pda.transitions) {
       if (transition is! PDATransition) {
-        return _PdaNormalizationValidation(
-          PdaNormalizationMessages.nonPdaTransition(),
-        );
+        return PdaNormalizationMessages.nonPdaTransition();
       }
       if (!pda.states.contains(transition.fromState) ||
           !pda.states.contains(transition.toState)) {
-        return _PdaNormalizationValidation(
-          PdaNormalizationMessages.transitionEndpointOutsideSet(transition.id),
+        return PdaNormalizationMessages.transitionEndpointOutsideSet(
+          transition.id,
         );
       }
       if (!_hasLambdaPop(transition) &&
           !pda.stackAlphabet.contains(transition.popSymbol)) {
-        return _PdaNormalizationValidation(
-          PdaNormalizationMessages.transitionPopSymbolOutsideAlphabet(
-            transition.id,
-            transition.popSymbol,
-          ),
+        return PdaNormalizationMessages.transitionPopSymbolOutsideAlphabet(
+          transition.id,
+          transition.popSymbol,
         );
       }
       if (!_hasLambdaPush(transition) &&
@@ -179,11 +167,9 @@ class PDANormalizer {
         final symbol = transition.pushSymbols.firstWhere(
           (symbol) => !pda.stackAlphabet.contains(symbol),
         );
-        return _PdaNormalizationValidation(
-          PdaNormalizationMessages.transitionPushSymbolOutsideAlphabet(
-            transition.id,
-            symbol,
-          ),
+        return PdaNormalizationMessages.transitionPushSymbolOutsideAlphabet(
+          transition.id,
+          symbol,
         );
       }
     }
@@ -646,9 +632,3 @@ bool _hasLambdaPop(PDATransition transition) =>
 
 bool _hasLambdaPush(PDATransition transition) =>
     transition.isLambdaPush || isEpsilonSymbol(transition.pushSymbol);
-
-final class _PdaNormalizationValidation {
-  const _PdaNormalizationValidation(this.message);
-
-  final StructuredMessage message;
-}

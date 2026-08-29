@@ -3,6 +3,9 @@ part of '../grammar_analyzer.dart';
 class GrammarLeftRecursionAnalyzer {
   const GrammarLeftRecursionAnalyzer(this.context);
 
+  static const String _noLeftRecursionNote =
+      'No direct or indirect left recursion detected.';
+
   final GrammarAnalysisContext context;
 
   bool hasLeftCornerCycle() {
@@ -57,6 +60,7 @@ class GrammarLeftRecursionTransformer {
       return ResultFactory.success(
         GrammarReportComposer.compose(
           value: grammar,
+          notes: [GrammarLeftRecursionAnalyzer._noLeftRecursionNote],
           structuredNotes: [GrammarAnalysisMessages.noLeftRecursion()],
         ),
       );

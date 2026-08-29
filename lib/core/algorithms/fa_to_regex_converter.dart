@@ -52,7 +52,7 @@ class FAToRegexConverter {
       }
 
       return ResultFactory.success(regex);
-    } catch (e) {
+    } catch (_) {
       return _failure(FaToRegexMessages.internalFailure());
     }
   }
@@ -719,7 +719,7 @@ class FAToRegexConverter {
       );
 
       return ResultFactory.success(result);
-    } catch (e) {
+    } catch (_) {
       return _failure(FaToRegexMessages.internalFailure());
     }
   }

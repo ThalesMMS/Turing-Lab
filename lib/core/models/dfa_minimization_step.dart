@@ -761,37 +761,37 @@ class DFAMinimizationStep {
       properties[key] = value;
     }
   }
-}
 
-AlgorithmStep _dfaMinimizationBaseStep({
-  required String id,
-  required int stepNumber,
-  required String title,
-  required String explanation,
-  required StructuredMessage titleMessage,
-  required StructuredMessage explanationMessage,
-}) => AlgorithmStep(
-  id: id,
-  stepNumber: stepNumber,
-  title: title,
-  explanation: explanation,
-  type: AlgorithmType.dfaMinimization,
-  properties: {
-    dfaMinimizationTitleMessageProperty: titleMessage.toJson(),
-    dfaMinimizationExplanationMessageProperty: explanationMessage.toJson(),
-  },
-);
+  static AlgorithmStep _dfaMinimizationBaseStep({
+    required String id,
+    required int stepNumber,
+    required String title,
+    required String explanation,
+    required StructuredMessage titleMessage,
+    required StructuredMessage explanationMessage,
+  }) => AlgorithmStep(
+    id: id,
+    stepNumber: stepNumber,
+    title: title,
+    explanation: explanation,
+    type: AlgorithmType.dfaMinimization,
+    properties: {
+      dfaMinimizationTitleMessageProperty: titleMessage.toJson(),
+      dfaMinimizationExplanationMessageProperty: explanationMessage.toJson(),
+    },
+  );
 
-StructuredMessage? _dfaMinimizationMessageProperty(
-  AlgorithmStep step,
-  String key,
-) {
-  final raw = step.properties[key];
-  if (raw is! Map) return null;
-  try {
-    return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
-  } on FormatException {
-    return null;
+  static StructuredMessage? _dfaMinimizationMessageProperty(
+    AlgorithmStep step,
+    String key,
+  ) {
+    final raw = step.properties[key];
+    if (raw is! Map) return null;
+    try {
+      return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
+    } on FormatException {
+      return null;
+    }
   }
 }
 

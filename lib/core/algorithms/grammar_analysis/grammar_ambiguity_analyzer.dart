@@ -26,6 +26,13 @@ class GrammarAmbiguityAnalyzer {
     return ResultFactory.success(
       GrammarReportComposer.compose(
         value: assessment,
+        notes: [
+          if (appearsLl1)
+            'No LL(1) conflicts detected (grammar appears LL(1) for this analysis).'
+          else
+            'LL(1) conflicts detected (grammar is not LL(1)).',
+          'Note: Being non-LL(1) does not necessarily mean the grammar is ambiguous; it may still be unambiguous but require a stronger parser (e.g., LR/Earley).',
+        ],
         structuredNotes: [
           if (appearsLl1)
             GrammarAmbiguityMessages.noLl1Conflicts()

@@ -13,7 +13,6 @@ import '../models/grammar.dart';
 import '../models/pda.dart';
 import '../models/production.dart';
 import '../models/state.dart';
-import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
 import 'pda_to_cfg_messages.dart';
@@ -93,12 +92,15 @@ class PDAtoCFGConverter {
       );
     }
 
-    final normalizationError = _validatePopNormalized(pda);
-    if (normalizationError != null) {
-      return Failure(
-        normalizationError.message,
-        structuredMessage: normalizationError.structuredMessage,
-      );
+    for (final transition in pda.pdaTransitions) {
+      if (transition.isLambdaPop || isEpsilonSymbol(transition.popSymbol)) {
+        return Failure(
+          'PDA to CFG conversion requires every transition to pop '
+          'exactly one stack symbol. Transition ${transition.id} uses '
+          'an epsilon pop; normalize the PDA before conversion.',
+          structuredMessage: PdaToCfgMessages.epsilonPop(transition.id),
+        );
+      }
     }
 
     Grammar grammar;
@@ -358,20 +360,6 @@ class PDAtoCFGConverter {
     return buffer.toString();
   }
 
-  static _PdaToCfgValidation? _validatePopNormalized(PDA pda) {
-    for (final transition in pda.pdaTransitions) {
-      if (transition.isLambdaPop || isEpsilonSymbol(transition.popSymbol)) {
-        return _PdaToCfgValidation(
-          'PDA to CFG conversion requires every transition to pop '
-          'exactly one stack symbol. Transition ${transition.id} uses '
-          'an epsilon pop; normalize the PDA before conversion.',
-          PdaToCfgMessages.epsilonPop(transition.id),
-        );
-      }
-    }
-    return null;
-  }
-
   static Iterable<List<State>> _stateSequences(
     List<State> states,
     int length,
@@ -394,13 +382,6 @@ class PDAtoCFGConverter {
       }
     }
   }
-}
-
-final class _PdaToCfgValidation {
-  const _PdaToCfgValidation(this.message, this.structuredMessage);
-
-  final String message;
-  final StructuredMessage structuredMessage;
 }
 
 class _PdaToCfgCancellation implements Exception {

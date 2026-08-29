@@ -1,24 +1,14 @@
 import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
 import 'package:turing_lab/core/algorithms/grammar_gnf_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar_gnf_transformation_report.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_diagnostic.dart';
 import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
+import 'package:turing_lab/core/models/grammar_gnf_structured_transformation_step.dart';
 import 'package:turing_lab/core/models/grammar_transformation_step.dart';
 
-class GrammarGnfTransformationReport {
-  final Grammar grammar;
-  final List<GrammarTransformationStep> steps;
-  final List<GrammarGnfStructuredTransformationStep> structuredSteps;
-  final List<GrammarDiagnostic> diagnostics;
-
-  const GrammarGnfTransformationReport({
-    required this.grammar,
-    required this.steps,
-    this.structuredSteps = const [],
-    required this.diagnostics,
-  });
-}
+export 'grammar_gnf_transformation_report.dart';
 
 class GrammarGnfTransformer {
   static GrammarGnfTransformationReport toGnf(Grammar grammar) {
@@ -78,19 +68,19 @@ class GrammarGnfTransformer {
       diagnostics: diagnostics,
     );
   }
-}
 
-GrammarDiagnostic _gnfDiagnostic({
-  required String code,
-  required StructuredMessage message,
-}) => GrammarDiagnostic(
-  code: code,
-  severity: switch (message.severity) {
-    StructuredMessageSeverity.information => GrammarDiagnosticSeverity.info,
-    StructuredMessageSeverity.warning => GrammarDiagnosticSeverity.warning,
-    StructuredMessageSeverity.error => GrammarDiagnosticSeverity.error,
-    StructuredMessageSeverity.unknown => GrammarDiagnosticSeverity.info,
-  },
-  message: message.stableCode,
-  structuredMessage: message,
-);
+  static GrammarDiagnostic _gnfDiagnostic({
+    required String code,
+    required StructuredMessage message,
+  }) => GrammarDiagnostic(
+    code: code,
+    severity: switch (message.severity) {
+      StructuredMessageSeverity.information => GrammarDiagnosticSeverity.info,
+      StructuredMessageSeverity.warning => GrammarDiagnosticSeverity.warning,
+      StructuredMessageSeverity.error => GrammarDiagnosticSeverity.error,
+      StructuredMessageSeverity.unknown => GrammarDiagnosticSeverity.info,
+    },
+    message: message.stableCode,
+    structuredMessage: message,
+  );
+}

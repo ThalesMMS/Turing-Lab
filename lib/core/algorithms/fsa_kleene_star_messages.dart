@@ -1,11 +1,12 @@
 import '../messages/structured_message.dart';
 
-const fsaKleeneStarTitleMessageProperty = 'fsaKleeneStarTitleMessage';
-const fsaKleeneStarExplanationMessageProperty =
-    'fsaKleeneStarExplanationMessage';
-
 /// Locale-neutral messages emitted by the FSA Kleene-star construction.
 abstract final class FsaKleeneStarMessages {
+  static const String FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY =
+      'fsaKleeneStarTitleMessage';
+  static const String FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY =
+      'fsaKleeneStarExplanationMessage';
+
   static StructuredMessage emptyOperand() => _validation('empty-operand');
 
   static StructuredMessage missingInitialState() =>
@@ -44,15 +45,13 @@ abstract final class FsaKleeneStarMessages {
 
   static StructuredMessage internalFailure() => _analysis('internal-failure');
 
-  static StructuredMessage stepTitle(String step) => _step(
-    switch (step) {
-      'clone' => 'clone-title',
-      'entry' => 'entry-title',
-      'repeat' => 'repeat-title',
-      'exit' => 'exit-title',
-      _ => 'unknown-title',
-    },
-  );
+  static StructuredMessage stepTitle(String step) => _step(switch (step) {
+    'clone' => 'clone-title',
+    'entry' => 'entry-title',
+    'repeat' => 'repeat-title',
+    'exit' => 'exit-title',
+    _ => 'unknown-title',
+  });
 
   static StructuredMessage cloneExplanation() => _step('clone-explanation');
 

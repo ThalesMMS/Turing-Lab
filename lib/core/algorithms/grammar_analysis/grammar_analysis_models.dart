@@ -79,9 +79,6 @@ class LL1ParseTable {
       entryTable[nonTerminal]?[terminal] ?? const <LL1ParseTableEntry>[];
 }
 
-/// Why a production was placed in an LL(1) table cell.
-enum LL1TablePlacement { first, follow }
-
 /// A production entry with stable identity and construction provenance.
 class LL1ParseTableEntry {
   LL1ParseTableEntry({

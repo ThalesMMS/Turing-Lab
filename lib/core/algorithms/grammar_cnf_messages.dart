@@ -2,6 +2,9 @@ import '../messages/structured_message.dart';
 import '../models/grammar.dart';
 import '../models/grammar_transformation_step.dart';
 
+part 'grammar_cnf_step_kind.dart';
+part 'grammar_cnf_structured_transformation_step.dart';
+
 /// Locale-neutral messages emitted by the CNF transformation pipeline.
 ///
 /// The transformer keeps its existing diagnostic codes and human-readable
@@ -76,23 +79,23 @@ abstract final class GrammarCnfMessages {
     },
   );
 
-  static StructuredMessage stepTitle(String step) => _step(switch (step) {
-    'start-symbol' => 'start-symbol-title',
-    'epsilon' => 'epsilon-title',
-    'unit' => 'unit-title',
-    'useless' => 'useless-title',
-    'binarize' => 'binarize-title',
-    _ => 'unknown-title',
-  });
+  static StructuredMessage stepTitle(GrammarCnfStepKind step) =>
+      _step(switch (step) {
+        GrammarCnfStepKind.startSymbol => 'start-symbol-title',
+        GrammarCnfStepKind.epsilon => 'epsilon-title',
+        GrammarCnfStepKind.unit => 'unit-title',
+        GrammarCnfStepKind.useless => 'useless-title',
+        GrammarCnfStepKind.binarize => 'binarize-title',
+      });
 
-  static StructuredMessage stepRationale(String step) => _step(switch (step) {
-    'start-symbol' => 'start-symbol-rationale',
-    'epsilon' => 'epsilon-rationale',
-    'unit' => 'unit-rationale',
-    'useless' => 'useless-rationale',
-    'binarize' => 'binarize-rationale',
-    _ => 'unknown-rationale',
-  });
+  static StructuredMessage stepRationale(GrammarCnfStepKind step) =>
+      _step(switch (step) {
+        GrammarCnfStepKind.startSymbol => 'start-symbol-rationale',
+        GrammarCnfStepKind.epsilon => 'epsilon-rationale',
+        GrammarCnfStepKind.unit => 'unit-rationale',
+        GrammarCnfStepKind.useless => 'useless-rationale',
+        GrammarCnfStepKind.binarize => 'binarize-rationale',
+      });
 
   static StructuredMessage _step(String code) => _message(
     code,
@@ -112,28 +115,4 @@ abstract final class GrammarCnfMessages {
     severity: severity,
     arguments: arguments,
   );
-}
-
-/// A CNF step with locale-neutral operation and rationale payloads.
-///
-/// [legacyStep] is retained so callers can continue to use the existing
-/// [GrammarTransformationStep] API while presentation code migrates.
-final class GrammarCnfStructuredTransformationStep {
-  const GrammarCnfStructuredTransformationStep({
-    required this.legacyStep,
-    required this.operationMessage,
-    required this.rationaleMessage,
-  });
-
-  final GrammarTransformationStep legacyStep;
-  final StructuredMessage operationMessage;
-  final StructuredMessage rationaleMessage;
-
-  String get id => legacyStep.id;
-  String get operation => legacyStep.operation;
-  String get rationale => legacyStep.rationale;
-  Grammar get before => legacyStep.before;
-  Grammar get after => legacyStep.after;
-  Set<String> get changedSymbols => legacyStep.changedSymbols;
-  Set<String> get changedProductionIds => legacyStep.changedProductionIds;
 }

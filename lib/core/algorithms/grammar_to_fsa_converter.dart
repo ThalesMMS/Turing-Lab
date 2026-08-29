@@ -70,8 +70,9 @@ class GrammarToFSAConverter {
     final requiresFinalState = _needsFinalState(grammar);
     State? finalState;
     if (requiresFinalState) {
-      final finalPosition =
-          statePositions.isEmpty ? Vector2.zero() : statePositions.last;
+      final finalPosition = statePositions.isEmpty
+          ? Vector2.zero()
+          : statePositions.last;
       finalState = State(
         id: '${grammar.id}_ACCEPT',
         label: 'F',
@@ -147,9 +148,9 @@ class GrammarToFSAConverter {
         final nextSymbol = rightSide.last;
         final mappedTarget = stateMap[nextSymbol];
         if (mappedTarget == null) {
-          return _failure(
+          return Failure(
             'Production ${production.id} references undefined non-terminal $nextSymbol.',
-            GrammarToFsaMessages.unknownRightNonterminal(
+            structuredMessage: GrammarToFsaMessages.unknownRightNonterminal(
               production.id,
               nextSymbol,
             ),
@@ -172,8 +173,9 @@ class GrammarToFSAConverter {
     }
 
     final acceptingStates = states.where((s) => s.isAccepting).toSet();
-    final alphabet =
-        grammar.terminals.where((symbol) => !isEpsilonSymbol(symbol)).toSet();
+    final alphabet = grammar.terminals
+        .where((symbol) => !isEpsilonSymbol(symbol))
+        .toSet();
     final canonicalTransitions = transitions
         .map(
           (transition) => transition.copyWith(
@@ -275,9 +277,6 @@ class GrammarToFSAConverter {
 
     return null;
   }
-
-  static Result<T> _failure<T>(String text, StructuredMessage message) =>
-      Failure<T>(text, structuredMessage: message);
 
   static bool _needsFinalState(Grammar grammar) {
     return grammar.productions.any((production) {

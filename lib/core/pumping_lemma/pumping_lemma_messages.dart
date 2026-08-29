@@ -4,6 +4,9 @@ abstract final class PumpingLemmaMessages {
   static StructuredMessage pumpingLengthPositive() =>
       _message('validation.pumping-length-positive');
 
+  static StructuredMessage contentVersionPositive() =>
+      _message('validation.content-version-positive');
+
   static StructuredMessage exponentNonNegative() =>
       _message('validation.exponent-non-negative');
 

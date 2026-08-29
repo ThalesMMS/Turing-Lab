@@ -326,23 +326,23 @@ class GrammarStructuralAnalyzer {
       GrammarDiagnosticsReport(diagnostics: diagnostics),
     );
   }
-}
 
-GrammarDiagnostic _structuralDiagnostic({
-  required String code,
-  required StructuredMessage message,
-  List<String> symbols = const [],
-  List<String> productionIds = const [],
-}) => GrammarDiagnostic(
-  code: code,
-  severity: switch (message.severity) {
-    StructuredMessageSeverity.information => GrammarDiagnosticSeverity.info,
-    StructuredMessageSeverity.warning => GrammarDiagnosticSeverity.warning,
-    StructuredMessageSeverity.error => GrammarDiagnosticSeverity.error,
-    StructuredMessageSeverity.unknown => GrammarDiagnosticSeverity.info,
-  },
-  message: message.stableCode,
-  structuredMessage: message,
-  symbols: symbols,
-  productionIds: productionIds,
-);
+  static GrammarDiagnostic _structuralDiagnostic({
+    required String code,
+    required StructuredMessage message,
+    List<String> symbols = const [],
+    List<String> productionIds = const [],
+  }) => GrammarDiagnostic(
+    code: code,
+    severity: switch (message.severity) {
+      StructuredMessageSeverity.information => GrammarDiagnosticSeverity.info,
+      StructuredMessageSeverity.warning => GrammarDiagnosticSeverity.warning,
+      StructuredMessageSeverity.error => GrammarDiagnosticSeverity.error,
+      StructuredMessageSeverity.unknown => GrammarDiagnosticSeverity.info,
+    },
+    message: message.stableCode,
+    structuredMessage: message,
+    symbols: symbols,
+    productionIds: productionIds,
+  );
+}

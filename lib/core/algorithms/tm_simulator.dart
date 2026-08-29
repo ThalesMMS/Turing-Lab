@@ -783,7 +783,7 @@ class TMSimulator {
             'The bounded simulation did not resolve acceptance.',
         structuredMessage:
             simulation.structuredMessage ??
-            TmSimulationMessages.configurationLimit(),
+            TmSimulationMessages.acceptanceUnresolved(),
       ),
     };
   }

@@ -49,17 +49,24 @@ class EquivalenceComparisonResult {
   /// When this comparison was performed
   final DateTime? timestamp;
 
-  const EquivalenceComparisonResult({
+  EquivalenceComparisonResult({
     required this.originalAutomaton,
     required this.comparedAutomaton,
     required this.isEquivalent,
     this.distinguishingString,
     this.productAutomaton,
-    this.steps = const [],
-    this.structuredSteps = const [],
+    List<Map<String, dynamic>> steps = const [],
+    List<StructuredMessage> structuredSteps = const [],
     required this.executionTimeMs,
     this.timestamp,
-  });
+  }) : steps = List<Map<String, dynamic>>.unmodifiable(steps),
+       structuredSteps = List<StructuredMessage>.unmodifiable(structuredSteps) {
+    if (this.steps.length != this.structuredSteps.length) {
+      throw ArgumentError(
+        'Legacy and structured comparison traces must stay aligned.',
+      );
+    }
+  }
 
   /// Create an equivalent result
   factory EquivalenceComparisonResult.equivalent({

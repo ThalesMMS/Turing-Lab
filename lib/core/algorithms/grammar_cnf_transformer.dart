@@ -56,7 +56,7 @@ class GrammarCnfTransformer {
     final diagnostics = <GrammarDiagnostic>[];
 
     void addStep({
-      required String kind,
+      required GrammarCnfStepKind kind,
       required GrammarTransformationStep step,
     }) {
       steps.add(step);
@@ -121,7 +121,7 @@ class GrammarCnfTransformer {
         );
 
         addStep(
-          kind: 'start-symbol',
+          kind: GrammarCnfStepKind.startSymbol,
           step: GrammarTransformationStep(
             id: 'cnf.start_symbol',
             operation: 'Introduce new start symbol',
@@ -146,7 +146,7 @@ class GrammarCnfTransformer {
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
         addStep(
-          kind: 'epsilon',
+          kind: GrammarCnfStepKind.epsilon,
           step: GrammarTransformationStep(
             id: 'cnf.epsilon',
             operation: 'Remove ε-productions',
@@ -169,7 +169,7 @@ class GrammarCnfTransformer {
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
         addStep(
-          kind: 'unit',
+          kind: GrammarCnfStepKind.unit,
           step: GrammarTransformationStep(
             id: 'cnf.unit',
             operation: 'Remove unit productions',
@@ -192,7 +192,7 @@ class GrammarCnfTransformer {
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
         addStep(
-          kind: 'useless',
+          kind: GrammarCnfStepKind.useless,
           step: GrammarTransformationStep(
             id: 'cnf.useless',
             operation: 'Remove useless symbols',
@@ -218,7 +218,7 @@ class GrammarCnfTransformer {
       diagnostics.addAll(result.diagnostics);
       if (!_grammarsEqual(before, current)) {
         addStep(
-          kind: 'binarize',
+          kind: GrammarCnfStepKind.binarize,
           step: GrammarTransformationStep(
             id: 'cnf.binarize',
             operation: 'Replace terminals and binarize',

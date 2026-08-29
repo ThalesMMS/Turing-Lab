@@ -461,12 +461,13 @@ class NFAToDFAStep {
 
     final titleMessage = this.titleMessage;
     if (titleMessage != null) {
-      properties[nfaToDfaTitleMessageProperty] = titleMessage.toJson();
+      properties[NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY] =
+          titleMessage.toJson();
     }
     final explanationMessage = this.explanationMessage;
     if (explanationMessage != null) {
-      properties[nfaToDfaExplanationMessageProperty] = explanationMessage
-          .toJson();
+      properties[NfaToDfaStepMessages.NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY] =
+          explanationMessage.toJson();
     }
 
     _putStateIds(properties, 'currentStateIds', currentStateSet);
@@ -571,13 +572,17 @@ class NFAToDFAStep {
   String get explanation => baseStep.explanation;
 
   /// Locale-neutral title contract resolved at the presentation boundary.
-  StructuredMessage? get titleMessage =>
-      _nfaToDfaMessageProperty(baseStep, nfaToDfaTitleMessageProperty);
+  StructuredMessage? get titleMessage => _nfaToDfaMessageProperty(
+    baseStep,
+    NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY,
+  );
 
   /// Locale-neutral explanation contract resolved at the presentation
   /// boundary.
-  StructuredMessage? get explanationMessage =>
-      _nfaToDfaMessageProperty(baseStep, nfaToDfaExplanationMessageProperty);
+  StructuredMessage? get explanationMessage => _nfaToDfaMessageProperty(
+    baseStep,
+    NfaToDfaStepMessages.NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY,
+  );
 
   /// Gets a summary of state sets involved
   String get stateSetsSummary {
@@ -662,8 +667,10 @@ AlgorithmStep _nfaToDfaBaseStep({
   stepExplanation: stepExplanation,
   type: AlgorithmType.nfaToDfa,
   properties: {
-    nfaToDfaTitleMessageProperty: titleMessage.toJson(),
-    nfaToDfaExplanationMessageProperty: explanationMessage.toJson(),
+    NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY: titleMessage
+        .toJson(),
+    NfaToDfaStepMessages.NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY:
+        explanationMessage.toJson(),
   },
 );
 

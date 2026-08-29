@@ -3,6 +3,7 @@ import '../models/pda.dart';
 import '../models/production.dart';
 import '../messages/structured_message.dart';
 import '../utils/epsilon_utils.dart';
+import 'pda_cfg_shortest_witness_messages.dart';
 import 'pda_normalizer.dart';
 import 'pda_simulator.dart';
 import 'pda_to_cfg_converter.dart';
@@ -263,9 +264,10 @@ class CFGShortestWitnessAnalyzer {
     );
   }
 
-  static _CfgValidationIssue? _validateGrammar(Grammar grammar) {
+  static ({String message, StructuredMessage structuredMessage})?
+  _validateGrammar(Grammar grammar) {
     if (!grammar.nonterminals.contains(grammar.startSymbol)) {
-      return _CfgValidationIssue(
+      return (
         message: 'The CFG start symbol must be a declared nonterminal.',
         structuredMessage: CfgShortestWitnessMessages.missingStartSymbol(),
       );
@@ -274,7 +276,7 @@ class CFGShortestWitnessAnalyzer {
       grammar.nonterminals,
     );
     if (ambiguousSymbols.isNotEmpty) {
-      return _CfgValidationIssue(
+      return (
         message: 'CFG terminals and nonterminals must be disjoint.',
         structuredMessage: CfgShortestWitnessMessages.overlappingSymbolSets(),
       );
@@ -282,7 +284,7 @@ class CFGShortestWitnessAnalyzer {
     for (final production in grammar.productions) {
       if (production.leftSide.length != 1 ||
           !grammar.nonterminals.contains(production.leftSide.single)) {
-        return _CfgValidationIssue(
+        return (
           message:
               'Production ${production.id} must have one declared '
               'nonterminal on its left side.',
@@ -293,7 +295,7 @@ class CFGShortestWitnessAnalyzer {
       }
       if ((production.isLambda && production.rightSide.isNotEmpty) ||
           (!production.isLambda && production.rightSide.isEmpty)) {
-        return _CfgValidationIssue(
+        return (
           message:
               'Production ${production.id} has inconsistent lambda metadata.',
           structuredMessage:
@@ -306,7 +308,7 @@ class CFGShortestWitnessAnalyzer {
       if (epsilonCount > 0 && production.rightSide.length != 1) {
         final message =
             'Production ${production.id} mixes epsilon with other symbols.';
-        return _CfgValidationIssue(
+        return (
           message: message,
           structuredMessage: CfgShortestWitnessMessages.epsilonMixed(
             production.id,
@@ -317,7 +319,7 @@ class CFGShortestWitnessAnalyzer {
         if (!grammar.nonterminals.contains(symbol) &&
             !grammar.terminals.contains(symbol) &&
             !isEpsilonSymbol(symbol)) {
-          return _CfgValidationIssue(
+          return (
             message:
                 'Production ${production.id} uses undeclared symbol $symbol.',
             structuredMessage: CfgShortestWitnessMessages.undeclaredSymbol(
@@ -613,16 +615,6 @@ int _compareProductions(Production left, Production right) {
   return left.rightSide
       .join('\u0000')
       .compareTo(right.rightSide.join('\u0000'));
-}
-
-class _CfgValidationIssue {
-  const _CfgValidationIssue({
-    required this.message,
-    required this.structuredMessage,
-  });
-
-  final String message;
-  final StructuredMessage structuredMessage;
 }
 
 bool _listEquals(List<String> left, List<String> right) {

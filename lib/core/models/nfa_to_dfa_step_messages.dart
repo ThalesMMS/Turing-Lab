@@ -1,20 +1,16 @@
 import '../messages/structured_message.dart';
 
-const nfaToDfaTitleMessageProperty = 'nfaToDfaTitleMessage';
-const nfaToDfaExplanationMessageProperty = 'nfaToDfaExplanationMessage';
-
-// Explicit aliases keep the model-specific naming discoverable alongside the
-// shorter property names used by the other algorithm-step models.
-const nfaToDfaStepTitleMessageProperty = nfaToDfaTitleMessageProperty;
-const nfaToDfaStepExplanationMessageProperty =
-    nfaToDfaExplanationMessageProperty;
-
 /// Locale-neutral titles, explanations, and bullets for NFA-to-DFA steps.
 ///
 /// The step model keeps its historical prose for compatibility. These
 /// messages carry the same dynamic values as typed arguments so presentation
 /// code can resolve the surrounding copy at the active locale.
 abstract final class NfaToDfaStepMessages {
+  static const String NFA_TO_DFA_TITLE_MESSAGE_PROPERTY =
+      'nfaToDfaTitleMessage';
+  static const String NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY =
+      'nfaToDfaExplanationMessage';
+
   static StructuredMessage initialEpsilonClosureTitle() =>
       _title('initial-epsilon-closure-title');
 

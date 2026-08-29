@@ -22,14 +22,14 @@ import '../utils/epsilon_utils.dart';
 import 'dfa_minimizer_messages.dart';
 import 'state_renamer.dart';
 
-Result<T> _failure<T>(String legacy, StructuredMessage message) =>
-    Failure<T>(legacy, structuredMessage: message);
-
-Result<T> _propagateFailure<T>(Result<dynamic> result) =>
-    Failure<T>(result.error!, structuredMessage: result.structuredError);
-
 /// Minimizes a Deterministic Finite Automaton (DFA) using the Hopcroft algorithm
 class DFAMinimizer {
+  static Result<T> _failure<T>(String legacy, StructuredMessage message) =>
+      Failure<T>(legacy, structuredMessage: message);
+
+  static Result<T> _propagateFailure<T>(Result<dynamic> result) =>
+      Failure<T>(result.error!, structuredMessage: result.structuredError);
+
   /// Minimizes a DFA to an equivalent minimal DFA
   static Result<FSA> minimize(FSA dfa) {
     try {

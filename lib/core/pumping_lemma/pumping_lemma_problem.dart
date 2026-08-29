@@ -70,7 +70,11 @@ final class PumpingLemmaProblem {
          validationExamples,
        ) {
     if (contentVersion < 1) {
-      throw RangeError.range(contentVersion, 1, null, 'contentVersion');
+      throw PumpingLemmaArgumentError.value(
+        contentVersion,
+        'contentVersion',
+        PumpingLemmaMessages.contentVersionPositive(),
+      );
     }
     if (suggestedPumpingLength < 1) {
       throw PumpingLemmaArgumentError.value(

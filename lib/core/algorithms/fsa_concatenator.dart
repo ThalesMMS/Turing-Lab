@@ -356,8 +356,11 @@ class FSAConcatenator {
         explanation: explanation.stableCode,
         type: AlgorithmType.fsaConcatenation,
         properties: {
-          fsaConcatenationTitleMessageProperty: title.toJson(),
-          fsaConcatenationExplanationMessageProperty: explanation.toJson(),
+          FsaConcatenationMessages.FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY:
+              title.toJson(),
+          FsaConcatenationMessages
+              .FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY: explanation
+              .toJson(),
           'operand': label,
           'clonedStates': [
             for (final clone in clones)
@@ -384,8 +387,11 @@ class FSAConcatenator {
         explanation: explanation.stableCode,
         type: AlgorithmType.fsaConcatenation,
         properties: {
-          fsaConcatenationTitleMessageProperty: title.toJson(),
-          fsaConcatenationExplanationMessageProperty: explanation.toJson(),
+          FsaConcatenationMessages.FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY:
+              title.toJson(),
+          FsaConcatenationMessages
+              .FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY: explanation
+              .toJson(),
           'epsilonBridges': [
             for (final bridge in sortedBridges)
               '${bridge.fromState.id} → ${bridge.toState.id}',

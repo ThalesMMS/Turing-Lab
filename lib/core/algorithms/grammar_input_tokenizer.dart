@@ -31,7 +31,7 @@ class GrammarInputTokenizer {
       final matched = terminals.any(
         (terminal) => input.startsWith(terminal, position),
       );
-      if (!matched) return input[position];
+      if (!matched) return _symbolAt(input, position);
       final terminal = terminals.firstWhere(
         (candidate) => input.startsWith(candidate, position),
       );
@@ -63,7 +63,7 @@ class GrammarInputTokenizer {
 
       if (match == null) {
         final message = GrammarInputMessages.invalidSymbol(
-          symbol: input[position],
+          symbol: _symbolAt(input, position),
           position: position,
         );
         return Failure(message.stableCode, structuredMessage: message);
@@ -90,13 +90,20 @@ class GrammarInputTokenizer {
       ]),
     );
   }
-}
 
-List<String> _sortedTerminals(Grammar grammar) =>
-    grammar.terminals
-        .where((terminal) => terminal.isNotEmpty && !isEpsilonSymbol(terminal))
-        .toList()
-      ..sort((left, right) {
-        final lengthComparison = right.length.compareTo(left.length);
-        return lengthComparison != 0 ? lengthComparison : left.compareTo(right);
-      });
+  static String _symbolAt(String input, int position) =>
+      String.fromCharCodes(input.substring(position).runes.take(1));
+
+  static List<String> _sortedTerminals(Grammar grammar) =>
+      grammar.terminals
+          .where(
+            (terminal) => terminal.isNotEmpty && !isEpsilonSymbol(terminal),
+          )
+          .toList()
+        ..sort((left, right) {
+          final lengthComparison = right.length.compareTo(left.length);
+          return lengthComparison != 0
+              ? lengthComparison
+              : left.compareTo(right);
+        });
+}

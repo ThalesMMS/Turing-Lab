@@ -186,6 +186,8 @@ final class TMToGrammarConstructionReport {
           if (diagnostic.detailCode != null)
             'detailCode': diagnostic.detailCode,
           'relatedIds': diagnostic.relatedIds,
+          if (diagnostic.structuredMessage != null)
+            'structuredMessage': diagnostic.structuredMessage!.toJson(),
         },
     ],
     'productionProvenance': productionProvenance

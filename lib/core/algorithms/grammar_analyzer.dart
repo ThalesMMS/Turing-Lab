@@ -15,8 +15,14 @@ import '../models/production.dart';
 import '../messages/structured_message.dart';
 import '../result.dart';
 import '../utils/epsilon_utils.dart';
-import 'grammar_analysis_messages.dart';
+import 'grammar_analysis_messages.dart' show GrammarAnalysisMessages;
+import 'grammar_analysis_structured_transformation_step.dart';
+import 'grammar_analysis/ll1_table_placement.dart';
+import 'grammar_analysis/grammar_predictive_messages.dart';
 import 'grammar_structural_messages.dart';
+
+export 'grammar_analysis/ll1_table_placement.dart';
+export 'grammar_analysis/grammar_predictive_messages.dart';
 
 part 'grammar_analysis/grammar_ambiguity_analyzer.dart';
 part 'grammar_analysis/grammar_analysis_context.dart';
@@ -65,6 +71,7 @@ class GrammarAnalyzer {
       return ResultFactory.success(
         GrammarReportComposer.compose(
           value: grammar,
+          notes: [GrammarLeftRecursionAnalyzer._noLeftRecursionNote],
           structuredNotes: [GrammarAnalysisMessages.noLeftRecursion()],
         ),
       );

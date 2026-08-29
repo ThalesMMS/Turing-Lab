@@ -1,6 +1,4 @@
 import '../messages/structured_message.dart';
-import '../models/grammar.dart';
-import '../models/grammar_transformation_step.dart';
 
 /// Locale-neutral messages emitted by the GNF transformation pipeline.
 ///
@@ -42,28 +40,4 @@ abstract final class GrammarGnfMessages {
     category: category,
     severity: severity,
   );
-}
-
-/// A GNF step with locale-neutral operation and rationale payloads.
-///
-/// [legacyStep] preserves the existing [GrammarTransformationStep] API while
-/// presentation code migrates from embedded English prose.
-final class GrammarGnfStructuredTransformationStep {
-  const GrammarGnfStructuredTransformationStep({
-    required this.legacyStep,
-    required this.operationMessage,
-    required this.rationaleMessage,
-  });
-
-  final GrammarTransformationStep legacyStep;
-  final StructuredMessage operationMessage;
-  final StructuredMessage rationaleMessage;
-
-  String get id => legacyStep.id;
-  String get operation => legacyStep.operation;
-  String get rationale => legacyStep.rationale;
-  Grammar get before => legacyStep.before;
-  Grammar get after => legacyStep.after;
-  Set<String> get changedSymbols => legacyStep.changedSymbols;
-  Set<String> get changedProductionIds => legacyStep.changedProductionIds;
 }

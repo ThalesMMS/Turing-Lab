@@ -20,44 +20,25 @@ import '../models/tm.dart';
 import '../models/tm_acceptance.dart';
 import '../models/tm_transition.dart';
 import '../models/grammar.dart';
-import '../models/validation_diagnostic.dart';
 import '../messages/structured_message.dart';
+import 'validation_issue.dart';
 import 'validation_messages.dart';
 
-class ValidationIssue {
-  final String code;
-  final String message;
-  final String? location;
-
-  /// Optional structured diagnostics payload. When present, UI layers can show
-  /// actionable suggestions/highlights without parsing [message].
-  final ValidationDiagnostic? diagnostic;
-
-  /// Optional locale-neutral semantic message for presentation resolvers.
-  final StructuredMessage? structuredMessage;
-
-  const ValidationIssue(
-    this.code,
-    this.message, {
-    this.location,
-    this.diagnostic,
-    this.structuredMessage,
-  });
-}
-
-ValidationIssue _structuredIssue(
-  String code,
-  String message, {
-  String? location,
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => ValidationIssue(
-  code,
-  message,
-  location: location,
-  structuredMessage: ValidationMessages.forCode(code, arguments: arguments),
-);
+export 'validation_issue.dart';
 
 class InputValidators {
+  static ValidationIssue _structuredIssue(
+    String code,
+    String message, {
+    String? location,
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => ValidationIssue(
+    code,
+    message,
+    location: location,
+    structuredMessage: ValidationMessages.forCode(code, arguments: arguments),
+  );
+
   static List<ValidationIssue> validateFSA(FSA fsa) {
     final issues = <ValidationIssue>[];
 

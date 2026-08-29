@@ -17,6 +17,8 @@ import '../messages/structured_message.dart';
 
 /// Single node in an NFA computation tree representing a branch point
 class NFAPathNode {
+  static const Object _unset = Object();
+
   /// Current state ID at this node
   final String currentState;
 
@@ -71,7 +73,11 @@ class NFAPathNode {
          'A path node cannot contain both legacy and structured descriptions.',
        );
 
-  /// Creates a copy of this path node with updated properties
+  /// Creates a copy of this path node with updated properties.
+  ///
+  /// [description] must be a `String?`, and [descriptionMessage] must be a
+  /// `StructuredMessage?`. Both use an internal sentinel so callers can clear
+  /// either nullable field explicitly.
   NFAPathNode copyWith({
     String? currentState,
     String? remainingInput,
@@ -83,9 +89,14 @@ class NFAPathNode {
     bool? isAccepting,
     bool? isDeadEnd,
     bool? isCycle,
-    String? description,
-    StructuredMessage? descriptionMessage,
+    Object? description = _unset,
+    Object? descriptionMessage = _unset,
   }) {
+    final descriptionWasProvided = !identical(description, _unset);
+    final descriptionMessageWasProvided = !identical(
+      descriptionMessage,
+      _unset,
+    );
     return NFAPathNode(
       currentState: currentState ?? this.currentState,
       remainingInput: remainingInput ?? this.remainingInput,
@@ -97,8 +108,16 @@ class NFAPathNode {
       isAccepting: isAccepting ?? this.isAccepting,
       isDeadEnd: isDeadEnd ?? this.isDeadEnd,
       isCycle: isCycle ?? this.isCycle,
-      description: description ?? this.description,
-      descriptionMessage: descriptionMessage ?? this.descriptionMessage,
+      description: descriptionWasProvided
+          ? description as String?
+          : descriptionMessageWasProvided
+          ? null
+          : this.description,
+      descriptionMessage: descriptionMessageWasProvided
+          ? descriptionMessage as StructuredMessage?
+          : descriptionWasProvided
+          ? null
+          : this.descriptionMessage,
     );
   }
 

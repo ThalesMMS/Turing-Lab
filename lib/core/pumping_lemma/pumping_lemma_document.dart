@@ -1,13 +1,11 @@
 import 'pumping_decomposition.dart';
+import 'pumping_lemma_content_migration.dart';
 import 'pumping_lemma_problem.dart';
 import 'pumping_lemma_progress.dart';
 import 'pumping_lemma_session.dart';
 
 sealed class PumpingLemmaDocument {
-  const PumpingLemmaDocument({
-    required this.problem,
-    required this.progress,
-  });
+  const PumpingLemmaDocument({required this.problem, required this.progress});
 
   factory PumpingLemmaDocument.fromJson(Map<String, Object?> json) {
     final schema = Map<String, Object?>.from(json['schema']! as Map);
@@ -17,26 +15,36 @@ sealed class PumpingLemmaDocument {
     final problem = PumpingLemmaProblem.fromJson(
       Map<String, Object?>.from(json['problem']! as Map),
     );
-    final progress = PumpingLemmaEnvironmentProgress.fromJson(
+    final decodedProgress = PumpingLemmaEnvironmentProgress.fromJson(
       Map<String, Object?>.from(json['progress']! as Map),
     );
+    final catalog = switch (problem.theorem) {
+      PumpingLemmaTheorem.regular => PumpingLemmaProblemCatalog.regular,
+      PumpingLemmaTheorem.contextFree => PumpingLemmaProblemCatalog.contextFree,
+    };
+    final progress = PumpingLemmaContentMigration.reconcile(
+      progress: decodedProgress,
+      currentContentVersions: {
+        problem.id: problem.contentVersion,
+        for (final current in catalog) current.id: current.contentVersion,
+      },
+    ).progress;
     final session = Map<String, Object?>.from(json['session']! as Map);
     return switch (problem.theorem) {
       PumpingLemmaTheorem.regular => RegularPumpingLemmaDocument(
-          problem: problem,
-          session: PumpingLemmaSession<RegularPumpingDecomposition>.fromJson(
-            session,
-          ),
-          progress: progress,
+        problem: problem,
+        session: PumpingLemmaSession<RegularPumpingDecomposition>.fromJson(
+          session,
         ),
+        progress: progress,
+      ),
       PumpingLemmaTheorem.contextFree => ContextFreePumpingLemmaDocument(
-          problem: problem,
-          session:
-              PumpingLemmaSession<ContextFreePumpingDecomposition>.fromJson(
-            session,
-          ),
-          progress: progress,
+        problem: problem,
+        session: PumpingLemmaSession<ContextFreePumpingDecomposition>.fromJson(
+          session,
         ),
+        progress: progress,
+      ),
     };
   }
 
@@ -47,11 +55,11 @@ sealed class PumpingLemmaDocument {
   PumpingLemmaSession<PumpingDecomposition> get erasedSession;
 
   Map<String, Object?> toJson() => {
-        'schema': {'id': 'turing-lab.pumping-lemma', 'version': 1},
-        'problem': problem.toJson(),
-        'session': erasedSession.toJson(),
-        'progress': progress.toJson(),
-      };
+    'schema': {'id': 'turing-lab.pumping-lemma', 'version': 1},
+    'problem': problem.toJson(),
+    'session': erasedSession.toJson(),
+    'progress': progress.toJson(),
+  };
 }
 
 final class RegularPumpingLemmaDocument extends PumpingLemmaDocument {

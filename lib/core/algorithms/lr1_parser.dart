@@ -678,15 +678,16 @@ class LR1Parser {
     }
   }
 
-  static _Lr1Diagnostic? _validateGrammar(Grammar grammar) {
+  static ({String message, StructuredMessage structuredMessage})?
+  _validateGrammar(Grammar grammar) {
     if (grammar.productions.isEmpty) {
-      return _Lr1Diagnostic(
+      return (
         message: 'Grammar must have at least one production.',
         structuredMessage: Lr1ParserMessages.invalidGrammar(),
       );
     }
     if (!grammar.nonterminals.contains(grammar.startSymbol)) {
-      return _Lr1Diagnostic(
+      return (
         message: 'The start symbol must be a declared non-terminal.',
         structuredMessage: Lr1ParserMessages.missingStartSymbol(),
       );
@@ -695,14 +696,14 @@ class LR1Parser {
     for (final production in grammar.productions) {
       if (production.leftSide.length != 1 ||
           !grammar.nonterminals.contains(production.leftSide.single)) {
-        return _Lr1Diagnostic(
+        return (
           message:
               'Canonical LR(1) requires one declared non-terminal on every production LHS.',
           structuredMessage: Lr1ParserMessages.malformedProduction(),
         );
       }
       if (!ids.add(production.id)) {
-        return _Lr1Diagnostic(
+        return (
           message:
               'Canonical LR(1) requires unique production IDs; duplicate "${production.id}".',
           structuredMessage: Lr1ParserMessages.duplicateProductionId(
@@ -713,7 +714,7 @@ class LR1Parser {
       for (final symbol in _normalizedRight(grammar, production)) {
         if (!grammar.terminals.contains(symbol) &&
             !grammar.nonterminals.contains(symbol)) {
-          return _Lr1Diagnostic(
+          return (
             message:
                 'Production ${production.id} references undeclared symbol "$symbol".',
             structuredMessage: Lr1ParserMessages.undeclaredSymbol(
@@ -862,14 +863,4 @@ class LR1Parser {
         ].join('\u0000'),
     ].join('\u0001');
   }
-}
-
-final class _Lr1Diagnostic {
-  const _Lr1Diagnostic({
-    required this.message,
-    required this.structuredMessage,
-  });
-
-  final String message;
-  final StructuredMessage structuredMessage;
 }

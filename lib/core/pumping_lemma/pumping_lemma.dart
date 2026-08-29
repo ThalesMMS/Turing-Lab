@@ -1,9 +1,14 @@
 export 'pumping_decomposition.dart';
 export 'pumping_decomposition_enumerator.dart';
 export 'pumping_lemma_document.dart';
+export 'pumping_lemma_content_migration.dart';
+export 'pumping_lemma_content_migration_result.dart';
 export 'pumping_lemma_evidence.dart';
 export 'pumping_lemma_messages.dart';
 export 'pumping_lemma_problem.dart';
 export 'pumping_lemma_progress.dart';
+export 'pumping_lemma_progress_migration.dart';
+export 'pumping_lemma_progress_migration_result.dart';
+export 'pumping_lemma_progress_snapshot.dart';
 export 'pumping_lemma_session.dart';
 export 'pumping_lemma_session_controller.dart';

@@ -207,14 +207,7 @@ class CYKStep {
             'Initializing CYK parse table for input string "$inputString" ($tableSize tokens). '
             'The table is a triangular matrix where cell [i][j] will contain all non-terminals '
             'that can derive the substring of i+1 tokens starting at token position j.',
-        stepExplanation: StepExplanation(
-          title: 'Initialize CYK table',
-          bullets: [
-            'Input: "$inputString" ($tableSize tokens).',
-            'We create an empty triangular table: cell [i][j] stores non-terminals that derive the substring of i+1 tokens starting at token position j.',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.initializeStepTitle(),
@@ -238,16 +231,16 @@ class CYKStep {
     required String terminal,
     required Set<String> derivingVariables,
   }) {
-    final varList = derivingVariables.isEmpty
+    final sortedVariables = _sortedStrings(derivingVariables);
+    final varList = sortedVariables.isEmpty
         ? 'none'
-        : derivingVariables.join(', ');
+        : sortedVariables.join(', ');
     final structuredVarList = derivingVariables.isEmpty ? '' : varList;
     final titleMessage = CykStepMessages.fillBaseCaseTitle(terminal);
     final explanationMessage = CykStepMessages.fillBaseCaseExplanation(
       position: position,
       terminal: terminal,
       derivingVariables: structuredVarList,
-      hasDerivingVariables: derivingVariables.isNotEmpty,
     );
     return CYKStep(
       baseStep: _cykBaseStep(
@@ -258,24 +251,13 @@ class CYKStep {
             'Processing terminal "$terminal" at position $position. '
             'Looking for productions of the form A → "$terminal". '
             '${derivingVariables.isEmpty ? "No variables produce this terminal." : "Variables that derive this terminal: $varList."}',
-        stepExplanation: StepExplanation(
-          title: 'Match terminal "$terminal"',
-          bullets: [
-            'Sentential form fragment: "$terminal" at input position $position.',
-            'We add every variable A such that there is a production A → "$terminal".',
-            if (derivingVariables.isEmpty)
-              'No variable derives "$terminal", so this cell stays empty.'
-            else
-              'Added variables: $varList.',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-          highlights: [
-            HighlightTarget(
-              type: HighlightTargetType.productionSpan,
-              data: {'terminal': terminal},
-            ),
-          ],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
+        highlights: [
+          HighlightTarget(
+            type: HighlightTargetType.productionSpan,
+            data: {'terminal': terminal},
+          ),
+        ],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.fillBaseCaseStepTitle(
@@ -329,14 +311,7 @@ class CYKStep {
         explanation:
             'Processing substring "$substring" of $length tokens starting at token position $col. '
             'We will try all possible ways to split this substring and check if any productions apply.',
-        stepExplanation: StepExplanation(
-          title: 'Process substring "$substring"',
-          bullets: [
-            'We are filling table cell [$row][$col] for a substring of $length tokens.',
-            'Try all split points and apply productions A → B C where B derives the left part and C derives the right part.',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.processCellStepTitle(
@@ -378,12 +353,14 @@ class CYKStep {
     required Set<String> leftNonTerminals,
     required Set<String> rightNonTerminals,
   }) {
-    final leftVars = leftNonTerminals.isEmpty
+    final sortedLeftNonTerminals = _sortedStrings(leftNonTerminals);
+    final sortedRightNonTerminals = _sortedStrings(rightNonTerminals);
+    final leftVars = sortedLeftNonTerminals.isEmpty
         ? '∅'
-        : leftNonTerminals.join(', ');
-    final rightVars = rightNonTerminals.isEmpty
+        : sortedLeftNonTerminals.join(', ');
+    final rightVars = sortedRightNonTerminals.isEmpty
         ? '∅'
-        : rightNonTerminals.join(', ');
+        : sortedRightNonTerminals.join(', ');
     final structuredLeftVars = leftNonTerminals.isEmpty ? '' : leftVars;
     final structuredRightVars = rightNonTerminals.isEmpty ? '' : rightVars;
     final titleMessage = CykStepMessages.checkSplitTitle(splitPoint);
@@ -407,15 +384,7 @@ class CYKStep {
             'Splitting "$substring" into "$leftSubstring" (cell [$leftRow][$leftCol]) and "$rightSubstring" (cell [$rightRow][$rightCol]). '
             'Left cell contains: {$leftVars}. Right cell contains: {$rightVars}. '
             'Looking for productions of the form A → B C where B ∈ left and C ∈ right.',
-        stepExplanation: StepExplanation(
-          title: 'Try split "$leftSubstring" | "$rightSubstring"',
-          bullets: [
-            'Left part (cell [$leftRow][$leftCol]) has {$leftVars}.',
-            'Right part (cell [$rightRow][$rightCol]) has {$rightVars}.',
-            'If we find a production A → B C with B in left and C in right, then add A to cell [$row][$col].',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.checkSplitStepTitle(
@@ -486,24 +455,16 @@ class CYKStep {
             'Found production $variable → $leftVar $rightVar. '
             'Since $leftVar is in the left cell and $rightVar is in the right cell, '
             'we can derive "$substring" using $variable. Adding $variable to cell [$row][$col].',
-        stepExplanation: StepExplanation(
-          title: 'Apply production $variable → $leftVar $rightVar',
-          bullets: [
-            'We found a production that can combine the left and right parts.',
-            'Because $leftVar derives the left substring and $rightVar derives the right substring, $variable derives "$substring".',
-            'Add $variable to table cell [$row][$col].',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-          highlights: [
-            HighlightTarget(
-              type: HighlightTargetType.productionSpan,
-              data: {
-                'lhs': variable,
-                'rhs': [leftVar, rightVar],
-              },
-            ),
-          ],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
+        highlights: [
+          HighlightTarget(
+            type: HighlightTargetType.productionSpan,
+            data: {
+              'lhs': variable,
+              'rhs': [leftVar, rightVar],
+            },
+          ),
+        ],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.applyProductionStepTitle(
@@ -550,9 +511,10 @@ class CYKStep {
     required int substringLength,
     required Set<String> cellNonTerminals,
   }) {
-    final varList = cellNonTerminals.isEmpty
+    final sortedNonTerminals = _sortedStrings(cellNonTerminals);
+    final varList = sortedNonTerminals.isEmpty
         ? 'none'
-        : cellNonTerminals.join(', ');
+        : sortedNonTerminals.join(', ');
     final structuredVarList = cellNonTerminals.isEmpty ? '' : varList;
     final titleMessage = CykStepMessages.completeCellTitle(row: row, col: col);
     final explanationMessage = CykStepMessages.completeCellExplanation(
@@ -560,7 +522,6 @@ class CYKStep {
       col: col,
       substring: substring,
       nonTerminals: structuredVarList,
-      hasNonTerminals: cellNonTerminals.isNotEmpty,
     );
     return CYKStep(
       baseStep: _cykBaseStep(
@@ -570,17 +531,7 @@ class CYKStep {
         explanation:
             'Finished processing substring "$substring" at cell [$row][$col]. '
             '${cellNonTerminals.isEmpty ? "No non-terminals can derive this substring." : "Non-terminals that can derive this substring: $varList."}',
-        stepExplanation: StepExplanation(
-          title: 'Cell [$row][$col] complete',
-          bullets: [
-            'Substring: "$substring".',
-            if (cellNonTerminals.isEmpty)
-              'No non-terminal derives this substring.'
-            else
-              'Non-terminals that derive this substring: $varList.',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.completeCellStepTitle(
@@ -614,9 +565,10 @@ class CYKStep {
     required Set<String> finalCellNonTerminals,
     required bool isAccepted,
   }) {
-    final varList = finalCellNonTerminals.isEmpty
+    final sortedFinalNonTerminals = _sortedStrings(finalCellNonTerminals);
+    final varList = sortedFinalNonTerminals.isEmpty
         ? 'none'
-        : finalCellNonTerminals.join(', ');
+        : sortedFinalNonTerminals.join(', ');
     final structuredVarList = finalCellNonTerminals.isEmpty ? '' : varList;
     final titleMessage = CykStepMessages.checkAcceptanceTitle();
     final explanationMessage = CykStepMessages.checkAcceptanceExplanation(
@@ -635,17 +587,7 @@ class CYKStep {
             'Checking if input string "$inputString" is accepted. '
             'The top cell of the table contains: {$varList}. '
             '${isAccepted ? "The start symbol $startSymbol is present, so the string IS accepted by the grammar." : "The start symbol $startSymbol is NOT present, so the string is NOT accepted by the grammar."}',
-        stepExplanation: StepExplanation(
-          title: 'Acceptance check',
-          bullets: [
-            'Final (top) cell contains: {$varList}.',
-            if (isAccepted)
-              'Start symbol $startSymbol is present → ACCEPT.'
-            else
-              'Start symbol $startSymbol is missing → REJECT.',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.checkAcceptanceStepTitle(),
@@ -688,17 +630,7 @@ class CYKStep {
             'CYK parsing completed for input string "$inputString". '
             'Processed $filledCells out of $totalCells cells in the parse table. '
             '${isAccepted ? "The string IS in the language generated by the grammar." : "The string is NOT in the language generated by the grammar."}',
-        stepExplanation: StepExplanation(
-          title: 'CYK parsing complete',
-          bullets: [
-            'Filled $filledCells / $totalCells cells.',
-            if (isAccepted)
-              'Result: ACCEPT (string is generated by the grammar).'
-            else
-              'Result: REJECT (string is not generated by the grammar).',
-          ],
-          categories: const [ExplanationCategory.grammarDerivation],
-        ),
+        categories: const [ExplanationCategory.grammarDerivation],
         titleMessage: titleMessage,
         explanationMessage: explanationMessage,
         stepExplanationTitleMessage: CykStepMessages.completionStepTitle(),
@@ -777,7 +709,7 @@ class CYKStep {
       'baseStep': baseStep.toJson(),
       'stepType': stepType.name,
       'tableState': tableState
-          ?.map((row) => row.map((cell) => cell.toList()).toList())
+          ?.map((row) => row.map(_sortedStrings).toList())
           .toList(),
       'currentRow': currentRow,
       'currentCol': currentCol,
@@ -789,13 +721,19 @@ class CYKStep {
       'leftCol': leftCol,
       'rightRow': rightRow,
       'rightCol': rightCol,
-      'leftNonTerminals': leftNonTerminals?.toList(),
-      'rightNonTerminals': rightNonTerminals?.toList(),
+      'leftNonTerminals': leftNonTerminals == null
+          ? null
+          : _sortedStrings(leftNonTerminals!),
+      'rightNonTerminals': rightNonTerminals == null
+          ? null
+          : _sortedStrings(rightNonTerminals!),
       'production': production,
       'productionLeft': productionLeft,
       'productionRight': productionRight,
       'addedNonTerminal': addedNonTerminal,
-      'cellNonTerminals': cellNonTerminals?.toList(),
+      'cellNonTerminals': cellNonTerminals == null
+          ? null
+          : _sortedStrings(cellNonTerminals!),
       'terminal': terminal,
       'isAccepted': isAccepted,
       'cellModified': cellModified,
@@ -891,22 +829,21 @@ class CYKStep {
 
   /// Locale-neutral title contract resolved at the presentation boundary.
   StructuredMessage? get titleMessage =>
-      _cykMessageProperty(baseStep, cykStepTitleMessageProperty);
+      _cykMessageProperty(baseStep, CykStepMessages.stepTitleMessageProperty);
 
   /// Locale-neutral explanation contract resolved at the presentation boundary.
-  StructuredMessage? get explanationMessage =>
-      _cykMessageProperty(baseStep, cykStepExplanationMessageProperty);
+  StructuredMessage? get explanationMessage => _cykMessageProperty(
+    baseStep,
+    CykStepMessages.stepExplanationMessageProperty,
+  );
 
   /// Locale-neutral title for the detailed step explanation.
   StructuredMessage? get stepExplanationTitleMessage =>
       baseStep.stepExplanation?.titleMessage;
 
   /// Locale-neutral bullets for the detailed step explanation.
-  List<StructuredMessage> get stepExplanationBulletMessages =>
+  List<StructuredMessage> get bulletMessages =>
       baseStep.stepExplanation?.bulletMessages ?? const [];
-
-  /// Short alias for consumers that treat the detailed explanation as bullets.
-  List<StructuredMessage> get bulletMessages => stepExplanationBulletMessages;
 
   /// Gets cell coordinates as a string
   String? get cellCoordinates {
@@ -934,47 +871,51 @@ class CYKStep {
 
   /// Gets the number of non-terminals in the current cell
   int get cellNonTerminalCount => cellNonTerminals?.length ?? 0;
-}
 
-AlgorithmStep _cykBaseStep({
-  required String id,
-  required int stepNumber,
-  required String title,
-  required String explanation,
-  required StepExplanation stepExplanation,
-  required StructuredMessage titleMessage,
-  required StructuredMessage explanationMessage,
-  required StructuredMessage stepExplanationTitleMessage,
-  required List<StructuredMessage> bulletMessages,
-}) {
-  final structuredStepExplanation = StepExplanation(
-    titleMessage: stepExplanationTitleMessage,
-    bulletMessages: bulletMessages,
-    categories: stepExplanation.categories,
-    highlights: stepExplanation.highlights,
-    suggestedFixes: stepExplanation.suggestedFixes,
-  );
-  return AlgorithmStep(
+  static AlgorithmStep _cykBaseStep({
+    required String id,
+    required int stepNumber,
+    required String title,
+    required String explanation,
+    required List<ExplanationCategory> categories,
+    List<HighlightTarget> highlights = const [],
+    required StructuredMessage titleMessage,
+    required StructuredMessage explanationMessage,
+    required StructuredMessage stepExplanationTitleMessage,
+    required List<StructuredMessage> bulletMessages,
+  }) => AlgorithmStep(
     id: id,
     stepNumber: stepNumber,
     title: title,
     explanation: explanation,
-    stepExplanation: structuredStepExplanation,
+    stepExplanation: StepExplanation(
+      titleMessage: stepExplanationTitleMessage,
+      bulletMessages: bulletMessages,
+      categories: categories,
+      highlights: highlights,
+    ),
     type: AlgorithmType.cykParsing,
     properties: {
-      cykStepTitleMessageProperty: titleMessage.toJson(),
-      cykStepExplanationMessageProperty: explanationMessage.toJson(),
+      CykStepMessages.stepTitleMessageProperty: titleMessage.toJson(),
+      CykStepMessages.stepExplanationMessageProperty: explanationMessage
+          .toJson(),
     },
   );
-}
 
-StructuredMessage? _cykMessageProperty(AlgorithmStep step, String key) {
-  final raw = step.properties[key];
-  if (raw is! Map) return null;
-  try {
-    return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
-  } on FormatException {
-    return null;
+  static List<String> _sortedStrings(Set<String> values) =>
+      values.toList()..sort();
+
+  static StructuredMessage? _cykMessageProperty(
+    AlgorithmStep step,
+    String key,
+  ) {
+    final raw = step.properties[key];
+    if (raw is! Map) return null;
+    try {
+      return StructuredMessage.fromJson(Map<String, Object?>.from(raw));
+    } on FormatException {
+      return null;
+    }
   }
 }
 
