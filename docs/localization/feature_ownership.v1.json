@@ -428,7 +428,11 @@
         "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart",
         "test/widget/presentation/tm_reachability_result_localization_test.dart"
       ],
-      "parityCoverage": {},
+      "parityCoverage": {
+        "document-tm-multi-tape": "covered",
+        "document-tm-building-blocks": "covered",
+        "conversion.tm-unrestricted-grammar": "covered"
+      },
       "completionStatus": "covered",
       "capabilityEvidence": {
         "workspace:tm:multi-tape": {"testPath": "test/widget/presentation/tm_multi_tape_workspace_test.dart", "assertions": ["localized-multi-tape-workspace"]},

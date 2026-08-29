@@ -214,7 +214,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "FSA records bounded symbol and epsilon paths with stable node, branch, state, and transition identities; parallel and convergent paths remain distinguishable, cycles terminate explicitly, and truncation remains unknown only at the incomplete frontier. Step-by-step provenance is bounded by the global node limit and 256 epsilon edges per path, while long consuming inputs remain finite. The inspector pages both large branch sets and branches with more than 500 configurations without fabricating terminal outcomes. PDA/TM report typed unavailability instead of fabricating full trees. English teaching copy is present; final bilingual localization remains owned by #343/#210."
+      "notes": "FSA records bounded symbol and epsilon paths with stable node, branch, state, and transition identities; parallel and convergent paths remain distinguishable, cycles terminate explicitly, and truncation remains unknown only at the incomplete frontier. Step-by-step provenance is bounded by the global node limit and 256 epsilon edges per path, while long consuming inputs remain finite. The inspector pages both large branch sets and branches with more than 500 configurations without fabricating terminal outcomes. PDA/TM report typed unavailability instead of fabricating full trees."
     },
     {
       "id": "simulation.nondeterminism-highlight",
@@ -263,7 +263,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "FSA, PDA, and TM expose keyboard-reachable conflict actions with exact transition IDs, counts, toggle semantics, and scoped clearing after edits, history changes, replacement, or simulation. Mealy/Moore retain typed reports without a canvas highlight action. Final bilingual localization remains owned by #343/#210."
+      "notes": "FSA, PDA, and TM expose keyboard-reachable conflict actions with exact transition IDs, counts, toggle semantics, and scoped clearing after edits, history changes, replacement, or simulation. Mealy/Moore retain typed reports without a canvas highlight action."
     },
     {
       "id": "simulation.epsilon-highlight",
@@ -309,7 +309,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "FSA and PDA expose keyboard-reachable epsilon actions with counts, toggle semantics, exact transition IDs, and scoped clearing after edits, history changes, replacement, or simulation. Final bilingual localization remains owned by #343/#210."
+      "notes": "FSA and PDA expose keyboard-reachable epsilon actions with counts, toggle semantics, exact transition IDs, and scoped clearing after edits, history changes, replacement, or simulation."
     },
     {
       "id": "analysis.dfa-equivalence",
@@ -356,7 +356,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "Turing Lab accepts DFA and NFA inputs, reports typed determinization failures, and ignores stale asynchronous results. Remaining feature-copy localization is owned by #343."
+      "notes": "Turing Lab accepts DFA and NFA inputs, reports typed determinization failures, and ignores stale asynchronous results."
     },
     {
       "id": "conversion.dfa-completion-trap",

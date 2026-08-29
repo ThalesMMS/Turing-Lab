@@ -641,7 +641,7 @@
           "test/unit/data/pumping_lemma_codecs_test.dart:99"
         ],
         "issues": [339, 343],
-        "decision": "Preserve full progress in local JSON extensions and disclose lossy JFLAP normalization. Treat JFLAP's inability to represent free-form predicates, complete local history, and multi-token boundaries as an intentional format deviation; #343 owns only the remaining localized disclosure copy."
+        "decision": "Preserve full progress in local JSON extensions and disclose lossy JFLAP normalization. Treat JFLAP's inability to represent free-form predicates, complete local history, and multi-token boundaries as an intentional format deviation."
       },
       "dimensions": {
         "domain": "covered",

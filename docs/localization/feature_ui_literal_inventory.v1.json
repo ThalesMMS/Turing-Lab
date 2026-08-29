@@ -8,7 +8,7 @@
   "summary": {
     "fileCount": 292,
     "legacyViolationFileCount": 113,
-    "legacyViolationCount": 2039
+    "legacyViolationCount": 2029
   },
   "entries": [
     {
@@ -91,20 +91,20 @@
     },
     {
       "path": "lib/presentation/l_systems/l_system_workspace.dart",
-      "sourceDigestSha256": "1bcc31dcffe0637b602a4b400fcdd867273950d7e78cbc16767776ed4e558e8e",
-      "violationDigestSha256": "14d52b97d1f0dc8b0dae1adf0ffa1045e5ac349466e8310d1ebdbb3c31253df7",
+      "sourceDigestSha256": "f6df8ebb4194a22b2c78499a0d50c1998ab5cba01c1d12b1e959d1a261dbbb32",
+      "violationDigestSha256": "5d658d03eac742c8ad2b450a49cce74792e2a0e3d317150140ea561027948656",
       "violationCount": 49
     },
     {
       "path": "lib/presentation/localization/locale_value_formatter.dart",
-      "sourceDigestSha256": "a4efeb85e49f6bd2e7c873acd74967b30227b3965a9c5fa4dd21b063369fe62c",
-      "violationDigestSha256": "be8b41195c196192347f44d11168c3f845e02da275c628f828c65180e5c6ea7e",
+      "sourceDigestSha256": "0612f55ff71f59c1195cf94eb765673677e93f41b59727c6564b61ba44ab1a92",
+      "violationDigestSha256": "8b1eb65199d227dbaa26fba320b0d676e129631741d4849238edb568263d1d04",
       "violationCount": 3
     },
     {
       "path": "lib/presentation/localization/manual_conversion_localizations.dart",
-      "sourceDigestSha256": "b523ae530d7e545b275a5ce5b9a1362b979a5a9456ac1b3f421092807461601a",
-      "violationDigestSha256": "c45114bad28a39fee6ca875ff664ce748658cd7243bbb1bafe22564fe6e46102",
+      "sourceDigestSha256": "a408a93eff6b138d6f3ecee75d8bb9be1281fe6ea629d808d5f489ca0d4b0a33",
+      "violationDigestSha256": "0f895603bb9b14fb8b0aec4a1894d0a0181c147c44e501b9be6c38da7f47ab46",
       "violationCount": 131
     },
     {
@@ -127,7 +127,7 @@
     },
     {
       "path": "lib/presentation/pages/regex_page.dart",
-      "sourceDigestSha256": "ee8ad596f3e78d8b7c506271cbdd68678d4e32f39fa417d80b674c0d79286b9e",
+      "sourceDigestSha256": "0324adb6fcc2aaa4c626bdb54f9c530c3cabf80881d9583dc1b25980ce7e0978",
       "violationDigestSha256": "469232b052bcdd866d03fc467a9e24f62ff9d37322ee2383701382ee0f219a79",
       "violationCount": 3
     },
@@ -175,8 +175,8 @@
     },
     {
       "path": "lib/presentation/providers/automaton_algorithm_provider.dart",
-      "sourceDigestSha256": "bdf7206be47e6c9c8705a75f90789b20c9bc31ae4a2f6d0bad0b05fbe2098c93",
-      "violationDigestSha256": "3cf27d350b329c88ec6b9eb1d4e95174448807ef931f9f867f527f48b7a5b794",
+      "sourceDigestSha256": "936c3a262489ef2754f5942d62bb9eda38b3d2c875e97e5d6dccee3c265e75c4",
+      "violationDigestSha256": "dace5900399d3c78dc0dd71245dc69306e785201c36fcf92c9d00ac1c62c1f74",
       "violationCount": 24
     },
     {
@@ -277,8 +277,8 @@
     },
     {
       "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace_strings.dart",
-      "sourceDigestSha256": "bcded8d973d0395320168f4f12e9388d53b34a635cd79bf891e418ea727ac8f3",
-      "violationDigestSha256": "6b24bb08fec36cf900510e43ee6bb339c945993a7b1ae993556a52981fcb61c9",
+      "sourceDigestSha256": "786cc9a6206f90ec2b06795fc69027f3c41536e1f27d8519c65ddf91d68bbafc",
+      "violationDigestSha256": "d7840d07e59d0058c8fd47198f4c274c583de3f54341ebdd1a0d23b0d91d1949",
       "violationCount": 159
     },
     {
@@ -289,8 +289,8 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_panel.dart",
-      "sourceDigestSha256": "ab464ec9737a972d87a14d9fa7c0995a45453a048bdcfd18f5345798eab0b9ad",
-      "violationDigestSha256": "fa4b00a5e5c493792a07048c7d51891366fb74d2b431759fff14ba2331e6e934",
+      "sourceDigestSha256": "eb8741abf3a7ebfefa26447c19701296abb80df530836c29183faeae5615fd74",
+      "violationDigestSha256": "fa5b07f56eb19975bda1fbaf2cbad739cc5a2409dbb14f82e836a58952705366",
       "violationCount": 102
     },
     {
@@ -301,19 +301,19 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
-      "sourceDigestSha256": "c479c34a66f3bc22b509de77b7355e5c9cacbc3e7d7af35aaae2e7f3d89dc43d",
+      "sourceDigestSha256": "913b04cf368608d980eece3f2d288a1d8960cb62a8480aa56c1efa01e19d4462",
       "violationDigestSha256": "4cf039dc361c0b27611958d34a21ef8c772cbbbd593827a7abf6d52316d74ef1",
       "violationCount": 27
     },
     {
       "path": "lib/presentation/widgets/algorithm_step_viewer.dart",
-      "sourceDigestSha256": "b3562e9467ffe1c48b3591a145d8205d4f66bb7f19920e5c3f9b846cc54d749e",
-      "violationDigestSha256": "7386e72e46cadc0de3fd2d31d6fcc5017dcab044feb7e9a02cf9282da35616ce",
+      "sourceDigestSha256": "e3ddcd1ff8769bd6d86b8c1df1a3f305b3355070b04e91a8e6b737c773903fa9",
+      "violationDigestSha256": "43d87faf4c5b4dd4214a0417574e0cc946698874603fdd1b2f82d1a7a04ca3d7",
       "violationCount": 6
     },
     {
       "path": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
-      "sourceDigestSha256": "f96bb1401ef478adb77d01901a71042b4b3811be9619059f62c952d9856c99b0",
+      "sourceDigestSha256": "0250fb55aed9b42fa76b639d6e140d45b85d09ba699e78a58d106673cbf9fc00",
       "violationDigestSha256": "f4c912bf57aba43020fab0dee1ddf4a950ef8bbfd8886b9370c843add6b7aaf1",
       "violationCount": 2
     },
@@ -343,8 +343,8 @@
     },
     {
       "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
-      "sourceDigestSha256": "cbc503ccda94b255016502543b161bc21b93359f743992fb73f3a881d0a6e6d4",
-      "violationDigestSha256": "4e6f5a57c63c527ac1ab21b806a88cfdfc178fba8ca53a077bace51a1b749760",
+      "sourceDigestSha256": "689f77490a8e21509c4c2776aa34c93dd24c10d95088d9c807970c6edbccde69",
+      "violationDigestSha256": "51be9a20a3cfc0ca173f74141646ea2d89cc2acd9fcf2f313478fe52efad04ef",
       "violationCount": 49
     },
     {
@@ -373,7 +373,7 @@
     },
     {
       "path": "lib/presentation/widgets/common/simulation_result_card.dart",
-      "sourceDigestSha256": "e6159c3489ed567b23ff0e2d379cbaafbf69b90b8ddcef1f11666419e00ae4ab",
+      "sourceDigestSha256": "1d1d0b139f1829983a157699b7aeda489565601655842b7f1f3ff51d88f11aa0",
       "violationDigestSha256": "e46b84897112b6f15928e3348f86007623db9b9ae553590c6426ca151c05f53d",
       "violationCount": 3
     },
@@ -439,8 +439,8 @@
     },
     {
       "path": "lib/presentation/widgets/grammar_algorithm_panel.dart",
-      "sourceDigestSha256": "508bb43b89f7764aa30a658955c0c4a1ec564e19140c5a3f6cfeebcb72232da2",
-      "violationDigestSha256": "77436b9b8321a71087304691c11b88b65ac2f5af6c523297df1ee47fa7689371",
+      "sourceDigestSha256": "aae339d2e9bdeab99290fd06c9836af271581144d31f61b21677fe421f6c6eff",
+      "violationDigestSha256": "13216f1e5883489d7799c36a7d12dea27f76a33156fbb94f3346f3ec22c963c2",
       "violationCount": 28
     },
     {
@@ -457,13 +457,13 @@
     },
     {
       "path": "lib/presentation/widgets/grammar_simulation_panel.dart",
-      "sourceDigestSha256": "8a2b847d270982c389b93391ec465e30c8808c9d63d77ef0af967613f795b60a",
-      "violationDigestSha256": "72154ff7e2ab0e2093d30075f063fb3e7e3a4cdb08a6b554508047f6bc7428ca",
+      "sourceDigestSha256": "1e14951411089e28bf9c331cdac2a408a2a524b57eb92aee5e15a1828763ba15",
+      "violationDigestSha256": "612215c8a3962ad4a3c099d9a3539f4ddb520c59d75432715827cd449d1e19b3",
       "violationCount": 15
     },
     {
       "path": "lib/presentation/widgets/grammar_transformation_history.dart",
-      "sourceDigestSha256": "4a1c13bb3b8e725122c0d710853f838aa5a79d3ddc30ee44fda8ed7de0ef390a",
+      "sourceDigestSha256": "0d717ca44ff8d70a77ce42e793f9736739a709ec69e3d77130dc314423bace80",
       "violationDigestSha256": "b66c69493cbbb37a3f38dc724e56bd248e15a22011f380fd5ac859a0a171b9c6",
       "violationCount": 2
     },
@@ -523,8 +523,8 @@
     },
     {
       "path": "lib/presentation/widgets/pda_algorithm_panel.dart",
-      "sourceDigestSha256": "4c5a42ac1598aaca408cf3b290f84cf6596ef055c2ba183d8809acf451c3e7f3",
-      "violationDigestSha256": "7a908ed7fc2972fac739a6b329151b82f47d91f8c0adb958b63a97de7da15d88",
+      "sourceDigestSha256": "7d2f57e32b8d5ef931a147d3681aee22d46a96df91cc9cbcb1ed7c2a498456c5",
+      "violationDigestSha256": "df7c58f3d85018f31558fac73c70729cf5403f59d670f01ee5b9343f4e391a93",
       "violationCount": 15
     },
     {
@@ -535,14 +535,14 @@
     },
     {
       "path": "lib/presentation/widgets/pumping_lemma_workspace.dart",
-      "sourceDigestSha256": "418c409a65d7fbb6f82fae5d14a4d465ec7d7997764e2b616aba6c4f4691e5bc",
-      "violationDigestSha256": "2c80ffd98180a0ec921b1e01dbc4deff9b8cc292de24af874e324ac45b8c9aa4",
+      "sourceDigestSha256": "edd3ad9f7b571bb4a57b4a76a87db852bc695582c95b7836107b3bd35370f9df",
+      "violationDigestSha256": "ffc852d2d4efae827ba990edeef0ffda4557871f26d690d95903cd8c218f6696",
       "violationCount": 9
     },
     {
       "path": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
-      "sourceDigestSha256": "1d8a383e3181ad642891a52ee4ad745dbf74cac3bde511738f42a591b116e70d",
-      "violationDigestSha256": "0963efa449955913997c4a24070d366ff67cab4257a2e01e7b657e33751e83e3",
+      "sourceDigestSha256": "687fd53d7cae878637b93fe243f2edb8e90b67e4d718e1cd0b566adcb9326d30",
+      "violationDigestSha256": "987e093fbf6843f01625bb41e41b7e955c0f6059e5be4f4d3383b7afbdb8de10",
       "violationCount": 25
     },
     {
@@ -577,7 +577,7 @@
     },
     {
       "path": "lib/presentation/widgets/tm_algorithm_presentation_primitives.dart",
-      "sourceDigestSha256": "cd565371fa1a6256fe674b382e951b2affd3516586a9b12201440dea3b8f7ee2",
+      "sourceDigestSha256": "6026609d5f0d09d8f43b328e509dc9866af31672c0ce5023c771afe660b4080f",
       "violationDigestSha256": "d69449db464bb6540a1003f157e44f37768e535b2c2335f5b775eb964d051d97",
       "violationCount": 10
     },
@@ -601,15 +601,15 @@
     },
     {
       "path": "lib/presentation/widgets/tm_algorithm_time_controls.dart",
-      "sourceDigestSha256": "e9615168e592ac890bc88fe3866ea47a0eafd405f914140efa6cfddfbae34bcb",
-      "violationDigestSha256": "0252bd2d25a518abffeee9ca8528916a82052392d38936699027c53a81bb2a09",
+      "sourceDigestSha256": "cd83b8857675e43568a73dd5fca7ca4b01b2773f22f6526afb32beff5e774ae4",
+      "violationDigestSha256": "dc39769de5e568141486804e5b4cf1cc530f7e413637bd3d7d9092faabd9a758",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/widgets/tm_language_result_view.dart",
-      "sourceDigestSha256": "ce4b83fe76ce84dc0647eaafb7fc2d1fc7b9d4108f8cb2ff7f9494d26a790ada",
-      "violationDigestSha256": "8bb702a35f9faa2359c92bf8db13504eddf7fd1808f5d484cc5cc26f9f1444db",
-      "violationCount": 26
+      "sourceDigestSha256": "92522effc39bfa73a9ae245d2454d6bf7252f173bd66f5ad393a9db7625c8829",
+      "violationDigestSha256": "b18942e11d05c179e16deceeed5395692209f64476c209e9795b201f689a2747",
+      "violationCount": 25
     },
     {
       "path": "lib/presentation/widgets/tm_reachability_result_view.dart",
@@ -619,9 +619,9 @@
     },
     {
       "path": "lib/presentation/widgets/tm_simulation_panel.dart",
-      "sourceDigestSha256": "9849e5e571e737994fa323a79926e2b20e7b319eeba6db6cc63a8ffddd995e6e",
-      "violationDigestSha256": "625a34ac5646fc079c67cccf1824c2a70070a4c07556c90fff3eebc127e8847d",
-      "violationCount": 32
+      "sourceDigestSha256": "f0b027b1a222460b0920330a5c121304cd5ed21eaceabf5ee9ab335e80b31e8d",
+      "violationDigestSha256": "60e253e24e394d0916e72abd0dafadfb4d2a62252dc1fc166a8ed26faba2568b",
+      "violationCount": 27
     },
     {
       "path": "lib/presentation/widgets/tm_space_result_view.dart",
@@ -631,15 +631,15 @@
     },
     {
       "path": "lib/presentation/widgets/tm_termination_result_view.dart",
-      "sourceDigestSha256": "70971e9cfef5ecdf81dd23f8df093306f29b0847d34499265c4959d95efff8ac",
-      "violationDigestSha256": "e9e1130c33cd30a99a60a6d0b2dd795b00ca6cf0816d01df9fc80d0c038279fa",
-      "violationCount": 22
+      "sourceDigestSha256": "74476134622a4c1dbd2fc9fbaf1ec622742696d11822e4824e66f568f47635ec",
+      "violationDigestSha256": "05c3f65838d3c224c5eaef8e3c3b1b2faeff8784ab197123f6610c749174fe7a",
+      "violationCount": 21
     },
     {
       "path": "lib/presentation/widgets/tm_time_result_view.dart",
-      "sourceDigestSha256": "e09a693a478f0eea1365d37e7996cb1cdd1d1c67ce95dc2619260e176d357341",
-      "violationDigestSha256": "8d88b9216708da4704231d9dc891406350bda749329e6f8037f89ee44da46f43",
-      "violationCount": 28
+      "sourceDigestSha256": "c24cc340063c0fd942a9d59518bc7bfed9703452ba43344bda2973b8cc67873b",
+      "violationDigestSha256": "9e08334e1e18b62609d7414de34df7928423d77c069893c676503b0d0a21d1da",
+      "violationCount": 25
     },
     {
       "path": "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart",
