@@ -135,6 +135,30 @@ void main() {
       expect(transition.lambdaSymbol, equals('ε'));
       expect(result.data!.alphabet, isEmpty);
     });
+
+    test('invalid JSON returns the codec-malformed contract', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'turing-lab-invalid-automaton-json-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File(
+        '${directory.path}${Platform.pathSeparator}invalid.json',
+      );
+      await file.writeAsString('{invalid');
+
+      final result = await service.loadAutomatonFromJson(file.path);
+
+      expect(result.isFailure, isTrue);
+      expect(result.error, 'service.file-operations.codec-malformed');
+      expect(
+        result.structuredError?.stableCode,
+        'service.file-operations.codec-malformed',
+      );
+      expect(
+        result.structuredError?.arguments['reason']?.value,
+        'invalidValue',
+      );
+    });
   });
 
   group('FileOperationsService file access messaging', () {
@@ -178,6 +202,61 @@ void main() {
 
       expect(message.stableCode, 'service.file-operations.access-denied');
       expect(message.arguments['operation']?.value, 'read');
+    });
+
+    test('classifies native Windows access and path error codes', () {
+      final denied = FileOperationsService.describeFileAccessFailure(
+        const FileSystemException(
+          'Localized system failure',
+          r'C:\restricted\export.jff',
+          OSError('Localized system failure', 5),
+        ),
+        isWrite: true,
+      );
+      final missing = FileOperationsService.describeFileAccessFailure(
+        const FileSystemException(
+          'Localized system failure',
+          r'C:\missing\input.jff',
+          OSError('Localized system failure', 3),
+        ),
+        isWrite: false,
+      );
+
+      expect(
+        denied.stableCode,
+        Platform.isWindows
+            ? 'service.file-operations.access-denied'
+            : 'service.file-operations.access-failed',
+      );
+      expect(
+        missing.stableCode,
+        Platform.isWindows
+            ? 'service.file-operations.location-missing'
+            : 'service.file-operations.access-failed',
+      );
+    });
+
+    test('does not infer the failure kind from the file path', () {
+      for (final path in [
+        '/tmp/permission denied/export.jff',
+        '/tmp/not permitted/export.jff',
+        '/tmp/does not exist/export.jff',
+      ]) {
+        final message = FileOperationsService.describeFileAccessFailure(
+          FileSystemException(
+            'Localized system failure',
+            path,
+            const OSError('Localized system failure', 999),
+          ),
+          isWrite: false,
+        );
+
+        expect(
+          message.stableCode,
+          'service.file-operations.access-failed',
+          reason: path,
+        );
+      }
     });
 
     test(

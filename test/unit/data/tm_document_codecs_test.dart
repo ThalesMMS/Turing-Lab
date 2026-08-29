@@ -11,12 +11,92 @@ import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_building_blocks.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/data/codecs/tm_jflap_document_codec.dart';
 import 'package:turing_lab/data/codecs/tm_json_document_codec.dart';
 
 void main() {
+  test('building-block failures preserve exact structured arguments', () {
+    const source = '''
+<structure><type>turing</type><automaton>
+  <block id="node id" name="Block"><x>bad</x><y>0</y><initial/><tag>leaf</tag></block>
+</automaton></structure>''';
+    final decoded = const TmJflapDocumentCodec().decode(
+      _textPayload(source, 'invalid-building-block.jff'),
+    );
+    final malformed = decoded as CodecMalformed<InteroperableDocument<Object>>;
+
+    expect(malformed.reason, CodecMalformedReason.invalidValue);
+    expect(
+      malformed.location?.path,
+      '/structure/automaton/block[@id="node id"]',
+    );
+    expect(malformed.message, 'JFLAP TM node node id has invalid coordinates.');
+    expect(
+      malformed.structuredMessage?.stableCode,
+      'codec.tm-jflap.invalid-node-coordinate',
+    );
+    expect(malformed.structuredMessage?.arguments['node']?.value, 'node id');
+  });
+
+  test('building-block import carries unsupported diagnostics directly', () {
+    const source = '''
+<structure><type>turing</type><automaton>
+  <block id="0" name="Block"><x>0</x><y>0</y><initial/><tag>leaf</tag></block>
+  <state id="1" name="q1"><x>10</x><y>0</y><final/></state>
+  <transition><from>0</from><to>1</to><read>~</read><write>a</write><move>R</move></transition>
+</automaton></structure>''';
+    final decoded = const TmJflapDocumentCodec().decode(
+      _textPayload(source, 'unsupported-building-block.jff'),
+    );
+    final unsupported =
+        decoded as CodecUnsupported<InteroperableDocument<Object>>;
+
+    expect(unsupported.reason, CodecUnsupportedReason.feature);
+    expect(
+      unsupported.message,
+      'JFLAP wildcard, negated, and variable TM reads are not supported.',
+    );
+    expect(
+      unsupported.structuredMessage?.stableCode,
+      'codec.tm-jflap.unsupported-read-predicate',
+    );
+  });
+
+  test('building-block export preserves unsupported operation details', () {
+    final machine = _singleSymbolMachine('a');
+    final withBlocks = machine.copyWith(
+      blockDefinitions: {
+        'leaf': TMBlockDefinition(
+          id: 'leaf',
+          name: 'Leaf',
+          revision: 1,
+          machine: _singleSymbolMachine('token').copyWith(id: 'leaf-machine'),
+        ),
+      },
+    );
+    final encoded = const TmJflapDocumentCodec().encode(_document(withBlocks));
+    final unsupported = encoded as CodecUnsupported<EncodedDocument>;
+
+    expect(unsupported.reason, CodecUnsupportedReason.feature);
+    expect(
+      unsupported.message,
+      'Transition t uses a read symbol that JFLAP cannot represent atomically.',
+    );
+    expect(
+      unsupported.structuredMessage?.stableCode,
+      'codec.tm-jflap.unsupported-operation',
+    );
+    expect(unsupported.structuredMessage?.arguments['transition']?.value, 't');
+    expect(
+      unsupported.structuredMessage?.arguments['operation']?.value,
+      'read',
+    );
+    expect(unsupported.structuredMessage?.arguments['symbol']?.value, 'token');
+  });
+
   group('TM JSON codec', () {
     test('persists the semantic variant and canonical endpoint identities', () {
       final machine = _twoTapeMachine();
@@ -74,10 +154,10 @@ void main() {
       final restoredTransition = restored.tmTransitions.single;
       expect(restoredTransition.readSymbols, ['a', '_']);
       expect(restoredTransition.writeSymbols, ['a', '_']);
-      expect(
-        restoredTransition.directions,
-        [TapeDirection.right, TapeDirection.stay],
-      );
+      expect(restoredTransition.directions, [
+        TapeDirection.right,
+        TapeDirection.stay,
+      ]);
       expect(
         identical(
           restoredTransition.toState,
@@ -138,26 +218,26 @@ void main() {
   <note><text>TM invariant</text><x>45</x><y>55</y></note>
 </automaton></structure>''';
       const codec = TmJflapDocumentCodec();
-      final decoded = codec.decode(_textPayload(source, 'notes.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_textPayload(source, 'notes.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
 
       expect(
-        annotationsFromExtensions(decoded.value.extensions)!
-            .annotations
-            .single
-            .text,
+        annotationsFromExtensions(
+          decoded.value.extensions,
+        )!.annotations.single.text,
         'TM invariant',
       );
 
       final encoded =
           codec.encode(decoded.value) as CodecSuccess<EncodedDocument>;
-      final restored = codec.decode(_payload(encoded.value.bytes, 'notes.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final restored =
+          codec.decode(_payload(encoded.value.bytes, 'notes.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(
-        annotationsFromExtensions(restored.value.extensions)!
-            .annotations
-            .single
-            .text,
+        annotationsFromExtensions(
+          restored.value.extensions,
+        )!.annotations.single.text,
         'TM invariant',
       );
     });
@@ -179,9 +259,9 @@ void main() {
       expect(xml, contains('<turingLabState>'));
       expect(xml, contains('<turingLabTransition>'));
 
-      final decoded = codec.decode(
-        _payload(success.value.bytes, 'local.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_payload(success.value.bytes, 'local.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.fidelity, DocumentFidelity.exact);
       final restored = decoded.value.document as TM;
       expect(restored.id, machine.id);
@@ -190,8 +270,9 @@ void main() {
       expect(restored.tapeAlphabet, machine.tapeAlphabet);
       expect(restored.zoomLevel, machine.zoomLevel);
       expect(restored.panOffset, machine.panOffset);
-      final state =
-          restored.states.singleWhere((value) => value.id == 'state/0');
+      final state = restored.states.singleWhere(
+        (value) => value.id == 'state/0',
+      );
       expect(state.type, StateType.initial);
       expect(state.properties, {'note': 'entry'});
       final transition = restored.tmTransitions.single;
@@ -220,19 +301,22 @@ void main() {
 
       final encoded =
           codec.encode(_document(empty)) as CodecSuccess<EncodedDocument>;
-      final decoded = codec.decode(_payload(encoded.value.bytes, 'empty.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_payload(encoded.value.bytes, 'empty.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       final restored = decoded.value.document as TM;
       expect(restored.states, isEmpty);
       expect(restored.initialState, isNull);
       expect(restored.blankSymbol, '_');
 
-      final standard = codec.decode(
-        _textPayload(
-          '<structure><type>turing</type><automaton/></structure>',
-          'standard-empty.jff',
-        ),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final standard =
+          codec.decode(
+                _textPayload(
+                  '<structure><type>turing</type><automaton/></structure>',
+                  'standard-empty.jff',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect((standard.value.document as TM).states, isEmpty);
       expect(standard.fidelity, DocumentFidelity.normalized);
     });
@@ -248,9 +332,11 @@ void main() {
 <read tape="3">b</read><write tape="3">c</write><move tape="3">S</move>
 </transition></automaton></structure>''';
 
-      final decoded = const TmJflapDocumentCodec().decode(
-        _textPayload(source, 'standard.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          const TmJflapDocumentCodec().decode(
+                _textPayload(source, 'standard.jff'),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.fidelity, DocumentFidelity.normalized);
       final machine = decoded.value.document as TM;
       expect(machine.tapeCount, 3);
@@ -258,10 +344,11 @@ void main() {
       final transition = machine.tmTransitions.single;
       expect(transition.toState.id, 'same-as-label');
       expect(transition.readSymbols, ['a', 'B', 'b']);
-      expect(
-        transition.directions,
-        [TapeDirection.left, TapeDirection.right, TapeDirection.stay],
-      );
+      expect(transition.directions, [
+        TapeDirection.left,
+        TapeDirection.right,
+        TapeDirection.stay,
+      ]);
     });
 
     test('keeps JFLAP final-state acceptance and halt rejection', () async {
@@ -270,11 +357,13 @@ void main() {
         ('<final/>', 'accepted'),
         ('', 'haltedRejected'),
       ]) {
-        final source = '''<structure><type>turing</type><automaton>
+        final source =
+            '''<structure><type>turing</type><automaton>
 <state id="0" name="q0"><x>0</x><y>0</y><initial/>$finalMarker</state>
 </automaton></structure>''';
-        final decoded = codec.decode(_textPayload(source, 'halt.jff'))
-            as CodecSuccess<InteroperableDocument<Object>>;
+        final decoded =
+            codec.decode(_textPayload(source, 'halt.jff'))
+                as CodecSuccess<InteroperableDocument<Object>>;
         final result = await TMExecutionAnalyzer.analyze(
           decoded.value.document as TM,
           '',
@@ -292,9 +381,11 @@ void main() {
 <transition><from>0</from><to>2</to><read>a</read><write>b</write><move>L</move></transition>
 </automaton></structure>''';
 
-      final decoded = const TmJflapDocumentCodec().decode(
-        _textPayload(source, 'nondeterministic.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          const TmJflapDocumentCodec().decode(
+                _textPayload(source, 'nondeterministic.jff'),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect((decoded.value.document as TM).isNondeterministic, isTrue);
     });
 
@@ -311,14 +402,18 @@ void main() {
 </automaton></structure>''';
       const codec = TmJflapDocumentCodec();
 
-      final left = (codec.decode(_textPayload(first, 'first.jff'))
-              as CodecSuccess<InteroperableDocument<Object>>)
-          .value
-          .document as TM;
-      final right = (codec.decode(_textPayload(second, 'second.jff'))
-              as CodecSuccess<InteroperableDocument<Object>>)
-          .value
-          .document as TM;
+      final left =
+          (codec.decode(_textPayload(first, 'first.jff'))
+                      as CodecSuccess<InteroperableDocument<Object>>)
+                  .value
+                  .document
+              as TM;
+      final right =
+          (codec.decode(_textPayload(second, 'second.jff'))
+                      as CodecSuccess<InteroperableDocument<Object>>)
+                  .value
+                  .document
+              as TM;
       expect(right.id, left.id);
       expect(
         right.tmTransitions.map((transition) => transition.id),
@@ -337,8 +432,9 @@ void main() {
 </automaton></structure>''';
       const codec = TmJflapDocumentCodec();
 
-      final decoded = codec.decode(_textPayload(source, 'vendor.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_textPayload(source, 'vendor.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.value.extensions.values, isNotEmpty);
       expect(
         decoded.diagnostics.map((diagnostic) => diagnostic.code),
@@ -370,8 +466,9 @@ void main() {
       const codec = TmJflapDocumentCodec();
 
       for (var index = 0; index < cases.length; index++) {
-        final decoded =
-            codec.decode(_textPayload(cases[index], 'bad-$index.jff'));
+        final decoded = codec.decode(
+          _textPayload(cases[index], 'bad-$index.jff'),
+        );
         expect(
           decoded,
           isA<CodecMalformed<InteroperableDocument<Object>>>(),

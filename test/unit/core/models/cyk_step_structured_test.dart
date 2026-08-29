@@ -145,8 +145,11 @@ void main() {
       );
 
       final properties = step.baseStep.properties;
-      expect(properties[cykStepTitleMessageProperty], isA<Map>());
-      expect(properties[cykStepExplanationMessageProperty], isA<Map>());
+      expect(properties[CykStepMessages.stepTitleMessageProperty], isA<Map>());
+      expect(
+        properties[CykStepMessages.stepExplanationMessageProperty],
+        isA<Map>(),
+      );
       final stepExplanationJson =
           step.baseStep.toJson()['stepExplanation'] as Map;
       expect(stepExplanationJson['titleMessage'], isA<Map>());
@@ -295,5 +298,50 @@ void main() {
       emptyCell.explanationMessage!.arguments['has-nonterminals']?.value,
       isFalse,
     );
+  });
+
+  test('set insertion order does not change CYK messages or JSON', () {
+    final forward = CYKStep.checkSplit(
+      id: 'canonical-split',
+      stepNumber: 1,
+      row: 1,
+      col: 0,
+      substring: 'a b',
+      substringLength: 2,
+      splitPoint: 1,
+      leftSubstring: 'a',
+      rightSubstring: 'b',
+      leftRow: 0,
+      leftCol: 0,
+      rightRow: 0,
+      rightCol: 1,
+      leftNonTerminals: {'A', 'B'},
+      rightNonTerminals: {'C', 'D'},
+    );
+    final reverse = CYKStep.checkSplit(
+      id: 'canonical-split',
+      stepNumber: 1,
+      row: 1,
+      col: 0,
+      substring: 'a b',
+      substringLength: 2,
+      splitPoint: 1,
+      leftSubstring: 'a',
+      rightSubstring: 'b',
+      leftRow: 0,
+      leftCol: 0,
+      rightRow: 0,
+      rightCol: 1,
+      leftNonTerminals: {'B', 'A'},
+      rightNonTerminals: {'D', 'C'},
+    );
+
+    expect(reverse.titleMessage, forward.titleMessage);
+    expect(reverse.explanationMessage, forward.explanationMessage);
+    final reverseJson = reverse.toJson();
+    final forwardJson = forward.toJson();
+    (reverseJson['baseStep'] as Map<String, dynamic>).remove('timestamp');
+    (forwardJson['baseStep'] as Map<String, dynamic>).remove('timestamp');
+    expect(reverseJson, forwardJson);
   });
 }

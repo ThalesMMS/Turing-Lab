@@ -275,6 +275,12 @@ void main() {
 
       final legacy = GrammarAmbiguityAnalyzer(context).legacyReport();
       expect(legacy.isSuccess, isTrue, reason: legacy.error);
+      expect(legacy.data!.notes, hasLength(2));
+      expect(legacy.data!.notes.first, contains('LL(1) conflict'));
+      expect(
+        legacy.data!.notes.last,
+        contains('does not necessarily mean the grammar is ambiguous'),
+      );
       expect(legacy.data!.structuredConflicts, report.structuredConflicts);
       expect(legacy.data!.structuredDerivations, report.structuredDerivations);
     },

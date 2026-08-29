@@ -202,6 +202,47 @@ void main() {
         isA<ContextFreePumpingLemmaDocument>(),
       );
     });
+
+    test('restored documents discard removed and stale challenge progress', () {
+      final problem = PumpingLemmaProblemCatalog.regular.first;
+      final document = RegularPumpingLemmaDocument(
+        problem: problem,
+        session: PumpingLemmaSession<RegularPumpingDecomposition>(
+          sessionId: 'regular-stale-progress',
+          challengeId: problem.id,
+          sourceRevision: problem.sourceRevision,
+          theorem: PumpingLemmaTheorem.regular,
+          mode: PumpingLemmaMode.guidedPractice,
+          role: PumpingLemmaRole.learner,
+          targetLanguage: problem.languageDescription,
+        ),
+        progress: PumpingLemmaEnvironmentProgress(
+          challengeScores: {
+            problem.id: 1,
+            'regular.equal-counts': 2,
+            'regular.removed': 3,
+          },
+          completedChallengeIds: {
+            problem.id,
+            'regular.equal-counts',
+            'regular.removed',
+          },
+          challengeContentVersions: {
+            problem.id: problem.contentVersion,
+            'regular.equal-counts': 999,
+            'regular.removed': 1,
+          },
+        ),
+      );
+
+      final restored = PumpingLemmaDocument.fromJson(document.toJson());
+
+      expect(restored.progress.challengeScores, {problem.id: 1});
+      expect(restored.progress.completedChallengeIds, {problem.id});
+      expect(restored.progress.challengeContentVersions, {
+        problem.id: problem.contentVersion,
+      });
+    });
   });
 
   group('session isolation and migration', () {
@@ -345,18 +386,93 @@ void main() {
         'version': 1,
         'challenges': [
           {'id': 'regular-1', 'theorem': 'regular', 'score': 2},
+          {'id': 'regular-zero', 'theorem': 'regular', 'score': 0},
+          {'id': 'regular-unscored', 'theorem': 'regular'},
           {'id': 'cfl-1', 'theorem': 'contextFree', 'score': 4},
+          {'id': 'cfl-zero', 'theorem': 'contextFree', 'score': 0},
           {'id': 'unknown-1', 'score': 99},
         ],
       });
 
-      expect(result.snapshot.regular.challengeScores, {'regular-1': 2});
-      expect(result.snapshot.contextFree.challengeScores, {'cfl-1': 4});
+      expect(result.snapshot.regular.challengeScores, {
+        'regular-1': 2,
+        'regular-zero': 0,
+        'regular-unscored': 0,
+      });
+      expect(result.snapshot.regular.completedChallengeIds, {'regular-1'});
+      expect(result.snapshot.regular.challengeContentVersions, {
+        'regular-1': 1,
+        'regular-zero': 1,
+        'regular-unscored': 1,
+      });
+      expect(result.snapshot.contextFree.challengeScores, {
+        'cfl-1': 4,
+        'cfl-zero': 0,
+      });
+      expect(result.snapshot.contextFree.completedChallengeIds, {'cfl-1'});
       expect(result.discardedChallengeIds, ['unknown-1']);
       expect(result.requiresUserNotice, isTrue);
       expect(
         PumpingLemmaProgressSnapshot.fromJson(result.snapshot.toJson()),
         result.snapshot,
+      );
+    });
+
+    test('persisted progress rejects malformed record shapes', () {
+      expect(
+        () => PumpingLemmaProgressSnapshot.fromJson({
+          'version': PumpingLemmaProgressSnapshot.schemaVersion,
+          'regular': const [],
+          'contextFree': const <String, Object?>{},
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => PumpingLemmaProgressSnapshot.fromJson({
+          'version': PumpingLemmaProgressSnapshot.schemaVersion,
+          'regular': const <String, Object?>{},
+          'contextFree': null,
+        }),
+        throwsFormatException,
+      );
+      for (final challenges in <Object?>[
+        'not-a-list',
+        const [null],
+        const [
+          <String, Object?>{'id': 1, 'theorem': 'regular'},
+        ],
+        const [
+          <String, Object?>{
+            'id': 'regular-1',
+            'theorem': 'regular',
+            'score': 'one',
+          },
+        ],
+      ]) {
+        expect(
+          () => PumpingLemmaProgressMigration.migrate({
+            'version': 1,
+            'challenges': challenges,
+          }),
+          throwsFormatException,
+        );
+      }
+    });
+
+    test('content version validation uses a structured domain error', () {
+      final encoded = Map<String, Object?>.from(
+        PumpingLemmaProblemCatalog.regular.first.toJson(),
+      )..['contentVersion'] = 0;
+
+      expect(
+        () => PumpingLemmaProblem.fromJson(encoded),
+        throwsA(
+          isA<PumpingLemmaArgumentError>().having(
+            (error) => error.structuredMessage.stableCode,
+            'stableCode',
+            'pumping.validation.content-version-positive',
+          ),
+        ),
       );
     });
 

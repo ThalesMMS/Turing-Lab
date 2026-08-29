@@ -12,10 +12,136 @@ import 'package:turing_lab/core/models/state.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  FSA dfa({required String id, required String name, bool acceptsA = false}) {
+    final q0 = State(
+      id: '${id}_q0',
+      label: 'q0',
+      position: Vector2.zero(),
+      isInitial: true,
+    );
+    final q1 = State(
+      id: '${id}_q1',
+      label: 'q1',
+      position: Vector2(100, 0),
+      isAccepting: acceptsA,
+    );
+    return FSA(
+      id: id,
+      name: name,
+      states: {q0, q1},
+      transitions: {
+        FSATransition.deterministic(
+          id: '${id}_t0',
+          fromState: q0,
+          toState: q1,
+          symbol: 'a',
+        ),
+        FSATransition.deterministic(
+          id: '${id}_t1',
+          fromState: q1,
+          toState: q1,
+          symbol: 'a',
+        ),
+      },
+      alphabet: {'a'},
+      initialState: q0,
+      acceptingStates: acceptsA ? {q1} : const {},
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 100, 100),
+    );
+  }
+
+  FSA nfa() {
+    final q0 = State(
+      id: 'nfa_q0',
+      label: 'q0',
+      position: Vector2.zero(),
+      isInitial: true,
+    );
+    final q1 = State(
+      id: 'nfa_q1',
+      label: 'q1',
+      position: Vector2(100, 0),
+      isAccepting: true,
+    );
+    return FSA(
+      id: 'nfa',
+      name: 'NFA',
+      states: {q0, q1},
+      transitions: {
+        FSATransition.epsilon(id: 'nfa_epsilon', fromState: q0, toState: q1),
+        FSATransition.deterministic(
+          id: 'nfa_a',
+          fromState: q1,
+          toState: q1,
+          symbol: 'a',
+        ),
+      },
+      alphabet: {'a'},
+      initialState: q0,
+      acceptingStates: {q1},
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 100, 100),
+    );
+  }
+
+  test('comparison results reject misaligned traces at runtime', () {
+    final original = dfa(id: 'original', name: 'Original');
+    final compared = dfa(id: 'compared', name: 'Compared');
+
+    expect(
+      () => EquivalenceComparisonResult(
+        originalAutomaton: original,
+        comparedAutomaton: compared,
+        isEquivalent: true,
+        steps: const [
+          {'type': 'validation'},
+        ],
+        executionTimeMs: 0,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Legacy and structured comparison traces must stay aligned.',
+        ),
+      ),
+    );
+  });
+
+  test('comparison results snapshot caller-owned trace lists', () {
+    final original = dfa(id: 'original', name: 'Original');
+    final compared = dfa(id: 'compared', name: 'Compared');
+    final steps = <Map<String, dynamic>>[
+      {'type': 'validation'},
+    ];
+    final structuredSteps = <StructuredMessage>[
+      LanguageComparisonStepMessages.validation(),
+    ];
+    final result = EquivalenceComparisonResult(
+      originalAutomaton: original,
+      comparedAutomaton: compared,
+      isEquivalent: true,
+      steps: steps,
+      structuredSteps: structuredSteps,
+      executionTimeMs: 0,
+    );
+
+    steps.add({'type': 'result'});
+    structuredSteps.clear();
+
+    expect(result.steps, hasLength(1));
+    expect(result.structuredSteps, hasLength(1));
+    expect(() => result.steps.add({'type': 'result'}), throwsUnsupportedError);
+    expect(result.structuredSteps.clear, throwsUnsupportedError);
+  });
+
   test('structured trace stays aligned with the legacy equivalent trace', () {
     final result = LanguageComparator.compareLanguages(
-      _dfa(id: 'rejects-a', name: 'Rejects A'),
-      _dfa(id: 'rejects-b', name: 'Rejects B'),
+      dfa(id: 'rejects-a', name: 'Rejects A'),
+      dfa(id: 'rejects-b', name: 'Rejects B'),
     );
 
     expect(result.isSuccess, isTrue);
@@ -100,8 +226,8 @@ void main() {
 
   test('non-equivalent result carries the distinguishing step payload', () {
     final result = LanguageComparator.compareLanguages(
-      _dfa(id: 'accepts-a', name: 'Accepts A', acceptsA: true),
-      _dfa(id: 'rejects-b', name: 'Rejects B'),
+      dfa(id: 'accepts-a', name: 'Accepts A', acceptsA: true),
+      dfa(id: 'rejects-b', name: 'Rejects B'),
     );
 
     expect(result.isSuccess, isTrue);
@@ -126,8 +252,8 @@ void main() {
 
   test('NFA conversion steps carry the automaton side argument', () {
     final result = LanguageComparator.compareLanguages(
-      _nfa(),
-      _dfa(id: 'all-strings', name: 'All strings', acceptsA: true),
+      nfa(),
+      dfa(id: 'all-strings', name: 'All strings', acceptsA: true),
     );
 
     expect(result.isSuccess, isTrue);
@@ -160,79 +286,32 @@ void main() {
     expect(unknown.stableCode, 'language.comparison.trace.unknown');
     expect(unknown.arguments['type']?.value, 'future_step');
   });
-}
 
-FSA _dfa({required String id, required String name, bool acceptsA = false}) {
-  final q0 = State(
-    id: '${id}_q0',
-    label: 'q0',
-    position: Vector2.zero(),
-    isInitial: true,
-  );
-  final q1 = State(
-    id: '${id}_q1',
-    label: 'q1',
-    position: Vector2(100, 0),
-    isAccepting: acceptsA,
-  );
-  return FSA(
-    id: id,
-    name: name,
-    states: {q0, q1},
-    transitions: {
-      FSATransition.deterministic(
-        id: '${id}_t0',
-        fromState: q0,
-        toState: q1,
-        symbol: 'a',
-      ),
-      FSATransition.deterministic(
-        id: '${id}_t1',
-        fromState: q1,
-        toState: q1,
-        symbol: 'a',
-      ),
-    },
-    alphabet: {'a'},
-    initialState: q0,
-    acceptingStates: acceptsA ? {q1} : const {},
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 100, 100),
-  );
-}
+  test('recognized trace types reject incomplete payloads', () {
+    const incompleteSteps = <Map<String, dynamic>>[
+      {'type': 'nfa_to_dfa'},
+      {'type': 'dfa_completion', 'data': <String, dynamic>{}},
+      {'type': 'product_state_created'},
+      {'type': 'product_transition_created'},
+      {
+        'type': 'bfs_initial_check',
+        'data': {'acceptsA': true},
+      },
+      {
+        'type': 'bfs_explore_pair',
+        'data': {'stateA': 'q0'},
+      },
+      {'type': 'bfs_distinguishing_found'},
+      {
+        'type': 'result',
+        'data': {'isEquivalent': 'false'},
+      },
+    ];
 
-FSA _nfa() {
-  final q0 = State(
-    id: 'nfa_q0',
-    label: 'q0',
-    position: Vector2.zero(),
-    isInitial: true,
-  );
-  final q1 = State(
-    id: 'nfa_q1',
-    label: 'q1',
-    position: Vector2(100, 0),
-    isAccepting: true,
-  );
-  return FSA(
-    id: 'nfa',
-    name: 'NFA',
-    states: {q0, q1},
-    transitions: {
-      FSATransition.epsilon(id: 'nfa_epsilon', fromState: q0, toState: q1),
-      FSATransition.deterministic(
-        id: 'nfa_a',
-        fromState: q1,
-        toState: q1,
-        symbol: 'a',
-      ),
-    },
-    alphabet: {'a'},
-    initialState: q0,
-    acceptingStates: {q1},
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 100, 100),
-  );
+    for (final step in incompleteSteps) {
+      final message = LanguageComparisonStepMessages.fromLegacyStep(step);
+      expect(message.stableCode, 'language.comparison.trace.unknown');
+      expect(message.arguments['type']?.value, step['type']);
+    }
+  });
 }

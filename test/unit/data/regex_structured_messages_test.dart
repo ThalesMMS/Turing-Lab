@@ -9,6 +9,7 @@ import 'package:turing_lab/core/models/regex_document.dart';
 import 'package:turing_lab/data/codecs/regex_codec_messages.dart';
 import 'package:turing_lab/data/codecs/regex_jflap_document_codec.dart';
 import 'package:turing_lab/data/codecs/regex_json_document_codec.dart';
+import 'package:turing_lab/data/codecs/regex_json_messages.dart';
 
 void main() {
   const jflap = RegexJflapDocumentCodec();
@@ -62,7 +63,7 @@ void main() {
     );
   });
 
-  test('JFLAP export feature failures carry typed arguments', () {
+  test('JFLAP export feature failures preserve structured diagnostics', () {
     final outcome = jflap.encode(
       _document(
         RegexDocument(
@@ -76,11 +77,7 @@ void main() {
     final unsupported = outcome as CodecUnsupported<EncodedDocument>;
     expect(
       unsupported.structuredMessage?.stableCode,
-      'codec.regex-jflap.unsupported-feature',
-    );
-    expect(
-      unsupported.structuredMessage?.arguments['feature']?.kind,
-      StructuredMessageArgumentKind.literal,
+      'codec.regex-jflap.non-bmp-symbol',
     );
   });
 
@@ -116,7 +113,7 @@ void main() {
 
   test('Regex codec companions round-trip through JSON', () {
     final messages = <StructuredMessage>[
-      RegexJflapMessages.unsupportedFeature('non-BMP symbol'),
+      RegexJflapMessages.nonBmpSymbol(),
       RegexJflapMessages.unbalancedParentheses(),
       RegexJflapMessages.emptySetInteroperability(),
       RegexJsonMessages.canonicalAstMismatch(),

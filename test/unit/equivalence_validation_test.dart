@@ -18,6 +18,47 @@ import 'dart:math' as math;
 import 'core/algorithms/fsa_test_fixtures.dart';
 
 void main() {
+  FSA createCommaIdDfa({
+    required String initialId,
+    required String nextId,
+    required bool acceptsNext,
+  }) {
+    final initial = State(
+      id: initialId,
+      label: initialId,
+      position: Vector2.zero(),
+      isInitial: true,
+    );
+    final next = State(
+      id: nextId,
+      label: nextId,
+      position: Vector2(100, 0),
+      isAccepting: acceptsNext,
+    );
+    return FSA(
+      id: 'comma-$initialId',
+      name: 'Comma ID DFA',
+      states: {initial, next},
+      transitions: {
+        FSATransition(
+          id: 'advance',
+          fromState: initial,
+          toState: next,
+          symbol: 'a',
+        ),
+        FSATransition(id: 'loop', fromState: next, toState: next, symbol: 'a'),
+      },
+      alphabet: {'a'},
+      initialState: initial,
+      acceptingStates: acceptsNext ? {next} : {},
+      created: DateTime.now(),
+      modified: DateTime.now(),
+      bounds: const math.Rectangle(0, 0, 200, 100),
+      zoomLevel: 1.0,
+      panOffset: Vector2.zero(),
+    );
+  }
+
   group('Equivalence Checker Validation Tests', () {
     late FSA dfa1;
     late FSA dfa2;
@@ -185,12 +226,12 @@ void main() {
       });
 
       test('state-pair identity is not ambiguous when ids contain commas', () {
-        final left = _createCommaIdDfa(
+        final left = createCommaIdDfa(
           initialId: 'x,y',
           nextId: 'x',
           acceptsNext: true,
         );
-        final right = _createCommaIdDfa(
+        final right = createCommaIdDfa(
           initialId: 'z',
           nextId: 'y,z',
           acceptsNext: false,
@@ -598,47 +639,6 @@ FSA _createNoInitialDFA() {
     created: DateTime.now(),
     modified: DateTime.now(),
     bounds: const math.Rectangle(0, 0, 100, 100),
-    zoomLevel: 1.0,
-    panOffset: Vector2.zero(),
-  );
-}
-
-FSA _createCommaIdDfa({
-  required String initialId,
-  required String nextId,
-  required bool acceptsNext,
-}) {
-  final initial = State(
-    id: initialId,
-    label: initialId,
-    position: Vector2.zero(),
-    isInitial: true,
-  );
-  final next = State(
-    id: nextId,
-    label: nextId,
-    position: Vector2(100, 0),
-    isAccepting: acceptsNext,
-  );
-  return FSA(
-    id: 'comma-$initialId',
-    name: 'Comma ID DFA',
-    states: {initial, next},
-    transitions: {
-      FSATransition(
-        id: 'advance',
-        fromState: initial,
-        toState: next,
-        symbol: 'a',
-      ),
-      FSATransition(id: 'loop', fromState: next, toState: next, symbol: 'a'),
-    },
-    alphabet: {'a'},
-    initialState: initial,
-    acceptingStates: acceptsNext ? {next} : {},
-    created: DateTime.now(),
-    modified: DateTime.now(),
-    bounds: const math.Rectangle(0, 0, 200, 100),
     zoomLevel: 1.0,
     panOffset: Vector2.zero(),
   );

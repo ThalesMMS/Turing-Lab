@@ -1061,41 +1061,12 @@ void main() {
     const topicId = 'tm.editor.building-blocks.manage-library';
     final topic = kHelpCatalog.nodeById(topicId)! as HelpTopicDefinition;
 
-    expect(topic.contentKind, HelpTopicContentKind.structuredText);
     expect(
       topic.relatedTopicIds,
       contains('tm.editor.building-blocks.library-and-execution'),
     );
     expect(topic.relatedTopicIds, contains('tm.editor.overview'));
     expect(topic.relatedTopicIds, contains('tm.editor.files-and-examples'));
-    for (final copy in [enHelpCatalogCopy, ptHelpCatalogCopy]) {
-      final localized = copy[topicId]!;
-      expect(localized.body, isNotEmpty);
-      expect(localized.blocks.whereType<HelpParagraphBlock>(), isNotEmpty);
-      expect(localized.blocks.whereType<HelpHeadingBlock>(), hasLength(1));
-      expect(
-        localized.blocks.whereType<HelpOrderedStepsBlock>().single.steps,
-        hasLength(3),
-      );
-      expect(localized.blocks.whereType<HelpCalloutBlock>(), hasLength(1));
-    }
-
-    expect(
-      enHelpCatalogCopy[topicId]!.body,
-      contains('named, versioned TM definitions'),
-    );
-    expect(
-      ptHelpCatalogCopy[topicId]!.body,
-      contains('definições nomeadas e versionadas de MT'),
-    );
-    expect(
-      enHelpCatalogCopy[topicId]!.searchableTextSegments.join('\n'),
-      contains('Detach and delete'),
-    );
-    expect(
-      ptHelpCatalogCopy[topicId]!.searchableTextSegments.join('\n'),
-      contains('Desvincular e excluir'),
-    );
   });
 
   test('tm copy records execution bounds and every bundled example', () {

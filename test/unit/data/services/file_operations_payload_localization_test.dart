@@ -10,6 +10,23 @@ import 'package:turing_lab/data/services/file_operations_service.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  FSA invalidAutomaton() {
+    final timestamp = DateTime.utc(2026);
+    return FSA(
+      id: 'invalid',
+      name: 'Invalid',
+      states: const {},
+      transitions: const {},
+      alphabet: const {},
+      acceptingStates: const {},
+      created: timestamp,
+      modified: timestamp,
+      bounds: const math.Rectangle<double>(0, 0, 100, 100),
+      zoomLevel: 1,
+      panOffset: Vector2.zero(),
+    );
+  }
+
   test(
     'interoperability review failure keeps locale-neutral semantics',
     () async {
@@ -54,7 +71,7 @@ void main() {
 
   test('synchronous encode failure carries structured semantics', () {
     final service = FileOperationsService();
-    final invalid = _invalidAutomaton();
+    final invalid = invalidAutomaton();
 
     expect(
       () => service.serializeAutomatonToJFLAPString(invalid),
@@ -81,7 +98,7 @@ void main() {
 
   test('native save preserves structured encode failure', () async {
     final result = await FileOperationsService().saveAutomatonToJFLAP(
-      _invalidAutomaton(),
+      invalidAutomaton(),
       'unused-invalid-automaton.jff',
     );
 
@@ -91,21 +108,4 @@ void main() {
       'service.file-operations.codec-malformed',
     );
   });
-}
-
-FSA _invalidAutomaton() {
-  final timestamp = DateTime.utc(2026);
-  return FSA(
-    id: 'invalid',
-    name: 'Invalid',
-    states: const {},
-    transitions: const {},
-    alphabet: const {},
-    acceptingStates: const {},
-    created: timestamp,
-    modified: timestamp,
-    bounds: const math.Rectangle<double>(0, 0, 100, 100),
-    zoomLevel: 1,
-    panOffset: Vector2.zero(),
-  );
 }

@@ -6,6 +6,29 @@ import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 
 void main() {
+  Grammar buildGrammar({
+    required String id,
+    Set<String> terminals = const {'a'},
+    Set<Production>? productions,
+  }) {
+    final timestamp = DateTime.utc(2026);
+    return Grammar(
+      id: id,
+      name: id,
+      terminals: terminals,
+      nonterminals: const {'S', 'A'},
+      startSymbol: 'S',
+      productions:
+          productions ??
+          {
+            const Production(id: 'p-1', leftSide: ['S'], rightSide: ['a']),
+          },
+      type: GrammarType.contextFree,
+      created: timestamp,
+      modified: timestamp,
+    );
+  }
+
   group('grammar-to-PDA structured messages', () {
     test('message factories expose stable identity and typed arguments', () {
       final duplicate = GrammarToPdaMessages.duplicateProductionId('p-2');
@@ -31,7 +54,7 @@ void main() {
     });
 
     test('validation failures retain legacy text and structured payloads', () {
-      final grammar = _grammar(
+      final grammar = buildGrammar(
         id: 'duplicate-id',
         productions: {
           const Production(id: 'p-1', leftSide: ['S'], rightSide: ['a']),
@@ -54,7 +77,7 @@ void main() {
       'conversion timeout is represented without embedding locale prose',
       () {
         final result = GrammarToPDAConverter.convert(
-          _grammar(
+          buildGrammar(
             id: 'timeout',
             productions: {
               const Production(id: 'p-1', leftSide: ['S'], rightSide: ['a']),
@@ -73,7 +96,7 @@ void main() {
       'analysis exposes structured counterparts for its legacy step list',
       () {
         final result = GrammarToPDAConverter.analyzeGrammarToPDAConversion(
-          _grammar(id: 'analysis'),
+          buildGrammar(id: 'analysis'),
         );
 
         expect(result.isSuccess, isTrue);
@@ -105,7 +128,7 @@ void main() {
 
     test('non-context-free check carries a validation payload', () {
       final result = GrammarToPDAConverter.canConvertGrammarToPDA(
-        _grammar(
+        buildGrammar(
           id: 'unrestricted',
           productions: {
             const Production(id: 'p-1', leftSide: ['S', 'A'], rightSide: ['a']),
@@ -120,7 +143,7 @@ void main() {
 
     test('GNF conversion failure carries a stable conversion payload', () {
       final result = GrammarToPDAConverter.convertGrammarToPDAGreibach(
-        _grammar(
+        buildGrammar(
           id: 'malformed-gnf',
           productions: {
             const Production(
@@ -140,27 +163,4 @@ void main() {
       );
     });
   });
-}
-
-Grammar _grammar({
-  required String id,
-  Set<String> terminals = const {'a'},
-  Set<Production>? productions,
-}) {
-  final timestamp = DateTime.utc(2026);
-  return Grammar(
-    id: id,
-    name: id,
-    terminals: terminals,
-    nonterminals: const {'S', 'A'},
-    startSymbol: 'S',
-    productions:
-        productions ??
-        {
-          const Production(id: 'p-1', leftSide: ['S'], rightSide: ['a']),
-        },
-    type: GrammarType.contextFree,
-    created: timestamp,
-    modified: timestamp,
-  );
 }

@@ -11,15 +11,43 @@ import 'package:turing_lab/core/models/state.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  State state(String id, {bool isInitial = false, bool isAccepting = false}) =>
+      State(
+        id: id,
+        label: id,
+        position: Vector2.zero(),
+        isInitial: isInitial,
+        isAccepting: isAccepting,
+      );
+
+  FSA automaton({
+    required Set<State> states,
+    State? initialState,
+    Set<State> acceptingStates = const {},
+    Set<String> alphabet = const {},
+    Set<FSATransition> transitions = const {},
+  }) => FSA(
+    id: 'structured-nfa',
+    name: 'Structured NFA',
+    states: states,
+    transitions: transitions,
+    alphabet: alphabet,
+    initialState: initialState,
+    acceptingStates: acceptingStates,
+    created: DateTime.utc(2026),
+    modified: DateTime.utc(2026),
+    bounds: const math.Rectangle(0, 0, 200, 100),
+  );
+
   group('NFA-to-DFA structured diagnostics', () {
     test('validation failures preserve legacy text and expose payloads', () {
-      final empty = _automaton(states: const {});
+      final empty = automaton(states: const {});
       final emptyResult = NFAToDFAConverter.convert(empty);
       expect(emptyResult.error, 'NFA must have at least one state');
       expect(emptyResult.structuredError, NfaToDfaMessages.emptyAutomaton());
 
-      final state = _state('q0', isInitial: true);
-      final noInitial = _automaton(states: {state});
+      final initial = state('q0', isInitial: true);
+      final noInitial = automaton(states: {initial});
       final noInitialResult = NFAToDFAConverter.convert(noInitial);
       expect(noInitialResult.error, 'NFA must have an initial state');
       expect(
@@ -27,8 +55,11 @@ void main() {
         NfaToDfaMessages.missingInitialState(),
       );
 
-      final outside = _state('outside', isInitial: true);
-      final initialOutside = _automaton(states: {state}, initialState: outside);
+      final outside = state('outside', isInitial: true);
+      final initialOutside = automaton(
+        states: {initial},
+        initialState: outside,
+      );
       final initialOutsideResult = NFAToDFAConverter.convert(initialOutside);
       expect(
         initialOutsideResult.error,
@@ -39,9 +70,9 @@ void main() {
         NfaToDfaMessages.initialStateOutsideSet(),
       );
 
-      final acceptingOutside = _automaton(
-        states: {state},
-        initialState: state,
+      final acceptingOutside = automaton(
+        states: {initial},
+        initialState: initial,
         acceptingStates: {outside},
       );
       final acceptingOutsideResult = NFAToDFAConverter.convert(
@@ -59,7 +90,7 @@ void main() {
 
     test('convertWithSteps carries the same validation contract', () {
       final result = NFAToDFAConverter.convertWithSteps(
-        _automaton(states: const {}),
+        automaton(states: const {}),
       );
 
       expect(result.error, 'NFA must have at least one state');
@@ -82,9 +113,9 @@ void main() {
 
   group('NFA simulation structured diagnostics', () {
     test('trace truncation preserves the compatibility explanation', () async {
-      final initial = _state('q0', isInitial: true);
-      final accepting = _state('q1', isAccepting: true);
-      final nfa = _automaton(
+      final initial = state('q0', isInitial: true);
+      final accepting = state('q1', isAccepting: true);
+      final nfa = automaton(
         states: {initial, accepting},
         initialState: initial,
         acceptingStates: {accepting},
@@ -127,8 +158,8 @@ void main() {
     test(
       'NFA rejection keeps structured error through accepts and rejects',
       () async {
-        final initial = _state('q0', isInitial: true);
-        final nfa = _automaton(
+        final initial = state('q0', isInitial: true);
+        final nfa = automaton(
           states: {initial},
           initialState: initial,
           alphabet: {'a', 'ε'},
@@ -150,7 +181,7 @@ void main() {
           'automaton.simulation.no-nfa-transition',
         );
 
-        final invalid = _automaton(states: {initial});
+        final invalid = automaton(states: {initial});
         final accepted = await AutomatonSimulator.accepts(invalid, 'b');
         expect(accepted.isFailure, isTrue);
         expect(
@@ -170,8 +201,8 @@ void main() {
     test(
       'final NFA rejection keeps its legacy tree text and payload',
       () async {
-        final initial = _state('q0', isInitial: true);
-        final nfa = _automaton(states: {initial}, initialState: initial);
+        final initial = state('q0', isInitial: true);
+        final nfa = automaton(states: {initial}, initialState: initial);
 
         final result = await AutomatonSimulator.simulateNFA(
           nfa,
@@ -209,31 +240,3 @@ void main() {
     });
   });
 }
-
-State _state(String id, {bool isInitial = false, bool isAccepting = false}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: isInitial,
-      isAccepting: isAccepting,
-    );
-
-FSA _automaton({
-  required Set<State> states,
-  State? initialState,
-  Set<State> acceptingStates = const {},
-  Set<String> alphabet = const {},
-  Set<FSATransition> transitions = const {},
-}) => FSA(
-  id: 'structured-nfa',
-  name: 'Structured NFA',
-  states: states,
-  transitions: transitions,
-  alphabet: alphabet,
-  initialState: initialState,
-  acceptingStates: acceptingStates,
-  created: DateTime.utc(2026),
-  modified: DateTime.utc(2026),
-  bounds: const math.Rectangle(0, 0, 200, 100),
-);

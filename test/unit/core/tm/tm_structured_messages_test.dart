@@ -21,6 +21,86 @@ import 'package:turing_lab/core/result.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  State testState(String id, {bool initial = false, bool accepting = false}) =>
+      State(
+        id: id,
+        label: id,
+        position: Vector2.zero(),
+        isInitial: initial,
+        isAccepting: accepting,
+      );
+
+  TMTransition testTransition(
+    String id,
+    State from,
+    State to,
+    String read,
+    String write,
+    TapeDirection direction,
+  ) => TMTransition(
+    id: id,
+    fromState: from,
+    toState: to,
+    label: '$read/$write,${direction.symbol}',
+    readSymbol: read,
+    writeSymbol: write,
+    direction: direction,
+  );
+
+  TM testMachine({
+    required Set<State> states,
+    required State initial,
+    Set<State> accepting = const {},
+    Set<String> alphabet = const {},
+    Set<String> tapeAlphabet = const {'B'},
+    Set<TMTransition> transitions = const {},
+  }) => TM(
+    id: 'structured-test-tm',
+    name: 'Structured test TM',
+    states: states,
+    transitions: transitions,
+    alphabet: alphabet,
+    initialState: initial,
+    acceptingStates: accepting,
+    created: DateTime(2025),
+    modified: DateTime(2025),
+    bounds: const math.Rectangle(0, 0, 100, 100),
+    tapeAlphabet: tapeAlphabet,
+    blankSymbol: 'B',
+  );
+
+  TM acceptingMachine() {
+    final q0 = testState('q0', initial: true);
+    final qa = testState('qa', accepting: true);
+    return testMachine(
+      states: {q0, qa},
+      initial: q0,
+      accepting: {qa},
+      alphabet: const {'a'},
+      tapeAlphabet: const {'a', 'B'},
+      transitions: {
+        testTransition('accept', q0, qa, 'a', 'a', TapeDirection.stay),
+      },
+    );
+  }
+
+  TM conflictingMachine() {
+    final q0 = testState('q0', initial: true);
+    final qa = testState('qa', accepting: true);
+    final qr = testState('qr');
+    return testMachine(
+      states: {q0, qa, qr},
+      initial: q0,
+      accepting: {qa},
+      alphabet: const {'1'},
+      tapeAlphabet: const {'1', 'B'},
+      transitions: {
+        testTransition('accept', q0, qa, '1', '1', TapeDirection.stay),
+        testTransition('reject', q0, qr, '1', '1', TapeDirection.stay),
+      },
+    );
+  }
+
   group('TM structured diagnostics', () {
     test(
       'factories expose stable identity, typed arguments, and JSON round trip',
@@ -53,8 +133,15 @@ void main() {
       },
     );
 
+    test('unresolved acceptance has a distinct fallback code', () {
+      final message = TmSimulationMessages.acceptanceUnresolved();
+
+      expect(message.stableCode, 'tm.simulation.acceptance-unresolved');
+      expect(message.severity, StructuredMessageSeverity.warning);
+    });
+
     test('simulator keeps legacy conflict prose beside structured payload', () {
-      final result = TMSimulator.simulateDTM(_conflictingMachine(), '1');
+      final result = TMSimulator.simulateDTM(conflictingMachine(), '1');
 
       expect(result, isA<Success<TMSimulationResult>>());
       final simulation = result.data!;
@@ -69,7 +156,7 @@ void main() {
 
     test('step explanations use locale-neutral trace messages', () {
       final result = TMSimulator.simulate(
-        _acceptingMachine(),
+        acceptingMachine(),
         'a',
         stepByStep: true,
       );
@@ -90,7 +177,7 @@ void main() {
 
     test('bounded analysis traces carry structured TM explanations', () async {
       final result = await TMExecutionAnalyzer.analyze(
-        _acceptingMachine(),
+        acceptingMachine(),
         'a',
         includeTrace: true,
       );
@@ -122,7 +209,7 @@ void main() {
       'execution analyzer preserves invalid-input prose and payload',
       () async {
         final analysis = await TMExecutionAnalyzer.analyze(
-          _acceptingMachine(),
+          acceptingMachine(),
           'b',
         );
 
@@ -138,7 +225,7 @@ void main() {
 
     test('space profiler attaches payload to validation failures', () async {
       final result = await TMSpaceProfiler.profile(
-        _acceptingMachine(),
+        acceptingMachine(),
         limits: const TMSpaceProfileLimits(maxInputLength: -1),
       );
 
@@ -153,7 +240,7 @@ void main() {
     test(
       'time profiler exposes structured plan and report validation',
       () async {
-        final machine = _acceptingMachine();
+        final machine = acceptingMachine();
         final plan = TMTimeProfiler.plan(
           machine,
           bounds: const TMTimeProfileBounds(maxLength: -1),
@@ -181,7 +268,7 @@ void main() {
       'reachability analyzer localizes invalid input through payload',
       () async {
         final report = await TMReachabilityAnalyzer.analyze(
-          _acceptingMachine(),
+          acceptingMachine(),
           inputs: const ['b'],
         );
 
@@ -198,7 +285,7 @@ void main() {
 
     test('language explorer exposes structured limit validation', () async {
       final result = await TMLanguageExplorer.explore(
-        _acceptingMachine(),
+        acceptingMachine(),
         limits: const TMLanguageExplorerLimits(maxCandidates: 0),
       );
 
@@ -211,81 +298,3 @@ void main() {
     });
   });
 }
-
-TM _acceptingMachine() {
-  final q0 = _state('q0', initial: true);
-  final qa = _state('qa', accepting: true);
-  return _tm(
-    states: {q0, qa},
-    initial: q0,
-    accepting: {qa},
-    alphabet: const {'a'},
-    tapeAlphabet: const {'a', 'B'},
-    transitions: {_transition('accept', q0, qa, 'a', 'a', TapeDirection.stay)},
-  );
-}
-
-TM _conflictingMachine() {
-  final q0 = _state('q0', initial: true);
-  final qa = _state('qa', accepting: true);
-  final qr = _state('qr');
-  return _tm(
-    states: {q0, qa, qr},
-    initial: q0,
-    accepting: {qa},
-    alphabet: const {'1'},
-    tapeAlphabet: const {'1', 'B'},
-    transitions: {
-      _transition('accept', q0, qa, '1', '1', TapeDirection.stay),
-      _transition('reject', q0, qr, '1', '1', TapeDirection.stay),
-    },
-  );
-}
-
-State _state(String id, {bool initial = false, bool accepting = false}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: initial,
-      isAccepting: accepting,
-    );
-
-TMTransition _transition(
-  String id,
-  State from,
-  State to,
-  String read,
-  String write,
-  TapeDirection direction,
-) => TMTransition(
-  id: id,
-  fromState: from,
-  toState: to,
-  label: '$read/$write,${direction.symbol}',
-  readSymbol: read,
-  writeSymbol: write,
-  direction: direction,
-);
-
-TM _tm({
-  required Set<State> states,
-  required State initial,
-  Set<State> accepting = const {},
-  Set<String> alphabet = const {},
-  Set<String> tapeAlphabet = const {'B'},
-  Set<TMTransition> transitions = const {},
-}) => TM(
-  id: 'structured-test-tm',
-  name: 'Structured test TM',
-  states: states,
-  transitions: transitions,
-  alphabet: alphabet,
-  initialState: initial,
-  acceptingStates: accepting,
-  created: DateTime(2025),
-  modified: DateTime(2025),
-  bounds: const math.Rectangle(0, 0, 100, 100),
-  tapeAlphabet: tapeAlphabet,
-  blankSymbol: 'B',
-);

@@ -9,9 +9,11 @@ import 'package:turing_lab/core/models/nfa_to_dfa_step_messages.dart';
 import 'package:turing_lab/core/models/state.dart';
 
 void main() {
-  final q0 = _state('q0');
-  final q1 = _state('q1');
-  final q2 = _state('q2');
+  State state(String id) => State(id: id, label: id, position: Vector2.zero());
+
+  final q0 = state('q0');
+  final q1 = state('q1');
+  final q2 = state('q2');
 
   test('all NFA-to-DFA factories carry structured title and explanation', () {
     final steps = [
@@ -109,7 +111,8 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            properties[nfaToDfaTitleMessageProperty]! as Map,
+            properties[NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY]!
+                as Map,
           ),
         ),
         step.titleMessage,
@@ -117,7 +120,9 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            properties[nfaToDfaExplanationMessageProperty]! as Map,
+            properties[NfaToDfaStepMessages
+                    .NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY]!
+                as Map,
           ),
         ),
         step.explanationMessage,
@@ -305,5 +310,3 @@ void main() {
     );
   });
 }
-
-State _state(String id) => State(id: id, label: id, position: Vector2.zero());

@@ -15,8 +15,19 @@ import 'package:turing_lab/core/validators/validation_messages.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  late final StructuredMessage Function(
+    String code,
+    String name,
+    StructuredMessageArgument argument,
+  )
+  messageWithArgument;
+  late final void Function(Iterable<ValidationIssue> issues)
+  expectDiagnosticRoundTrip;
+  late final FSA Function() fsaWithIssues;
+  late final PDA Function() pdaWithIssues;
+
   test('FSA validation issues retain legacy text and typed payloads', () {
-    final issues = InputValidators.validateFSA(_fsaWithIssues());
+    final issues = InputValidators.validateFSA(fsaWithIssues());
     final byCode = {for (final issue in issues) issue.code: issue};
 
     expect(
@@ -36,7 +47,7 @@ void main() {
     );
     expect(
       byCode['FSA_INVALID_INITIAL']!.structuredMessage,
-      _messageWithArgument(
+      messageWithArgument(
         'fsa-invalid-initial',
         'state',
         StructuredMessageArgument.identifier('q1', role: 'state-id'),
@@ -57,11 +68,11 @@ void main() {
       2,
     );
 
-    _expectDiagnosticRoundTrip(byCode.values);
+    expectDiagnosticRoundTrip(byCode.values);
   });
 
   test('PDA validation issues retain legacy text and typed payloads', () {
-    final issues = InputValidators.validatePDA(_pdaWithIssues());
+    final issues = InputValidators.validatePDA(pdaWithIssues());
     final byCode = {for (final issue in issues) issue.code: issue};
 
     expect(
@@ -103,7 +114,7 @@ void main() {
       'stack-symbol',
     );
 
-    _expectDiagnosticRoundTrip(byCode.values);
+    expectDiagnosticRoundTrip(byCode.values);
   });
 
   test('FSA and PDA legacy codes have stable validation identities', () {
@@ -143,133 +154,136 @@ void main() {
       );
     }
   });
-}
 
-StructuredMessage _messageWithArgument(
-  String code,
-  String name,
-  StructuredMessageArgument argument,
-) => StructuredMessage(
-  namespace: 'validation',
-  code: code,
-  category: StructuredMessageCategory.validation,
-  severity: StructuredMessageSeverity.error,
-  arguments: {name: argument},
-);
+  messageWithArgument =
+      (String code, String name, StructuredMessageArgument argument) =>
+          StructuredMessage(
+            namespace: 'validation',
+            code: code,
+            category: StructuredMessageCategory.validation,
+            severity: StructuredMessageSeverity.error,
+            arguments: {name: argument},
+          );
 
-void _expectDiagnosticRoundTrip(Iterable<ValidationIssue> issues) {
-  for (final issue in issues) {
-    final message = issue.structuredMessage;
-    expect(message, isNotNull, reason: issue.code);
+  expectDiagnosticRoundTrip = (Iterable<ValidationIssue> issues) {
+    for (final issue in issues) {
+      final message = issue.structuredMessage;
+      expect(message, isNotNull, reason: issue.code);
 
-    final diagnostic = ValidationIssueToDiagnostic.fromIssue(issue);
-    expect(diagnostic.structuredMessage, message, reason: issue.code);
+      final diagnostic = ValidationIssueToDiagnostic.fromIssue(issue);
+      expect(diagnostic.structuredMessage, message, reason: issue.code);
 
-    final restored = ValidationDiagnostic.fromJson(
-      Map<String, dynamic>.from(diagnostic.toJson()),
+      final restored = ValidationDiagnostic.fromJson(
+        Map<String, dynamic>.from(diagnostic.toJson()),
+      );
+      expect(restored.structuredMessage, message, reason: issue.code);
+      expect(restored.code, issue.code, reason: issue.code);
+      expect(restored.summary, issue.message, reason: issue.code);
+    }
+  };
+
+  fsaWithIssues = () {
+    final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
+    final q1 = State(id: 'q1', label: 'q1', position: Vector2(1, 0));
+    final q2 = State(id: 'q2', label: 'q2', position: Vector2(2, 0));
+    final q3 = State(id: 'q3', label: 'q3', position: Vector2(3, 0));
+    final q4 = State(id: 'q4', label: 'q4', position: Vector2(4, 0));
+
+    return FSA(
+      id: 'fsa-validation',
+      name: 'FSA validation',
+      states: {q0},
+      transitions: <Transition>{
+        FSATransition(id: 'bad-from', fromState: q3, toState: q0, symbol: 'a'),
+        FSATransition(id: 'bad-to', fromState: q0, toState: q4, symbol: 'a'),
+        FSATransition(
+          id: 'bad-symbol',
+          fromState: q0,
+          toState: q0,
+          symbol: 'b',
+        ),
+        FSATransition(
+          id: 'nondeterministic',
+          fromState: q0,
+          toState: q0,
+          symbol: 'a',
+        ),
+      },
+      alphabet: const {'a'},
+      initialState: q1,
+      acceptingStates: {q2},
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 100, 100),
     );
-    expect(restored.structuredMessage, message, reason: issue.code);
-    expect(restored.code, issue.code, reason: issue.code);
-    expect(restored.summary, issue.message, reason: issue.code);
-  }
-}
+  };
 
-FSA _fsaWithIssues() {
-  final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
-  final q1 = State(id: 'q1', label: 'q1', position: Vector2(1, 0));
-  final q2 = State(id: 'q2', label: 'q2', position: Vector2(2, 0));
-  final q3 = State(id: 'q3', label: 'q3', position: Vector2(3, 0));
-  final q4 = State(id: 'q4', label: 'q4', position: Vector2(4, 0));
+  pdaWithIssues = () {
+    final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
+    final q1 = State(id: 'q1', label: 'q1', position: Vector2(1, 0));
+    final q2 = State(id: 'q2', label: 'q2', position: Vector2(2, 0));
+    final q3 = State(id: 'q3', label: 'q3', position: Vector2(3, 0));
+    final q4 = State(id: 'q4', label: 'q4', position: Vector2(4, 0));
 
-  return FSA(
-    id: 'fsa-validation',
-    name: 'FSA validation',
-    states: {q0},
-    transitions: <Transition>{
-      FSATransition(id: 'bad-from', fromState: q3, toState: q0, symbol: 'a'),
-      FSATransition(id: 'bad-to', fromState: q0, toState: q4, symbol: 'a'),
-      FSATransition(id: 'bad-symbol', fromState: q0, toState: q0, symbol: 'b'),
-      FSATransition(
-        id: 'nondeterministic',
-        fromState: q0,
-        toState: q0,
-        symbol: 'a',
-      ),
-    },
-    alphabet: const {'a'},
-    initialState: q1,
-    acceptingStates: {q2},
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 100, 100),
-  );
-}
-
-PDA _pdaWithIssues() {
-  final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
-  final q1 = State(id: 'q1', label: 'q1', position: Vector2(1, 0));
-  final q2 = State(id: 'q2', label: 'q2', position: Vector2(2, 0));
-  final q3 = State(id: 'q3', label: 'q3', position: Vector2(3, 0));
-  final q4 = State(id: 'q4', label: 'q4', position: Vector2(4, 0));
-
-  return PDA(
-    id: 'pda-validation',
-    name: 'PDA validation',
-    states: {q0},
-    transitions: <Transition>{
-      PDATransition(
-        id: 'bad-from',
-        fromState: q3,
-        toState: q0,
-        inputSymbol: 'a',
-        popSymbol: 'Z',
-        pushSymbol: 'Z',
-        label: 'a,Z/Z',
-      ),
-      PDATransition(
-        id: 'bad-to',
-        fromState: q0,
-        toState: q4,
-        inputSymbol: 'a',
-        popSymbol: 'Z',
-        pushSymbol: 'Z',
-        label: 'a,Z/Z',
-      ),
-      PDATransition(
-        id: 'bad-input',
-        fromState: q0,
-        toState: q0,
-        inputSymbol: 'b',
-        popSymbol: 'Z',
-        pushSymbol: 'Z',
-        label: 'b,Z/Z',
-      ),
-      PDATransition(
-        id: 'bad-pop',
-        fromState: q0,
-        toState: q0,
-        inputSymbol: 'a',
-        popSymbol: 'X',
-        pushSymbol: 'Z',
-        label: 'a,X/Z',
-      ),
-      PDATransition(
-        id: 'bad-push',
-        fromState: q0,
-        toState: q0,
-        inputSymbol: 'a',
-        popSymbol: 'Z',
-        pushSymbol: 'X',
-        label: 'a,Z/X',
-      ),
-    },
-    alphabet: const {'a'},
-    initialState: q1,
-    acceptingStates: {q2},
-    stackAlphabet: const {'Z'},
-    initialStackSymbol: 'X',
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 100, 100),
-  );
+    return PDA(
+      id: 'pda-validation',
+      name: 'PDA validation',
+      states: {q0},
+      transitions: <Transition>{
+        PDATransition(
+          id: 'bad-from',
+          fromState: q3,
+          toState: q0,
+          inputSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          label: 'a,Z/Z',
+        ),
+        PDATransition(
+          id: 'bad-to',
+          fromState: q0,
+          toState: q4,
+          inputSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          label: 'a,Z/Z',
+        ),
+        PDATransition(
+          id: 'bad-input',
+          fromState: q0,
+          toState: q0,
+          inputSymbol: 'b',
+          popSymbol: 'Z',
+          pushSymbol: 'Z',
+          label: 'b,Z/Z',
+        ),
+        PDATransition(
+          id: 'bad-pop',
+          fromState: q0,
+          toState: q0,
+          inputSymbol: 'a',
+          popSymbol: 'X',
+          pushSymbol: 'Z',
+          label: 'a,X/Z',
+        ),
+        PDATransition(
+          id: 'bad-push',
+          fromState: q0,
+          toState: q0,
+          inputSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'X',
+          label: 'a,Z/X',
+        ),
+      },
+      alphabet: const {'a'},
+      initialState: q1,
+      acceptingStates: {q2},
+      stackAlphabet: const {'Z'},
+      initialStackSymbol: 'X',
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 100, 100),
+    );
+  };
 }

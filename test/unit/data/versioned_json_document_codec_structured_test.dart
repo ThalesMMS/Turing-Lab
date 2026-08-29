@@ -57,7 +57,14 @@ void main() {
         'codec.turing-lab-json.unknown-field-preserved',
       ]),
     );
-    final unknown = outcome.diagnostics.last.structuredMessage!;
+    final unknown = outcome.diagnostics
+        .map((diagnostic) => diagnostic.structuredMessage)
+        .whereType<StructuredMessage>()
+        .firstWhere(
+          (message) =>
+              message.stableCode ==
+              'codec.turing-lab-json.unknown-field-preserved',
+        );
     expect(unknown.arguments['field']?.value, 'vendorField');
   });
 

@@ -269,6 +269,8 @@ void main() {
       }
       expectRoundTrip(report.structuredSteps.single.operationMessage);
       expectRoundTrip(report.structuredSteps.single.rationaleMessage);
+      final structuredStep = report.structuredSteps.single;
+      expect(structuredStep.operation, structuredStep.legacyStep.operation);
 
       final invalid = grammar(
         id: 'invalid-cycle',

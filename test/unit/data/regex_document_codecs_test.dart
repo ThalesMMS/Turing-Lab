@@ -13,50 +13,59 @@ import 'package:turing_lab/core/models/regex_document.dart';
 import 'package:turing_lab/data/codecs/default_document_interoperability_registry.dart';
 import 'package:turing_lab/data/codecs/regex_jflap_document_codec.dart';
 import 'package:turing_lab/data/codecs/regex_json_document_codec.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_pt.dart';
+import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
 
 void main() {
   group('Regex JSON codec', () {
-    test('preserves source, dialect, tokenization, alphabet, and canonical AST',
-        () {
-      const source = '((a|β))*|😀';
-      final document = _regex(source, alphabet: const ['a', 'β', '😀']);
+    test(
+      'preserves source, dialect, tokenization, alphabet, and canonical AST',
+      () {
+        const source = '((a|β))*|😀';
+        final document = _regex(source, alphabet: const ['a', 'β', '😀']);
 
-      final encoded = _encodeJson(document);
-      final envelope = jsonDecode(utf8.decode(encoded.value.bytes)) as Map;
-      final payload = (envelope['document'] as Map)['payload'] as Map;
-      expect(payload['source'], source);
-      expect(payload['sourceOfTruth'], 'source');
-      expect(payload['dialect'], 'turingLabV1');
-      expect(payload['tokenization'], 'unicodeScalar');
-      expect(payload['canonicalAst'], isA<Map>());
-      expect(payload, isNot(contains('testString')));
-      expect(payload, isNot(contains('simplificationResult')));
+        final encoded = _encodeJson(document);
+        final envelope = jsonDecode(utf8.decode(encoded.value.bytes)) as Map;
+        final payload = (envelope['document'] as Map)['payload'] as Map;
+        expect(payload['source'], source);
+        expect(payload['sourceOfTruth'], 'source');
+        expect(payload['dialect'], 'turingLabV1');
+        expect(payload['tokenization'], 'unicodeScalar');
+        expect(payload['canonicalAst'], isA<Map>());
+        expect(payload, isNot(contains('testString')));
+        expect(payload, isNot(contains('simplificationResult')));
 
-      final decoded = _decodeJson(encoded.value.bytes);
-      expect(decoded.fidelity, DocumentFidelity.exact);
-      final restored = decoded.value.document as RegexDocument;
-      expect(restored.source, source);
-      expect(restored.alphabet, ['a', 'β', '😀']);
-    });
+        final decoded = _decodeJson(encoded.value.bytes);
+        expect(decoded.fidelity, DocumentFidelity.exact);
+        final restored = decoded.value.document as RegexDocument;
+        expect(restored.source, source);
+        expect(restored.alphabet, ['a', 'β', '😀']);
+      },
+    );
 
-    test('migrates the previous active-session shape without derived results',
-        () {
-      final legacy = {
-        'currentRegex': '(a|b)*',
-        'alphabet': 'ab',
-        'testString': 'abba',
-        'simplifyOutput': false,
-        'matches': true,
-      };
+    test(
+      'migrates the previous active-session shape without derived results',
+      () {
+        final legacy = {
+          'currentRegex': '(a|b)*',
+          'alphabet': 'ab',
+          'testString': 'abba',
+          'simplifyOutput': false,
+          'matches': true,
+        };
 
-      final decoded = RegexJsonDocumentCodec().decode(
-        _payload(_bytes(jsonEncode(legacy)), 'legacy-session.json'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
-      expect(decoded.fidelity, DocumentFidelity.normalized);
-      final restored = decoded.value.document as RegexDocument;
-      expect(restored.source, '(a|b)*');
-      expect(restored.alphabet, ['a', 'b']);
-    });
+        final decoded =
+            RegexJsonDocumentCodec().decode(
+                  _payload(_bytes(jsonEncode(legacy)), 'legacy-session.json'),
+                )
+                as CodecSuccess<InteroperableDocument<Object>>;
+        expect(decoded.fidelity, DocumentFidelity.normalized);
+        final restored = decoded.value.document as RegexDocument;
+        expect(restored.source, '(a|b)*');
+        expect(restored.alphabet, ['a', 'b']);
+      },
+    );
 
     test('rejects a stale canonical AST', () {
       final encoded = _encodeJson(_regex('a|b'));
@@ -82,8 +91,9 @@ void main() {
         'test/fixtures/interoperability/regex_canonical.json',
       ).readAsBytesSync();
       final decoded = _decodeJson(bytes);
-      final encoded = RegexJsonDocumentCodec().encode(decoded.value)
-          as CodecSuccess<EncodedDocument>;
+      final encoded =
+          RegexJsonDocumentCodec().encode(decoded.value)
+              as CodecSuccess<EncodedDocument>;
       expect(encoded.value.bytes, bytes);
     });
 
@@ -104,28 +114,35 @@ void main() {
       final bytes = File(
         'test/fixtures/interoperability/regex_canonical.jff',
       ).readAsBytesSync();
-      final decoded = const RegexJflapDocumentCodec().decode(
-        _payload(bytes, 'regex_canonical.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          const RegexJflapDocumentCodec().decode(
+                _payload(bytes, 'regex_canonical.jff'),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect((decoded.value.document as RegexDocument).source, '(a|b)*');
     });
 
     test('normalizes JFLAP union and epsilon with bounded semantics', () async {
       const source = '''<?xml version="1.0" encoding="UTF-8"?>
 <structure><type>re</type><expression>((a+b)*)+!</expression></structure>''';
-      final decoded = const RegexJflapDocumentCodec().decode(
-        _textPayload(source, 'jflap-expression.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          const RegexJflapDocumentCodec().decode(
+                _textPayload(source, 'jflap-expression.jff'),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.fidelity, DocumentFidelity.normalized);
       final document = decoded.value.document as RegexDocument;
       expect(document.source, '((a|b)*)|ε');
       expect(document.alphabet, ['a', 'b']);
 
-      await _expectSameBoundedLanguage(
-        document.source,
-        '((a|b)*)|ε',
-        ['', 'a', 'b', 'ab', 'ba', 'c'],
-      );
+      await _expectSameBoundedLanguage(document.source, '((a|b)*)|ε', [
+        '',
+        'a',
+        'b',
+        'ab',
+        'ba',
+        'c',
+      ]);
     });
 
     test('round-trips local source and metadata through the extension', () {
@@ -140,8 +157,9 @@ void main() {
       expect(xml, contains('<expression>((a+b))*+!</expression>'));
       expect(xml, contains('<turingLabRegex>'));
 
-      final decoded = codec.decode(_payload(encoded.value.bytes, 'local.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_payload(encoded.value.bytes, 'local.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.fidelity, DocumentFidelity.exact);
       final restored = decoded.value.document as RegexDocument;
       expect(restored.id, document.id);
@@ -156,8 +174,9 @@ void main() {
         final encoded = codec.encode(_document(_regex(source)));
         expect(encoded, isA<CodecSuccess<EncodedDocument>>(), reason: source);
         final bytes = (encoded as CodecSuccess<EncodedDocument>).value.bytes;
-        final restored = codec.decode(_payload(bytes, 'round-trip.jff'))
-            as CodecSuccess<InteroperableDocument<Object>>;
+        final restored =
+            codec.decode(_payload(bytes, 'round-trip.jff'))
+                as CodecSuccess<InteroperableDocument<Object>>;
         expect((restored.value.document as RegexDocument).source, source);
       }
     });
@@ -189,12 +208,34 @@ void main() {
       }
     });
 
+    test('localizes unsupported escape details without embedded English', () {
+      final outcome =
+          const RegexJflapDocumentCodec().encode(_document(_regex(r'\+')))
+              as CodecUnsupported<EncodedDocument>;
+      final message = outcome.structuredMessage!;
+
+      expect(message.stableCode, 'codec.regex-jflap.escape-unsupported');
+      expect(message.arguments['symbol']?.value, '+');
+      expect(
+        AppLocalizationsEn().resolveStructuredMessage(message),
+        'JFLAP has no escape syntax for the literal "+".',
+      );
+      final portuguese = AppLocalizationsPt().resolveStructuredMessage(message);
+      expect(
+        portuguese,
+        'O JFLAP não possui sintaxe de escape para o literal "+".',
+      );
+      expect(portuguese, isNot(contains('has no escape syntax')));
+    });
+
     test('imports JFLAP-generated empty set as explicitly lossy', () async {
       const xml =
           '<structure><type>re</type><expression>ø</expression></structure>';
-      final decoded = const RegexJflapDocumentCodec().decode(
-        _textPayload(xml, 'empty-set.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          const RegexJflapDocumentCodec().decode(
+                _textPayload(xml, 'empty-set.jff'),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.fidelity, DocumentFidelity.lossy);
       expect((decoded.value.document as RegexDocument).source, '∅');
       expect(
@@ -212,8 +253,9 @@ void main() {
       const source = '''<structure vendor="root"><type>re</type>
 <expression>a+b</expression><vendorData value="1"/></structure>''';
       const codec = RegexJflapDocumentCodec();
-      final decoded = codec.decode(_textPayload(source, 'vendor.jff'))
-          as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(_textPayload(source, 'vendor.jff'))
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect(decoded.value.extensions.values, isNotEmpty);
       final first =
           codec.encode(decoded.value) as CodecSuccess<EncodedDocument>;
@@ -223,6 +265,106 @@ void main() {
       final xml = utf8.decode(first.value.bytes);
       expect(xml, contains('vendor="root"'));
       expect(xml, contains('<vendorData value="1"/>'));
+    });
+
+    test('malformed paths keep legacy text and carry typed messages', () {
+      const codec = RegexJflapDocumentCodec();
+      final cases = [
+        (
+          xml: '<structure><expression>a</expression></structure>',
+          legacy: 'JFLAP Regex requires exactly one type element.',
+          code: 'codec.regex-jflap.expected-regex-document',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>(a</expression></structure>',
+          legacy: 'JFLAP Regex parentheses are unbalanced.',
+          code: 'codec.regex-jflap.unbalanced-parentheses',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>+a</expression></structure>',
+          legacy: 'JFLAP Regex operators are poorly formatted.',
+          code: 'codec.regex-jflap.malformed-operators',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>a+</expression></structure>',
+          legacy: 'JFLAP Regex union lacks a right operand.',
+          code: 'codec.regex-jflap.union-missing-operand',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>a!</expression></structure>',
+          legacy: 'JFLAP epsilon cannot be concatenated on its left.',
+          code: 'codec.regex-jflap.epsilon-left-concatenation',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>!a</expression></structure>',
+          legacy: 'JFLAP epsilon cannot be concatenated on its right.',
+          code: 'codec.regex-jflap.epsilon-right-concatenation',
+        ),
+        (
+          xml:
+              '<structure><type>re</type><expression>a**</expression></structure>',
+          legacy: 'Consecutive quantifiers are not allowed (at position 3)',
+          code: 'codec.regex-jflap.invalid-source',
+        ),
+      ];
+
+      for (final testCase in cases) {
+        final outcome =
+            codec.decode(_textPayload(testCase.xml, 'bad.jff'))
+                as CodecMalformed<InteroperableDocument<Object>>;
+        expect(outcome.message, testCase.legacy, reason: testCase.xml);
+        expect(
+          outcome.structuredMessage?.stableCode,
+          testCase.code,
+          reason: testCase.xml,
+        );
+      }
+
+      const malformedExtension = '''<structure><type>re</type>
+<expression>a</expression><turingLabRegex>{</turingLabRegex></structure>''';
+      final extensionOutcome =
+          codec.decode(_textPayload(malformedExtension, 'bad-extension.jff'))
+              as CodecMalformed<InteroperableDocument<Object>>;
+      expect(
+        extensionOutcome.structuredMessage?.stableCode,
+        'codec.regex-jflap.invalid-extension',
+      );
+      expect(extensionOutcome.message, isNotEmpty);
+
+      final invalidSource =
+          codec.encode(_document(_regex('a**')))
+              as CodecMalformed<EncodedDocument>;
+      expect(
+        invalidSource.message,
+        'Consecutive quantifiers are not allowed (at position 3)',
+      );
+      expect(
+        invalidSource.structuredMessage?.stableCode,
+        'codec.regex-jflap.invalid-source',
+      );
+
+      final invalidDocument =
+          codec.encode(
+                _document(
+                  RegexDocument(
+                    id: '',
+                    name: 'Regex name',
+                    source: 'a',
+                    alphabet: const ['a'],
+                  ),
+                ),
+              )
+              as CodecMalformed<EncodedDocument>;
+      expect(invalidDocument.message, 'Regex document id must be non-empty.');
+      expect(
+        invalidDocument.structuredMessage?.stableCode,
+        'codec.regex-jflap.invalid-document',
+      );
     });
 
     test('rejects malformed syntax, duplicate fields, and profile epsilon', () {
@@ -249,20 +391,25 @@ void main() {
         '<structure><type>re</type><expression>a+b</expression></structure>',
         'actually-json.json',
       );
-      final detected = registry.detect(
-        jflap,
-        expectedSystem: DefaultFormalSystemIds.regex,
-      ) as CodecSuccess<DetectedDocument>;
-      expect(detected.value.descriptor.formatId,
-          DefaultFormalSystemIds.jflapXmlFormat);
+      final detected =
+          registry.detect(jflap, expectedSystem: DefaultFormalSystemIds.regex)
+              as CodecSuccess<DetectedDocument>;
+      expect(
+        detected.value.descriptor.formatId,
+        DefaultFormalSystemIds.jflapXmlFormat,
+      );
 
       final json = _encodeJson(_regex('a|b')).value.bytes;
-      final detectedJson = registry.detect(
-        _payload(json, 'actually-jflap.jff'),
-        expectedSystem: DefaultFormalSystemIds.regex,
-      ) as CodecSuccess<DetectedDocument>;
-      expect(detectedJson.value.descriptor.formatId,
-          DefaultFormalSystemIds.turingLabJsonFormat);
+      final detectedJson =
+          registry.detect(
+                _payload(json, 'actually-jflap.jff'),
+                expectedSystem: DefaultFormalSystemIds.regex,
+              )
+              as CodecSuccess<DetectedDocument>;
+      expect(
+        detectedJson.value.descriptor.formatId,
+        DefaultFormalSystemIds.turingLabJsonFormat,
+      );
     });
   });
 
@@ -295,8 +442,10 @@ Future<void> _expectSameBoundedLanguage(
 }
 
 FSA _convert(String source) {
-  final result =
-      RegexToNFAConverter.convert(source, contextAlphabet: {'a', 'b'});
+  final result = RegexToNFAConverter.convert(
+    source,
+    contextAlphabet: {'a', 'b'},
+  );
   expect(result.isSuccess, isTrue, reason: result.error);
   return result.data!;
 }
@@ -304,13 +453,12 @@ FSA _convert(String source) {
 RegexDocument _regex(
   String source, {
   List<String> alphabet = const ['a', 'b'],
-}) =>
-    RegexDocument(
-      id: 'regex/id',
-      name: 'Regex name',
-      source: source,
-      alphabet: alphabet,
-    );
+}) => RegexDocument(
+  id: 'regex/id',
+  name: 'Regex name',
+  source: source,
+  alphabet: alphabet,
+);
 
 InteroperableDocument<Object> _document(RegexDocument document) =>
     InteroperableDocument<Object>(

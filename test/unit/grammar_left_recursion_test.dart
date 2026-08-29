@@ -289,7 +289,10 @@ void main() {
         formattedProductions(input),
       );
       expect(result.data!.steps, isEmpty);
-      expect(result.data!.notes, isEmpty);
+      expect(
+        result.data!.notes,
+        ['No direct or indirect left recursion detected.'],
+      );
       expect(
         result.data!.structuredNotes,
         [GrammarAnalysisMessages.noLeftRecursion()],

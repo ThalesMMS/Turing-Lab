@@ -19,6 +19,189 @@ FIXTURE_ROOT = REPO_ROOT / "test" / "fixtures" / "domain_message_prose"
 
 
 class DomainMessageProseScannerTest(unittest.TestCase):
+    def test_local_suffix_fails_closed_when_literal_is_missing(self) -> None:
+        self.assertEqual(
+            CHECKER._local_suffix("unrelated surrounding context", "missing"),
+            "",
+        )
+
+    def test_validation_wire_roles_do_not_absolve_similar_visible_copy(
+        self,
+    ) -> None:
+        source = """
+issues.add(_structuredIssue('FSA_EMPTY', 'Visible validation message'));
+switch (issue.code) {
+  case 'FSA_NO_INITIAL':
+    break;
+}
+final wireCode = switch (legacyCode) {
+  'PDA_EMPTY' => 'pda-empty',
+};
+final issue = ValidationIssue(
+  location: 'production[$i]',
+);
+if (direction != 'TapeDirection.left') return;
+final visible = Domain(
+  label: 'FSA_EMPTY',
+  message: 'production[$i]',
+  description: 'TapeDirection.left',
+);
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/validators/example.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "FSA_EMPTY",
+            "production[$i]",
+            "TapeDirection.left",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+        self.assertEqual(
+            by_occurrence[("FSA_NO_INITIAL", 1)],
+            "protocolDescription",
+        )
+        self.assertEqual(
+            by_occurrence[("PDA_EMPTY", 1)],
+            "protocolDescription",
+        )
+
+    def test_codec_protocol_roles_do_not_absolve_similar_visible_copy(
+        self,
+    ) -> None:
+        source = """
+final descriptor = CodecDescriptor(
+  compatibilityOwner: 'Turing Lab interoperability',
+  knownUnsupportedFields: const {
+    'building-block references',
+  },
+);
+final diagnostic = CodecDiagnostic(path: r'$.document.payload');
+extensions['stateName.$id'] = name;
+builder.processing('xml', 'version="1.0" encoding="UTF-8"');
+builder.comment('The regular expression.');
+return '${prefix}_${fnv1a32Hex(source)}';
+final visible = Domain(
+  label: 'Turing Lab interoperability',
+  message: 'building-block references',
+  description: r'$.document.payload',
+  title: 'stateName.$id',
+  explanation: 'version="1.0" encoding="UTF-8"',
+  warning: 'The regular expression.',
+  reason: '${prefix}_${fnv1a32Hex(source)}',
+);
+"""
+
+        findings = CHECKER.scan_source("lib/data/codecs/example.dart", source)
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "Turing Lab interoperability",
+            "building-block references",
+            "$.document.payload",
+            "stateName.$id",
+            'version="1.0" encoding="UTF-8"',
+            "The regular expression.",
+            "${prefix}_${fnv1a32Hex(source)}",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+
+    def test_codec_dispatch_diagnostics_do_not_absolve_visible_copy(
+        self,
+    ) -> None:
+        source = """
+requireUniqueIds(states, 'TM state');
+errors.remove('Automaton must have at least one state');
+final structured = message == 'XML is not valid UTF-8.';
+final visible = Domain(
+  label: 'TM state',
+  message: 'Automaton must have at least one state',
+  description: 'XML is not valid UTF-8.',
+);
+"""
+
+        findings = CHECKER.scan_source("lib/data/codecs/example.dart", source)
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "TM state",
+            "Automaton must have at least one state",
+            "XML is not valid UTF-8.",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "developerDiagnostic",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+
+    def test_structural_identifiers_do_not_absolve_visible_labels(self) -> None:
+        findings = CHECKER.scan_source(
+            "lib/core/models/example.dart",
+            """
+final item = Node(
+  id: 'step_$index',
+  label: 'Visible state label',
+  actionId: 'canvas.open.$index',
+);
+final path = parseObject(payload, '/structure/state[$index]');
+final signature = '${left.id}\\u0000${right.id}';
+""",
+        )
+        classifications = {
+            item.literal: item.detected_classification for item in findings
+        }
+
+        self.assertEqual(classifications["step_$index"], "protocolDescription")
+        self.assertEqual(
+            classifications["canvas.open.$index"], "protocolDescription"
+        )
+        self.assertEqual(
+            classifications["/structure/state[$index]"],
+            "protocolDescription",
+        )
+        self.assertEqual(
+            classifications["${left.id}\\u0000${right.id}"],
+            "protocolDescription",
+        )
+        self.assertEqual(
+            classifications["Visible state label"], "legacyUserVisible"
+        )
+
     def test_classifies_file_operation_compatibility_codes_as_protocol(self) -> None:
         source = """
 Failure('codec.unsupported.${reason.name}');
@@ -234,6 +417,123 @@ final payloadMessage =
                 item.detected_classification == "legacyUserVisible"
                 for item in findings
             )
+        )
+
+    def test_structural_domain_roles_do_not_absolve_similar_visible_copy(
+        self,
+    ) -> None:
+        source = """
+String buildSessionId(String? sessionId) {
+  final resolvedSessionId =
+      sessionId ?? 'manual.fa-to-regex.${source.id}.$revision.';
+  return resolvedSessionId;
+}
+
+final state = State(
+  id: _stringOr(json['id'], 'example_${slug(exampleName)}'),
+  label: 'q$index',
+);
+final transition = Transition(label: '${left.id}→${right.id}');
+final supportingData = {'formula': 'R_ij ∪ R_ik(R_kk)*R_kj'};
+bool get isTimeout => errorMessage.contains('timed out');
+
+String _actionId(int cursor) {
+  return 'action_${cursor}_${stableHash(payload)}';
+}
+
+String get splitSummary => '${left.length}:${right.length}';
+
+@override
+String toString() {
+  return 'Example(id: $id, title: $title)';
+}
+
+void requirePrefix() {
+  throw ArgumentError.value(
+    prefix,
+    'prefix',
+    'State IDs must be unique eliminable source states.',
+  );
+}
+
+final artifact = {'oracle': 'LanguageComparator.compareLanguages'};
+final visible = Domain(
+  title: 'manual.fa-to-regex.${source.id}.$revision.',
+  label: 'State $index',
+  message: 'R_ij ∪ R_ik(R_kk)*R_kj explains the next step.',
+  description: 'timed out',
+  warning: 'LanguageComparator.compareLanguages',
+  reason: 'State IDs must be unique eliminable source states.',
+);
+
+String describe() => 'Example(id: $id, title: $title)';
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/manual_conversions/example.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "manual.fa-to-regex.${source.id}.$revision.",
+            "Example(id: $id, title: $title)",
+            "State IDs must be unique eliminable source states.",
+            "LanguageComparator.compareLanguages",
+            "timed out",
+        ):
+            self.assertNotEqual(
+                by_occurrence[(literal, 1)],
+                "legacyUserVisible",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+
+        for literal in (
+            "manual.fa-to-regex.${source.id}.$revision.",
+            "example_${slug(exampleName)}",
+            "q$index",
+            "${left.id}→${right.id}",
+            "R_ij ∪ R_ik(R_kk)*R_kj",
+            "timed out",
+            "action_${cursor}_${stableHash(payload)}",
+            "${left.length}:${right.length}",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+
+        for literal in (
+            "Example(id: $id, title: $title)",
+            "State IDs must be unique eliminable source states.",
+            "LanguageComparator.compareLanguages",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "developerDiagnostic",
+                literal,
+            )
+        self.assertEqual(
+            by_occurrence[("State $index", 1)],
+            "legacyUserVisible",
+        )
+        self.assertEqual(
+            by_occurrence[
+                (
+                    "R_ij ∪ R_ik(R_kk)*R_kj explains the next step.",
+                    1,
+                )
+            ],
+            "legacyUserVisible",
         )
 
     def test_path_style_content_ids_are_not_user_visible_prose(self) -> None:
@@ -687,6 +987,209 @@ final payloadMessage =
             ],
         )
 
+    def test_algorithm_developer_roles_do_not_absolve_visible_copy(self) -> None:
+        source = """
+class Example {
+  @Deprecated('Use the structured replacement instead.')
+  void legacy() {}
+
+  @override
+  String toString() {
+    return 'Example(value: $value)';
+  }
+}
+throw ArgumentError.value(
+  value,
+  'value',
+  'must be non-negative',
+);
+final visible = Domain(
+  message: 'Use the structured replacement instead.',
+  description: 'Example(value: $value)',
+  reason: 'must be non-negative',
+);
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/algorithms/example.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "Use the structured replacement instead.",
+            "Example(value: $value)",
+            "must be non-negative",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "developerDiagnostic",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+
+    def test_algorithm_protocol_roles_do_not_absolve_visible_copy(self) -> None:
+        source = """
+final diagnostic = GrammarDiagnostic(
+  code: 'grammar.start_symbol_missing',
+  message: GrammarMessages.startSymbolMissing(),
+);
+final check = DifferentialCheck(detailCode: 'tm-validation-$index');
+final step = <String, Object?>{'type': 'product_state_created'};
+final generated = productionIds.allocate('${production.id}_unit_$source');
+String freshId(String prefix) => '${prefix}_${counter++}';
+final automaton = FSA(
+  id: _newAutomatonId('empty'),
+  name: 'Empty language',
+);
+final visible = Domain(
+  title: 'grammar.start_symbol_missing',
+  message: 'tm-validation-$index',
+  label: 'product_state_created',
+  description: '${production.id}_unit_$source',
+  explanation: '${prefix}_${counter++}',
+);
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/algorithms/example.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "grammar.start_symbol_missing",
+            "tm-validation-$index",
+            "product_state_created",
+            "${production.id}_unit_$source",
+            "${prefix}_${counter++}",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+        self.assertEqual(
+            by_occurrence[("Empty language", 1)],
+            "legacyUserVisible",
+        )
+
+    def test_algorithm_dispatch_tokens_do_not_absolve_visible_copy(self) -> None:
+        source = """
+final message = switch (legacyDescription) {
+  'DFA for complement' => DfaMessages.complement(),
+};
+final matching = error != 'Self-loop transitions must have a control point';
+final timedOut = result.error?.startsWith('Parse timed out') ?? false;
+final visible = Domain(
+  title: 'DFA for complement',
+  message: 'Self-loop transitions must have a control point',
+  description: 'Parse timed out',
+);
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/algorithms/example_messages.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "DFA for complement",
+            "Self-loop transitions must have a control point",
+            "Parse timed out",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+
+    def test_algorithm_formal_payloads_do_not_absolve_visible_copy(self) -> None:
+        source = """
+final trace = SimulationStep(
+  usedTransition: 'δ($from, $symbol) = $to',
+);
+final splitTrace = SimulationStep(
+  usedTransition: '$from,$read → '
+      '$to,$write,$move',
+);
+final message = GrammarMessages.production(
+  production: '$left → ${formatSymbols(right)}',
+);
+final step = AlgorithmStep(
+  properties: {
+    'clonedStates': ['${clone.key} → ${clone.value.id}'],
+  },
+);
+buffer.writeln('  $left → $right');
+final visible = Domain(
+  message: 'δ($from, $symbol) = $to',
+  description: '$left → ${formatSymbols(right)}',
+  title: '${clone.key} → ${clone.value.id}',
+  explanation: '  $left → $right',
+  reason: '$from,$read → '
+      '$to,$write,$move',
+);
+"""
+
+        findings = CHECKER.scan_source(
+            "lib/core/algorithms/example.dart",
+            source,
+        )
+        by_occurrence = {
+            (item.literal, item.occurrence): item.detected_classification
+            for item in findings
+        }
+
+        for literal in (
+            "δ($from, $symbol) = $to",
+            "$left → ${formatSymbols(right)}",
+            "${clone.key} → ${clone.value.id}",
+            "  $left → $right",
+        ):
+            self.assertEqual(
+                by_occurrence[(literal, 1)],
+                "protocolDescription",
+                literal,
+            )
+            self.assertEqual(
+                by_occurrence[(literal, 2)],
+                "legacyUserVisible",
+                literal,
+            )
+        self.assertEqual(
+            by_occurrence[("$to,$write,$move", 1)],
+            "protocolDescription",
+        )
+        self.assertEqual(
+            by_occurrence[("$to,$write,$move", 2)],
+            "legacyUserVisible",
+        )
+
     def test_ll1_conflict_formal_outputs_are_protocol_only_in_exact_getters(self) -> None:
         alternatives = "${entry.productionId} ${entry.display}"
         description = "$formalKind [$nonTerminal, $lookahead]: $alternativesDisplay"
@@ -910,8 +1413,8 @@ final payloadMessage =
                                     "supportedCompatibilityDescription"
                                 ),
                                 "rationale": (
-                                    "Supported compatibility description without "
-                                    "production resolver evidence."
+                                    "Supported compatibility description; the model "
+                                    "StructuredMessage resolver supplies localized UI copy."
                                 ),
                                 "owner": "domain-models",
                                 "targetNamespace": "model",
@@ -931,6 +1434,464 @@ final payloadMessage =
         self.assertTrue(
             any("StructuredMessage resolver" in error for error in errors)
         )
+
+    def test_supported_compatibility_validates_resolver_path_and_identifier(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path = root / "lib" / "core" / "models" / "result.dart"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                "final value = Domain(message: 'Compatibility prose.');\n",
+                encoding="utf-8",
+            )
+            resolver_path = root / "lib" / "l10n" / "resolver.dart"
+            resolver_path.parent.mkdir(parents=True)
+            resolver_path.write_text(
+                "const compatibilityCode = 'model.compatibility';\n"
+                "String resolveStructuredMessage(Object message) => 'localized';\n",
+                encoding="utf-8",
+            )
+            scope = root / "scope.json"
+            allowlist = root / "allowlist.json"
+            inventory = root / "inventory.json"
+            scope.write_text(
+                json.dumps(
+                    {"schemaVersion": 1, "roots": ["lib/core/models"]}
+                ),
+                encoding="utf-8",
+            )
+            allowlist.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resolverEvidence": {
+                            "model": {
+                                "path": "lib/l10n/resolver.dart",
+                                "identifier": "resolveStructuredMessage",
+                            }
+                        },
+                        "entries": [
+                            {
+                                "path": "lib/core/models/result.dart",
+                                "literal": "Compatibility prose.",
+                                "occurrence": 1,
+                                "classification": (
+                                    "supportedCompatibilityDescription"
+                                ),
+                                "rationale": "Tracked compatibility description.",
+                                "owner": "domain-models",
+                                "targetNamespace": "model",
+                                "resolverCode": "model.compatibility",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text("{}", encoding="utf-8")
+
+            report, errors = CHECKER.validate_repository(
+                root, scope, allowlist, inventory
+            )
+
+        self.assertEqual(report["violationCount"], 0)
+        self.assertFalse(
+            any("StructuredMessage resolver" in error for error in errors)
+        )
+
+    def test_supported_compatibility_rejects_missing_resolver_identifier(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path = root / "lib" / "core" / "models" / "result.dart"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                "final value = Domain(message: 'Compatibility prose.');\n",
+                encoding="utf-8",
+            )
+            resolver_path = root / "lib" / "l10n" / "resolver.dart"
+            resolver_path.parent.mkdir(parents=True)
+            resolver_path.write_text(
+                "const compatibilityCode = 'model.compatibility';\n"
+                "String otherResolver() => '';\n",
+                encoding="utf-8",
+            )
+            scope = root / "scope.json"
+            allowlist = root / "allowlist.json"
+            inventory = root / "inventory.json"
+            scope.write_text(
+                json.dumps(
+                    {"schemaVersion": 1, "roots": ["lib/core/models"]}
+                ),
+                encoding="utf-8",
+            )
+            allowlist.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resolverEvidence": {
+                            "model": {
+                                "path": "lib/l10n/resolver.dart",
+                                "identifier": "resolveStructuredMessage",
+                            }
+                        },
+                        "entries": [
+                            {
+                                "path": "lib/core/models/result.dart",
+                                "literal": "Compatibility prose.",
+                                "occurrence": 1,
+                                "classification": (
+                                    "supportedCompatibilityDescription"
+                                ),
+                                "rationale": "Tracked compatibility description.",
+                                "owner": "domain-models",
+                                "targetNamespace": "model",
+                                "resolverCode": "model.compatibility",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text("{}", encoding="utf-8")
+
+            report, errors = CHECKER.validate_repository(
+                root, scope, allowlist, inventory
+            )
+
+        self.assertEqual(report["violationCount"], 1)
+        self.assertTrue(
+            any("resolver identifier" in error for error in errors)
+        )
+
+    def test_supported_compatibility_requires_evidence_for_each_entry(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path = root / "lib" / "core" / "models" / "result.dart"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                "final first = Domain(message: 'First compatibility prose.');\n"
+                "final second = Domain(message: 'Second compatibility prose.');\n",
+                encoding="utf-8",
+            )
+            resolver_path = root / "lib" / "l10n" / "resolver.dart"
+            resolver_path.parent.mkdir(parents=True)
+            resolver_path.write_text(
+                "const firstCode = 'model.first';\n"
+                "String resolveStructuredMessage(Object message) => 'localized';\n",
+                encoding="utf-8",
+            )
+            scope = root / "scope.json"
+            allowlist = root / "allowlist.json"
+            inventory = root / "inventory.json"
+            scope.write_text(
+                json.dumps(
+                    {"schemaVersion": 1, "roots": ["lib/core/models"]}
+                ),
+                encoding="utf-8",
+            )
+            common = {
+                "occurrence": 1,
+                "classification": "supportedCompatibilityDescription",
+                "rationale": "Tracked compatibility description.",
+                "owner": "domain-models",
+                "targetNamespace": "model",
+            }
+            allowlist.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resolverEvidence": {
+                            "model": {
+                                "path": "lib/l10n/resolver.dart",
+                                "identifier": "resolveStructuredMessage",
+                            }
+                        },
+                        "entries": [
+                            {
+                                **common,
+                                "path": "lib/core/models/result.dart",
+                                "literal": "First compatibility prose.",
+                                "resolverCode": "model.first",
+                            },
+                            {
+                                **common,
+                                "path": "lib/core/models/result.dart",
+                                "literal": "Second compatibility prose.",
+                                "resolverCode": "model.second",
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text("{}", encoding="utf-8")
+
+            report, errors = CHECKER.validate_repository(
+                root, scope, allowlist, inventory
+            )
+
+        self.assertEqual(report["violationCount"], 1)
+        self.assertTrue(
+            any("resolverCode 'model.second'" in error for error in errors)
+        )
+
+    def test_supported_compatibility_accepts_exact_content_reference_evidence(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path = (
+                root
+                / "lib"
+                / "core"
+                / "manual_conversions"
+                / "requirement.dart"
+            )
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                "final value = Domain(message: 'Compatibility prose.');\n",
+                encoding="utf-8",
+            )
+            catalog_path = source_path.parent / "manual_conversion_content.dart"
+            catalog_path.write_text(
+                "abstract final class ManualConversionContent {\n"
+                "  static final regexToFaSymbol = EducationalContentReference(\n"
+                "    id: 'manual-conversion/regex-to-fa/symbol',\n"
+                "  );\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            resolver_path = (
+                root
+                / "lib"
+                / "presentation"
+                / "content"
+                / "manual_conversion_content_copy.dart"
+            )
+            resolver_path.parent.mkdir(parents=True)
+            resolver_path.write_text(
+                "abstract final class ManualConversionContentCopies {\n"
+                "  static final entries = [\n"
+                "    _entry(\n"
+                "      reference: ManualConversionContent.regexToFaSymbol,\n"
+                "    ),\n"
+                "  ];\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            scope = root / "scope.json"
+            allowlist = root / "allowlist.json"
+            inventory = root / "inventory.json"
+            scope.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "roots": ["lib/core/manual_conversions"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            allowlist.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "contentReferenceEvidence": {
+                            "catalog": {
+                                "path": (
+                                    "lib/core/manual_conversions/"
+                                    "manual_conversion_content.dart"
+                                ),
+                                "identifier": "ManualConversionContent",
+                            },
+                            "resolver": {
+                                "path": (
+                                    "lib/presentation/content/"
+                                    "manual_conversion_content_copy.dart"
+                                ),
+                                "identifier": "ManualConversionContentCopies",
+                            },
+                        },
+                        "entries": [
+                            {
+                                "path": (
+                                    "lib/core/manual_conversions/requirement.dart"
+                                ),
+                                "literal": "Compatibility prose.",
+                                "occurrence": 1,
+                                "classification": (
+                                    "supportedCompatibilityDescription"
+                                ),
+                                "rationale": (
+                                    "Exact educational content reference supplies "
+                                    "localized compatibility copy."
+                                ),
+                                "owner": "domain-core-data",
+                                "targetNamespace": "domain",
+                                "contentReference": (
+                                    "manual-conversion/regex-to-fa/symbol"
+                                ),
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text("{}", encoding="utf-8")
+
+            report, errors = CHECKER.validate_repository(
+                root, scope, allowlist, inventory
+            )
+
+        self.assertEqual(report["violationCount"], 0)
+        self.assertFalse(
+            any("contentReference" in error for error in errors),
+            errors,
+        )
+
+    def test_content_reference_evidence_is_exact_and_fail_closed(self) -> None:
+        cases = {
+            "missing catalog id": (
+                "manual-conversion/regex-to-fa/other",
+                "ManualConversionContent.regexToFaSymbol",
+                "catalog",
+                "",
+            ),
+            "missing resolver entry": (
+                "manual-conversion/regex-to-fa/symbol",
+                "ManualConversionContent.regexToFaOther",
+                "resolver",
+                "",
+            ),
+            "ambiguous catalog id": (
+                "manual-conversion/regex-to-fa/symbol",
+                "ManualConversionContent.regexToFaSymbol",
+                "duplicate",
+                (
+                    "  static final regexToFaOther = "
+                    "EducationalContentReference(\n"
+                    "    id: 'manual-conversion/regex-to-fa/symbol',\n"
+                    "  );\n"
+                ),
+            ),
+        }
+        for name, case in cases.items():
+            content_reference, resolver_reference, expected, extra_catalog = case
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                source_path = (
+                    root
+                    / "lib"
+                    / "core"
+                    / "manual_conversions"
+                    / "requirement.dart"
+                )
+                source_path.parent.mkdir(parents=True)
+                source_path.write_text(
+                    "final value = Domain(message: 'Compatibility prose.');\n",
+                    encoding="utf-8",
+                )
+                catalog_path = source_path.parent / "manual_conversion_content.dart"
+                catalog_path.write_text(
+                    "abstract final class ManualConversionContent {\n"
+                    "  static final regexToFaSymbol = EducationalContentReference(\n"
+                    "    id: 'manual-conversion/regex-to-fa/symbol',\n"
+                    "  );\n"
+                    f"{extra_catalog}"
+                    "}\n",
+                    encoding="utf-8",
+                )
+                resolver_path = (
+                    root
+                    / "lib"
+                    / "presentation"
+                    / "content"
+                    / "manual_conversion_content_copy.dart"
+                )
+                resolver_path.parent.mkdir(parents=True)
+                resolver_path.write_text(
+                    "abstract final class ManualConversionContentCopies {\n"
+                    "  static final entries = [\n"
+                    "    _entry(reference: "
+                    f"{resolver_reference}),\n"
+                    "  ];\n"
+                    "}\n",
+                    encoding="utf-8",
+                )
+                scope = root / "scope.json"
+                allowlist = root / "allowlist.json"
+                inventory = root / "inventory.json"
+                scope.write_text(
+                    json.dumps(
+                        {
+                            "schemaVersion": 1,
+                            "roots": ["lib/core/manual_conversions"],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                allowlist.write_text(
+                    json.dumps(
+                        {
+                            "schemaVersion": 1,
+                            "contentReferenceEvidence": {
+                                "catalog": {
+                                    "path": (
+                                        "lib/core/manual_conversions/"
+                                        "manual_conversion_content.dart"
+                                    ),
+                                    "identifier": "ManualConversionContent",
+                                },
+                                "resolver": {
+                                    "path": (
+                                        "lib/presentation/content/"
+                                        "manual_conversion_content_copy.dart"
+                                    ),
+                                    "identifier": "ManualConversionContentCopies",
+                                },
+                            },
+                            "entries": [
+                                {
+                                    "path": (
+                                        "lib/core/manual_conversions/requirement.dart"
+                                    ),
+                                    "literal": "Compatibility prose.",
+                                    "occurrence": 1,
+                                    "classification": (
+                                        "supportedCompatibilityDescription"
+                                    ),
+                                    "rationale": (
+                                        "Exact educational content reference supplies "
+                                        "localized compatibility copy."
+                                    ),
+                                    "owner": "domain-core-data",
+                                    "targetNamespace": "domain",
+                                    "contentReference": content_reference,
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                inventory.write_text("{}", encoding="utf-8")
+
+                report, errors = CHECKER.validate_repository(
+                    root, scope, allowlist, inventory
+                )
+
+            self.assertEqual(report["violationCount"], 1)
+            self.assertTrue(
+                any(
+                    "contentReference" in error and expected in error
+                    for error in errors
+                ),
+                errors,
+            )
 
     def test_inventory_accounts_for_every_source_occurrence(self) -> None:
         findings = CHECKER.scan_source(
@@ -987,7 +1948,7 @@ final payloadMessage =
             "structured-compatibility",
         )
 
-    def test_repository_gate_fails_when_allowlisted_migration_work_remains(
+    def test_repository_gate_tracks_allowlisted_migration_work_without_false_zero(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1019,6 +1980,7 @@ final payloadMessage =
                 rationale="Existing domain prose still requires migration under #210.",
                 owner="domain-models",
                 target_namespace="model",
+                migration_reference="#210",
             )
             classified, _ = CHECKER.apply_allowlist(
                 [finding], {allowance.key: allowance}
@@ -1036,6 +1998,7 @@ final payloadMessage =
                                 "rationale": allowance.rationale,
                                 "owner": allowance.owner,
                                 "targetNamespace": allowance.target_namespace,
+                                "migrationReference": allowance.migration_reference,
                             }
                         ],
                     }
@@ -1046,11 +2009,97 @@ final payloadMessage =
                 json.dumps(CHECKER.build_inventory(classified)), encoding="utf-8"
             )
 
-            _, errors = CHECKER.validate_repository(
+            report, errors = CHECKER.validate_repository(
                 root, scope, allowlist, inventory
             )
 
-        self.assertTrue(any("migration is incomplete" in error for error in errors))
+        self.assertEqual(errors, [])
+        self.assertFalse(report["zeroUserVisibleProseClaim"])
+        self.assertEqual(report["migrationRequiredCount"], 1)
+
+    def test_tracked_migration_requires_per_entry_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path = root / "lib" / "core" / "models" / "result.dart"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                "final value = Domain(message: 'Unfinished prose.');\n",
+                encoding="utf-8",
+            )
+            scope = root / "scope.json"
+            allowlist = root / "allowlist.json"
+            inventory = root / "inventory.json"
+            scope.write_text(
+                json.dumps({"schemaVersion": 1, "roots": ["lib/core/models"]}),
+                encoding="utf-8",
+            )
+            allowlist.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "entries": [
+                            {
+                                "path": "lib/core/models/result.dart",
+                                "literal": "Unfinished prose.",
+                                "occurrence": 1,
+                                "classification": "legacyUserVisible",
+                                "rationale": "Tracked migration still pending under issue 210.",
+                                "owner": "domain-models",
+                                "targetNamespace": "model",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory.write_text("{}", encoding="utf-8")
+
+            _, errors = CHECKER.validate_repository(root, scope, allowlist, inventory)
+
+        self.assertTrue(
+            any("requires a valid migrationReference" in error for error in errors)
+        )
+
+    def test_bootstrap_allowlist_round_trips_tracked_migrations(self) -> None:
+        findings = [
+            CHECKER.Finding(
+                path="lib/core/models/result.dart",
+                line=index,
+                column=1,
+                literal=literal,
+                occurrence=1,
+                surface="message",
+                detected_classification=classification,
+                classification=classification,
+                rationale="",
+                allowlisted=False,
+            )
+            for index, (literal, classification) in enumerate(
+                (
+                    ("Unfinished prose.", "legacyUserVisible"),
+                    ("Workflow adapter prose.", "legacyWorkflowAdapter"),
+                ),
+                start=1,
+            )
+        ]
+        document = CHECKER._bootstrap_allowlist(findings)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            allowlist = root / "allowlist.json"
+            allowlist.write_text(json.dumps(document), encoding="utf-8")
+            errors: list[str] = []
+
+            loaded = CHECKER._load_allowlist(root, allowlist, errors)
+
+        self.assertEqual(errors, [])
+        self.assertEqual(set(loaded), {finding.key for finding in findings})
+        self.assertTrue(
+            all(
+                entry["migrationReference"] == "#210"
+                for entry in document["entries"]
+            )
+        )
 
     def test_missing_scope_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

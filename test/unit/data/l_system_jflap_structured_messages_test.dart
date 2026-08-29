@@ -261,10 +261,10 @@ void main() {
       LSystemJflapMessages.encodeFailed(),
       LSystemJflapMessages.advancedVariantPreserved(),
       LSystemJflapMessages.parametersPreserved('vendorDrawing'),
-      LSystemJflapMessages.executionExtensionRestored(),
+      LSystemJflapMessages.executionExtensionRestored(features: 'angle, color'),
       LSystemJflapMessages.elementsPreserved(),
-      LSystemJflapMessages.executionExtension(),
-      LSystemJflapMessages.advancedVariantExtension(),
+      LSystemJflapMessages.executionExtension(features: 'angle, color'),
+      LSystemJflapMessages.advancedVariantExtension(variants: 'stochastic'),
     ];
     expect(messages, everyElement(isA<StructuredMessage>()));
     expect(

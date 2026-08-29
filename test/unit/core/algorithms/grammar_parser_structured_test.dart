@@ -18,6 +18,20 @@ import 'package:turing_lab/core/models/production.dart';
 void main() {
   final timestamp = DateTime.utc(2026);
 
+  Grammar simpleGrammar() => Grammar(
+    id: 'lr1-structured-test',
+    name: 'LR(1) structured test grammar',
+    terminals: {'a'},
+    nonterminals: {'S'},
+    startSymbol: 'S',
+    productions: {
+      const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
+    },
+    type: GrammarType.contextFree,
+    created: DateTime.utc(2026),
+    modified: DateTime.utc(2026),
+  );
+
   Grammar grammar({
     Set<String> terminals = const {'a'},
     Set<String> nonterminals = const {'S'},
@@ -349,17 +363,3 @@ void main() {
     });
   });
 }
-
-Grammar simpleGrammar() => Grammar(
-  id: 'lr1-structured-test',
-  name: 'LR(1) structured test grammar',
-  terminals: {'a'},
-  nonterminals: {'S'},
-  startSymbol: 'S',
-  productions: {
-    const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
-  },
-  type: GrammarType.contextFree,
-  created: DateTime.utc(2026),
-  modified: DateTime.utc(2026),
-);

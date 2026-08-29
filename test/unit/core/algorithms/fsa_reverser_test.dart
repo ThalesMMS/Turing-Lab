@@ -193,7 +193,9 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            step.properties[fsaReversalTitleMessageProperty] as Map,
+            step.properties[FsaReversalMessages
+                    .FSA_REVERSAL_TITLE_MESSAGE_PROPERTY]
+                as Map,
           ),
         ).stableCode,
         step.title,
@@ -201,7 +203,9 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            step.properties[fsaReversalExplanationMessageProperty] as Map,
+            step.properties[FsaReversalMessages
+                    .FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY]
+                as Map,
           ),
         ).stableCode,
         step.explanation,

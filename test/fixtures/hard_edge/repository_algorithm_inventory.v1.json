@@ -81,6 +81,36 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
+        "CodecOperationException"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_codec_family_test.dart test/unit/core/interoperability test/unit/data test/integration/io test/widget/presentation/variable_dependency_graph_workspace_test.dart test/unit/core/models/automaton_json_roundtrip_test.dart",
+      "family": "codec",
+      "id": "codec:core.interoperability.codec_operation_exception",
+      "issue": 340,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge/families/codec_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "codec corpus, migration, security, and conversion properties",
+      "regressions": {
+        "fixtureCount": 79,
+        "root": "test/fixtures/hard_edge/codec",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "codec",
+      "sourcePath": "lib/core/interoperability/codec_operation_exception.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
         "CodecAmbiguous",
         "CodecDiagnostic",
         "CodecDiagnosticDisposition",
@@ -88,7 +118,6 @@
         "CodecInternalFailureStage",
         "CodecMalformed",
         "CodecMalformedReason",
-        "CodecOperationException",
         "CodecOutcome",
         "CodecResourceLimit",
         "CodecResourceLimitKind",
@@ -1234,8 +1263,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "RegexJflapMessages",
-        "RegexJsonMessages"
+        "RegexJflapMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/hard_edge_codec_family_test.dart test/unit/core/interoperability test/unit/data test/integration/io test/widget/presentation/variable_dependency_graph_workspace_test.dart test/unit/core/models/automaton_json_roundtrip_test.dart",
       "family": "codec",
@@ -1318,6 +1346,36 @@
       },
       "role": "codec",
       "sourcePath": "lib/data/codecs/regex_json_document_codec.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "RegexJsonMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_codec_family_test.dart test/unit/core/interoperability test/unit/data test/integration/io test/widget/presentation/variable_dependency_graph_workspace_test.dart test/unit/core/models/automaton_json_roundtrip_test.dart",
+      "family": "codec",
+      "id": "codec:data.codecs.regex_json_messages",
+      "issue": 340,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge/families/codec_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "codec corpus, migration, security, and conversion properties",
+      "regressions": {
+        "fixtureCount": 79,
+        "root": "test/fixtures/hard_edge/codec",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/data/codecs/regex_json_messages.dart"
     },
     {
       "cancellation": {
@@ -2806,6 +2864,66 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
+        "PumpingLemmaContentMigration"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
+      "family": "formal-systems",
+      "id": "formal-systems:core.pumping_lemma.pumping_lemma_content_migration",
+      "issue": 339,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_formal_systems.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "transducer, L-system, Pumping Lemma, and registry properties",
+      "regressions": {
+        "fixtureCount": 33,
+        "root": "test/fixtures/hard_edge/formal_systems",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/pumping_lemma/pumping_lemma_content_migration.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "PumpingLemmaContentMigrationResult"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
+      "family": "formal-systems",
+      "id": "formal-systems:core.pumping_lemma.pumping_lemma_content_migration_result",
+      "issue": 339,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_formal_systems.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "transducer, L-system, Pumping Lemma, and registry properties",
+      "regressions": {
+        "fixtureCount": 33,
+        "root": "test/fixtures/hard_edge/formal_systems",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/pumping_lemma/pumping_lemma_content_migration_result.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
         "ContextFreePumpingLemmaDocument",
         "PumpingLemmaDocument",
         "RegularPumpingLemmaDocument"
@@ -2937,12 +3055,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "PumpingLemmaContentMigration",
-        "PumpingLemmaContentMigrationResult",
-        "PumpingLemmaEnvironmentProgress",
-        "PumpingLemmaProgressMigration",
-        "PumpingLemmaProgressMigrationResult",
-        "PumpingLemmaProgressSnapshot"
+        "PumpingLemmaEnvironmentProgress"
       ],
       "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
       "family": "formal-systems",
@@ -2965,6 +3078,96 @@
       },
       "role": "algorithm",
       "sourcePath": "lib/core/pumping_lemma/pumping_lemma_progress.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "PumpingLemmaProgressMigration"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
+      "family": "formal-systems",
+      "id": "formal-systems:core.pumping_lemma.pumping_lemma_progress_migration",
+      "issue": 339,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_formal_systems.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "transducer, L-system, Pumping Lemma, and registry properties",
+      "regressions": {
+        "fixtureCount": 33,
+        "root": "test/fixtures/hard_edge/formal_systems",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/pumping_lemma/pumping_lemma_progress_migration.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "PumpingLemmaProgressMigrationResult"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
+      "family": "formal-systems",
+      "id": "formal-systems:core.pumping_lemma.pumping_lemma_progress_migration_result",
+      "issue": 339,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_formal_systems.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "transducer, L-system, Pumping Lemma, and registry properties",
+      "regressions": {
+        "fixtureCount": 33,
+        "root": "test/fixtures/hard_edge/formal_systems",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/pumping_lemma/pumping_lemma_progress_migration_result.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "PumpingLemmaProgressSnapshot"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/formal_systems_hard_edge_test.dart test/unit/core/transducers test/unit/core/l_systems test/unit/core/pumping_lemma test/unit/core/formal_systems test/unit/data/default_formal_system_registry_test.dart test/unit/data/moore_registered_module_test.dart test/unit/data/mealy_document_codecs_test.dart test/widget/presentation/l_system_workspace_test.dart test/unit/presentation/moore_workspace_definition_test.dart test/widget/presentation/mealy_workspace_test.dart",
+      "family": "formal-systems",
+      "id": "formal-systems:core.pumping_lemma.pumping_lemma_progress_snapshot",
+      "issue": 339,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_formal_systems.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "transducer, L-system, Pumping Lemma, and registry properties",
+      "regressions": {
+        "fixtureCount": 33,
+        "root": "test/fixtures/hard_edge/formal_systems",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/pumping_lemma/pumping_lemma_progress_snapshot.dart"
     },
     {
       "cancellation": {
@@ -3927,8 +4130,7 @@
         "LL1ConflictKind",
         "LL1ParseTable",
         "LL1ParseTableConflict",
-        "LL1ParseTableEntry",
-        "LL1TablePlacement"
+        "LL1ParseTableEntry"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
       "family": "grammar",
@@ -4019,8 +4221,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "GrammarPredictiveAnalyzer",
-        "GrammarPredictiveMessages"
+        "GrammarPredictiveAnalyzer"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
       "family": "grammar",
@@ -4043,6 +4244,36 @@
       },
       "role": "analyzer",
       "sourcePath": "lib/core/algorithms/grammar_analysis/grammar_predictive_analyzer.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "GrammarPredictiveMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_analysis.grammar_predictive_messages",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_analysis/grammar_predictive_messages.dart"
     },
     {
       "cancellation": {
@@ -4110,8 +4341,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "GrammarAnalysisMessages",
-        "GrammarAnalysisStructuredTransformationStep"
+        "GrammarAnalysisMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
       "family": "grammar",
@@ -4134,6 +4364,36 @@
       },
       "role": "algorithm",
       "sourcePath": "lib/core/algorithms/grammar_analysis_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "GrammarAnalysisStructuredTransformationStep"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_analysis_structured_transformation_step",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_analysis_structured_transformation_step.dart"
     },
     {
       "cancellation": {
@@ -4172,8 +4432,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "GrammarCnfMessages",
-        "GrammarCnfStructuredTransformationStep"
+        "GrammarCnfMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
       "family": "grammar",
@@ -4196,6 +4455,66 @@
       },
       "role": "algorithm",
       "sourcePath": "lib/core/algorithms/grammar_cnf_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "GrammarCnfStepKind"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_cnf_step_kind",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_cnf_step_kind.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "GrammarCnfStructuredTransformationStep"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_cnf_structured_transformation_step",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_cnf_structured_transformation_step.dart"
     },
     {
       "cancellation": {
@@ -4234,8 +4553,7 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "GrammarGnfMessages",
-        "GrammarGnfStructuredTransformationStep"
+        "GrammarGnfMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
       "family": "grammar",
@@ -4265,7 +4583,68 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "GrammarGnfTransformationReport",
+        "GrammarGnfTransformationReport"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_gnf_transformation_report",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_gnf_transformation_report.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "GrammarGnfTransformationReportPatterns",
+        "class",
+        "toString"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
+      "family": "grammar",
+      "id": "grammar:core.algorithms.grammar_gnf_transformation_report.freezed",
+      "issue": 336,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_grammar_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "grammar family differential and bounded derivation oracles",
+      "regressions": {
+        "fixtureCount": 62,
+        "root": "test/fixtures/hard_edge/grammar",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_gnf_transformation_report.freezed.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
         "GrammarGnfTransformer"
       ],
       "evidenceCommand": "flutter test test/unit/tool/grammar_hard_edge_certification_test.dart test/unit/core/grammar test/unit/core/cfg test/unit/core/parsers test/unit/core/algorithms test/unit/data/services/grammar_teaching_session_store_test.dart test/unit/data/unrestricted_grammar_module_test.dart test/widget/presentation/unrestricted_grammar_workspace_test.dart test/widget/presentation/unrestricted_grammar_tm_provenance_test.dart",
@@ -6804,6 +7183,36 @@
         "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
       },
       "entryPoints": [
+        "CfgShortestWitnessMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_pda_family_test.dart test/unit/core/pda test/unit/core/algorithms test/unit/presentation/pda_simulation_provider_test.dart",
+      "family": "pda",
+      "id": "pda:core.algorithms.pda_cfg_shortest_witness_messages",
+      "issue": 337,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge/families/pda_cases.dart mutate",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "PDA configuration-search, conversion, and oracle properties",
+      "regressions": {
+        "fixtureCount": 41,
+        "root": "test/fixtures/hard_edge/pda",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/pda_cfg_shortest_witness_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": true,
+        "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
+      },
+      "entryPoints": [
         "CFGDerivationStep",
         "CFGShortestWitnessAnalysis",
         "CFGShortestWitnessAnalyzer",
@@ -6845,7 +7254,6 @@
         "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
       },
       "entryPoints": [
-        "CfgShortestWitnessMessages",
         "PdaLanguageEmptinessMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/hard_edge_pda_family_test.dart test/unit/core/pda test/unit/core/algorithms test/unit/presentation/pda_simulation_provider_test.dart",
@@ -7911,6 +8319,36 @@
         "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
+        "LL1TablePlacement"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_regular_family_test.dart test/unit/core/fsa test/unit/core/regex test/unit/core/manual_conversions test/unit/core/algorithms test/unit/providers/algorithm_step_provider_test.dart test/unit/presentation/automaton_providers_integration_test.dart test/unit/presentation/automaton_simulation_stale_test.dart test/unit/providers/regex_editor_provider_test.dart test/widget/presentation/language_comparison_controller_test.dart",
+      "family": "regular",
+      "id": "regular:core.algorithms.grammar_analysis.ll1_table_placement",
+      "issue": 335,
+      "limits": {
+        "applicable": false,
+        "rationale": "The source has no independent resource-limit contract."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_regular.dart --property regular.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "regular family properties and independent automata oracles",
+      "regressions": {
+        "fixtureCount": 7,
+        "root": "test/fixtures/hard_edge/regular",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/grammar_analysis/ll1_table_placement.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
         "LanguageComparator"
       ],
       "evidenceCommand": "flutter test test/unit/tool/hard_edge_regular_family_test.dart test/unit/core/fsa test/unit/core/regex test/unit/core/manual_conversions test/unit/core/algorithms test/unit/providers/algorithm_step_provider_test.dart test/unit/presentation/automaton_providers_integration_test.dart test/unit/presentation/automaton_simulation_stale_test.dart test/unit/providers/regex_editor_provider_test.dart test/widget/presentation/language_comparison_controller_test.dart",
@@ -8948,6 +9386,36 @@
         "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
       },
       "entryPoints": [
+        "TmExecutionMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
+      "family": "tm",
+      "id": "tm:core.algorithms.tm_execution_messages",
+      "issue": 338,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_tm.dart --property tm.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "TM single/multi-tape, building-block, and typed-outcome properties",
+      "regressions": {
+        "fixtureCount": 8,
+        "root": "test/fixtures/hard_edge/tm",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/tm_execution_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": true,
+        "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
+      },
+      "entryPoints": [
         "TMLanguageExplorer"
       ],
       "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
@@ -8974,20 +9442,15 @@
     },
     {
       "cancellation": {
-        "applicable": true,
-        "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
       },
       "entryPoints": [
-        "TmExecutionMessages",
-        "TmLanguageExplorerMessages",
-        "TmReachabilityMessages",
-        "TmSimulationMessages",
-        "TmSpaceProfileMessages",
-        "TmTimeProfileMessages"
+        "TmLanguageExplorerMessages"
       ],
       "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
       "family": "tm",
-      "id": "tm:core.algorithms.tm_messages",
+      "id": "tm:core.algorithms.tm_language_explorer_messages",
       "issue": 338,
       "limits": {
         "applicable": true,
@@ -9005,7 +9468,7 @@
         "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
       },
       "role": "algorithm",
-      "sourcePath": "lib/core/algorithms/tm_messages.dart"
+      "sourcePath": "lib/core/algorithms/tm_language_explorer_messages.dart"
     },
     {
       "cancellation": {
@@ -9103,6 +9566,66 @@
         "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
       },
       "entryPoints": [
+        "TmReachabilityMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
+      "family": "tm",
+      "id": "tm:core.algorithms.tm_reachability_messages",
+      "issue": 338,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_tm.dart --property tm.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "TM single/multi-tape, building-block, and typed-outcome properties",
+      "regressions": {
+        "fixtureCount": 8,
+        "root": "test/fixtures/hard_edge/tm",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/tm_reachability_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "TmSimulationMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
+      "family": "tm",
+      "id": "tm:core.algorithms.tm_simulation_messages",
+      "issue": 338,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_tm.dart --property tm.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "TM single/multi-tape, building-block, and typed-outcome properties",
+      "regressions": {
+        "fixtureCount": 8,
+        "root": "test/fixtures/hard_edge/tm",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/tm_simulation_messages.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": true,
+        "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
+      },
+      "entryPoints": [
         "TMSimulationResult",
         "TMSimulator"
       ],
@@ -9127,6 +9650,36 @@
       },
       "role": "simulator",
       "sourcePath": "lib/core/algorithms/tm_simulator.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": false,
+        "rationale": "The entry point is synchronous and has no cancellation contract."
+      },
+      "entryPoints": [
+        "TmSpaceProfileMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
+      "family": "tm",
+      "id": "tm:core.algorithms.tm_space_profile_messages",
+      "issue": 338,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_tm.dart --property tm.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "TM single/multi-tape, building-block, and typed-outcome properties",
+      "regressions": {
+        "fixtureCount": 8,
+        "root": "test/fixtures/hard_edge/tm",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/tm_space_profile_messages.dart"
     },
     {
       "cancellation": {
@@ -9157,6 +9710,36 @@
       },
       "role": "profiler",
       "sourcePath": "lib/core/algorithms/tm_space_profiler.dart"
+    },
+    {
+      "cancellation": {
+        "applicable": true,
+        "rationale": "The production source exposes cancellation, stale-generation, or cooperative execution semantics."
+      },
+      "entryPoints": [
+        "TmTimeProfileMessages"
+      ],
+      "evidenceCommand": "flutter test test/unit/tool/hard_edge_tm_family_test.dart test/unit/core/tm test/unit/core/algorithms test/unit/core/services test/widget/presentation/tm_algorithm_execution_controller_test.dart test/widget/presentation/tm_algorithm_panel_test.dart",
+      "family": "tm",
+      "id": "tm:core.algorithms.tm_time_profile_messages",
+      "issue": 338,
+      "limits": {
+        "applicable": true,
+        "rationale": "The owner family command exercises the source limit or typed bounded outcome."
+      },
+      "mutation": {
+        "command": "dart run tool/hard_edge_tm.dart --property tm.mutations",
+        "inScope": true,
+        "rationale": "The owner family runs reviewed semantic mutation operators."
+      },
+      "propertyEvidence": "TM single/multi-tape, building-block, and typed-outcome properties",
+      "regressions": {
+        "fixtureCount": 8,
+        "root": "test/fixtures/hard_edge/tm",
+        "rationale": "Historical defects use minimized committed fixtures under the owner family root; zero defects must be recorded by that root index."
+      },
+      "role": "algorithm",
+      "sourcePath": "lib/core/algorithms/tm_time_profile_messages.dart"
     },
     {
       "cancellation": {
@@ -9690,6 +10273,12 @@
       "family": "tm",
       "issue": 338,
       "rationale": "Barrel or private support file with no public production entry point.",
+      "sourcePath": "lib/core/algorithms/tm_messages.dart"
+    },
+    {
+      "family": "tm",
+      "issue": 338,
+      "rationale": "Barrel or private support file with no public production entry point.",
       "sourcePath": "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_unrestricted_grammar.dart"
     },
     {
@@ -9887,15 +10476,15 @@
   "remotelyVerified": false,
   "schema": "turing-lab.repository-algorithm-inventory.v1",
   "summary": {
-    "entries": 302,
-    "excludedSupportFiles": 32,
+    "entries": 322,
+    "excludedSupportFiles": 33,
     "issues": {
-      "335": 48,
-      "336": 46,
-      "337": 20,
-      "338": 27,
-      "339": 49,
-      "340": 60,
+      "335": 49,
+      "336": 52,
+      "337": 21,
+      "338": 32,
+      "339": 54,
+      "340": 62,
       "341": 45,
       "342": 7
     }

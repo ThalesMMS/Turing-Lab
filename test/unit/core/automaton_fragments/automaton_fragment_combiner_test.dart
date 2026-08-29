@@ -39,7 +39,9 @@ void main() {
       expect(first.stateSourceMap, second.stateSourceMap);
       expect(first.transitionSourceMap, second.transitionSourceMap);
       expect(
-          (first.preview! as FSA).toJson(), (second.preview! as FSA).toJson());
+        (first.preview! as FSA).toJson(),
+        (second.preview! as FSA).toJson(),
+      );
       expect(first.stateSourceMap.values, everyElement(startsWith('import_')));
       expect(first.stateSourceMap.values.toSet().length, 2);
       expect(destination.toJson(), beforeDestination);
@@ -48,20 +50,21 @@ void main() {
       expect(combined.states, hasLength(4));
       expect(combined.transitions, hasLength(2));
       expect(combined.states.map((state) => state.id).toSet(), hasLength(4));
-      expect(combined.transitions.map((transition) => transition.id).toSet(),
-          hasLength(2));
       expect(
-          combined.states.where((state) => state.label == 'q0'), hasLength(2));
+        combined.transitions.map((transition) => transition.id).toSet(),
+        hasLength(2),
+      );
+      expect(
+        combined.states.where((state) => state.label == 'q0'),
+        hasLength(2),
+      );
       expect(combined.states.where((state) => state.isInitial), hasLength(1));
       expect(combined.initialState?.id, 'q0');
       final importedQ0 = combined.states.singleWhere(
         (state) => state.id == first.stateSourceMap['q0'],
       );
       expect(importedQ0.position, Vector2(200, 300));
-      expect(
-        first.provenanceByImportedId[importedQ0.id]?.elementId,
-        'q0',
-      );
+      expect(first.provenanceByImportedId[importedQ0.id]?.elementId, 'q0');
     });
 
     test('blocks an empty fragment without changing either input', () {
@@ -97,22 +100,24 @@ void main() {
       );
     });
 
-    test('imports a selected induced subgraph without dangling transitions',
-        () {
-      final source = _fsa('source');
-      final plan = AutomatonFragmentCombiner.prepare(
-        AutomatonFragmentRequest(
-          destination: _emptyFsa('destination'),
-          source: source,
-          selectedStateIds: const {'q1'},
-        ),
-      );
+    test(
+      'imports a selected induced subgraph without dangling transitions',
+      () {
+        final source = _fsa('source');
+        final plan = AutomatonFragmentCombiner.prepare(
+          AutomatonFragmentRequest(
+            destination: _emptyFsa('destination'),
+            source: source,
+            selectedStateIds: const {'q1'},
+          ),
+        );
 
-      expect(plan.canCommit, isTrue);
-      expect(plan.importedStateIds, hasLength(1));
-      expect(plan.importedTransitionIds, isEmpty);
-      expect((plan.preview! as FSA).transitions, isEmpty);
-    });
+        expect(plan.canCommit, isTrue);
+        expect(plan.importedStateIds, hasLength(1));
+        expect(plan.importedTransitionIds, isEmpty);
+        expect((plan.preview! as FSA).transitions, isEmpty);
+      },
+    );
 
     test('honors explicit transition selection', () {
       final plan = AutomatonFragmentCombiner.prepare(
@@ -126,6 +131,17 @@ void main() {
       expect(plan.canCommit, isTrue);
       expect(plan.importedStateIds, hasLength(2));
       expect(plan.importedTransitionIds, isEmpty);
+    });
+
+    test('stores dangling transition identity outside presentation prose', () {
+      const diagnostic = AutomatonFragmentDiagnostic(
+        code: AutomatonFragmentDiagnosticCode.danglingTransition,
+        severity: AutomatonFragmentDiagnosticSeverity.blocking,
+        message: 'compatibility description',
+        transitionId: 't0',
+      );
+
+      expect(diagnostic.transitionId, 't0');
     });
 
     test('unions alphabets and preserves an explicit epsilon alias', () {
@@ -297,10 +313,54 @@ void main() {
           AutomatonFragmentDiagnosticCode.pdaInitialStackSymbolConflict,
         }),
       );
+      expect(
+        plan.diagnostics.map((diagnostic) => diagnostic.normalized).toSet(),
+        {false},
+      );
     });
 
-    test('requires explicit normalization and retains destination semantics',
-        () {
+    test(
+      'requires explicit normalization and retains destination semantics',
+      () {
+        final plan = AutomatonFragmentCombiner.prepare(
+          AutomatonFragmentRequest(
+            destination: _pda(
+              'destination',
+              acceptanceMode: PDAAcceptanceMode.finalState,
+              initialStackSymbol: 'Z',
+            ),
+            source: _pda(
+              'source',
+              acceptanceMode: PDAAcceptanceMode.emptyStack,
+              initialStackSymbol: 'S',
+            ),
+            initialStatePolicy: ImportedInitialStatePolicy.keepDestination,
+            pdaAcceptanceResolution: PdaConflictResolution.useDestination,
+            pdaInitialStackResolution: PdaConflictResolution.useDestination,
+          ),
+        );
+
+        expect(plan.canCommit, isTrue);
+        final result = plan.preview! as PDA;
+        expect(result.acceptanceMode, PDAAcceptanceMode.finalState);
+        expect(result.initialStackSymbol, 'Z');
+        expect(result.stackAlphabet, containsAll({'Z', 'S'}));
+        expect(
+          plan.diagnostics.where(
+            (diagnostic) =>
+                diagnostic.severity ==
+                AutomatonFragmentDiagnosticSeverity.warning,
+          ),
+          hasLength(2),
+        );
+        expect(
+          plan.diagnostics.map((diagnostic) => diagnostic.normalized).toSet(),
+          {true},
+        );
+      },
+    );
+
+    test('identifies the connector kind without parsing prose', () {
       final plan = AutomatonFragmentCombiner.prepare(
         AutomatonFragmentRequest(
           destination: _pda(
@@ -310,28 +370,20 @@ void main() {
           ),
           source: _pda(
             'source',
-            acceptanceMode: PDAAcceptanceMode.emptyStack,
-            initialStackSymbol: 'S',
+            acceptanceMode: PDAAcceptanceMode.finalState,
+            initialStackSymbol: 'Z',
           ),
+          operation: AutomatonFragmentOperation.connector,
           initialStatePolicy: ImportedInitialStatePolicy.keepDestination,
-          pdaAcceptanceResolution: PdaConflictResolution.useDestination,
-          pdaInitialStackResolution: PdaConflictResolution.useDestination,
         ),
       );
 
-      expect(plan.canCommit, isTrue);
-      final result = plan.preview! as PDA;
-      expect(result.acceptanceMode, PDAAcceptanceMode.finalState);
-      expect(result.initialStackSymbol, 'Z');
-      expect(result.stackAlphabet, containsAll({'Z', 'S'}));
+      final diagnostic = plan.diagnostics.single;
       expect(
-        plan.diagnostics.where(
-          (diagnostic) =>
-              diagnostic.severity ==
-              AutomatonFragmentDiagnosticSeverity.warning,
-        ),
-        hasLength(2),
+        diagnostic.code,
+        AutomatonFragmentDiagnosticCode.connectorUnsupported,
       );
+      expect(diagnostic.connectorKind, AutomatonFragmentKind.pda);
     });
   });
 
@@ -371,10 +423,7 @@ void main() {
       expect(result.blockDefinitions, contains(clonedBlockId));
       expect(result.blockInvocations, hasLength(1));
       expect(result.blockInvocations.single.reference.blockId, clonedBlockId);
-      expect(
-        result.blockInvocations.single.stateId,
-        plan.stateSourceMap['q1'],
-      );
+      expect(result.blockInvocations.single.stateId, plan.stateSourceMap['q1']);
     });
 
     test('omits unrelated blocks when importing a selected subgraph', () {
@@ -474,12 +523,7 @@ FSA _fsa(String id, {double offset = 0}) {
     name: id,
     states: {q0, q1},
     transitions: <Transition>{
-      FSATransition(
-        id: 't0',
-        fromState: q0,
-        toState: q1,
-        inputSymbols: {'a'},
-      ),
+      FSATransition(id: 't0', fromState: q0, toState: q1, inputSymbols: {'a'}),
     },
     alphabet: {'a'},
     initialState: q0,
@@ -535,11 +579,7 @@ PDA _pda(
   );
 }
 
-TM _tm(
-  String id, {
-  int tapeCount = 1,
-  String blank = 'B',
-}) {
+TM _tm(String id, {int tapeCount = 1, String blank = 'B'}) {
   final now = DateTime.utc(2026, 8, 25);
   final q0 = State(
     id: 'q0',
@@ -603,49 +643,49 @@ TM _tmWithBlock(String id) {
 }
 
 MealyMachine _mealy(String id) => MealyMachine(
-      id: TransducerMachineId(id),
-      name: id,
-      revision: const TransducerRevision(1),
-      inputAlphabet: {const TransducerInputSymbol('a')},
-      outputAlphabet: {const TransducerOutputSymbol('out')},
-      states: const [
-        MealyState(
-          id: TransducerStateId('q0'),
-          label: 'q0',
-          position: TransducerPoint(0, 0),
-          isInitial: true,
-        ),
-        MealyState(
-          id: TransducerStateId('q1'),
-          label: 'q1',
-          position: TransducerPoint(100, 0),
-        ),
-      ],
-      transitions: [
-        MealyTransition(
-          id: const TransducerTransitionId('t0'),
-          from: const TransducerStateId('q0'),
-          to: const TransducerStateId('q1'),
-          input: const TransducerInputSymbol('a'),
-          output: TransducerOutputWord.fromValues(const ['out']),
-        ),
-      ],
-    );
+  id: TransducerMachineId(id),
+  name: id,
+  revision: const TransducerRevision(1),
+  inputAlphabet: {const TransducerInputSymbol('a')},
+  outputAlphabet: {const TransducerOutputSymbol('out')},
+  states: const [
+    MealyState(
+      id: TransducerStateId('q0'),
+      label: 'q0',
+      position: TransducerPoint(0, 0),
+      isInitial: true,
+    ),
+    MealyState(
+      id: TransducerStateId('q1'),
+      label: 'q1',
+      position: TransducerPoint(100, 0),
+    ),
+  ],
+  transitions: [
+    MealyTransition(
+      id: const TransducerTransitionId('t0'),
+      from: const TransducerStateId('q0'),
+      to: const TransducerStateId('q1'),
+      input: const TransducerInputSymbol('a'),
+      output: TransducerOutputWord.fromValues(const ['out']),
+    ),
+  ],
+);
 
 MooreMachine _moore(String id) => MooreMachine(
-      id: TransducerMachineId(id),
-      name: id,
-      revision: const TransducerRevision(1),
-      inputAlphabet: {const TransducerInputSymbol('a')},
-      outputAlphabet: {const TransducerOutputSymbol('out')},
-      states: [
-        MooreState(
-          id: const TransducerStateId('q0'),
-          label: 'q0',
-          position: const TransducerPoint(0, 0),
-          isInitial: true,
-          output: TransducerOutputWord.fromValues(const ['out']),
-        ),
-      ],
-      transitions: const [],
-    );
+  id: TransducerMachineId(id),
+  name: id,
+  revision: const TransducerRevision(1),
+  inputAlphabet: {const TransducerInputSymbol('a')},
+  outputAlphabet: {const TransducerOutputSymbol('out')},
+  states: [
+    MooreState(
+      id: const TransducerStateId('q0'),
+      label: 'q0',
+      position: const TransducerPoint(0, 0),
+      isInitial: true,
+      output: TransducerOutputWord.fromValues(const ['out']),
+    ),
+  ],
+  transitions: const [],
+);

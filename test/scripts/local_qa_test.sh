@@ -148,6 +148,14 @@ assert_output_contains format_fail \
 assert_output_contains format_fail \
     "python3 -m unittest discover -s test/tool -p '*_test.py'"
 
+NO_REPORT_DIR="$TMP_DIR/no-report"
+run_case format_no_report 0 "QA_STATUS format=passed" \
+    fake_qa --only format --base HEAD --report-dir "$NO_REPORT_DIR" --no-report
+if [ -e "$NO_REPORT_DIR" ]; then
+    echo "did not expect format artifacts at $NO_REPORT_DIR with --no-report" >&2
+    exit 1
+fi
+
 FORMAT_REPORT_DIR="$TMP_DIR/format-report"
 run_case format_report 0 "QA_STATUS format.arb-resources=passed" \
     fake_qa --only format --base HEAD --report-dir "$FORMAT_REPORT_DIR"
@@ -197,7 +205,7 @@ run_case preset_tm 0 "QA_STATUS unit=passed" fake_qa --preset tm --no-report
 assert_output_contains preset_tm "tm_validation_test.dart"
 
 run_case preset_localization 0 "QA_STATUS responsive=passed" \
-    fake_qa --preset localization --no-report
+    fake_qa --preset localization --base HEAD --no-report
 assert_output_contains preset_localization "QA_STATUS golden=not_run reason=not_selected"
 assert_output_contains preset_localization "QA_STATUS graphview=not_run reason=not_selected"
 

@@ -219,6 +219,19 @@ class EducationalContentValidatorTest(unittest.TestCase):
             )
         )
 
+    def test_string_list_map_requires_entry_separators(self) -> None:
+        errors: list[str] = []
+
+        result = CHECKER._string_list_map(
+            "const fixture = {'a': ['x'] 'b': ['y']};",
+            "const fixture =",
+            "fixture",
+            errors,
+        )
+
+        self.assertEqual(result, {"a": ["x"]})
+        self.assertEqual(errors, ["fixture entry 'a' has no separator"])
+
     def test_suggested_simulations_exclude_only_l_system_catalogs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = self._copy_fixture(Path(temporary))

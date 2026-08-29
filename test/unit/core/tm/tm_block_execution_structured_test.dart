@@ -13,9 +13,90 @@ import 'package:turing_lab/core/models/transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  State state(String id, {bool initial = false, bool accepting = false}) =>
+      State(
+        id: id,
+        label: id,
+        position: Vector2.zero(),
+        isInitial: initial,
+        isAccepting: accepting,
+      );
+
+  TMTransition transition(String id, State from, State to) => TMTransition(
+    id: id,
+    label: id,
+    fromState: from,
+    toState: to,
+    readSymbol: 'B',
+    writeSymbol: 'B',
+    direction: TapeDirection.stay,
+  );
+
+  TM machine({
+    required String id,
+    required Iterable<State> states,
+    Iterable<Transition> transitions = const [],
+    bool accepting = false,
+    Map<String, TMBlockDefinition> definitions = const {},
+    Iterable<TMBlockInvocationNode> invocations = const [],
+  }) {
+    final stateSet = states.toSet();
+    final initialStates = stateSet.where((candidate) => candidate.isInitial);
+    return TM(
+      id: id,
+      name: id,
+      states: stateSet,
+      transitions: transitions.toSet(),
+      alphabet: const {},
+      initialState: initialStates.isEmpty ? null : initialStates.first,
+      acceptingStates: accepting
+          ? stateSet.where((candidate) => candidate.isAccepting).toSet()
+          : const {},
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle<double>(0, 0, 100, 100),
+      tapeAlphabet: const {'B'},
+      blockDefinitions: definitions,
+      blockInvocations: invocations,
+    );
+  }
+
+  TMBlockProject project() {
+    final rootCall = state('root-call', initial: true);
+    final rootAccept = state('root-accept', accepting: true);
+    final childStart = state('child-start', initial: true);
+    final childHalt = state('child-halt');
+    final child = TMBlockDefinition(
+      id: 'child',
+      name: 'Child',
+      revision: 1,
+      machine: machine(
+        id: 'child-machine',
+        states: [childStart, childHalt],
+        transitions: [transition('child-step', childStart, childHalt)],
+      ),
+    );
+    return TMBlockProject(
+      rootMachine: machine(
+        id: 'root',
+        states: [rootCall, rootAccept],
+        transitions: [transition('root-accept', rootCall, rootAccept)],
+        accepting: true,
+        definitions: {'child': child},
+        invocations: [
+          const TMBlockInvocationNode(
+            id: 'call-child',
+            stateId: 'root-call',
+            reference: TMBlockReference(blockId: 'child', revision: 1),
+          ),
+        ],
+      ),
+    );
+  }
+
   group('TM building-block execution structured messages', () {
     test('attaches locale-neutral payloads to every trace action', () {
-      final result = TMBlockExecutionEngine.execute(_project(), '');
+      final result = TMBlockExecutionEngine.execute(project(), '');
 
       expect(result.outcome.name, 'accepted');
       expect(result.trace.map((step) => step.action), [
@@ -58,7 +139,7 @@ void main() {
     });
 
     test('serializes trace payloads without dropping legacy fields', () {
-      final trace = TMBlockExecutionEngine.execute(_project(), '').trace;
+      final trace = TMBlockExecutionEngine.execute(project(), '').trace;
       final encoded = trace.map((step) => step.toJson()).toList();
 
       expect(encoded[0]['action'], 'enterBlock');
@@ -78,14 +159,14 @@ void main() {
         id: 'child',
         name: 'Child',
         revision: 1,
-        machine: _machine(
+        machine: machine(
           id: 'child-machine',
-          states: [_state('child-start', initial: true)],
+          states: [state('child-start', initial: true)],
         ),
       );
-      final rootState = _state('root-call', initial: true, accepting: true);
+      final rootState = state('root-call', initial: true, accepting: true);
       final project = TMBlockProject(
-        rootMachine: _machine(
+        rootMachine: machine(
           id: 'root',
           states: [rootState],
           accepting: true,
@@ -118,88 +199,4 @@ void main() {
       );
     });
   });
-}
-
-TMBlockProject _project() {
-  final rootCall = _state('root-call', initial: true);
-  final rootAccept = _state('root-accept', accepting: true);
-  final childStart = _state('child-start', initial: true);
-  final childHalt = _state('child-halt');
-  final child = TMBlockDefinition(
-    id: 'child',
-    name: 'Child',
-    revision: 1,
-    machine: _machine(
-      id: 'child-machine',
-      states: [childStart, childHalt],
-      transitions: [_transition('child-step', childStart, childHalt)],
-    ),
-  );
-  return TMBlockProject(
-    rootMachine: _machine(
-      id: 'root',
-      states: [rootCall, rootAccept],
-      transitions: [_transition('root-accept', rootCall, rootAccept)],
-      accepting: true,
-      definitions: {'child': child},
-      invocations: [
-        const TMBlockInvocationNode(
-          id: 'call-child',
-          stateId: 'root-call',
-          reference: TMBlockReference(blockId: 'child', revision: 1),
-        ),
-      ],
-    ),
-  );
-}
-
-State _state(String id, {bool initial = false, bool accepting = false}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: initial,
-      isAccepting: accepting,
-    );
-
-TM _machine({
-  required String id,
-  required Iterable<State> states,
-  Iterable<Transition> transitions = const [],
-  bool accepting = false,
-  Map<String, TMBlockDefinition> definitions = const {},
-  Iterable<TMBlockInvocationNode> invocations = const [],
-}) {
-  final stateSet = states.toSet();
-  return TM(
-    id: id,
-    name: id,
-    states: stateSet,
-    transitions: transitions.toSet(),
-    alphabet: const {},
-    initialState: stateSet.where((state) => state.isInitial).firstOrNull,
-    acceptingStates: accepting
-        ? stateSet.where((state) => state.isAccepting).toSet()
-        : const {},
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle<double>(0, 0, 100, 100),
-    tapeAlphabet: const {'B'},
-    blockDefinitions: definitions,
-    blockInvocations: invocations,
-  );
-}
-
-TMTransition _transition(String id, State from, State to) => TMTransition(
-  id: id,
-  label: id,
-  fromState: from,
-  toState: to,
-  readSymbol: 'B',
-  writeSymbol: 'B',
-  direction: TapeDirection.stay,
-);
-
-extension<T> on Iterable<T> {
-  T? get firstOrNull => this.isEmpty ? null : first;
 }

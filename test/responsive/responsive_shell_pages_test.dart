@@ -8,6 +8,7 @@
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/presentation/pages/about_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
@@ -80,23 +81,32 @@ class _LanguageComparisonHost extends StatelessWidget {
 EquivalenceComparisonResult _comparisonFixture() {
   final automatonA = buildResponsiveFsaFixture();
   final automatonB = buildResponsiveFsaFixture();
+  final steps = <Map<String, dynamic>>[
+    {
+      'type': 'initialization',
+      'description': 'Initialize product automaton construction',
+    },
+    {
+      'type': 'bfs_explore_pair',
+      'description': 'Exploring state (q0,p0)',
+      'data': {'stateA': 'q0', 'stateB': 'p0'},
+    },
+    {
+      'type': 'bfs_distinguishing_found',
+      'description': 'Found distinguishing string: aab',
+      'data': {'distinguishingString': 'aab'},
+    },
+  ];
   return EquivalenceComparisonResult(
     originalAutomaton: automatonA,
     comparedAutomaton: automatonB,
     isEquivalent: false,
     distinguishingString: 'aab',
     productAutomaton: automatonA,
-    steps: const [
-      {
-        'type': 'initialization',
-        'description': 'Initialize product automaton construction',
-      },
-      {'type': 'bfs_exploration', 'description': 'Exploring state (q0,p0)'},
-      {
-        'type': 'counterexample_found',
-        'description': 'Found distinguishing string: aab',
-      },
-    ],
+    steps: steps,
+    structuredSteps: steps
+        .map(LanguageComparisonStepMessages.fromLegacyStep)
+        .toList(growable: false),
     executionTimeMs: 87,
     timestamp: DateTime.utc(2026, 1, 1),
   );

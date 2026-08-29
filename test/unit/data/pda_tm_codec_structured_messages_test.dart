@@ -95,10 +95,32 @@ void main() {
     final encoded = PdaJsonDocumentCodec().encode(document);
     expect(encoded, isA<CodecSuccess<EncodedDocument>>());
 
+    final malformedJson =
+        jsonDecode(
+              utf8.decode(
+                (encoded as CodecSuccess<EncodedDocument>).value.bytes,
+              ),
+            )
+            as Map<String, dynamic>;
+    final malformedPayload =
+        (malformedJson['document'] as Map<String, dynamic>)['payload']
+            as Map<String, dynamic>;
+    malformedPayload['stackAlphabet'] = <String>[];
+
     final malformed = PdaJsonDocumentCodec().decode(
-      _payload('{"format":"turing-lab.document","document":{}}'),
+      _payload(jsonEncode(malformedJson)),
     );
     expect(malformed, isNot(isA<CodecSuccess<Object>>()));
+    final expectedMalformedMessage = PdaJsonMessages.invalidDocument();
+    expect(
+      (malformed as CodecMalformed<InteroperableDocument<Object>>)
+          .structuredMessage,
+      isNotNull,
+    );
+    expect(
+      malformed.structuredMessage!.toJson(),
+      expectedMalformedMessage.toJson(),
+    );
 
     _expectRoundTrip(PdaJsonMessages.invalidDocument());
     _expectRoundTrip(PdaJsonMessages.unexpectedDocumentType());

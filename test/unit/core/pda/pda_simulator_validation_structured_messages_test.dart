@@ -11,6 +11,7 @@ import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  const unset = Object();
   final initial = State(
     id: 'q0',
     label: 'q0',
@@ -26,7 +27,7 @@ void main() {
 
   PDA pda({
     Set<State>? states,
-    Object? initialState = _unset,
+    Object? initialState = unset,
     Set<State>? acceptingStates,
   }) => PDA(
     id: 'validation-test',
@@ -34,7 +35,7 @@ void main() {
     states: states ?? {initial},
     transitions: const {},
     alphabet: const {},
-    initialState: identical(initialState, _unset)
+    initialState: identical(initialState, unset)
         ? initial
         : initialState as State?,
     acceptingStates: acceptingStates ?? const {},
@@ -149,5 +150,3 @@ void main() {
     }
   });
 }
-
-const Object _unset = Object();

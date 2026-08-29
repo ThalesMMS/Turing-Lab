@@ -10,7 +10,45 @@ import 'package:turing_lab/core/models/transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
-  final pda = _acceptsA();
+  PDA acceptsA({Set<State>? states}) {
+    final q0 = State(
+      id: 'q0',
+      label: 'q0',
+      position: Vector2.zero(),
+      isInitial: true,
+    );
+    final q1 = State(
+      id: 'q1',
+      label: 'q1',
+      position: Vector2(100, 0),
+      isAccepting: true,
+    );
+    final transition = PDATransition(
+      id: 't0',
+      fromState: q0,
+      toState: q1,
+      inputSymbol: 'a',
+      popSymbol: 'Z',
+      pushSymbol: 'Z',
+      label: 'a,Z/Z',
+    );
+    return PDA(
+      id: 'accepts-a',
+      name: 'Accepts a',
+      states: states ?? {q0, q1},
+      transitions: <Transition>{transition},
+      alphabet: const {'a'},
+      initialState: q0,
+      acceptingStates: {q1},
+      stackAlphabet: const {'Z'},
+      initialStackSymbol: 'Z',
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 300, 200),
+    );
+  }
+
+  final pda = acceptsA();
 
   test('resource outcomes carry stable structured messages', () {
     final timeout = PDASimulator.simulateNPDA(pda, 'a', timeout: Duration.zero);
@@ -109,7 +147,7 @@ void main() {
   });
 
   test('accepts and string generation preserve structured failures', () {
-    final invalid = _acceptsA(states: const {});
+    final invalid = acceptsA(states: const {});
     final accepted = PDASimulator.findAcceptedStrings(invalid, 0);
     final rejected = PDASimulator.findRejectedStrings(invalid, 0);
 
@@ -124,42 +162,4 @@ void main() {
       'pda.simulation.rejected-strings-failure',
     );
   });
-}
-
-PDA _acceptsA({Set<State>? states}) {
-  final q0 = State(
-    id: 'q0',
-    label: 'q0',
-    position: Vector2.zero(),
-    isInitial: true,
-  );
-  final q1 = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(100, 0),
-    isAccepting: true,
-  );
-  final transition = PDATransition(
-    id: 't0',
-    fromState: q0,
-    toState: q1,
-    inputSymbol: 'a',
-    popSymbol: 'Z',
-    pushSymbol: 'Z',
-    label: 'a,Z/Z',
-  );
-  return PDA(
-    id: 'accepts-a',
-    name: 'Accepts a',
-    states: states ?? {q0, q1},
-    transitions: <Transition>{transition},
-    alphabet: const {'a'},
-    initialState: q0,
-    acceptingStates: {q1},
-    stackAlphabet: const {'Z'},
-    initialStackSymbol: 'Z',
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 300, 200),
-  );
 }

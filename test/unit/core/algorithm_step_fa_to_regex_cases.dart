@@ -478,13 +478,27 @@ void _registerFaToRegexStepTests() {
 
       expect(
         step.eliminationSummary,
-        step.eliminationSummaryMessage.stableCode,
+        '${step.eliminationSummaryMessage.stableCode}.with-state',
       );
       expect(step.eliminationSummaryMessage.arguments['state']?.value, 'q1');
       expect(
         step.eliminationSummaryMessage.arguments['incoming-state-count']?.value,
         1,
       );
+
+      final validation = FAToRegexStep.validation(
+        id: 'step-without-state',
+        stepNumber: 0,
+        stateCount: 2,
+        transitionCount: 1,
+        hasInitialState: true,
+        hasAcceptingStates: true,
+      );
+      expect(
+        validation.eliminationSummary,
+        '${validation.eliminationSummaryMessage.stableCode}.no-state',
+      );
+      expect(validation.eliminationSummary, isNot(step.eliminationSummary));
     });
   });
 }

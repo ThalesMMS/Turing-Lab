@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/constants/automaton_canvas_constants.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_building_blocks.dart';
@@ -98,8 +99,9 @@ void main() {
       controller.dispose();
 
       expect(
-        () => transformation.value = Matrix4.identity()
-          ..translateByDouble(1.0, 0.0, 0.0, 1.0),
+        () =>
+            transformation.value = Matrix4.identity()
+              ..translateByDouble(1.0, 0.0, 0.0, 1.0),
         returnsNormally,
       );
       transformation.dispose();
@@ -124,7 +126,7 @@ void main() {
       expect(viewController.lastTarget, isNotNull);
       expect(
         viewController.lastTarget!.getMaxScaleOnAxis(),
-        closeTo(1.0, 0.0001),
+        closeTo(kAutomatonCanvasFitMaxScale, 0.0001),
       );
     });
 
@@ -142,38 +144,40 @@ void main() {
       expect(edge.writeSymbol, equals('b'));
     });
 
-    test('clearCanvas preserves TM configuration and participates in history',
-        () {
-      final tm = buildSampleTm().copyWith(
-        alphabet: {'a', 'b', 'unused-input'},
-        tapeAlphabet: {'a', 'b', 'B', 'unused-tape'},
-        blankSymbol: 'B',
-        tapeCount: 3,
-      );
-      notifier.setTm(tm);
-      controller.synchronize(tm);
+    test(
+      'clearCanvas preserves TM configuration and participates in history',
+      () {
+        final tm = buildSampleTm().copyWith(
+          alphabet: {'a', 'b', 'unused-input'},
+          tapeAlphabet: {'a', 'b', 'B', 'unused-tape'},
+          blankSymbol: 'B',
+          tapeCount: 3,
+        );
+        notifier.setTm(tm);
+        controller.synchronize(tm);
 
-      expect(controller.clearCanvas(), isTrue);
-      final cleared = notifier.state.tm;
-      expect(cleared, isNotNull);
-      expect(cleared!.id, 'tm-1');
-      expect(cleared.name, 'Sample TM');
-      expect(cleared.alphabet, {'a', 'b', 'unused-input'});
-      expect(cleared.tapeAlphabet, {'a', 'b', 'B', 'unused-tape'});
-      expect(cleared.blankSymbol, 'B');
-      expect(cleared.tapeCount, 3);
-      expect(cleared.states, isEmpty);
-      expect(cleared.transitions, isEmpty);
-      expect(controller.clearCanvas(), isFalse);
+        expect(controller.clearCanvas(), isTrue);
+        final cleared = notifier.state.tm;
+        expect(cleared, isNotNull);
+        expect(cleared!.id, 'tm-1');
+        expect(cleared.name, 'Sample TM');
+        expect(cleared.alphabet, {'a', 'b', 'unused-input'});
+        expect(cleared.tapeAlphabet, {'a', 'b', 'B', 'unused-tape'});
+        expect(cleared.blankSymbol, 'B');
+        expect(cleared.tapeCount, 3);
+        expect(cleared.states, isEmpty);
+        expect(cleared.transitions, isEmpty);
+        expect(controller.clearCanvas(), isFalse);
 
-      expect(controller.undo(), isTrue);
-      expect(notifier.state.tm!.states, hasLength(2));
-      expect(notifier.state.tm!.tmTransitions, hasLength(1));
+        expect(controller.undo(), isTrue);
+        expect(notifier.state.tm!.states, hasLength(2));
+        expect(notifier.state.tm!.tmTransitions, hasLength(1));
 
-      expect(controller.redo(), isTrue);
-      expect(notifier.state.tm!.states, isEmpty);
-      expect(notifier.state.tm!.transitions, isEmpty);
-    });
+        expect(controller.redo(), isTrue);
+        expect(notifier.state.tm!.states, isEmpty);
+        expect(notifier.state.tm!.transitions, isEmpty);
+      },
+    );
 
     test('complete replacement preserves TM blocks across undo and redo', () {
       final destination = buildSampleTm();
@@ -326,8 +330,9 @@ void main() {
       controller.addStateAt(const Offset(160, 100));
       notifier.setTapeCount(2);
       controller.synchronize(notifier.state.tm);
-      final stateIds =
-          notifier.state.tm!.states.map((state) => state.id).toList();
+      final stateIds = notifier.state.tm!.states
+          .map((state) => state.id)
+          .toList();
 
       controller.addOrUpdateTransitionVectors(
         fromStateId: stateIds.first,
@@ -340,10 +345,7 @@ void main() {
       var transition = notifier.state.tm!.tmTransitions.single;
       expect(transition.readSymbols, ['1', 'B']);
       expect(transition.writeSymbols, ['B', '1']);
-      expect(
-        transition.directions,
-        [TapeDirection.right, TapeDirection.stay],
-      );
+      expect(transition.directions, [TapeDirection.right, TapeDirection.stay]);
       expect(controller.edgeById(transition.id)!.tmReadSymbols, ['1', 'B']);
 
       expect(controller.undo(), isTrue);
@@ -353,40 +355,40 @@ void main() {
       transition = notifier.state.tm!.tmTransitions.single;
       expect(transition.readSymbols, ['1', 'B']);
       expect(transition.writeSymbols, ['B', '1']);
-      expect(
-        transition.directions,
-        [TapeDirection.right, TapeDirection.stay],
-      );
+      expect(transition.directions, [TapeDirection.right, TapeDirection.stay]);
     });
 
-    test('partial transition update preserves operation and moves its label',
-        () {
-      final tm = buildSampleTm();
-      notifier.setTm(tm);
-      controller.synchronize(tm);
+    test(
+      'partial transition update preserves operation and moves its label',
+      () {
+        final tm = buildSampleTm();
+        notifier.setTm(tm);
+        controller.synchronize(tm);
 
-      controller.addOrUpdateTransition(
-        fromStateId: 'q0',
-        toStateId: 'q1',
-        transitionId: 't0',
-        controlPointX: 73,
-        controlPointY: 91,
-      );
+        controller.addOrUpdateTransition(
+          fromStateId: 'q0',
+          toStateId: 'q1',
+          transitionId: 't0',
+          controlPointX: 73,
+          controlPointY: 91,
+        );
 
-      final transition = notifier.state.tm!.tmTransitions.single;
-      expect(transition.readSymbol, 'a');
-      expect(transition.writeSymbol, 'b');
-      expect(transition.direction, TapeDirection.right);
-      expect(transition.controlPoint, Vector2(73, 91));
-      expect(controller.edgeById('t0')!.controlPointX, 73);
-      expect(controller.edgeById('t0')!.controlPointY, 91);
-    });
+        final transition = notifier.state.tm!.tmTransitions.single;
+        expect(transition.readSymbol, 'a');
+        expect(transition.writeSymbol, 'b');
+        expect(transition.direction, TapeDirection.right);
+        expect(transition.controlPoint, Vector2(73, 91));
+        expect(controller.edgeById('t0')!.controlPointX, 73);
+        expect(controller.edgeById('t0')!.controlPointY, 91);
+      },
+    );
 
     test('addOrUpdateTransition preserves a multi-tape target', () {
       controller.addStateAt(const Offset(0, 0));
       controller.addStateAt(const Offset(160, 100));
-      final stateIds =
-          notifier.state.tm!.states.map((state) => state.id).toList();
+      final stateIds = notifier.state.tm!.states
+          .map((state) => state.id)
+          .toList();
 
       controller.addOrUpdateTransition(
         fromStateId: stateIds.first,

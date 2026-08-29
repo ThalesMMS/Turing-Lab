@@ -485,6 +485,25 @@ class ArbResourceValidatorTest(unittest.TestCase):
             any("plural selector is invalid: banana" in error for error in errors)
         )
 
+    def test_duplicate_plural_offsets_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self._copy_fixture(Path(temporary))
+            for locale in ("en", "pt"):
+                self._mutate_json(
+                    root,
+                    locale,
+                    lambda document: document.__setitem__(
+                        "summary",
+                        "{count, plural, offset:1 offset:2 other{{count} files}}",
+                    ),
+                )
+
+            errors = self._validate(root)
+
+        self.assertTrue(
+            any("duplicate plural offset" in error for error in errors)
+        )
+
     def test_number_argument_requires_numeric_placeholder_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = self._copy_fixture(Path(temporary))

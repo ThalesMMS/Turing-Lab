@@ -209,7 +209,9 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            step.properties[fsaKleeneStarTitleMessageProperty] as Map,
+            step.properties[FsaKleeneStarMessages
+                    .FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY]
+                as Map,
           ),
         ).stableCode,
         step.title,

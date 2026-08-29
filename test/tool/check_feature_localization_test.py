@@ -109,6 +109,25 @@ class FeatureLocalizationValidatorTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_undeclared_message_placeholder_drift_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self._copy_fixture(Path(temporary))
+            messages = {
+                "app_en.arb": "Feature {undeclared}",
+                "app_pt.arb": "Recurso",
+            }
+            for filename, message in messages.items():
+                path = root / filename
+                arb = json.loads(path.read_text(encoding="utf-8"))
+                arb["featureLabel"] = message
+                path.write_text(json.dumps(arb), encoding="utf-8")
+
+            errors = self._validate(root)
+
+        self.assertTrue(
+            any("message placeholders differ for featureLabel" in error for error in errors)
+        )
+
     def test_unowned_residual_parity_row_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = self._copy_fixture(Path(temporary))

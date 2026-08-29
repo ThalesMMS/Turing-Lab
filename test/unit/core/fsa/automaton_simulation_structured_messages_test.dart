@@ -11,44 +11,44 @@ import 'package:turing_lab/l10n/app_localizations_pt.dart';
 import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-FSA _dfa() {
-  final initial = State(
-    id: 'q0-id',
-    label: 'q0',
-    position: Vector2.zero(),
-    isInitial: true,
-  );
-  final accepting = State(
-    id: 'q1-id',
-    label: 'q1',
-    position: Vector2(100, 0),
-    isAccepting: true,
-  );
-  return FSA(
-    id: 'structured-dfa',
-    name: 'Structured DFA',
-    states: {initial, accepting},
-    transitions: {
-      FSATransition(
-        id: 'q0-q1-a',
-        fromState: initial,
-        toState: accepting,
-        inputSymbols: {'a'},
-        label: 'a',
-      ),
-    },
-    alphabet: {'a'},
-    initialState: initial,
-    acceptingStates: {accepting},
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 200, 100),
-  );
-}
-
 void main() {
+  FSA dfa() {
+    final initial = State(
+      id: 'q0-id',
+      label: 'q0',
+      position: Vector2.zero(),
+      isInitial: true,
+    );
+    final accepting = State(
+      id: 'q1-id',
+      label: 'q1',
+      position: Vector2(100, 0),
+      isAccepting: true,
+    );
+    return FSA(
+      id: 'structured-dfa',
+      name: 'Structured DFA',
+      states: {initial, accepting},
+      transitions: {
+        FSATransition(
+          id: 'q0-q1-a',
+          fromState: initial,
+          toState: accepting,
+          inputSymbols: {'a'},
+          label: 'a',
+        ),
+      },
+      alphabet: {'a'},
+      initialState: initial,
+      acceptingStates: {accepting},
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 200, 100),
+    );
+  }
+
   test('DFA validation and rejection expose structured messages', () async {
-    final invalid = await AutomatonSimulator.simulateDFA(_dfa(), 'b');
+    final invalid = await AutomatonSimulator.simulateDFA(dfa(), 'b');
     expect(invalid.isFailure, isTrue);
     expect(invalid.structuredError, isNotNull);
     expect(
@@ -57,16 +57,16 @@ void main() {
     );
     expect(invalid.structuredError!.arguments['symbol']!.value, 'b');
 
-    final rejected = await AutomatonSimulator.simulateDFA(_dfa(), '');
+    final rejected = await AutomatonSimulator.simulateDFA(dfa(), '');
     expect(rejected.isSuccess, isTrue);
     expect(rejected.data!.message, isNotNull);
     expect(
       rejected.data!.message!.stableCode,
       'automaton.simulation.rejected-no-accepting-state',
     );
-    final accepted = await AutomatonSimulator.simulateDFA(_dfa(), 'a');
+    final accepted = await AutomatonSimulator.simulateDFA(dfa(), 'a');
     expect(accepted.isSuccess, isTrue);
-    final noTransition = await AutomatonSimulator.simulateDFA(_dfa(), 'aa');
+    final noTransition = await AutomatonSimulator.simulateDFA(dfa(), 'aa');
     expect(noTransition.isSuccess, isTrue);
     expect(noTransition.data!.message, isNotNull);
     expect(
@@ -81,7 +81,7 @@ void main() {
 
   test('step explanations carry locale-neutral trace messages', () async {
     final result = await AutomatonSimulator.simulateDFA(
-      _dfa(),
+      dfa(),
       'a',
       stepByStep: true,
     );

@@ -7,9 +7,30 @@ import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 
 void main() {
+  Grammar buildGrammar({
+    String startSymbol = 'S',
+    Set<String> terminals = const {'a', 'b'},
+    Set<String> nonterminals = const {'S'},
+    Set<Production>? productions,
+  }) => Grammar(
+    id: 'cfg',
+    name: 'CFG',
+    terminals: terminals,
+    nonterminals: nonterminals,
+    startSymbol: startSymbol,
+    productions:
+        productions ??
+        {
+          const Production(id: 'p0', leftSide: ['S'], rightSide: ['a']),
+        },
+    type: GrammarType.contextFree,
+    created: DateTime.utc(2026),
+    modified: DateTime.utc(2026),
+  );
+
   test('validation diagnostics carry typed messages and legacy fields', () {
     final report = CfgToPdaConverter.buildLl(
-      _grammar(
+      buildGrammar(
         productions: {
           const Production(id: 'duplicate', leftSide: ['S'], rightSide: ['a']),
           const Production(id: 'duplicate', leftSide: ['S'], rightSide: ['b']),
@@ -56,7 +77,7 @@ void main() {
 
   test('start-symbol diagnostics preserve symbols as typed arguments', () {
     final report = CfgToPdaConverter.buildLl(
-      _grammar(startSymbol: 'X'),
+      buildGrammar(startSymbol: 'X'),
       sourceRevision: 1,
     );
     final diagnostic = report.diagnostics.single;
@@ -71,7 +92,7 @@ void main() {
 
   test('LL conflicts carry locale-neutral conflict context', () {
     final report = CfgToPdaConverter.buildLl(
-      _grammar(
+      buildGrammar(
         terminals: {'a'},
         productions: {
           const Production(id: 'p1', leftSide: ['S'], rightSide: ['a']),
@@ -105,24 +126,3 @@ void main() {
     expect(restored.arguments['symbol']!.role, 'grammar-symbol');
   });
 }
-
-Grammar _grammar({
-  String startSymbol = 'S',
-  Set<String> terminals = const {'a', 'b'},
-  Set<String> nonterminals = const {'S'},
-  Set<Production>? productions,
-}) => Grammar(
-  id: 'cfg',
-  name: 'CFG',
-  terminals: terminals,
-  nonterminals: nonterminals,
-  startSymbol: startSymbol,
-  productions:
-      productions ??
-      {
-        const Production(id: 'p0', leftSide: ['S'], rightSide: ['a']),
-      },
-  type: GrammarType.contextFree,
-  created: DateTime.utc(2026),
-  modified: DateTime.utc(2026),
-);

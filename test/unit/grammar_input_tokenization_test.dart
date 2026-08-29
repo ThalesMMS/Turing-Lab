@@ -148,5 +148,17 @@ void main() {
       ).recognizeWithReport('i?');
       expect(earleyReport.structuredMessage, result.structuredError);
     });
+
+    test('invalid non-BMP symbols remain intact in diagnostics', () {
+      expect(
+        GrammarInputTokenizer.firstInvalidSymbol(longestTokenGrammar, '🙂'),
+        '🙂',
+      );
+
+      final result = GrammarInputTokenizer.tokenize(longestTokenGrammar, '🙂');
+      expect(result.isFailure, isTrue);
+      expect(result.structuredError?.arguments['symbol']?.value, '🙂');
+      expect(result.structuredError?.arguments['position']?.value, 0);
+    });
   });
 }

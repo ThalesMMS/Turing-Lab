@@ -83,4 +83,28 @@ void main() {
     expect(en.resolveStructuredMessage(loop), contains('infinite loop'));
     expect(pt.resolveStructuredMessage(loop), contains('loop infinito'));
   });
+
+  test('path node copyWith replaces either description representation', () {
+    final message = AutomatonSimulationMessages.nfaNotAccepted();
+    const legacyNode = NFAPathNode(
+      currentState: 'q0',
+      remainingInput: 'a',
+      stepNumber: 0,
+      description: 'Legacy description',
+    );
+    final structuredNode = legacyNode.copyWith(descriptionMessage: message);
+
+    expect(structuredNode.description, isNull);
+    expect(structuredNode.descriptionMessage, message);
+
+    final restoredLegacy = structuredNode.copyWith(
+      description: 'Replacement description',
+    );
+    expect(restoredLegacy.description, 'Replacement description');
+    expect(restoredLegacy.descriptionMessage, isNull);
+
+    final unchanged = structuredNode.copyWith();
+    expect(unchanged.description, isNull);
+    expect(unchanged.descriptionMessage, message);
+  });
 }

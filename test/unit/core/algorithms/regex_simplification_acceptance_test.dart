@@ -153,11 +153,28 @@ void main() {
 
       final step = ruleSteps.first;
       expect(step.ruleExplanation, isNotEmpty);
-      expect(
-        step.ruleExplanation,
-        step.ruleApplied!.descriptionMessage.stableCode,
-      );
+      expect(step.ruleExplanation, step.ruleApplied!.description);
       expect(step.ruleExplanationMessage, step.ruleApplied!.descriptionMessage);
+    });
+
+    test('compatibility identifiers retain rule and step-type identity', () {
+      expect(
+        SimplificationRule.values.map((rule) => rule.description).toSet(),
+        hasLength(SimplificationRule.values.length),
+      );
+      expect(
+        RegexSimplificationStepType.values
+            .map((type) => type.displayName)
+            .toSet(),
+        hasLength(RegexSimplificationStepType.values.length),
+      );
+
+      final result = RegexSimplifier.simplifyWithSteps('(a|∅)ε');
+      final ruleSteps = result.data!.ruleApplicationSteps;
+      expect(
+        ruleSteps.map((step) => step.ruleSummary).toSet(),
+        hasLength(ruleSteps.length),
+      );
     });
 
     test('complex expression shows multiple rule applications', () {

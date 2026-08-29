@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/annotations/annotations.dart';
@@ -39,80 +40,111 @@ void main() {
         isA<CodecSuccess<InteroperableDocument<Object>>>(),
         reason: fixture,
       );
-      final pda = (decoded as CodecSuccess<InteroperableDocument<Object>>)
-          .value
-          .document as PDA;
+      final pda =
+          (decoded as CodecSuccess<InteroperableDocument<Object>>)
+                  .value
+                  .document
+              as PDA;
       expect(pda.initialState?.id, 'q0');
       expect(pda.pdaTransitions.single.pushSymbols, ['A', 'Z']);
     }
   });
 
-  test('canonical JSON preserves tokens, epsilon flags, mode, and extensions',
-      () {
-    final source = _document(
-      extensions: DocumentExtensionBag({
-        'future': {'kept': true}
-      }),
-    );
-    final encoded =
-        PdaJsonDocumentCodec().encode(source) as CodecSuccess<EncodedDocument>;
-    final decoded = PdaJsonDocumentCodec().decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'machine.data'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
-    final pda = decoded.value.document as PDA;
+  test(
+    'canonical JSON preserves tokens, epsilon flags, mode, and extensions',
+    () {
+      final source = _document(
+        extensions: DocumentExtensionBag({
+          'future': {'kept': true},
+        }),
+      );
+      final encoded =
+          PdaJsonDocumentCodec().encode(source)
+              as CodecSuccess<EncodedDocument>;
+      final decoded =
+          PdaJsonDocumentCodec().decode(
+                DocumentPayload(
+                  bytes: encoded.value.bytes,
+                  filename: 'machine.data',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
+      final pda = decoded.value.document as PDA;
 
-    expect(encoded.fidelity, DocumentFidelity.exact);
-    expect(pda.acceptanceMode, PDAAcceptanceMode.both);
-    expect(pda.initialStackSymbol, 'BOTTOM');
-    expect(pda.pdaTransitions.single.pushSymbols, ['LONG', 'BOTTOM']);
-    expect(pda.pdaTransitions.single.isLambdaPop, isFalse);
-    expect(decoded.value.extensions.values['future'], {'kept': true});
-  });
+      expect(encoded.fidelity, DocumentFidelity.exact);
+      expect(pda.acceptanceMode, PDAAcceptanceMode.both);
+      expect(pda.initialStackSymbol, 'BOTTOM');
+      expect(pda.pdaTransitions.single.pushSymbols, ['LONG', 'BOTTOM']);
+      expect(pda.pdaTransitions.single.isLambdaPop, isFalse);
+      expect(decoded.value.extensions.values['future'], {'kept': true});
+    },
+  );
 
   test('both codecs preserve every local acceptance mode', () {
     for (final mode in PDAAcceptanceMode.values) {
       final source = _document(acceptanceMode: mode);
-      final json = PdaJsonDocumentCodec().encode(source)
-          as CodecSuccess<EncodedDocument>;
-      final jsonDecoded = PdaJsonDocumentCodec().decode(
-        DocumentPayload(bytes: json.value.bytes, filename: 'machine.json'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final json =
+          PdaJsonDocumentCodec().encode(source)
+              as CodecSuccess<EncodedDocument>;
+      final jsonDecoded =
+          PdaJsonDocumentCodec().decode(
+                DocumentPayload(
+                  bytes: json.value.bytes,
+                  filename: 'machine.json',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect((jsonDecoded.value.document as PDA).acceptanceMode, mode);
 
-      final xml = const PdaJflapDocumentCodec().encode(source)
-          as CodecSuccess<EncodedDocument>;
-      final xmlDecoded = const PdaJflapDocumentCodec().decode(
-        DocumentPayload(bytes: xml.value.bytes, filename: 'machine.jff'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final xml =
+          const PdaJflapDocumentCodec().encode(source)
+              as CodecSuccess<EncodedDocument>;
+      final xmlDecoded =
+          const PdaJflapDocumentCodec().decode(
+                DocumentPayload(
+                  bytes: xml.value.bytes,
+                  filename: 'machine.jff',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       expect((xmlDecoded.value.document as PDA).acceptanceMode, mode);
     }
   });
 
-  test('Turing Lab JFLAP extension round-trips atomic stack tokens locally',
-      () {
-    const codec = PdaJflapDocumentCodec();
-    final encoded = codec.encode(_document()) as CodecSuccess<EncodedDocument>;
-    final decoded = codec.decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'machine.jff'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
-    final pda = decoded.value.document as PDA;
+  test(
+    'Turing Lab JFLAP extension round-trips atomic stack tokens locally',
+    () {
+      const codec = PdaJflapDocumentCodec();
+      final encoded =
+          codec.encode(_document()) as CodecSuccess<EncodedDocument>;
+      final decoded =
+          codec.decode(
+                DocumentPayload(
+                  bytes: encoded.value.bytes,
+                  filename: 'machine.jff',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
+      final pda = decoded.value.document as PDA;
 
-    expect(encoded.fidelity, DocumentFidelity.lossy);
-    expect(
-      encoded.diagnostics.map((item) => item.code),
-      contains('jflap.pda-turing-lab-extension-portability'),
-    );
-    expect(decoded.fidelity, DocumentFidelity.exact);
-    expect(pda.acceptanceMode, PDAAcceptanceMode.both);
-    expect(pda.initialStackSymbol, 'BOTTOM');
-    expect(pda.pdaTransitions.single.id, 'transition-id');
-    expect(pda.pdaTransitions.single.pushSymbols, ['LONG', 'BOTTOM']);
-  });
+      expect(encoded.fidelity, DocumentFidelity.lossy);
+      expect(
+        encoded.diagnostics.map((item) => item.code),
+        contains('jflap.pda-turing-lab-extension-portability'),
+      );
+      expect(decoded.fidelity, DocumentFidelity.exact);
+      expect(pda.acceptanceMode, PDAAcceptanceMode.both);
+      expect(pda.initialStackSymbol, 'BOTTOM');
+      expect(pda.pdaTransitions.single.id, 'transition-id');
+      expect(pda.pdaTransitions.single.pushSymbols, ['LONG', 'BOTTOM']);
+    },
+  );
 
   test('standard JFLAP normalizes push text and assumes final-state mode', () {
     const codec = PdaJflapDocumentCodec();
-    final decoded = codec.decode(_payload(_standardJflap))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        codec.decode(_payload(_standardJflap))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final pda = decoded.value.document as PDA;
 
     expect(decoded.fidelity, DocumentFidelity.normalized);
@@ -133,29 +165,35 @@ void main() {
           '</automaton>',
     );
 
-    final decoded = codec.decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        codec.decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final annotations = annotationsFromExtensions(decoded.value.extensions)!;
     expect(annotations.annotations.single.text, 'PDA invariant');
 
     final encoded =
         codec.encode(decoded.value) as CodecSuccess<EncodedDocument>;
-    final restored = codec.decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'notes.jff'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
+    final restored =
+        codec.decode(
+              DocumentPayload(
+                bytes: encoded.value.bytes,
+                filename: 'notes.jff',
+              ),
+            )
+            as CodecSuccess<InteroperableDocument<Object>>;
     expect(
-      annotationsFromExtensions(restored.value.extensions)!
-          .annotations
-          .single
-          .text,
+      annotationsFromExtensions(
+        restored.value.extensions,
+      )!.annotations.single.text,
       'PDA invariant',
     );
   });
 
   test('standard JFLAP reports multi-character pop semantics as lossy', () {
     final source = _standardJflap.replaceFirst('<pop>Z</pop>', '<pop>AZ</pop>');
-    final decoded = const PdaJflapDocumentCodec().decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        const PdaJflapDocumentCodec().decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
 
     expect(decoded.fidelity, DocumentFidelity.lossy);
     expect(
@@ -170,8 +208,9 @@ void main() {
         .replaceFirst('<read>a</read>', '<read>eps</read>')
         .replaceFirst('<pop>Z</pop>', '<pop>λ</pop>')
         .replaceFirst('<push>AZ</push>', '<push>epsilon</push>');
-    final decoded = codec.decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        codec.decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final transition = (decoded.value.document as PDA).pdaTransitions.single;
 
     expect(decoded.fidelity, DocumentFidelity.lossy);
@@ -188,8 +227,9 @@ void main() {
         .replaceFirst('<read>a</read>', '<read/>')
         .replaceFirst('<pop>Z</pop>', '<pop/>')
         .replaceFirst('<push>AZ</push>', '<push/>');
-    final decoded = const PdaJflapDocumentCodec().decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        const PdaJflapDocumentCodec().decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final transition = (decoded.value.document as PDA).pdaTransitions.single;
 
     expect(transition.isLambdaInput, isTrue);
@@ -206,8 +246,9 @@ void main() {
   <transition><from>0</from><to>1</to><read>a</read><pop>Z</pop><push>Z</push></transition>
 </automaton></structure>
 ''';
-    final decoded = const PdaJflapDocumentCodec().decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        const PdaJflapDocumentCodec().decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final transition = (decoded.value.document as PDA).pdaTransitions.single;
 
     expect(transition.fromState.id, '0');
@@ -251,6 +292,24 @@ void main() {
     }
   });
 
+  test('invalid JFLAP UTF-8 keeps its typed reason and localized message', () {
+    final decoded = const PdaJflapDocumentCodec().decode(
+      DocumentPayload(
+        bytes: Uint8List.fromList(const [0xff]),
+        filename: 'machine.jff',
+      ),
+    );
+
+    expect(decoded, isA<CodecMalformed<InteroperableDocument<Object>>>());
+    final malformed = decoded as CodecMalformed<InteroperableDocument<Object>>;
+    expect(malformed.reason, CodecMalformedReason.invalidUtf8);
+    expect(malformed.message, 'XML is not valid UTF-8.');
+    expect(
+      malformed.structuredMessage?.stableCode,
+      'codec.pda-jflap.invalid-utf8',
+    );
+  });
+
   test('duplicate explicit JFLAP transition ids report the extension path', () {
     const source = '''
 <structure><type>pda</type><automaton>
@@ -267,22 +326,44 @@ void main() {
       (decoded as CodecMalformed<InteroperableDocument<Object>>).location?.path,
       contains('turingLabTransition'),
     );
+    expect(
+      decoded.structuredMessage?.stableCode,
+      'codec.pda-jflap.duplicate-transition-id',
+    );
+  });
+
+  test('empty explicit JFLAP transition ids are invalid, not duplicates', () {
+    const source = '''
+<structure><type>pda</type><automaton>
+  <state id="q0" name="q0"><x>0</x><y>0</y><initial/></state>
+  <state id="q1" name="q1"><x>100</x><y>0</y><final/></state>
+  <transition><from>q0</from><to>q1</to><read>a</read><pop>Z</pop><push>Z</push><turingLabTransition>{"id":""}</turingLabTransition></transition>
+</automaton></structure>
+''';
+    final decoded = const PdaJflapDocumentCodec().decode(_payload(source));
+
+    expect(decoded, isA<CodecMalformed<InteroperableDocument<Object>>>());
+    final malformed = decoded as CodecMalformed<InteroperableDocument<Object>>;
+    expect(malformed.reason, CodecMalformedReason.invalidValue);
+    expect(
+      malformed.structuredMessage?.stableCode,
+      'codec.pda-jflap.invalid-transition-id',
+    );
   });
 
   test('invalid acceptance modes are rejected by both versioned codecs', () {
-    final jsonSource = jsonDecode(
-      File(
-        'test/fixtures/interoperability/pda_canonical.json',
-      ).readAsStringSync(),
-    ) as Map<String, dynamic>
-      ..['acceptanceMode'] = 'sometimes';
+    final jsonSource =
+        jsonDecode(
+                File(
+                  'test/fixtures/interoperability/pda_canonical.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>
+          ..['acceptanceMode'] = 'sometimes';
     final jsonOutcome = PdaJsonDocumentCodec().decode(
       _payload(jsonEncode(jsonSource)),
     );
-    expect(
-      jsonOutcome,
-      isA<CodecMalformed<InteroperableDocument<Object>>>(),
-    );
+    expect(jsonOutcome, isA<CodecMalformed<InteroperableDocument<Object>>>());
 
     final xmlSource = utf8
         .decode(
@@ -292,7 +373,9 @@ void main() {
               .bytes,
         )
         .replaceFirst(
-            '"acceptanceMode":"both"', '"acceptanceMode":"sometimes"');
+          '"acceptanceMode":"both"',
+          '"acceptanceMode":"sometimes"',
+        );
     final xmlOutcome = const PdaJflapDocumentCodec().decode(
       _payload(xmlSource),
     );
@@ -315,8 +398,9 @@ void main() {
 </automaton></structure>
 ''';
     const codec = PdaJflapDocumentCodec();
-    final decoded = codec.decode(_payload(source))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        codec.decode(_payload(source))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final encoded =
         codec.encode(decoded.value) as CodecSuccess<EncodedDocument>;
     final xml = utf8.decode(encoded.value.bytes);
@@ -333,10 +417,12 @@ void main() {
 
   test('element order canonicalizes to stable identities and JSON', () {
     const codec = PdaJflapDocumentCodec();
-    final original = codec.decode(_payload(_standardJflap))
-        as CodecSuccess<InteroperableDocument<Object>>;
-    final reordered = codec.decode(_payload(_reorderedJflap))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final original =
+        codec.decode(_payload(_standardJflap))
+            as CodecSuccess<InteroperableDocument<Object>>;
+    final reordered =
+        codec.decode(_payload(_reorderedJflap))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final originalPda = original.value.document as PDA;
     final reorderedPda = reordered.value.document as PDA;
 
@@ -355,13 +441,19 @@ void main() {
 
   test('bounded behavior is unchanged by a local JFLAP cycle', () {
     const codec = PdaJflapDocumentCodec();
-    final imported = codec.decode(_payload(_standardJflap))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final imported =
+        codec.decode(_payload(_standardJflap))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final encoded =
         codec.encode(imported.value) as CodecSuccess<EncodedDocument>;
-    final roundTripped = codec.decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'cycle.jff'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
+    final roundTripped =
+        codec.decode(
+              DocumentPayload(
+                bytes: encoded.value.bytes,
+                filename: 'cycle.jff',
+              ),
+            )
+            as CodecSuccess<InteroperableDocument<Object>>;
     final before = imported.value.document as PDA;
     final after = roundTripped.value.document as PDA;
 
@@ -385,11 +477,13 @@ void main() {
   });
 
   test('legacy JSON infers explicit flags and Unicode scalar push tokens', () {
-    final legacy = jsonDecode(
-      File(
-        'test/fixtures/interoperability/pda_canonical.json',
-      ).readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final legacy =
+        jsonDecode(
+              File(
+                'test/fixtures/interoperability/pda_canonical.json',
+              ).readAsStringSync(),
+            )
+            as Map<String, dynamic>;
     final transition =
         (legacy['transitions'] as List).single as Map<String, dynamic>;
     transition
@@ -401,9 +495,9 @@ void main() {
     (legacy['stackAlphabet'] as List).add('🙂');
     legacy.remove('acceptanceMode');
 
-    final decoded = PdaJsonDocumentCodec().decode(
-      _payload(jsonEncode(legacy)),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        PdaJsonDocumentCodec().decode(_payload(jsonEncode(legacy)))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final pda = decoded.value.document as PDA;
 
     expect(pda.pdaTransitions.single.pushSymbols, ['🙂', 'Z']);
@@ -412,9 +506,9 @@ void main() {
   });
 
   test('content detection ignores a wrong filename extension', () {
-    final decoded = registry.detect(
-      _payload(_standardJflap, filename: 'renamed.txt'),
-    ) as CodecSuccess<DetectedDocument>;
+    final decoded =
+        registry.detect(_payload(_standardJflap, filename: 'renamed.txt'))
+            as CodecSuccess<DetectedDocument>;
 
     expect(decoded.value.descriptor.systemKey, DefaultFormalSystemIds.pda);
   });
@@ -470,10 +564,8 @@ InteroperableDocument<Object> _document({
   );
 }
 
-DocumentPayload _payload(String source, {String? filename}) => DocumentPayload(
-      bytes: utf8.encode(source),
-      filename: filename,
-    );
+DocumentPayload _payload(String source, {String? filename}) =>
+    DocumentPayload(bytes: utf8.encode(source), filename: filename);
 
 const _standardJflap = '''
 <?xml version="1.0" encoding="UTF-8"?>

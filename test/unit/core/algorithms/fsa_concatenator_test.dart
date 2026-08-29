@@ -165,7 +165,9 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            cloneStep.properties[fsaConcatenationTitleMessageProperty] as Map,
+            cloneStep.properties[FsaConcatenationMessages
+                    .FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY]
+                as Map,
           ),
         ),
         FsaConcatenationMessages.cloneTitle('left'),
@@ -173,7 +175,8 @@ void main() {
       expect(
         StructuredMessage.fromJson(
           Map<String, Object?>.from(
-            cloneStep.properties[fsaConcatenationExplanationMessageProperty]
+            cloneStep.properties[FsaConcatenationMessages
+                    .FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY]
                 as Map,
           ),
         ).stableCode,

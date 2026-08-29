@@ -7,9 +7,11 @@ import 'package:turing_lab/core/models/dfa_minimization_step_messages.dart';
 import 'package:turing_lab/core/models/state.dart';
 
 void main() {
-  final q0 = _state('q0');
-  final q1 = _state('q1');
-  final q2 = _state('q2');
+  State state(String id) => State(id: id, label: id, position: Vector2.zero());
+
+  final q0 = state('q0');
+  final q1 = state('q1');
+  final q2 = state('q2');
 
   test('all educational steps carry locale-neutral title and explanation', () {
     final steps = [
@@ -241,5 +243,3 @@ void main() {
     expect(message.arguments['reduction']?.value, 2);
   });
 }
-
-State _state(String id) => State(id: id, label: id, position: Vector2.zero());

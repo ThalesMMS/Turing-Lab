@@ -13,9 +13,51 @@ import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
 
 void main() {
+  State state(String id, {bool isInitial = false, bool isAccepting = false}) =>
+      State(
+        id: id,
+        label: id,
+        position: Vector2.zero(),
+        isInitial: isInitial,
+        isAccepting: isAccepting,
+      );
+
+  FSATransition transition(String id, State from, State to, String symbol) =>
+      FSATransition.deterministic(
+        id: id,
+        fromState: from,
+        toState: to,
+        symbol: symbol,
+        controlPoint: identical(from, to)
+            ? from.position + Vector2(20, -20)
+            : null,
+      );
+
+  FSA automaton({
+    Set<State>? states,
+    Set<String> alphabet = const {},
+    Set<FSATransition> transitions = const {},
+    State? initialState,
+    Set<State> acceptingStates = const {},
+  }) {
+    final resolvedStates = states ?? {state('q0')};
+    return FSA(
+      id: 'dfa',
+      name: 'DFA',
+      states: resolvedStates,
+      transitions: transitions,
+      alphabet: alphabet,
+      initialState: initialState,
+      acceptingStates: acceptingStates,
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle(0, 0, 200, 200),
+    );
+  }
+
   group('DFA operation structured diagnostics', () {
     test('keeps the legacy validation text and adds a typed message', () {
-      final result = DFAOperations.complement(_automaton(initialState: null));
+      final result = DFAOperations.complement(automaton(initialState: null));
 
       expect(result.isFailure, isTrue);
       expect(
@@ -34,12 +76,12 @@ void main() {
     });
 
     test('attaches context and symbol arguments to validation failures', () {
-      final q0 = _state('q0', isInitial: true);
-      final transition = _transition('t0', q0, q0, 'b');
+      final q0 = state('q0', isInitial: true);
+      final invalidTransition = transition('t0', q0, q0, 'b');
       final result = DFAOperations.prefixClosure(
-        _automaton(
+        automaton(
           states: {q0},
-          transitions: {transition},
+          transitions: {invalidTransition},
           alphabet: {'a'},
           initialState: q0,
         ),
@@ -65,6 +107,26 @@ void main() {
       expect(symbol.value, 'b');
     });
 
+    test('prioritizes empty alphabets for labeled binary operands', () {
+      final a0 = state('a0', isInitial: true);
+      final b0 = state('b0', isInitial: true);
+      final result = DFAOperations.union(
+        automaton(
+          states: {a0},
+          transitions: {transition('a-loop', a0, a0, 'a')},
+          initialState: a0,
+        ),
+        automaton(states: {b0}, initialState: b0),
+      );
+
+      expect(result.isFailure, isTrue);
+      expect(
+        result.structuredError?.stableCode,
+        'automaton.dfa-operations.empty-alphabet-with-labeled-transitions',
+      );
+      expect(result.structuredError?.arguments['operand']?.value, 'a');
+    });
+
     test('uses an operation outcome for internal failures', () {
       final message = DfaOperationsMessages.operationFailed('∪');
 
@@ -80,7 +142,7 @@ void main() {
 
   group('DFA minimization structured diagnostics', () {
     test('preserves validation failures from minimize', () {
-      final result = DFAMinimizer.minimize(_automaton(initialState: null));
+      final result = DFAMinimizer.minimize(automaton(initialState: null));
 
       expect(result.isFailure, isTrue);
       expect(result.error, 'DFA must have an initial state');
@@ -91,12 +153,12 @@ void main() {
     });
 
     test('classifies structural and determinism validation failures', () {
-      final q0 = _state('q0', isInitial: true);
-      final outside = _state('outside');
-      final acceptingOutside = _state('accepting-outside', isAccepting: true);
+      final q0 = state('q0', isInitial: true);
+      final outside = state('outside');
+      final acceptingOutside = state('accepting-outside', isAccepting: true);
 
       final initialOutsideResult = DFAMinimizer.minimize(
-        _automaton(states: {q0}, initialState: outside),
+        automaton(states: {q0}, initialState: outside),
       );
       expect(
         initialOutsideResult.structuredError?.stableCode,
@@ -104,7 +166,7 @@ void main() {
       );
 
       final acceptingOutsideResult = DFAMinimizer.minimize(
-        _automaton(
+        automaton(
           states: {q0},
           initialState: q0,
           acceptingStates: {acceptingOutside},
@@ -115,16 +177,16 @@ void main() {
         'automaton.dfa-minimization.accepting-state-outside-set',
       );
 
-      final q1 = _state('q1');
-      final q2 = _state('q2');
+      final q1 = state('q1');
+      final q2 = state('q2');
       final nondeterministicResult = DFAMinimizer.minimize(
-        _automaton(
+        automaton(
           states: {q0, q1, q2},
           initialState: q0,
           alphabet: {'a'},
           transitions: {
-            _transition('t1', q0, q1, 'a'),
-            _transition('t2', q0, q2, 'a'),
+            transition('t1', q0, q1, 'a'),
+            transition('t2', q0, q2, 'a'),
           },
         ),
       );
@@ -181,46 +243,4 @@ void main() {
       );
     });
   });
-}
-
-State _state(String id, {bool isInitial = false, bool isAccepting = false}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: isInitial,
-      isAccepting: isAccepting,
-    );
-
-FSATransition _transition(String id, State from, State to, String symbol) =>
-    FSATransition.deterministic(
-      id: id,
-      fromState: from,
-      toState: to,
-      symbol: symbol,
-      controlPoint: identical(from, to)
-          ? from.position + Vector2(20, -20)
-          : null,
-    );
-
-FSA _automaton({
-  Set<State>? states,
-  Set<String> alphabet = const {},
-  Set<FSATransition> transitions = const {},
-  State? initialState,
-  Set<State> acceptingStates = const {},
-}) {
-  final resolvedStates = states ?? {_state('q0')};
-  return FSA(
-    id: 'dfa',
-    name: 'DFA',
-    states: resolvedStates,
-    transitions: transitions,
-    alphabet: alphabet,
-    initialState: initialState,
-    acceptingStates: acceptingStates,
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle(0, 0, 200, 200),
-  );
 }

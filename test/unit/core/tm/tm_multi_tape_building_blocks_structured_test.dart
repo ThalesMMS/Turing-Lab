@@ -19,13 +19,72 @@ import 'package:turing_lab/core/models/transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
+  State testState(String id, {bool initial = false, bool accepting = false}) =>
+      State(
+        id: id,
+        label: id,
+        position: Vector2.zero(),
+        isInitial: initial,
+        isAccepting: accepting,
+      );
+
+  TM testMachine({
+    required String id,
+    required Iterable<State> states,
+    Iterable<Transition> transitions = const [],
+    bool accepting = false,
+    int tapeCount = 1,
+    Map<String, TMBlockDefinition> definitions = const {},
+    Iterable<TMBlockInvocationNode> invocations = const [],
+  }) {
+    final stateSet = states.toSet();
+    final initialStates = stateSet.where((candidate) => candidate.isInitial);
+    final initial = initialStates.isEmpty ? null : initialStates.first;
+    final acceptingStates = accepting
+        ? stateSet.where((candidate) => candidate.isAccepting).toSet()
+        : <State>{};
+    return TM(
+      id: id,
+      name: id,
+      states: stateSet,
+      transitions: transitions.toSet(),
+      alphabet: const {},
+      initialState: initial,
+      acceptingStates: acceptingStates,
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+      bounds: const math.Rectangle<double>(0, 0, 100, 100),
+      tapeAlphabet: const {'B'},
+      tapeCount: tapeCount,
+      blockDefinitions: definitions,
+      blockInvocations: invocations,
+    );
+  }
+
+  TMTransition testTransition(
+    String id,
+    State from,
+    State to,
+    List<String> reads,
+    List<String> writes,
+    List<TapeDirection> directions,
+  ) => TMTransition(
+    id: id,
+    label: id,
+    fromState: from,
+    toState: to,
+    readSymbols: reads,
+    writeSymbols: writes,
+    directions: directions,
+  );
+
   group('multi-tape structured messages', () {
     test('preserves locale-neutral outcomes and legacy prose', () async {
       final accepted = await TMMultiTapeExecutionAnalyzer.analyze(
-        _machine(
+        testMachine(
           id: 'accepted',
           tapeCount: 2,
-          states: [_state('q0', initial: true, accepting: true)],
+          states: [testState('q0', initial: true, accepting: true)],
           accepting: true,
         ),
         '',
@@ -36,10 +95,10 @@ void main() {
         includeTrace: false,
       );
       final rejected = await TMMultiTapeExecutionAnalyzer.analyze(
-        _machine(
+        testMachine(
           id: 'rejected',
           tapeCount: 2,
-          states: [_state('q0', initial: true)],
+          states: [testState('q0', initial: true)],
         ),
         '',
         maxSteps: 10,
@@ -78,15 +137,15 @@ void main() {
     test(
       'marks multi-tape bounds, cancellation, and deterministic cycles',
       () async {
-        final machine = _machine(
+        final machine = testMachine(
           id: 'loop',
           tapeCount: 2,
-          states: [_state('q0', initial: true)],
+          states: [testState('q0', initial: true)],
           transitions: [
-            _transition(
+            testTransition(
               'loop',
-              _state('q0', initial: true),
-              _state('q0', initial: true),
+              testState('q0', initial: true),
+              testState('q0', initial: true),
               ['B', 'B'],
               ['B', 'B'],
               [TapeDirection.stay, TapeDirection.stay],
@@ -136,15 +195,15 @@ void main() {
 
         final boundedByConfigurations =
             await TMMultiTapeExecutionAnalyzer.analyze(
-              _machine(
+              testMachine(
                 id: 'config-limit',
                 tapeCount: 2,
-                states: [_state('q0', initial: true), _state('q1')],
+                states: [testState('q0', initial: true), testState('q1')],
                 transitions: [
-                  _transition(
+                  testTransition(
                     'advance',
-                    _state('q0', initial: true),
-                    _state('q1'),
+                    testState('q0', initial: true),
+                    testState('q1'),
                     ['B', 'B'],
                     ['B', 'B'],
                     [TapeDirection.right, TapeDirection.stay],
@@ -168,11 +227,11 @@ void main() {
 
   group('building-block structured messages', () {
     test('annotates dependency diagnostics and inline expansion failures', () {
-      final firstState = _state('first', initial: true);
-      final secondState = _state('second', initial: true);
-      final rootState = _state('root', initial: true, accepting: true);
+      final firstState = testState('first', initial: true);
+      final secondState = testState('second', initial: true);
+      final rootState = testState('root', initial: true, accepting: true);
       final project = TMBlockProject(
-        rootMachine: _machine(
+        rootMachine: testMachine(
           id: 'root',
           states: [rootState],
           accepting: true,
@@ -181,13 +240,13 @@ void main() {
               id: 'first',
               name: 'Same',
               revision: 1,
-              machine: _machine(id: 'first-machine', states: [firstState]),
+              machine: testMachine(id: 'first-machine', states: [firstState]),
             ),
             'second': TMBlockDefinition(
               id: 'second',
               name: 'same',
               revision: 1,
-              machine: _machine(id: 'second-machine', states: [secondState]),
+              machine: testMachine(id: 'second-machine', states: [secondState]),
             ),
           },
         ),
@@ -216,13 +275,13 @@ void main() {
         id: 'child',
         name: 'Child',
         revision: 1,
-        machine: _machine(
+        machine: testMachine(
           id: 'child-machine',
-          states: [_state('child-state', initial: true)],
+          states: [testState('child-state', initial: true)],
         ),
       );
       final inlineProject = TMBlockProject(
-        rootMachine: _machine(
+        rootMachine: testMachine(
           id: 'inline-root',
           states: [rootState],
           accepting: true,
@@ -247,9 +306,9 @@ void main() {
     test('annotates execution outcomes and invalid projects', () {
       final accepted = TMBlockExecutionEngine.execute(
         TMBlockProject(
-          rootMachine: _machine(
+          rootMachine: testMachine(
             id: 'root',
-            states: [_state('q0', initial: true, accepting: true)],
+            states: [testState('q0', initial: true, accepting: true)],
             accepting: true,
           ),
         ),
@@ -257,9 +316,9 @@ void main() {
       );
       final cancelled = TMBlockExecutionEngine.execute(
         TMBlockProject(
-          rootMachine: _machine(
+          rootMachine: testMachine(
             id: 'root',
-            states: [_state('q0', initial: true)],
+            states: [testState('q0', initial: true)],
           ),
         ),
         '',
@@ -267,7 +326,7 @@ void main() {
       );
       final invalid = TMBlockExecutionEngine.execute(
         TMBlockProject(
-          rootMachine: _machine(id: 'root', states: const []),
+          rootMachine: testMachine(id: 'root', states: const []),
         ),
         '',
       );
@@ -291,10 +350,10 @@ void main() {
 
   group('TM-to-grammar structured diagnostics', () {
     test('annotates unsupported multi-tape and building-block inputs', () {
-      final multi = _machine(
+      final multi = testMachine(
         id: 'multi',
         tapeCount: 2,
-        states: [_state('q0', initial: true, accepting: true)],
+        states: [testState('q0', initial: true, accepting: true)],
         accepting: true,
       );
       final multiReport = TMToGrammarConverter.build(multi, sourceRevision: 1);
@@ -313,14 +372,14 @@ void main() {
         id: 'block',
         name: 'Block',
         revision: 1,
-        machine: _machine(
+        machine: testMachine(
           id: 'block-machine',
-          states: [_state('block-state', initial: true)],
+          states: [testState('block-state', initial: true)],
         ),
       );
-      final withBlock = _machine(
+      final withBlock = testMachine(
         id: 'with-block',
-        states: [_state('q0', initial: true, accepting: true)],
+        states: [testState('q0', initial: true, accepting: true)],
         accepting: true,
         definitions: {'block': block},
       );
@@ -363,66 +422,4 @@ void main() {
       expect(warning.arguments['state']?.value, 'q-unused');
     });
   });
-}
-
-State _state(String id, {bool initial = false, bool accepting = false}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: initial,
-      isAccepting: accepting,
-    );
-
-TM _machine({
-  required String id,
-  required Iterable<State> states,
-  Iterable<Transition> transitions = const [],
-  bool accepting = false,
-  int tapeCount = 1,
-  Map<String, TMBlockDefinition> definitions = const {},
-  Iterable<TMBlockInvocationNode> invocations = const [],
-}) {
-  final stateSet = states.toSet();
-  final initial = stateSet.where((state) => state.isInitial).firstOrNull;
-  final acceptingStates = accepting
-      ? stateSet.where((state) => state.isAccepting).toSet()
-      : <State>{};
-  return TM(
-    id: id,
-    name: id,
-    states: stateSet,
-    transitions: transitions.toSet(),
-    alphabet: const {},
-    initialState: initial,
-    acceptingStates: acceptingStates,
-    created: DateTime.utc(2026),
-    modified: DateTime.utc(2026),
-    bounds: const math.Rectangle<double>(0, 0, 100, 100),
-    tapeAlphabet: const {'B'},
-    tapeCount: tapeCount,
-    blockDefinitions: definitions,
-    blockInvocations: invocations,
-  );
-}
-
-TMTransition _transition(
-  String id,
-  State from,
-  State to,
-  List<String> reads,
-  List<String> writes,
-  List<TapeDirection> directions,
-) => TMTransition(
-  id: id,
-  label: id,
-  fromState: from,
-  toState: to,
-  readSymbols: reads,
-  writeSymbols: writes,
-  directions: directions,
-);
-
-extension<T> on Iterable<T> {
-  T? get firstOrNull => this.isEmpty ? null : first;
 }
