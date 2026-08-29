@@ -14,6 +14,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/language_comparison_outcome.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
@@ -133,30 +134,34 @@ class _DialogHeader extends StatelessWidget {
 EquivalenceComparisonResult _comparisonFixture() {
   final automatonA = buildResponsiveFsaFixture();
   final automatonB = buildResponsiveFsaFixture();
+  final steps = <Map<String, dynamic>>[
+    {
+      'type': 'initialization',
+      'description': 'Initialize product automaton construction',
+    },
+    {'type': 'bfs_exploration', 'description': 'Exploring state (q0,p0)'},
+    {
+      'type': 'counterexample_found',
+      'description': 'Found distinguishing string: aab',
+      'data': {
+        'distinguishingString': 'aab',
+        'stateA': 'q1',
+        'stateB': 'q2',
+        'acceptsA': true,
+        'acceptsB': false,
+      },
+    },
+  ];
   return EquivalenceComparisonResult(
     originalAutomaton: automatonA,
     comparedAutomaton: automatonB,
     isEquivalent: false,
     distinguishingString: 'aab',
     productAutomaton: automatonA,
-    steps: const [
-      {
-        'type': 'initialization',
-        'description': 'Initialize product automaton construction',
-      },
-      {'type': 'bfs_exploration', 'description': 'Exploring state (q0,p0)'},
-      {
-        'type': 'counterexample_found',
-        'description': 'Found distinguishing string: aab',
-        'data': {
-          'distinguishingString': 'aab',
-          'stateA': 'q1',
-          'stateB': 'q2',
-          'acceptsA': true,
-          'acceptsB': false,
-        },
-      },
-    ],
+    steps: steps,
+    structuredSteps: steps
+        .map(LanguageComparisonStepMessages.fromLegacyStep)
+        .toList(growable: false),
     executionTimeMs: 87,
     timestamp: DateTime.utc(2026, 1, 1),
   );
@@ -292,13 +297,12 @@ void main() {
 
       Finder witness() => find.text('"aab"');
       Finder verdict() => find.byKey(
-            LanguageComparisonSemantics.statusKey(
-              LanguageComparisonStatus.notEquivalent,
-            ),
-          );
-      Finder selectedStep() => find.byKey(
-            LanguageComparisonSemantics.stepKey(1),
-          );
+        LanguageComparisonSemantics.statusKey(
+          LanguageComparisonStatus.notEquivalent,
+        ),
+      );
+      Finder selectedStep() =>
+          find.byKey(LanguageComparisonSemantics.stepKey(1));
 
       expect(witness(), findsWidgets);
       expect(verdict(), findsOneWidget);
@@ -337,7 +341,8 @@ void main() {
             comparisonResult: null,
             failure: LanguageComparisonFailure(
               reason: LanguageComparisonFailureReason.determinization,
-              message: 'Determinization of automaton A exceeded its budget '
+              message:
+                  'Determinization of automaton A exceeded its budget '
                   'while expanding the subset construction',
             ),
           ),

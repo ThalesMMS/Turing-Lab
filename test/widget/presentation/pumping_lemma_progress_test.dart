@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';
+import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
 import 'package:turing_lab/presentation/providers/pumping_lemma_progress_provider.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
 
@@ -82,7 +83,10 @@ void main() {
           );
 
           expect(progressSemantics.label, l10n.overallProgress);
-          expect(progressSemantics.value, '0');
+          expect(
+            progressSemantics.value,
+            LocaleValueFormatter(locale).percentFromRatio(0, decimalDigits: 0),
+          );
           expect(tester.takeException(), isNull);
         } finally {
           semantics.dispose();

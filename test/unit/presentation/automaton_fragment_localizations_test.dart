@@ -35,11 +35,13 @@ void main() {
       severity: AutomatonFragmentDiagnosticSeverity.blocking,
       message:
           'Transition source-transition-4 has an endpoint outside the selected fragment.',
+      transitionId: 'source-transition-4',
     );
     const connector = AutomatonFragmentDiagnostic(
       code: AutomatonFragmentDiagnosticCode.connectorUnsupported,
       severity: AutomatonFragmentDiagnosticSeverity.blocking,
       message: 'Moore connectors require an explicit input rule.',
+      connectorKind: AutomatonFragmentKind.moore,
     );
 
     expect(
@@ -96,14 +98,16 @@ void main() {
       (
         CodecDiagnostic(
           code: 'jflap.l-system.execution-extension',
-          message: 'Seed and weighted choices use Turing Lab XML parameters.',
+          message:
+              'Seed, ignored context symbols, and weighted choices use Turing Lab XML parameters.',
         ),
         'Semente, símbolos de contexto ignorados e escolhas ponderadas usam parâmetros XML do Turing Lab.',
       ),
       (
         CodecDiagnostic(
           code: 'jflap.regex-dialect-normalized',
-          message: 'JFLAP syntax was normalized to the Turing Lab dialect.',
+          message:
+              'JFLAP union and epsilon syntax was normalized to the Turing Lab dialect.',
         ),
         'A sintaxe de união e ε do JFLAP foi normalizada para o dialeto do Turing Lab.',
       ),

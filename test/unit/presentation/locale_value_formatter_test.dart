@@ -31,10 +31,22 @@ void main() {
     );
     expect(
       portuguese.integersInLocalizedText(
-        'Importados 1234 casos de report-1234.csv.',
+        'Relatório report-1234.csv: importados 1234 casos.',
         const [1234],
       ),
-      'Importados 1.234 casos de report-1234.csv.',
+      'Relatório report-1234.csv: importados 1.234 casos.',
+    );
+  });
+
+  test('formats an integer immediately before sentence punctuation', () {
+    final portuguese = LocaleValueFormatter(const Locale('pt', 'BR'));
+
+    expect(
+      portuguese.integersInLocalizedText(
+        'A quantidade de casos não pode exceder 10000.',
+        const [10000],
+      ),
+      'A quantidade de casos não pode exceder 10.000.',
     );
   });
 
@@ -46,6 +58,15 @@ void main() {
     expect(english.compactDuration(duration), '1,234 ms');
     expect(portuguese.compactDuration(duration), '1.234 ms');
     expect(duration.inMilliseconds, 1234);
+  });
+
+  test('keeps negative millisecond durations in milliseconds', () {
+    final english = LocaleValueFormatter(const Locale('en'));
+    final portuguese = LocaleValueFormatter(const Locale('pt', 'BR'));
+    const duration = Duration(milliseconds: -1500);
+
+    expect(english.compactDuration(duration), '-1,500 ms');
+    expect(portuguese.compactDuration(duration), '-1.500 ms');
   });
 
   test('formats arbitrary BigInt values by locale', () {
@@ -79,6 +100,13 @@ void main() {
         2,
       ),
       'Transição t0; 2 fitas atualizadas atomicamente',
+    );
+    expect(
+      portuguese.inLocalizedTemplate(
+        (value) => 'report-1234.csv: $value registros',
+        1234,
+      ),
+      'report-1234.csv: 1.234 registros',
     );
   });
 

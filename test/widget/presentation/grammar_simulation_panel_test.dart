@@ -26,6 +26,41 @@ void main() {
     expect(find.text('Canonical LR(1)'), findsOneWidget);
   });
 
+  testWidgets('renders the structured CYK rejection message', (tester) async {
+    final grammar = GrammarProvider()
+      ..addProduction(leftSide: ['S'], rightSide: const ['a']);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [grammarProvider.overrideWith((ref) => grammar)],
+        child: const MaterialApp(
+          home: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'aa');
+    await tester.tap(find.text('Parse String'));
+    for (var attempt = 0; attempt < 100; attempt++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      if (find
+          .text('The input string aa cannot be derived from the grammar.')
+          .evaluate()
+          .isNotEmpty) {
+        break;
+      }
+    }
+
+    expect(
+      find.text('The input string aa cannot be derived from the grammar.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('grammar.cyk.input-rejected'), findsNothing);
+  });
+
   testWidgets('selects canonical LR(1) and navigates synchronized execution', (
     tester,
   ) async {
@@ -571,6 +606,14 @@ void main() {
     expect(find.text('Rejected'), findsNothing);
     expect(find.text('Reached limit'), findsOneWidget);
     expect(find.text('depth'), findsOneWidget);
+    expect(
+      find.text('No witness was found before the depth limit stopped search.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('grammar.brute-force.bounded-at-limit'),
+      findsNothing,
+    );
   });
 
   testWidgets('cancels a cooperative brute-force search responsively', (

@@ -40,6 +40,57 @@ void _runFileOperationsPanelMachineOperationTests(
       expect(find.textContaining('Download started'), findsOneWidget);
     }, skip: !kIsWeb);
 
+    testWidgets(
+      'save grammar resolves structured file error in locale',
+      (tester) async {
+        final grammar = _buildSampleGrammar();
+        final message = StructuredMessage(
+          namespace: 'service.file-operations',
+          code: 'access-denied',
+          category: StructuredMessageCategory.interoperability,
+          severity: StructuredMessageSeverity.error,
+          arguments: {
+            'operation': StructuredMessageArgument.outcome(
+              'write',
+              role: 'file-operation',
+            ),
+          },
+        );
+        final service = _StubFileOperationsService(
+          saveGrammarResponses: Queue.of([
+            Failure<String>(message.stableCode, structuredMessage: message),
+          ]),
+        );
+        fakeFilePicker().enqueueSaveResult('/tmp/grammar.cfg');
+
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('pt'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FileOperationsPanel(grammar: grammar, fileService: service),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Salvar como JFLAP'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.textContaining(
+            'O Turing Lab não tem permissão para salvar no local selecionado.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining(message.stableCode), findsNothing);
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+      }),
+      skip: kIsWeb,
+    );
+
     testWidgets('load grammar button triggers callback', (tester) async {
       final grammar = _buildSampleGrammar();
       bool grammarLoaded = false;

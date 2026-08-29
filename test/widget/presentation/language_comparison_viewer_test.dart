@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
@@ -180,6 +181,9 @@ EquivalenceComparisonResult _createNonEquivalentResult({
     distinguishingString: distinguishingString,
     productAutomaton: productAutomaton,
     steps: steps,
+    structuredSteps: steps
+        .map(LanguageComparisonStepMessages.fromLegacyStep)
+        .toList(growable: false),
     executionTimeMs: 87,
     timestamp: DateTime(2025, 1, 25),
   );
@@ -208,6 +212,9 @@ EquivalenceComparisonResult _createResultWithSteps(
     distinguishingString: 'ab',
     productAutomaton: null,
     steps: steps,
+    structuredSteps: steps
+        .map(LanguageComparisonStepMessages.fromLegacyStep)
+        .toList(growable: false),
     executionTimeMs: 87,
     timestamp: DateTime(2025, 1, 25),
   );

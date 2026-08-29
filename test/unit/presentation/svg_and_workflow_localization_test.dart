@@ -38,22 +38,21 @@ void main() {
   }
 
   test(
-      'empty SVG uses English placeholder by default and Portuguese when asked',
-      () {
-    final defaultSvg = SvgExporter.exportFsaToSvg(emptyFsa());
-    expect(defaultSvg, contains(kDefaultSvgEmptyAutomatonLabel));
-    expect(defaultSvg, contains('class="empty-automaton"'));
+    'empty SVG uses English placeholder by default and Portuguese when asked',
+    () {
+      final defaultSvg = SvgExporter.exportFsaToSvg(emptyFsa());
+      expect(defaultSvg, contains(kDefaultSvgEmptyAutomatonLabel));
+      expect(defaultSvg, contains('class="empty-automaton"'));
 
-    final ptSvg = SvgExporter.exportFsaToSvg(
-      emptyFsa(),
-      options: SvgExportOptions(
-        emptyAutomatonLabel: pt.svgNoStatesDefined,
-      ),
-    );
-    expect(ptSvg, contains(pt.svgNoStatesDefined));
-    expect(ptSvg, isNot(contains(kDefaultSvgEmptyAutomatonLabel)));
-    expect(en.svgNoStatesDefined, kDefaultSvgEmptyAutomatonLabel);
-  });
+      final ptSvg = SvgExporter.exportFsaToSvg(
+        emptyFsa(),
+        options: SvgExportOptions(emptyAutomatonLabel: pt.svgNoStatesDefined),
+      );
+      expect(ptSvg, contains(pt.svgNoStatesDefined));
+      expect(ptSvg, isNot(contains(kDefaultSvgEmptyAutomatonLabel)));
+      expect(en.svgNoStatesDefined, kDefaultSvgEmptyAutomatonLabel);
+    },
+  );
 
   test('TM SVG legend is localized instead of hardcoded Portuguese', () {
     expect(pt.svgTmLegend, isNot(en.svgTmLegend));
@@ -107,9 +106,7 @@ void main() {
       'Introduzir novo símbolo inicial',
     );
     expect(
-      pt.localizeWorkflowText(
-        'Read symbol "a" from the input.',
-      ),
+      pt.localizeWorkflowText('Read symbol "a" from the input.'),
       'Leu o símbolo "a" da entrada.',
     );
     expect(
@@ -124,5 +121,7 @@ void main() {
       en.localizeWorkflowText('Introduce new start symbol'),
       'Introduce new start symbol',
     );
+    expect(pt.localizeWorkflowText('steps'), 'passos');
+    expect(pt.localizeWorkflowText('Step limit'), 'Limite de passos');
   });
 }

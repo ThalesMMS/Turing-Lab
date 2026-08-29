@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
@@ -97,15 +98,19 @@ FSA _buildFsa({
 }
 
 EquivalenceComparisonResult _comparisonResult() {
+  final steps = <Map<String, dynamic>>[
+    {'type': 'initialization', 'description': 'Initialize construction'},
+  ];
   return EquivalenceComparisonResult(
     originalAutomaton: _buildFsa(id: 'cmp-a', labelPrefix: 'A', stateCount: 3),
     comparedAutomaton: _buildFsa(id: 'cmp-b', labelPrefix: 'B', stateCount: 3),
     productAutomaton: _buildFsa(id: 'cmp-p', labelPrefix: 'P', stateCount: 3),
     isEquivalent: false,
     distinguishingString: 'ab',
-    steps: const [
-      {'type': 'initialization', 'description': 'Initialize construction'},
-    ],
+    steps: steps,
+    structuredSteps: steps
+        .map(LanguageComparisonStepMessages.fromLegacyStep)
+        .toList(growable: false),
     executionTimeMs: 12,
     timestamp: DateTime.utc(2026, 1, 1),
   );
@@ -199,14 +204,10 @@ Future<_WorkspaceHarness> _createWorkspace(
   });
 
   final container = ProviderContainer();
-  final mainAutomaton = _buildFsa(
-    id: 'main',
-    labelPrefix: 'M',
-    stateCount: 3,
-  );
-  container.read(automatonStateProvider.notifier).updateAutomaton(
-        mainAutomaton,
-      );
+  final mainAutomaton = _buildFsa(id: 'main', labelPrefix: 'M', stateCount: 3);
+  container
+      .read(automatonStateProvider.notifier)
+      .updateAutomaton(mainAutomaton);
 
   final canvasController = GraphViewCanvasController(
     automatonStateNotifier: container.read(automatonStateProvider.notifier),

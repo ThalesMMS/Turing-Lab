@@ -87,7 +87,7 @@ void main() {
     );
     final message = step.eliminationSummaryMessage;
 
-    expect(step.eliminationSummary, message.stableCode);
+    expect(step.eliminationSummary, '${message.stableCode}.with-state');
     expect(
       AppLocalizationsEn().resolveStructuredMessage(message),
       'Eliminating q1: 1 incoming state, no outgoing states, no self-loop.',

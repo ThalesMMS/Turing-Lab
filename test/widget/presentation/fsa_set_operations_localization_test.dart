@@ -15,10 +15,9 @@ void main() {
       explanation: 'legacy reversal explanation',
       type: AlgorithmType.fsaReversal,
       properties: {
-        fsaReversalTitleMessageProperty: FsaReversalMessages.stepTitle(
-          'reverse',
-        ).toJson(),
-        fsaReversalExplanationMessageProperty:
+        FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY:
+            FsaReversalMessages.stepTitle('reverse').toJson(),
+        FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY:
             FsaReversalMessages.reverseExplanation().toJson(),
       },
     );
@@ -46,9 +45,9 @@ void main() {
       explanation: 'legacy concatenation explanation',
       type: AlgorithmType.fsaConcatenation,
       properties: {
-        fsaConcatenationTitleMessageProperty:
+        FsaConcatenationMessages.FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY:
             FsaConcatenationMessages.cloneTitle('left').toJson(),
-        fsaConcatenationExplanationMessageProperty:
+        FsaConcatenationMessages.FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY:
             FsaConcatenationMessages.cloneExplanation('left').toJson(),
       },
     );

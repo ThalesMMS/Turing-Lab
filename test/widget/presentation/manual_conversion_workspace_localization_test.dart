@@ -6,10 +6,22 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_content.dar
 import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/localization/manual_conversion_localizations.dart';
 import 'package:turing_lab/presentation/widgets/manual_conversion_workspace.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('localizes an empty-word completion counterexample', () {
+    final l10n = lookupAppLocalizations(const Locale('pt', 'BR'));
+
+    expect(
+      l10n.manualConversionDiagnostic(
+        'The completed automaton is not language-equivalent. Counterexample: .',
+      ),
+      'O autômato concluído não é equivalente em linguagem. Contraexemplo: .',
+    );
+  });
 
   for (final scenario in const [
     (

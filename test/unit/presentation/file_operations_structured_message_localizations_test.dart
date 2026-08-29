@@ -8,6 +8,16 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final en = lookupAppLocalizations(const Locale('en'));
   final pt = lookupAppLocalizations(const Locale('pt'));
+  StructuredMessage fileOperationMessage(
+    String code, {
+    Map<String, StructuredMessageArgument> arguments = const {},
+  }) => StructuredMessage(
+    namespace: 'service.file-operations',
+    code: code,
+    category: StructuredMessageCategory.interoperability,
+    severity: StructuredMessageSeverity.error,
+    arguments: arguments,
+  );
 
   test('file-operation fallback contracts resolve in both locales', () {
     final messages = <StructuredMessage>[
@@ -18,7 +28,7 @@ void main() {
         'access-failed': 'read',
         'web-unsupported': 'exportPng',
       }.entries)
-        _message(
+        fileOperationMessage(
           entry.key,
           arguments: {
             'operation': StructuredMessageArgument.outcome(
@@ -27,7 +37,7 @@ void main() {
             ),
           },
         ),
-      _message(
+      fileOperationMessage(
         'codec-unsupported',
         arguments: {
           'reason': StructuredMessageArgument.outcome(
@@ -36,13 +46,13 @@ void main() {
           ),
         },
       ),
-      _message(
+      fileOperationMessage(
         'codec-ambiguous',
         arguments: {
           'count': StructuredMessageArgument.count(2, role: 'codec-count'),
         },
       ),
-      _message(
+      fileOperationMessage(
         'codec-malformed',
         arguments: {
           'reason': StructuredMessageArgument.outcome(
@@ -51,7 +61,7 @@ void main() {
           ),
         },
       ),
-      _message(
+      fileOperationMessage(
         'codec-resource-limit',
         arguments: {
           'limit': StructuredMessageArgument.outcome(
@@ -62,7 +72,7 @@ void main() {
           'actual': StructuredMessageArgument.count(65),
         },
       ),
-      _message(
+      fileOperationMessage(
         'codec-internal-failure',
         arguments: {
           'stage': StructuredMessageArgument.outcome(
@@ -71,9 +81,9 @@ void main() {
           ),
         },
       ),
-      _message('interoperability-review-required'),
-      _message('lossy-export-requires-confirmation'),
-      _message('invalid-model-type'),
+      fileOperationMessage('interoperability-review-required'),
+      fileOperationMessage('lossy-export-requires-confirmation'),
+      fileOperationMessage('invalid-model-type'),
     ];
 
     for (final message in messages) {
@@ -92,7 +102,7 @@ void main() {
   });
 
   test('invalid file-operation contract uses the safe coded fallback', () {
-    final malformed = _message(
+    final malformed = fileOperationMessage(
       'codec-ambiguous',
       arguments: {
         'count': StructuredMessageArgument.integer(2, role: 'codec-count'),
@@ -110,7 +120,7 @@ void main() {
   });
 
   test('future operation values use localized other branches', () {
-    final message = _message(
+    final message = fileOperationMessage(
       'operation-failed',
       arguments: {
         'operation': StructuredMessageArgument.outcome(
@@ -131,7 +141,7 @@ void main() {
   });
 
   test('missing operation argument fails closed', () {
-    final malformed = _message('operation-failed');
+    final malformed = fileOperationMessage('operation-failed');
 
     expect(
       en.resolveStructuredMessage(malformed),
@@ -143,14 +153,3 @@ void main() {
     );
   });
 }
-
-StructuredMessage _message(
-  String code, {
-  Map<String, StructuredMessageArgument> arguments = const {},
-}) => StructuredMessage(
-  namespace: 'service.file-operations',
-  code: code,
-  category: StructuredMessageCategory.interoperability,
-  severity: StructuredMessageSeverity.error,
-  arguments: arguments,
-);

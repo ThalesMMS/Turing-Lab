@@ -8,6 +8,7 @@ import 'package:turing_lab/core/models/tm_time_profile.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
 import 'package:turing_lab/presentation/widgets/tm_language_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm_algorithm_presentation_primitives.dart';
 import 'package:turing_lab/presentation/widgets/tm_reachability_result_view.dart';
 import 'package:turing_lab/presentation/widgets/tm_space_result_view.dart';
 import 'package:turing_lab/presentation/widgets/tm_tape_result_view.dart';
@@ -36,11 +37,13 @@ void main() {
       locale: Locale('en'),
       outcome: 'Accepted',
       progress: '12,345 transition(s) • 12,345 configuration(s) explored',
+      selectedHeading: 'Selected word: a',
     ),
     (
       locale: Locale('pt', 'BR'),
       outcome: 'Aceita',
       progress: '12.345 transição(ões) • 12.345 configuração(ões) exploradas',
+      selectedHeading: 'Palavra selecionada: a',
     ),
   ]) {
     testWidgets(
@@ -82,6 +85,19 @@ void main() {
           expect(find.textContaining(' steps'), findsNothing);
           expect(find.textContaining(' configurations'), findsNothing);
         }
+
+        await _pump(
+          tester,
+          TMLanguageResultView(
+            report: report,
+            selectedWord: report.results.single,
+            selectedTrace: null,
+            isLoadingTrace: false,
+            onWordSelected: (_) {},
+          ),
+          scenario.locale,
+        );
+        expect(find.text(scenario.selectedHeading), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -93,12 +109,22 @@ void main() {
       grouped: '12,345',
       duration: '1,234 ms',
       inputLength: 'Input length 12,345',
+      profileKind: 'DTM transition-step profile',
+      rowStatus: 'Exhaustive • complete',
+      timeMessage: 'Complete',
+      terminationMessage: 'Accepted. Accepted',
+      tapeMessage: 'Accepted',
     ),
     (
       locale: Locale('pt', 'BR'),
       grouped: '12.345',
       duration: '1.234 ms',
       inputLength: 'Comprimento da entrada 12.345',
+      profileKind: 'Perfil de passos de transição da MTD',
+      rowStatus: 'Exaustivo • completo',
+      timeMessage: 'Completo',
+      terminationMessage: 'Aceita. Aceita',
+      tapeMessage: 'Aceita',
     ),
   ]) {
     testWidgets(
@@ -126,6 +152,14 @@ void main() {
         expect(find.text(scenario.duration), findsOneWidget);
         expect(find.text('${scenario.grouped} s'), findsOneWidget);
         expect(find.text(scenario.inputLength), findsOneWidget);
+        expect(find.text(scenario.profileKind), findsOneWidget);
+        expect(find.text(scenario.rowStatus), findsOneWidget);
+        expect(
+          tester
+              .widgetList<TMStatusMessage>(find.byType(TMStatusMessage))
+              .any((status) => status.message == scenario.timeMessage),
+          isTrue,
+        );
 
         await _pump(
           tester,
@@ -151,6 +185,12 @@ void main() {
           scenario.locale,
         );
         expect(find.text('${scenario.grouped} s'), findsOneWidget);
+        expect(
+          tester
+              .widgetList<TMStatusMessage>(find.byType(TMStatusMessage))
+              .any((status) => status.message == scenario.terminationMessage),
+          isTrue,
+        );
 
         await _pump(
           tester,
@@ -159,6 +199,12 @@ void main() {
         );
         expect(find.text('${scenario.grouped} s'), findsOneWidget);
         expect(find.text(scenario.grouped), findsWidgets);
+        expect(
+          tester
+              .widgetList<TMStatusMessage>(find.byType(TMStatusMessage))
+              .any((status) => status.message == scenario.tapeMessage),
+          isTrue,
+        );
       },
     );
   }
@@ -201,7 +247,7 @@ TMLanguageExplorerReport _languageReport() => TMLanguageExplorerReport(
 TMTimeProfileReport _timeReport() => TMTimeProfileReport(
   kind: TMTimeProfileKind.deterministicTime,
   status: TMTimeProfileStatus.complete,
-  message: 'Complete.',
+  message: 'Complete',
   plan: TMTimeProfilePlan(
     bounds: const TMTimeProfileBounds(
       maxLength: 12345,
@@ -275,7 +321,7 @@ TMReachabilityReport _reachabilityReport() => TMReachabilityReport(
 TMExecutionAnalysis _analysis() => TMExecutionAnalysis(
   input: 'a',
   outcome: TMExecutionOutcome.accepted,
-  message: 'Accepted.',
+  message: 'Accepted',
   stepsExecuted: 12345,
   configurationsExplored: 12345,
   maxSteps: 12345,
@@ -287,7 +333,7 @@ TMExecutionAnalysis _analysis() => TMExecutionAnalysis(
 TMExecutionAnalysis _tapeAnalysis() => TMExecutionAnalysis(
   input: 'a',
   outcome: TMExecutionOutcome.accepted,
-  message: 'Accepted.',
+  message: 'Accepted',
   stepsExecuted: 12345,
   configurationsExplored: 12345,
   maxSteps: 12345,

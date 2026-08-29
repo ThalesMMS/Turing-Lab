@@ -14,6 +14,15 @@ void main() {
   final pt = lookupAppLocalizations(const Locale('pt'));
 
   test('structural grammar diagnostics resolve in English and Portuguese', () {
+    final leftSideNotSingle =
+        GrammarStructuralMessages.productionLeftSideNotSingleNonterminal(
+          'p-many',
+          'A B',
+        );
+    final unreachable = GrammarStructuralMessages.unreachableNonterminals(
+      2,
+      'A, B',
+    );
     final messages = <StructuredMessage>[
       GrammarStructuralMessages.startSymbolMissing(),
       GrammarStructuralMessages.startSymbolMissingForReachability(),
@@ -22,10 +31,7 @@ void main() {
       GrammarStructuralMessages.noProductions(),
       GrammarStructuralMessages.noProductionsForProductivity(),
       GrammarStructuralMessages.productionLeftSideEmpty('p-empty'),
-      GrammarStructuralMessages.productionLeftSideNotSingleNonterminal(
-        'p-many',
-        'A B',
-      ),
+      leftSideNotSingle,
       GrammarStructuralMessages.productionLeftSideEmptySymbol('p-empty-symbol'),
       GrammarStructuralMessages.productionLeftSideNotNonterminal(
         'p-bad-left',
@@ -39,7 +45,7 @@ void main() {
       GrammarStructuralMessages.unknownSymbolForProductivity('Z'),
       GrammarStructuralMessages.lambdaProductionRhsNotEmpty('p-lambda'),
       GrammarStructuralMessages.productionRhsEmpty('p-empty-right'),
-      GrammarStructuralMessages.unreachableNonterminals(2, 'A, B'),
+      unreachable,
       GrammarStructuralMessages.unproductiveNonterminals(1, 'C'),
       GrammarStructuralMessages.unproductiveProductions('C'),
     ];
@@ -56,19 +62,19 @@ void main() {
     }
 
     expect(
-      en.resolveStructuredMessage(messages[7]),
+      en.resolveStructuredMessage(leftSideNotSingle),
       'Production p-many left-hand side must be exactly one non-terminal for CFG tooling; got A B.',
     );
     expect(
-      pt.resolveStructuredMessage(messages[7]),
+      pt.resolveStructuredMessage(leftSideNotSingle),
       'O lado esquerdo da produção p-many deve conter exatamente um não terminal para as ferramentas CFG; foi recebido A B.',
     );
     expect(
-      en.resolveStructuredMessage(messages[15]),
+      en.resolveStructuredMessage(unreachable),
       'Found 2 unreachable non-terminals: A, B.',
     );
     expect(
-      pt.resolveStructuredMessage(messages[15]),
+      pt.resolveStructuredMessage(unreachable),
       'Foram encontrados 2 não terminais inalcançáveis: A, B.',
     );
   });

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
+import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/pumping_lemma/pumping_lemma.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
@@ -13,6 +15,7 @@ import 'package:turing_lab/presentation/providers/workspace_quick_actions_provid
 import 'package:turing_lab/presentation/providers/workspace_registry_provider.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
 import 'package:turing_lab/presentation/widgets/pumping_lemma_workspace.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
@@ -30,6 +33,7 @@ Future<ProviderContainer> _pumpPumpingPage(
   WidgetTester tester, {
   required Size size,
   Locale locale = const Locale('en'),
+  ValueListenable<Locale>? localeListenable,
   PumpingLemmaTheorem theorem = PumpingLemmaTheorem.regular,
   double textScale = 1,
 }) async {
@@ -47,29 +51,34 @@ Future<ProviderContainer> _pumpPumpingPage(
   );
   addTearDown(container.dispose);
 
+  Widget app(Locale activeLocale) => MaterialApp(
+    locale: activeLocale,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      child: child!,
+    ),
+    home: Scaffold(
+      appBar: AppBar(
+        leadingWidth: 120,
+        leading: WorkspaceQuickActionsBar(workspaceKey: _workspaceKey(theorem)),
+      ),
+      body: PumpingLemmaPage(theorem: theorem),
+    ),
+  );
+
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp(
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
-        ),
-        home: Scaffold(
-          appBar: AppBar(
-            leadingWidth: 120,
-            leading: WorkspaceQuickActionsBar(
-              workspaceKey: _workspaceKey(theorem),
+      child: localeListenable == null
+          ? app(locale)
+          : ValueListenableBuilder<Locale>(
+              valueListenable: localeListenable,
+              builder: (context, activeLocale, child) => app(activeLocale),
             ),
-          ),
-          body: PumpingLemmaPage(theorem: theorem),
-        ),
-      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -80,6 +89,71 @@ Finder get _progressAction =>
     find.byKey(const ValueKey('workspace-quick-action-progress'));
 
 void main() {
+  testWidgets('progress sheet follows locale changes while open', (
+    tester,
+  ) async {
+    final locale = ValueNotifier(const Locale('en'));
+    addTearDown(locale.dispose);
+    await _pumpPumpingPage(
+      tester,
+      size: const Size(430, 932),
+      localeListenable: locale,
+    );
+
+    await tester.tap(_progressAction);
+    await tester.pumpAndSettle();
+    expect(find.text('Progress'), findsWidgets);
+    expect(find.byTooltip('Close'), findsOneWidget);
+
+    locale.value = const Locale('pt', 'BR');
+    await tester.pumpAndSettle();
+    expect(find.text('Progresso'), findsWidgets);
+    expect(find.byTooltip('Fechar'), findsOneWidget);
+    expect(find.text('Progress'), findsNothing);
+  });
+
+  testWidgets('import keeps progress for a matching custom problem version', (
+    tester,
+  ) async {
+    final container = await _pumpPumpingPage(
+      tester,
+      size: const Size(800, 1000),
+    );
+    final panel = tester.widget<FileOperationsPanel>(
+      find.byType(FileOperationsPanel),
+    );
+    final binding = panel.interoperability!;
+    final current = binding.currentDocument!.document as PumpingLemmaDocument;
+    final encoded = Map<String, Object?>.from(current.toJson());
+    final problem = Map<String, Object?>.from(encoded['problem']! as Map)
+      ..['id'] = 'regular.imported-custom';
+    encoded
+      ..['problem'] = problem
+      ..['progress'] = <String, Object?>{
+        'challengeScores': <String, int>{'regular.imported-custom': 7},
+        'completedChallengeIds': <String>['regular.imported-custom'],
+        'challengeContentVersions': <String, int>{
+          'regular.imported-custom': problem['contentVersion']! as int,
+        },
+      };
+    final imported = PumpingLemmaDocument.fromJson(encoded);
+    expect(imported.progress.challengeScores, {'regular.imported-custom': 7});
+
+    await binding.replace(
+      InteroperableDocument<Object>(
+        document: imported,
+        systemKey: binding.systemKey,
+        schema: binding.currentDocument!.schema,
+      ),
+    );
+
+    final progress = container.read(regularPumpingLemmaProgressProvider);
+    expect(progress.challengeScores, {'regular.imported-custom': 7});
+    expect(progress.completedChallengeIds, {'regular.imported-custom'});
+    await binding.restoreCheckpoint(current);
+    await tester.pumpAndSettle();
+  });
+
   for (final scenario in const [
     (
       PumpingLemmaTheorem.regular,

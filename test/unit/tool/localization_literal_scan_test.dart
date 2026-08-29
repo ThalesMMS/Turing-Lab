@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -300,5 +301,57 @@ void showFailure(AppLocalizations l10n) {
       ),
       throwsA(isA<FormatException>()),
     );
+  });
+
+  test('--write-inventory does not audit the generated snapshot', () async {
+    final root = Directory.systemTemp.createTempSync(
+      'localization-literal-write-only-',
+    );
+    addTearDown(() {
+      exitCode = 0;
+      root.deleteSync(recursive: true);
+    });
+    File('${root.path}/scope.json').writeAsStringSync(
+      jsonEncode({
+        'files': ['lib/example.dart'],
+      }),
+    );
+    File(
+      '${root.path}/allowlist.json',
+    ).writeAsStringSync(jsonEncode({'entries': <Object>[]}));
+    Directory('${root.path}/lib').createSync();
+    File(
+      '${root.path}/lib/example.dart',
+    ).writeAsStringSync("Widget build() => const Text('Unapproved copy');");
+    final generatedInventory = File('${root.path}/generated.json');
+
+    await runLocalizationLiteralScan([
+      '--root',
+      root.path,
+      '--scope',
+      'scope.json',
+      '--allowlist',
+      'allowlist.json',
+      '--write-inventory',
+      'generated.json',
+      '--json',
+      'report.json',
+    ]);
+
+    final report =
+        jsonDecode(File('${root.path}/report.json').readAsStringSync())
+            as Map<String, Object?>;
+    expect(report['status'], 'failed');
+    expect(report['unapprovedViolationCount'], 1);
+    expect(report, isNot(contains('inventory')));
+    expect(generatedInventory.existsSync(), isTrue);
+    final inventory =
+        jsonDecode(generatedInventory.readAsStringSync())
+            as Map<String, Object?>;
+    final entries = inventory['entries']! as List<Object?>;
+    expect(entries, hasLength(1));
+    expect(entries.single, containsPair('path', 'lib/example.dart'));
+    expect(entries.single, containsPair('violationCount', 1));
+    expect(exitCode, 1);
   });
 }

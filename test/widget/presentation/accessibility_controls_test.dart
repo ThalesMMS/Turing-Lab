@@ -108,16 +108,11 @@ void main() {
         expect(category.flagsCollection.isButton, isTrue);
         expect(category.flagsCollection.isExpanded, Tristate.isTrue);
 
-        final tree = tester.widget<HelpTreeView>(find.byType(HelpTreeView));
-        tree.scrollController.jumpTo(
-          tree.scrollController.position.maxScrollExtent,
-        );
+        await tester.scrollUntilVisible(_helpNode('fsa'), 200);
         await tester.pumpAndSettle();
         await tester.tap(_helpNode('fsa'));
         await tester.pumpAndSettle();
-        tree.scrollController.jumpTo(
-          tree.scrollController.position.maxScrollExtent,
-        );
+        await tester.scrollUntilVisible(_helpNode('fsa.editor'), 200);
         await tester.pumpAndSettle();
 
         final subsection = tester.getSemantics(_helpNode('fsa.editor'));

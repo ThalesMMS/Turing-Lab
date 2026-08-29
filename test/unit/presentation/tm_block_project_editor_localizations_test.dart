@@ -3,10 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
+import 'package:turing_lab/l10n/tm_advanced_localizations.dart';
 
 void main() {
   final en = lookupAppLocalizations(const Locale('en'));
   final pt = lookupAppLocalizations(const Locale('pt', 'BR'));
+
+  test('pluralizes TM block trace calls in both locales', () {
+    expect(en.tmBlockTraceSummary(1, 2), '1 call · maximum depth 2');
+    expect(en.tmBlockTraceSummary(2, 2), '2 calls · maximum depth 2');
+    expect(pt.tmBlockTraceSummary(1, 2), '1 chamada · profundidade máxima 2');
+    expect(pt.tmBlockTraceSummary(2, 2), '2 chamadas · profundidade máxima 2');
+  });
 
   test('resolves every TM block editor failure in English and Portuguese', () {
     final cases = <({StructuredMessage message, String en, String pt})>[

@@ -18,8 +18,10 @@ void main() {
       explanation: explanation.stableCode,
       type: AlgorithmType.fsaKleeneStar,
       properties: {
-        fsaKleeneStarTitleMessageProperty: title.toJson(),
-        fsaKleeneStarExplanationMessageProperty: explanation.toJson(),
+        FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY: title
+            .toJson(),
+        FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY:
+            explanation.toJson(),
       },
     );
 

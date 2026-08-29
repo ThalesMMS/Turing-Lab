@@ -29,6 +29,7 @@ void main() {
 
     final iterations = find.widgetWithText(TextField, 'Iterations');
     await tester.enterText(iterations, '-1');
+    tester.widget<TextField>(iterations).focusNode?.unfocus();
     await _tapApply(tester, 'Apply and expand');
     expect(find.text('Iterations must be zero or greater.'), findsOneWidget);
     expect(tester.widget<TextField>(iterations).focusNode?.hasFocus, isTrue);
@@ -39,6 +40,7 @@ void main() {
 
     final rules = find.widgetWithText(TextField, 'Regras de produção paralela');
     await tester.enterText(rules, 'F');
+    tester.widget<TextField>(rules).focusNode?.unfocus();
     await _tapApply(tester, 'Aplicar e expandir');
     expect(find.text('A regra 1 deve conter ->.'), findsOneWidget);
     expect(tester.widget<TextField>(rules).focusNode?.hasFocus, isTrue);
@@ -49,6 +51,7 @@ void main() {
       'Mapeamento de comandos da tartaruga',
     );
     await tester.enterText(mapping, 'F drawForward');
+    tester.widget<TextField>(mapping).focusNode?.unfocus();
     await _tapApply(tester, 'Aplicar e expandir');
     expect(
       find.text('O mapeamento de comandos 1 deve conter =.'),

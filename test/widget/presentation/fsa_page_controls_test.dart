@@ -19,6 +19,7 @@ import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/fsa_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
+import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
@@ -178,6 +179,23 @@ Grammar _loadedGrammar() {
 }
 
 void main() {
+  test('algorithm provider keeps structured conversion failures', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container
+        .read(automatonStateProvider.notifier)
+        .replaceAutomaton(FSA.empty(id: 'invalid-nfa', name: 'Invalid NFA'));
+
+    await container.read(automatonAlgorithmProvider.notifier).convertNfaToDfa();
+
+    final failure = container.read(automatonAlgorithmProvider);
+    expect(failure.error, isNotNull);
+    expect(
+      failure.structuredError?.stableCode,
+      'automaton.nfa-to-dfa.empty-automaton',
+    );
+  });
+
   testWidgets('FSA to Grammar transfers the result and switches workspace', (
     tester,
   ) async {
@@ -476,7 +494,7 @@ void main() {
     await _pumpFsaPage(
       tester,
       viewSize: const Size(800, 900),
-      platform: TargetPlatform.android,
+      platform: TargetPlatform.iOS,
     );
     final canvas = tester.widget<AutomatonGraphViewCanvas>(
       find.byType(AutomatonGraphViewCanvas),
@@ -573,7 +591,7 @@ void main() {
     await _pumpFsaPage(
       tester,
       viewSize: const Size(800, 900),
-      platform: TargetPlatform.android,
+      platform: TargetPlatform.iOS,
     );
     final canvas = tester.widget<AutomatonGraphViewCanvas>(
       find.byType(AutomatonGraphViewCanvas),
@@ -639,7 +657,7 @@ void main() {
     await _pumpFsaPage(
       tester,
       viewSize: const Size(800, 900),
-      platform: TargetPlatform.android,
+      platform: TargetPlatform.iOS,
     );
     final canvas = tester.widget<AutomatonGraphViewCanvas>(
       find.byType(AutomatonGraphViewCanvas),

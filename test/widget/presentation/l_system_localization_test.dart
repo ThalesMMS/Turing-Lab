@@ -336,6 +336,13 @@ void main() {
     'L-system formats numeric editor drafts and parses PT decimal input',
     (tester) async {
       final semantics = tester.ensureSemantics();
+      var semanticsDisposed = false;
+      addTearDown(() {
+        if (!semanticsDisposed) {
+          semantics.dispose();
+        }
+        tester.view.resetPhysicalSize();
+      });
       final locale = ValueNotifier(const Locale('pt', 'BR'));
       final controller = LSystemEditorController(
         document: _numberFormatEditorDocument(),
@@ -377,6 +384,10 @@ void main() {
       expect(controller.document.turtle.scale, 2.75);
       expect(find.textContaining('A geração 0 tem'), findsOneWidget);
 
+      await tester.enterText(find.widgetWithText(TextField, 'Escala'), '1.500');
+      await _tapApply(tester, 'Aplicar e expandir');
+      expect(controller.document.turtle.scale, 1500);
+
       await tester.enterText(find.widgetWithText(TextField, 'Escala'), '4,25');
       locale.value = const Locale('en');
       await tester.pumpAndSettle();
@@ -398,8 +409,18 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Scale'), '3.125');
       await _tapApply(tester, 'Apply and expand');
       expect(controller.document.turtle.scale, 3.125);
+
+      for (final malformed in const ['1..5', '1,2,3']) {
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Scale'),
+          malformed,
+        );
+        await _tapApply(tester, 'Apply and expand');
+        expect(controller.document.turtle.scale, 3.125);
+      }
       expect(tester.takeException(), isNull);
       semantics.dispose();
+      semanticsDisposed = true;
     },
   );
 

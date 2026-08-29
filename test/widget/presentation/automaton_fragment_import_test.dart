@@ -92,7 +92,7 @@ void main() {
           (
             locale: const Locale('pt', 'BR'),
             title: 'Não foi possível importar o autômato',
-            expected: 'A sintaxe do documento é inválida ou está incompleta.',
+            expected: 'O FSA JFLAP não contém <automaton>.',
             forbidden: 'JFLAP FSA is missing <automaton>.',
           ),
         ];
@@ -345,6 +345,37 @@ void main() {
       (state) => state.id == 'import_source_q0',
     );
     expect(importedState.position.x, closeTo(500.5, 0.001));
+
+    for (final testCase in const [
+      (input: '100,5', expectedPosition: 180.5),
+      (input: '1,000', expectedPosition: 1000.0),
+    ]) {
+      result = null;
+      await tester.pumpWidget(
+        _ReviewHarness(
+          locale: const Locale('en'),
+          destination: _fsa(
+            'destination',
+          ).copyWith(bounds: const math.Rectangle<double>(0, 0, 2000, 2000)),
+          source: _fsa('source'),
+          initialAnchor: Vector2.zero(),
+          onResult: (value) => result = value,
+        ),
+      );
+      await tester.tap(find.text('Open review'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, testCase.input);
+      await tester.pump();
+      final applyButton = find.byKey(const ValueKey('fragment-apply-button'));
+      await tester.ensureVisible(applyButton);
+      await tester.tap(applyButton);
+      await tester.pumpAndSettle();
+
+      final parsedState = (result!.preview! as FSA).states.singleWhere(
+        (state) => state.id == 'import_source_q0',
+      );
+      expect(parsedState.position.x, closeTo(testCase.expectedPosition, 0.001));
+    }
   });
 
   testWidgets(

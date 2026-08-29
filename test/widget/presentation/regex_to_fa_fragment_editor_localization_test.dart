@@ -67,7 +67,7 @@ void main() {
           expect(find.text('Invariante do fragmento'), findsOneWidget);
           expect(
             find.text(
-              '2 estados, 1 transição, uma entrada e 1 estado de aceitação. '
+              '2 estados, 1 transição, um estado de entrada e 1 estado de aceitação. '
               'Alfabeto: a.',
             ),
             findsOneWidget,
@@ -100,6 +100,25 @@ void main() {
       }
     });
   }
+
+  testWidgets('formats expected fragment counts for pt-BR', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('pt', 'BR'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: RegexToFaFragmentEditor(
+            requirement: _requirementWithStateCount(1234),
+            onSubmit: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('1.234'), findsWidgets);
+  });
 }
 
 ManualConversionRequirement _requirement() {
@@ -113,4 +132,14 @@ ManualConversionRequirement _requirement() {
     sourceRevision: 1,
   );
   return session.currentRequirement!;
+}
+
+ManualConversionRequirement _requirementWithStateCount(int stateCount) {
+  final encoded = Map<String, Object?>.from(_requirement().toJson());
+  final payload = Map<String, Object?>.from(encoded['expectedPayload']! as Map);
+  final invariants = Map<String, Object?>.from(payload['invariants']! as Map)
+    ..['stateCount'] = stateCount;
+  payload['invariants'] = invariants;
+  encoded['expectedPayload'] = payload;
+  return ManualConversionRequirement.fromJson(encoded);
 }

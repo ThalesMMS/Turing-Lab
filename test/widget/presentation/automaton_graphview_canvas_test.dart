@@ -1620,6 +1620,32 @@ void main() {
       );
     });
 
+    testWidgets('deleting a transition source clears the pending source', (
+      tester,
+    ) async {
+      final automaton = buildAutomaton({});
+      await pumpCanvas(tester, automaton);
+
+      await tester.tap(find.text('A'), warnIfMissed: false);
+      await tester.pump();
+      expect(find.text('Choose target state'), findsOneWidget);
+
+      await tester.longPress(find.text('A'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('automaton-state-delete-A')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('B'), warnIfMissed: false);
+      await tester.pump();
+
+      expect(find.text('Choose target state'), findsOneWidget);
+      expect(
+        _nodeBackgroundColor(tester, 'B'),
+        Theme.of(tester.element(find.text('B'))).colorScheme.tertiaryContainer,
+      );
+      expect(provider.currentAutomaton?.transitions, isEmpty);
+    });
+
     testWidgets('transition preview follows hover with a precision cursor', (
       tester,
     ) async {

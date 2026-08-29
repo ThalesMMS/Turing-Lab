@@ -64,16 +64,16 @@ void main() {
     for (final type in RegexToNFAStepType.values) {
       final englishLabel = en.resolveStructuredMessage(type.labelMessage);
       final portugueseLabel = pt.resolveStructuredMessage(type.labelMessage);
-      expect(englishLabel, isNot(type.labelMessage.stableCode));
-      expect(portugueseLabel, isNot(type.labelMessage.stableCode));
+      expect(englishLabel, isNot(contains(type.labelMessage.stableCode)));
+      expect(portugueseLabel, isNot(contains(type.labelMessage.stableCode)));
       expect(englishLabel, isNot(portugueseLabel));
       expect(
         en.resolveStructuredMessage(type.descriptionMessage),
-        isNot(type.descriptionMessage.stableCode),
+        isNot(contains(type.descriptionMessage.stableCode)),
       );
       expect(
         pt.resolveStructuredMessage(type.descriptionMessage),
-        isNot(type.descriptionMessage.stableCode),
+        isNot(contains(type.descriptionMessage.stableCode)),
       );
     }
   });

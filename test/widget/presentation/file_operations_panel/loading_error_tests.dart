@@ -3,6 +3,23 @@ part of '../file_operations_panel_test.dart';
 void _runFileOperationsPanelLoadingErrorTests(
   _FakeFilePicker Function() fakeFilePicker,
 ) {
+  CodecOperationException accessDenied(String operation) =>
+      CodecOperationException(
+        compatibilityCode: 'service.file-operations.access-denied',
+        structuredMessage: StructuredMessage(
+          namespace: 'service.file-operations',
+          code: 'access-denied',
+          category: StructuredMessageCategory.interoperability,
+          severity: StructuredMessageSeverity.error,
+          arguments: {
+            'operation': StructuredMessageArgument.outcome(
+              operation,
+              role: 'file-operation',
+            ),
+          },
+        ),
+      );
+
   void configureNativeSaveDestinations(List<String?> paths) {
     if (kIsWeb) return;
     for (final path in paths) {
@@ -141,6 +158,59 @@ void _runFileOperationsPanelLoadingErrorTests(
 
         expect(find.byType(ErrorBanner), findsOneWidget);
         expect(find.textContaining('Failed to save automaton'), findsOneWidget);
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+      }),
+    );
+
+    testWidgets(
+      'save failure resolves structured file error in locale',
+      (tester) async {
+        configureNativeSaveDestinations(['/tmp/automaton.jff']);
+        final automaton = _buildSampleAutomaton();
+        final message = StructuredMessage(
+          namespace: 'service.file-operations',
+          code: 'access-denied',
+          category: StructuredMessageCategory.interoperability,
+          severity: StructuredMessageSeverity.error,
+          arguments: {
+            'operation': StructuredMessageArgument.outcome(
+              'write',
+              role: 'file-operation',
+            ),
+          },
+        );
+        final service = _StubFileOperationsService(
+          saveAutomatonResponses: Queue.of([
+            Failure<String>(message.stableCode, structuredMessage: message),
+          ]),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('pt'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FileOperationsPanel(
+                automaton: automaton,
+                fileService: service,
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Salvar como JFLAP'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.textContaining(
+            'O Turing Lab não tem permissão para salvar no local selecionado.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining(message.stableCode), findsNothing);
       },
       variant: const TargetPlatformVariant(<TargetPlatform>{
         TargetPlatform.macOS,
@@ -436,5 +506,152 @@ void _runFileOperationsPanelLoadingErrorTests(
       expect(find.text(platformFileInaccessibleErrorCode), findsNothing);
       expect(find.text('View technical details'), findsNothing);
     });
+
+    testWidgets('localizes structured exceptions raised while loading JFLAP', (
+      tester,
+    ) async {
+      final service = _StubFileOperationsService(
+        loadJflapException: accessDenied('read'),
+      );
+      fakeFilePicker().enqueuePickResult(
+        FilePickerResult([
+          PlatformFile(
+            name: 'denied.jff',
+            size: 1,
+            bytes: Uint8List.fromList([0]),
+          ),
+        ]),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FileOperationsPanel(
+              automaton: _buildSampleAutomaton(),
+              fileService: service,
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Load JFLAP'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('does not have permission to read'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('service.file-operations.access-denied'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('localizes structured exceptions raised while loading JSON', (
+      tester,
+    ) async {
+      final service = _StubFileOperationsService(
+        loadJsonException: accessDenied('read'),
+      );
+      fakeFilePicker().enqueuePickResult(
+        FilePickerResult([
+          PlatformFile(
+            name: 'denied.json',
+            size: 2,
+            bytes: Uint8List.fromList([123, 125]),
+          ),
+        ]),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FileOperationsPanel(
+              automaton: _buildSampleAutomaton(),
+              fileService: service,
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Load JSON'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('does not have permission to read'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('service.file-operations.access-denied'),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+      'localizes structured exceptions raised while exporting SVG',
+      (tester) async {
+        configureNativeSaveDestinations(['/tmp/denied.svg']);
+        final service = _StubFileOperationsService(
+          exportSvgException: accessDenied('write'),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FileOperationsPanel(
+                automaton: _buildSampleAutomaton(),
+                fileService: service,
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Export SVG'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.textContaining('does not have permission to save'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('service.file-operations.access-denied'),
+          findsNothing,
+        );
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+      }),
+    );
+
+    testWidgets(
+      'localizes structured exceptions raised while exporting PNG',
+      (tester) async {
+        final service = _StubFileOperationsService(
+          exportPngException: accessDenied('write'),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FileOperationsPanel(
+                automaton: _buildSampleAutomaton(),
+                fileService: service,
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Export PNG'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.textContaining('does not have permission to save'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('service.file-operations.access-denied'),
+          findsNothing,
+        );
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+      }),
+    );
   });
 }

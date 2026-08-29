@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/algorithm_step.dart';
 import 'package:turing_lab/core/models/cyk_step.dart';
+import 'package:turing_lab/core/models/regex_to_nfa_step.dart';
 import 'package:turing_lab/core/models/typed_algorithm_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_renderer_registry.dart';
@@ -88,6 +90,79 @@ void main() {
     expect(tester.takeException(), isNull);
 
     semantics.dispose();
+  });
+
+  testWidgets('localizes booleans without translating formal Yes text', (
+    tester,
+  ) async {
+    final baseStep = AlgorithmStep(
+      id: 'regex-step',
+      stepNumber: 0,
+      title: 'title',
+      explanation: 'explanation',
+      type: AlgorithmType.regexToNfa,
+    );
+    final payload = RegexToNFAStep(
+      baseStep: baseStep,
+      stepType: RegexToNFAStepType.basicSymbol,
+      regexFragment: 'Yes',
+      isFinalNFA: true,
+    );
+
+    await tester.pumpWidget(
+      _localizedViewer(
+        baseStep.copyWith(properties: {kRegexToNfaStepKey: payload}),
+        rendererRegistry: AlgorithmStepRendererRegistry.withDefaults(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Yes'), findsOneWidget);
+    expect(find.text('Sim'), findsOneWidget);
+  });
+
+  testWidgets('hides every structured title and explanation property', (
+    tester,
+  ) async {
+    final message = StructuredMessage(
+      namespace: 'test',
+      code: 'metadata',
+      category: StructuredMessageCategory.unknown,
+      severity: StructuredMessageSeverity.unknown,
+    );
+    final step = AlgorithmStep(
+      id: 'metadata-step',
+      stepNumber: 0,
+      title: 'Step title',
+      explanation: 'Step explanation',
+      type: AlgorithmType.nfaToDfa,
+      properties: {
+        'faToRegexTitleMessage': message,
+        'faToRegexExplanationMessage': message,
+        'regexToNfaTitleMessage': message,
+        'regexToNfaExplanationMessage': message,
+        'fsaKleeneStarTitleMessage': message,
+        'fsaKleeneStarExplanationMessage': message,
+        'fsaReversalTitleMessage': message,
+        'fsaReversalExplanationMessage': message,
+        'fsaConcatenationTitleMessage': message,
+        'fsaConcatenationExplanationMessage': message,
+        'dfaMinimizationTitleMessage': message,
+        'dfaMinimizationExplanationMessage': message,
+        'nfaToDfaTitleMessage': message,
+        'nfaToDfaExplanationMessage': message,
+        'cykStepTitleMessage': message,
+        'cykStepExplanationMessage': message,
+        'visibleValue': 'q0',
+      },
+    );
+
+    await tester.pumpWidget(_localizedViewer(step));
+    await tester.pumpAndSettle();
+
+    expect(find.text('q0'), findsOneWidget);
+    expect(find.textContaining('Title Message'), findsNothing);
+    expect(find.textContaining('Explanation Message'), findsNothing);
   });
 }
 

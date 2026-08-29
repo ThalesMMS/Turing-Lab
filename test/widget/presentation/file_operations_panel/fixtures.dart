@@ -125,6 +125,10 @@ class _StubFileOperationsService extends FileOperationsService {
     Queue<Result<Uint8List>>? readBytesResponses,
     Queue<Result<String>>? writeBytesResponses,
     this.serializeAutomatonException,
+    this.loadJflapException,
+    this.loadJsonException,
+    this.exportSvgException,
+    this.exportPngException,
     this.delayMs = 0,
   }) : saveAutomatonResponses =
            saveAutomatonResponses ?? Queue<Result<String>>(),
@@ -143,6 +147,10 @@ class _StubFileOperationsService extends FileOperationsService {
   final Queue<Result<Uint8List>> readBytesResponses;
   final Queue<Result<String>> writeBytesResponses;
   final CodecOperationException? serializeAutomatonException;
+  final CodecOperationException? loadJflapException;
+  final CodecOperationException? loadJsonException;
+  final CodecOperationException? exportSvgException;
+  final CodecOperationException? exportPngException;
   final int delayMs;
 
   int saveAutomatonCallCount = 0;
@@ -234,6 +242,7 @@ class _StubFileOperationsService extends FileOperationsService {
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
+    if (exportSvgException case final exception?) throw exception;
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
     }
@@ -333,6 +342,7 @@ class _StubFileOperationsService extends FileOperationsService {
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
+    if (exportPngException case final exception?) throw exception;
     exportPngBytesCallCount++;
     lastPngIncludeAnnotations = includeAnnotations;
     lastPngAnnotations = annotations;
@@ -365,6 +375,7 @@ class _StubFileOperationsService extends FileOperationsService {
 
   @override
   Future<Result<FSA>> loadAutomatonFromBytes(Uint8List bytes) async {
+    if (loadJflapException case final exception?) throw exception;
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
     }
@@ -377,6 +388,7 @@ class _StubFileOperationsService extends FileOperationsService {
 
   @override
   Future<Result<FSA>> loadAutomatonFromJsonBytes(Uint8List bytes) async {
+    if (loadJsonException case final exception?) throw exception;
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
     }

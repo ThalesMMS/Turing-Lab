@@ -9,6 +9,7 @@ import 'package:turing_lab/data/codecs/l_system_jflap_messages.dart';
 import 'package:turing_lab/data/codecs/pda_jflap_messages.dart';
 import 'package:turing_lab/data/codecs/pda_json_messages.dart';
 import 'package:turing_lab/data/codecs/regex_codec_messages.dart';
+import 'package:turing_lab/data/codecs/regex_json_messages.dart';
 import 'package:turing_lab/data/codecs/tm_jflap_messages.dart';
 import 'package:turing_lab/data/codecs/tm_json_messages.dart';
 import 'package:turing_lab/data/codecs/versioned_json_messages.dart';
@@ -182,17 +183,19 @@ void main() {
       LSystemJflapMessages.encodeFailed(),
       LSystemJflapMessages.advancedVariantPreserved(),
       LSystemJflapMessages.parametersPreserved('angle, step'),
-      LSystemJflapMessages.executionExtensionRestored(),
+      LSystemJflapMessages.executionExtensionRestored(
+        features: 'seed, context symbols',
+      ),
       LSystemJflapMessages.elementsPreserved(),
-      LSystemJflapMessages.executionExtension(),
-      LSystemJflapMessages.advancedVariantExtension(),
+      LSystemJflapMessages.executionExtension(features: 'seed'),
+      LSystemJflapMessages.advancedVariantExtension(variants: 'stochastic'),
       RegexJflapMessages.unsupportedDocument(),
       RegexJflapMessages.multipleExpressions(),
       RegexJflapMessages.multipleExtensions(),
       RegexJflapMessages.invalidExtension(),
       RegexJflapMessages.extensionMismatch(),
       RegexJflapMessages.dialectNormalized(),
-      RegexJflapMessages.unsupportedFeature('lookahead'),
+      RegexJflapMessages.unsupportedConstruct('lookahead'),
       RegexJflapMessages.invalidDocument(),
       RegexJflapMessages.malformedDocument(),
       RegexJflapMessages.expectedRegexDocument(),
@@ -370,11 +373,17 @@ void main() {
       VersionedJsonMessages.envelopeSerializationFailed(),
     ];
 
+    final unresolved = <String>[];
     for (final message in messages) {
       final english = en.resolveStructuredMessage(message);
       final portuguese = pt.resolveStructuredMessage(message);
-      expect(english, isNot(message.stableCode), reason: message.stableCode);
-      expect(portuguese, isNot(message.stableCode), reason: message.stableCode);
+      if (english.contains(message.stableCode)) {
+        unresolved.add('en:${message.stableCode}');
+      }
+      if (portuguese.contains(message.stableCode)) {
+        unresolved.add('pt:${message.stableCode}');
+      }
     }
+    expect(unresolved, isEmpty);
   });
 }

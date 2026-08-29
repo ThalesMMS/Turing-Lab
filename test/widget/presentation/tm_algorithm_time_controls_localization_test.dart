@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
 import 'package:turing_lab/presentation/widgets/tm_algorithm_execution_controller.dart';
 import 'package:turing_lab/presentation/widgets/tm_algorithm_inputs.dart';
 import 'package:turing_lab/presentation/widgets/tm_algorithm_time_controls.dart';
@@ -25,13 +26,15 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
 
         final inputs = TMAlgorithmInputs()
-          ..profileMaxLength.text = '1'
-          ..profileCandidateCap.text = '1';
+          ..profileMaxLength.text = '4'
+          ..profileCandidateCap.text = '1000';
         addTearDown(inputs.dispose);
 
         final tm = TM
             .empty(id: 'time-profile-locale', name: 'Locale')
-            .copyWith(alphabet: {'a', 'b'});
+            .copyWith(
+              alphabet: {for (var index = 0; index < 10; index++) '$index'},
+            );
         await tester.pumpWidget(
           MaterialApp(
             locale: scenario.locale,
@@ -62,10 +65,24 @@ void main() {
         );
         expect(rowsFinder, findsOneWidget);
         final rows = tester.widget<Text>(rowsFinder).data;
+        final formatter = LocaleValueFormatter(scenario.locale);
+        final plannedCount = tester
+            .widget<Text>(
+              find.byKey(const ValueKey('tm-time-profile-planned-count')),
+            )
+            .data;
+        expect(plannedCount, contains(formatter.integer(2111)));
         expect(
           rows,
-          'n=0: 1 ${scenario.exhaustive} • '
-          'n=1: 1/2 ${scenario.sampled}',
+          contains('n=3: ${formatter.integer(1000)} ${scenario.exhaustive}'),
+        );
+        expect(
+          rows,
+          contains(
+            'n=4: ${formatter.integer(1000)}/'
+            '${formatter.integerBigInt(BigInt.from(10000))} '
+            '${scenario.sampled}',
+          ),
         );
         final oppositeSampled = scenario.sampled == 'sampled'
             ? 'amostrado'

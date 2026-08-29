@@ -271,7 +271,7 @@ void main() {
     ) async {
       await _pumpAlgorithmPanel(tester);
 
-      expect(find.text('Algorithms & Examples'), findsOneWidget);
+      expect(find.text('Algorithms'), findsOneWidget);
       expect(find.text('Regex to NFA'), findsOneWidget);
       expect(find.text('NFA to DFA'), findsOneWidget);
       expect(find.text('Remove ε-transitions'), findsOneWidget);
@@ -968,7 +968,7 @@ void main() {
     testWidgets('displays title text with correct styling', (tester) async {
       await _pumpAlgorithmPanel(tester);
 
-      final titleText = find.text('Algorithms & Examples');
+      final titleText = find.text('Algorithms');
       expect(titleText, findsOneWidget);
 
       final textWidget = tester.widget<Text>(titleText);

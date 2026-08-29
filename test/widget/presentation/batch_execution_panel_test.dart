@@ -283,6 +283,38 @@ void main() {
     );
   });
 
+  testWidgets('filters localized outcomes and diagnostics in Portuguese', (
+    tester,
+  ) async {
+    await _pumpPanel(
+      tester,
+      executor: _TestExecutor(
+        structuredMessage: StructuredMessage(
+          namespace: 'batch.execution',
+          code: 'scalar-tokenization-required',
+          category: StructuredMessageCategory.simulation,
+          severity: StructuredMessageSeverity.error,
+        ),
+      ),
+      locale: const Locale('pt'),
+    );
+    await tester.enterText(find.byKey(const Key('batch-inputs')), 'a');
+    await tester.tap(find.byKey(const Key('batch-run')));
+    await tester.pumpAndSettle();
+
+    const result = Key('batch-result-line-000001');
+    await tester.enterText(find.byKey(const Key('batch-filter')), 'Saída');
+    await tester.pump();
+    expect(find.byKey(result), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('batch-filter')),
+      'Este simulador canônico',
+    );
+    await tester.pump();
+    expect(find.byKey(result), findsOneWidget);
+  });
+
   testWidgets('virtualizes a large generated batch under its explicit cap', (
     tester,
   ) async {

@@ -27,13 +27,7 @@ void main() {
           limit: 8,
         ),
         GrammarCnfMessages.newSymbolLimitReached(5),
-        for (final step in const [
-          'start-symbol',
-          'epsilon',
-          'unit',
-          'useless',
-          'binarize',
-        ]) ...[
+        for (final step in GrammarCnfStepKind.values) ...[
           GrammarCnfMessages.stepTitle(step),
           GrammarCnfMessages.stepRationale(step),
         ],
@@ -150,8 +144,14 @@ void main() {
       ];
 
       for (final message in messages) {
-        expect(en.resolveStructuredMessage(message), isNot(message.stableCode));
-        expect(pt.resolveStructuredMessage(message), isNot(message.stableCode));
+        expect(
+          en.resolveStructuredMessage(message),
+          isNot(contains(message.stableCode)),
+        );
+        expect(
+          pt.resolveStructuredMessage(message),
+          isNot(contains(message.stableCode)),
+        );
       }
     });
   });
@@ -182,11 +182,11 @@ void main() {
         for (final message in messages) {
           expect(
             en.resolveStructuredMessage(message),
-            isNot(message.stableCode),
+            isNot(contains(message.stableCode)),
           );
           expect(
             pt.resolveStructuredMessage(message),
-            isNot(message.stableCode),
+            isNot(contains(message.stableCode)),
           );
         }
 
@@ -245,11 +245,11 @@ void main() {
         for (final message in messages) {
           expect(
             en.resolveStructuredMessage(message),
-            isNot(message.stableCode),
+            isNot(contains(message.stableCode)),
           );
           expect(
             pt.resolveStructuredMessage(message),
-            isNot(message.stableCode),
+            isNot(contains(message.stableCode)),
           );
         }
 

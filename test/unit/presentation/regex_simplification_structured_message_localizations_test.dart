@@ -94,16 +94,16 @@ void main() {
     for (final type in RegexSimplificationStepType.values) {
       final english = en.resolveStructuredMessage(type.labelMessage);
       final portuguese = pt.resolveStructuredMessage(type.labelMessage);
-      expect(english, isNot(type.labelMessage.stableCode));
-      expect(portuguese, isNot(type.labelMessage.stableCode));
+      expect(english, isNot(contains(type.labelMessage.stableCode)));
+      expect(portuguese, isNot(contains(type.labelMessage.stableCode)));
       expect(english, isNot(portuguese));
     }
 
     for (final rule in SimplificationRule.values) {
       final english = en.resolveStructuredMessage(rule.descriptionMessage);
       final portuguese = pt.resolveStructuredMessage(rule.descriptionMessage);
-      expect(english, isNot(rule.descriptionMessage.stableCode));
-      expect(portuguese, isNot(rule.descriptionMessage.stableCode));
+      expect(english, isNot(contains(rule.descriptionMessage.stableCode)));
+      expect(portuguese, isNot(contains(rule.descriptionMessage.stableCode)));
       expect(english, isNot(portuguese));
       expect(rule.formalNotation, isNotEmpty);
     }
