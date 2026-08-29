@@ -328,10 +328,18 @@ final class PdaJflapDocumentCodec implements DocumentCodecCapability<Object> {
         final id =
             customData['id'] as String? ??
             deterministicContentId('pda_transition', signature);
-        if (id.isEmpty || !transitionIds.add(id)) {
+        if (id.isEmpty) {
+          throw _PdaXmlException(
+            CodecMalformedReason.invalidValue,
+            'JFLAP PDA transition ids must be non-empty.',
+            '/structure/automaton/transition[$index]/turingLabTransition',
+            PdaJflapMessages.invalidTransitionId(),
+          );
+        }
+        if (!transitionIds.add(id)) {
           throw _PdaXmlException(
             CodecMalformedReason.duplicateIdentity,
-            'JFLAP PDA transition ids must be non-empty and unique.',
+            'JFLAP PDA transition ids must be unique.',
             '/structure/automaton/transition[$index]/turingLabTransition',
             PdaJflapMessages.duplicateTransitionId(),
           );
@@ -856,35 +864,39 @@ void _nullableElement(
 
 List<CodecDiagnostic> _withPdaDiagnosticMessages(
   List<CodecDiagnostic> diagnostics,
-) => [
-  for (final diagnostic in diagnostics)
-    diagnostic.structuredMessage != null
-        ? diagnostic
-        : CodecDiagnostic(
-            code: diagnostic.code,
-            message: diagnostic.message,
-            path: diagnostic.path,
-            location: diagnostic.location,
-            sourceValue: diagnostic.sourceValue,
-            disposition: diagnostic.disposition,
-            structuredMessage: switch (diagnostic.code) {
-              'jflap.unknown-optional-element' =>
-                PdaJflapMessages.unknownOptionalElement(
-                  diagnostic.path ?? 'unknown',
-                ),
-              'jflap.unknown-optional-attribute' =>
-                PdaJflapMessages.unknownOptionalAttribute(
-                  diagnostic.path ?? 'unknown',
-                ),
-              'jflap.note-invalid-position-preserved' =>
-                PdaJflapMessages.invalidNotePosition(),
-              'jflap.notes-normalized' => PdaJflapMessages.notesNormalized(),
-              'jflap.note-presentation-dropped' =>
-                PdaJflapMessages.notePresentationDropped(),
-              _ => PdaJflapMessages.unknownDiagnostic(),
-            },
-          ),
-];
+) {
+  return diagnostics
+      .map((diagnostic) {
+        if (diagnostic.structuredMessage != null) return diagnostic;
+        final structuredMessage = switch (diagnostic.code) {
+          'jflap.unknown-optional-element' =>
+            PdaJflapMessages.unknownOptionalElement(
+              diagnostic.path ?? 'unknown',
+            ),
+          'jflap.unknown-optional-attribute' =>
+            PdaJflapMessages.unknownOptionalAttribute(
+              diagnostic.path ?? 'unknown',
+            ),
+          'jflap.note-invalid-position-preserved' =>
+            PdaJflapMessages.invalidNotePosition(),
+          'jflap.notes-normalized' => PdaJflapMessages.notesNormalized(),
+          'jflap.note-presentation-dropped' =>
+            PdaJflapMessages.notePresentationDropped(),
+          _ => null,
+        };
+        if (structuredMessage == null) return diagnostic;
+        return CodecDiagnostic(
+          code: diagnostic.code,
+          message: diagnostic.message,
+          path: diagnostic.path,
+          location: diagnostic.location,
+          sourceValue: diagnostic.sourceValue,
+          disposition: diagnostic.disposition,
+          structuredMessage: structuredMessage,
+        );
+      })
+      .toList(growable: false);
+}
 
 CodecOutcome<InteroperableDocument<Object>> _copyPdaXmlFailure(
   CodecOutcome<XmlDocument> outcome,
@@ -904,7 +916,7 @@ CodecOutcome<InteroperableDocument<Object>> _copyPdaXmlFailure(
         cause: cause,
         structuredMessage:
             structuredMessage ??
-            (message == 'XML is not valid UTF-8.'
+            (reason == CodecMalformedReason.invalidUtf8
                 ? PdaJflapMessages.invalidUtf8()
                 : PdaJflapMessages.malformedXml()),
       ),

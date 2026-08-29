@@ -630,54 +630,54 @@ final class MealyJflapDocumentCodec implements DocumentCodecCapability<Object> {
       diagnostics: diagnostics,
     );
   }
-}
 
-void _preserveUnknown(
-  XmlElement parent, {
-  required Set<String> known,
-  required String key,
-  required Map<String, Object?> extensions,
-  required List<CodecDiagnostic> diagnostics,
-}) {
-  final unknown = parent.childElements
-      .where((element) => !known.contains(element.name.local))
-      .map((element) => element.toXmlString())
-      .toList(growable: false);
-  if (unknown.isEmpty) return;
-  extensions[key] = unknown;
-  diagnostics.add(
-    CodecDiagnostic(
-      code: 'jflap.unknown-optional-element',
-      message: 'Unknown optional XML data was preserved.',
-      path: key,
-      structuredMessage: MealyJflapMessages.unknownOptionalElement(key),
-    ),
-  );
-}
-
-void _preserveAttributes(
-  XmlElement element, {
-  required Set<String> known,
-  required String key,
-  required Map<String, Object?> extensions,
-  required List<CodecDiagnostic> diagnostics,
-}) {
-  final unknown = <String, String>{};
-  for (final attribute in element.attributes) {
-    if (!known.contains(attribute.name.local)) {
-      unknown[attribute.name.qualified] = attribute.value;
-    }
+  static void _preserveUnknown(
+    XmlElement parent, {
+    required Set<String> known,
+    required String key,
+    required Map<String, Object?> extensions,
+    required List<CodecDiagnostic> diagnostics,
+  }) {
+    final unknown = parent.childElements
+        .where((element) => !known.contains(element.name.local))
+        .map((element) => element.toXmlString())
+        .toList(growable: false);
+    if (unknown.isEmpty) return;
+    extensions[key] = unknown;
+    diagnostics.add(
+      CodecDiagnostic(
+        code: 'jflap.unknown-optional-element',
+        message: 'Unknown optional XML data was preserved.',
+        path: key,
+        structuredMessage: MealyJflapMessages.unknownOptionalElement(key),
+      ),
+    );
   }
-  if (unknown.isEmpty) return;
-  extensions[key] = unknown;
-  diagnostics.add(
-    CodecDiagnostic(
-      code: 'jflap.unknown-optional-attribute',
-      message: 'Unknown optional XML attributes were preserved.',
-      path: key,
-      structuredMessage: MealyJflapMessages.unknownOptionalAttribute(key),
-    ),
-  );
+
+  static void _preserveAttributes(
+    XmlElement element, {
+    required Set<String> known,
+    required String key,
+    required Map<String, Object?> extensions,
+    required List<CodecDiagnostic> diagnostics,
+  }) {
+    final unknown = <String, String>{};
+    for (final attribute in element.attributes) {
+      if (!known.contains(attribute.name.local)) {
+        unknown[attribute.name.qualified] = attribute.value;
+      }
+    }
+    if (unknown.isEmpty) return;
+    extensions[key] = unknown;
+    diagnostics.add(
+      CodecDiagnostic(
+        code: 'jflap.unknown-optional-attribute',
+        message: 'Unknown optional XML attributes were preserved.',
+        path: key,
+        structuredMessage: MealyJflapMessages.unknownOptionalAttribute(key),
+      ),
+    );
+  }
 }
 
 final class _MealyTransitionRecord {

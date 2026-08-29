@@ -20,15 +20,45 @@ abstract final class RegexJflapMessages {
   static StructuredMessage dialectNormalized() =>
       _information('dialect-normalized');
 
-  static StructuredMessage unsupportedFeature(String feature) => _unsupported(
-    'unsupported-feature',
+  static StructuredMessage unsupportedDialect() =>
+      _unsupported('unsupported-dialect');
+
+  static StructuredMessage nonBmpSymbol() => _unsupported('non-bmp-symbol');
+
+  static StructuredMessage escapeUnsupported(String symbol) => _unsupported(
+    'escape-unsupported',
     arguments: {
-      'feature': StructuredMessageArgument.literal(
-        feature,
-        role: 'feature-description',
-      ),
+      'symbol': StructuredMessageArgument.symbol(symbol, role: 'regex-symbol'),
     },
   );
+
+  static StructuredMessage emptyLanguageUnsupported() =>
+      _unsupported('empty-language-unsupported');
+
+  static StructuredMessage reservedLiteral(String symbol) => _unsupported(
+    'reserved-literal',
+    arguments: {
+      'symbol': StructuredMessageArgument.symbol(symbol, role: 'regex-symbol'),
+    },
+  );
+
+  static StructuredMessage unsupportedConstruct(String symbol) => _unsupported(
+    'unsupported-construct',
+    arguments: {
+      'symbol': StructuredMessageArgument.symbol(symbol, role: 'regex-symbol'),
+    },
+  );
+
+  static StructuredMessage profileDependentSymbol(String symbol) =>
+      _unsupported(
+        'profile-dependent-symbol',
+        arguments: {
+          'symbol': StructuredMessageArgument.symbol(
+            symbol,
+            role: 'regex-symbol',
+          ),
+        },
+      );
 
   static StructuredMessage invalidDocument() => _error('invalid-document');
 
@@ -109,47 +139,5 @@ abstract final class RegexJflapMessages {
     category: StructuredMessageCategory.interoperability,
     severity: severity,
     arguments: arguments,
-  );
-}
-
-abstract final class RegexJsonMessages {
-  static const namespace = 'codec.regex-json';
-
-  static StructuredMessage unexpectedDecoderType() =>
-      _error('unexpected-decoder-type');
-
-  static StructuredMessage sourceOfTruthInvalid() =>
-      _error('source-of-truth-invalid');
-
-  static StructuredMessage canonicalAstMismatch() =>
-      _error('canonical-ast-mismatch');
-
-  static StructuredMessage expectedRegexDocument() =>
-      _error('expected-regex-document');
-
-  static StructuredMessage invalidDocument() => _error('invalid-document');
-
-  static StructuredMessage unsupportedDialect() =>
-      _unsupported('unsupported-dialect');
-
-  static StructuredMessage invalidSource() => _error('invalid-source');
-
-  static StructuredMessage unexpectedValidationOutcome() =>
-      _error('unexpected-validation-outcome');
-
-  static StructuredMessage _unsupported(String code) =>
-      _message(code, severity: StructuredMessageSeverity.error);
-
-  static StructuredMessage _error(String code) =>
-      _message(code, severity: StructuredMessageSeverity.error);
-
-  static StructuredMessage _message(
-    String code, {
-    required StructuredMessageSeverity severity,
-  }) => StructuredMessage(
-    namespace: namespace,
-    code: code,
-    category: StructuredMessageCategory.interoperability,
-    severity: severity,
   );
 }

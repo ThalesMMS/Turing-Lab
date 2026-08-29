@@ -5,7 +5,7 @@ import '../../core/formal_systems/formal_systems.dart';
 import '../../core/interoperability/interoperability.dart';
 import '../../core/models/regex_document.dart';
 import 'codec_utils.dart';
-import 'regex_codec_messages.dart';
+import 'regex_json_messages.dart';
 import 'versioned_json_document_codec.dart';
 
 /// Canonical, versioned Turing Lab JSON codec for Regex documents.

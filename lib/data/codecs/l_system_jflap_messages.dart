@@ -124,8 +124,7 @@ abstract final class LSystemJflapMessages {
       );
 
   static StructuredMessage executionExtensionRestored({
-    String features =
-        'production-metadata, random-seed, ignored-context-symbols',
+    required String features,
   }) => _information(
     'execution-extension-restored',
     arguments: {
@@ -139,20 +138,19 @@ abstract final class LSystemJflapMessages {
   static StructuredMessage elementsPreserved() =>
       _information('elements-preserved');
 
-  static StructuredMessage executionExtension({
-    String features = 'random-seed, ignored-context-symbols, weighted-choices',
-  }) => _warning(
-    'execution-extension',
-    arguments: {
-      'features': StructuredMessageArgument.literal(
-        features,
-        role: 'extension-feature-list',
-      ),
-    },
-  );
+  static StructuredMessage executionExtension({required String features}) =>
+      _warning(
+        'execution-extension',
+        arguments: {
+          'features': StructuredMessageArgument.literal(
+            features,
+            role: 'extension-feature-list',
+          ),
+        },
+      );
 
   static StructuredMessage advancedVariantExtension({
-    String variants = 'parametric, stochastic, contextSensitive',
+    required String variants,
   }) => _warning(
     'advanced-variant-extension',
     arguments: {

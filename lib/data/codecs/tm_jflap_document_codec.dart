@@ -8,6 +8,7 @@ import 'package:xml/xml.dart';
 import '../../core/formal_systems/formal_systems.dart';
 import '../../core/algorithms/tm_block_dependency_analyzer.dart';
 import '../../core/interoperability/interoperability.dart';
+import '../../core/messages/structured_message.dart';
 import '../../core/models/state.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_acceptance.dart';
@@ -1055,18 +1056,20 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
         ? 1
         : int.tryParse(rawTapeCount);
     if (tapeCount == null || tapeCount < 1 || tapeCount > 5) {
-      throw const _BlockXmlException(
+      throw _BlockXmlException(
         CodecMalformedReason.invalidValue,
         'JFLAP tape count must be between 1 and 5.',
         '/structure/tapes',
+        structuredMessage: TmJflapMessages.invalidTapeCount(),
       );
     }
     final automaton = root.findElements('automaton').firstOrNull;
     if (automaton == null) {
-      throw const _BlockXmlException(
+      throw _BlockXmlException(
         CodecMalformedReason.missingField,
         'JFLAP TM is missing <automaton>.',
         '/structure/automaton',
+        structuredMessage: TmJflapMessages.missingAutomaton(),
       );
     }
     if (root.descendants.whereType<XmlElement>().length >
@@ -1090,23 +1093,26 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
         CodecMalformedReason.invalidValue,
         error.message,
         '/structure/turingLabTm',
+        structuredMessage: TmJflapMessages.invalidMetadata(),
       );
     }
     if (rootMetadata['variant'] != null &&
         rootMetadata['variant'] != TMDocumentVariant.buildingBlocks.name) {
-      throw const _BlockXmlException(
+      throw _BlockXmlException(
         CodecMalformedReason.invalidValue,
         'The Turing Lab TM variant does not match the building-block XML.',
         '/structure/turingLabTm/variant',
+        structuredMessage: TmJflapMessages.buildingBlockVariantMismatch(),
       );
     }
     if (rootMetadata['tapeCount'] != null &&
         (rootMetadata['tapeCount'] is! int ||
             rootMetadata['tapeCount'] != tapeCount)) {
-      throw const _BlockXmlException(
+      throw _BlockXmlException(
         CodecMalformedReason.invalidValue,
         'The Turing Lab tape count does not match <tapes>.',
         '/structure/turingLabTm/tapeCount',
+        structuredMessage: TmJflapMessages.tapeCountMismatch(),
       );
     }
     late final String? metadataId;
@@ -1121,6 +1127,7 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
         CodecMalformedReason.invalidValue,
         error.message,
         '/structure/turingLabTm',
+        structuredMessage: TmJflapMessages.invalidMetadata(),
       );
     }
     final rootId =
@@ -1148,6 +1155,7 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
           CodecMalformedReason.invalidValue,
           'JFLAP TM building blocks contain a recursive dependency.',
           '/structure/automaton/${reference.tag}',
+          structuredMessage: TmJflapMessages.recursiveDependency(reference.tag),
         );
       }
       final candidates = root.descendants
@@ -1163,6 +1171,9 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
               ? 'JFLAP block ${reference.tag} has no submachine definition.'
               : 'JFLAP block ${reference.tag} has ambiguous definitions.',
           '/structure/automaton/${reference.tag}',
+          structuredMessage: candidates.isEmpty
+              ? TmJflapMessages.missingBlockDefinition(reference.tag)
+              : TmJflapMessages.ambiguousBlockDefinition(reference.tag),
         );
       }
       final element = candidates.single;
@@ -1272,6 +1283,8 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
         CodecMalformedReason.invalidValue,
         firstError.message,
         '/structure/automaton',
+        structuredMessage:
+            firstError.structuredMessage ?? TmJflapMessages.invalidDocument(),
       );
     }
     final droppedUnknownXml = _hasUnknownBuildingBlockXml(root);
@@ -1318,14 +1331,14 @@ CodecOutcome<InteroperableDocument<Object>> _decodeBuildingBlockDocument(
     return CodecUnsupported(
       reason: CodecUnsupportedReason.feature,
       message: error.message,
-      structuredMessage: TmJflapMessages.unsupportedFromLegacy(error.message),
+      structuredMessage: error.structuredMessage,
     );
   } on _BlockXmlException catch (error) {
     return CodecMalformed(
       reason: error.reason,
       message: error.message,
       location: CodecSourceLocation(path: error.path),
-      structuredMessage: TmJflapMessages.malformedFromLegacy(error.message),
+      structuredMessage: error.structuredMessage,
     );
   } on FormatException catch (error) {
     return CodecMalformed(
@@ -1357,10 +1370,11 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
   if (customMetadata.containsKey('acceptancePolicy') &&
       metadata.containsKey('acceptancePolicy') &&
       customMetadata['acceptancePolicy'] != metadata['acceptancePolicy']) {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'The root and machine acceptance policies conflict.',
       '/structure/automaton/turingLabMachine/acceptancePolicy',
+      structuredMessage: TmJflapMessages.acceptancePolicyConflict(),
     );
   }
   final machineMetadata = <String, dynamic>{...customMetadata, ...metadata};
@@ -1369,10 +1383,11 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
       _metadataString(machineMetadata, 'name') ?? machineName;
   if (machineMetadata['schema'] != null &&
       machineMetadata['schema'] != 'turing-lab.tm@1') {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'A building-block machine has an invalid Turing Lab schema.',
       '/structure/automaton/turingLabMachine/schema',
+      structuredMessage: TmJflapMessages.machineSchemaInvalid(),
     );
   }
   final declaredVariant = machineMetadata['variant'];
@@ -1381,27 +1396,30 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
           !TMDocumentVariant.values.any(
             (variant) => variant.name == declaredVariant,
           ))) {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'A building-block machine has an invalid TM variant.',
       '/structure/automaton/turingLabMachine/variant',
+      structuredMessage: TmJflapMessages.machineVariantInvalid(),
     );
   }
   final declaredTapeCount = machineMetadata['tapeCount'];
   if (declaredTapeCount != null &&
       (declaredTapeCount is! int || declaredTapeCount != tapeCount)) {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'A building-block machine has a mismatched tape count.',
       '/structure/automaton/turingLabMachine/tapeCount',
+      structuredMessage: TmJflapMessages.machineTapeCountMismatch(),
     );
   }
   final declaredBlank = machineMetadata['blankSymbol'];
   if (declaredBlank != null && declaredBlank != blankSymbol) {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'A building-block machine has a mismatched blank symbol.',
       '/structure/automaton/turingLabMachine/blankSymbol',
+      structuredMessage: TmJflapMessages.machineBlankSymbolMismatch(),
     );
   }
   late final TMAcceptancePolicy acceptancePolicy;
@@ -1412,6 +1430,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
       CodecMalformedReason.invalidValue,
       error.message,
       '/structure/automaton/turingLabMachine/acceptancePolicy',
+      structuredMessage: TmJflapMessages.acceptancePolicyInvalid(),
     );
   }
   final stateElements = <XmlElement>[
@@ -1432,6 +1451,9 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
             : CodecMalformedReason.duplicateIdentity,
         'JFLAP TM state and block ids must be non-empty and unique.',
         '/structure/automaton/${element.name.local}',
+        structuredMessage: id == null || id.isEmpty
+            ? TmJflapMessages.invalidNodeId()
+            : TmJflapMessages.duplicateNodeId(),
       );
     }
     final x = double.tryParse(element.getElement('x')?.innerText ?? '');
@@ -1441,6 +1463,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM node $id has invalid coordinates.',
         '/structure/automaton/${element.name.local}[@id="$id"]',
+        structuredMessage: TmJflapMessages.invalidNodeCoordinate(id),
       );
     }
     final initial = element.findElements('initial').isNotEmpty;
@@ -1461,6 +1484,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM node $id has an invalid state type.',
         '/structure/automaton/${element.name.local}[@id="$id"]/turingLabState/type',
+        structuredMessage: TmJflapMessages.invalidNodeStateType(id),
       );
     }
     final stateProperties = customData['properties'];
@@ -1469,6 +1493,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM node $id has invalid state properties.',
         '/structure/automaton/${element.name.local}[@id="$id"]/turingLabState/properties',
+        structuredMessage: TmJflapMessages.invalidNodeProperties(id),
       );
     }
     final state = State(
@@ -1492,6 +1517,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
           CodecMalformedReason.missingField,
           'JFLAP building block $id has no <tag> reference.',
           '/structure/automaton/block[@id="$id"]/tag',
+          structuredMessage: TmJflapMessages.missingBlockTagReference(id),
         );
       }
       final blockId =
@@ -1523,10 +1549,11 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
     }
   }
   if (states.isEmpty || initialCount != 1) {
-    throw const _BlockXmlException(
+    throw _BlockXmlException(
       CodecMalformedReason.invalidValue,
       'Every JFLAP TM block definition requires states and one initial state.',
       '/structure/automaton',
+      structuredMessage: TmJflapMessages.invalidInitialStateCount(),
     );
   }
 
@@ -1546,6 +1573,10 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM transition references an unknown state.',
         '/structure/automaton/transition[$index]',
+        structuredMessage: TmJflapMessages.unknownTransitionEndpoints(
+          from: fromId,
+          to: toId,
+        ),
       );
     }
     final isBlockTransition = element.getAttribute('block') == 'true';
@@ -1567,13 +1598,15 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
             CodecMalformedReason.invalidValue,
             'JFLAP TM transition has an invalid or duplicate tape index.',
             '/structure/automaton/transition[$index]/$tag',
+            structuredMessage: TmJflapMessages.invalidOrDuplicateTapeIndex(),
           );
         }
         final value = child.innerText;
         if (tag == 'read') {
           if (_usesJflapReadPredicate(value)) {
-            throw const _BlockUnsupportedException(
+            throw _BlockUnsupportedException(
               'JFLAP wildcard, negated, and variable TM reads are not supported.',
+              structuredMessage: TmJflapMessages.unsupportedReadPredicate(),
             );
           }
           if (value.isNotEmpty && value.length != 1) {
@@ -1581,6 +1614,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
               CodecMalformedReason.invalidValue,
               'JFLAP TM read symbols must contain one UTF-16 code unit.',
               '/structure/automaton/transition[$index]/read',
+              structuredMessage: TmJflapMessages.invalidReadSymbol(),
             );
           }
           reads[tape - 1] = _jflapSymbol(value, blankSymbol);
@@ -1591,6 +1625,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
               CodecMalformedReason.invalidValue,
               'JFLAP TM write symbols must contain one UTF-16 code unit.',
               '/structure/automaton/transition[$index]/write',
+              structuredMessage: TmJflapMessages.invalidWriteSymbol(),
             );
           }
           writes[tape - 1] = _jflapSymbol(value, blankSymbol);
@@ -1602,6 +1637,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
               CodecMalformedReason.invalidValue,
               'JFLAP TM movement must be L, R, or S.',
               '/structure/automaton/transition[$index]/move',
+              structuredMessage: TmJflapMessages.invalidMove(),
             );
           }
           moves[tape - 1] = direction;
@@ -1629,6 +1665,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM transition $index has an invalid Turing Lab id.',
         '/structure/automaton/transition[$index]/turingLabTransition/id',
+        structuredMessage: TmJflapMessages.invalidTransitionId(),
       );
     }
     if (customId != null && attributeId != null && customId != attributeId) {
@@ -1636,6 +1673,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM transition identity extensions disagree.',
         '/structure/automaton/transition[$index]',
+        structuredMessage: TmJflapMessages.transitionIdentityConflict(),
       );
     }
     final id =
@@ -1650,6 +1688,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.duplicateIdentity,
         'JFLAP TM transition ids must be unique.',
         '/structure/automaton/transition[$index]',
+        structuredMessage: TmJflapMessages.duplicateTransitionId(),
       );
     }
     final rawLabel = customData['label'];
@@ -1658,6 +1697,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM transition $id has an invalid label.',
         '/structure/automaton/transition[$index]/turingLabTransition/label',
+        structuredMessage: TmJflapMessages.invalidTransitionLabel(id),
       );
     }
     final transitionTypeName = customData['type'];
@@ -1670,6 +1710,7 @@ _ParsedBlockAutomaton _parseBlockAutomaton(
         CodecMalformedReason.invalidValue,
         'JFLAP TM transition $id has an invalid type.',
         '/structure/automaton/transition[$index]/turingLabTransition/type',
+        structuredMessage: TmJflapMessages.invalidTransitionType(id),
       );
     }
     transitions.add(
@@ -1771,8 +1812,8 @@ CodecOutcome<EncodedDocument> _encodeBuildingBlockDocument(
     if (unsupported != null) {
       return CodecUnsupported(
         reason: CodecUnsupportedReason.feature,
-        message: unsupported,
-        structuredMessage: TmJflapMessages.unsupportedFromLegacy(unsupported),
+        message: unsupported.message,
+        structuredMessage: unsupported.structuredMessage,
       );
     }
   }
@@ -2094,17 +2135,27 @@ class _RawBlockInvocation {
 }
 
 class _BlockXmlException implements Exception {
-  const _BlockXmlException(this.reason, this.message, this.path);
+  const _BlockXmlException(
+    this.reason,
+    this.message,
+    this.path, {
+    required this.structuredMessage,
+  });
 
   final CodecMalformedReason reason;
   final String message;
   final String path;
+  final StructuredMessage structuredMessage;
 }
 
 class _BlockUnsupportedException implements Exception {
-  const _BlockUnsupportedException(this.message);
+  const _BlockUnsupportedException(
+    this.message, {
+    required this.structuredMessage,
+  });
 
   final String message;
+  final StructuredMessage structuredMessage;
 }
 
 TapeDirection? _direction(String raw) => switch (raw.trim().toUpperCase()) {
@@ -2265,7 +2316,8 @@ String? _firstTmCodecValidationError(TM machine) {
   return errors.firstOrNull;
 }
 
-String? _jflapUnsupportedOperation(TM machine) {
+({String message, StructuredMessage structuredMessage})?
+_jflapUnsupportedOperation(TM machine) {
   for (final transition in machine.tmTransitions) {
     final operations = transition.operationsForTapeCount(
       machine.tapeCount,
@@ -2276,12 +2328,28 @@ String? _jflapUnsupportedOperation(TM machine) {
       final write = operations.writeSymbols[tape];
       if (read != machine.blankSymbol &&
           (_usesJflapReadPredicate(read) || read.length != 1)) {
-        return 'Transition ${transition.id} uses a read symbol that JFLAP '
-            'cannot represent atomically.';
+        return (
+          message:
+              'Transition ${transition.id} uses a read symbol that JFLAP '
+              'cannot represent atomically.',
+          structuredMessage: TmJflapMessages.unsupportedOperation(
+            transitionId: transition.id,
+            operation: 'read',
+            symbol: read,
+          ),
+        );
       }
       if (write != machine.blankSymbol && write.length != 1) {
-        return 'Transition ${transition.id} uses a write symbol that JFLAP '
-            'cannot represent atomically.';
+        return (
+          message:
+              'Transition ${transition.id} uses a write symbol that JFLAP '
+              'cannot represent atomically.',
+          structuredMessage: TmJflapMessages.unsupportedOperation(
+            transitionId: transition.id,
+            operation: 'write',
+            symbol: write,
+          ),
+        );
       }
     }
   }

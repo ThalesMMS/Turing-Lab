@@ -110,16 +110,30 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
 
       final extension = extensionElements.firstOrNull;
       if (extension != null && extension.innerText.trim().isNotEmpty) {
-        final decoded = jsonDecode(extension.innerText);
+        Object? decoded;
+        try {
+          decoded = jsonDecode(extension.innerText);
+        } on FormatException catch (error) {
+          throw _RegexJflapFormatException(
+            error.message,
+            RegexJflapMessages.invalidExtension(),
+          );
+        }
         if (decoded is! Map) {
           throw _RegexJflapFormatException(
             'turingLabRegex must contain a JSON object.',
             RegexJflapMessages.invalidExtension(),
           );
         }
-        final document = RegexDocument.fromJson(
-          Map<String, dynamic>.from(decoded),
-        );
+        late final RegexDocument document;
+        try {
+          document = RegexDocument.fromJson(Map<String, dynamic>.from(decoded));
+        } on FormatException catch (error) {
+          throw _RegexJflapFormatException(
+            error.message,
+            RegexJflapMessages.invalidDocument(),
+          );
+        }
         _requireValidDocument(document);
         final mapped = _toJflap(document.source);
         if (mapped != jflapSource) {
@@ -146,13 +160,14 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
       }
 
       final conversion = _fromJflap(jflapSource);
-      if (conversion.source.isNotEmpty &&
-          !RegexToNFAConverter.validate(conversion.source).isValid) {
-        throw FormatException(
-          RegexToNFAConverter.validate(
-            conversion.source,
-          ).diagnostic!.displayMessage,
-        );
+      if (conversion.source.isNotEmpty) {
+        final validation = RegexToNFAConverter.validate(conversion.source);
+        if (!validation.isValid) {
+          throw _RegexJflapFormatException(
+            validation.diagnostic!.displayMessage,
+            RegexJflapMessages.invalidSource(),
+          );
+        }
       }
       final document = RegexDocument(
         id: deterministicContentId('regex', jflapSource),
@@ -193,7 +208,7 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
         reason: CodecUnsupportedReason.feature,
         message: error.message,
         roadmapIssue: 327,
-        structuredMessage: RegexJflapMessages.unsupportedFeature(error.message),
+        structuredMessage: error.structuredMessage,
       );
     } on _RegexJflapFormatException catch (error) {
       return CodecMalformed(
@@ -207,7 +222,7 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
         reason: CodecMalformedReason.invalidValue,
         message: error.message,
         cause: error,
-        structuredMessage: _structuredJflapFormat(error.message),
+        structuredMessage: RegexJflapMessages.invalidSource(),
       );
     } catch (error) {
       return CodecMalformed(
@@ -289,7 +304,7 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
         reason: CodecUnsupportedReason.feature,
         message: error.message,
         roadmapIssue: 327,
-        structuredMessage: RegexJflapMessages.unsupportedFeature(error.message),
+        structuredMessage: error.structuredMessage,
       );
     } on _RegexJflapFormatException catch (error) {
       return CodecMalformed(
@@ -303,7 +318,7 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
         reason: CodecMalformedReason.invalidValue,
         message: error.message,
         cause: error,
-        structuredMessage: _structuredJflapFormat(error.message),
+        structuredMessage: RegexJflapMessages.invalidSource(),
       );
     } catch (error) {
       return CodecInternalFailure(
@@ -318,19 +333,28 @@ final class RegexJflapDocumentCodec implements DocumentCodecCapability<Object> {
 
 void _requireValidDocument(RegexDocument document) {
   final errors = document.validate();
-  if (errors.isNotEmpty) throw FormatException(errors.first);
+  if (errors.isNotEmpty) {
+    throw _RegexJflapFormatException(
+      errors.first,
+      RegexJflapMessages.invalidDocument(),
+    );
+  }
   if (document.dialect != RegexDialect.turingLabV1 ||
       document.tokenization != RegexTokenization.unicodeScalar ||
       document.epsilonSymbol != 'ε' ||
       document.emptyLanguageSymbol != '∅') {
-    throw const _RegexJflapUnsupported(
+    throw _RegexJflapUnsupported(
       'JFLAP export supports only the Turing Lab v1 Unicode-scalar Regex dialect.',
+      RegexJflapMessages.unsupportedDialect(),
     );
   }
   if (document.source.isNotEmpty) {
     final validation = RegexToNFAConverter.validate(document.source);
     if (!validation.isValid) {
-      throw FormatException(validation.diagnostic!.displayMessage);
+      throw _RegexJflapFormatException(
+        validation.diagnostic!.displayMessage,
+        RegexJflapMessages.invalidSource(),
+      );
     }
   }
 }
@@ -341,14 +365,16 @@ String _toJflap(String source) {
   for (var index = 0; index < characters.length; index++) {
     final char = characters[index];
     if (char.length > 1) {
-      throw const _RegexJflapUnsupported(
+      throw _RegexJflapUnsupported(
         'JFLAP regular expressions cannot safely preserve non-BMP symbols.',
+        RegexJflapMessages.nonBmpSymbol(),
       );
     }
     if (char == '\\') {
       if (++index >= characters.length) {
-        throw const FormatException(
+        throw _RegexJflapFormatException(
           'Regex escape must be followed by a symbol.',
+          RegexJflapMessages.escapeMissingSymbol(),
         );
       }
       final literal = characters[index];
@@ -356,6 +382,7 @@ String _toJflap(String source) {
           const {'+', '*', '(', ')', '!', 'ø', 'ε', 'λ'}.contains(literal)) {
         throw _RegexJflapUnsupported(
           'JFLAP has no escape syntax for the literal "$literal".',
+          RegexJflapMessages.escapeUnsupported(literal),
         );
       }
       output.write(literal);
@@ -367,14 +394,16 @@ String _toJflap(String source) {
       case 'ε':
         output.write('!');
       case '∅':
-        throw const _RegexJflapUnsupported(
+        throw _RegexJflapUnsupported(
           'JFLAP 7.1 does not reopen the empty-language symbol with equivalent semantics.',
+          RegexJflapMessages.emptyLanguageUnsupported(),
         );
       case '!':
       case 'ø':
       case 'λ':
         throw _RegexJflapUnsupported(
           'The literal "$char" has reserved or profile-dependent meaning in JFLAP.',
+          RegexJflapMessages.reservedLiteral(char),
         );
       case '+':
       case '?':
@@ -383,6 +412,7 @@ String _toJflap(String source) {
       case ']':
         throw _RegexJflapUnsupported(
           'The JFLAP Regex dialect does not support the "$char" construct.',
+          RegexJflapMessages.unsupportedConstruct(char),
         );
       default:
         output.write(char);
@@ -402,8 +432,9 @@ String _toJflap(String source) {
   final diagnostics = <CodecDiagnostic>[];
   for (final char in source.runes.map(String.fromCharCode)) {
     if (char.length > 1) {
-      throw const _RegexJflapUnsupported(
+      throw _RegexJflapUnsupported(
         'JFLAP non-BMP Regex symbols do not have portable Java-char semantics.',
+        RegexJflapMessages.nonBmpSymbol(),
       );
     }
     switch (char) {
@@ -429,6 +460,7 @@ String _toJflap(String source) {
       case 'λ':
         throw _RegexJflapUnsupported(
           'The JFLAP symbol "$char" depends on a global profile; use ! for portable epsilon.',
+          RegexJflapMessages.profileDependentSymbol(char),
         );
       case '|':
       case '?':
@@ -454,21 +486,29 @@ void _validateJflap(String source) {
     final char = source[index];
     if (char == '(') depth++;
     if (char == ')' && --depth < 0) {
-      throw const FormatException('JFLAP Regex parentheses are unbalanced.');
+      throw _RegexJflapFormatException(
+        'JFLAP Regex parentheses are unbalanced.',
+        RegexJflapMessages.unbalancedParentheses(),
+      );
     }
     if (index == 0 && const {')', '+', '*'}.contains(char)) {
-      throw const FormatException(
+      throw _RegexJflapFormatException(
         'JFLAP Regex operators are poorly formatted.',
+        RegexJflapMessages.malformedOperators(),
       );
     }
     if (char == '+' && index == source.length - 1) {
-      throw const FormatException('JFLAP Regex union lacks a right operand.');
+      throw _RegexJflapFormatException(
+        'JFLAP Regex union lacks a right operand.',
+        RegexJflapMessages.unionMissingOperand(),
+      );
     }
     if (index > 0 && const {'+', ')', '*'}.contains(char)) {
       final previous = source[index - 1];
       if (previous == '(' || previous == '+') {
-        throw const FormatException(
+        throw _RegexJflapFormatException(
           'JFLAP Regex operators are poorly formatted.',
+          RegexJflapMessages.malformedOperators(),
         );
       }
     }
@@ -476,19 +516,24 @@ void _validateJflap(String source) {
       final previous = index == 0 ? null : source[index - 1];
       final next = index + 1 == source.length ? null : source[index + 1];
       if (previous != null && previous != '(' && previous != '+') {
-        throw const FormatException(
+        throw _RegexJflapFormatException(
           'JFLAP epsilon cannot be concatenated on its left.',
+          RegexJflapMessages.epsilonLeftConcatenation(),
         );
       }
       if (next != null && next != ')' && next != '+' && next != '*') {
-        throw const FormatException(
+        throw _RegexJflapFormatException(
           'JFLAP epsilon cannot be concatenated on its right.',
+          RegexJflapMessages.epsilonRightConcatenation(),
         );
       }
     }
   }
   if (depth != 0) {
-    throw const FormatException('JFLAP Regex parentheses are unbalanced.');
+    throw _RegexJflapFormatException(
+      'JFLAP Regex parentheses are unbalanced.',
+      RegexJflapMessages.unbalancedParentheses(),
+    );
   }
 }
 
@@ -527,7 +572,10 @@ Set<String> _literalAlphabet(String source) {
 String _singleText(XmlElement root, String name) {
   final values = root.findElements(name).toList();
   if (values.length != 1) {
-    throw FormatException('JFLAP Regex requires exactly one $name element.');
+    throw _RegexJflapFormatException(
+      'JFLAP Regex requires exactly one $name element.',
+      RegexJflapMessages.expectedRegexDocument(),
+    );
   }
   return values.single.innerText.trim();
 }
@@ -550,9 +598,10 @@ String _safeFilename(String name) {
 }
 
 final class _RegexJflapUnsupported implements Exception {
-  const _RegexJflapUnsupported(this.message);
+  const _RegexJflapUnsupported(this.message, this.structuredMessage);
 
   final String message;
+  final StructuredMessage structuredMessage;
 }
 
 final class _RegexJflapFormatException implements Exception {
@@ -561,22 +610,6 @@ final class _RegexJflapFormatException implements Exception {
   final String message;
   final StructuredMessage structuredMessage;
 }
-
-StructuredMessage _structuredJflapFormat(String message) => switch (message) {
-  'Regex escape must be followed by a symbol.' =>
-    RegexJflapMessages.escapeMissingSymbol(),
-  'JFLAP Regex parentheses are unbalanced.' =>
-    RegexJflapMessages.unbalancedParentheses(),
-  'JFLAP Regex operators are poorly formatted.' =>
-    RegexJflapMessages.malformedOperators(),
-  'JFLAP Regex union lacks a right operand.' =>
-    RegexJflapMessages.unionMissingOperand(),
-  'JFLAP epsilon cannot be concatenated on its left.' =>
-    RegexJflapMessages.epsilonLeftConcatenation(),
-  'JFLAP epsilon cannot be concatenated on its right.' =>
-    RegexJflapMessages.epsilonRightConcatenation(),
-  _ => RegexJflapMessages.invalidSource(),
-};
 
 extension<T> on List<T> {
   T? get firstOrNull => isEmpty ? null : first;

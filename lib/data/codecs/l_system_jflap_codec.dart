@@ -386,12 +386,14 @@ final class LSystemJflapCodec
           parameters['color'],
           0xff000000,
           parameter: 'turingLabInitialColor',
+          nativeParameter: 'color',
         ),
         initialPolygonColorArgb: _colorParameter(
           parameters['turingLabInitialPolygonColor'],
           parameters['polygonColor'],
           0xffff0000,
           parameter: 'turingLabInitialPolygonColor',
+          nativeParameter: 'polygonColor',
         ),
       );
       final document = LSystemDocument(
@@ -580,16 +582,22 @@ final class LSystemJflapCodec
       final bytes = Uint8List.fromList(
         utf8.encode(builder.buildDocument().toXmlString(pretty: true)),
       );
+      final executionFeatures = <String>[
+        if (system.randomSeed != 0) 'random-seed',
+        if (system.ignoredContextSymbols.isNotEmpty) 'ignored-context-symbols',
+        if (system.productions.any((production) => production.weight != 1))
+          'weighted-choices',
+      ];
       final diagnostics = <CodecDiagnostic>[
-        if (system.randomSeed != 0 ||
-            system.ignoredContextSymbols.isNotEmpty ||
-            system.productions.any((production) => production.weight != 1))
+        if (executionFeatures.isNotEmpty)
           CodecDiagnostic(
             code: 'jflap.l-system.execution-extension',
             message:
                 'Seed, ignored context symbols, and weighted choices use Turing Lab XML parameters.',
             path: r'$.parameter',
-            structuredMessage: LSystemJflapMessages.executionExtension(),
+            structuredMessage: LSystemJflapMessages.executionExtension(
+              features: executionFeatures.join(', '),
+            ),
           ),
         if (system.unsupportedVariants.isNotEmpty)
           CodecDiagnostic(
@@ -812,6 +820,7 @@ int _colorParameter(
   String? native,
   int fallback, {
   required String parameter,
+  required String nativeParameter,
 }) {
   if (exact != null) {
     return _colorInteger(exact, fallback, parameter: parameter);
@@ -821,7 +830,10 @@ int _colorParameter(
   if (parsed == null) {
     throw _LSystemJflapFormatException(
       'Invalid color JFLAP parameter: $native.',
-      LSystemJflapMessages.invalidParameter(name: parameter, value: native),
+      LSystemJflapMessages.invalidParameter(
+        name: nativeParameter,
+        value: native,
+      ),
     );
   }
   return parsed;

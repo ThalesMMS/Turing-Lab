@@ -221,17 +221,17 @@ class FileOperationsService
     final normalized = [
       error.message,
       error.osError?.message,
-      error.path,
     ].whereType<String>().join(' ').toLowerCase();
-    if (errorCode == 1 ||
-        errorCode == 13 ||
+    if ((!Platform.isWindows && (errorCode == 1 || errorCode == 13)) ||
+        (Platform.isWindows && errorCode == 5) ||
         normalized.contains('operation not permitted') ||
         normalized.contains('permission denied') ||
         normalized.contains('access is denied') ||
         normalized.contains('not permitted')) {
       return 'access-denied';
     }
-    if (errorCode == 2 ||
+    if ((!Platform.isWindows && errorCode == 2) ||
+        (Platform.isWindows && (errorCode == 2 || errorCode == 3)) ||
         normalized.contains('no such file') ||
         normalized.contains('cannot find the path') ||
         normalized.contains('does not exist')) {
@@ -319,6 +319,16 @@ class FileOperationsService
       return Success(FSA.fromJson(decoded));
     } on FileSystemException catch (e) {
       return _accessFailure(e, isWrite: false);
+    } on FormatException {
+      return fileOperationFailure(
+        'codec-malformed',
+        arguments: {
+          'reason': StructuredMessageArgument.outcome(
+            'invalidValue',
+            role: 'codec-malformed-reason',
+          ),
+        },
+      );
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'read');
     }
@@ -373,7 +383,7 @@ class FileOperationsService
           structuredMessage: pngBytesResult.structuredError,
         );
       }
-      return writePngBytesToPath(pngBytesResult.data!, filePath);
+      return await writePngBytesToPath(pngBytesResult.data!, filePath);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportPng');
     }
@@ -608,6 +618,8 @@ class FileOperationsService
         return const Success(true);
       }
       return fileOperationFailure('location-missing', operation: 'delete');
+    } on FileSystemException catch (e) {
+      return _accessFailure(e, isWrite: true);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'delete');
     }

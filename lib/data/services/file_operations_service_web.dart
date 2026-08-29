@@ -73,7 +73,7 @@ class FileOperationsService
   ) async {
     try {
       final xml = serializeAutomatonToJFLAPString(automaton);
-      return _downloadText(filePath, 'application/xml', xml);
+      return await _downloadText(filePath, 'application/xml', xml);
     } on CodecOperationException catch (e) {
       return Failure(
         e.compatibilityCode,
@@ -96,7 +96,7 @@ class FileOperationsService
   ) async {
     try {
       final jsonString = serializeAutomatonToJsonString(automaton);
-      return _downloadText(filePath, 'application/json', jsonString);
+      return await _downloadText(filePath, 'application/json', jsonString);
     } on CodecOperationException catch (e) {
       return Failure(
         e.compatibilityCode,
@@ -119,7 +119,7 @@ class FileOperationsService
   ) async {
     try {
       final xml = serializeGrammarToJFLAPString(grammar);
-      return _downloadText(filePath, 'application/xml', xml);
+      return await _downloadText(filePath, 'application/xml', xml);
     } on CodecOperationException catch (e) {
       return Failure(
         e.compatibilityCode,
@@ -161,7 +161,7 @@ class FileOperationsService
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
-      return _downloadText(filePath, 'image/svg+xml', svg);
+      return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
@@ -174,7 +174,7 @@ class FileOperationsService
   }) async {
     try {
       final svg = exportGrammarToSvgString(grammar, options: options);
-      return _downloadText(filePath, 'image/svg+xml', svg);
+      return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
@@ -199,7 +199,7 @@ class FileOperationsService
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
-      return _downloadText(filePath, 'image/svg+xml', svg);
+      return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
@@ -224,7 +224,7 @@ class FileOperationsService
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
-      return _downloadText(filePath, 'image/svg+xml', svg);
+      return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }
@@ -249,7 +249,7 @@ class FileOperationsService
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
-      return _downloadText(filePath, 'image/svg+xml', svg);
+      return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
     }

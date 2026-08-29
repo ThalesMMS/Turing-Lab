@@ -11,26 +11,26 @@ final class RegisteredFormalSystemModule<TDocument extends Object>
     required FormalSystemModule<TDocument> base,
     Iterable<DocumentCodecCapability<Object>>? codecs,
     ExampleCatalogCapability<TDocument>? examples,
-  })  : descriptor = base.descriptor,
-        codecs = List<DocumentCodecCapability<Object>>.unmodifiable(
-          codecs ??
-              base.codecs.map(
-                (codec) => _ErasedDocumentCodecCapability<TDocument>(codec),
-              ),
-        ),
-        conversions = List<ConversionCapability<Object, Object>>.unmodifiable(
-          base.conversions.map(
-            (conversion) =>
-                _ErasedConversionCapability<TDocument, Object>(conversion),
-          ),
-        ),
-        examples = switch (examples ?? base.examples) {
-          final capability? => _ErasedExamples<TDocument>(capability),
-          null => null,
-        },
-        session = base.session == null
-            ? null
-            : _ErasedSessionCapability<TDocument>(base.session!);
+  }) : descriptor = base.descriptor,
+       codecs = List<DocumentCodecCapability<Object>>.unmodifiable(
+         codecs ??
+             base.codecs.map(
+               (codec) => _ErasedDocumentCodecCapability<TDocument>(codec),
+             ),
+       ),
+       conversions = List<ConversionCapability<Object, Object>>.unmodifiable(
+         base.conversions.map(
+           (conversion) =>
+               _ErasedConversionCapability<TDocument, Object>(conversion),
+         ),
+       ),
+       examples = switch (examples ?? base.examples) {
+         final capability? => _ErasedExamples<TDocument>(capability),
+         null => null,
+       },
+       session = base.session == null
+           ? null
+           : _ErasedSessionCapability<TDocument>(base.session!);
 
   @override
   final FormalSystemDescriptor descriptor;
@@ -95,8 +95,11 @@ final class _ErasedDocumentCodecCapability<TDocument extends Object>
   }
 }
 
-final class _ErasedConversionCapability<TSource extends Object,
-    TTarget extends Object> implements ConversionCapability<Object, Object> {
+final class _ErasedConversionCapability<
+  TSource extends Object,
+  TTarget extends Object
+>
+    implements ConversionCapability<Object, Object> {
   const _ErasedConversionCapability(this._delegate);
 
   final ConversionCapability<TSource, TTarget> _delegate;
@@ -130,8 +133,7 @@ final class _ErasedSessionCapability<TDocument extends Object>
   Object decodeSession(
     Map<String, Object?> encoded, {
     required DocumentSchemaDescriptor schema,
-  }) =>
-      _delegate.decodeSession(encoded, schema: schema);
+  }) => _delegate.decodeSession(encoded, schema: schema);
 
   @override
   Map<String, Object?> encodeSession(Object document) {
@@ -161,35 +163,35 @@ final class _ErasedExamples<TDocument extends Object>
 CodecOutcome<TMapped> _mapCodecOutcome<TValue, TMapped>(
   CodecOutcome<TValue> outcome,
   TMapped Function(TValue) map,
-) =>
-    switch (outcome) {
-      CodecSuccess<TValue>() => CodecSuccess<TMapped>(
-          value: map(outcome.value),
-          fidelity: outcome.fidelity,
-          diagnostics: outcome.diagnostics,
-        ),
-      CodecUnsupported<TValue>() => CodecUnsupported<TMapped>(
-          reason: outcome.reason,
-          message: outcome.message,
-          roadmapIssue: outcome.roadmapIssue,
-        ),
-      CodecAmbiguous<TValue>() => CodecAmbiguous<TMapped>(
-          codecIds: outcome.codecIds,
-        ),
-      CodecMalformed<TValue>() => CodecMalformed<TMapped>(
-          reason: outcome.reason,
-          message: outcome.message,
-          location: outcome.location,
-          cause: outcome.cause,
-        ),
-      CodecResourceLimit<TValue>() => CodecResourceLimit<TMapped>(
-          limit: outcome.limit,
-          maximum: outcome.maximum,
-          actual: outcome.actual,
-        ),
-      CodecInternalFailure<TValue>() => CodecInternalFailure<TMapped>(
-          stage: outcome.stage,
-          message: outcome.message,
-          cause: outcome.cause,
-        ),
-    };
+) => switch (outcome) {
+  CodecSuccess<TValue>() => CodecSuccess<TMapped>(
+    value: map(outcome.value),
+    fidelity: outcome.fidelity,
+    diagnostics: outcome.diagnostics,
+  ),
+  CodecUnsupported<TValue>() => CodecUnsupported<TMapped>(
+    reason: outcome.reason,
+    message: outcome.message,
+    roadmapIssue: outcome.roadmapIssue,
+  ),
+  CodecAmbiguous<TValue>() => CodecAmbiguous<TMapped>(
+    codecIds: outcome.codecIds,
+  ),
+  CodecMalformed<TValue>() => CodecMalformed<TMapped>(
+    reason: outcome.reason,
+    message: outcome.message,
+    location: outcome.location,
+    cause: outcome.cause,
+    structuredMessage: outcome.structuredMessage,
+  ),
+  CodecResourceLimit<TValue>() => CodecResourceLimit<TMapped>(
+    limit: outcome.limit,
+    maximum: outcome.maximum,
+    actual: outcome.actual,
+  ),
+  CodecInternalFailure<TValue>() => CodecInternalFailure<TMapped>(
+    stage: outcome.stage,
+    message: outcome.message,
+    cause: outcome.cause,
+  ),
+};
