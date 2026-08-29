@@ -14031,6 +14031,12 @@ abstract class AppLocalizations {
   /// **'Configuration limit reached; the result is inconclusive'**
   String get tmSimulationConfigurationLimit;
 
+  /// Fallback warning when a bounded TM simulation has no more specific unresolved-outcome message.
+  ///
+  /// In en, this message translates to:
+  /// **'The bounded simulation did not resolve acceptance.'**
+  String get tmSimulationAcceptanceUnresolved;
+
   /// Failure detail for deterministic TM simulation.
   ///
   /// In en, this message translates to:
@@ -17149,11 +17155,47 @@ abstract class AppLocalizations {
   /// **'The regular expression dialect was normalized during import.'**
   String get codecRegexJflapDialectNormalized;
 
-  /// Regex JFLAP codec rejected an unsupported expression feature.
+  /// Regex JFLAP codec rejected an unsupported document dialect.
   ///
   /// In en, this message translates to:
-  /// **'The regular expression uses an unsupported feature: {feature}.'**
-  String codecRegexJflapUnsupportedFeature(String feature);
+  /// **'JFLAP export supports only the Turing Lab v1 Unicode-scalar regular-expression dialect.'**
+  String get codecRegexJflapUnsupportedDialect;
+
+  /// Regex JFLAP codec rejected a non-BMP symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'JFLAP cannot safely preserve regular-expression symbols outside the Basic Multilingual Plane.'**
+  String get codecRegexJflapNonBmpSymbol;
+
+  /// Regex JFLAP codec cannot encode an escaped literal.
+  ///
+  /// In en, this message translates to:
+  /// **'JFLAP has no escape syntax for the literal \"{symbol}\".'**
+  String codecRegexJflapEscapeUnsupported(String symbol);
+
+  /// Regex JFLAP codec rejected the empty-language symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'JFLAP 7.1 cannot reopen the empty-language symbol with equivalent semantics.'**
+  String get codecRegexJflapEmptyLanguageUnsupported;
+
+  /// Regex JFLAP codec rejected a reserved literal.
+  ///
+  /// In en, this message translates to:
+  /// **'The literal \"{symbol}\" has reserved or profile-dependent meaning in JFLAP.'**
+  String codecRegexJflapReservedLiteral(String symbol);
+
+  /// Regex JFLAP codec rejected an unsupported construct.
+  ///
+  /// In en, this message translates to:
+  /// **'The JFLAP regular-expression dialect does not support the \"{symbol}\" construct.'**
+  String codecRegexJflapUnsupportedConstruct(String symbol);
+
+  /// Regex JFLAP codec rejected a profile-dependent epsilon symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'The JFLAP symbol \"{symbol}\" depends on a global profile. Use ! for portable epsilon.'**
+  String codecRegexJflapProfileDependentSymbol(String symbol);
 
   /// Regex JFLAP export rejected an invalid document.
   ///

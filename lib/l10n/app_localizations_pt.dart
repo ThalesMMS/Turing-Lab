@@ -9787,6 +9787,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Limite de configurações atingido; o resultado é inconclusivo';
 
   @override
+  String get tmSimulationAcceptanceUnresolved =>
+      'A simulação limitada não determinou a aceitação.';
+
+  @override
   String tmSimulationDtmFailure(String error) {
     return 'A simulação da MTD falhou: $error';
   }
@@ -12255,8 +12259,35 @@ class AppLocalizationsPt extends AppLocalizations {
       'O dialeto da expressão regular foi normalizado durante a importação.';
 
   @override
-  String codecRegexJflapUnsupportedFeature(String feature) {
-    return 'A expressão regular usa um recurso não compatível: $feature.';
+  String get codecRegexJflapUnsupportedDialect =>
+      'A exportação JFLAP aceita apenas o dialeto de expressão regular Turing Lab v1 com escalares Unicode.';
+
+  @override
+  String get codecRegexJflapNonBmpSymbol =>
+      'O JFLAP não preserva com segurança símbolos de expressão regular fora do Plano Multilíngue Básico.';
+
+  @override
+  String codecRegexJflapEscapeUnsupported(String symbol) {
+    return 'O JFLAP não possui sintaxe de escape para o literal \"$symbol\".';
+  }
+
+  @override
+  String get codecRegexJflapEmptyLanguageUnsupported =>
+      'O JFLAP 7.1 não reabre o símbolo de linguagem vazia com semântica equivalente.';
+
+  @override
+  String codecRegexJflapReservedLiteral(String symbol) {
+    return 'O literal \"$symbol\" tem significado reservado ou dependente do perfil no JFLAP.';
+  }
+
+  @override
+  String codecRegexJflapUnsupportedConstruct(String symbol) {
+    return 'O dialeto de expressão regular do JFLAP não aceita a construção \"$symbol\".';
+  }
+
+  @override
+  String codecRegexJflapProfileDependentSymbol(String symbol) {
+    return 'O símbolo \"$symbol\" do JFLAP depende de um perfil global. Use ! para representar épsilon de forma portátil.';
   }
 
   @override

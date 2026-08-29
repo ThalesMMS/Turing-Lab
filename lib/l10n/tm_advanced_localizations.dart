@@ -19,7 +19,8 @@ extension AppLocalizationsTmAdvanced on AppLocalizations {
 
   String tmBlockTraceSummary(int calls, int maximumDepth) {
     if (!localeName.startsWith('pt')) {
-      return '$calls calls · maximum depth $maximumDepth';
+      final callLabel = calls == 1 ? 'call' : 'calls';
+      return '$calls $callLabel · maximum depth $maximumDepth';
     }
     final callLabel = calls == 1 ? 'chamada' : 'chamadas';
     return '$calls $callLabel · profundidade máxima $maximumDepth';

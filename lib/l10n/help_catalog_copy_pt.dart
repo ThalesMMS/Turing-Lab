@@ -403,7 +403,7 @@ final _transducerCompactCanvasPlaybackBlocks = <HelpContentBlock>[
 final _transducerBatchBlocks = <HelpContentBlock>[
   const HelpHeadingBlock('Execute um lote ou compare saídas'),
   HelpOrderedStepsBlock([
-    'Abra Algoritmos e exemplos, depois Lote, e informe um vetor JSON de tokens por linha.',
+    'Abra Algoritmos e Exemplos, depois Lote, e informe um vetor JSON de tokens por linha.',
     'Execute o lote e inspecione o estado e a saída registrados para cada entrada.',
     'Para comparar máquinas, escolha um exemplo, selecione o modo Exata ou Limitada e revise a entrada testemunha e as saídas diferentes, quando apresentadas.',
   ]),

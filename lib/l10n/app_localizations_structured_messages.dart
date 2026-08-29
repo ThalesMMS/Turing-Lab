@@ -985,14 +985,47 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
     'codec.regex-jflap.dialect-normalized'
         when _matchesArguments(message, const {}) =>
       codecRegexJflapDialectNormalized,
-    'codec.regex-jflap.unsupported-feature'
+    'codec.regex-jflap.unsupported-dialect'
+        when _matchesArguments(message, const {}) =>
+      codecRegexJflapUnsupportedDialect,
+    'codec.regex-jflap.non-bmp-symbol'
+        when _matchesArguments(message, const {}) =>
+      codecRegexJflapNonBmpSymbol,
+    'codec.regex-jflap.escape-unsupported'
         when _matchesArguments(message, const {
-          'feature': (
-            kind: StructuredMessageArgumentKind.literal,
-            role: 'feature-description',
+          'symbol': (
+            kind: StructuredMessageArgumentKind.symbol,
+            role: 'regex-symbol',
           ),
         }) =>
-      codecRegexJflapUnsupportedFeature(_stringArgument(message, 'feature')),
+      codecRegexJflapEscapeUnsupported(_stringArgument(message, 'symbol')),
+    'codec.regex-jflap.empty-language-unsupported'
+        when _matchesArguments(message, const {}) =>
+      codecRegexJflapEmptyLanguageUnsupported,
+    'codec.regex-jflap.reserved-literal'
+        when _matchesArguments(message, const {
+          'symbol': (
+            kind: StructuredMessageArgumentKind.symbol,
+            role: 'regex-symbol',
+          ),
+        }) =>
+      codecRegexJflapReservedLiteral(_stringArgument(message, 'symbol')),
+    'codec.regex-jflap.unsupported-construct'
+        when _matchesArguments(message, const {
+          'symbol': (
+            kind: StructuredMessageArgumentKind.symbol,
+            role: 'regex-symbol',
+          ),
+        }) =>
+      codecRegexJflapUnsupportedConstruct(_stringArgument(message, 'symbol')),
+    'codec.regex-jflap.profile-dependent-symbol'
+        when _matchesArguments(message, const {
+          'symbol': (
+            kind: StructuredMessageArgumentKind.symbol,
+            role: 'regex-symbol',
+          ),
+        }) =>
+      codecRegexJflapProfileDependentSymbol(_stringArgument(message, 'symbol')),
     'codec.regex-jflap.invalid-document'
         when _matchesArguments(message, const {}) =>
       codecRegexJflapInvalidDocument,
@@ -1693,7 +1726,12 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
         _stringArgument(message, 'field'),
       ),
     'codec.l-system-jflap.invalid-command-mapping'
-        when _matchesArguments(message, const {}) =>
+        when _matchesArguments(message, const {
+          'parameter': (
+            kind: StructuredMessageArgumentKind.literal,
+            role: 'parameter-name',
+          ),
+        }) =>
       codecLSystemJflapInvalidCommandMapping,
     'codec.l-system-jflap.invalid-document'
         when _matchesArguments(message, const {}) =>
@@ -2910,6 +2948,9 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
     'tm.simulation.configuration-limit'
         when _matchesArguments(message, const {}) =>
       tmSimulationConfigurationLimit,
+    'tm.simulation.acceptance-unresolved'
+        when _matchesArguments(message, const {}) =>
+      tmSimulationAcceptanceUnresolved,
     'tm.simulation.dtm-failure' when _tmErrorContract(message) =>
       tmSimulationDtmFailure(_stringArgument(message, 'error')),
     'tm.simulation.ntm-failure' when _tmErrorContract(message) =>

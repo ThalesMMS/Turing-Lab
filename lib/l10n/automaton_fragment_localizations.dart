@@ -1,5 +1,6 @@
 import '../core/automaton_fragments/automaton_fragments.dart';
 import '../core/interoperability/codec_outcome.dart';
+import '../core/automaton_fragments/automaton_fragment_combiner.dart';
 import 'app_localizations.dart';
 
 /// Localizes diagnostics that are assembled by the fragment combiner.
@@ -21,15 +22,18 @@ extension AppLocalizationsAutomatonFragments on AppLocalizations {
       case AutomatonFragmentDiagnosticCode.unsupportedOperation:
         return 'Operações algébricas e substituição de documentos usam fluxos próprios.';
       case AutomatonFragmentDiagnosticCode.danglingTransition:
-        return _danglingTransitionMessage(diagnostic.message);
+        final transitionId = diagnostic.transitionId;
+        return transitionId == null
+            ? 'O fragmento selecionado contém uma transição pendente.'
+            : 'A transição $transitionId tem um ponto final fora do fragmento selecionado.';
       case AutomatonFragmentDiagnosticCode.initialStateConflict:
         return 'Os dois fragmentos declaram um estado inicial. Escolha qual estado inicial manter.';
       case AutomatonFragmentDiagnosticCode.pdaAcceptanceModeConflict:
-        return diagnostic.message.startsWith('Imported PDA acceptance')
+        return diagnostic.normalized == true
             ? 'A aceitação do AP importado foi normalizada explicitamente para o modo do destino.'
             : 'Os modos de aceitação dos APs são diferentes e exigem um plano de conversão explícito.';
       case AutomatonFragmentDiagnosticCode.pdaInitialStackSymbolConflict:
-        return diagnostic.message.startsWith('Imported PDA stack')
+        return diagnostic.normalized == true
             ? 'A inicialização da pilha do AP importado foi normalizada explicitamente para o símbolo do destino.'
             : 'Os símbolos iniciais da pilha dos APs são diferentes e exigem um plano de conversão explícito.';
       case AutomatonFragmentDiagnosticCode.tmTapeCountConflict:
@@ -37,7 +41,17 @@ extension AppLocalizationsAutomatonFragments on AppLocalizations {
       case AutomatonFragmentDiagnosticCode.tmBlankSymbolConflict:
         return 'Máquinas de Turing com símbolos brancos diferentes não podem ser combinadas sem uma conversão explícita.';
       case AutomatonFragmentDiagnosticCode.connectorUnsupported:
-        return _connectorMessage(diagnostic.message);
+        return switch (diagnostic.connectorKind) {
+          AutomatonFragmentKind.pda =>
+            'As transições de conector do AP exigem um plano tipado de operações de pilha.',
+          AutomatonFragmentKind.tm =>
+            'As transições de conector da MT exigem um vetor de operações por fita.',
+          AutomatonFragmentKind.mealy =>
+            'Os conectores Mealy exigem uma regra explícita de entrada e saída.',
+          AutomatonFragmentKind.moore =>
+            'Os conectores Moore exigem uma regra explícita de entrada.',
+          _ => 'O conector não é compatível com este modelo de grafo.',
+        };
       case AutomatonFragmentDiagnosticCode.connectorEndpointMissing:
         return 'O conector deve referenciar um estado de destino e um estado importado.';
       case AutomatonFragmentDiagnosticCode.annotationLimit:
@@ -196,30 +210,4 @@ extension AppLocalizationsAutomatonFragments on AppLocalizations {
   }
 
   bool get _isPortuguese => localeName.toLowerCase().startsWith('pt');
-}
-
-String _danglingTransitionMessage(String source) {
-  final match = RegExp(
-    r'^Transition (.+) has an endpoint outside the selected fragment\.$',
-  ).firstMatch(source);
-  final id = match?.group(1);
-  return id == null
-      ? 'O fragmento selecionado contém uma transição pendente.'
-      : 'A transição $id tem um ponto final fora do fragmento selecionado.';
-}
-
-String _connectorMessage(String source) {
-  if (source.startsWith('PDA connector')) {
-    return 'As transições de conector do AP exigem um plano tipado de operações de pilha.';
-  }
-  if (source.startsWith('TM connector')) {
-    return 'As transições de conector da MT exigem um vetor de operações por fita.';
-  }
-  if (source.startsWith('Mealy connectors')) {
-    return 'Os conectores Mealy exigem uma regra explícita de entrada e saída.';
-  }
-  if (source.startsWith('Moore connectors')) {
-    return 'Os conectores Moore exigem uma regra explícita de entrada.';
-  }
-  return 'O conector não é compatível com este modelo de grafo.';
 }

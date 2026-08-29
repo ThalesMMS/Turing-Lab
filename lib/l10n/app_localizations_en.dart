@@ -9699,6 +9699,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Configuration limit reached; the result is inconclusive';
 
   @override
+  String get tmSimulationAcceptanceUnresolved =>
+      'The bounded simulation did not resolve acceptance.';
+
+  @override
   String tmSimulationDtmFailure(String error) {
     return 'DTM simulation failed: $error';
   }
@@ -12147,8 +12151,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'The regular expression dialect was normalized during import.';
 
   @override
-  String codecRegexJflapUnsupportedFeature(String feature) {
-    return 'The regular expression uses an unsupported feature: $feature.';
+  String get codecRegexJflapUnsupportedDialect =>
+      'JFLAP export supports only the Turing Lab v1 Unicode-scalar regular-expression dialect.';
+
+  @override
+  String get codecRegexJflapNonBmpSymbol =>
+      'JFLAP cannot safely preserve regular-expression symbols outside the Basic Multilingual Plane.';
+
+  @override
+  String codecRegexJflapEscapeUnsupported(String symbol) {
+    return 'JFLAP has no escape syntax for the literal \"$symbol\".';
+  }
+
+  @override
+  String get codecRegexJflapEmptyLanguageUnsupported =>
+      'JFLAP 7.1 cannot reopen the empty-language symbol with equivalent semantics.';
+
+  @override
+  String codecRegexJflapReservedLiteral(String symbol) {
+    return 'The literal \"$symbol\" has reserved or profile-dependent meaning in JFLAP.';
+  }
+
+  @override
+  String codecRegexJflapUnsupportedConstruct(String symbol) {
+    return 'The JFLAP regular-expression dialect does not support the \"$symbol\" construct.';
+  }
+
+  @override
+  String codecRegexJflapProfileDependentSymbol(String symbol) {
+    return 'The JFLAP symbol \"$symbol\" depends on a global profile. Use ! for portable epsilon.';
   }
 
   @override
