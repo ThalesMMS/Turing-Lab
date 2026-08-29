@@ -990,9 +990,11 @@ final class _VisualizationPanel extends StatelessWidget {
             if (controller.document.iterations > 0)
               MergeSemantics(
                 child: Semantics(
-                  label: _localizedIntegerValues(
-                    context,
-                    'Generation ${generation?.index ?? 0} of ${controller.document.iterations}',
+                  label: valueFormatter.integersInLocalizedText(
+                    _localized(
+                      context,
+                      'Generation ${generation?.index ?? 0} of ${controller.document.iterations}',
+                    ),
                     [generation?.index ?? 0, controller.document.iterations],
                   ),
                   child: Slider(
@@ -1291,14 +1293,13 @@ double _parseLocalizedDouble(BuildContext context, String source) {
         ? '.'.allMatches(trimmed).length
         : ','.allMatches(trimmed).length;
     if (occurrences > 1) {
-      normalized = normalized.replaceAll(separator, '');
+      if (_isGroupingForm(trimmed, separator)) {
+        normalized = normalized.replaceAll(separator, '');
+      }
     } else if (separator == decimalSeparator) {
       normalized = normalized.replaceAll(separator, '.');
-    } else if (separator == groupSeparator &&
-        !(separator == '.' && decimalSeparator == ',')) {
-      final fractionDigits =
-          trimmed.length - trimmed.lastIndexOf(separator) - 1;
-      normalized = fractionDigits == 3
+    } else if (separator == groupSeparator) {
+      normalized = _isGroupingForm(trimmed, separator)
           ? normalized.replaceAll(separator, '')
           : normalized.replaceAll(separator, '.');
     } else {
@@ -1326,25 +1327,6 @@ bool _allDigits(String value) =>
 String _localized(BuildContext context, String source) =>
     appLocalizationsOf(context).localizeWorkflowText(source);
 
-String _localizedIntegerValues(
-  BuildContext context,
-  String source,
-  Iterable<int> values,
-) {
-  var translated = _localized(context, source);
-  var searchStart = 0;
-  final formatter = LocaleValueFormatter.of(context);
-  for (final value in values) {
-    final raw = value.toString();
-    final index = translated.indexOf(raw, searchStart);
-    if (index < 0) continue;
-    final formatted = formatter.integer(value);
-    translated = translated.replaceRange(index, index + raw.length, formatted);
-    searchStart = index + formatted.length;
-  }
-  return translated;
-}
-
 String _friendlyError(BuildContext context, Object error) =>
     _localized(context, switch (error) {
       FormatException() => error.message,
@@ -1356,8 +1338,8 @@ String _statusText(BuildContext context, LSystemEditorController controller) {
   final geometry = controller.geometry;
   final summary = generation == null
       ? ''
-      : ' ${_localizedIntegerValues(context, 'Generation ${generation.index} has ${generation.word.length} tokens'
-        '${geometry == null ? '.' : ' and ${geometry.segmentCount} segments.'}', [generation.index, generation.word.length, if (geometry != null) geometry.segmentCount])}';
+      : ' ${LocaleValueFormatter.of(context).integersInLocalizedText(_localized(context, 'Generation ${generation.index} has ${generation.word.length} tokens'
+        '${geometry == null ? '.' : ' and ${geometry.segmentCount} segments.'}'), [generation.index, generation.word.length, if (geometry != null) geometry.segmentCount])}';
   final fallback = switch (controller.status) {
     LSystemEditorStatus.idle => 'Ready.',
     LSystemEditorStatus.expanding => 'Expanding in parallel…',
@@ -1379,11 +1361,13 @@ String _geometryDescription(
   BuildContext context,
   LSystemGeometry geometry,
   LSystemGeneration? generation,
-) => _localizedIntegerValues(
-  context,
-  'Turtle rendering for generation ${generation?.index ?? 0}, '
-  '${geometry.segmentCount} line segments, maximum branch depth '
-  '${geometry.maximumBranchDepth}.',
+) => LocaleValueFormatter.of(context).integersInLocalizedText(
+  _localized(
+    context,
+    'Turtle rendering for generation ${generation?.index ?? 0}, '
+    '${geometry.segmentCount} line segments, maximum branch depth '
+    '${geometry.maximumBranchDepth}.',
+  ),
   [generation?.index ?? 0, geometry.segmentCount, geometry.maximumBranchDepth],
 );
 
@@ -1395,9 +1379,8 @@ String _wordPreview(BuildContext context, LSystemWord? word) {
     return visible.isEmpty ? _localized(context, 'Empty word.') : visible;
   }
   final overflowCount = word.length - maximum;
-  final overflow = _localizedIntegerValues(
-    context,
-    '$overflowCount more tokens',
+  final overflow = LocaleValueFormatter.of(context).integersInLocalizedText(
+    _localized(context, '$overflowCount more tokens'),
     [overflowCount],
   );
   return '$visible … ($overflow)';

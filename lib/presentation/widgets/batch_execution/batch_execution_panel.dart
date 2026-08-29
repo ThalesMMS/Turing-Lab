@@ -553,7 +553,7 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
   Widget _buildResults(BuildContext context) {
     final l10n = appLocalizationsOf(context);
     final formatter = LocaleValueFormatter.of(context);
-    final results = _visibleResults;
+    final results = _visibleResults(context);
     final counts = _report?.outcomeCounts;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -769,16 +769,24 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
     );
   }
 
-  List<BatchCaseResult> get _visibleResults {
+  List<BatchCaseResult> _visibleResults(BuildContext context) {
     final ordered = _report?.results ?? _partialResults.values.toList();
     final query = _filterController.text.toLowerCase();
+    final l10n = appLocalizationsOf(context);
     final results = ordered.where((result) {
       if (query.isEmpty) return true;
       return result.inputCase.input.toLowerCase().contains(query) ||
           result.inputCase.id.toLowerCase().contains(query) ||
           result.outcome.name.toLowerCase().contains(query) ||
+          _localizedOutcomeName(
+            l10n,
+            result.outcome,
+          ).toLowerCase().contains(query) ||
           (result.diagnosticCode?.toLowerCase().contains(query) ?? false) ||
-          (result.message?.toLowerCase().contains(query) ?? false);
+          _localizedResultMessages(
+            context,
+            result,
+          ).any((message) => message.toLowerCase().contains(query));
     }).toList();
     switch (_sort) {
       case BatchResultSort.inputOrder:

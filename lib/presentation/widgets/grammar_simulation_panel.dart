@@ -530,7 +530,11 @@ class _GrammarSimulationPanelState
     final expectedSymbols = report.expectedSymbols.toList(growable: false)
       ..sort();
     final bruteForceMessage = report.bruteForceResult?.structuredMessage;
-    final reportMessage = report.structuredMessage;
+    final reportMessage = report.structuredMessage != null
+        ? l10n.resolveStructuredMessage(report.structuredMessage!)
+        : bruteForceMessage != null
+        ? l10n.resolveStructuredMessage(bruteForceMessage)
+        : report.message;
 
     final cykSteps = _cykStepsResult?.steps;
     final ll1Steps = report.ll1Steps;
@@ -608,6 +612,15 @@ class _GrammarSimulationPanelState
           if (cykSteps != null && cykSteps.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildCykStepsSection(context, cykSteps),
+            if (!isAccepted && reportMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                reportMessage,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
           ] else ...[
             if (_lr1Construction != null &&
                 _lr1Result != null &&
@@ -673,20 +686,12 @@ class _GrammarSimulationPanelState
                       .toList(growable: false),
                 ),
               ],
-              if (report.message != null &&
+              if (reportMessage != null &&
                   !(report.outcome == GrammarParseOutcome.conflict &&
                       _ll1TableReport != null)) ...[
                 const SizedBox(height: 8),
                 Text(
-                  reportMessage != null
-                      ? appLocalizationsOf(
-                          context,
-                        ).resolveStructuredMessage(reportMessage)
-                      : bruteForceMessage == null
-                      ? report.message!
-                      : appLocalizationsOf(
-                          context,
-                        ).resolveStructuredMessage(bruteForceMessage),
+                  reportMessage,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -1107,6 +1112,7 @@ class _GrammarSimulationPanelState
       farthestPosition: 0,
       executionTime: result.statistics.executionTime,
       message: result.message,
+      structuredMessage: result.structuredMessage,
       outcome: outcome,
       bruteForceResult: result,
     );

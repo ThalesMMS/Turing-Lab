@@ -236,18 +236,12 @@ String formatTMAnalysisDuration(BuildContext context, Duration duration) {
   return '${valueFormatter.integer(duration.inMicroseconds * 1000)} ns';
 }
 
-/// Localizes a generated message whose integer placeholder needs display-only
-/// grouping. Generated methods interpolate [int] values verbatim, so a marker
-/// preserves the translated template while the active locale formats the
-/// final value.
+/// Localizes a generated message whose integer argument needs display grouping.
 String localizeTMInteger(
   LocaleValueFormatter formatter,
-  String Function(int marker) localize,
+  String Function(int value) localize,
   int value,
-) {
-  const marker = 987654321;
-  return localize(marker).replaceFirst('$marker', formatter.integer(value));
-}
+) => formatter.inLocalizedTemplate(localize, value);
 
 Widget buildTMFocusBanner(BuildContext context, TMAnalysisFocus focus) =>
     TMAnalysisFocusBanner(focus: focus);

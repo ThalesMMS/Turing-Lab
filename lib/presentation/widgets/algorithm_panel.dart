@@ -202,7 +202,9 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   @override
   Widget build(BuildContext context) {
     return AlgorithmPanelScaffold(
-      title: appLocalizationsOf(context).algorithmsAndExamples,
+      title: widget.showExamples
+          ? appLocalizationsOf(context).algorithmsAndExamples
+          : appLocalizationsOf(context).algorithms,
       showHeaderIcon: false,
       paddingInsideScroll: false,
       spacing: 0,

@@ -87,7 +87,7 @@ class _StepTile extends StatelessWidget {
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text('${strings.stepNumber(index + 1)}. $operation'),
-        subtitle: step.rationale.trim().isEmpty ? null : Text(rationale),
+        subtitle: rationale.trim().isEmpty ? null : Text(rationale),
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         children: [
           Row(

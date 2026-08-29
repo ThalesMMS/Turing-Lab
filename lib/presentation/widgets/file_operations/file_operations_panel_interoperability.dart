@@ -87,7 +87,7 @@ extension _FileOperationsPanelInteroperability on _FileOperationsPanelState {
           await _showInteroperabilityFailure(
             CodecInternalFailure<InteroperableDocument<Object>>(
               stage: CodecInternalFailureStage.decode,
-              message: readResult.error ?? _l10n.fileReadFailed,
+              message: _localizedFailure(readResult),
             ),
             file.name,
           );
@@ -305,7 +305,7 @@ extension _FileOperationsPanelInteroperability on _FileOperationsPanelState {
       mimeType: mimeType,
     );
     if (result.isFailure) {
-      throw StateError(result.error ?? _l10n.interoperabilityOperationFailed);
+      throw StateError(_localizedFailure(result));
     }
   }
 

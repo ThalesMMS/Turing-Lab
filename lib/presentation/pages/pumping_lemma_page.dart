@@ -74,12 +74,12 @@ class _PumpingLemmaPageState extends ConsumerState<PumpingLemmaPage> {
   /// app-bar action; the game keeps its round because the sheet never
   /// unmounts the workspace beneath it.
   Future<void> _openProgressSheet() async {
-    final l10n = AppLocalizations.of(context);
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.72,

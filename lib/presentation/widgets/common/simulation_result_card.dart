@@ -89,7 +89,7 @@ class SimulationResultCard extends StatelessWidget {
             const SizedBox(height: 8),
             _buildMetrics(context),
           ],
-          if (result.errorMessage.isNotEmpty) ...[
+          if (result.errorMessage.isNotEmpty || result.message != null) ...[
             const SizedBox(height: 8),
             _buildErrorMessage(context, colorScheme),
           ],

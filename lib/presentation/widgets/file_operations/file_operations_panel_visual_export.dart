@@ -71,9 +71,7 @@ extension _FileOperationsPanelVisualExport on _FileOperationsPanelState {
           mimeType: artifact.mimeType,
         );
         if (result.isFailure) {
-          throw StateError(
-            result.error ?? _l10n.interoperabilityOperationFailed,
-          );
+          throw StateError(_localizedFailure(result));
         }
       }
       _showSuccessMessage(_l10n.interoperabilityExportSucceeded);

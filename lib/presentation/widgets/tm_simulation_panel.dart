@@ -33,6 +33,7 @@ import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../../l10n/tm_advanced_localizations.dart';
 import '../../l10n/automata_diagnostics_localizations.dart';
+import '../localization/locale_value_formatter.dart';
 import '../providers/tm_editor_provider.dart';
 import 'base_simulation_panel.dart';
 import 'batch_execution/batch_execution_panel.dart';
@@ -744,6 +745,7 @@ class _TMBlockTrace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
     return Material(
       type: MaterialType.transparency,
       child: ExpansionTile(
@@ -751,9 +753,12 @@ class _TMBlockTrace extends StatelessWidget {
         childrenPadding: const EdgeInsetsDirectional.only(start: 12),
         title: Text(l10n.tmAdvancedText('Nested call trace')),
         subtitle: Text(
-          l10n.tmBlockTraceSummary(
+          formatter.inLocalizedTemplate(
+            (entries) => formatter.inLocalizedTemplate(
+              (depth) => l10n.tmBlockTraceSummary(entries, depth),
+              result.metrics.maximumCallDepth,
+            ),
             result.metrics.blockEntries,
-            result.metrics.maximumCallDepth,
           ),
         ),
         children: [
@@ -799,13 +804,27 @@ String _simulationStatus(BuildContext context, TMSimulationResult result) {
       ? result.errorMessage
       : l10n.resolveStructuredMessage(result.structuredMessage!);
   return switch (result.outcome) {
-    TMExecutionOutcome.accepted => 'Accepted',
+    TMExecutionOutcome.accepted => l10n.accepted,
     TMExecutionOutcome.haltedRejected =>
-      detail == null || detail.isEmpty ? 'Rejected' : 'Rejected: $detail',
-    TMExecutionOutcome.provenCycle => detail ?? 'Infinite loop detected',
-    TMExecutionOutcome.boundedUnknown => detail ?? 'Simulation inconclusive',
-    TMExecutionOutcome.cancelled => detail ?? 'Simulation cancelled',
-    TMExecutionOutcome.invalidMachine => detail ?? 'Invalid machine',
+      detail == null || detail.isEmpty
+          ? l10n.rejected
+          : l10n.localizeWorkflowText('Rejected: $detail'),
+    TMExecutionOutcome.provenCycle =>
+      detail == null || detail.isEmpty
+          ? l10n.localizeWorkflowText('Infinite loop detected')
+          : detail,
+    TMExecutionOutcome.boundedUnknown =>
+      detail == null || detail.isEmpty
+          ? l10n.localizeWorkflowText('Simulation inconclusive')
+          : detail,
+    TMExecutionOutcome.cancelled =>
+      detail == null || detail.isEmpty
+          ? l10n.localizeWorkflowText('Simulation cancelled')
+          : detail,
+    TMExecutionOutcome.invalidMachine =>
+      detail == null || detail.isEmpty
+          ? l10n.localizeWorkflowText('Invalid machine')
+          : detail,
   };
 }
 

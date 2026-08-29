@@ -179,7 +179,7 @@ Widget _renderRegexToNfaStep(
 List<_TypedStepRow> _compactRows(Map<String, Object?> values) {
   return values.entries
       .where((entry) => entry.value != null)
-      .map((entry) => _TypedStepRow(entry.key, _formatTypedValue(entry.value)))
+      .map((entry) => _TypedStepRow(entry.key, entry.value))
       .toList(growable: false);
 }
 
@@ -206,7 +206,7 @@ String? _cellCoordinates(int? row, int? col) {
 
 class _TypedStepRow {
   final String label;
-  final String value;
+  final Object? value;
 
   const _TypedStepRow(this.label, this.value);
 }
@@ -284,8 +284,20 @@ class _TypedStepData extends StatelessWidget {
   }
 }
 
-String _localizeTypedValue(AppLocalizations l10n, String value) {
-  if (value == 'Yes') return l10n.yes;
-  if (value == 'No') return l10n.no;
-  return l10n.localizeWorkflowText(value);
+String _localizeTypedValue(AppLocalizations l10n, Object? value) {
+  if (value is bool) return value ? l10n.yes : l10n.no;
+  if (value is String) {
+    if (value == 'Yes' || value == 'No') return value;
+    return l10n.localizeWorkflowText(_formatTypedValue(value));
+  }
+  if (value is automata.State || value is Transition) {
+    return _formatTypedValue(value);
+  }
+  if (value is Iterable) {
+    final items = value
+        .map((item) => _localizeTypedValue(l10n, item))
+        .toList(growable: false);
+    return items.isEmpty ? '∅' : items.join(', ');
+  }
+  return _formatTypedValue(value);
 }

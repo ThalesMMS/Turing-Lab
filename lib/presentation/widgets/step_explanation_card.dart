@@ -30,17 +30,19 @@ class StepExplanationCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final l10n = appLocalizationsOf(context);
 
-    final title = explanation?.titleMessage == null
-        ? (explanation?.title?.trim().isNotEmpty == true
-              ? explanation!.title!.trim()
-              : titleWhenEmpty)
-        : l10n.resolveStructuredMessage(explanation!.titleMessage!);
-
-    final bullets = explanation?.bulletMessages.isNotEmpty == true
-        ? explanation!.bulletMessages
-              .map(l10n.resolveStructuredMessage)
-              .toList(growable: false)
-        : explanation?.bullets ?? const <String>[];
+    final titleMessage = explanation?.titleMessage;
+    final legacyTitle = explanation?.title?.trim();
+    final title = titleMessage != null
+        ? l10n.resolveStructuredMessage(titleMessage)
+        : l10n.localizeWorkflowText(
+            legacyTitle?.isNotEmpty == true ? legacyTitle! : titleWhenEmpty,
+          );
+    final bulletMessages = explanation?.bulletMessages ?? const [];
+    final bullets = bulletMessages.isNotEmpty
+        ? bulletMessages.map(l10n.resolveStructuredMessage).toList()
+        : (explanation?.bullets ?? const <String>[])
+              .map(l10n.localizeWorkflowText)
+              .toList();
     final suggestedFixes =
         explanation?.suggestedFixes ?? const <SuggestedFix>[];
 
@@ -67,7 +69,7 @@ class StepExplanationCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.localizeWorkflowText(title),
+                    title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -100,10 +102,7 @@ class StepExplanationCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          l10n.localizeWorkflowText(bullet),
-                          style: theme.textTheme.bodyMedium,
-                        ),
+                        child: Text(bullet, style: theme.textTheme.bodyMedium),
                       ),
                     ],
                   ),
@@ -162,7 +161,8 @@ class _SuggestedFixRow extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              if (fix.details?.trim().isNotEmpty == true)
+              if (fix.details?.trim().isNotEmpty == true ||
+                  fix.detailsMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(

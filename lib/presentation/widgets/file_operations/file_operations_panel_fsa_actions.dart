@@ -93,7 +93,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
     } catch (e, stackTrace) {
       await _handleImportFailure(
         fileName: _l10n.fileSectionFsa,
-        errorMessage: _l10n.errorLoadingAutomaton('$e'),
+        errorMessage: _l10n.errorLoadingAutomaton(_localizedException(e)),
         retryOperation: _loadAutomatonFromJFLAP,
         stackTrace: stackTrace,
       );
@@ -193,7 +193,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
     } catch (e, stackTrace) {
       await _handleImportFailure(
         fileName: 'JSON',
-        errorMessage: _l10n.errorLoadingAutomatonJson('$e'),
+        errorMessage: _l10n.errorLoadingAutomatonJson(_localizedException(e)),
         retryOperation: _loadAutomatonFromJson,
         stackTrace: stackTrace,
       );
@@ -253,15 +253,13 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         _showSuccessMessage(successMessage);
       } else {
         _showErrorMessage(
-          _l10n.failedToExportAutomaton(
-            _l10n.localizeWorkflowText('${exportResult.error}'),
-          ),
+          _l10n.failedToExportAutomaton(_localizedFailure(exportResult)),
           retryOperation: _exportAutomatonAsSVG,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        _l10n.errorExportingAutomaton(_l10n.localizeWorkflowText('$e')),
+        _l10n.errorExportingAutomaton(_localizedException(e)),
         retryOperation: _exportAutomatonAsSVG,
         stackTrace: stackTrace,
       );
@@ -285,7 +283,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       );
       if (pngBytesResult.isFailure) {
         _showErrorMessage(
-          _l10n.failedToExportAutomatonPng('${pngBytesResult.error}'),
+          _l10n.failedToExportAutomatonPng(_localizedFailure(pngBytesResult)),
           retryOperation: _exportAutomatonAsPNG,
         );
         return;
@@ -308,13 +306,13 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
         _showSuccessMessage(_l10n.automatonExportedSuccessfully);
       } else {
         _showErrorMessage(
-          _l10n.failedToExportAutomatonPng('${exportResult.error}'),
+          _l10n.failedToExportAutomatonPng(_localizedFailure(exportResult)),
           retryOperation: _exportAutomatonAsPNG,
         );
       }
     } catch (e, stackTrace) {
       _showErrorMessage(
-        _l10n.errorExportingAutomatonPng('$e'),
+        _l10n.errorExportingAutomatonPng(_localizedException(e)),
         retryOperation: _exportAutomatonAsPNG,
         stackTrace: stackTrace,
       );

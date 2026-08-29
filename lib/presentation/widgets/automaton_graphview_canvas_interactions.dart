@@ -470,6 +470,9 @@ extension _AutomatonGraphViewCanvasInteractions
     _logAutomatonGraphViewCanvasInteraction(
       'opening state options for $nodeId',
     );
+    if (_transitionSourceId == nodeId) {
+      _setTransitionSourceId(null);
+    }
     _showStateOptions(node);
   }
 

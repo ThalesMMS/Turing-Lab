@@ -827,6 +827,7 @@ final class _PumpingLemmaWorkspaceState
       document.erasedSession.toJson(),
     );
     final currentContentVersions = <String, int>{
+      document.problem.id: document.problem.contentVersion,
       for (final problem in _problems) problem.id: problem.contentVersion,
     };
     final migratedProgress = PumpingLemmaContentMigration.reconcile(

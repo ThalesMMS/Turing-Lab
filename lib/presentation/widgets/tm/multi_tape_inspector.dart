@@ -154,17 +154,12 @@ class _MetricsSummary extends StatelessWidget {
     int tape,
     TMMultiTapeMetrics metrics,
   ) {
-    final withSpan = formatter.inLocalizedTemplate(
-      (value) => l10n.tmMultiTapeMetrics(
-        tape + 1,
-        value,
+    return formatter.inLocalizedTemplate(
+      (span) => formatter.inLocalizedTemplate(
+        (nonBlank) => l10n.tmMultiTapeMetrics(tape + 1, span, nonBlank),
         metrics.maximumNonBlankCellsByTape[tape],
       ),
       metrics.maximumVisitedSpanByTape[tape],
-    );
-    return formatter.inLocalizedTemplate(
-      (_) => withSpan,
-      metrics.maximumNonBlankCellsByTape[tape],
     );
   }
 }

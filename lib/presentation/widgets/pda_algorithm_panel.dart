@@ -372,8 +372,13 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           targetForm: PDANormalForm.finalStateAndSinglePop,
         );
         if (normalizationResult.isFailure) {
+          final normalizationError = normalizationResult.structuredError == null
+              ? normalizationResult.error
+              : strings.resolveStructuredMessage(
+                  normalizationResult.structuredError!,
+                );
           final message = strings.pdaConversionFailure(
-            normalizationResult.error ?? conversionResult.error ?? '',
+            normalizationError ?? conversionResult.error ?? '',
           );
           _latestConvertedGrammar = null;
           _showSnackbar(message, tone: AppSnackBarTone.error);

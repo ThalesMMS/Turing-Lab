@@ -43,7 +43,7 @@ class TMTerminationResultView extends StatelessWidget {
               )
               .toList(growable: false);
     final analysisMessage = analysis.structuredMessage == null
-        ? analysis.message
+        ? l10n.localizeWorkflowText(analysis.message)
         : l10n.resolveStructuredMessage(analysis.structuredMessage!);
 
     return Container(
@@ -60,7 +60,8 @@ class TMTerminationResultView extends StatelessWidget {
           const SizedBox(height: 12),
           buildTMStatusMessage(
             context,
-            message: '$outcomeLabel. $analysisMessage',
+            message:
+                '${l10n.localizeWorkflowText(outcomeLabel)}. $analysisMessage',
             isPositive: positive,
             isWarning: warning,
           ),

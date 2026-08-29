@@ -10,6 +10,7 @@ import '../../core/models/state.dart' as automaton;
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../../l10n/conversion_preview_localizations.dart';
+import '../localization/locale_value_formatter.dart';
 import '../localization/manual_conversion_localizations.dart';
 
 /// A form-based finite-automaton editor for one Regex-to-FA requirement.
@@ -204,8 +205,7 @@ class _RegexToFaFragmentEditorState extends State<RegexToFaFragmentEditor> {
         Semantics(
           header: true,
           child: Text(
-            '${l10n.localizeWorkflowText(title)} · '
-            '${l10n.localizeWorkflowText(countLabel)}',
+            '${l10n.localizeWorkflowText(title)} · $countLabel',
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
@@ -562,9 +562,12 @@ class _RegexToFaFragmentEditorState extends State<RegexToFaFragmentEditor> {
 
   static String _countLabel(BuildContext context, int actual, int expected) {
     final l10n = appLocalizationsOf(context);
+    final formatter = LocaleValueFormatter.of(context);
+    final formattedActual = formatter.integer(actual);
+    final formattedExpected = formatter.integer(expected);
     return l10n.conversionPreviewText(
-      '$actual of $expected expected',
-      '$actual de $expected esperados',
+      '$formattedActual of $formattedExpected expected',
+      '$formattedActual de $formattedExpected esperados',
     );
   }
 }

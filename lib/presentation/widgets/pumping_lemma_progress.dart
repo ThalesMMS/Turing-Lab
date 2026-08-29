@@ -102,7 +102,7 @@ class PumpingLemmaProgress extends ConsumerWidget {
             key: const ValueKey('pumping-overall-progress'),
             container: true,
             label: l10n.overallProgress,
-            value: formatter.integer((ratio * 100).round()),
+            value: formatter.percentFromRatio(ratio, decimalDigits: 0),
             child: ExcludeSemantics(
               child: LinearProgressIndicator(
                 value: ratio,

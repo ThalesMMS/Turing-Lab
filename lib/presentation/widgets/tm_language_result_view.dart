@@ -214,7 +214,8 @@ class TMLanguageResultView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Selected word: ${result.input.isEmpty ? 'ε' : result.input}',
+          '${appLocalizationsOf(context).localizeWorkflowText('Selected word')}: '
+          '${result.input.isEmpty ? 'ε' : result.input}',
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),

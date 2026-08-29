@@ -26,6 +26,7 @@ import '../../core/algorithms/regex_to_nfa_converter.dart';
 import '../../core/models/algorithm_step.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
+import '../../core/result.dart';
 import 'algorithm_step_provider.dart';
 import 'conversion_history_provider.dart';
 import 'automaton_state_provider.dart';
@@ -172,6 +173,14 @@ class AutomatonAlgorithmNotifier
     });
   }
 
+  void _setFailure<T>(Result<T> result) {
+    state = state.copyWith(
+      isLoading: false,
+      error: result.error,
+      structuredError: result.structuredError,
+    );
+  }
+
   /// Converts NFA to DFA
   Future<void> convertNfaToDfa() async {
     final currentAutomaton = ref.read(automatonStateProvider).currentAutomaton;
@@ -200,7 +209,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -259,7 +268,7 @@ class AutomatonAlgorithmNotifier
           steps: algorithmSteps,
         );
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -308,7 +317,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -341,7 +350,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -372,7 +381,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -403,7 +412,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -445,11 +454,7 @@ class AutomatonAlgorithmNotifier
           fsaConcatenationResult: concatenation,
         );
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: result.error,
-          structuredError: result.structuredError,
-        );
+        _setFailure(result);
       }
     } catch (error) {
       state = state.copyWith(
@@ -487,11 +492,7 @@ class AutomatonAlgorithmNotifier
         }
         state = state.copyWith(isLoading: false, fsaKleeneStarResult: star);
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: result.error,
-          structuredError: result.structuredError,
-        );
+        _setFailure(result);
       }
     } catch (error) {
       state = state.copyWith(
@@ -531,11 +532,7 @@ class AutomatonAlgorithmNotifier
         }
         state = state.copyWith(isLoading: false, fsaReversalResult: reversal);
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: result.error,
-          structuredError: result.structuredError,
-        );
+        _setFailure(result);
       }
     } catch (error) {
       state = state.copyWith(
@@ -567,7 +564,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -598,7 +595,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -629,7 +626,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -660,7 +657,7 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        _setFailure(result);
       }
     } catch (e) {
       state = state.copyWith(
@@ -712,7 +709,11 @@ class AutomatonAlgorithmNotifier
             .read(algorithmStepProvider.notifier)
             .initializeSteps(algorithmSteps);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
       }
     } catch (e) {
       state = state.copyWith(
@@ -796,7 +797,11 @@ class AutomatonAlgorithmNotifier
             .replaceAutomaton(result.data!);
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
       }
     } catch (e) {
       state = state.copyWith(
@@ -845,7 +850,11 @@ class AutomatonAlgorithmNotifier
             .read(algorithmStepProvider.notifier)
             .initializeSteps(algorithmSteps);
       } else {
-        state = state.copyWith(isLoading: false, error: result.error);
+        state = state.copyWith(
+          isLoading: false,
+          error: result.error,
+          structuredError: result.structuredError,
+        );
       }
     } catch (e) {
       state = state.copyWith(

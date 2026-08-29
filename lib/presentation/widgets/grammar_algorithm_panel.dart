@@ -982,12 +982,13 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         tone: AppSnackBarTone.success,
       );
     } else {
-      final message =
-          result.error ??
-          appLocalizationsOf(context).failedToConvertGrammarToPda;
+      final strings = appLocalizationsOf(context);
+      final message = result.structuredError == null
+          ? result.error ?? strings.failedToConvertGrammarToPda
+          : strings.resolveStructuredMessage(result.structuredError!);
       showAppSnackBar(
         context,
-        message: appLocalizationsOf(context).localizeWorkflowText(message),
+        message: strings.localizeWorkflowText(message),
         tone: AppSnackBarTone.error,
       );
     }

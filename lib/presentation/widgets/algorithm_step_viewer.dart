@@ -17,7 +17,6 @@ import '../../core/messages/structured_message.dart';
 import '../../core/models/algorithm_step.dart';
 import '../../core/models/cyk_step_messages.dart';
 import '../../core/models/dfa_minimization_step_messages.dart';
-import '../../core/models/fa_to_regex_step.dart';
 import '../../core/models/nfa_to_dfa_step_messages.dart';
 import '../../core/models/regex_to_nfa_step.dart';
 import '../../l10n/app_localizations_resolver.dart';
@@ -30,6 +29,28 @@ import 'algorithm_step_renderer_registry.dart';
 /// Shows step title, detailed explanation, and algorithm-specific data
 /// in an educational format. Used in step-by-step algorithm visualization.
 class AlgorithmStepViewer extends StatelessWidget {
+  static const _faToRegexTitleMessageProperty = 'faToRegexTitleMessage';
+  static const _faToRegexExplanationMessageProperty =
+      'faToRegexExplanationMessage';
+  static const _structuredMessageProperties = <String>{
+    _faToRegexTitleMessageProperty,
+    _faToRegexExplanationMessageProperty,
+    regexToNfaTitleMessageProperty,
+    regexToNfaExplanationMessageProperty,
+    FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY,
+    FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY,
+    FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY,
+    FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY,
+    FsaConcatenationMessages.FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY,
+    FsaConcatenationMessages.FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY,
+    dfaMinimizationTitleMessageProperty,
+    dfaMinimizationExplanationMessageProperty,
+    NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY,
+    NfaToDfaStepMessages.NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY,
+    CykStepMessages.stepTitleMessageProperty,
+    CykStepMessages.stepExplanationMessageProperty,
+  };
+
   /// The algorithm step to display
   final AlgorithmStep step;
 
@@ -55,6 +76,11 @@ class AlgorithmStepViewer extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final typedStepData = rendererRegistry?.render(context, step);
+    final visibleProperties = Map<String, dynamic>.fromEntries(
+      step.properties.entries.where(
+        (entry) => !_structuredMessageProperties.contains(entry.key),
+      ),
+    );
 
     return Card(
       elevation: 2,
@@ -73,9 +99,14 @@ class AlgorithmStepViewer extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Algorithm-specific data
-            if (typedStepData != null || step.properties.isNotEmpty) ...[
+            if (typedStepData != null || visibleProperties.isNotEmpty) ...[
               typedStepData ??
-                  _buildPropertiesSection(context, colorScheme, textTheme),
+                  _buildPropertiesSection(
+                    context,
+                    colorScheme,
+                    textTheme,
+                    visibleProperties,
+                  ),
               const SizedBox(height: 12),
             ],
 
@@ -98,17 +129,29 @@ class AlgorithmStepViewer extends StatelessWidget {
   ) {
     final l10n = appLocalizationsOf(context);
     final titleMessage =
-        _structuredMessageProperty(step, faToRegexTitleMessageProperty) ??
+        _structuredMessageProperty(step, _faToRegexTitleMessageProperty) ??
         _structuredMessageProperty(step, regexToNfaTitleMessageProperty) ??
-        _structuredMessageProperty(step, fsaKleeneStarTitleMessageProperty) ??
-        _structuredMessageProperty(step, fsaReversalTitleMessageProperty) ??
         _structuredMessageProperty(
           step,
-          fsaConcatenationTitleMessageProperty,
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_TITLE_MESSAGE_PROPERTY,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          FsaReversalMessages.FSA_REVERSAL_TITLE_MESSAGE_PROPERTY,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          FsaConcatenationMessages.FSA_CONCATENATION_TITLE_MESSAGE_PROPERTY,
         ) ??
         _structuredMessageProperty(step, dfaMinimizationTitleMessageProperty) ??
-        _structuredMessageProperty(step, nfaToDfaTitleMessageProperty) ??
-        _structuredMessageProperty(step, cykStepTitleMessageProperty);
+        _structuredMessageProperty(
+          step,
+          NfaToDfaStepMessages.NFA_TO_DFA_TITLE_MESSAGE_PROPERTY,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          CykStepMessages.stepTitleMessageProperty,
+        );
     final stepBadge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -180,29 +223,39 @@ class AlgorithmStepViewer extends StatelessWidget {
   Widget _buildExplanationSection(BuildContext context, TextTheme textTheme) {
     final l10n = appLocalizationsOf(context);
     final explanationMessage =
-        _structuredMessageProperty(step, faToRegexExplanationMessageProperty) ??
+        _structuredMessageProperty(
+          step,
+          _faToRegexExplanationMessageProperty,
+        ) ??
         _structuredMessageProperty(
           step,
           regexToNfaExplanationMessageProperty,
         ) ??
         _structuredMessageProperty(
           step,
-          fsaKleeneStarExplanationMessageProperty,
+          FsaKleeneStarMessages.FSA_KLEENE_STAR_EXPLANATION_MESSAGE_PROPERTY,
         ) ??
         _structuredMessageProperty(
           step,
-          fsaReversalExplanationMessageProperty,
+          FsaReversalMessages.FSA_REVERSAL_EXPLANATION_MESSAGE_PROPERTY,
         ) ??
         _structuredMessageProperty(
           step,
-          fsaConcatenationExplanationMessageProperty,
+          FsaConcatenationMessages
+              .FSA_CONCATENATION_EXPLANATION_MESSAGE_PROPERTY,
         ) ??
         _structuredMessageProperty(
           step,
           dfaMinimizationExplanationMessageProperty,
         ) ??
-        _structuredMessageProperty(step, nfaToDfaExplanationMessageProperty) ??
-        _structuredMessageProperty(step, cykStepExplanationMessageProperty);
+        _structuredMessageProperty(
+          step,
+          NfaToDfaStepMessages.NFA_TO_DFA_EXPLANATION_MESSAGE_PROPERTY,
+        ) ??
+        _structuredMessageProperty(
+          step,
+          CykStepMessages.stepExplanationMessageProperty,
+        );
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -254,6 +307,7 @@ class AlgorithmStepViewer extends StatelessWidget {
     BuildContext context,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    Map<String, dynamic> properties,
   ) {
     final l10n = appLocalizationsOf(context);
     return Container(
@@ -280,7 +334,7 @@ class AlgorithmStepViewer extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          ...step.properties.entries.map((entry) {
+          ...properties.entries.map((entry) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: _buildPropertyRow(

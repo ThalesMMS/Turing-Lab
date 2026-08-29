@@ -30,7 +30,7 @@ class TMTimeResultView extends StatelessWidget {
         ? '∅'
         : report.plan.alphabet.join(', ');
     final reportMessage = report.structuredMessage == null
-        ? report.message
+        ? l10n.localizeWorkflowText(report.message)
         : l10n.resolveStructuredMessage(report.structuredMessage!);
 
     return Container(
@@ -52,7 +52,11 @@ class TMTimeResultView extends StatelessWidget {
             isWarning: incomplete || invalid,
           ),
           const SizedBox(height: 8),
-          buildTMMetricRow(context, 'Profile kind', kindLabel),
+          buildTMMetricRow(
+            context,
+            'Profile kind',
+            l10n.localizeWorkflowText(kindLabel),
+          ),
           buildTMMetricRow(context, 'Input alphabet', alphabet),
           buildTMMetricRow(
             context,
@@ -121,10 +125,13 @@ class TMTimeResultView extends StatelessWidget {
         ? colorScheme.primary
         : colorScheme.error;
     final status = sampled
-        ? 'Sampled • incomplete'
+        ? '${appLocalizationsOf(context).localizeWorkflowText('Sampled')} • '
+              '${appLocalizationsOf(context).localizeWorkflowText('Incomplete').toLowerCase()}'
         : row.isComplete
-        ? 'Exhaustive • complete'
-        : 'Exhaustive • incomplete';
+        ? '${appLocalizationsOf(context).localizeWorkflowText('Exhaustive')} • '
+              '${appLocalizationsOf(context).localizeWorkflowText('Complete').toLowerCase()}'
+        : '${appLocalizationsOf(context).localizeWorkflowText('Exhaustive')} • '
+              '${appLocalizationsOf(context).localizeWorkflowText('Incomplete').toLowerCase()}';
 
     return Container(
       key: Key('tm-time-profile-row-${row.inputLength}'),

@@ -25,17 +25,16 @@ final class LocaleValueFormatter {
   ///
   /// Generated localization methods accept typed integers, but their ICU
   /// interpolation does not apply the presentation grouping used by the
-  /// surrounding UI. Building the template first keeps plural selection and
-  /// locale-specific wording intact, then replaces only the controlled
-  /// numeric argument.
+  /// surrounding UI. Comparing a probe render preserves the exact argument
+  /// position without matching identical digits in user-controlled content.
   String inLocalizedTemplate(String Function(int value) template, int value) {
     final text = template(value);
     final raw = value.toString();
     final formatted = integer(value);
     if (raw == formatted) return text;
-    final index = text.indexOf(raw);
-    if (index < 0) return text;
-    return text.replaceRange(index, index + raw.length, formatted);
+    final range = _integerInterpolationRange(template, value, text);
+    if (range == null) return text;
+    return text.replaceRange(range.$1, range.$2, formatted);
   }
 
   /// Formats controlled integer arguments after a message has been localized.
@@ -63,7 +62,7 @@ final class LocaleValueFormatter {
         occurrence < replacementCounts[value]!;
         occurrence++
       ) {
-        final index = result.indexOf(raw);
+        final index = _controlledIntegerTokenIndex(result, raw);
         if (index < 0) break;
         final placeholder = String.fromCharCode(0xE000 + placeholderIndex++);
         result = result.replaceRange(index, index + raw.length, placeholder);
@@ -122,7 +121,7 @@ final class LocaleValueFormatter {
   }
 
   String compactDuration(Duration duration) {
-    if (duration.inMilliseconds > 0) {
+    if (duration.inMilliseconds.abs() > 0) {
       return '${integer(duration.inMilliseconds)} ms';
     }
     return '${integer(duration.inMicroseconds)} µs';
@@ -131,6 +130,72 @@ final class LocaleValueFormatter {
   String timeOfDay(DateTime value) =>
       DateFormat.jms(_localeName).format(value.toLocal());
 }
+
+(int, int)? _integerInterpolationRange(
+  String Function(int value) template,
+  int value,
+  String text,
+) {
+  for (final offset in const [1000003, -1000033, 2000003]) {
+    final probe = value + offset;
+    final probeRaw = probe.toString();
+    final probeText = template(probe);
+    var searchStart = 0;
+    while (searchStart < probeText.length) {
+      final index = probeText.indexOf(probeRaw, searchStart);
+      if (index < 0) break;
+      final restored = probeText.replaceRange(
+        index,
+        index + probeRaw.length,
+        value.toString(),
+      );
+      if (restored == text) {
+        return (index, index + value.toString().length);
+      }
+      searchStart = index + probeRaw.length;
+    }
+  }
+  return null;
+}
+
+int _controlledIntegerTokenIndex(String text, String raw) {
+  var searchStart = 0;
+  while (searchStart < text.length) {
+    final index = text.indexOf(raw, searchStart);
+    if (index < 0) return -1;
+    final end = index + raw.length;
+    if (!_hasIdentifierBoundaryBefore(text, index) &&
+        !_hasIdentifierBoundaryAfter(text, end)) {
+      return index;
+    }
+    searchStart = end;
+  }
+  return -1;
+}
+
+bool _hasIdentifierBoundaryBefore(String text, int index) {
+  if (index == 0) return false;
+  final character = text[index - 1];
+  if (_isIdentifierCoreCharacter(character)) return true;
+  return _isIdentifierSeparator(character) &&
+      index > 1 &&
+      _isIdentifierCoreCharacter(text[index - 2]);
+}
+
+bool _hasIdentifierBoundaryAfter(String text, int end) {
+  if (end == text.length) return false;
+  final character = text[end];
+  if (_isIdentifierCoreCharacter(character)) return true;
+  return _isIdentifierSeparator(character) &&
+      end + 1 < text.length &&
+      _isIdentifierCoreCharacter(text[end + 1]);
+}
+
+bool _isIdentifierCoreCharacter(String character) =>
+    RegExp(r'[A-Za-z0-9_]').hasMatch(character);
+
+bool _isIdentifierSeparator(String character) =>
+    character == '.' || character == '-';
 
 String _groupDigits(
   String digits,

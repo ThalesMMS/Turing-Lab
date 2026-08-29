@@ -43,7 +43,7 @@ extension AppLocalizationsManualConversions on AppLocalizations {
     final transitionLabel = transitionCount == 1 ? 'transição' : 'transições';
     final acceptingLabel = acceptingCount == 1 ? 'estado' : 'estados';
     return '$stateCount $stateLabel, $transitionCount $transitionLabel, '
-        'uma entrada e $acceptingCount $acceptingLabel de aceitação. '
+        'um estado de entrada e $acceptingCount $acceptingLabel de aceitação. '
         'Alfabeto: $alphabetText.';
   }
 
@@ -126,7 +126,7 @@ extension AppLocalizationsManualConversions on AppLocalizations {
     if (exact != null) return exact;
 
     final completeCounterexample = RegExp(
-      r'^The completed automaton is not language-equivalent\. Counterexample: (.+)\.$',
+      r'^The completed automaton is not language-equivalent\. Counterexample: (.*)\.$',
     ).firstMatch(source);
     if (completeCounterexample != null) {
       return 'O autômato concluído não é equivalente em linguagem. '

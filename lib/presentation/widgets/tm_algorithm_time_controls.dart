@@ -4,6 +4,7 @@ import '../../core/algorithms/tm_time_profiler.dart';
 import '../../core/models/tm.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_inputs.dart';
 
@@ -96,6 +97,7 @@ class TMTimeProfilerControls extends StatelessWidget {
 
   Widget _planSummary(BuildContext context) {
     final strings = appLocalizationsOf(context);
+    final valueFormatter = LocaleValueFormatter.of(context);
     final bounds = inputs.timeBounds;
     if (bounds == null) {
       return Text(
@@ -127,9 +129,11 @@ class TMTimeProfilerControls extends StatelessWidget {
     final rows = plan.rows
         .map((row) {
           return row.isSampled
-              ? 'n=${row.inputLength}: ${row.candidateCount}/'
-                    '${row.possibleCandidateCount} $sampled'
-              : 'n=${row.inputLength}: ${row.candidateCount} $exhaustive';
+              ? 'n=${valueFormatter.integer(row.inputLength)}: '
+                    '${valueFormatter.integer(row.candidateCount)}/'
+                    '${valueFormatter.integerBigInt(row.possibleCandidateCount)} $sampled'
+              : 'n=${valueFormatter.integer(row.inputLength)}: '
+                    '${valueFormatter.integer(row.candidateCount)} $exhaustive';
         })
         .join(' • ');
     return Column(
@@ -137,7 +141,7 @@ class TMTimeProfilerControls extends StatelessWidget {
       children: [
         Text(
           '${strings.localizeWorkflowText('Planned candidates')}: '
-          '${plan.plannedCandidateCount}',
+          '${valueFormatter.integer(plan.plannedCandidateCount)}',
           key: const Key('tm-time-profile-planned-count'),
           style: Theme.of(context).textTheme.bodySmall,
         ),

@@ -643,8 +643,14 @@ double? _parseLocalizedCoordinate(BuildContext context, String source) {
   final alternateDecimalSeparator = decimalSeparator == ',' ? '.' : ',';
   if (trimmed.contains(alternateDecimalSeparator) &&
       !trimmed.contains(decimalSeparator)) {
-    final invariant = double.tryParse(trimmed);
-    if (invariant != null) return invariant;
+    final separatorCount = alternateDecimalSeparator.allMatches(trimmed).length;
+    final fractionalLength =
+        trimmed.length - trimmed.lastIndexOf(alternateDecimalSeparator) - 1;
+    if (separatorCount == 1 && fractionalLength != 3) {
+      final normalized = trimmed.replaceAll(alternateDecimalSeparator, '.');
+      final alternateDecimal = double.tryParse(normalized);
+      if (alternateDecimal != null) return alternateDecimal;
+    }
   }
   return format.tryParse(trimmed)?.toDouble() ?? double.tryParse(trimmed);
 }
@@ -882,24 +888,6 @@ String _failureMessage(BuildContext context, CodecOutcome<Object?> outcome) {
     _ => null,
   };
   if (structuredMessage != null) {
-    // Keep the fragment-import dialog's established Portuguese fallback for
-    // codec failures. Direct codec callers still retain the more specific
-    // structured payload for diagnostics and logging.
-    if (isPortuguese) {
-      return switch (outcome) {
-        CodecUnsupported(:final reason) => _unsupportedCodecFailureDescription(
-          l10n,
-          reason,
-        ),
-        CodecMalformed(:final reason) => _malformedCodecFailureDescription(
-          l10n,
-          reason,
-        ),
-        CodecInternalFailure() =>
-          l10n.interoperabilityInternalFailureDescription,
-        _ => l10n.resolveStructuredMessage(structuredMessage),
-      };
-    }
     return l10n.resolveStructuredMessage(structuredMessage);
   }
   return switch (outcome) {

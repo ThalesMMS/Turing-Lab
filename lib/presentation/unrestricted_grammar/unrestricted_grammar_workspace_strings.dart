@@ -259,7 +259,7 @@ final class UnrestrictedGrammarWorkspaceStrings {
         PhraseGrammarDiagnosticCode.declaredTypeMismatch =>
           'The declared grammar type does not match the inferred type$suffix.',
         PhraseGrammarDiagnosticCode.invalidInputSymbol =>
-          'The input uses an undeclared terminal symbol.',
+          'The input uses an undeclared terminal symbol$suffix.',
       };
     }
     return switch (diagnostic.code) {
@@ -298,7 +298,7 @@ final class UnrestrictedGrammarWorkspaceStrings {
       PhraseGrammarDiagnosticCode.declaredTypeMismatch =>
         'O tipo declarado da gramática não corresponde ao tipo inferido$suffix.',
       PhraseGrammarDiagnosticCode.invalidInputSymbol =>
-        'A entrada usa um símbolo terminal não declarado.',
+        'A entrada usa um símbolo terminal não declarado$suffix.',
     };
   }
 
