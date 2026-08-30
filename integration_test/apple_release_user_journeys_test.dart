@@ -221,6 +221,20 @@ void main() {
             );
 
             await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+            await harness.waitUntil(
+              () =>
+                  tester
+                      .widget<TextField>(
+                        find.byKey(const ValueKey('help-search-field')),
+                      )
+                      .controller
+                      ?.text
+                      .isEmpty ??
+                  false,
+              description: 'the active help query to clear on Escape',
+            );
+
+            await tester.sendKeyEvent(LogicalKeyboardKey.escape);
             await harness.waitUntilGone(
               find.byKey(const ValueKey('help-search-field')),
               description: 'the help search field to close on Escape',

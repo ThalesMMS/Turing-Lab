@@ -28,6 +28,8 @@ import 'package:turing_lab/presentation/providers/home_navigation_provider.dart'
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
+import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
 import '../../tool/app_store/app_store_capture_screen.dart';
@@ -107,7 +109,8 @@ class AppStoreCaptureScreens {
       tester,
       find.text(localizations.accepted),
       stage: 'fsa-simulation',
-      pending: 'the simulation panel never reported '
+      pending:
+          'the simulation panel never reported '
           '"${localizations.accepted}" for input "ba"',
     );
   }
@@ -123,10 +126,7 @@ class AppStoreCaptureScreens {
       leftSide: const ['S'],
       rightSide: const ['a', 'S', 'b'],
     );
-    grammar.addProduction(
-      leftSide: const ['S'],
-      rightSide: const ['a', 'b'],
-    );
+    grammar.addProduction(leftSide: const ['S'], rightSide: const ['a', 'b']);
     await waits.until(
       tester,
       stage: 'grammar-fixture',
@@ -141,19 +141,16 @@ class AppStoreCaptureScreens {
   }
 
   Future<void> _preparePda() async {
-    final pda = await waits.runReal<PDA>(
-      tester,
-      'pda-fixture',
-      () async {
-        final result = await ExamplesAssetDataSource()
-            .loadTypedPdaExample('APD - a^n b^n');
-        final example = result.data;
-        if (example == null) {
-          throw StateError('Failed to load the PDA example: ${result.error}');
-        }
-        return example.payload;
-      },
-    );
+    final pda = await waits.runReal<PDA>(tester, 'pda-fixture', () async {
+      final result = await ExamplesAssetDataSource().loadTypedPdaExample(
+        'APD - a^n b^n',
+      );
+      final example = result.data;
+      if (example == null) {
+        throw StateError('Failed to load the PDA example: ${result.error}');
+      }
+      return example.payload;
+    });
     container.read(pdaEditorProvider.notifier).setPda(pda);
     await waits.until(
       tester,
@@ -169,19 +166,16 @@ class AppStoreCaptureScreens {
   }
 
   Future<void> _prepareTm() async {
-    final tm = await waits.runReal<TM>(
-      tester,
-      'tm-fixture',
-      () async {
-        final result = await ExamplesAssetDataSource()
-            .loadTypedTmExample('MT - Incremento binário');
-        final example = result.data;
-        if (example == null) {
-          throw StateError('Failed to load the TM example: ${result.error}');
-        }
-        return example.payload;
-      },
-    );
+    final tm = await waits.runReal<TM>(tester, 'tm-fixture', () async {
+      final result = await ExamplesAssetDataSource().loadTypedTmExample(
+        'MT - Incremento binário',
+      );
+      final example = result.data;
+      if (example == null) {
+        throw StateError('Failed to load the TM example: ${result.error}');
+      }
+      return example.payload;
+    });
     container.read(tmEditorProvider.notifier).setTm(tm);
     await waits.until(
       tester,
@@ -221,10 +215,12 @@ class AppStoreCaptureScreens {
       tester,
       find.text(localizations.validRegex),
       stage: 'regex-validation',
-      pending: 'the validation banner never showed '
+      pending:
+          'the validation banner never showed '
           '"${localizations.validRegex}"',
     );
 
+    await _tapSimulateAction();
     final testField = find.byKey(const ValueKey('regex_test_input_field'));
     await waits.untilVisible(
       tester,
@@ -275,7 +271,7 @@ class AppStoreCaptureScreens {
 
   /// Taps the simulation shortcut in the workspace app bar.
   Future<void> _tapSimulateAction() async {
-    final finder = find.descendant(
+    final directAction = find.descendant(
       of: find.byType(WorkspaceQuickActionsBar),
       matching: find.byWidgetPredicate(
         (widget) =>
@@ -285,13 +281,55 @@ class AppStoreCaptureScreens {
             widget.onPressed != null,
       ),
     );
-    expect(
-      finder,
-      findsOneWidget,
-      reason: 'Expected one enabled simulation shortcut in the app bar',
+    if (directAction.evaluate().isNotEmpty) {
+      expect(
+        directAction,
+        findsOneWidget,
+        reason: 'Expected one enabled simulation shortcut in the app bar',
+      );
+      await tester.ensureVisible(directAction);
+      await tester.tap(directAction);
+      await waits.quiesce(tester);
+      return;
+    }
+
+    final overflow = find.byKey(
+      const ValueKey('workspace-quick-actions-overflow'),
     );
-    await tester.ensureVisible(finder);
-    await tester.tap(finder);
+    if (overflow.evaluate().isEmpty) {
+      final dockAction = find.byKey(
+        WorkspaceDock.railButtonKey(
+          AutomatonWorkspaceScaffold.simulationPanelId,
+        ),
+      );
+      expect(
+        dockAction,
+        findsOneWidget,
+        reason: 'Expected a simulation shortcut in the wide workspace dock',
+      );
+      await tester.tap(dockAction);
+      await waits.quiesce(tester);
+      return;
+    }
+
+    expect(
+      overflow,
+      findsOneWidget,
+      reason: 'Expected a direct simulation shortcut or compact overflow',
+    );
+    await tester.tap(overflow);
+    await waits.quiesce(tester);
+
+    final menuAction = find.ancestor(
+      of: find.byIcon(Icons.play_arrow),
+      matching: find.byType(PopupMenuItem<int>),
+    );
+    expect(
+      menuAction,
+      findsOneWidget,
+      reason: 'Expected one simulation action in the compact overflow',
+    );
+    await tester.tap(menuAction);
     await waits.quiesce(tester);
   }
 }

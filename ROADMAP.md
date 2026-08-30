@@ -5,6 +5,12 @@ It is not a commitment to specific dates. `V1_SCOPE.md` remains authoritative
 for the current release scope, while this document records what is planned,
 deferred, or explicitly out of scope.
 
+GitHub issue #306 is the sole live implementation Epic. The machine-readable
+phase and dependency map for its children is
+[`docs/issue-roadmap.json`](docs/issue-roadmap.json). Validate the map locally
+with `python3 tool/check_issue_roadmap.py --github` before changing phases or
+adding work to the Epic.
+
 ## Current Baseline: v1.0
 
 Turing Lab v1.0 focuses on a stable educational core:
