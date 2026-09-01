@@ -54,8 +54,9 @@ extension _RegexPageSampleSections on _RegexPageState {
                 child: ElevatedButton.icon(
                   onPressed: _runSampleGeneration,
                   icon: const Icon(Icons.text_snippet_outlined),
-                  label:
-                      Text(AppLocalizations.of(context).generateSampleStrings),
+                  label: Text(
+                    AppLocalizations.of(context).generateSampleStrings,
+                  ),
                 ),
               )
             else ...[
@@ -125,8 +126,9 @@ extension _RegexPageSampleSections on _RegexPageState {
               ),
               const SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)
-                    .sampleStringsGeneratedCount(samples.count),
+                AppLocalizations.of(
+                  context,
+                ).sampleStringsGeneratedCount(samples.count),
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -148,8 +150,9 @@ extension _RegexPageSampleSections on _RegexPageState {
                 ),
               if (samples.shortestString != null)
                 _buildInfoChip(
-                  AppLocalizations.of(context)
-                      .shortestSample(_displayString(samples.shortestString!)),
+                  AppLocalizations.of(
+                    context,
+                  ).shortestSample(_displayString(samples.shortestString!)),
                   Icons.short_text,
                   colorScheme.secondary,
                 ),
@@ -196,9 +199,9 @@ extension _RegexPageSampleSections on _RegexPageState {
         child: Text(
           AppLocalizations.of(context).noSampleStringsGenerated,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       );
     }
@@ -299,7 +302,7 @@ extension _RegexPageSampleSections on _RegexPageState {
 
   /// Formats a string for display, showing special representations for empty/epsilon
   String _displayString(String s) {
-    if (s.isEmpty) return 'ε';
+    if (s.isEmpty) return EmptyStringNotation.symbolOf(context);
     if (s.length > 20) return '${s.substring(0, 17)}...';
     return s;
   }
@@ -320,9 +323,6 @@ extension _RegexPageSampleSections on _RegexPageState {
       return;
     }
     if (!mounted) return;
-    _showFeedback(
-      successMessage,
-      tone: AppSnackBarTone.success,
-    );
+    _showFeedback(successMessage, tone: AppSnackBarTone.success);
   }
 }

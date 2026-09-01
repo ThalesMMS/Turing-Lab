@@ -1453,16 +1453,29 @@ final enHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorProductionRowsAndAlternatives: HelpNodeCopy(
     title: 'Production rows and alternatives',
     body:
-        'Each production row stores one left side and one right-side '
-        'alternative. Use multiple rows when a variable has alternatives such '
-        'as S → aS and S → b. Fill Left Side (Variable) and Right Side '
-        '(Production), select Add, and use a row menu for Edit or Delete; '
-        'Update and Cancel appear while editing. Production Rules shows the '
-        'numbered rules in source order. A compact value such as aA is split '
-        'into characters, while whitespace separates multi-character symbols; '
-        'do not type the vertical bar as an alternative separator. Continue '
-        'with Empty productions using ε.',
-    keywords: ['Add', 'Edit', 'Delete', 'Update', 'Production Rules'],
+        'Enter one left side and one or more right-side alternatives separated '
+        'by |, such as S with aS | b. Select Add once; the grammar stores each '
+        'alternative as an independent production and groups rules with the '
+        'same left side in the workspace. Use the group menu to Edit '
+        'alternatives, Delete group, Move up, or Move down. Drag only the '
+        'group handle to reorder with a pointer or touch; the complete group '
+        'moves while its alternative order stays unchanged. The menu actions '
+        'provide the keyboard and screen-reader path. Editing replaces the '
+        'complete group, and deletion asks for confirmation. A compact value such as aA is '
+        'split into characters, while whitespace separates multi-character '
+        'symbols. Type \\| to enter a literal pipe terminal. Native files '
+        'preserve this order; JFLAP export may move start-symbol rules first '
+        'and reports that interoperability normalization. Continue with '
+        'Empty productions using ε.',
+    keywords: [
+      'Add',
+      'Edit alternatives',
+      'Delete group',
+      'Move up',
+      'drag',
+      '|',
+      '\\|',
+    ],
   ),
   HelpTopicIds.grammarEditorProductionLambda: HelpNodeCopy(
     title: 'Empty productions with ε',
@@ -1483,12 +1496,14 @@ final enHelpCatalogCopy = HelpCatalogCopy({
         'Production validation keeps malformed editor rows from entering the '
         'grammar. Use it when Add or Update does nothing or a later analysis '
         'reports validation errors. Supply both sides, put exactly one symbol '
-        'on the left, and put at least one ordinary symbol or one ε marker on '
-        'the right; use Clear to remove every production after confirming. '
-        'Inline messages identify the failing side, and Clear offers Undo in '
-        'its confirmation feedback. The editor validates row shape rather than '
-        'proving language properties, and analysis also requires a non-empty '
-        'grammar with a declared start symbol. Continue with Parser workflow.',
+        'on the left, and give every | separator a non-empty alternative on '
+        'the right. Each alternative must contain ordinary symbols or one '
+        'empty-string marker. The complete batch is validated before anything '
+        'is added; existing alternatives are skipped with feedback. Use Clear '
+        'to remove every production after confirming. Inline messages identify '
+        'the failing side, and Clear offers Undo in its confirmation feedback. '
+        'The editor validates rule shape rather than proving language '
+        'properties. Continue with Parser workflow.',
     keywords: ['validation', 'Clear', 'Undo', 'error', 'rule shape'],
   ),
   'grammar.editor.parser': HelpNodeCopy(
@@ -4450,9 +4465,20 @@ final enHelpCatalogCopy = HelpCatalogCopy({
     title: 'Editing and classification',
     body:
         'The editor keeps terminals, nonterminals, and production sides as '
-        'explicit token sequences. The classifier reports the strongest class '
-        'satisfied by the current production set and names violated rules.',
-    keywords: ['production', 'classification', 'nonterminal', 'JSON'],
+        'explicit token sequences. Drag a production only from its handle to '
+        'reorder it, or use Move up and Move down from the production menu '
+        'with a keyboard or screen reader. Native JSON and the Turing Lab '
+        'JFLAP token extension preserve the exact order. The classifier '
+        'reports the strongest class satisfied by the current production set '
+        'and names violated rules.',
+    keywords: [
+      'production',
+      'classification',
+      'nonterminal',
+      'JSON',
+      'Move up',
+      'drag',
+    ],
     blocks: _unrestrictedGrammarEditingBlocks,
   ),
   HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph: HelpNodeCopy(

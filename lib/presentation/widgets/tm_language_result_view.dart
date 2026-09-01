@@ -5,6 +5,7 @@ import '../../core/models/tm_language_explorer_models.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_presentation_primitives.dart';
@@ -188,7 +189,9 @@ class TMLanguageResultView extends StatelessWidget {
         selected: selected,
         onTap: () => onWordSelected(result),
         leading: Icon(_languageOutcomeIcon(result.outcome), color: color),
-        title: Text(result.input.isEmpty ? 'ε' : result.input),
+        title: Text(
+          result.input.isEmpty ? EmptyStringNotation.symbolOf(context) : result.input,
+        ),
         subtitle: Text(
           '$outcomeLabel • ${_languageProgressText(context, valueFormatter, result.analysis)}',
         ),
@@ -209,13 +212,16 @@ class TMLanguageResultView extends StatelessWidget {
         : appLocalizationsOf(
             context,
           ).resolveStructuredMessage(analysis.structuredMessage!);
+    final selectedDisplay = result.input.isEmpty
+        ? EmptyStringNotation.symbolOf(context)
+        : result.input;
     return Column(
       key: const Key('tm-language-selected-word'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           '${appLocalizationsOf(context).localizeWorkflowText('Selected word')}: '
-          '${result.input.isEmpty ? 'ε' : result.input}',
+          '$selectedDisplay',
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -228,7 +234,7 @@ class TMLanguageResultView extends StatelessWidget {
         ),
         buildTMStatusMessage(
           context,
-          message: analysisMessage,
+          message: EmptyStringNotation.format(context, analysisMessage),
           isWarning: !analysis.isExact,
         ),
         buildTMMetricRow(
@@ -279,6 +285,14 @@ class TMLanguageResultView extends StatelessWidget {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final step = trace[index];
+                final subtitle = step.usedTransition ??
+                    localizeTMInteger(
+                      valueFormatter,
+                      (marker) => appLocalizationsOf(
+                        context,
+                      ).initialConfigurationAtHead(marker),
+                      step.headPosition ?? 0,
+                    );
                 return ListTile(
                   dense: true,
                   title: Text(
@@ -291,14 +305,7 @@ class TMLanguageResultView extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    step.usedTransition ??
-                        localizeTMInteger(
-                          valueFormatter,
-                          (marker) => appLocalizationsOf(
-                            context,
-                          ).initialConfigurationAtHead(marker),
-                          step.headPosition ?? 0,
-                        ),
+                    EmptyStringNotation.format(context, subtitle),
                   ),
                 );
               },

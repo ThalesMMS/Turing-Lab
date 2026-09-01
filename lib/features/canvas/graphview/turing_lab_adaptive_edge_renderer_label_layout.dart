@@ -287,7 +287,7 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
   }) {
     final edgeId = _edgeId(edge);
     return _buildLabelPainterForText(
-      text: edge.label ?? '',
+      text: formatEmptyStringNotation(edge.label ?? '', emptyStringSymbol),
       highlighted: highlightedOverride ?? _isHighlighted(edgeId),
       selected: selectedOverride ?? _isSelected(edgeId),
     );

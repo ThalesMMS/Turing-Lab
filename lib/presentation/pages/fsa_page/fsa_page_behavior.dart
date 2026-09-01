@@ -336,6 +336,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
       onCompareEquivalence: isDfa ? _handleCompareEquivalence : null,
       equivalenceResult: algorithmState.equivalenceResult,
       equivalenceDetails: algorithmState.equivalenceDetails,
+      stepByStepMode: _stepByStepMode,
       onStepByStepModeChanged: _handleStepByStepModeChanged,
     );
   }

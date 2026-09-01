@@ -2191,7 +2191,7 @@ abstract class AppLocalizations {
   /// **'Pause'**
   String get pause;
 
-  /// No description provided for @reset.
+  /// Button or tooltip label for restoring defaults.
   ///
   /// In en, this message translates to:
   /// **'Reset'**
@@ -2329,7 +2329,7 @@ abstract class AppLocalizations {
   /// **'Execution Path'**
   String get executionPath;
 
-  /// No description provided for @transitions.
+  /// Shared interface label for transition counts in automaton summaries.
   ///
   /// In en, this message translates to:
   /// **'Transitions'**
@@ -3627,7 +3627,7 @@ abstract class AppLocalizations {
   /// No description provided for @editProductionRule.
   ///
   /// In en, this message translates to:
-  /// **'Edit Production Rule'**
+  /// **'Edit alternatives'**
   String get editProductionRule;
 
   /// No description provided for @addProductionRule.
@@ -3669,7 +3669,7 @@ abstract class AppLocalizations {
   /// No description provided for @rightSideHelper.
   ///
   /// In en, this message translates to:
-  /// **'Use ε for the empty string.'**
+  /// **'Separate alternatives with |. Use \\| for a literal pipe and ε for the empty string.'**
   String get rightSideHelper;
 
   /// No description provided for @insertEpsilon.
@@ -3743,6 +3743,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ε must be the only symbol on the right side'**
   String get lambdaMustBeOnlySymbol;
+
+  /// No description provided for @rightSideEmptyAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value between each | separator'**
+  String get rightSideEmptyAlternative;
+
+  /// No description provided for @rightSideArrowNotAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter only right-side alternatives here, without an arrow'**
+  String get rightSideArrowNotAccepted;
+
+  /// No description provided for @editAlternatives.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit alternatives'**
+  String get editAlternatives;
+
+  /// No description provided for @deleteGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get deleteGroup;
+
+  /// No description provided for @productionGroupActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Production group actions'**
+  String get productionGroupActions;
+
+  /// No description provided for @moveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get moveUp;
+
+  /// No description provided for @moveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get moveDown;
+
+  /// No description provided for @reorderProductionsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder productions for {leftSide}'**
+  String reorderProductionsFor(String leftSide);
+
+  /// No description provided for @productionPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Position {position} of {total}'**
+  String productionPosition(int position, int total);
+
+  /// No description provided for @productionGroupMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved productions for {leftSide} to position {position} of {total}'**
+  String productionGroupMoved(String leftSide, int position, int total);
+
+  /// No description provided for @deleteProductionGroupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete production group?'**
+  String get deleteProductionGroupTitle;
+
+  /// No description provided for @deleteProductionGroupMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete {count, plural, =1 {1 alternative} other {{count} alternatives}}.'**
+  String deleteProductionGroupMessage(int count);
+
+  /// No description provided for @productionAlternativesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1 {1 alternative} other {{count} alternatives}}'**
+  String productionAlternativesCount(int count);
+
+  /// No description provided for @productionAlternativesSkippedDuplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added}; skipped {duplicates} that already existed.'**
+  String productionAlternativesSkippedDuplicates(int added, int duplicates);
+
+  /// No description provided for @productionAlternativesAlreadyExist.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1 {That alternative already exists.} other {Those {count} alternatives already exist.}}'**
+  String productionAlternativesAlreadyExist(int count);
 
   /// No description provided for @sampleStringsTitle.
   ///
@@ -5142,11 +5232,29 @@ abstract class AppLocalizations {
   /// **'Distinguishing String Found'**
   String get distinguishingStringFound;
 
-  /// No description provided for @emptyStringEpsilon.
+  /// Selector label for epsilon empty-string notation.
   ///
   /// In en, this message translates to:
   /// **'ε (empty string)'**
   String get emptyStringEpsilon;
+
+  /// Selector label for lambda empty-string notation.
+  ///
+  /// In en, this message translates to:
+  /// **'λ (empty string)'**
+  String get emptyStringLambda;
+
+  /// Settings section title for choosing the empty-string symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty-string notation'**
+  String get settingsEmptyStringNotationTitle;
+
+  /// Explanation below the empty-string notation selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether the interface shows the empty string and empty transitions as ε or λ.'**
+  String get settingsEmptyStringNotationDescription;
 
   /// No description provided for @distinguishingStringExplanation.
   ///
@@ -6814,6 +6922,22 @@ abstract class AppLocalizations {
   /// **'Derivation Tree'**
   String get derivationTree;
 
+  /// Screen-reader description for a leaf in a derivation tree.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol}, leaf at level {level}'**
+  String derivationTreeLeafSemantics(String symbol, int level);
+
+  /// Screen-reader description for a branch in a derivation tree.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol}, level {level}, {childCount, plural, one{1 child} other{{childCount} children}}'**
+  String derivationTreeBranchSemantics(
+    String symbol,
+    int level,
+    int childCount,
+  );
+
   /// No description provided for @derivationTreesAmbiguous.
   ///
   /// In en, this message translates to:
@@ -7371,6 +7495,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select DFA to compare'**
   String get selectDfaToCompare;
+
+  /// Error shown when the platform file picker cannot be opened for an automaton selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the automaton file picker: {error}'**
+  String errorOpeningAutomatonFilePicker(String error);
 
   /// No description provided for @loadingAutomatonEllipsis.
   ///
@@ -16782,6 +16912,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grammar classification {classification} cannot be preserved in JFLAP XML.'**
   String codecGrammarJflapClassificationLossy(String classification);
+
+  /// JFLAP grammar export normalized production order for start-symbol interoperability.
+  ///
+  /// In en, this message translates to:
+  /// **'JFLAP export moved start-symbol productions first so other JFLAP tools can infer the start symbol.'**
+  String get codecGrammarJflapStartOrderNormalized;
 
   /// Malformed L-system JFLAP document with an invalid XML root.
   ///

@@ -15,10 +15,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/core/annotations/document_annotation_collection.dart';
+import 'package:turing_lab/core/entities/grammar_entity.dart';
+import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
+import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/services/file_operations_service.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';
+import 'package:turing_lab/presentation/widgets/export/svg_exporter.dart';
 
 void main() {
   group('FileOperationsService JFLAP import edge cases', () {
@@ -294,6 +299,70 @@ void main() {
       },
     );
   });
+
+  test(
+    'legacy visual export wrappers forward the empty-string symbol',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'turing-lab-legacy-visual-export-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final service = _RecordingLegacyExportService();
+
+      final pngResult = await service.exportAutomatonToPNG(
+        FSA.empty(id: 'empty', name: 'Empty'),
+        '${directory.path}${Platform.pathSeparator}automaton.png',
+        emptyStringSymbol: 'λ',
+      );
+      final svgResult = await service.exportGrammarToSVG(
+        const GrammarEntity(
+          id: 'grammar',
+          name: 'Grammar',
+          terminals: {},
+          nonTerminals: {'S'},
+          startSymbol: 'S',
+          productions: [],
+        ),
+        '${directory.path}${Platform.pathSeparator}grammar.svg',
+        emptyStringSymbol: 'λ',
+      );
+
+      expect(pngResult.isSuccess, isTrue);
+      expect(svgResult.isSuccess, isTrue);
+      expect(service.pngEmptyStringSymbol, 'λ');
+      expect(service.grammarEmptyStringSymbol, 'λ');
+    },
+  );
 }
 
 Uint8List _bytes(String xml) => Uint8List.fromList(utf8.encode(xml));
+
+class _RecordingLegacyExportService extends FileOperationsService {
+  String? pngEmptyStringSymbol;
+  String? grammarEmptyStringSymbol;
+
+  @override
+  Future<Result<Uint8List>> exportAutomatonToPngBytes(
+    FSA automaton, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    pngEmptyStringSymbol = emptyStringSymbol;
+    return Success(Uint8List.fromList(const [1, 2, 3]));
+  }
+
+  @override
+  String exportGrammarToSvgString(
+    GrammarEntity grammar, {
+    SvgExportOptions? options,
+    String? emptyAutomatonLabel,
+    String? tmLegendLabel,
+    String? emptyStringSymbol,
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) {
+    grammarEmptyStringSymbol = emptyStringSymbol;
+    return '<svg></svg>';
+  }
+}

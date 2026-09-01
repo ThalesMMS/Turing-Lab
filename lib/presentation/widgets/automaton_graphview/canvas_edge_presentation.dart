@@ -42,6 +42,7 @@ class AutomatonGraphViewEdgePresentation {
   Color? _labelSurfaceColor;
   String? _labelFontFamily;
   List<String>? _labelFontFamilyFallback;
+  String? _emptyStringSymbol;
 
   void replaceController(
     BaseGraphViewCanvasController<dynamic, dynamic> controller,
@@ -50,13 +51,14 @@ class AutomatonGraphViewEdgePresentation {
     _lastStructureSignature = null;
   }
 
-  void updateTheme(ThemeData theme) {
+  void updateTheme(ThemeData theme, {String? emptyStringSymbol}) {
     _baseColor = theme.colorScheme.outline;
     _highlightColor = theme.colorScheme.primary;
     _labelSurfaceColor = theme.colorScheme.surfaceContainerHighest;
     final labelStyle = theme.textTheme.labelLarge;
     _labelFontFamily = labelStyle?.fontFamily;
     _labelFontFamilyFallback = labelStyle?.fontFamilyFallback;
+    _emptyStringSymbol = emptyStringSymbol;
   }
 
   void updateHighlight(
@@ -77,6 +79,7 @@ class AutomatonGraphViewEdgePresentation {
         labelSurfaceColor: labelSurfaceColor,
         labelFontFamily: _labelFontFamily,
         labelFontFamilyFallback: _labelFontFamilyFallback,
+        emptyStringSymbol: _emptyStringSymbol,
       );
     }
 

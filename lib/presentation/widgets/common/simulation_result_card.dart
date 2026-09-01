@@ -16,6 +16,7 @@ import '../../../l10n/app_localizations_resolver.dart';
 import '../../../l10n/app_localizations_structured_messages.dart';
 import '../../../l10n/app_localizations_workflows.dart';
 import '../../../core/constants/monospace_typography.dart';
+import '../../empty_string_notation.dart';
 import '../../localization/locale_value_formatter.dart';
 
 /// Card widget for displaying simulation results with path visualization.
@@ -411,7 +412,9 @@ class SimulationResultCard extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: transitions.map((transition) {
-              final displayTransition = transition.isEmpty ? 'ε' : transition;
+              final displayTransition = transition.isEmpty
+                  ? EmptyStringNotation.symbolOf(context)
+                  : EmptyStringNotation.formatMarkers(context, transition);
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphview/graphview_turing_lab.dart';
 
+import '../../../core/utils/epsilon_utils.dart';
+import '../../../presentation/empty_string_notation.dart';
 import 'automatic_transition_route_planner.dart';
 import 'grouped_fsa_geometry.dart';
 
@@ -88,6 +90,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     this.labelFontFamily,
     this.labelFontFamilyFallback,
     this.renderMode = TuringLabEdgeRenderMode.standard,
+    this.emptyStringSymbol = kEpsilonSymbol,
   });
 
   Set<String> _highlightedEdgeIds = const <String>{};
@@ -138,6 +141,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   String? labelFontFamily;
   List<String>? labelFontFamilyFallback;
   TuringLabEdgeRenderMode renderMode;
+  String emptyStringSymbol;
 
   @override
   void setGraph(Graph graph) {
@@ -201,6 +205,7 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
     required Color labelSurfaceColor,
     String? labelFontFamily,
     List<String>? labelFontFamilyFallback,
+    String? emptyStringSymbol,
   }) {
     final labelStyleChanged =
         this.baseColor != baseColor || this.highlightColor != highlightColor;
@@ -217,10 +222,16 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
         !listEquals(this.labelFontFamilyFallback, labelFontFamilyFallback);
     this.labelFontFamily = labelFontFamily;
     this.labelFontFamilyFallback = labelFontFamilyFallback;
-    if (labelStyleChanged || fontChanged) {
+    final resolvedEmptyStringSymbol = normalizeEmptyStringDisplaySymbol(
+      emptyStringSymbol ?? this.emptyStringSymbol,
+    );
+    final emptyStringSymbolChanged =
+        this.emptyStringSymbol != resolvedEmptyStringSymbol;
+    this.emptyStringSymbol = resolvedEmptyStringSymbol;
+    if (labelStyleChanged || fontChanged || emptyStringSymbolChanged) {
       _clearLabelPainterCache();
     }
-    if (labelLayoutChanged &&
+    if ((labelLayoutChanged || emptyStringSymbolChanged) &&
         renderMode == TuringLabEdgeRenderMode.groupedFsa) {
       _clearGroupedLabelRects();
     }

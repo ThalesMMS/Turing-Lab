@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/manual_conversions/manual_conversion_session.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 
 /// Semantic form for one GNFA state-elimination step.
 class FaToRegexRequirementEditor extends StatefulWidget {
@@ -63,30 +64,32 @@ class _FaToRegexRequirementEditorState
   List<Widget> _fieldsFor(ManualConversionRequirement requirement) {
     return switch (requirement.type) {
       ManualConversionActionType.normalizeEndpoints => [
-          _fixedValue(
-            label: 'Protected start state',
-            value: _stringValue(requirement.expectedPayload['startStateId']),
-          ),
-          const SizedBox(height: 12),
-          _fixedValue(
-            label: 'Protected final state',
-            value: _stringValue(requirement.expectedPayload['finalStateId']),
-          ),
-          const SizedBox(height: 12),
-          _fixedValue(label: 'Endpoint bridge label', value: 'ε'),
-        ],
+        _fixedValue(
+          label: 'Protected start state',
+          value: _stringValue(requirement.expectedPayload['startStateId']),
+        ),
+        const SizedBox(height: 12),
+        _fixedValue(
+          label: 'Protected final state',
+          value: _stringValue(requirement.expectedPayload['finalStateId']),
+        ),
+        const SizedBox(height: 12),
+        _fixedValue(label: 'Endpoint bridge label', value: 'ε'),
+      ],
       ManualConversionActionType.selectState => [_stateSelector(requirement)],
-      ManualConversionActionType.submitPairExpression =>
-        _pairExpressionFields(requirement),
-      ManualConversionActionType.commitElimination =>
-        _commitFields(requirement),
+      ManualConversionActionType.submitPairExpression => _pairExpressionFields(
+        requirement,
+      ),
+      ManualConversionActionType.commitElimination => _commitFields(
+        requirement,
+      ),
       ManualConversionActionType.complete => _completionFields(),
       _ => [
-          Text(
-            _localized('This step has no FA to Regex editor.'),
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ],
+        Text(
+          _localized('This step has no FA to Regex editor.'),
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ],
     };
   }
 
@@ -96,10 +99,10 @@ class _FaToRegexRequirementEditorState
     );
     final choices = stateIds.isEmpty
         ? requirement.acceptedPayloads
-            .map((payload) => payload['stateId'])
-            .whereType<String>()
-            .toSet()
-            .toList()
+              .map((payload) => payload['stateId'])
+              .whereType<String>()
+              .toSet()
+              .toList()
         : stateIds;
     choices.sort();
     return DropdownButtonFormField<String>(
@@ -123,14 +126,13 @@ class _FaToRegexRequirementEditorState
     );
   }
 
-  List<Widget> _pairExpressionFields(
-    ManualConversionRequirement requirement,
-  ) {
+  List<Widget> _pairExpressionFields(ManualConversionRequirement requirement) {
     final data = requirement.supportingData;
     return [
       _fixedValue(
         label: 'Affected state pair',
-        value: '${_stringValue(data['fromStateId'])} → '
+        value:
+            '${_stringValue(data['fromStateId'])} → '
             '${_stringValue(data['toStateId'])}',
       ),
       const SizedBox(height: 12),
@@ -151,14 +153,16 @@ class _FaToRegexRequirementEditorState
                 const SelectableText('R_ij ∪ R_ik(R_kk)*R_kj'),
                 const SizedBox(height: 8),
                 SelectableText(
-                    'R_ij = ${_stringValue(data['directExpression'])}'),
-                SelectableText(
-                  'R_ik = ${_stringValue(data['incomingExpression'])}',
+                  'R_ij = ${EmptyStringNotation.formatMarkers(context, _stringValue(data['directExpression']))}',
                 ),
                 SelectableText(
-                    'R_kk = ${_stringValue(data['loopExpression'])}'),
+                  'R_ik = ${EmptyStringNotation.formatMarkers(context, _stringValue(data['incomingExpression']))}',
+                ),
                 SelectableText(
-                  'R_kj = ${_stringValue(data['outgoingExpression'])}',
+                  'R_kk = ${EmptyStringNotation.formatMarkers(context, _stringValue(data['loopExpression']))}',
+                ),
+                SelectableText(
+                  'R_kj = ${EmptyStringNotation.formatMarkers(context, _stringValue(data['outgoingExpression']))}',
                 ),
               ],
             ),
@@ -175,30 +179,30 @@ class _FaToRegexRequirementEditorState
   }
 
   List<Widget> _commitFields(ManualConversionRequirement requirement) => [
-        _fixedValue(
-          label: 'State to remove',
-          value: _stringValue(requirement.supportingData['stateId']),
-        ),
-        const SizedBox(height: 12),
-        _fixedValue(
-          label: 'Validated affected pairs',
-          value: '${requirement.supportingData['pairCount'] ?? 0}',
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _localized(
-            'Checking this step removes the state only after every affected pair is valid.',
-          ),
-        ),
-      ];
+    _fixedValue(
+      label: 'State to remove',
+      value: _stringValue(requirement.supportingData['stateId']),
+    ),
+    const SizedBox(height: 12),
+    _fixedValue(
+      label: 'Validated affected pairs',
+      value: '${requirement.supportingData['pairCount'] ?? 0}',
+    ),
+    const SizedBox(height: 8),
+    Text(
+      _localized(
+        'Checking this step removes the state only after every affected pair is valid.',
+      ),
+    ),
+  ];
 
   List<Widget> _completionFields() => [
-        _expressionField(
-          key: const ValueKey('fa-to-regex-final-expression'),
-          label: 'Final regular expression',
-          helper: 'Enter an expression equivalent to the source automaton.',
-        ),
-      ];
+    _expressionField(
+      key: const ValueKey('fa-to-regex-final-expression'),
+      label: 'Final regular expression',
+      helper: 'Enter an expression equivalent to the source automaton.',
+    ),
+  ];
 
   Widget _fixedValue({required String label, required String value}) {
     return InputDecorator(
@@ -206,7 +210,7 @@ class _FaToRegexRequirementEditorState
         labelText: _localized(label),
         border: const OutlineInputBorder(),
       ),
-      child: SelectableText(value),
+      child: SelectableText(EmptyStringNotation.formatMarkers(context, value)),
     );
   }
 
@@ -244,16 +248,16 @@ class _FaToRegexRequirementEditorState
     final requirement = widget.requirement;
     final payload = switch (requirement.type) {
       ManualConversionActionType.selectState => <String, Object?>{
-          'stateId': _selectedStateId,
-        },
+        'stateId': _selectedStateId,
+      },
       ManualConversionActionType.submitPairExpression => <String, Object?>{
-          'fromStateId': requirement.expectedPayload['fromStateId'],
-          'toStateId': requirement.expectedPayload['toStateId'],
-          'expression': _expressionController.text.trim(),
-        },
+        'fromStateId': requirement.expectedPayload['fromStateId'],
+        'toStateId': requirement.expectedPayload['toStateId'],
+        'expression': _expressionController.text.trim(),
+      },
       ManualConversionActionType.complete => <String, Object?>{
-          'regex': _expressionController.text.trim(),
-        },
+        'regex': _expressionController.text.trim(),
+      },
       _ => Map<String, Object?>.from(requirement.expectedPayload),
     };
     widget.onSubmit(payload);
@@ -265,6 +269,8 @@ class _FaToRegexRequirementEditorState
 
   String _stringValue(Object? value) => value?.toString() ?? '∅';
 
-  String _localized(String text) =>
-      appLocalizationsOf(context).localizeWorkflowText(text);
+  String _localized(String text) => EmptyStringNotation.formatTerminology(
+    context,
+    appLocalizationsOf(context).localizeWorkflowText(text),
+  );
 }

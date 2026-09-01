@@ -47,10 +47,14 @@ Future<void> _pumpSettingsPage(
     tester.view.resetDevicePixelRatio();
     tester.platformDispatcher.clearLocalesTestValue();
   });
+  final preferences = await SharedPreferences.getInstance();
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
+        settingsRepositoryProvider.overrideWithValue(repository),
+      ],
       child: Consumer(
         builder: (context, ref, child) {
           final localeCode = ref.watch(settingsProvider).localeCode;
@@ -143,6 +147,7 @@ void main() {
         'Idioma',
         'Modo do tema',
         'Idioma do aplicativo',
+        'Notação da cadeia vazia',
         'Mostrar grade',
         'Salvamento automático',
         'Salvar configurações',
@@ -152,21 +157,27 @@ void main() {
       }
     });
 
-    testWidgets('does not advertise an empty-string symbol preference', (
+    testWidgets('selects and persists the empty-string notation', (
       tester,
     ) async {
       await _pumpSettingsPage(tester, repository: _FakeSettingsRepository());
 
-      expect(find.text('Symbols'), findsNothing);
-      expect(find.text('Empty String Symbol'), findsNothing);
-      expect(
-        find.byKey(const ValueKey('settings_empty_string_lambda')),
-        findsNothing,
+      final epsilonOption = find.byKey(
+        const ValueKey('settings_empty_string_epsilon'),
       );
-      expect(
-        find.byKey(const ValueKey('settings_empty_string_epsilon')),
-        findsNothing,
+      final lambdaOption = find.byKey(
+        const ValueKey('settings_empty_string_lambda'),
       );
+      expect(find.text('Empty-string notation'), findsOneWidget);
+      expect(tester.widget<FilterChip>(epsilonOption).selected, isTrue);
+      expect(tester.widget<FilterChip>(lambdaOption).selected, isFalse);
+
+      await _ensureVisibleAndTap(tester, lambdaOption);
+
+      expect(tester.widget<FilterChip>(epsilonOption).selected, isFalse);
+      expect(tester.widget<FilterChip>(lambdaOption).selected, isTrue);
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.getString('settings_empty_string_symbol'), 'λ');
     });
 
     testWidgets('save settings button persists the current settings', (
@@ -175,6 +186,11 @@ void main() {
       final repository = _FakeSettingsRepository();
 
       await _pumpSettingsPage(tester, repository: repository);
+
+      await _ensureVisibleAndTap(
+        tester,
+        find.byKey(const ValueKey('settings_empty_string_lambda')),
+      );
 
       await _ensureVisibleAndTap(
         tester,
@@ -243,6 +259,16 @@ void main() {
 
       expect(repository.savedSettings, hasLength(1));
       expect(repository.savedSettings.single, const SettingsModel());
+      expect(
+        tester
+            .widget<FilterChip>(
+              find.byKey(const ValueKey('settings_empty_string_epsilon')),
+            )
+            .selected,
+        isTrue,
+      );
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.getString('settings_empty_string_symbol'), 'ε');
 
       expect(
         tester

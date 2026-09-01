@@ -168,6 +168,57 @@ void main() {
     }
   });
 
+  test('export reports start-symbol-first normalization explicitly', () {
+    final grammar = Grammar(
+      id: 'ordered',
+      name: 'Ordered grammar',
+      terminals: const {'a', 'b'},
+      nonterminals: const {'S', 'A'},
+      startSymbol: 'S',
+      productions: {
+        const Production(
+          id: 'a-rule',
+          leftSide: ['A'],
+          rightSide: ['a'],
+          order: 0,
+        ),
+        const Production(
+          id: 'start-rule',
+          leftSide: ['S'],
+          rightSide: ['b'],
+          order: 1,
+        ),
+      },
+      type: GrammarType.contextFree,
+      created: DateTime.utc(2026),
+      modified: DateTime.utc(2026),
+    );
+    final source = InteroperableDocument<Object>(
+      document: grammar,
+      systemKey: DefaultFormalSystemIds.grammar,
+      schema: GrammarJflapDocumentCodec.descriptorSchema,
+    );
+
+    final success = codec.encode(source) as CodecSuccess<EncodedDocument>;
+    final xml = utf8.decode(success.value.bytes);
+    final diagnostic = success.diagnostics.singleWhere(
+      (item) => item.code == 'jflap.grammar-start-order-normalized',
+    );
+
+    expect(
+      xml.indexOf('<left>S</left>'),
+      lessThan(xml.indexOf('<left>A</left>')),
+    );
+    expect(diagnostic.disposition, CodecDiagnosticDisposition.normalized);
+    expect(diagnostic.sourceValue, ['a-rule', 'start-rule']);
+    expect(
+      diagnostic.structuredMessage?.stableCode,
+      'codec.grammar-jflap.start-order-normalized',
+    );
+    expect(grammar.productions.first.id, 'a-rule');
+    _expectRoundTrip(diagnostic.structuredMessage!);
+  });
+
   test('unsupported and invalid export outcomes are structured', () {
     final foreign =
         codec.encode(
@@ -231,6 +282,7 @@ void main() {
       GrammarJflapMessages.invalidDocument(),
       GrammarJflapMessages.tokenBoundariesLossy('identifier'),
       GrammarJflapMessages.classificationLossy('regular'),
+      GrammarJflapMessages.startOrderNormalized(),
     ];
 
     expect(messages, everyElement(isA<StructuredMessage>()));

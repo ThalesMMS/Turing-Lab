@@ -10,6 +10,8 @@
 //  Thales Matheus Mendonça Santos - January 2026
 //
 import 'package:flutter/material.dart';
+
+import '../empty_string_notation.dart';
 import '../../core/algorithms/fsa_concatenation_messages.dart';
 import '../../core/algorithms/fsa_kleene_star_messages.dart';
 import '../../core/algorithms/fsa_reverser_messages.dart';
@@ -411,7 +413,7 @@ class AlgorithmStepViewer extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              _formatValue(item),
+              _formatValue(context, item),
               style: textTheme.bodySmall?.copyWith(
                 color: colorScheme.onPrimaryContainer,
               ),
@@ -440,7 +442,7 @@ class AlgorithmStepViewer extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              _formatValue(item),
+              _formatValue(context, item),
               style: textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSecondaryContainer,
               ),
@@ -476,7 +478,7 @@ class AlgorithmStepViewer extends StatelessWidget {
       );
     } else {
       return Text(
-        _formatValue(value),
+        _formatValue(context, value),
         style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface),
       );
     }
@@ -512,11 +514,13 @@ class AlgorithmStepViewer extends StatelessWidget {
   }
 
   /// Formats a value for display
-  String _formatValue(dynamic value) {
+  String _formatValue(BuildContext context, dynamic value) {
     if (value == null) {
       return 'null';
     } else if (value is String) {
-      return value.isEmpty ? 'ε' : value;
+      return value.isEmpty
+          ? EmptyStringNotation.symbolOf(context)
+          : EmptyStringNotation.formatMarkers(context, value);
     } else {
       return value.toString();
     }

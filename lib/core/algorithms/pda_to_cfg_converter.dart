@@ -93,7 +93,11 @@ class PDAtoCFGConverter {
     }
 
     for (final transition in pda.pdaTransitions) {
-      if (transition.isLambdaPop || isEpsilonSymbol(transition.popSymbol)) {
+      if (transition.isLambdaPop ||
+          _isEpsilonForDeclaredSymbol(
+            transition.popSymbol,
+            pda.stackAlphabet,
+          )) {
         return Failure(
           'PDA to CFG conversion requires every transition to pop '
           'exactly one stack symbol. Transition ${transition.id} uses '
@@ -143,12 +147,17 @@ class PDAtoCFGConverter {
     final transitions = pda.pdaTransitions.toList()
       ..sort((left, right) => left.id.compareTo(right.id));
     final terminals = <String>{
-      ...pda.alphabet.where((symbol) => !isEpsilonSymbol(symbol)),
+      ...pda.alphabet.where(
+        (symbol) => !_isEpsilonForDeclaredSymbol(symbol, pda.alphabet),
+      ),
       ...transitions
           .where(
             (transition) =>
                 !transition.isLambdaInput &&
-                !isEpsilonSymbol(transition.inputSymbol),
+                !_isEpsilonForDeclaredSymbol(
+                  transition.inputSymbol,
+                  pda.alphabet,
+                ),
           )
           .map((transition) => transition.inputSymbol),
     };
@@ -219,7 +228,8 @@ class PDAtoCFGConverter {
     for (final transition in transitions) {
       checkCancellation();
       final isLambdaInput =
-          transition.isLambdaInput || isEpsilonSymbol(transition.inputSymbol);
+          transition.isLambdaInput ||
+          _isEpsilonForDeclaredSymbol(transition.inputSymbol, pda.alphabet);
       final input = isLambdaInput ? null : transition.inputSymbol;
       if (input != null) {
         terminals.add(input);
@@ -228,7 +238,8 @@ class PDAtoCFGConverter {
       final pop = transition.popSymbol;
 
       final isLambdaPush =
-          transition.isLambdaPush || isEpsilonSymbol(transition.pushSymbol);
+          transition.isLambdaPush ||
+          _isEpsilonForDeclaredSymbol(transition.pushSymbol, pda.stackAlphabet);
       final pushSymbols = isLambdaPush ? <String>[] : transition.pushSymbols;
 
       final from = transition.fromState;
@@ -392,4 +403,10 @@ class _PdaToCfgProductionLimit implements Exception {
   const _PdaToCfgProductionLimit(this.limit);
 
   final int limit;
+}
+
+bool _isEpsilonForDeclaredSymbol(String? symbol, Set<String> declared) {
+  if (symbol == null || symbol.isEmpty) return true;
+  if (symbol.trim().isEmpty && declared.contains(symbol)) return false;
+  return isEpsilonSymbol(symbol);
 }

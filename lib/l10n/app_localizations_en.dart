@@ -2054,7 +2054,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startSymbolLabel => 'Start Symbol';
 
   @override
-  String get editProductionRule => 'Edit Production Rule';
+  String get editProductionRule => 'Edit alternatives';
 
   @override
   String get addProductionRule => 'Add Production Rule';
@@ -2075,7 +2075,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leftSideHelper => 'Enter exactly one non-terminal symbol.';
 
   @override
-  String get rightSideHelper => 'Use ε for the empty string.';
+  String get rightSideHelper =>
+      'Separate alternatives with |. Use \\| for a literal pipe and ε for the empty string.';
 
   @override
   String get insertEpsilon => 'Insert ε';
@@ -2119,6 +2120,85 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lambdaMustBeOnlySymbol =>
       'ε must be the only symbol on the right side';
+
+  @override
+  String get rightSideEmptyAlternative =>
+      'Enter a value between each | separator';
+
+  @override
+  String get rightSideArrowNotAccepted =>
+      'Enter only right-side alternatives here, without an arrow';
+
+  @override
+  String get editAlternatives => 'Edit alternatives';
+
+  @override
+  String get deleteGroup => 'Delete group';
+
+  @override
+  String get productionGroupActions => 'Production group actions';
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String reorderProductionsFor(String leftSide) {
+    return 'Reorder productions for $leftSide';
+  }
+
+  @override
+  String productionPosition(int position, int total) {
+    return 'Position $position of $total';
+  }
+
+  @override
+  String productionGroupMoved(String leftSide, int position, int total) {
+    return 'Moved productions for $leftSide to position $position of $total';
+  }
+
+  @override
+  String get deleteProductionGroupTitle => 'Delete production group?';
+
+  @override
+  String deleteProductionGroupMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alternatives',
+      one: '1 alternative',
+    );
+    return 'This will delete $_temp0.';
+  }
+
+  @override
+  String productionAlternativesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alternatives',
+      one: '1 alternative',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String productionAlternativesSkippedDuplicates(int added, int duplicates) {
+    return 'Added $added; skipped $duplicates that already existed.';
+  }
+
+  @override
+  String productionAlternativesAlreadyExist(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Those $count alternatives already exist.',
+      one: 'That alternative already exists.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get sampleStringsTitle => 'Sample Strings';
@@ -2922,6 +3002,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyStringEpsilon => 'ε (empty string)';
+
+  @override
+  String get emptyStringLambda => 'λ (empty string)';
+
+  @override
+  String get settingsEmptyStringNotationTitle => 'Empty-string notation';
+
+  @override
+  String get settingsEmptyStringNotationDescription =>
+      'Choose whether the interface shows the empty string and empty transitions as ε or λ.';
 
   @override
   String get distinguishingStringExplanation =>
@@ -3983,6 +4073,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get derivationTree => 'Derivation Tree';
 
   @override
+  String derivationTreeLeafSemantics(String symbol, int level) {
+    return '$symbol, leaf at level $level';
+  }
+
+  @override
+  String derivationTreeBranchSemantics(
+    String symbol,
+    int level,
+    int childCount,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      childCount,
+      locale: localeName,
+      other: '$childCount children',
+      one: '1 child',
+    );
+    return '$symbol, level $level, $_temp0';
+  }
+
+  @override
   String derivationTreesAmbiguous(int count) {
     return 'Derivation Trees (showing first $count; ambiguous)';
   }
@@ -4336,6 +4446,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectDfaToCompare => 'Select DFA to compare';
+
+  @override
+  String errorOpeningAutomatonFilePicker(String error) {
+    return 'Could not open the automaton file picker: $error';
+  }
 
   @override
   String get loadingAutomatonEllipsis => 'Loading automaton...';
@@ -11878,6 +11993,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String codecGrammarJflapClassificationLossy(String classification) {
     return 'Grammar classification $classification cannot be preserved in JFLAP XML.';
   }
+
+  @override
+  String get codecGrammarJflapStartOrderNormalized =>
+      'JFLAP export moved start-symbol productions first so other JFLAP tools can infer the start symbol.';
 
   @override
   String get codecLSystemJflapInvalidRoot =>

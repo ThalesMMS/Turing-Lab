@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/manual_conversions/manual_conversion_session.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 
 /// Semantic form for one FA/right-linear-grammar correspondence step.
 class FaGrammarRequirementEditor extends StatefulWidget {
@@ -87,9 +88,7 @@ class _FaGrammarRequirementEditorState
                 liveRegion: true,
                 child: Text(
                   _localized(message),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
             ],
@@ -139,40 +138,39 @@ class _FaGrammarRequirementEditorState
   List<Widget> _fieldsFor(ManualConversionRequirement requirement) {
     return switch (requirement.type) {
       ManualConversionActionType.mapState => _mapStateFields(requirement),
-      ManualConversionActionType.mapNonterminal =>
-        _mapNonterminalFields(requirement),
+      ManualConversionActionType.mapNonterminal => _mapNonterminalFields(
+        requirement,
+      ),
       ManualConversionActionType.addProduction => _productionFields(),
       ManualConversionActionType.addTransition => _transitionFields(),
       ManualConversionActionType.markEpsilon => _epsilonFields(requirement),
       ManualConversionActionType.markAccepting => _acceptingFields(),
       _ => [
-          Text(
-            _localized('This step has no FA or grammar editor.'),
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ],
+        Text(
+          _localized('This step has no FA or grammar editor.'),
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ],
     };
   }
 
   List<Widget> _mapStateFields(ManualConversionRequirement requirement) => [
-        _fixedValue(
-          label: 'State',
-          value: _stringValue(requirement.expectedPayload['stateId']),
-        ),
-        const SizedBox(height: 12),
-        _textField(
-          key: const ValueKey('fa-grammar-nonterminal'),
-          controller: _nonterminalController,
-          focusNode: _nonterminalFocus,
-          label: 'Nonterminal',
-          error: 'Enter a nonterminal.',
-          onSubmitted: (_) => _submit(),
-        ),
-      ];
+    _fixedValue(
+      label: 'State',
+      value: _stringValue(requirement.expectedPayload['stateId']),
+    ),
+    const SizedBox(height: 12),
+    _textField(
+      key: const ValueKey('fa-grammar-nonterminal'),
+      controller: _nonterminalController,
+      focusNode: _nonterminalFocus,
+      label: 'Nonterminal',
+      error: 'Enter a nonterminal.',
+      onSubmitted: (_) => _submit(),
+    ),
+  ];
 
-  List<Widget> _mapNonterminalFields(
-    ManualConversionRequirement requirement,
-  ) =>
+  List<Widget> _mapNonterminalFields(ManualConversionRequirement requirement) =>
       [
         _fixedValue(
           label: 'Nonterminal',
@@ -190,150 +188,148 @@ class _FaGrammarRequirementEditorState
       ];
 
   List<Widget> _productionFields() => [
-        _textField(
-          key: const ValueKey('fa-grammar-production-left'),
-          controller: _productionLeftController,
-          focusNode: _productionLeftFocus,
-          label: 'Left-side nonterminal',
-          error: 'Enter the left-side nonterminal.',
-        ),
-        const SizedBox(height: 12),
-        SwitchListTile(
-          key: const ValueKey('fa-grammar-production-epsilon'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(_localized('Use ε as the right side')),
-          subtitle: Text(
-            _localized('Epsilon consumes no input symbol.'),
-          ),
-          value: _productionIsEpsilon,
-          onChanged: (value) => setState(() {
-            _productionIsEpsilon = value;
-          }),
-        ),
-        if (!_productionIsEpsilon) ...[
-          const SizedBox(height: 12),
-          _textField(
-            key: const ValueKey('fa-grammar-production-right'),
-            controller: _productionRightController,
-            focusNode: _productionRightFocus,
-            label: 'Right-side symbols',
-            helper: 'Separate symbols with spaces, for example: a A.',
-            error: 'Enter at least one right-side symbol.',
-            onSubmitted: (_) => _submit(),
-          ),
-        ],
-      ];
+    _textField(
+      key: const ValueKey('fa-grammar-production-left'),
+      controller: _productionLeftController,
+      focusNode: _productionLeftFocus,
+      label: 'Left-side nonterminal',
+      error: 'Enter the left-side nonterminal.',
+    ),
+    const SizedBox(height: 12),
+    SwitchListTile(
+      key: const ValueKey('fa-grammar-production-epsilon'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(_localized('Use ε as the right side')),
+      subtitle: Text(_localized('Epsilon consumes no input symbol.')),
+      value: _productionIsEpsilon,
+      onChanged: (value) => setState(() {
+        _productionIsEpsilon = value;
+      }),
+    ),
+    if (!_productionIsEpsilon) ...[
+      const SizedBox(height: 12),
+      _textField(
+        key: const ValueKey('fa-grammar-production-right'),
+        controller: _productionRightController,
+        focusNode: _productionRightFocus,
+        label: 'Right-side symbols',
+        helper: 'Separate symbols with spaces, for example: a A.',
+        error: 'Enter at least one right-side symbol.',
+        onSubmitted: (_) => _submit(),
+      ),
+    ],
+  ];
 
   List<Widget> _transitionFields() => [
-        Row(
-          children: [
-            Expanded(
-              child: _textField(
-                key: const ValueKey('fa-grammar-transition-from'),
-                controller: _transitionFromController,
-                focusNode: _transitionFromFocus,
-                label: 'From state',
-                error: 'Enter the source state ID.',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _textField(
-                key: const ValueKey('fa-grammar-transition-to'),
-                controller: _transitionToController,
-                focusNode: _transitionToFocus,
-                label: 'To state',
-                error: 'Enter the destination state ID.',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<_TransitionInputKind>(
-          key: const ValueKey('fa-grammar-transition-kind'),
-          focusNode: _transitionKindFocus,
-          initialValue: _transitionKind,
-          decoration: InputDecoration(
-            labelText: _localized('Transition type'),
-            border: const OutlineInputBorder(),
+    Row(
+      children: [
+        Expanded(
+          child: _textField(
+            key: const ValueKey('fa-grammar-transition-from'),
+            controller: _transitionFromController,
+            focusNode: _transitionFromFocus,
+            label: 'From state',
+            error: 'Enter the source state ID.',
           ),
-          items: [
-            DropdownMenuItem(
-              value: _TransitionInputKind.symbol,
-              child: Text(_localized('Input symbol')),
-            ),
-            DropdownMenuItem(
-              value: _TransitionInputKind.epsilon,
-              child: Text(_localized('Epsilon (ε)')),
-            ),
-          ],
-          validator: (value) =>
-              value == null ? _localized('Select a transition type.') : null,
-          onChanged: (value) => setState(() {
-            _transitionKind = value;
-          }),
         ),
-        if (_transitionKind == _TransitionInputKind.symbol) ...[
-          const SizedBox(height: 12),
-          _textField(
-            key: const ValueKey('fa-grammar-transition-symbol'),
-            controller: _transitionSymbolController,
-            focusNode: _transitionSymbolFocus,
-            label: 'Input symbol',
-            error: 'Enter an input symbol.',
+        const SizedBox(width: 12),
+        Expanded(
+          child: _textField(
+            key: const ValueKey('fa-grammar-transition-to'),
+            controller: _transitionToController,
+            focusNode: _transitionToFocus,
+            label: 'To state',
+            error: 'Enter the destination state ID.',
           ),
-        ],
-        const SizedBox(height: 4),
-        SwitchListTile(
-          key: const ValueKey('fa-grammar-transition-accepting'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(_localized('Destination state is accepting')),
-          value: _destinationIsAccepting,
-          onChanged: (value) => setState(() {
-            _destinationIsAccepting = value;
-          }),
         ),
-      ];
+      ],
+    ),
+    const SizedBox(height: 12),
+    DropdownButtonFormField<_TransitionInputKind>(
+      key: const ValueKey('fa-grammar-transition-kind'),
+      focusNode: _transitionKindFocus,
+      initialValue: _transitionKind,
+      decoration: InputDecoration(
+        labelText: _localized('Transition type'),
+        border: const OutlineInputBorder(),
+      ),
+      items: [
+        DropdownMenuItem(
+          value: _TransitionInputKind.symbol,
+          child: Text(_localized('Input symbol')),
+        ),
+        DropdownMenuItem(
+          value: _TransitionInputKind.epsilon,
+          child: Text(_localized('Epsilon (ε)')),
+        ),
+      ],
+      validator: (value) =>
+          value == null ? _localized('Select a transition type.') : null,
+      onChanged: (value) => setState(() {
+        _transitionKind = value;
+      }),
+    ),
+    if (_transitionKind == _TransitionInputKind.symbol) ...[
+      const SizedBox(height: 12),
+      _textField(
+        key: const ValueKey('fa-grammar-transition-symbol'),
+        controller: _transitionSymbolController,
+        focusNode: _transitionSymbolFocus,
+        label: 'Input symbol',
+        error: 'Enter an input symbol.',
+      ),
+    ],
+    const SizedBox(height: 4),
+    SwitchListTile(
+      key: const ValueKey('fa-grammar-transition-accepting'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(_localized('Destination state is accepting')),
+      value: _destinationIsAccepting,
+      onChanged: (value) => setState(() {
+        _destinationIsAccepting = value;
+      }),
+    ),
+  ];
 
   List<Widget> _epsilonFields(ManualConversionRequirement requirement) => [
-        _fixedValue(
-          label: 'Accepting state',
-          value: _stringValue(requirement.expectedPayload['stateId']),
-        ),
-        const SizedBox(height: 12),
-        _textField(
-          key: const ValueKey('fa-grammar-production-left'),
-          controller: _productionLeftController,
-          focusNode: _productionLeftFocus,
-          label: 'Left-side nonterminal',
-          error: 'Enter the left-side nonterminal.',
-          onSubmitted: (_) => _submit(),
-        ),
-        const SizedBox(height: 12),
-        _fixedValue(label: 'Right side', value: 'ε'),
-      ];
+    _fixedValue(
+      label: 'Accepting state',
+      value: _stringValue(requirement.expectedPayload['stateId']),
+    ),
+    const SizedBox(height: 12),
+    _textField(
+      key: const ValueKey('fa-grammar-production-left'),
+      controller: _productionLeftController,
+      focusNode: _productionLeftFocus,
+      label: 'Left-side nonterminal',
+      error: 'Enter the left-side nonterminal.',
+      onSubmitted: (_) => _submit(),
+    ),
+    const SizedBox(height: 12),
+    _fixedValue(label: 'Right side', value: 'ε'),
+  ];
 
   List<Widget> _acceptingFields() => [
-        _textField(
-          key: const ValueKey('fa-grammar-state-id'),
-          controller: _stateController,
-          focusNode: _stateFocus,
-          label: 'State ID',
-          error: 'Enter a state ID.',
-        ),
-        const SizedBox(height: 4),
-        SwitchListTile(
-          key: const ValueKey('fa-grammar-mark-accepting'),
-          focusNode: _acceptingFocus,
-          contentPadding: EdgeInsets.zero,
-          title: Text(_localized('Mark state as accepting')),
-          value: _acceptingConfirmed,
-          onChanged: (value) => setState(() {
-            _acceptingConfirmed = value;
-            if (value) _selectionError = null;
-          }),
-        ),
-      ];
+    _textField(
+      key: const ValueKey('fa-grammar-state-id'),
+      controller: _stateController,
+      focusNode: _stateFocus,
+      label: 'State ID',
+      error: 'Enter a state ID.',
+    ),
+    const SizedBox(height: 4),
+    SwitchListTile(
+      key: const ValueKey('fa-grammar-mark-accepting'),
+      focusNode: _acceptingFocus,
+      contentPadding: EdgeInsets.zero,
+      title: Text(_localized('Mark state as accepting')),
+      value: _acceptingConfirmed,
+      onChanged: (value) => setState(() {
+        _acceptingConfirmed = value;
+        if (value) _selectionError = null;
+      }),
+    ),
+  ];
 
   Widget _fixedValue({required String label, required String value}) {
     return InputDecorator(
@@ -341,7 +337,7 @@ class _FaGrammarRequirementEditorState
         labelText: _localized(label),
         border: const OutlineInputBorder(),
       ),
-      child: SelectableText(value),
+      child: SelectableText(EmptyStringNotation.formatMarkers(context, value)),
     );
   }
 
@@ -363,8 +359,9 @@ class _FaGrammarRequirementEditorState
         helperText: helper == null ? null : _localized(helper),
         border: const OutlineInputBorder(),
       ),
-      textInputAction:
-          onSubmitted == null ? TextInputAction.next : TextInputAction.done,
+      textInputAction: onSubmitted == null
+          ? TextInputAction.next
+          : TextInputAction.done,
       validator: (value) =>
           value == null || value.trim().isEmpty ? _localized(error) : null,
       onFieldSubmitted: onSubmitted,
@@ -394,49 +391,48 @@ class _FaGrammarRequirementEditorState
     final requirement = widget.requirement;
     return switch (requirement.type) {
       ManualConversionActionType.mapState => {
-          'stateId': _stringValue(requirement.expectedPayload['stateId']),
-          'nonterminal': _nonterminalController.text.trim(),
-        },
+        'stateId': _stringValue(requirement.expectedPayload['stateId']),
+        'nonterminal': _nonterminalController.text.trim(),
+      },
       ManualConversionActionType.mapNonterminal => {
-          'nonterminal':
-              _stringValue(requirement.expectedPayload['nonterminal']),
-          'stateId': _stateController.text.trim(),
-        },
+        'nonterminal': _stringValue(requirement.expectedPayload['nonterminal']),
+        'stateId': _stateController.text.trim(),
+      },
       ManualConversionActionType.addProduction => {
-          'sourceTransitionIds': _sourceIds(requirement),
-          'production': {
-            'leftSide': [_productionLeftController.text.trim()],
-            'rightSide': _productionIsEpsilon
-                ? <String>[]
-                : _symbols(_productionRightController.text),
-            'isEpsilon': _productionIsEpsilon,
-          },
+        'sourceTransitionIds': _sourceIds(requirement),
+        'production': {
+          'leftSide': [_productionLeftController.text.trim()],
+          'rightSide': _productionIsEpsilon
+              ? <String>[]
+              : _symbols(_productionRightController.text),
+          'isEpsilon': _productionIsEpsilon,
         },
+      },
       ManualConversionActionType.addTransition => {
-          'sourceProductionIds': _sourceIds(requirement),
-          'transition': {
-            'fromStateId': _transitionFromController.text.trim(),
-            'toStateId': _transitionToController.text.trim(),
-            'inputSymbol': _transitionKind == _TransitionInputKind.epsilon
-                ? ''
-                : _transitionSymbolController.text.trim(),
-            'isEpsilon': _transitionKind == _TransitionInputKind.epsilon,
-            'toStateIsAccepting': _destinationIsAccepting,
-          },
+        'sourceProductionIds': _sourceIds(requirement),
+        'transition': {
+          'fromStateId': _transitionFromController.text.trim(),
+          'toStateId': _transitionToController.text.trim(),
+          'inputSymbol': _transitionKind == _TransitionInputKind.epsilon
+              ? ''
+              : _transitionSymbolController.text.trim(),
+          'isEpsilon': _transitionKind == _TransitionInputKind.epsilon,
+          'toStateIsAccepting': _destinationIsAccepting,
         },
+      },
       ManualConversionActionType.markEpsilon => {
-          'stateId': _stringValue(requirement.expectedPayload['stateId']),
-          'production': {
-            'leftSide': [_productionLeftController.text.trim()],
-            'rightSide': <String>[],
-            'isEpsilon': true,
-          },
+        'stateId': _stringValue(requirement.expectedPayload['stateId']),
+        'production': {
+          'leftSide': [_productionLeftController.text.trim()],
+          'rightSide': <String>[],
+          'isEpsilon': true,
         },
+      },
       ManualConversionActionType.markAccepting => {
-          'sourceProductionIds': _sourceIds(requirement),
-          'stateId': _stateController.text.trim(),
-          'isAccepting': _acceptingConfirmed,
-        },
+        'sourceProductionIds': _sourceIds(requirement),
+        'stateId': _stateController.text.trim(),
+        'isAccepting': _acceptingConfirmed,
+      },
       _ => <String, Object?>{},
     };
   }
@@ -445,8 +441,7 @@ class _FaGrammarRequirementEditorState
     final focusNode = switch (widget.requirement.type) {
       ManualConversionActionType.mapState => _nonterminalFocus,
       ManualConversionActionType.mapNonterminal ||
-      ManualConversionActionType.markAccepting =>
-        _stateFocus,
+      ManualConversionActionType.markAccepting => _stateFocus,
       ManualConversionActionType.addProduction =>
         _productionLeftController.text.trim().isEmpty
             ? _productionLeftFocus
@@ -456,10 +451,10 @@ class _FaGrammarRequirementEditorState
         _transitionFromController.text.trim().isEmpty
             ? _transitionFromFocus
             : _transitionToController.text.trim().isEmpty
-                ? _transitionToFocus
-                : _transitionKind == null
-                    ? _transitionKindFocus
-                    : _transitionSymbolFocus,
+            ? _transitionToFocus
+            : _transitionKind == null
+            ? _transitionKindFocus
+            : _transitionSymbolFocus,
       _ => null,
     };
     focusNode?.requestFocus();
@@ -469,8 +464,7 @@ class _FaGrammarRequirementEditorState
     final key = switch (requirement.type) {
       ManualConversionActionType.addProduction => 'sourceTransitionIds',
       ManualConversionActionType.addTransition ||
-      ManualConversionActionType.markAccepting =>
-        'sourceProductionIds',
+      ManualConversionActionType.markAccepting => 'sourceProductionIds',
       _ => null,
     };
     if (key == null) return requirement.provenanceIds;
@@ -487,8 +481,10 @@ class _FaGrammarRequirementEditorState
 
   String _stringValue(Object? value) => value is String ? value : '';
 
-  String _localized(String text) =>
-      appLocalizationsOf(context).localizeWorkflowText(text);
+  String _localized(String text) => EmptyStringNotation.formatTerminology(
+    context,
+    appLocalizationsOf(context).localizeWorkflowText(text),
+  );
 }
 
 enum _TransitionInputKind { symbol, epsilon }

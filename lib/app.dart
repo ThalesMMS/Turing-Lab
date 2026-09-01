@@ -12,10 +12,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/app_localizations.dart';
 import 'core/pumping_lemma/pumping_lemma.dart';
+import 'presentation/empty_string_notation.dart';
 import 'presentation/localization/app_locale_policy.dart';
+import 'presentation/platform/canvas_context_menu_policy.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/pumping_lemma_chooser_page.dart';
 import 'presentation/pages/pumping_lemma_page.dart';
+import 'presentation/providers/empty_string_symbol_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/widgets/active_session_lifecycle.dart';
@@ -27,29 +30,37 @@ class TuringLabApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+    final emptyStringSymbol = ref.watch(emptyStringSymbolProvider);
     final platformLocales = View.of(context).platformDispatcher.locales;
 
-    return ActiveSessionLifecycle(
-      child: MaterialApp(
-        title: 'Turing Lab',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: _resolveThemeMode(settings.themeMode),
-        locale: AppLocalePolicy.resolve(
-          persistedLocaleCode: settings.localeCode,
-          platformLocales: platformLocales,
+    return EmptyStringNotation(
+      symbol: emptyStringSymbol,
+      child: ActiveSessionLifecycle(
+        child: MaterialApp(
+          title: 'Turing Lab',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _resolveThemeMode(settings.themeMode),
+          locale: AppLocalePolicy.resolve(
+            persistedLocaleCode: settings.localeCode,
+            platformLocales: platformLocales,
+          ),
+          home: const HomePage(),
+          routes: {
+            PumpingLemmaChooserPage.route: (_) =>
+                const PumpingLemmaChooserPage(),
+            PumpingLemmaChooserPage.regularRoute: (_) =>
+                const PumpingLemmaPage(theorem: PumpingLemmaTheorem.regular),
+            PumpingLemmaChooserPage.contextFreeRoute: (_) =>
+                const PumpingLemmaPage(
+                  theorem: PumpingLemmaTheorem.contextFree,
+                ),
+          },
+          navigatorObservers: [canvasContextMenuNavigatorObserver],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalePolicy.supportedLocales,
+          debugShowCheckedModeBanner: false,
         ),
-        home: const HomePage(),
-        routes: {
-          PumpingLemmaChooserPage.route: (_) => const PumpingLemmaChooserPage(),
-          PumpingLemmaChooserPage.regularRoute: (_) =>
-              const PumpingLemmaPage(theorem: PumpingLemmaTheorem.regular),
-          PumpingLemmaChooserPage.contextFreeRoute: (_) =>
-              const PumpingLemmaPage(theorem: PumpingLemmaTheorem.contextFree),
-        },
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalePolicy.supportedLocales,
-        debugShowCheckedModeBanner: false,
       ),
     );
   }

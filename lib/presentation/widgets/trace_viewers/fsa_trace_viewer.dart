@@ -5,6 +5,7 @@ import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../empty_string_notation.dart';
 import 'base_trace_viewer.dart';
 import '../../../core/constants/monospace_typography.dart';
 
@@ -81,7 +82,7 @@ class FsaTraceViewer extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _describeStep(index, l10n),
+              EmptyStringNotation.format(context, _describeStep(index, l10n)),
               style: Theme.of(context).textTheme.bodySmall,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -115,6 +116,7 @@ class FsaTraceViewer extends StatelessWidget {
     final consumed = index == 0 ? null : step.usedTransition;
     final nextState = _nextStateFor(index);
     final remaining = step.remainingInput;
+    final emptyStringSymbol = EmptyStringNotation.symbolOf(context);
 
     return Container(
       width: double.infinity,
@@ -142,7 +144,7 @@ class FsaTraceViewer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            _describeStep(index, l10n),
+            EmptyStringNotation.format(context, _describeStep(index, l10n)),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium,
@@ -150,7 +152,7 @@ class FsaTraceViewer extends StatelessWidget {
           if (consumed != null) ...[
             const SizedBox(height: 4),
             Text(
-              l10n.consumedValue(consumed),
+              EmptyStringNotation.format(context, l10n.consumedValue(consumed)),
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
@@ -170,7 +172,7 @@ class FsaTraceViewer extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             l10n.remainingInputValue(
-              remaining.isEmpty ? 'ε' : '"$remaining"',
+              remaining.isEmpty ? emptyStringSymbol : '"$remaining"',
             ),
             style: Theme.of(context)
                 .textTheme

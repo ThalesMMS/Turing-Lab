@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/batch_execution/batch_execution.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
+import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/widgets/batch_execution/batch_execution_panel.dart';
 import 'package:turing_lab/presentation/widgets/batch_execution/batch_file_service.dart';
 
@@ -190,6 +192,22 @@ void main() {
     expect(find.text('Added an empty-word case.'), findsOneWidget);
   });
 
+  testWidgets('formats trusted empty-word guidance as lambda', (tester) async {
+    await _pumpPanel(
+      tester,
+      executor: _TestExecutor(),
+      emptyStringSymbol: kLambdaSymbol,
+    );
+
+    await tester.tap(find.byKey(const Key('batch-run')));
+    await tester.pump();
+
+    expect(
+      find.text('Add at least one case. Use λ for the empty word.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('imports CSV IDs and exports stable JSON and CSV reports', (
     tester,
   ) async {
@@ -252,6 +270,22 @@ void main() {
 
     expect(files.saved, hasLength(1));
     expect(files.saved.single.dialogTitle, 'Exportar JSON');
+  });
+
+  testWidgets('preserves lambda terms and glyphs in exported report paths', (
+    tester,
+  ) async {
+    const reportPath = r'C:\Lambda calculus\report-λ.json';
+    final files = _TestFileService(reportPath: reportPath);
+    await _pumpPanel(tester, executor: _TestExecutor(), fileService: files);
+
+    await tester.enterText(find.byKey(const Key('batch-inputs')), 'a');
+    await tester.tap(find.byKey(const Key('batch-run')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('batch-export-json')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Report exported to $reportPath.'), findsOneWidget);
   });
 
   testWidgets('generates bounded words and filters virtualized results', (
@@ -561,22 +595,26 @@ Future<void> _pumpPanel(
   BatchFileService? fileService,
   TextScaler textScaler = TextScaler.noScaling,
   Locale locale = const Locale('en'),
+  String emptyStringSymbol = kEpsilonSymbol,
 }) {
   return tester.pumpWidget(
-    MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: MediaQuery(
-          data: MediaQueryData(textScaler: textScaler),
-          child: SingleChildScrollView(
-            child: BatchExecutionPanel(
-              key: panelKey,
-              executor: executor,
-              alphabet: alphabet,
-              comparisonExecutor: comparisonExecutor,
-              fileService: fileService,
+    EmptyStringNotation(
+      symbol: emptyStringSymbol,
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: MediaQuery(
+            data: MediaQueryData(textScaler: textScaler),
+            child: SingleChildScrollView(
+              child: BatchExecutionPanel(
+                key: panelKey,
+                executor: executor,
+                alphabet: alphabet,
+                comparisonExecutor: comparisonExecutor,
+                fileService: fileService,
+              ),
             ),
           ),
         ),
@@ -644,9 +682,10 @@ final class _SavedReport {
 }
 
 final class _TestFileService implements BatchFileService {
-  _TestFileService({this.selection});
+  _TestFileService({this.selection, this.reportPath});
 
   final BatchInputFileSelection? selection;
+  final String? reportPath;
   final List<_SavedReport> saved = [];
   String? importDialogTitle;
 
@@ -665,6 +704,6 @@ final class _TestFileService implements BatchFileService {
     required String dialogTitle,
   }) async {
     saved.add(_SavedReport(filename, contents, dialogTitle));
-    return filename;
+    return reportPath ?? filename;
   }
 }

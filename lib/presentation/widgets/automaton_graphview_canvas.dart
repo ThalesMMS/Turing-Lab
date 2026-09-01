@@ -12,6 +12,7 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:async' show unawaited;
 import 'dart:developer' show Timeline;
 import 'dart:math' as math;
 
@@ -28,6 +29,7 @@ import '../../core/annotations/annotations.dart';
 import '../../core/automaton_fragments/automaton_fragments.dart';
 import '../../core/formal_systems/formal_system_ids.dart';
 import '../../core/graph_layout/graph_layout.dart';
+import '../../core/models/automaton.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../core/models/tm_transition.dart' show TapeDirection;
@@ -42,6 +44,8 @@ import '../../features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import '../../features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../empty_string_notation.dart';
+import '../platform/canvas_context_menu_policy.dart';
 import '../providers/automaton_state_provider.dart';
 import '../providers/document_annotations_provider.dart';
 import 'automaton_canvas_tool.dart';
@@ -154,6 +158,8 @@ class _AutomatonGraphViewCanvasState
   late AutomatonGraphViewTransitionConfig _transitionConfig;
   TuringLabAdaptiveEdgeRenderer get _edgeRenderer => _edgePresentation.renderer;
   late final FocusNode _canvasFocusNode;
+  final Object _contextMenuOwner = Object();
+  bool _contextMenuPointerInside = false;
 
   @visibleForTesting
   TuringLabEdgeRenderGeometry? debugGeometryForTransition(String id) {
@@ -349,14 +355,22 @@ class _AutomatonGraphViewCanvasState
       oldWidget.automaton,
       widget.automaton,
     )) {
-      if (GraphLayoutDocumentAdapter.documentId(oldWidget.automaton) !=
-          GraphLayoutDocumentAdapter.documentId(widget.automaton)) {
+      final documentIdChanged =
+          GraphLayoutDocumentAdapter.documentId(oldWidget.automaton) !=
+          GraphLayoutDocumentAdapter.documentId(widget.automaton);
+      final shouldRefitViewport =
+          documentIdChanged ||
+          _hasStructuralGraphChange(oldWidget.automaton, widget.automaton);
+      if (documentIdChanged) {
         _savedLayoutPositions = null;
       }
       _syncCoordinator.schedule(widget.automaton);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
+        }
+        if (shouldRefitViewport && _controller.graph.nodes.isNotEmpty) {
+          _controller.fitToContent();
         }
         _refreshTransitionOverlayFromGraph();
       });
@@ -365,12 +379,56 @@ class _AutomatonGraphViewCanvasState
     if (shouldReapplyCustomization ||
         oldWidget.customization != widget.customization) {
       _applyCustomization(widget.customization);
+      _synchronizeContextMenuOwnership();
+    }
+  }
+
+  bool _hasStructuralGraphChange(Object? previous, Object? next) {
+    if (previous is! Automaton || next is! Automaton) {
+      return false;
+    }
+
+    final previousStateIds = previous.states.map((state) => state.id).toSet();
+    final nextStateIds = next.states.map((state) => state.id).toSet();
+    if (previousStateIds.length != nextStateIds.length ||
+        !previousStateIds.containsAll(nextStateIds)) {
+      return true;
+    }
+
+    final previousTransitionIds = previous.transitions
+        .map((transition) => transition.id)
+        .toSet();
+    final nextTransitionIds = next.transitions
+        .map((transition) => transition.id)
+        .toSet();
+    return previousTransitionIds.length != nextTransitionIds.length ||
+        !previousTransitionIds.containsAll(nextTransitionIds);
+  }
+
+  void _handleContextMenuPointerEnter(PointerEnterEvent event) {
+    _contextMenuPointerInside = true;
+    _synchronizeContextMenuOwnership();
+  }
+
+  void _handleContextMenuPointerExit(PointerExitEvent event) {
+    _contextMenuPointerInside = false;
+    _synchronizeContextMenuOwnership();
+  }
+
+  void _synchronizeContextMenuOwnership() {
+    final shouldOwn =
+        _contextMenuPointerInside && _customization.enableToolSelection;
+    if (shouldOwn) {
+      unawaited(CanvasContextMenuPolicy.instance.acquire(_contextMenuOwner));
+    } else {
+      unawaited(CanvasContextMenuPolicy.instance.release(_contextMenuOwner));
     }
   }
 
   @override
   void dispose() {
     _isDisposing = true;
+    unawaited(CanvasContextMenuPolicy.instance.release(_contextMenuOwner));
     _syncCoordinator.dispose();
     _nodePanGestureRecognizer.dispose();
     _canvasFocusNode.dispose();
@@ -486,16 +544,18 @@ class _AutomatonGraphViewCanvasState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = appLocalizationsOf(context);
+    final emptyStringSymbol = EmptyStringNotation.symbolOf(context);
     final semantics = AutomatonGraphViewSemanticsAdapter(
       controller: _controller,
       localizations: l10n,
       selectedTransitionIds: _selectedTransitions,
+      emptyStringSymbol: emptyStringSymbol,
       nodeSemanticsDetails: (node) =>
           _customization.nodeSemanticsDetails?.call(l10n, node),
       edgeSemanticsDetails: (edge) =>
           _customization.edgeSemanticsDetails?.call(l10n, edge),
     );
-    _edgePresentation.updateTheme(theme);
+    _edgePresentation.updateTheme(theme, emptyStringSymbol: emptyStringSymbol);
     _edgePresentation.updateHighlight(
       _controller.highlightNotifier.value,
       _selectedTransitions,
@@ -526,8 +586,14 @@ class _AutomatonGraphViewCanvasState
       canvasSemanticsHint: _customization.enableToolSelection
           ? l10n.canvasViewportEditHint
           : l10n.canvasViewportReadOnlyHint,
-      transitionPrompt: l10n.canvasAddTransitionPrompt,
-      chooseTargetPrompt: l10n.canvasChooseTargetState,
+      transitionPrompt: EmptyStringNotation.format(
+        context,
+        l10n.canvasAddTransitionPrompt,
+      ),
+      chooseTargetPrompt: EmptyStringNotation.format(
+        context,
+        l10n.canvasChooseTargetState,
+      ),
       hasTransitionSource: _transitionSourceId != null,
       transitionSemanticsLayer: semantics.transitionLayer(),
       transitionPreview: _buildTransitionPreview(theme.colorScheme.tertiary),
@@ -551,8 +617,13 @@ class _AutomatonGraphViewCanvasState
           child: RepaintBoundary(
             child: _AutomatonGraphNode(
               nodeId: canvasNode.id,
-              label: canvasNode.label,
-              secondaryLabel: canvasNode.secondaryLabel,
+              label: EmptyStringNotation.format(context, canvasNode.label),
+              secondaryLabel: canvasNode.secondaryLabel == null
+                  ? null
+                  : EmptyStringNotation.format(
+                      context,
+                      canvasNode.secondaryLabel!,
+                    ),
               isInitial: canvasNode.isInitial,
               isAccepting: canvasNode.isAccepting,
               highlightListenable: _controller.highlightNotifier,
@@ -570,6 +641,8 @@ class _AutomatonGraphViewCanvasState
         _handleNodePointerDown(event.position);
         _nodePanGestureRecognizer.cancelForAdditionalPointer(event.pointer);
       },
+      onPointerEnter: _handleContextMenuPointerEnter,
+      onPointerExit: _handleContextMenuPointerExit,
       onPointerHover: _handleCanvasPointerHover,
       onTapDown: _handleCanvasTapDownWithFocus,
       onTapUp: _handleCanvasTapUp,
@@ -577,6 +650,7 @@ class _AutomatonGraphViewCanvasState
       onSecondaryTapUp: _handleCanvasSecondaryTapUp,
       onAddStateAtCenter: _interactionCoordinator.addStateAtCenter,
       onDeleteSelection: _interactionCoordinator.deleteSelection,
+      onOpenSelectionContext: _handleSelectedStateContextAction,
       onUndo: _interactionCoordinator.undo,
       onRedo: _interactionCoordinator.redo,
       onActivateTool: _interactionCoordinator.activateTool,

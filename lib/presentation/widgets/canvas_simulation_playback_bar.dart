@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
+import '../empty_string_notation.dart';
 import 'automaton_workspace_scaffold.dart';
 import '../../core/constants/monospace_typography.dart';
 
@@ -120,7 +121,7 @@ class _CanvasSimulationPlaybackBarState
     );
     if (word.isEmpty) {
       return Text(
-        'ε',
+        EmptyStringNotation.symbolOf(context),
         style: baseStyle?.copyWith(
           color: colorScheme.onSurface.withValues(alpha: 0.45),
           fontStyle: FontStyle.italic,

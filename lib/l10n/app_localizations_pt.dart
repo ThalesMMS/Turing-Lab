@@ -2071,7 +2071,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get startSymbolLabel => 'Símbolo inicial';
 
   @override
-  String get editProductionRule => 'Editar regra de produção';
+  String get editProductionRule => 'Editar alternativas';
 
   @override
   String get addProductionRule => 'Adicionar regra de produção';
@@ -2092,7 +2092,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get leftSideHelper => 'Informe exatamente um símbolo não terminal.';
 
   @override
-  String get rightSideHelper => 'Use ε para a cadeia vazia.';
+  String get rightSideHelper =>
+      'Separe alternativas com |. Use \\| para uma barra vertical literal e ε para a cadeia vazia.';
 
   @override
   String get insertEpsilon => 'Inserir ε';
@@ -2137,6 +2138,85 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get lambdaMustBeOnlySymbol =>
       'ε deve ser o único símbolo no lado direito';
+
+  @override
+  String get rightSideEmptyAlternative =>
+      'Informe um valor entre cada separador |';
+
+  @override
+  String get rightSideArrowNotAccepted =>
+      'Informe somente alternativas do lado direito aqui, sem uma seta';
+
+  @override
+  String get editAlternatives => 'Editar alternativas';
+
+  @override
+  String get deleteGroup => 'Excluir grupo';
+
+  @override
+  String get productionGroupActions => 'Ações do grupo de produções';
+
+  @override
+  String get moveUp => 'Mover para cima';
+
+  @override
+  String get moveDown => 'Mover para baixo';
+
+  @override
+  String reorderProductionsFor(String leftSide) {
+    return 'Reordenar produções de $leftSide';
+  }
+
+  @override
+  String productionPosition(int position, int total) {
+    return 'Posição $position de $total';
+  }
+
+  @override
+  String productionGroupMoved(String leftSide, int position, int total) {
+    return 'Produções de $leftSide movidas para a posição $position de $total';
+  }
+
+  @override
+  String get deleteProductionGroupTitle => 'Excluir grupo de produções?';
+
+  @override
+  String deleteProductionGroupMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alternativas',
+      one: '1 alternativa',
+    );
+    return 'Isso excluirá $_temp0.';
+  }
+
+  @override
+  String productionAlternativesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alternativas',
+      one: '1 alternativa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String productionAlternativesSkippedDuplicates(int added, int duplicates) {
+    return 'Adicionadas: $added; ignoradas por já existirem: $duplicates.';
+  }
+
+  @override
+  String productionAlternativesAlreadyExist(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Essas $count alternativas já existem.',
+      one: 'Essa alternativa já existe.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get sampleStringsTitle => 'Cadeias de exemplo';
@@ -2947,6 +3027,16 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get emptyStringEpsilon => 'ε (cadeia vazia)';
+
+  @override
+  String get emptyStringLambda => 'λ (cadeia vazia)';
+
+  @override
+  String get settingsEmptyStringNotationTitle => 'Notação da cadeia vazia';
+
+  @override
+  String get settingsEmptyStringNotationDescription =>
+      'Escolha se a interface mostra a cadeia vazia e as transições vazias como ε ou λ.';
 
   @override
   String get distinguishingStringExplanation =>
@@ -4023,6 +4113,26 @@ class AppLocalizationsPt extends AppLocalizations {
   String get derivationTree => 'Árvore de derivação';
 
   @override
+  String derivationTreeLeafSemantics(String symbol, int level) {
+    return '$symbol, folha no nível $level';
+  }
+
+  @override
+  String derivationTreeBranchSemantics(
+    String symbol,
+    int level,
+    int childCount,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      childCount,
+      locale: localeName,
+      other: '$childCount filhos',
+      one: '1 filho',
+    );
+    return '$symbol, nível $level, $_temp0';
+  }
+
+  @override
   String derivationTreesAmbiguous(int count) {
     return 'Árvores de derivação (mostrando as primeiras $count; ambígua)';
   }
@@ -4377,6 +4487,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectDfaToCompare => 'Selecione o AFD para comparar';
+
+  @override
+  String errorOpeningAutomatonFilePicker(String error) {
+    return 'Não foi possível abrir o seletor de arquivos do autômato: $error';
+  }
 
   @override
   String get loadingAutomatonEllipsis => 'Carregando autômato...';
@@ -11986,6 +12101,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String codecGrammarJflapClassificationLossy(String classification) {
     return 'A classificação de gramática $classification não pode ser preservada no XML JFLAP.';
   }
+
+  @override
+  String get codecGrammarJflapStartOrderNormalized =>
+      'A exportação JFLAP moveu para o início as produções do símbolo inicial para que outras ferramentas JFLAP possam inferi-lo.';
 
   @override
   String get codecLSystemJflapInvalidRoot =>

@@ -1503,15 +1503,31 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
   HelpTopicIds.grammarEditorProductionRowsAndAlternatives: HelpNodeCopy(
     title: 'Linhas de produção e alternativas',
     body:
-        'Cada linha de produção armazena um lado esquerdo e uma alternativa '
-        'do lado direito. Use várias linhas para alternativas como S → aS e '
-        'S → b. Preencha Lado esquerdo (variável) e Lado direito (produção), '
-        'selecione Adicionar e use o menu da linha para Editar ou Excluir; '
-        'Atualizar e Cancelar aparecem durante a edição. Regras de produção '
-        'mostra as regras numeradas na ordem de origem. Um valor compacto como '
-        'aA é separado em caracteres e espaços delimitam símbolos maiores; não '
-        'digite a barra vertical como separador. Continue em Produções vazias.',
-    keywords: ['Adicionar', 'Editar', 'Excluir', 'Atualizar', 'alternativa'],
+        'Informe um lado esquerdo e uma ou mais alternativas do lado direito '
+        'separadas por |, como S com aS | b. Selecione Adicionar uma vez; a '
+        'gramática armazena cada alternativa como uma produção independente e '
+        'agrupa no espaço de trabalho as regras com o mesmo lado esquerdo. Use '
+        'o menu do grupo para Editar alternativas, Excluir grupo, Mover para '
+        'cima ou Mover para baixo. Arraste somente pela alça do grupo com '
+        'ponteiro ou toque; o grupo completo muda de posição e preserva a '
+        'ordem das alternativas. As ações do menu atendem teclado e leitor de '
+        'tela. A edição substitui o grupo completo, e a exclusão pede '
+        'confirmação. Um valor '
+        'compacto como aA é separado em caracteres, enquanto espaços delimitam '
+        'símbolos maiores. Digite \\| para inserir uma barra vertical literal. '
+        'Arquivos nativos preservam essa ordem; a exportação JFLAP pode mover '
+        'primeiro as regras do símbolo inicial e informa essa normalização de '
+        'interoperabilidade. '
+        'Continue em Produções vazias.',
+    keywords: [
+      'Adicionar',
+      'Editar alternativas',
+      'Excluir grupo',
+      'Mover para cima',
+      'arrastar',
+      '|',
+      '\\|',
+    ],
   ),
   HelpTopicIds.grammarEditorProductionLambda: HelpNodeCopy(
     title: 'Produções vazias com ε',
@@ -1532,12 +1548,14 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
         'A validação impede que linhas malformadas entrem na gramática. Use-a '
         'quando Adicionar ou Atualizar não funcionar ou uma análise apontar '
         'erros. Preencha os dois lados, coloque exatamente um símbolo à '
-        'esquerda e ao menos um símbolo comum ou um único ε à direita; use '
-        'Limpar para remover todas as produções após confirmar. Mensagens junto '
-        'aos campos indicam o lado inválido, e a confirmação de Limpar oferece '
-        'Desfazer. O editor valida a forma da linha, não propriedades da '
-        'linguagem, e a análise também exige gramática não vazia com símbolo '
-        'inicial declarado. Continue no Fluxo de análise.',
+        'esquerda e dê a cada separador | uma alternativa não vazia à direita. '
+        'Cada alternativa deve conter símbolos comuns ou um único marcador de '
+        'cadeia vazia. O lote completo é validado antes de qualquer inclusão; '
+        'alternativas existentes são ignoradas com uma mensagem. Use Limpar '
+        'para remover todas as produções após confirmar. Mensagens junto aos '
+        'campos indicam o lado inválido, e a confirmação de Limpar oferece '
+        'Desfazer. O editor valida a forma da regra, não as propriedades da '
+        'linguagem. Continue no Fluxo de análise.',
     keywords: ['validação', 'Limpar', 'Desfazer', 'erro', 'forma da regra'],
   ),
   'grammar.editor.parser': HelpNodeCopy(
@@ -4540,9 +4558,20 @@ final ptHelpCatalogCopy = HelpCatalogCopy({
     title: 'Edição e classificação',
     body:
         'O editor mantém terminais, não terminais e lados de produção como '
-        'sequências explícitas de tokens. O classificador informa a classe '
-        'mais forte atendida pelo conjunto atual e nomeia as regras violadas.',
-    keywords: ['produção', 'classificação', 'não terminal', 'JSON'],
+        'sequências explícitas de tokens. Arraste uma produção somente pela '
+        'alça para reordená-la ou use Mover para cima e Mover para baixo no '
+        'menu com teclado ou leitor de tela. O JSON nativo e a extensão de '
+        'tokens do Turing Lab no JFLAP preservam a ordem exata. O classificador '
+        'informa a classe mais forte atendida pelo conjunto atual e nomeia as '
+        'regras violadas.',
+    keywords: [
+      'produção',
+      'classificação',
+      'não terminal',
+      'JSON',
+      'Mover para cima',
+      'arrastar',
+    ],
     blocks: _unrestrictedGrammarEditingBlocks,
   ),
   HelpTopicIds.unrestrictedGrammarDerivationAndDependencyGraph: HelpNodeCopy(

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
+import 'package:turing_lab/core/models/algorithm_step.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/grammar.dart';
@@ -19,6 +20,7 @@ import 'package:turing_lab/l10n/app_localizations_workflows.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/fsa_page.dart';
 import 'package:turing_lab/presentation/pages/help_page.dart';
+import 'package:turing_lab/presentation/providers/algorithm_step_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
@@ -486,6 +488,73 @@ void main() {
       container.read(automatonStateProvider).currentAutomaton?.name,
       'AFD - Contém AB',
     );
+  });
+
+  testWidgets('changing the FSA document clears stale algorithm steps', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+    final page = find.byType(FSAPage);
+    final container = ProviderScope.containerOf(
+      tester.element(page),
+      listen: false,
+    );
+    final automatonNotifier = container.read(automatonStateProvider.notifier);
+
+    automatonNotifier.replaceAutomaton(_singleStateFsa(id: 'step-source'));
+    await tester.pumpAndSettle();
+
+    container.read(algorithmStepProvider.notifier).initializeSteps([
+      AlgorithmStep(
+        id: 'source-step',
+        stepNumber: 0,
+        title: 'Source step',
+        explanation: 'Step from the source document.',
+        type: AlgorithmType.nfaToDfa,
+      ),
+    ]);
+    await tester.pumpAndSettle();
+
+    expect(container.read(algorithmStepProvider).hasSteps, isTrue);
+    expect(find.text('Step 1 of 1'), findsOneWidget);
+
+    automatonNotifier.replaceAutomaton(
+      _singleStateFsa(id: 'replacement-document'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(container.read(algorithmStepProvider).hasSteps, isFalse);
+    expect(find.text('Step 1 of 1'), findsNothing);
+  });
+
+  testWidgets('FSA step-by-step mode persists when the panel is reopened', (
+    tester,
+  ) async {
+    await _pumpFsaPage(tester, viewSize: const Size(430, 900));
+
+    await tester.tap(find.byTooltip('Algorithms & Examples'));
+    await tester.pumpAndSettle();
+    final panel = find.byType(AlgorithmPanel);
+    final modeSwitch = find.descendant(
+      of: panel,
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(modeSwitch).value, isFalse);
+
+    await tester.tap(modeSwitch);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(modeSwitch).value, isTrue);
+
+    Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Algorithms & Examples'));
+    await tester.pumpAndSettle();
+
+    final reopenedModeSwitch = find.descendant(
+      of: find.byType(AlgorithmPanel),
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(reopenedModeSwitch).value, isTrue);
   });
 
   testWidgets('FSA iOS canvas playback closes the sheet and highlights steps', (

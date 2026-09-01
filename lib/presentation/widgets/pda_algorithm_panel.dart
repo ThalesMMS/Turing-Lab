@@ -33,6 +33,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart' show pdaSimulationProvider;
 import '../providers/grammar_provider.dart';
@@ -81,6 +82,7 @@ final class _PdaImportCheckpoint {
 
 class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   bool _isAnalyzing = false;
+  int _analysisRequestId = 0;
   String? _loadingExampleName;
   String? _analysisResult;
   Grammar? _latestConvertedGrammar;
@@ -307,9 +309,12 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SelectableText(
-              appLocalizationsOf(
+              EmptyStringNotation.formatMarkers(
                 context,
-              ).localizeWorkflowText(_analysisResult!),
+                appLocalizationsOf(
+                  context,
+                ).localizeWorkflowText(_analysisResult!),
+              ),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontFamilyFallback: kMonospaceFontFamilyFallback,
               ),
@@ -900,7 +905,9 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       );
 
       if (!proof.isEmpty) {
-        final witness = proof.witnessWord!.isEmpty ? 'ε' : proof.witnessWord!;
+        final witness = proof.witnessWord!.isEmpty
+            ? kEpsilonSymbol
+            : proof.witnessWord!;
         buffer.writeln('');
         buffer.writeln(strings.shortestWitness(witness));
         buffer.writeln(
@@ -946,7 +953,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
   }
 
   String _formatSententialForm(List<String> symbols) =>
-      symbols.isEmpty ? 'ε' : symbols.join(' ');
+      symbols.isEmpty ? kEpsilonSymbol : symbols.join(' ');
 
   void _analyzeStackOperations() {
     final editorState = ref.read(pdaEditorProvider);
@@ -1017,6 +1024,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
     analysisFunction, {
     bool resetConvertedGrammar = true,
   }) {
+    final requestId = ++_analysisRequestId;
     final highlights = _analysisHighlights;
     if (highlights != null) {
       highlights.clearFor(highlights.target);
@@ -1037,7 +1045,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         final output = await analysisFunction((highlight) {
           nextHighlight = highlight;
         });
-        if (!mounted) {
+        if (!mounted || requestId != _analysisRequestId) {
           return;
         }
         if (highlights != null) {
@@ -1048,7 +1056,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
           _analysisResult = '=== $algorithmName ===\n\n$output';
         });
       } catch (error) {
-        if (!mounted) {
+        if (!mounted || requestId != _analysisRequestId) {
           return;
         }
         setState(() {
@@ -1077,7 +1085,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
 
     String formatSymbols(List<String> symbols) {
       if (symbols.isEmpty) {
-        return 'ε';
+        return EmptyStringNotation.symbolOf(context);
       }
       return symbols.join(' ');
     }
@@ -1124,7 +1132,7 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
               '• ${formatSymbols(production.leftSide)} → '
-              '${production.isLambda ? 'ε' : formatSymbols(production.rightSide)}',
+              '${production.isLambda ? EmptyStringNotation.symbolOf(context) : formatSymbols(production.rightSide)}',
               style: textTheme.bodyMedium?.copyWith(
                 fontFamilyFallback: kMonospaceFontFamilyFallback,
                 color: colorScheme.onSurface.withValues(alpha: 0.9),
@@ -1182,7 +1190,16 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
       }
 
       final pda = result.data!.payload;
+      ++_analysisRequestId;
+      final highlights = _analysisHighlights;
+      if (highlights != null) {
+        highlights.clearFor(highlights.target);
+      }
       ref.read(pdaEditorProvider.notifier).setPda(pda);
+      setState(() {
+        _isAnalyzing = false;
+        _clearAnalysisResults();
+      });
       _showSnackbar('Example loaded: ${pda.name}');
     } catch (error) {
       if (!mounted) return;
@@ -1197,5 +1214,12 @@ class _PDAAlgorithmPanelState extends ConsumerState<PDAAlgorithmPanel> {
         });
       }
     }
+  }
+
+  void _clearAnalysisResults() {
+    _analysisResult = null;
+    _latestConvertedGrammar = null;
+    _latestLanguageProof = null;
+    _latestLanguageSourcePda = null;
   }
 }

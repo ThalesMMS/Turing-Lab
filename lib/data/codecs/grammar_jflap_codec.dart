@@ -309,7 +309,12 @@ final class GrammarJflapDocumentCodec
         structuredMessage: GrammarJflapMessages.invalidDocument(),
       );
     }
-    final ordered = grammar.productions.toList()
+    final canonical = grammar.productions.toList()
+      ..sort((left, right) {
+        final order = left.order.compareTo(right.order);
+        return order != 0 ? order : left.id.compareTo(right.id);
+      });
+    final ordered = [...canonical]
       ..sort((left, right) {
         final startOrder = (left.leftSide.contains(grammar.startSymbol) ? 0 : 1)
             .compareTo(right.leftSide.contains(grammar.startSymbol) ? 0 : 1);
@@ -317,6 +322,10 @@ final class GrammarJflapDocumentCodec
         final order = left.order.compareTo(right.order);
         return order != 0 ? order : left.id.compareTo(right.id);
       });
+    final startOrderNormalized = !const ListEquality<Production>().equals(
+      canonical,
+      ordered,
+    );
     final ambiguousTokens =
         ordered
             .expand(
@@ -398,6 +407,7 @@ final class GrammarJflapDocumentCodec
       ),
       fidelity: lossy ? DocumentFidelity.lossy : DocumentFidelity.normalized,
       diagnostics: [
+        if (startOrderNormalized) _startOrderNormalizedDiagnostic(canonical),
         if (ambiguousTokens.isNotEmpty)
           CodecDiagnostic(
             code: 'jflap.grammar-token-boundaries-lossy',
@@ -425,6 +435,20 @@ final class GrammarJflapDocumentCodec
       ],
     );
   }
+
+  CodecDiagnostic _startOrderNormalizedDiagnostic(
+    List<Production> canonical,
+  ) => CodecDiagnostic(
+    code: 'jflap.grammar-start-order-normalized',
+    message:
+        'JFLAP export moved start-symbol productions first so consumers can infer the start symbol.',
+    path: r'$.productions',
+    sourceValue: canonical
+        .map((production) => production.id)
+        .toList(growable: false),
+    structuredMessage: GrammarJflapMessages.startOrderNormalized(),
+    disposition: CodecDiagnosticDisposition.normalized,
+  );
 
   static const descriptorSchema = DocumentSchemaDescriptor(
     id: DocumentSchemaId('turing-lab.grammar'),

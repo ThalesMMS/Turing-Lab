@@ -51,6 +51,7 @@ class FileOperationsService
   @override
   Future<Result<Uint8List>> exportAutomatonToPngBytes(
     FSA automaton, {
+    String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -149,6 +150,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -158,6 +160,7 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
@@ -171,9 +174,14 @@ class FileOperationsService
     GrammarEntity grammar,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyStringSymbol,
   }) async {
     try {
-      final svg = exportGrammarToSvgString(grammar, options: options);
+      final svg = exportGrammarToSvgString(
+        grammar,
+        options: options,
+        emptyStringSymbol: emptyStringSymbol,
+      );
       return await _downloadText(filePath, 'image/svg+xml', svg);
     } catch (_) {
       return fileOperationFailure('operation-failed', operation: 'exportSvg');
@@ -187,6 +195,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -196,6 +205,7 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
@@ -212,6 +222,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -221,6 +232,7 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );
@@ -237,6 +249,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -246,6 +259,7 @@ class FileOperationsService
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       );

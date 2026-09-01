@@ -8,12 +8,13 @@ import '../../../features/canvas/graphview/base_graphview_canvas_controller.dart
 import '../../../features/canvas/graphview/graphview_canvas_models.dart';
 import '../automaton_canvas_tool.dart';
 
-typedef AutomatonGraphNodeBuilder = Widget Function(
-  BuildContext context,
-  GraphViewCanvasNode node,
-  Map<String, int> outgoingCounts,
-  Map<String, int> incomingCounts,
-);
+typedef AutomatonGraphNodeBuilder =
+    Widget Function(
+      BuildContext context,
+      GraphViewCanvasNode node,
+      Map<String, int> outgoingCounts,
+      Map<String, int> incomingCounts,
+    );
 
 class _AddStateAtCenterIntent extends Intent {
   const _AddStateAtCenterIntent();
@@ -21,6 +22,10 @@ class _AddStateAtCenterIntent extends Intent {
 
 class _DeleteSelectionIntent extends Intent {
   const _DeleteSelectionIntent();
+}
+
+class _OpenSelectionContextIntent extends Intent {
+  const _OpenSelectionContextIntent();
 }
 
 class _RedoCanvasIntent extends Intent {
@@ -39,14 +44,21 @@ class _UndoCanvasIntent extends Intent {
 
 const Map<ShortcutActivator, Intent> _keyboardShortcuts = {
   SingleActivator(LogicalKeyboardKey.keyA): _AddStateAtCenterIntent(),
-  SingleActivator(LogicalKeyboardKey.keyT):
-      _SetCanvasToolIntent(AutomatonCanvasTool.transition),
-  SingleActivator(LogicalKeyboardKey.keyV):
-      _SetCanvasToolIntent(AutomatonCanvasTool.selection),
-  SingleActivator(LogicalKeyboardKey.escape):
-      _SetCanvasToolIntent(AutomatonCanvasTool.selection),
+  SingleActivator(LogicalKeyboardKey.keyT): _SetCanvasToolIntent(
+    AutomatonCanvasTool.transition,
+  ),
+  SingleActivator(LogicalKeyboardKey.keyV): _SetCanvasToolIntent(
+    AutomatonCanvasTool.selection,
+  ),
+  SingleActivator(LogicalKeyboardKey.escape): _SetCanvasToolIntent(
+    AutomatonCanvasTool.selection,
+  ),
   SingleActivator(LogicalKeyboardKey.delete): _DeleteSelectionIntent(),
   SingleActivator(LogicalKeyboardKey.backspace): _DeleteSelectionIntent(),
+  SingleActivator(LogicalKeyboardKey.f10, shift: true):
+      _OpenSelectionContextIntent(),
+  SingleActivator(LogicalKeyboardKey.contextMenu):
+      _OpenSelectionContextIntent(),
   SingleActivator(LogicalKeyboardKey.keyZ, control: true): _UndoCanvasIntent(),
   SingleActivator(LogicalKeyboardKey.keyZ, meta: true): _UndoCanvasIntent(),
   SingleActivator(LogicalKeyboardKey.keyY, control: true): _RedoCanvasIntent(),
@@ -87,6 +99,8 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
     required this.nodeBuilder,
     required this.onViewportChanged,
     required this.onPointerDown,
+    required this.onPointerEnter,
+    required this.onPointerExit,
     required this.onPointerHover,
     required this.onTapDown,
     required this.onTapUp,
@@ -94,6 +108,7 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
     required this.onSecondaryTapUp,
     required this.onAddStateAtCenter,
     required this.onDeleteSelection,
+    required this.onOpenSelectionContext,
     required this.onUndo,
     required this.onRedo,
     required this.onActivateTool,
@@ -120,6 +135,8 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
   final AutomatonGraphNodeBuilder nodeBuilder;
   final ValueChanged<Size> onViewportChanged;
   final ValueChanged<PointerDownEvent> onPointerDown;
+  final ValueChanged<PointerEnterEvent> onPointerEnter;
+  final ValueChanged<PointerExitEvent> onPointerExit;
   final ValueChanged<PointerHoverEvent> onPointerHover;
   final ValueChanged<TapDownDetails> onTapDown;
   final ValueChanged<TapUpDetails> onTapUp;
@@ -127,6 +144,7 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
   final ValueChanged<TapUpDetails> onSecondaryTapUp;
   final VoidCallback onAddStateAtCenter;
   final VoidCallback onDeleteSelection;
+  final VoidCallback onOpenSelectionContext;
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final ValueChanged<AutomatonCanvasTool> onActivateTool;
@@ -144,13 +162,15 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
           _DeleteSelectionIntent: CallbackAction<_DeleteSelectionIntent>(
             onInvoke: (_) => _invoke(onDeleteSelection),
           ),
+          _OpenSelectionContextIntent:
+              CallbackAction<_OpenSelectionContextIntent>(
+                onInvoke: (_) => _invoke(onOpenSelectionContext),
+              ),
           _RedoCanvasIntent: CallbackAction<_RedoCanvasIntent>(
             onInvoke: (_) => _invoke(onRedo),
           ),
           _SetCanvasToolIntent: CallbackAction<_SetCanvasToolIntent>(
-            onInvoke: (intent) => _invoke(
-              () => onActivateTool(intent.tool),
-            ),
+            onInvoke: (intent) => _invoke(() => onActivateTool(intent.tool)),
           ),
           _UndoCanvasIntent: CallbackAction<_UndoCanvasIntent>(
             onInvoke: (_) => _invoke(onUndo),
@@ -183,6 +203,8 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
       cursor: activeTool == AutomatonCanvasTool.transition
           ? SystemMouseCursors.precise
           : MouseCursor.defer,
+      onEnter: onPointerEnter,
+      onExit: onPointerExit,
       onHover: onPointerHover,
       child: canvas,
     );
@@ -220,9 +242,7 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
                   // in-flight node drag suppresses the viewport gestures.
                   absorbing: suppressCanvasPan,
                   child: Semantics(
-                    key: const ValueKey(
-                      'automaton-canvas-viewport-semantics',
-                    ),
+                    key: const ValueKey('automaton-canvas-viewport-semantics'),
                     container: true,
                     explicitChildNodes: true,
                     label: canvasSemanticsLabel(),
@@ -247,7 +267,8 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
                         if (nodeId == null) {
                           return const SizedBox.shrink();
                         }
-                        final canvasNode = controller.nodeById(nodeId) ??
+                        final canvasNode =
+                            controller.nodeById(nodeId) ??
                             GraphViewCanvasNode(
                               id: nodeId,
                               label: nodeId,
@@ -281,9 +302,7 @@ class AutomatonGraphViewCanvasSurface extends StatelessWidget {
             child: IgnorePointer(
               child: Center(
                 child: DecoratedBox(
-                  key: const ValueKey(
-                    'automaton-transition-mode-indicator',
-                  ),
+                  key: const ValueKey('automaton-transition-mode-indicator'),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(8),

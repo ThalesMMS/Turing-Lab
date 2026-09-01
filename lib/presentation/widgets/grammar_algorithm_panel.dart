@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../empty_string_notation.dart';
+
 import '../../core/algorithms/grammar_analyzer.dart';
 import '../../core/algorithms/grammar_cnf_transformer.dart';
 import '../../core/algorithms/grammar_gnf_transformer.dart';
@@ -34,6 +36,7 @@ import '../../core/messages/structured_message.dart';
 import '../../core/models/pda.dart';
 import '../../core/repositories/examples_repository.dart';
 import '../../core/result.dart';
+import '../../core/utils/epsilon_utils.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
@@ -589,6 +592,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
 
       final grammar = result.data!.payload;
       ref.read(grammarProvider.notifier).applyGrammar(grammar);
+      setState(_clearAnalysisResults);
       _showExampleFeedback('Example loaded: ${grammar.name}');
     } catch (error) {
       if (!mounted) return;
@@ -614,6 +618,13 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       message: appLocalizationsOf(context).localizeWorkflowText(message),
       tone: tone,
     );
+  }
+
+  void _clearAnalysisResults() {
+    _analysisResult = null;
+    _classificationReport = null;
+    _transformationSteps = const [];
+    _transformationStepMessages = const [];
   }
 
   Widget _buildConversionSection(
@@ -1042,9 +1053,12 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              appLocalizationsOf(
+              EmptyStringNotation.formatMarkers(
                 context,
-              ).localizeWorkflowText(_analysisResult!),
+                appLocalizationsOf(
+                  context,
+                ).localizeWorkflowText(_analysisResult!),
+              ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontFamilyFallback: kMonospaceFontFamilyFallback,
               ),
@@ -1552,7 +1566,10 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
         } else {
           row.add(
             entries
-                .map((symbols) => symbols.isEmpty ? 'ε' : symbols.join(' '))
+                .map(
+                  (symbols) =>
+                      symbols.isEmpty ? kEpsilonSymbol : symbols.join(' '),
+                )
                 .join(' | '),
           );
         }
@@ -1610,7 +1627,7 @@ class _GrammarAlgorithmPanelState extends ConsumerState<GrammarAlgorithmPanel> {
       }
       final left = production.leftSide.first;
       final right = production.isLambda || production.rightSide.isEmpty
-          ? 'ε'
+          ? kEpsilonSymbol
           : production.rightSide.join(' ');
       grouped.putIfAbsent(left, () => <String>[]).add(right);
     }

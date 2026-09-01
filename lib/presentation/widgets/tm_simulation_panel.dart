@@ -15,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../empty_string_notation.dart';
+
 import '../../core/algorithms/tm_block_execution_engine.dart';
 import '../../core/algorithms/tm_simulator.dart';
 import '../../core/algorithms/tm_execution_analyzer.dart';
@@ -194,7 +196,10 @@ class _TMSimulationPanelState extends ConsumerState<TMSimulationPanel>
         SimulationTextField(
           controller: _inputController,
           labelText: 'Input String',
-          hintText: 'Leave blank for ε; whitespace is preserved',
+          hintText: EmptyStringNotation.formatTerminology(
+            context,
+            'Leave blank for ε; whitespace is preserved',
+          ),
           isDense: false,
         ),
         const SizedBox(height: 8),

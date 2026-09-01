@@ -28,6 +28,7 @@ import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../../l10n/automata_diagnostics_localizations.dart';
+import '../empty_string_notation.dart';
 import '../providers/algorithm_step_provider.dart';
 import '../providers/automaton_state_provider.dart';
 import '../providers/interoperable_document_sidecar_provider.dart';
@@ -73,6 +74,7 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
   final Future<void> Function(FSA other)? onCompareEquivalence;
   final bool? equivalenceResult;
   final String? equivalenceDetails;
+  final bool? stepByStepMode;
   final ValueChanged<bool>? onStepByStepModeChanged;
   final FileOperationsGateway? fileService;
   final AlgorithmStepRendererRegistry? rendererRegistry;
@@ -106,6 +108,7 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
     this.onCompareEquivalence,
     this.equivalenceResult,
     this.equivalenceDetails,
+    this.stepByStepMode,
     this.onStepByStepModeChanged,
     this.rendererRegistry,
     this.fileService,
@@ -151,6 +154,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   @override
   void initState() {
     super.initState();
+    _stepByStepMode = widget.stepByStepMode ?? false;
     _languageComparisonController = LanguageComparisonController(
       runner: widget.languageComparisonRunner ?? runLanguageComparison,
     );
@@ -165,6 +169,11 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   @override
   void didUpdateWidget(covariant AlgorithmPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (widget.stepByStepMode != null &&
+        widget.stepByStepMode != oldWidget.stepByStepMode) {
+      _stepByStepMode = widget.stepByStepMode!;
+    }
 
     if (oldWidget.languageComparisonRunner != widget.languageComparisonRunner) {
       _languageComparisonController.dispose();
@@ -264,8 +273,14 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
 
         // Remove epsilon transitions
         AlgorithmButton(
-          title: appLocalizationsOf(context).removeLambdaTitle,
-          description: appLocalizationsOf(context).removeLambdaDescription,
+          title: EmptyStringNotation.formatTerminology(
+            context,
+            appLocalizationsOf(context).removeLambdaTitle,
+          ),
+          description: EmptyStringNotation.formatTerminology(
+            context,
+            appLocalizationsOf(context).removeLambdaDescription,
+          ),
           icon: Icons.highlight_off,
           onPressed: widget.onRemoveLambda == null
               ? null
@@ -836,6 +851,35 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     );
   }
 
+  Future<PlatformFile?> _pickJflapAutomatonFile({
+    required String dialogTitle,
+  }) async {
+    try {
+      final selection = await FilePicker.platform.pickFiles(
+        dialogTitle: dialogTitle,
+        // Android's DocumentsUI rejects the custom extension filter used by
+        // file_picker on some API levels. The loader below still validates
+        // the selected document as a JFLAP automaton.
+        type: FileType.any,
+        withData: true,
+      );
+      if (selection == null || selection.files.isEmpty) {
+        return null;
+      }
+      return selection.files.single;
+    } catch (error) {
+      if (mounted) {
+        _showSnack(
+          appLocalizationsOf(
+            context,
+          ).errorOpeningAutomatonFilePicker(error.toString()),
+          isError: true,
+        );
+      }
+      return null;
+    }
+  }
+
   Future<void> _submitRegexToNfa(String regex) async {
     if (regex.isEmpty || widget.onRegexToNfa == null) return;
 
@@ -986,18 +1030,9 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
       return;
     }
 
-    final selection = await FilePicker.platform.pickFiles(
-      dialogTitle: dialogTitle,
-      type: FileType.custom,
-      allowedExtensions: const ['jff'],
-      withData: true,
-    );
+    final file = await _pickJflapAutomatonFile(dialogTitle: dialogTitle);
+    if (!mounted || file == null) return;
 
-    if (selection == null || selection.files.isEmpty) {
-      return;
-    }
-
-    final file = selection.files.single;
     setState(() {
       _isExecuting = true;
       _currentAlgorithm = algorithmName;
@@ -1066,22 +1101,14 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     final flowGeneration = ++_comparisonFlowGeneration;
     _languageComparisonController.reset();
 
-    final selection = await FilePicker.platform.pickFiles(
+    final file = await _pickJflapAutomatonFile(
       dialogTitle: localizations.selectDfaToCompare,
-      type: FileType.custom,
-      allowedExtensions: const ['jff'],
-      withData: true,
     );
-
-    if (selection == null || selection.files.isEmpty) {
-      return;
-    }
+    if (file == null) return;
 
     if (!_isCurrentComparisonFlow(flowGeneration, sourceAutomaton)) {
       return;
     }
-
-    final file = selection.files.single;
     setState(() {
       _isExecuting = true;
       _currentAlgorithm = 'Compare Equivalence';

@@ -11,6 +11,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 
@@ -48,7 +49,8 @@ class PdaTransitionEditor extends StatefulWidget {
     required bool lambdaInput,
     required bool lambdaPop,
     required bool lambdaPush,
-  }) onSubmit;
+  })
+  onSubmit;
   final VoidCallback onCancel;
   final VoidCallback? onDelete;
 
@@ -74,7 +76,6 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
   @override
   void initState() {
     super.initState();
-    // Add listeners to update preview on text change
     _readController.addListener(() => setState(() {}));
     _popController.addListener(() => setState(() {}));
     _pushController.addListener(() => setState(() {}));
@@ -130,6 +131,8 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    String display(String text) =>
+        EmptyStringNotation.formatTerminology(context, text);
     const shortcuts = <ShortcutActivator, Intent>{
       SingleActivator(LogicalKeyboardKey.enter): _SubmitIntent(),
       SingleActivator(LogicalKeyboardKey.numpadEnter): _SubmitIntent(),
@@ -166,12 +169,13 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                     controller: _readController,
                     enabled: !_lambdaInput,
                     decoration: InputDecoration(
-                      labelText: l10n.pdaInputSymbol,
+                      labelText: display(l10n.pdaInputSymbol),
                       border: const OutlineInputBorder(),
-                      errorText: _showValidationErrors &&
+                      errorText:
+                          _showValidationErrors &&
                               !_lambdaInput &&
                               _readController.text.trim().isEmpty
-                          ? l10n.pdaInputSymbolRequired
+                          ? display(l10n.pdaInputSymbolRequired)
                           : null,
                     ),
                     autocorrect: false,
@@ -184,7 +188,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(1.0),
                   child: _buildLambdaSwitch(
-                    label: l10n.pdaLambdaInput,
+                    label: display(l10n.pdaLambdaInput),
                     value: _lambdaInput,
                     onChanged: (value) {
                       _lambdaInput = value;
@@ -201,12 +205,13 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                     controller: _popController,
                     enabled: !_lambdaPop,
                     decoration: InputDecoration(
-                      labelText: l10n.pdaPopSymbol,
+                      labelText: display(l10n.pdaPopSymbol),
                       border: const OutlineInputBorder(),
-                      errorText: _showValidationErrors &&
+                      errorText:
+                          _showValidationErrors &&
                               !_lambdaPop &&
                               _popController.text.trim().isEmpty
-                          ? l10n.pdaPopSymbolRequired
+                          ? display(l10n.pdaPopSymbolRequired)
                           : null,
                     ),
                     autocorrect: false,
@@ -218,7 +223,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(3.0),
                   child: _buildLambdaSwitch(
-                    label: l10n.pdaLambdaPop,
+                    label: display(l10n.pdaLambdaPop),
                     value: _lambdaPop,
                     onChanged: (value) {
                       _lambdaPop = value;
@@ -235,12 +240,13 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                     controller: _pushController,
                     enabled: !_lambdaPush,
                     decoration: InputDecoration(
-                      labelText: l10n.pdaPushSymbol,
+                      labelText: display(l10n.pdaPushSymbol),
                       border: const OutlineInputBorder(),
-                      errorText: _showValidationErrors &&
+                      errorText:
+                          _showValidationErrors &&
                               !_lambdaPush &&
                               _pushController.text.trim().isEmpty
-                          ? l10n.pdaPushSymbolRequired
+                          ? display(l10n.pdaPushSymbolRequired)
                           : null,
                     ),
                     autocorrect: false,
@@ -252,7 +258,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(5.0),
                   child: _buildLambdaSwitch(
-                    label: l10n.pdaLambdaPush,
+                    label: display(l10n.pdaLambdaPush),
                     value: _lambdaPush,
                     onChanged: (value) {
                       _lambdaPush = value;
@@ -265,12 +271,15 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                 const SizedBox(height: 16),
                 if (widget.currentStack != null) ...[
                   StackOperationPreview(
-                    inputSymbol:
-                        _lambdaInput ? kEpsilonSymbol : _readController.text,
-                    popSymbol:
-                        _lambdaPop ? kEpsilonSymbol : _popController.text,
-                    pushSymbol:
-                        _lambdaPush ? kEpsilonSymbol : _pushController.text,
+                    inputSymbol: _lambdaInput
+                        ? kEpsilonSymbol
+                        : _readController.text,
+                    popSymbol: _lambdaPop
+                        ? kEpsilonSymbol
+                        : _popController.text,
+                    pushSymbol: _lambdaPush
+                        ? kEpsilonSymbol
+                        : _pushController.text,
                     currentStack: widget.currentStack!,
                   ),
                   const SizedBox(height: 16),

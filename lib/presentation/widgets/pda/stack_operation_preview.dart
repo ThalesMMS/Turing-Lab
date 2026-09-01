@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:turing_lab/l10n/app_localizations_resolver.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import '../../../core/constants/monospace_typography.dart';
 import '../../../core/utils/epsilon_utils.dart';
@@ -65,6 +66,7 @@ class StackOperationPreview extends StatelessWidget {
           ),
           const Divider(),
           _buildOperationRow(
+            context,
             theme,
             appLocalizationsOf(context).inputLabel,
             inputSymbol,
@@ -72,6 +74,7 @@ class StackOperationPreview extends StatelessWidget {
             theme.colorScheme.primary,
           ),
           _buildOperationRow(
+            context,
             theme,
             appLocalizationsOf(context).pop,
             popSymbol,
@@ -79,6 +82,7 @@ class StackOperationPreview extends StatelessWidget {
             theme.colorScheme.error,
           ),
           _buildOperationRow(
+            context,
             theme,
             appLocalizationsOf(context).push,
             pushSymbol,
@@ -100,6 +104,7 @@ class StackOperationPreview extends StatelessWidget {
   }
 
   Widget _buildOperationRow(
+    BuildContext context,
     ThemeData theme,
     String label,
     String value,
@@ -118,7 +123,7 @@ class StackOperationPreview extends StatelessWidget {
             style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
           ),
           Text(
-            isEmptyString ? kEpsilonSymbol : value,
+            isEmptyString ? EmptyStringNotation.symbolOf(context) : value,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -133,18 +138,13 @@ class StackOperationPreview extends StatelessWidget {
   }
 
   Widget _buildStackPreview(BuildContext context, ThemeData theme) {
-    // Simulate the operation
     var resultStack = currentStack;
 
-    // Pop unless the symbol represents the empty string.
     if (!isEpsilonSymbol(popSymbol)) {
       resultStack = resultStack.pop();
     }
 
-    // Push unless the symbol represents the empty string.
     if (!isEpsilonSymbol(pushSymbol)) {
-      // Push may be multiple symbols (e.g. "ABC")
-      // Push right-to-left to keep the correct order
       for (var i = pushSymbol.length - 1; i >= 0; i--) {
         resultStack = resultStack.push(pushSymbol[i]);
       }

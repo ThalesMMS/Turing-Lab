@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../empty_string_notation.dart';
+
 import '../../core/models/grammar.dart';
 import '../../core/models/grammar_transformation_step.dart';
 import '../../core/messages/structured_message.dart';
@@ -154,7 +156,7 @@ class _GrammarSnapshot extends StatelessWidget {
                       .map(
                         (p) =>
                             '${p.leftSide.join(' ')} → '
-                            '${p.isLambda ? 'ε' : p.rightSide.join(' ')}',
+                            '${p.isLambda || p.rightSide.isEmpty ? EmptyStringNotation.symbolOf(context) : p.rightSide.join(' ')}',
                       )
                       .join('\n'),
             style: theme.textTheme.bodySmall?.copyWith(

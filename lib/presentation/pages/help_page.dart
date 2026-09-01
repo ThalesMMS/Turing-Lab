@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/help_catalog.dart';
+import '../../core/constants/help_topic_ids.dart';
 import '../../core/models/help_catalog.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
@@ -23,6 +24,14 @@ import '../widgets/help_tree_view.dart';
 part 'help_page_content.dart';
 part 'license_text_card.dart';
 part 'licenses_help_content.dart';
+
+const _notationComparisonHelpTopicIds = {
+  HelpTopicIds.gettingStartedImportAutomatonFragments,
+  HelpTopicIds.gettingStartedManualConversions,
+  HelpTopicIds.gettingStartedDocumentNotes,
+  HelpTopicIds.regexTheoryLambda,
+  HelpTopicIds.troubleshootingRegexInput,
+};
 
 /// Help page with interactive documentation and tutorials
 /// Based on JFLAP's HelpAction.java and documentation structure
@@ -161,10 +170,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
     });
   }
 
-  Future<void> _materializeAndReveal(
-    String topicId,
-    int generation,
-  ) async {
+  Future<void> _materializeAndReveal(String topicId, int generation) async {
     if (!_isRevealActive(generation) || !_scrollController.hasClients) return;
 
     if (_topicKeys[topicId]?.currentContext == null) {
@@ -187,8 +193,9 @@ class _HelpPageState extends ConsumerState<HelpPage> {
         await Scrollable.ensureVisible(
           topicContext,
           alignment: 0.25,
-          duration:
-              reduceMotion ? Duration.zero : const Duration(milliseconds: 180),
+          duration: reduceMotion
+              ? Duration.zero
+              : const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
         );
         if (_isRevealActive(generation)) {
@@ -227,12 +234,13 @@ class _HelpPageState extends ConsumerState<HelpPage> {
     final treeController = _treeController!;
     final searchStatusMessage = treeController.isSearching
         ? treeController.matchingTopicIds.isEmpty
-            ? l10n.helpSearchNoResults
-            : l10n.helpSearchResultCount(
-                treeController.matchingTopicIds.length,
-              )
+              ? l10n.helpSearchNoResults
+              : l10n.helpSearchResultCount(
+                  treeController.matchingTopicIds.length,
+                )
         : '';
-    final showVisibleSearchStatus = treeController.isSearching &&
+    final showVisibleSearchStatus =
+        treeController.isSearching &&
         treeController.matchingTopicIds.isNotEmpty;
 
     return Scaffold(
@@ -244,8 +252,9 @@ class _HelpPageState extends ConsumerState<HelpPage> {
             focusNode: _searchActionFocusNode,
             onPressed: _toggleSearch,
             icon: Icon(_searchOpen ? Icons.close : Icons.search),
-            tooltip:
-                _searchOpen ? l10n.helpSearchClose : l10n.helpSearchTooltip,
+            tooltip: _searchOpen
+                ? l10n.helpSearchClose
+                : l10n.helpSearchTooltip,
           ),
         ],
       ),
@@ -322,9 +331,9 @@ class _HelpPageState extends ConsumerState<HelpPage> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                         ),
                                   ),
                                 ),
@@ -346,6 +355,8 @@ class _HelpPageState extends ConsumerState<HelpPage> {
                   unavailableDescription: l10n.helpTopicUnavailableDescription,
                   noResultsTitle: l10n.helpSearchNoResults,
                   noResultsDescription: l10n.helpSearchNoResultsDescription,
+                  preserveNotationComparisonTopicIds:
+                      _notationComparisonHelpTopicIds,
                   topicContentBuilder: (context, topic) {
                     if (topic.contentKind !=
                         HelpTopicContentKind.aboutAndLicenses) {

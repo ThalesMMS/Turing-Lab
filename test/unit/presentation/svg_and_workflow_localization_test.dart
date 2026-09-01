@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' hide State;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_math/vector_math_64.dart';
 import 'package:turing_lab/core/constants/svg_export_defaults.dart';
 import 'package:turing_lab/core/annotations/annotations.dart';
 import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
@@ -37,6 +39,35 @@ void main() {
     );
   }
 
+  FSA epsilonFsa() {
+    final now = DateTime(2026, 1, 1);
+    final start = State(
+      id: 'q0',
+      label: 'q0',
+      position: Vector2(100, 100),
+      isInitial: true,
+    );
+    final end = State(
+      id: 'q1',
+      label: 'q1',
+      position: Vector2(250, 100),
+      isAccepting: true,
+    );
+    return FSA(
+      id: 'epsilon',
+      name: 'Epsilon',
+      states: {start, end},
+      transitions: {
+        FSATransition.epsilon(id: 't0', fromState: start, toState: end),
+      },
+      alphabet: const {},
+      acceptingStates: {end},
+      created: now,
+      modified: now,
+      bounds: const Rectangle<double>(0, 0, 400, 200),
+    );
+  }
+
   test(
     'empty SVG uses English placeholder by default and Portuguese when asked',
     () {
@@ -58,6 +89,18 @@ void main() {
     expect(pt.svgTmLegend, isNot(en.svgTmLegend));
     expect(en.svgTmLegend, contains('read'));
     expect(pt.svgTmLegend, contains('leitura'));
+  });
+
+  test('visual SVG follows notation without changing the FSA model', () {
+    final automaton = epsilonFsa();
+    final lambdaSvg = SvgExporter.exportFsaToSvg(
+      automaton,
+      options: const SvgExportOptions(emptyStringSymbol: 'λ'),
+    );
+
+    expect(lambdaSvg, contains('λ'));
+    expect(lambdaSvg, isNot(contains('>ε<')));
+    expect(automaton.transitions.whereType<FSATransition>().single.symbol, 'ε');
   });
 
   test('SVG excludes annotations by default and includes them explicitly', () {

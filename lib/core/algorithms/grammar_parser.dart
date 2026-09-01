@@ -161,12 +161,10 @@ class GrammarParser {
             ),
           );
         }
-        // Accepted via fast path; optionally attempt to build derivation later
-        final parser = SimpleRecursiveDescentParser(grammar);
-        final rd = parser.parse(inputString, timeout: timeout);
-        if (rd.isSuccess) {
-          return rd;
-        }
+        // Accepted via fast path; build a source-grammar witness when the
+        // remaining budget allows it without slowing recognition itself.
+        final derivation = _bestEffortAutoParse(grammar, inputString, timeout);
+        if (derivation != null) return Success(derivation);
         return Success(
           ParseResult.success(
             inputString: inputString,
@@ -194,12 +192,10 @@ class GrammarParser {
       );
     }
 
-    // If accepted, optionally build a derivation using the simple parser (best-effort)
-    final parser = SimpleRecursiveDescentParser(grammar);
-    final rd = parser.parse(inputString, timeout: timeout);
-    if (rd.isSuccess) {
-      return rd;
-    }
+    // If accepted, build a derivation best-effort. Recursive descent is fast
+    // for suitable grammars; bounded brute force covers left-recursive ones.
+    final derivation = _bestEffortAutoParse(grammar, inputString, timeout);
+    if (derivation != null) return Success(derivation);
 
     // Fallback: accepted without a derivation trace
     return Success(
@@ -364,6 +360,21 @@ class GrammarParser {
             ),
           );
         }
+        final remaining = timeout - DateTime.now().difference(startTime);
+        final derivation = remaining <= Duration.zero
+            ? null
+            : _bestEffortAutoParse(grammar, inputString, remaining);
+        if (derivation != null) {
+          final trees = _treesForParseResult(derivation);
+          return Success(
+            GrammarParseReport.accepted(
+              inputString: inputString,
+              executionTime: DateTime.now().difference(startTime),
+              trees: trees.take(maxTrees).toList(growable: false),
+              isAmbiguous: (derivation.bruteForceResult?.witnessCount ?? 0) > 1,
+            ),
+          );
+        }
         return Success(
           GrammarParseReport.accepted(
             inputString: inputString,
@@ -396,18 +407,19 @@ class GrammarParser {
       return Success(earleyReport);
     }
 
-    // Best-effort tree via recursive descent derivation trace (legacy format).
-    final parser = SimpleRecursiveDescentParser(grammar);
-    final rd = parser.parse(inputString, timeout: timeout);
-    if (rd.isSuccess) {
-      final result = rd.data!;
-      final allTrees = _treesFromDerivations(result.derivations, inputString);
+    // Best-effort tree via recursive descent, with a bounded fallback for
+    // accepted grammars that contain left recursion.
+    final result = _bestEffortAutoParse(grammar, inputString, timeout);
+    if (result != null) {
+      final allTrees = _treesForParseResult(result);
       return Success(
         GrammarParseReport.accepted(
           inputString: inputString,
           executionTime: DateTime.now().difference(startTime),
           trees: allTrees.take(maxTrees).toList(growable: false),
-          isAmbiguous: allTrees.length > maxTrees,
+          isAmbiguous:
+              (result.bruteForceResult?.witnessCount ?? 0) > 1 ||
+              allTrees.length > maxTrees,
         ),
       );
     }
@@ -507,6 +519,102 @@ class GrammarParser {
       out.add(DerivationTree(root: root, isShallow: true));
     }
     return out;
+  }
+
+  static List<DerivationTree> _treesForParseResult(ParseResult result) {
+    final bruteTrees =
+        result.bruteForceResult?.witnesses
+            .map((witness) => witness.tree)
+            .toList(growable: false) ??
+        const <DerivationTree>[];
+    if (bruteTrees.isNotEmpty) return bruteTrees;
+    if (result.tree != null) return [result.tree!];
+    return _treesFromDerivations(result.derivations, result.inputString);
+  }
+
+  /// Converts a CYK back-pointer tree to an original-grammar tree.
+  ///
+  /// CYK operates on a CNF copy, which can contain synthetic start symbols,
+  /// terminal aliases, and binarization nodes. Those nodes are useful for the
+  /// algorithm but are not valid productions in the grammar shown to the
+  /// learner. If the normalized tree is not directly valid for the source
+  /// grammar, use the bounded CFG search only to recover one source-grammar
+  /// witness for presentation.
+  static DerivationTree? treeFromCykDerivation(
+    Grammar grammar,
+    String inputString,
+    CYKDerivation? derivation, {
+    Duration timeout = const Duration(seconds: 5),
+  }) {
+    if (derivation == null) return null;
+    final normalizedTree = derivation.toDerivationTree();
+    if (_treeMatchesGrammar(grammar, normalizedTree.root)) {
+      return normalizedTree;
+    }
+
+    if (timeout <= Duration.zero) return null;
+    final sourceResult = BruteForceCFGParser.search(
+      grammar,
+      inputString,
+      limits: BruteForceSearchLimits(resultCap: 1, timeLimit: timeout),
+    );
+    if (sourceResult.accepted && sourceResult.witnesses.isNotEmpty) {
+      return sourceResult.witnesses.first.tree;
+    }
+    return null;
+  }
+
+  static bool _treeMatchesGrammar(Grammar grammar, DerivationTreeNode node) {
+    if (node.symbol == 'ε') return node.children.isEmpty;
+    if (grammar.terminals.contains(node.symbol)) {
+      return node.children.isEmpty;
+    }
+    if (!grammar.nonterminals.contains(node.symbol)) return false;
+
+    final childSymbols = node.children.map((child) => child.symbol).toList();
+    final matchesProduction = grammar.productions
+        .where(
+          (production) =>
+              production.leftSide.length == 1 &&
+              production.leftSide.single == node.symbol,
+        )
+        .any((production) {
+          final rightSide = production.isLambda
+              ? const ['ε']
+              : production.rightSide;
+          return _sameSymbols(childSymbols, rightSide);
+        });
+    if (!matchesProduction) return false;
+    return node.children.every((child) => _treeMatchesGrammar(grammar, child));
+  }
+
+  static bool _sameSymbols(List<String> left, List<String> right) {
+    if (left.length != right.length) return false;
+    for (var index = 0; index < left.length; index++) {
+      if (left[index] != right[index]) return false;
+    }
+    return true;
+  }
+
+  static ParseResult? _bestEffortAutoParse(
+    Grammar grammar,
+    String inputString,
+    Duration timeout,
+  ) {
+    final startedAt = DateTime.now();
+    final recursive = SimpleRecursiveDescentParser(
+      grammar,
+    ).parse(inputString, timeout: timeout);
+    if (recursive.isSuccess && recursive.data!.accepted) {
+      return recursive.data!;
+    }
+
+    final remaining = timeout - DateTime.now().difference(startedAt);
+    if (remaining <= Duration.zero) return null;
+
+    final brute = _parseWithBruteForce(grammar, inputString, remaining);
+    if (brute?.accepted ?? false) return brute;
+    return null;
   }
 
   /// Validates the input grammar and string
@@ -1087,8 +1195,8 @@ class GrammarParser {
   ) {
     final stopwatch = Stopwatch()..start();
     final result = CYKParser.parse(grammar, inputString, timeout: timeout);
-    stopwatch.stop();
     if (result.isFailure) {
+      stopwatch.stop();
       return ParseResult.failure(
         inputString: inputString,
         errorMessage: result.error!,
@@ -1100,11 +1208,22 @@ class GrammarParser {
       );
     }
     final cykResult = result.data!;
+    final remaining = timeout - stopwatch.elapsed;
+    final tree = cykResult.derivation == null
+        ? null
+        : treeFromCykDerivation(
+            grammar,
+            inputString,
+            cykResult.derivation,
+            timeout: remaining.isNegative ? Duration.zero : remaining,
+          );
+    stopwatch.stop();
     return cykResult.accepted
         ? ParseResult.success(
             inputString: inputString,
             derivations: const [],
             executionTime: stopwatch.elapsed,
+            tree: tree,
           )
         : ParseResult.failure(
             inputString: inputString,

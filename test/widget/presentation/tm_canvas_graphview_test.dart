@@ -134,6 +134,34 @@ void main() {
       expect(delivered, isNotEmpty);
     });
 
+    testWidgets('secondary click opens TM state options', (tester) async {
+      final toolController = AutomatonCanvasToolController(
+        AutomatonCanvasTool.selection,
+      );
+      addTearDown(toolController.dispose);
+      await _pumpTmCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+      );
+      controller.addStateAt(const Offset(120, 120));
+      await tester.pumpAndSettle();
+
+      await tester.tapAt(
+        tester.getCenter(find.text('q0')),
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('automaton-state-delete-state_0')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('fits initial TM content once', (tester) async {
       final fitController = _FitCountingTmCanvasController(
         editorNotifier: notifier,
@@ -154,11 +182,7 @@ void main() {
     testWidgets('groups TM self-loops into one path with a shared label card', (
       tester,
     ) async {
-      await _pumpTmCanvas(
-        tester,
-        notifier: notifier,
-        controller: controller,
-      );
+      await _pumpTmCanvas(tester, notifier: notifier, controller: controller);
 
       controller.addStateAt(const Offset(160, 160));
       await tester.pumpAndSettle();
@@ -188,13 +212,17 @@ void main() {
       final dynamic canvasState = tester.state(
         find.byType(AutomatonGraphViewCanvas),
       );
-      final firstLoop = canvasState.debugGeometryForTransition('tm-loop-a')
-          as TuringLabEdgeRenderGeometry;
-      final secondLoop = canvasState.debugGeometryForTransition('tm-loop-y')
-          as TuringLabEdgeRenderGeometry;
+      final firstLoop =
+          canvasState.debugGeometryForTransition('tm-loop-a')
+              as TuringLabEdgeRenderGeometry;
+      final secondLoop =
+          canvasState.debugGeometryForTransition('tm-loop-y')
+              as TuringLabEdgeRenderGeometry;
 
       expect(
-          identical(firstLoop.pathGeometry, secondLoop.pathGeometry), isTrue);
+        identical(firstLoop.pathGeometry, secondLoop.pathGeometry),
+        isTrue,
+      );
       expect(firstLoop.labelRect, isNotNull);
       expect(firstLoop.labelRect, secondLoop.labelRect);
     });
@@ -202,11 +230,7 @@ void main() {
     testWidgets('updates a TM route before committing its dragged state', (
       tester,
     ) async {
-      await _pumpTmCanvas(
-        tester,
-        notifier: notifier,
-        controller: controller,
-      );
+      await _pumpTmCanvas(tester, notifier: notifier, controller: controller);
 
       controller.addStateAt(const Offset(40, 40));
       controller.addStateAt(const Offset(260, 40));
@@ -230,10 +254,11 @@ void main() {
       final dynamic canvasState = tester.state(
         find.byType(AutomatonGraphViewCanvas),
       );
-      final routeBefore = (canvasState.debugGeometryForTransition(transitionId)
-              as TuringLabEdgeRenderGeometry)
-          .pathGeometry
-          .pointAt(0.5);
+      final routeBefore =
+          (canvasState.debugGeometryForTransition(transitionId)
+                  as TuringLabEdgeRenderGeometry)
+              .pathGeometry
+              .pointAt(0.5);
 
       final gesture = await tester.startGesture(
         tester.getCenter(find.text('q0')),
@@ -241,10 +266,11 @@ void main() {
       );
       await gesture.moveBy(const Offset(60, 45));
       await tester.pump();
-      final routeDuring = (canvasState.debugGeometryForTransition(transitionId)
-              as TuringLabEdgeRenderGeometry)
-          .pathGeometry
-          .pointAt(0.5);
+      final routeDuring =
+          (canvasState.debugGeometryForTransition(transitionId)
+                  as TuringLabEdgeRenderGeometry)
+              .pathGeometry
+              .pointAt(0.5);
       final domainDuring = notifier.state.tm!.states.firstWhere(
         (state) => state.id == initialState.id,
       );
@@ -364,13 +390,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TmTransitionOperationsEditor), findsNothing);
-      expect(
-        [
-          for (final state in notifier.state.tm!.states)
-            Offset(state.position.x, state.position.y),
-        ],
-        positionsBefore,
-      );
+      expect([
+        for (final state in notifier.state.tm!.states)
+          Offset(state.position.x, state.position.y),
+      ], positionsBefore);
     });
 
     testWidgets('keeps TM transition actions inside a narrow canvas', (

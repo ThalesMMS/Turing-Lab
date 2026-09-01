@@ -10,6 +10,7 @@ import '../../core/models/production.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../content/grammar_teaching_content_copy.dart';
 import 'derivation_tree_view.dart';
 import 'parse_table_teaching_workspace.dart';
@@ -225,7 +226,12 @@ class _LR1TeachingWorkspaceState extends State<LR1TeachingWorkspace> {
                     : null,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(_productionDisplay(production)),
+              child: Text(
+                _productionDisplay(
+                  production,
+                  EmptyStringNotation.symbolOf(context),
+                ),
+              ),
             ),
         ],
       ),
@@ -243,7 +249,7 @@ class _LR1TeachingWorkspaceState extends State<LR1TeachingWorkspace> {
       context,
       title:
           '${state.id} · viable prefix: '
-          '${state.viablePrefix.isEmpty ? 'ε' : state.viablePrefix.join(' ')}',
+          '${state.viablePrefix.isEmpty ? EmptyStringNotation.symbolOf(context) : state.viablePrefix.join(' ')}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -415,7 +421,7 @@ class _LR1TeachingWorkspaceState extends State<LR1TeachingWorkspace> {
                 subtitle: Text(
                   l10n.localizeWorkflowText(
                     'Actions: ${conflict.actions.map((a) => a.display).join(', ')}\n'
-                    'Witness prefix: ${conflict.viablePrefix.isEmpty ? 'ε' : conflict.viablePrefix.join(' ')}\n'
+                    'Witness prefix: ${conflict.viablePrefix.isEmpty ? EmptyStringNotation.symbolOf(context) : conflict.viablePrefix.join(' ')}\n'
                     'Sources: ${conflict.actions.expand((a) => a.sourceItems).map((i) => i.display).join(' · ')}',
                   ),
                 ),
@@ -512,10 +518,7 @@ class _LR1TeachingWorkspaceState extends State<LR1TeachingWorkspace> {
           ),
           if (step.partialTree != null) ...[
             const SizedBox(height: 8),
-            DerivationTreeView(
-              tree: step.partialTree!,
-              initiallyExpanded: true,
-            ),
+            DerivationTreeView(tree: step.partialTree!),
           ],
         ],
       ),
@@ -622,9 +625,12 @@ class _LR1TeachingWorkspaceState extends State<LR1TeachingWorkspace> {
     return order != 0 ? order : a.id.compareTo(b.id);
   }
 
-  static String _productionDisplay(Production production) {
+  static String _productionDisplay(
+    Production production,
+    String emptyStringSymbol,
+  ) {
     final right = production.rightSide.isEmpty
-        ? 'ε'
+        ? emptyStringSymbol
         : production.rightSide.join(' ');
     return '${production.id}: ${production.leftSide.join(' ')} → $right';
   }

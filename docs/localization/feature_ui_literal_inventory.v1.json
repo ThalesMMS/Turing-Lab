@@ -6,9 +6,9 @@
   "zeroUserVisibleProseClaim": false,
   "scope": "tool/localization/feature_ui_scope.v1.json",
   "summary": {
-    "fileCount": 292,
+    "fileCount": 297,
     "legacyViolationFileCount": 113,
-    "legacyViolationCount": 2029
+    "legacyViolationCount": 2035
   },
   "entries": [
     {
@@ -109,8 +109,8 @@
     },
     {
       "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
-      "sourceDigestSha256": "ef2dca79a30fafab34ed2c1620598673945156971e2c36468d3a4101a74271ff",
-      "violationDigestSha256": "2e75208c155bd885de9a593eee471c6d266a345e68b2390d7e6b7151e12c9a93",
+      "sourceDigestSha256": "6f5b67710b0fc9c72e96a0bc9ceea2eb83f87f1e4d747832c738f3b49f32438d",
+      "violationDigestSha256": "c9b0a120cee0ba04386de5d27a89170676465201d806c65da01e87f63728d673",
       "violationCount": 1
     },
     {
@@ -127,8 +127,8 @@
     },
     {
       "path": "lib/presentation/pages/regex_page.dart",
-      "sourceDigestSha256": "0324adb6fcc2aaa4c626bdb54f9c530c3cabf80881d9583dc1b25980ce7e0978",
-      "violationDigestSha256": "469232b052bcdd866d03fc467a9e24f62ff9d37322ee2383701382ee0f219a79",
+      "sourceDigestSha256": "de0bf2729c6daf06280837f589aceca5db66c21aed71144b7443424e9341b5ca",
+      "violationDigestSha256": "21e25ead80933bb96b36e8fc225f5bd6fa1085bbb5c414c2fc810a046be2f3fd",
       "violationCount": 3
     },
     {
@@ -145,8 +145,8 @@
     },
     {
       "path": "lib/presentation/pages/regex_page_samples.dart",
-      "sourceDigestSha256": "8dea42cd79875420ff3381c2f267e4a3bbdd214349c40b3d476ba67a82b6c1d0",
-      "violationDigestSha256": "1e9807c59f913f3a78b45964525754837342735a41711e4e03ee0356a2fcd83e",
+      "sourceDigestSha256": "a65fef88ccc85dce703feb0f501e75c2775bb3da80a41ea7c369251177690c42",
+      "violationDigestSha256": "bfb4bfd234d7618cadb23bbff23cd979b9181fbac7d45dd830a7702773fa72c3",
       "violationCount": 2
     },
     {
@@ -205,8 +205,8 @@
     },
     {
       "path": "lib/presentation/providers/grammar_provider.dart",
-      "sourceDigestSha256": "e344554497aa60517fd6a80122563005047f80547e8b9970bcede5786f946a02",
-      "violationDigestSha256": "6dc0f58ac64a2d45c6f3ed46d001b61f488d18f291cbc2b2de6bc0e80e8d188a",
+      "sourceDigestSha256": "5cf0e04c094a73675eea7de155a0925513a23aafda63146b4a93132258eaf9af",
+      "violationDigestSha256": "f043c18dd69a2aa50e8299de74782362f321e83f05bbad5f1af92e68d1dbc01e",
       "violationCount": 4
     },
     {
@@ -271,15 +271,15 @@
     },
     {
       "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace.dart",
-      "sourceDigestSha256": "1a121b9d3f4b61ff3bc3d77ec3354d34cf6cea89fb435ad25fc90fc977c36a69",
-      "violationDigestSha256": "804a2324f26814ce05d025876fb99faf2c4121cd3a22cac7f2cc32c47b0a4c92",
+      "sourceDigestSha256": "79110b294bac1f706ef266c632ec1e9e1cc94e10f95edf41240b96f66224eb7c",
+      "violationDigestSha256": "e7bf6a06fbf4806be07fd1dc5942ed167cda2028ae141e7338d61026a1adc8cb",
       "violationCount": 11
     },
     {
       "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace_strings.dart",
-      "sourceDigestSha256": "786cc9a6206f90ec2b06795fc69027f3c41536e1f27d8519c65ddf91d68bbafc",
-      "violationDigestSha256": "d7840d07e59d0058c8fd47198f4c274c583de3f54341ebdd1a0d23b0d91d1949",
-      "violationCount": 159
+      "sourceDigestSha256": "25c024f24e9974636a51b18513be22fa988e08a82a01f8042c7c55e827954e09",
+      "violationDigestSha256": "e5fb2c61ca9b136474f97c52941f22e65e6ee768b303b13ae7b34fb2b1bbd7dc",
+      "violationCount": 171
     },
     {
       "path": "lib/presentation/widgets/algorithm_examples_section.dart",
@@ -289,8 +289,8 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_panel.dart",
-      "sourceDigestSha256": "eb8741abf3a7ebfefa26447c19701296abb80df530836c29183faeae5615fd74",
-      "violationDigestSha256": "fa5b07f56eb19975bda1fbaf2cbad739cc5a2409dbb14f82e836a58952705366",
+      "sourceDigestSha256": "7a7dff1bee4dea2212741e9963dd45ab15b0edd60d2ea2e65584431f5d0d7910",
+      "violationDigestSha256": "63be9cf79d0e0214fafb8abc2112d7c2141d26a513181211026e00323cb6d345",
       "violationCount": 102
     },
     {
@@ -307,14 +307,14 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_step_viewer.dart",
-      "sourceDigestSha256": "e3ddcd1ff8769bd6d86b8c1df1a3f305b3355070b04e91a8e6b737c773903fa9",
-      "violationDigestSha256": "43d87faf4c5b4dd4214a0417574e0cc946698874603fdd1b2f82d1a7a04ca3d7",
+      "sourceDigestSha256": "7a99a462899cccf566b97054f2299366f6018609b005235cb0c16aabbcb8c48c",
+      "violationDigestSha256": "de7970e951a0e63a4f2140beac2a290f07c1ee0a6686bea507786288d7778e2e",
       "violationCount": 6
     },
     {
       "path": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
-      "sourceDigestSha256": "0250fb55aed9b42fa76b639d6e140d45b85d09ba699e78a58d106673cbf9fc00",
-      "violationDigestSha256": "f4c912bf57aba43020fab0dee1ddf4a950ef8bbfd8886b9370c843add6b7aaf1",
+      "sourceDigestSha256": "386249746a832859bf4191b9aca0c145420f7f7e55af84e77925c842f0b66b44",
+      "violationDigestSha256": "38c29fd35ac888e05ee5c06d3d94aa0f0126c6d8277177ee4db8edb502263edc",
       "violationCount": 2
     },
     {
@@ -343,9 +343,9 @@
     },
     {
       "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
-      "sourceDigestSha256": "689f77490a8e21509c4c2776aa34c93dd24c10d95088d9c807970c6edbccde69",
-      "violationDigestSha256": "51be9a20a3cfc0ca173f74141646ea2d89cc2acd9fcf2f313478fe52efad04ef",
-      "violationCount": 49
+      "sourceDigestSha256": "2ebe077cdaac593878382fa1087f5bb3c21d804778e2254e159cc8d3f8f51305",
+      "violationDigestSha256": "023feea63e9432123ff1af24df9231acb70601292399708cc94ffa5a9f97721f",
+      "violationCount": 51
     },
     {
       "path": "lib/presentation/widgets/before_after_comparison.dart",
@@ -355,8 +355,8 @@
     },
     {
       "path": "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-      "sourceDigestSha256": "539b546b9108c713bddf1b0956d5624be637f18625ff5f75f54d4517447c5c0e",
-      "violationDigestSha256": "167ca10a661cf628a75a9d8f6afb04228c7a4e56214b8f836b0ff7fd66b3bd36",
+      "sourceDigestSha256": "7fbbaf40bb014a62f65327a76aa0f4b4cf952c7dafad271f08246ff009071da3",
+      "violationDigestSha256": "c9de7c5a8946502b1ab92b2732f7ec0348e18908c3ce5975acb8cf6c38b6bbd9",
       "violationCount": 12
     },
     {
@@ -373,8 +373,8 @@
     },
     {
       "path": "lib/presentation/widgets/common/simulation_result_card.dart",
-      "sourceDigestSha256": "1d1d0b139f1829983a157699b7aeda489565601655842b7f1f3ff51d88f11aa0",
-      "violationDigestSha256": "e46b84897112b6f15928e3348f86007623db9b9ae553590c6426ca151c05f53d",
+      "sourceDigestSha256": "a7eb84b0df33e781be6799722e375ac3ae284eb75ed67a21763fa0788ad6336f",
+      "violationDigestSha256": "408efa0a282be9484d6fd8a81bf2c91ab9b6ed160ba64276de8af8bbb33949cd",
       "violationCount": 3
     },
     {
@@ -385,14 +385,14 @@
     },
     {
       "path": "lib/presentation/widgets/derivation_tree_view.dart",
-      "sourceDigestSha256": "57a55bce5d545a94fa44bb5c1c9070803e662b53498f093b5214cfb1bc67b5cf",
-      "violationDigestSha256": "0f11dc813f179fdac5d584b6add45ada9613fda68421dc6c6698dbdd308ff8bf",
+      "sourceDigestSha256": "3c087edea5fec92fbc6680eb6f63929194dd756eb98f0b537fbf95943e23f1af",
+      "violationDigestSha256": "e91b42e3502df339d11d671aadc1a8c8bf39d63ca2414657f29f8db9bac068b0",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/widgets/export/svg_exporter.dart",
-      "sourceDigestSha256": "ccf349cf47926bb29dfc7c0ab1a7a6d2a4561fbbcafde79676065c5a690b5f7d",
-      "violationDigestSha256": "a609fbd25235cfc0b851970a14d919ce729358049d1df494cbcfeb7a3b9ff1b4",
+      "sourceDigestSha256": "0ee020c242e8860b0f5598bbbf0d1ed91ea8f7d94f80936c3ce70cb7360ccae6",
+      "violationDigestSha256": "76501973d95fdffac13897ed56a02b36f17e78163cdcce1700d3e2b2a1e05e07",
       "violationCount": 50
     },
     {
@@ -421,50 +421,50 @@
     },
     {
       "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
-      "sourceDigestSha256": "918e4dc8cf827a10cecebb98ac5a4c685b407063f149165e1fd078b81b8cf348",
-      "violationDigestSha256": "aedeee36cfbd7e17f89d62730c9f506b2ec90af0ccd58d4090742236bd99f221",
+      "sourceDigestSha256": "9334e152fa8815c93f0f40f21e6baa5ffbe03cd3e739c9cbe7567471f4a129ea",
+      "violationDigestSha256": "f2ed2f90d2de998aa4817cde8d6c074bda58c4c5509f778ba068dab50e1ee81a",
       "violationCount": 37
     },
     {
       "path": "lib/presentation/widgets/fa_to_regex_requirement_editor.dart",
-      "sourceDigestSha256": "7cbf242d524f898faebe370355c45a4e0ca983c6d4f003c42a5566c005f3a7ef",
-      "violationDigestSha256": "158df937b985a9c6345423916265ba9d7878bf4eb42c53633b20030efcb75da6",
+      "sourceDigestSha256": "d71a59cff5ad5d19407e29691a7aa7245cab31ab52fa410223fbf21599555e43",
+      "violationDigestSha256": "826e55758f6a6ee3a4129ef4d3053c1f865f85758e81cbbec551ab4ec7c62995",
       "violationCount": 27
     },
     {
       "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
-      "sourceDigestSha256": "ecce644028e6c365f8a88ae30940fa9a7fe1655fc90fd44ac9fb29ffe16e186b",
-      "violationDigestSha256": "594ee2dd6d74041e7dce614c73c291e21033b9ad3be69d8aa8370068b345d4c3",
+      "sourceDigestSha256": "6502778ae1b9edfb13f30cf8ed8d613abd9a42a3764faf13c196454b55f2e396",
+      "violationDigestSha256": "a123d1f93b039129df356c0209e0ebbed89157fef99931ec6f588c8411936609",
       "violationCount": 4
     },
     {
       "path": "lib/presentation/widgets/grammar_algorithm_panel.dart",
-      "sourceDigestSha256": "aae339d2e9bdeab99290fd06c9836af271581144d31f61b21677fe421f6c6eff",
-      "violationDigestSha256": "13216f1e5883489d7799c36a7d12dea27f76a33156fbb94f3346f3ec22c963c2",
+      "sourceDigestSha256": "c23eb3c0b953be0263c96add4d95dbb80f1e30fbb1236199e2f971c47d07388f",
+      "violationDigestSha256": "fa5a83a049f3e95a475a38db0f329456e8352f86df6b9c2c4c2030053e61e8fc",
       "violationCount": 28
     },
     {
       "path": "lib/presentation/widgets/grammar_editor.dart",
-      "sourceDigestSha256": "4a60311ff0a742f4fc096dbd3dc1d548778dfe7ebf195a782af8b6e27533a310",
-      "violationDigestSha256": "833e0a9d707d6328a69d0929d2251efacbc96f7059aca9effcea33152c264004",
-      "violationCount": 10
+      "sourceDigestSha256": "a0dbef910e88220ce1587f86e621de18de55ea1805f4260457272966af5c6432",
+      "violationDigestSha256": "7a8549d5f59242583adb2bc0ee997e7777a5a8dbf65bb38ede2e9593f2efa8ff",
+      "violationCount": 2
     },
     {
       "path": "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-      "sourceDigestSha256": "52762a955292bc4833338b56e95f60f176fce900f2522dd7996696938aa10b45",
-      "violationDigestSha256": "6f8e6bfd59e4025e4905ec6e3e8eee564b22d9058a38186f57e8180ed3860526",
+      "sourceDigestSha256": "f8951615a0fca4c6965cbd2a4665a9d4d5b2e69f8a0753ad4bce4f48bfb197f7",
+      "violationDigestSha256": "8b56a515c12a98ada16b8cdff746c3ae426d6c2797b8b78e1933b83ea001f4f7",
       "violationCount": 11
     },
     {
       "path": "lib/presentation/widgets/grammar_simulation_panel.dart",
-      "sourceDigestSha256": "1e14951411089e28bf9c331cdac2a408a2a524b57eb92aee5e15a1828763ba15",
-      "violationDigestSha256": "612215c8a3962ad4a3c099d9a3539f4ddb520c59d75432715827cd449d1e19b3",
+      "sourceDigestSha256": "7c5e7d3ff89de94490cc93798aff5393303eb4ddc9b08944d3306b9bcef8ab05",
+      "violationDigestSha256": "cd9fa2815a251c5028c0e3bd59df481b56148a2a25bf5ce2dc8ef4e1bea256f4",
       "violationCount": 15
     },
     {
       "path": "lib/presentation/widgets/grammar_transformation_history.dart",
-      "sourceDigestSha256": "0d717ca44ff8d70a77ce42e793f9736739a709ec69e3d77130dc314423bace80",
-      "violationDigestSha256": "b66c69493cbbb37a3f38dc724e56bd248e15a22011f380fd5ac859a0a171b9c6",
+      "sourceDigestSha256": "b4355201dbef9103ef42e66e0958d49789964aefa92ffd35c9b3f14135171817",
+      "violationDigestSha256": "2638dadbba83667fb0911cb02717f4f11cf3101514729d91ea74cec5b42341eb",
       "violationCount": 2
     },
     {
@@ -487,14 +487,14 @@
     },
     {
       "path": "lib/presentation/widgets/lr1_teaching_workspace.dart",
-      "sourceDigestSha256": "114f20292754c76c0433c2218b914116f0e37db60dd61ed2a10329be6d370d2b",
-      "violationDigestSha256": "a476fb8a24f41e80e37f4238792e55c11a8a40c0c4a3708544a9782a0be8c24c",
+      "sourceDigestSha256": "0ea356d2abef2bafed9a5e40dfe243dfdb09bb587f1547749c048f30cf518728",
+      "violationDigestSha256": "5dc71bc19706a723423ff4adde49f217c3a6a4be62179584520de1778ff1b0c3",
       "violationCount": 14
     },
     {
       "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
-      "sourceDigestSha256": "f3af60379ee4df8bb683f1462bb81110f17bebb930f451541b255171a2897b48",
-      "violationDigestSha256": "bcff69df7ce483a44156c93fb18187cab633654255fd536e89afdc798f3ce54a",
+      "sourceDigestSha256": "484ca78fd1753640cc44a55ca43965cc8d01817eff7c2239e6ec115d43093d32",
+      "violationDigestSha256": "1481f21481bfba603eced169d554f0077a70cf04c9d061b32e69a0f350f03139",
       "violationCount": 5
     },
     {
@@ -517,20 +517,20 @@
     },
     {
       "path": "lib/presentation/widgets/pda/stack_operation_preview.dart",
-      "sourceDigestSha256": "3f1b7fd6dc83abbdbc975372e4e09e2d7636295c4cdabae37f426aeca7d5335d",
-      "violationDigestSha256": "715ddbf8717013021a88b5d83df7ae9c4d00bf1dedf930d41ad9bb92f7b03625",
+      "sourceDigestSha256": "2e83afc8e5d68a5e5bf614969cf302fce5da1c0f0026a5e57a821f676e269aa4",
+      "violationDigestSha256": "ad098eaaa33d2423ddceece2be346342da7a18c9f15fac1e2d502d9b0bed2684",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/widgets/pda_algorithm_panel.dart",
-      "sourceDigestSha256": "7d2f57e32b8d5ef931a147d3681aee22d46a96df91cc9cbcb1ed7c2a498456c5",
-      "violationDigestSha256": "df7c58f3d85018f31558fac73c70729cf5403f59d670f01ee5b9343f4e391a93",
+      "sourceDigestSha256": "71e7726519f689e7eb8644953e66e1c04affa659bb0bfadf95093289d8a27252",
+      "violationDigestSha256": "14fe3235fe87279409a9725701ae3ed95d5abcf718fb6a200f5062b63cdcf2fc",
       "violationCount": 15
     },
     {
       "path": "lib/presentation/widgets/pda_simulation_panel.dart",
-      "sourceDigestSha256": "6b3cecc49d31218aa369b2df4352bdcbb60faae1fe1e50d187a346f7a278985c",
-      "violationDigestSha256": "2b3c5e3cef45cc9183c5b9a2d217477858682ac6694404aa555e612b0d7ca7fc",
+      "sourceDigestSha256": "18c3242dfd307028adf17f651b5a957fc290fe294b89a0f1fd4ae1beb82deb5a",
+      "violationDigestSha256": "6cc82b7e02a71741551b6f9c9a9475463e0c2488aa8e1818da04a64c3f38adfd",
       "violationCount": 14
     },
     {
@@ -541,8 +541,8 @@
     },
     {
       "path": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
-      "sourceDigestSha256": "687fd53d7cae878637b93fe243f2edb8e90b67e4d718e1cd0b566adcb9326d30",
-      "violationDigestSha256": "987e093fbf6843f01625bb41e41b7e955c0f6059e5be4f4d3383b7afbdb8de10",
+      "sourceDigestSha256": "0dc149358df09c88d14e0cb491d30a07353b6d8d7cba623ba7ae24ab298f46b0",
+      "violationDigestSha256": "8f9b69666c6c640f90bfbb1d4fa0871d027bea374ae87a8c316efbd79d9d5b04",
       "violationCount": 25
     },
     {
@@ -583,8 +583,8 @@
     },
     {
       "path": "lib/presentation/widgets/tm_algorithm_reachability_controls.dart",
-      "sourceDigestSha256": "131f6811baa8bcebe77acb039458cf1286d3439d5d2e258a2072724491a0719a",
-      "violationDigestSha256": "aa9fee96f6639268c94b8010a94abb322740a02f5ebb402f9351a5530090903c",
+      "sourceDigestSha256": "5aebd6837c64f9d433e8b8d9d50f66314c1e28a8d9ced8dde6f7f7800750316d",
+      "violationDigestSha256": "2af1bce7f45b78bfaf647dba4e4cf51b1d2292658b330ced21299e1ead8682d0",
       "violationCount": 1
     },
     {
@@ -601,44 +601,44 @@
     },
     {
       "path": "lib/presentation/widgets/tm_algorithm_time_controls.dart",
-      "sourceDigestSha256": "cd83b8857675e43568a73dd5fca7ca4b01b2773f22f6526afb32beff5e774ae4",
-      "violationDigestSha256": "dc39769de5e568141486804e5b4cf1cc530f7e413637bd3d7d9092faabd9a758",
+      "sourceDigestSha256": "20ce2d2cd7e761f2cbf8c20921c42ef3506bb71c5c607c3d3033e3d96d9c1721",
+      "violationDigestSha256": "ae7b2e85c87c3eb82e713c13c5200e44663636a787f64521e2540a53f90eed90",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/widgets/tm_language_result_view.dart",
-      "sourceDigestSha256": "92522effc39bfa73a9ae245d2454d6bf7252f173bd66f5ad393a9db7625c8829",
-      "violationDigestSha256": "b18942e11d05c179e16deceeed5395692209f64476c209e9795b201f689a2747",
+      "sourceDigestSha256": "5635e0fdcb611c4b2db103ef3ced70e143113813281a758ea918d3a572927abc",
+      "violationDigestSha256": "8d94f1740675e6c471067edf03c86e96b17545b291eb7d81d0d725bc4a2fccb0",
       "violationCount": 25
     },
     {
       "path": "lib/presentation/widgets/tm_reachability_result_view.dart",
-      "sourceDigestSha256": "2b370715d6bb51e85368c2951fa5ab64a8d079f94100c2fd534716b826f0e709",
-      "violationDigestSha256": "8ff25dd0192b2eb80291094000f62ebdfc44d7440ca75f95efdbcd7816fe49b8",
+      "sourceDigestSha256": "4d528219590ae5ed174f1c5202c3abdd01fa1005d58c89d100904b7c0258f4af",
+      "violationDigestSha256": "bd9e15f8e876f06abd74f1c391c2a2263b2559ede5856543c0aa7ae758c2629d",
       "violationCount": 22
     },
     {
       "path": "lib/presentation/widgets/tm_simulation_panel.dart",
-      "sourceDigestSha256": "f0b027b1a222460b0920330a5c121304cd5ed21eaceabf5ee9ab335e80b31e8d",
-      "violationDigestSha256": "60e253e24e394d0916e72abd0dafadfb4d2a62252dc1fc166a8ed26faba2568b",
+      "sourceDigestSha256": "3a703c7430aa08b455eb8fb080bdcae8f26ededa45d154ca3179fc32cd430146",
+      "violationDigestSha256": "e37b33459951cbbc4e406272c85ae0f5d70cf1f7538ca8e8f5fbff3443291c4c",
       "violationCount": 27
     },
     {
       "path": "lib/presentation/widgets/tm_space_result_view.dart",
-      "sourceDigestSha256": "911d32ad91c85c37e47a7b43837f92b252bf793c104f459da5b8fc08505bee3c",
-      "violationDigestSha256": "6d8a39dde56ec7a14fe90f0c65c098803fbe7c09d2c14aa060f7687fc934896e",
+      "sourceDigestSha256": "f12c8504afeeefd8707e7689f7c4a3926c942a5b20d720a469be6a81be5b7e1a",
+      "violationDigestSha256": "8f76f448b162a1f6e82cde47254aa8bb79c9735cf84b48e32ae419da961fdf34",
       "violationCount": 20
     },
     {
       "path": "lib/presentation/widgets/tm_termination_result_view.dart",
-      "sourceDigestSha256": "74476134622a4c1dbd2fc9fbaf1ec622742696d11822e4824e66f568f47635ec",
-      "violationDigestSha256": "05c3f65838d3c224c5eaef8e3c3b1b2faeff8784ab197123f6610c749174fe7a",
+      "sourceDigestSha256": "ae0eaeb25acaf97f1f0946b6f76e05b2fa9157f541d19182cc1b8535ce2a69d3",
+      "violationDigestSha256": "87ce6ff8e6ad209be941b2126fe1027694d79c2de72a69bfdcb5adc0ada74d2b",
       "violationCount": 21
     },
     {
       "path": "lib/presentation/widgets/tm_time_result_view.dart",
-      "sourceDigestSha256": "c24cc340063c0fd942a9d59518bc7bfed9703452ba43344bda2973b8cc67873b",
-      "violationDigestSha256": "9e08334e1e18b62609d7414de34df7928423d77c069893c676503b0d0a21d1da",
+      "sourceDigestSha256": "9e9024094ddb452b363ad950ac75187018cef0acdda0e87ee1528901b03e23eb",
+      "violationDigestSha256": "9e8792c5894fc5909357277d102c16828f22004e6a1080ab42680d2c68ceffb4",
       "violationCount": 25
     },
     {
@@ -655,14 +655,14 @@
     },
     {
       "path": "lib/presentation/widgets/trace_viewers/fsa_trace_viewer.dart",
-      "sourceDigestSha256": "dfe2b14ae53ac12c4525637bd68b3315fb32cc9a1d5c101501433838e47484cb",
-      "violationDigestSha256": "87db1036f50f7cc79b450618ebedebc90e7c4d26e72cabb571282899c0aa73f1",
+      "sourceDigestSha256": "fdd24f89e8e1e8cc40951205a74abb59a3645ea5735ef2bd84c62e45ddc34fdc",
+      "violationDigestSha256": "69993d0d5542408aa198f6c73600618b0d162968be8b8a9b98ca474a85a957e8",
       "violationCount": 2
     },
     {
       "path": "lib/presentation/widgets/trace_viewers/pda_trace_viewer.dart",
-      "sourceDigestSha256": "36b78630592ea6b35c0f10df147d2802093ef25f33cf02edbb5b900987763437",
-      "violationDigestSha256": "4a460ce26eb6d885ac12b1bedb2847b3202af5ef12aa846e1cec9cbab2e43ef6",
+      "sourceDigestSha256": "60968752cca0dae79850678865378388bd6d6e11cbf8178ded1f8f0db97dd7a8",
+      "violationDigestSha256": "9cc5d3d895bc7f912758d98ae7e61bdbcddb93b86f4648c5ae0c493ae69db81f",
       "violationCount": 3
     },
     {
@@ -679,8 +679,8 @@
     },
     {
       "path": "lib/presentation/widgets/user_derivation_workspace.dart",
-      "sourceDigestSha256": "a1221a848e9d8ea835ad029ba2faa376e4c258d2c3b8622df97655a1803561a2",
-      "violationDigestSha256": "6a25e9c45e8d955957b86ff2e4f7d1e59438a06620c2cb9326a2aa026cd5c43a",
+      "sourceDigestSha256": "fe26737dae91b7858cb63117684389598f582e8218ddae4335e8f3ab73d24067",
+      "violationDigestSha256": "a12042e0812c00aee20078018a2de84ce55e333d36fe74ee6e34a0ee9f8affb7",
       "violationCount": 26
     },
     {

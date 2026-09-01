@@ -908,8 +908,8 @@ class _StubFileOperationsService extends FileOperationsService {
   _StubFileOperationsService({
     Queue<Result<String>>? exportResponses,
     Queue<Result<FSA>>? loadAutomatonResponses,
-  })  : exportResponses = exportResponses ?? Queue<Result<String>>(),
-        loadAutomatonResponses = loadAutomatonResponses ?? Queue<Result<FSA>>();
+  }) : exportResponses = exportResponses ?? Queue<Result<String>>(),
+       loadAutomatonResponses = loadAutomatonResponses ?? Queue<Result<FSA>>();
 
   final Queue<Result<String>> exportResponses;
   final Queue<Result<FSA>> loadAutomatonResponses;
@@ -923,6 +923,7 @@ class _StubFileOperationsService extends FileOperationsService {
     dynamic options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     dynamic annotations,
   }) async {
@@ -945,8 +946,8 @@ class _StubFileOperationsService extends FileOperationsService {
 
 class _FakeFilePicker extends FilePicker {
   _FakeFilePicker()
-      : _pickResults = Queue<FilePickerResult?>(),
-        _saveResults = Queue<String?>();
+    : _pickResults = Queue<FilePickerResult?>(),
+      _saveResults = Queue<String?>();
 
   final Queue<FilePickerResult?> _pickResults;
   final Queue<String?> _saveResults;

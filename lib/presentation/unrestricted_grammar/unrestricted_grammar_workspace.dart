@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/grammar/phrase_structure/phrase_structure.dart';
+import '../empty_string_notation.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/user_derivation_workspace.dart';
@@ -570,7 +572,7 @@ final class _UnrestrictedGrammarWorkspaceState
 
 const _editPanelId = 'unrestricted-edit';
 
-final class _ProductionsSurface extends StatelessWidget {
+final class _ProductionsSurface extends StatefulWidget {
   const _ProductionsSurface({
     required this.controller,
     required this.strings,
@@ -584,10 +586,30 @@ final class _ProductionsSurface extends StatelessWidget {
   final ValueChanged<PhraseStructureProduction> onEditProduction;
 
   @override
+  State<_ProductionsSurface> createState() => _ProductionsSurfaceState();
+}
+
+final class _ProductionsSurfaceState extends State<_ProductionsSurface> {
+  final Map<String, FocusNode> _reorderFocusNodes = {};
+  String? _focusedProductionId;
+  String? _draggingProductionId;
+
+  @override
+  void dispose() {
+    for (final focusNode in _reorderFocusNodes.values) {
+      focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: controller,
+    listenable: widget.controller,
     builder: (context, _) {
-      final report = PhraseGrammarClassifier.classify(controller.grammar);
+      final productions = widget.controller.grammar.productions;
+      final report = PhraseGrammarClassifier.classify(
+        widget.controller.grammar,
+      );
       final offendingProductionIds = _offendingProductionIds(report);
       return DecoratedBox(
         decoration: BoxDecoration(
@@ -611,45 +633,90 @@ final class _ProductionsSurface extends StatelessWidget {
                         child: Semantics(
                           header: true,
                           child: Text(
-                            strings.editorTitle,
+                            widget.strings.editorTitle,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
                       ),
                       IconButton(
                         key: const ValueKey('unrestricted-edit-grammar'),
-                        tooltip: strings.editGrammar,
-                        onPressed: onEditGrammar,
+                        tooltip: widget.strings.editGrammar,
+                        onPressed: widget.onEditGrammar,
                         icon: const Icon(Icons.edit_outlined),
                       ),
                     ],
                   ),
                 ),
               ),
-              if (controller.grammar.productions.isEmpty)
+              if (productions.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(strings.noProductions),
+                      child: Text(widget.strings.noProductions),
                     ),
                   ),
                 )
               else
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-                  sliver: SliverList.builder(
-                    itemCount: controller.grammar.productions.length,
+                  sliver: SliverReorderableList(
+                    itemCount: productions.length,
+                    // Flutter 3.32 compatibility.
+                    // ignore: deprecated_member_use
+                    onReorder: _reorderProduction,
+                    onReorderStart: (index) {
+                      setState(
+                        () => _draggingProductionId = productions[index].id,
+                      );
+                    },
+                    onReorderEnd: (_) {
+                      if (mounted) {
+                        setState(() => _draggingProductionId = null);
+                      }
+                    },
+                    proxyDecorator: (child, index, animation) => Material(
+                      color: Colors.transparent,
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(8),
+                      child: child,
+                    ),
                     itemBuilder: (context, index) {
-                      final production = controller.grammar.productions[index];
-                      return _ProductionTile(
-                        production: production,
-                        strings: strings,
-                        offending: offendingProductionIds.contains(
-                          production.id,
+                      final production = productions[index];
+                      return KeyedSubtree(
+                        key: ValueKey(
+                          'unrestricted-production-row-${production.id}',
                         ),
-                        onEdit: () => onEditProduction(production),
+                        child: _ProductionTile(
+                          production: production,
+                          strings: widget.strings,
+                          offending: offendingProductionIds.contains(
+                            production.id,
+                          ),
+                          dragHandle: _buildDragHandle(
+                            production,
+                            index,
+                            productions.length,
+                          ),
+                          onEdit: () => widget.onEditProduction(production),
+                          onMoveUp: index > 0
+                              ? () => _moveProduction(
+                                  production,
+                                  index,
+                                  index - 1,
+                                  productions.length,
+                                )
+                              : null,
+                          onMoveDown: index < productions.length - 1
+                              ? () => _moveProduction(
+                                  production,
+                                  index,
+                                  index + 1,
+                                  productions.length,
+                                )
+                              : null,
+                        ),
                       );
                     },
                   ),
@@ -660,6 +727,102 @@ final class _ProductionsSurface extends StatelessWidget {
       );
     },
   );
+
+  void _reorderProduction(int oldIndex, int newIndex) {
+    final productions = widget.controller.grammar.productions;
+    if (oldIndex < 0 || oldIndex >= productions.length) return;
+    final adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+    _moveProduction(
+      productions[oldIndex],
+      oldIndex,
+      adjustedNewIndex,
+      productions.length,
+    );
+  }
+
+  void _moveProduction(
+    PhraseStructureProduction production,
+    int oldIndex,
+    int newIndex,
+    int total,
+  ) {
+    final changed = widget.controller.reorderProduction(oldIndex, newIndex);
+    if (!changed || !mounted) return;
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      widget.strings.productionMoved(production.id, newIndex + 1, total),
+      Directionality.of(context),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNodeFor(production.id).requestFocus();
+    });
+  }
+
+  FocusNode _focusNodeFor(String productionId) =>
+      _reorderFocusNodes.putIfAbsent(
+        productionId,
+        () => FocusNode(debugLabel: 'Reorder production $productionId'),
+      );
+
+  Widget _buildDragHandle(
+    PhraseStructureProduction production,
+    int index,
+    int total,
+  ) {
+    final label = widget.strings.reorderProduction(production.id);
+    final position = widget.strings.productionPosition(index + 1, total);
+    final focusNode = _focusNodeFor(production.id);
+    final focused = _focusedProductionId == production.id;
+    final colors = Theme.of(context).colorScheme;
+    return ReorderableDragStartListener(
+      index: index,
+      child: Semantics(
+        key: ValueKey('unrestricted-production-handle-${production.id}'),
+        container: true,
+        focusable: true,
+        focused: focused,
+        label: label,
+        value: position,
+        excludeSemantics: true,
+        child: Tooltip(
+          message: label,
+          child: Focus(
+            focusNode: focusNode,
+            onFocusChange: (hasFocus) {
+              if (!mounted) return;
+              setState(
+                () => _focusedProductionId = hasFocus ? production.id : null,
+              );
+            },
+            child: Listener(
+              onPointerDown: (_) => focusNode.requestFocus(),
+              child: MouseRegion(
+                cursor: _draggingProductionId == production.id
+                    ? SystemMouseCursors.grabbing
+                    : SystemMouseCursors.grab,
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: focused
+                          ? Border.all(color: colors.primary, width: 2)
+                          : null,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 final class _GrammarEditorPane extends StatelessWidget {
@@ -861,15 +1024,21 @@ final class _ProductionTile extends StatelessWidget {
     required this.production,
     required this.strings,
     required this.offending,
+    this.dragHandle,
     this.onEdit,
     this.onRemove,
+    this.onMoveUp,
+    this.onMoveDown,
   });
 
   final PhraseStructureProduction production;
   final UnrestrictedGrammarWorkspaceStrings strings;
   final bool offending;
+  final Widget? dragHandle;
   final VoidCallback? onEdit;
   final VoidCallback? onRemove;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -884,9 +1053,10 @@ final class _ProductionTile extends StatelessWidget {
             ? Theme.of(context).colorScheme.errorContainer
             : null,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        leading: dragHandle,
         title: Text(
-          '${_formatSequence(production.left)} → '
-          '${_formatSequence(production.right)}',
+          '${_formatSequence(production.left, EmptyStringNotation.symbolOf(context))} → '
+          '${_formatSequence(production.right, EmptyStringNotation.symbolOf(context))}',
         ),
         subtitle: Text(production.id),
         trailing: Row(
@@ -898,6 +1068,41 @@ final class _ProductionTile extends StatelessWidget {
                 tooltip: strings.editProduction,
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined),
+              ),
+            if (onMoveUp != null || onMoveDown != null)
+              PopupMenuButton<String>(
+                tooltip: strings.productionActions,
+                onSelected: (value) {
+                  if (value == 'move-up') {
+                    onMoveUp?.call();
+                  } else if (value == 'move-down') {
+                    onMoveDown?.call();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'move-up',
+                    enabled: onMoveUp != null,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.arrow_upward, size: 18),
+                        const SizedBox(width: 8),
+                        Text(strings.moveUp),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'move-down',
+                    enabled: onMoveDown != null,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.arrow_downward, size: 18),
+                        const SizedBox(width: 8),
+                        Text(strings.moveDown),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             if (onRemove != null)
               IconButton(
@@ -1129,8 +1334,8 @@ final class _DerivationPane extends StatelessWidget {
                 Text(
                   '${entry.occurrence.productionId} @ '
                   '${entry.occurrence.startIndex}: '
-                  '${_formatSequence(entry.before)} → '
-                  '${_formatSequence(entry.after)}',
+                  '${_formatSequence(entry.before, EmptyStringNotation.symbolOf(context))} → '
+                  '${_formatSequence(entry.after, EmptyStringNotation.symbolOf(context))}',
                 ),
           ],
           if (outcome case final DerivationInvalid invalid)
@@ -1194,8 +1399,11 @@ String _encodeTaggedSequence(GrammarSymbolSequence sequence) => jsonEncode(
       .toList(growable: false),
 );
 
-String _formatSequence(GrammarSymbolSequence sequence) => sequence.isEmpty
-    ? 'ε'
+String _formatSequence(
+  GrammarSymbolSequence sequence,
+  String emptyStringSymbol,
+) => sequence.isEmpty
+    ? emptyStringSymbol
     : sequence.symbols
           .map(
             (symbol) => '${symbol.isNonterminal ? 'n' : 't'}:${symbol.value}',

@@ -611,10 +611,25 @@ class CFGToolkit {
       cleanedProds.add(p);
     }
 
+    // Different substitution paths can produce the same rule with fresh IDs.
+    // Keep one stable representative so structural classifiers do not reject
+    // an otherwise valid GNF grammar for duplicate production shapes.
+    final uniqueShapes = <String>{};
+    final uniqueProds = <Production>{};
+    final orderedCleanedProds = cleanedProds.toList()
+      ..sort((left, right) => left.id.compareTo(right.id));
+    for (final production in orderedCleanedProds) {
+      final shape =
+          '${production.leftSide.join('\u0000')}\u0001'
+          '${production.rightSide.join('\u0000')}\u0001'
+          '${production.isLambda}';
+      if (uniqueShapes.add(shape)) uniqueProds.add(production);
+    }
+
     // Ensure terminals appearing at position 0 after inlining are in the
     // terminal set (they should already be from the original grammar).
     // Also ensure all tail nonterminals are in the nonterminals set.
-    return g.copyWith(nonterminals: nonterminals, productions: cleanedProds);
+    return g.copyWith(nonterminals: nonterminals, productions: uniqueProds);
   }
 }
 

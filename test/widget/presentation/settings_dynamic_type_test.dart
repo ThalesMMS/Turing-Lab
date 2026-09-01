@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/presentation/pages/settings_page.dart';
 import 'package:turing_lab/presentation/widgets/switch_setting_tile.dart';
 
@@ -44,8 +45,10 @@ Future<void> _pumpSettingsPage(
   required double width,
   required double textScale,
 }) async {
+  final preferences = await SharedPreferences.getInstance();
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -75,8 +78,9 @@ void main() {
       await _pumpSwitchSettingTile(tester, width: 420, textScale: 1);
 
       final switchRect = tester.getRect(find.byType(Switch));
-      final subtitleRect =
-          tester.getRect(find.text('Display grid lines on canvas'));
+      final subtitleRect = tester.getRect(
+        find.text('Display grid lines on canvas'),
+      );
 
       expect(tester.takeException(), isNull);
       expect(switchRect.left, greaterThan(subtitleRect.right));
@@ -88,8 +92,9 @@ void main() {
       await _pumpSwitchSettingTile(tester, width: 420, textScale: 1.8);
 
       final switchRect = tester.getRect(find.byType(Switch));
-      final subtitleRect =
-          tester.getRect(find.text('Display grid lines on canvas'));
+      final subtitleRect = tester.getRect(
+        find.text('Display grid lines on canvas'),
+      );
 
       expect(tester.takeException(), isNull);
       expect(switchRect.top, greaterThan(subtitleRect.bottom));
@@ -98,22 +103,22 @@ void main() {
 
   group('SettingsPage', () {
     testWidgets(
-        'lays out slider controls without overflow at larger text scales', (
-      tester,
-    ) async {
-      await _pumpSettingsPage(tester, width: 360, textScale: 2);
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('settings_font_size_slider')),
-      );
-      await tester.pumpAndSettle();
+      'lays out slider controls without overflow at larger text scales',
+      (tester) async {
+        await _pumpSettingsPage(tester, width: 360, textScale: 2);
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('settings_font_size_slider')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('Text size in the interface'), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey('settings_font_size_slider')),
-        findsOneWidget,
-      );
-      expect(find.text('Save Settings'), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.text('Text size in the interface'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('settings_font_size_slider')),
+          findsOneWidget,
+        );
+        expect(find.text('Save Settings'), findsOneWidget);
+      },
+    );
   });
 }

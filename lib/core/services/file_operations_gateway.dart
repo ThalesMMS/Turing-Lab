@@ -16,6 +16,7 @@ abstract interface class FileOperationsGateway {
   });
   Future<Result<Uint8List>> exportAutomatonToPngBytes(
     FSA automaton, {
+    String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -31,6 +32,7 @@ abstract interface class FileOperationsGateway {
     String filePath, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -39,6 +41,7 @@ abstract interface class FileOperationsGateway {
     String filePath, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -47,6 +50,7 @@ abstract interface class FileOperationsGateway {
     String filePath, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -55,6 +59,7 @@ abstract interface class FileOperationsGateway {
     String filePath, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -65,6 +70,7 @@ abstract interface class FileOperationsGateway {
     FSA automaton, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -72,6 +78,7 @@ abstract interface class FileOperationsGateway {
     Grammar grammar, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -79,6 +86,7 @@ abstract interface class FileOperationsGateway {
     PDA pda, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });
@@ -86,6 +94,7 @@ abstract interface class FileOperationsGateway {
     TuringMachineEntity machine, {
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   });

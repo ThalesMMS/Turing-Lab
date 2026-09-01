@@ -34,6 +34,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import 'utils/platform_file_loader.dart';
 import 'error_banner.dart';
 import 'document_interoperability_binding.dart';
@@ -149,6 +150,8 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
   String get _svgEmptyAutomatonLabel => _l10n.svgNoStatesDefined;
 
   String get _svgTmLegendLabel => _l10n.svgTmLegend;
+
+  String get _emptyStringSymbol => EmptyStringNotation.symbolOf(context);
 
   FormalSystemRegistry get _registry =>
       widget.formalSystemRegistry ?? FormalSystemRegistry.defaultRegistry;

@@ -1,0 +1,1635 @@
+{
+  "schemaVersion": 1,
+  "scope": [
+    "lib/presentation/**/*.dart",
+    "lib/features/canvas/**/*.dart",
+    "lib/l10n/app_*.arb (generated localization files excluded)"
+  ],
+  "glyphTotals": {
+    "ε": 211,
+    "ϵ": 2,
+    "λ": 9
+  },
+  "records": [
+    {
+      "path": "lib/features/canvas/graphview/graphview_pda_mapper.dart",
+      "text": "/// Empty-string operations are represented as ε.",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canvas parsing or rendering boundary that recognizes empty transitions"
+    },
+    {
+      "path": "lib/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart",
+      "text": "label == 'λ' ||",
+      "glyphs": {
+        "λ": 1
+      },
+      "reason": "canvas parsing or rendering boundary that recognizes empty transitions"
+    },
+    {
+      "path": "lib/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart",
+      "text": "return label == 'ε' ||",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canvas parsing or rendering boundary that recognizes empty transitions"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"acceptsEpsilon\": \"Accepts ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonHasNoLambdaTransitions\": \"The current automaton does not contain ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonMustContainLambdaToRemove\": \"The current automaton must contain ε-transitions to remove them.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationComputedEpsilonClosureTitle\": \"Computed ε-closure\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationDfaRequired\": \"A DFA is required: the automaton must be deterministic and have no ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationEpsilonAfterConsuming\": \"After consuming \\\"{symbol}\\\", we also follow any ε-transitions (moves that consume no input).\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationEpsilonClosureBeforeReading\": \"Before reading input, an NFA may take ε-transitions (moves that consume no input).\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationEpsilonClosureExpanded\": \"The ε-closure expanded the active state set from {before} to {after}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationEpsilonClosureReached\": \"Starting from {initialState}, ε-transitions reach: {stateSet}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationExpandedViaEpsilonTitle\": \"Expanded via ε-transitions\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"automatonSimulationInitialEpsilonClosureDescription\": \"Initial ε-closure\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"binaryDfaRequiresDeterministic\": \"Binary DFA operations require a deterministic automaton without ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"complementRequiresDeterministic\": \"Complement is only available for deterministic automata without ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"concatenationOfFsasDescription\": \"Append another automaton language using ε-transitions\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"dfaOperationsEpsilonRemovalFailed\": \"Error removing ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"dfaOperationsEpsilonTransitionsNotAllowed\": \"The {context, select, dfa {DFA} complementDfa {DFA for complement} prefixClosure {DFA for prefix closure} suffixClosure {DFA for suffix closure} operandA {operand A} operandB {operand B} other {DFA}} cannot contain ε (epsilon) transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"emptyStringEpsilon\": \"ε (empty string)\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"emptyStringLambda\": \"λ (empty string)\",",
+      "glyphs": {
+        "λ": 1
+      },
+      "reason": "reviewed lambda identifier or genuine mathematical lambda reference"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"epsilonNfaHelpMessage\": \"Nondeterministic Finite Automaton with ε-transitions\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"exampleNfaLambdaAOrAb\": \"NFA-ε - A or AB\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"faToRegexAddFinalStateExplanation\": \"Adding the new final state {newState}. The original accepting states, {oldStates}, receive ε-transitions to it, leaving one accepting state with no outgoing transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"faToRegexAddInitialStateExplanation\": \"Adding the new initial state {newState}, with an ε-transition to the original initial state {oldState}. This leaves one initial state with no incoming transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"grammarStructuralProductionRhsEmpty\": \"Production {productionId} has an empty right-hand side; use ε or mark it as epsilon.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"hasEpsilonTransitions\": \"Has ε (epsilon) transitions\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"insertEpsilon\": \"Insert ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"lambdaMustBeOnlySymbol\": \"ε must be the only symbol on the right side\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"lambdaTransitionsPresent\": \"ε-transitions present: {count}\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"lambdaTransitionsRemoved\": \"ε-transitions removed successfully.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableExplanation\": \"The ε-closure of {reachableStates} is {epsilonClosure}; it {isNewState, select, true{creates a new} other{reuses an existing}} DFA state{containsAcceptingState, select, true{, which is accepting} other{}}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableStepTitle\": \"Close the reachable states under ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableTitle\": \"Compute ε-closure of reachable states\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureReached\": \"Reach {stateSet} through ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureReachedFromStates\": \"The ε-closure from {reachableStates} is {epsilonClosure}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepEpsilonTransitionsDoNotConsumeInput\": \"ε-transitions do not consume input.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureExplanation\": \"The ε-closure of {initialState} is {epsilonClosure}{containsAcceptingState, select, true{ and contains an accepting state} other{}}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureStepTitle\": \"Initial ε-closure\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureTitle\": \"Compute the initial ε-closure\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"nfaToDfaStepProcessSymbolExplanation\": \"From {currentStates}, reading {symbol} reaches {reachableStates} before ε-closure.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"operationRequiresDeterministicNoEpsilon\": \"This operation requires a deterministic automaton without ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaInputSymbolRequired\": \"Enter a symbol or enable ε-input\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaLambdaInput\": \"ε-input\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaLambdaPop\": \"ε-pop\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaLambdaPush\": \"ε-push\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaPopSymbolRequired\": \"Enter a symbol or enable ε-pop\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaPushSymbolRequired\": \"Enter a symbol or enable ε-push\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaSimulationEpsilonMove\": \"This is an ε-move.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pdaToCfgEpsilonPop\": \"PDA-to-CFG conversion requires every transition to pop exactly one stack symbol. Transition {transition} uses an ε-pop. Normalize the PDA before conversion.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"prefixClosureRequiresDeterministic\": \"Prefix closure is only available for deterministic automata without ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"pumpingChallenge1Proof4\": \"For any pumping length p, we can choose x = ε, y = a^k (1 ≤ k ≤ p), z = a^(n-k) for n ≥ k.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexSimplificationRuleName\": \"{rule, select, emptyUnion{Empty union (r|∅ → r)} emptyUnionLeft{Empty union on the left (∅|r → r)} emptySetConcatenation{Empty-set concatenation (r∅ → ∅)} emptySetConcatenationLeft{Empty-set concatenation on the left (∅r → ∅)} emptyStringConcatenation{Empty-string concatenation (rε → r)} emptyStringConcatenationLeft{Empty-string concatenation on the left (εr → r)} starIdempotence{Star idempotence (r** → r*)} emptySetStar{Empty-set star (∅* → ε)} emptyStringStar{Empty-string star (ε* → ε)} unionIdempotence{Union idempotence (r|r → r)} doubleStar{Double star ((r*)* → r*)} plusToStar{Plus to star (ε|rr* → r*)} plusToStarAlt{Alternative plus to star (ε|r*r → r*)} plusExpansion{Plus expansion (r+ → rr*)} optionalExpansion{Optional expansion (r? → ε|r)} optionalStarSimplification{Optional star ((ε|r)* → r*)} starConcatenationIdempotence{Star concatenation idempotence (r*r* → r*)} unionStarDistribution{Union-star distribution} redundantParentheses{Remove redundant parentheses} characterClassCreation{Create a character class} other{Unknown simplification rule}}\",",
+      "glyphs": {
+        "ε": 9
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaConcatenationExplanation\": \"Concatenating \\\"{firstFragment}\\\" and \\\"{secondFragment}\\\" {positionDescription}. Added ε-bridges: {transitions}. The resulting fragment starts at {startState} and accepts at {acceptStates}. Stack depth: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaKleeneStarExplanation\": \"Applying Kleene star to \\\"{fragment}\\\" {positionDescription}. The fragment now starts at {startState}, accepts at {acceptState}, and uses these ε-transitions: {transitions}. It accepts zero or more repetitions. Stack depth: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaOptionalExplanation\": \"Making \\\"{fragment}\\\" optional {positionDescription}. The fragment now starts at {startState}, accepts at {acceptState}, and uses these ε-transitions: {transitions}. It accepts zero or one occurrence. Stack depth: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaPlusExplanation\": \"Applying plus to \\\"{fragment}\\\" {positionDescription}. The fragment now starts at {startState}, accepts at {acceptState}, and uses these ε-transitions: {transitions}. It requires at least one repetition. Stack depth: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaStartExplanation\": \"Converting \\\"{regex}\\\" to an NFA with Thompson's construction. The algorithm creates one fragment for each subexpression, then combines the fragments with ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"regexToNfaUnionExplanation\": \"Creating a union for \\\"{pattern}\\\" {positionDescription}. Added start state {startState}, accept state {acceptState}, and ε-transitions: {transitions}. Either branch can be followed. Stack depth: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"removeLambdaTitle\": \"Remove ε-transitions\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"rightSideAtLeastOneSymbol\": \"Right side must contain at least one symbol (or ε)\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"rightSideHelper\": \"Separate alternatives with |. Use \\\\| for a literal pipe and ε for the empty string.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"rightSideHint\": \"e.g., aA, bB, ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"rightSideSingleLambda\": \"Right side can contain only one ε symbol\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"settingsEmptyStringNotationDescription\": \"Choose whether the interface shows the empty string and empty transitions as ε or λ.\",",
+      "glyphs": {
+        "ε": 1,
+        "λ": 1
+      },
+      "reason": "settings copy explicitly compares both supported conventions"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"simulationInputHint\": \"Leave blank for ε; whitespace is preserved\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"suffixClosureRequiresDeterministic\": \"Suffix closure is only available for deterministic automata without ε-transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"workspaceStatusLambdaTransitions\": \"ε-transitions present\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationComputedEpsilonClosureTitle\": {\"description\": \"Título da explicação de um passo de fecho ε de AFN.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationDfaRequired\": {\"description\": \"Mensagem de validação exibida quando a simulação de AFD recebe um autômato não determinístico ou com transições ε.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationEpsilonAfterConsuming\": {\"description\": \"Explicação do passo que descreve transições ε depois de um AFN consumir um símbolo.\", \"placeholders\": {\"symbol\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationEpsilonClosureBeforeReading\": {\"description\": \"Explicação do passo que descreve o fecho ε de AFN antes de consumir a entrada.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationEpsilonClosureExpanded\": {\"description\": \"Explicação do passo que compara os conjuntos de estados ativos de AFN antes e depois do fecho ε.\", \"placeholders\": {\"before\": {\"type\": \"String\"}, \"after\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationEpsilonClosureReached\": {\"description\": \"Explicação do passo que lista os estados alcançados por um fecho ε inicial.\", \"placeholders\": {\"initialState\": {\"type\": \"String\"}, \"stateSet\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationExpandedViaEpsilonTitle\": {\"description\": \"Título da explicação de um passo de expansão por fecho ε de AFN.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@automatonSimulationInitialEpsilonClosureDescription\": {\"description\": \"Descrição da raiz virtual de uma árvore de computação de AFN com fecho ε inicial.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepEpsilonClosureOfReachableExplanation\": {\"description\": \"Explicação do fecho-ε dos estados alcançáveis.\", \"placeholders\": {\"reachableStates\": {\"type\": \"String\"}, \"epsilonClosure\": {\"type\": \"String\"}, \"isNewState\": {\"type\": \"String\"}, \"containsAcceptingState\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepEpsilonClosureOfReachableStepTitle\": {\"description\": \"Título da etapa didática do fecho-ε alcançável.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepEpsilonClosureOfReachableTitle\": {\"description\": \"Título para fechar os estados alcançáveis do AFN por ε.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepEpsilonClosureReached\": {\"description\": \"Tópico que descreve estados alcançados por transições ε.\", \"placeholders\": {\"stateSet\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepEpsilonTransitionsDoNotConsumeInput\": {\"description\": \"Tópico que explica transições ε.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepInitialEpsilonClosureExplanation\": {\"description\": \"Explicação do fecho-ε inicial.\", \"placeholders\": {\"initialState\": {\"type\": \"String\"}, \"epsilonClosure\": {\"type\": \"String\"}, \"containsAcceptingState\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepInitialEpsilonClosureStepTitle\": {\"description\": \"Título da etapa didática do fecho-ε inicial.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepInitialEpsilonClosureTitle\": {\"description\": \"Título para calcular o fecho-ε inicial.\"},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"@nfaToDfaStepReachableBeforeEpsilonClosure\": {\"description\": \"Tópico que nomeia estados alcançáveis antes do fecho-ε.\", \"placeholders\": {\"stateSet\": {\"type\": \"String\"}}},",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"acceptsEpsilon\": \"Aceita ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonHasNoLambdaTransitions\": \"O autômato atual não contém transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonMustContainLambdaToRemove\": \"O autômato atual precisa conter transições ε para removê-las.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationComputedEpsilonClosureTitle\": \"Fecho ε calculado\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationDfaRequired\": \"É necessário um AFD: o autômato deve ser determinístico e não ter transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationEpsilonAfterConsuming\": \"Após consumir \\\"{symbol}\\\", também seguimos quaisquer transições ε (movimentos que não consomem entrada).\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationEpsilonClosureBeforeReading\": \"Antes de ler a entrada, um AFN pode fazer transições ε (movimentos que não consomem entrada).\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationEpsilonClosureExpanded\": \"O fecho ε expandiu o conjunto de estados ativos de {before} para {after}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationEpsilonClosureReached\": \"A partir de {initialState}, as transições ε alcançam: {stateSet}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationExpandedViaEpsilonTitle\": \"Expandido por transições ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"automatonSimulationInitialEpsilonClosureDescription\": \"Fecho ε inicial\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"binaryDfaRequiresDeterministic\": \"Operações binárias de AFD exigem um autômato determinístico sem transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"complementRequiresDeterministic\": \"O complemento só está disponível para autômatos determinísticos sem transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"concatenationOfFsasDescription\": \"Anexar a linguagem de outro autômato usando transições ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"dfaOperationsEpsilonRemovalFailed\": \"Erro ao remover transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"dfaOperationsEpsilonTransitionsNotAllowed\": \"O {context, select, dfa {AFD} complementDfa {AFD do complemento} prefixClosure {AFD do fecho por prefixos} suffixClosure {AFD do fecho por sufixos} operandA {operando A} operandB {operando B} other {AFD}} não pode conter transições ε (epsilon).\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"emptyStringEpsilon\": \"ε (cadeia vazia)\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"emptyStringLambda\": \"λ (cadeia vazia)\",",
+      "glyphs": {
+        "λ": 1
+      },
+      "reason": "reviewed lambda identifier or genuine mathematical lambda reference"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"epsilonNfaHelpMessage\": \"Autômato finito não determinístico com transições ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"exampleNfaLambdaAOrAb\": \"AFNε - A ou AB\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"faToRegexAddFinalStateExplanation\": \"Adicionando o novo estado final {newState}. Os estados de aceitação originais, {oldStates}, recebem transições ε para ele, deixando um único estado de aceitação sem transições de saída.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"faToRegexAddInitialStateExplanation\": \"Adicionando o novo estado inicial {newState}, com uma transição ε para o estado inicial original {oldState}. Assim, resta um único estado inicial sem transições de entrada.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"grammarStructuralProductionRhsEmpty\": \"A produção {productionId} possui lado direito vazio; use ε ou marque-a como epsilon.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"hasEpsilonTransitions\": \"Possui transições ε (épsilon)\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"insertEpsilon\": \"Inserir ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"lambdaMustBeOnlySymbol\": \"ε deve ser o único símbolo no lado direito\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"lambdaTransitionsPresent\": \"Transições ε presentes: {count}\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"lambdaTransitionsRemoved\": \"Transições ε removidas com sucesso.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableExplanation\": \"O fecho-ε de {reachableStates} é {epsilonClosure}; ele {isNewState, select, true{cria um novo} other{reutiliza um}} estado do AFD{containsAcceptingState, select, true{, que é de aceitação} other{}}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableStepTitle\": \"Fechar estados alcançáveis sob ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureOfReachableTitle\": \"Calcular o fecho-ε dos estados alcançáveis\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureReached\": \"Alcance {stateSet} por transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonClosureReachedFromStates\": \"O fecho-ε a partir de {reachableStates} é {epsilonClosure}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepEpsilonTransitionsDoNotConsumeInput\": \"Transições ε não consomem entrada.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureExplanation\": \"O fecho-ε de {initialState} é {epsilonClosure}{containsAcceptingState, select, true{ e contém um estado de aceitação} other{}}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureStepTitle\": \"Fecho-ε inicial\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepInitialEpsilonClosureTitle\": \"Calcular o fecho-ε inicial\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"nfaToDfaStepProcessSymbolExplanation\": \"A partir de {currentStates}, ler {symbol} alcança {reachableStates} antes do fecho-ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"operationRequiresDeterministicNoEpsilon\": \"Esta operação exige um autômato determinístico sem transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaInputSymbolRequired\": \"Insira um símbolo ou ative ε-entrada\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaLambdaInput\": \"ε-entrada\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaLambdaPop\": \"ε-desempilhar\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaLambdaPush\": \"ε-empilhar\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaPopSymbolRequired\": \"Insira um símbolo ou ative ε-desempilhar\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaPushSymbolRequired\": \"Insira um símbolo ou ative ε-empilhar\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaSimulationEpsilonMove\": \"Este é um movimento ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pdaToCfgEpsilonPop\": \"A conversão de AP para GLC exige que cada transição remova exatamente um símbolo da pilha. A transição {transition} usa uma remoção ε. Normalize o AP antes da conversão.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"prefixClosureRequiresDeterministic\": \"O fecho por prefixos só está disponível para autômatos determinísticos sem transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"pumpingChallenge1Proof4\": \"Para qualquer comprimento de bombeamento p, podemos escolher x = ε, y = a^k (1 ≤ k ≤ p), z = a^(n-k) para n ≥ k.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexSimplificationRuleName\": \"{rule, select, emptyUnion{União com conjunto vazio (r|∅ → r)} emptyUnionLeft{União com conjunto vazio à esquerda (∅|r → r)} emptySetConcatenation{Concatenação com conjunto vazio (r∅ → ∅)} emptySetConcatenationLeft{Concatenação com conjunto vazio à esquerda (∅r → ∅)} emptyStringConcatenation{Concatenação com cadeia vazia (rε → r)} emptyStringConcatenationLeft{Concatenação com cadeia vazia à esquerda (εr → r)} starIdempotence{Idempotência do fecho (r** → r*)} emptySetStar{Fecho do conjunto vazio (∅* → ε)} emptyStringStar{Fecho da cadeia vazia (ε* → ε)} unionIdempotence{Idempotência da união (r|r → r)} doubleStar{Fecho duplo ((r*)* → r*)} plusToStar{Mais para fecho (ε|rr* → r*)} plusToStarAlt{Forma alternativa de mais para fecho (ε|r*r → r*)} plusExpansion{Expansão do operador mais (r+ → rr*)} optionalExpansion{Expansão do operador opcional (r? → ε|r)} optionalStarSimplification{Fecho de opcional ((ε|r)* → r*)} starConcatenationIdempotence{Idempotência da concatenação de fechos (r*r* → r*)} unionStarDistribution{Distribuição do fecho sobre união} redundantParentheses{Remover parênteses redundantes} characterClassCreation{Criar uma classe de caracteres} other{Regra de simplificação desconhecida}}\",",
+      "glyphs": {
+        "ε": 9
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaConcatenationExplanation\": \"Concatenando \\\"{firstFragment}\\\" e \\\"{secondFragment}\\\" {positionDescription}. Foram adicionadas pontes ε: {transitions}. O fragmento resultante começa em {startState} e aceita em {acceptStates}. Profundidade da pilha: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaKleeneStarExplanation\": \"Aplicando a estrela de Kleene a \\\"{fragment}\\\" {positionDescription}. O fragmento agora começa em {startState}, aceita em {acceptState} e usa estas transições ε: {transitions}. Ele aceita zero ou mais repetições. Profundidade da pilha: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaOptionalExplanation\": \"Tornando \\\"{fragment}\\\" opcional {positionDescription}. O fragmento agora começa em {startState}, aceita em {acceptState} e usa estas transições ε: {transitions}. Ele aceita zero ou uma ocorrência. Profundidade da pilha: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaPlusExplanation\": \"Aplicando o operador mais a \\\"{fragment}\\\" {positionDescription}. O fragmento agora começa em {startState}, aceita em {acceptState} e usa estas transições ε: {transitions}. Ele exige pelo menos uma repetição. Profundidade da pilha: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaStartExplanation\": \"Convertendo \\\"{regex}\\\" em um AFN com a construção de Thompson. O algoritmo cria um fragmento para cada subexpressão e combina os fragmentos com transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"regexToNfaUnionExplanation\": \"Criando uma união para \\\"{pattern}\\\" {positionDescription}. Foram adicionados o estado inicial {startState}, o estado de aceitação {acceptState} e as transições ε: {transitions}. Qualquer um dos ramos pode ser seguido. Profundidade da pilha: {stackSize}.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"removeLambdaTitle\": \"Remover transições ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"rightSideAtLeastOneSymbol\": \"O lado direito deve conter pelo menos um símbolo (ou ε)\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"rightSideHelper\": \"Separe alternativas com |. Use \\\\| para uma barra vertical literal e ε para a cadeia vazia.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"rightSideHint\": \"ex.: aA, bB, ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"rightSideSingleLambda\": \"O lado direito pode conter apenas um símbolo ε\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"settingsEmptyStringNotationDescription\": \"Escolha se a interface mostra a cadeia vazia e as transições vazias como ε ou λ.\",",
+      "glyphs": {
+        "ε": 1,
+        "λ": 1
+      },
+      "reason": "settings copy explicitly compares both supported conventions"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"simulationInputHint\": \"Deixe em branco para ε; os espaços são preservados\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"suffixClosureRequiresDeterministic\": \"O fecho por sufixos só está disponível para autômatos determinísticos sem transições ε.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"workspaceStatusLambdaTransitions\": \"Transições ε presentes\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/empty_string_notation.dart",
+      "text": "const String kLambdaSymbol = 'λ';",
+      "glyphs": {
+        "λ": 1
+      },
+      "reason": "shared notation policy and supported glyph constants"
+    },
+    {
+      "path": "lib/presentation/empty_string_notation.dart",
+      "text": "const String kVarepsilonSymbol = 'ϵ';",
+      "glyphs": {
+        "ϵ": 1
+      },
+      "reason": "shared notation policy and supported glyph constants"
+    },
+    {
+      "path": "lib/presentation/localization/manual_conversion_localizations.dart",
+      "text": "'O AFN-ε concluído é exatamente equivalente em linguagem à expressão regular de origem.',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical localized source copy formatted at its presentation boundary"
+    },
+    {
+      "path": "lib/presentation/localization/manual_conversion_localizations.dart",
+      "text": "'produção ε de origem.';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical localized source copy formatted at its presentation boundary"
+    },
+    {
+      "path": "lib/presentation/localization/manual_conversion_localizations.dart",
+      "text": "return 'A produção ε preserva a aceitação no estado de origem '",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical localized source copy formatted at its presentation boundary"
+    },
+    {
+      "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
+      "text": "// Badge DFA/NFA/ε-NFA (desktop)",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
+      "text": "// Diagnostics bar and DFA/NFA/ε-NFA badge share one top-anchored",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/providers/automaton_algorithm_provider.dart",
+      "text": "error: 'Error removing ε-transitions: $e',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical presentation-state adapter; the render boundary formats it"
+    },
+    {
+      "path": "lib/presentation/providers/grammar_provider.dart",
+      "text": "symbol == 'ε' || symbol == 'λ' || symbol.toLowerCase() == 'lambda';",
+      "glyphs": {
+        "ε": 1,
+        "λ": 1
+      },
+      "reason": "canonical presentation-state adapter; the render boundary formats it"
+    },
+    {
+      "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace_strings.dart",
+      "text": "PhraseGrammarPredicateCode.epsilonRestriction => 'restrição de ε',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "text": "'Remove ε-transitions',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "text": "_isExecuting && _currentAlgorithm == 'Remove ε-transitions',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "text": "executionProgress: _currentAlgorithm == 'Remove ε-transitions'",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "text": "executionStatus: _currentAlgorithm == 'Remove ε-transitions'",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "text": "isSelected: _currentAlgorithm == 'Remove ε-transitions',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
+      "text": "if (value is String) return value.isEmpty ? 'ε' : value;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "'Use spaces between tokens and ε for the empty word.',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "'Use ε for the empty word. Whitespace is preserved.',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "_setMessage('Add at least one case. Use ε for the empty word.');",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "_setMessage('The model has no alphabet; only ε can be generated.');",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "message == 'Add at least one case. Use ε for the empty word.' ||",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/batch_execution/batch_execution_panel.dart",
+      "text": "message == 'The model has no alphabet; only ε can be generated.';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/canvas_simulation_step_projection.dart",
+      "text": "final isPopEpsilon = pop == 'ε' || pop.isEmpty;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical presentation-state adapter; the render boundary formats it"
+    },
+    {
+      "path": "lib/presentation/widgets/canvas_simulation_step_projection.dart",
+      "text": "final isPushEpsilon = push == 'ε' || push.isEmpty;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "canonical presentation-state adapter; the render boundary formats it"
+    },
+    {
+      "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
+      "text": "_fixedValue(label: 'Right side', value: 'ε'),",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
+      "text": "child: Text(_localized('Epsilon (ε)')),",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
+      "text": "title: Text(_localized('Use ε as the right side')),",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fa_to_regex_requirement_editor.dart",
+      "text": "_fixedValue(label: 'Endpoint bridge label', value: 'ε'),",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
+      "text": "'Nondeterministic Finite Automaton with ε-transitions';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
+      "text": "//  Visual badge showing the finite-automaton type (DFA/NFA/ε-NFA) with",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
+      "text": "/// Badge showing the FSA type (DFA/NFA/ε-NFA)",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
+      "text": "if (hasEpsilonTransitions) return 'ε-NFA';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/help_search_highlight.dart",
+      "text": "'ε',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/help_search_highlight.dart",
+      "text": "'λ',",
+      "glyphs": {
+        "λ": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/help_search_highlight.dart",
+      "text": "'ϵ',",
+      "glyphs": {
+        "ϵ": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_step_view_model.dart",
+      "text": "return path.isEmpty ? 'ε' : path;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_step_view_model.dart",
+      "text": "return string.isEmpty ? 'ε (empty string)' : '\"$string\"';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison_step_view_model.dart",
+      "text": "return symbol.isEmpty ? 'ε' : symbol;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "text": "'${transition.fromState.label} → ${transition.toState.label}: ${transition.isEpsilonTransition ? 'ε' : _ordered(transition.inputSymbols).join(', ')} [${transition.id}]',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "text": "'${transition['fromStateId']} → ${transition['toStateId']}: ${transition['isEpsilon'] == true ? 'ε' : transition['inputSymbol']}',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "text": "? 'ε'",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "text": "? 'ε'",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "text": "lineBuilders: [(l10n) => regex.isEmpty ? 'ε' : regex],",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/pda_simulation_panel.dart",
+      "text": "'Leave blank for ε; whitespace is preserved',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
+      "text": "lambdaSymbol: draft.isEpsilon ? 'ε' : null,",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_inputs.dart",
+      "text": ".map((input) => input == 'ε' || input == 'λ' ? '' : input)",
+      "glyphs": {
+        "ε": 1,
+        "λ": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_reachability_controls.dart",
+      "text": "'Separate inputs with commas; use ε for the empty string.',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/tm_algorithm_runner.dart",
+      "text": "final input = progress.input.isEmpty ? 'ε' : progress.input;",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/tm_simulation_panel.dart",
+      "text": "'Leave blank for ε; whitespace is preserved',",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/fsa_trace_viewer.dart",
+      "text": ": 'ε');",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/fsa_trace_viewer.dart",
+      "text": "step.remainingInput.isEmpty ? 'ε' : '\"${step.remainingInput}\"';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/transition_editors/pda_transition_editor.dart",
+      "text": "//  fields plus ε toggles. Clears and validates input, firing structured",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../empty_string_notation.dart';
+
 import '../../core/constants/monospace_typography.dart';
 import '../../core/grammar/teaching/grammar_teaching_sessions.dart';
 import '../../core/grammar/teaching/grammar_teaching_session_store.dart';
@@ -333,7 +335,7 @@ class _ReferenceGrammar extends StatelessWidget {
             for (final production in productions)
               Text(
                 '${production.leftSide.single} → '
-                '${production.isLambda || production.rightSide.isEmpty ? 'ε' : production.rightSide.join(' ')}',
+                '${production.isLambda || production.rightSide.isEmpty ? EmptyStringNotation.symbolOf(context) : production.rightSide.join(' ')}',
                 style: const TextStyle(
                   fontFamilyFallback: kMonospaceFontFamilyFallback,
                 ),

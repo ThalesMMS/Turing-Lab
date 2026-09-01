@@ -4,6 +4,7 @@ import '../../core/models/tm_time_profile.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_presentation_primitives.dart';
@@ -305,7 +306,9 @@ class TMTimeResultView extends StatelessWidget {
     required String metricKey,
     required String title,
   }) {
-    final input = witness.input.isEmpty ? 'ε' : witness.input;
+    final input = witness.input.isEmpty
+        ? EmptyStringNotation.symbolOf(context)
+        : witness.input;
     return Material(
       color: Colors.transparent,
       child: ExpansionTile(

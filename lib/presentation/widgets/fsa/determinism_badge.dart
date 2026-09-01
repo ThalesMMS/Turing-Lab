@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/fsa.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../empty_string_notation.dart';
 
 /// Information about automaton determinism
 class DeterminismInfo {
@@ -126,11 +127,12 @@ class FsaTypeBadge extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     final l10n = appLocalizationsOf(context);
+    final displayType = EmptyStringNotation.format(context, info.type);
 
     return Semantics(
       container: true,
       excludeSemantics: true,
-      label: '${info.type}, ${l10n.determinismAnalysis}',
+      label: '$displayType, ${l10n.determinismAnalysis}',
       button: onTap != null,
       enabled: onTap != null,
       hint: onTap != null ? l10n.showDetails : null,
@@ -163,7 +165,7 @@ class FsaTypeBadge extends StatelessWidget {
               ),
               SizedBox(width: isMobile || compact ? 4 : 6),
               Text(
-                info.type,
+                displayType,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -210,7 +212,6 @@ class NonDeterminismPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -245,42 +246,40 @@ class NonDeterminismPanel extends StatelessWidget {
               ],
             ),
           ),
-
-          // Content
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Type
                 Row(
                   children: [
                     Text(
                       appLocalizationsOf(context).typeLabel,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(info.type),
+                    Text(EmptyStringNotation.format(context, info.type)),
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // Description
                 Text(
-                  info.helpMessage(appLocalizationsOf(context)),
+                  EmptyStringNotation.formatTerminology(
+                    context,
+                    info.helpMessage(appLocalizationsOf(context)),
+                  ),
                   style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
-
-                // Features
                 if (info.hasEpsilonTransitions) ...[
                   _buildFeature(
                     icon: Icons.call_split,
-                    label: appLocalizationsOf(context).hasEpsilonTransitions,
+                    label: EmptyStringNotation.formatTerminology(
+                      context,
+                      appLocalizationsOf(context).hasEpsilonTransitions,
+                    ),
                     color: Colors.purple,
                   ),
                   const SizedBox(height: 8),
                 ],
-
                 if (!info.isDeterministic &&
                     info.nonDeterministicStates.isNotEmpty) ...[
                   _buildFeature(
@@ -307,7 +306,6 @@ class NonDeterminismPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                 ],
-
                 if (!info.isDeterministic &&
                     info.nonDeterministicSymbols.isNotEmpty) ...[
                   _buildFeature(
@@ -325,7 +323,9 @@ class NonDeterminismPanel extends StatelessWidget {
                       runSpacing: 4,
                       children: info.nonDeterministicSymbols.map((symbol) {
                         return Chip(
-                          label: Text(symbol),
+                          label: Text(
+                            EmptyStringNotation.format(context, symbol),
+                          ),
                           backgroundColor: Colors.blue[100],
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize:
@@ -335,7 +335,6 @@ class NonDeterminismPanel extends StatelessWidget {
                     ),
                   ),
                 ],
-
                 if (info.isDeterministic) ...[
                   _buildFeature(
                     icon: Icons.check_circle,
@@ -374,11 +373,6 @@ class FSADeterminismOverlay extends StatefulWidget {
   final FSA? automaton;
   final bool isMobile;
   final double desktopTop;
-
-  /// When true, renders as a regular flow widget (badge with the details
-  /// panel below it) instead of positioning itself inside a [Stack]. Used by
-  /// the mobile layout, which stacks the diagnostics bar and the badge in one
-  /// top-anchored column so they can never overlap.
   final bool inline;
 
   const FSADeterminismOverlay({
@@ -434,7 +428,6 @@ class _FSADeterminismOverlayState extends State<FSADeterminismOverlay> {
 
     return Stack(
       children: [
-        // Badge
         Positioned(
           top: widget.isMobile ? 60 : widget.desktopTop,
           right: 16,
@@ -448,8 +441,6 @@ class _FSADeterminismOverlayState extends State<FSADeterminismOverlay> {
             },
           ),
         ),
-
-        // Details panel
         if (_showDetails)
           Positioned(
             top: widget.isMobile ? 100 : widget.desktopTop + 44,

@@ -239,6 +239,7 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -261,6 +262,7 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -282,6 +284,7 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -303,6 +306,7 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -323,6 +327,7 @@ class _StubFileOperationsService extends FileOperationsService {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -339,6 +344,7 @@ class _StubFileOperationsService extends FileOperationsService {
   @override
   Future<Result<Uint8List>> exportAutomatonToPngBytes(
     FSA automaton, {
+    String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -364,8 +370,9 @@ class _StubFileOperationsService extends FileOperationsService {
   @override
   Future<StringResult> exportAutomatonToPNG(
     FSA automaton,
-    String filePath,
-  ) async {
+    String filePath, {
+    String emptyStringSymbol = 'ε',
+  }) async {
     exportAutomatonPngCallCount++;
     if (exportResponses.isEmpty) {
       return const Failure<String>('No export response configured');

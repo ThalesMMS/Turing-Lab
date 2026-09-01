@@ -8,6 +8,7 @@ import '../../core/grammar/teaching/grammar_teaching_content.dart';
 import '../../core/grammar/phrase_structure/phrase_structure.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../content/grammar_teaching_content_copy.dart';
 import '../localization/locale_value_formatter.dart';
 import 'derivation_tree_view.dart';
@@ -315,9 +316,7 @@ class _UserDerivationWorkspaceState extends State<UserDerivationWorkspace> {
                     title: Text(
                       l10n.localizeWorkflowText('Current derivation tree'),
                     ),
-                    children: [
-                      DerivationTreeView(tree: tree, initiallyExpanded: true),
-                    ],
+                    children: [DerivationTreeView(tree: tree)],
                   ),
                 ),
               ],
@@ -700,7 +699,9 @@ class _SequenceChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final symbols = sequence.isEmpty
-        ? const <PhraseGrammarSymbol>[TerminalGrammarSymbol('ε')]
+        ? <PhraseGrammarSymbol>[
+            TerminalGrammarSymbol(EmptyStringNotation.symbolOf(context)),
+          ]
         : sequence.symbols;
     return Wrap(
       spacing: 4,

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
+import '../empty_string_notation.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/constants/monospace_typography.dart';
@@ -171,12 +173,7 @@ class _BruteForceTeachingWorkspaceState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    children: [
-                      DerivationTreeView(
-                        tree: witness.tree,
-                        initiallyExpanded: true,
-                      ),
-                    ],
+                    children: [DerivationTreeView(tree: witness.tree)],
                   ),
                 ),
               ],
@@ -417,7 +414,9 @@ class _SententialForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final display = symbols.isEmpty ? const ['ε'] : symbols;
+    final display = symbols.isEmpty
+        ? [EmptyStringNotation.symbolOf(context)]
+        : symbols;
     return Wrap(
       spacing: 4,
       runSpacing: 4,

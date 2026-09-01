@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_content.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dart';
+import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/widgets/fa_to_regex_requirement_editor.dart';
 
 // feature-localization-contract: automata-conversions-and-fragments
@@ -131,6 +133,37 @@ void main() {
     },
   );
 
+  testWidgets('formats empty pair operands without changing other terms', (
+    tester,
+  ) async {
+    await _pumpEditor(
+      tester,
+      emptyStringSymbol: kLambdaSymbol,
+      requirement: _requirement(
+        type: ManualConversionActionType.submitPairExpression,
+        payload: const {
+          'fromStateId': 'q0',
+          'toStateId': 'q2',
+          'expression': 'λ',
+        },
+        supportingData: const {
+          'fromStateId': 'q0',
+          'toStateId': 'q2',
+          'directExpression': 'ε',
+          'incomingExpression': 'a',
+          'loopExpression': 'ε',
+          'outgoingExpression': 'c',
+        },
+      ),
+      onSubmit: (_) {},
+    );
+
+    expect(find.text('R_ij = λ'), findsOneWidget);
+    expect(find.text('R_ik = a'), findsOneWidget);
+    expect(find.text('R_kk = λ'), findsOneWidget);
+    expect(find.text('R_kj = c'), findsOneWidget);
+  });
+
   testWidgets('renders semantic commit and final-expression controls', (
     tester,
   ) async {
@@ -196,21 +229,25 @@ Future<void> _pumpEditor(
   required ValueChanged<Map<String, Object?>> onSubmit,
   Locale locale = const Locale('en'),
   TextScaler textScaler = TextScaler.noScaling,
+  String emptyStringSymbol = kEpsilonSymbol,
 }) async {
   await tester.pumpWidget(
-    MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: MediaQuery(
-          data: MediaQueryData(textScaler: textScaler),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: FaToRegexRequirementEditor(
-              key: ValueKey(requirement.id),
-              requirement: requirement,
-              onSubmit: onSubmit,
+    EmptyStringNotation(
+      symbol: emptyStringSymbol,
+      child: MaterialApp(
+        locale: locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: MediaQuery(
+            data: MediaQueryData(textScaler: textScaler),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: FaToRegexRequirementEditor(
+                key: ValueKey(requirement.id),
+                requirement: requirement,
+                onSubmit: onSubmit,
+              ),
             ),
           ),
         ),

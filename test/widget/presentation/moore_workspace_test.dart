@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,22 @@ import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('secondary click opens Moore state options', (tester) async {
+    final notifier = TransducerEditorNotifier<MooreMachine>(_machine());
+    await _pumpWorkspace(tester, notifier: notifier);
+    await tester.pumpAndSettle();
+
+    await tester.tapAt(
+      tester.getCenter(find.text('Idle')),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transducer-state-label')), findsOneWidget);
+    expect(find.byKey(const Key('transducer-state-output')), findsOneWidget);
+  });
 
   testWidgets(
     'Moore publishes one action set and focuses wide Simulation without running',

@@ -12,6 +12,8 @@
 
 import '../models/grammar.dart';
 import '../models/grammar_parse_report.dart';
+import '../models/derivation_tree.dart';
+import '../models/derivation_tree_node.dart';
 import '../result.dart' as turing_lab_result;
 import 'grammar_input_tokenizer.dart';
 import 'grammar_parser.dart';
@@ -49,6 +51,7 @@ class SimpleRecursiveDescentParser {
           GrammarParseReport.accepted(
             inputString: inputString,
             executionTime: elapsed,
+            trees: [DerivationTree(root: result.tree, isShallow: false)],
           ),
         );
       }
@@ -111,8 +114,9 @@ class SimpleRecursiveDescentParser {
         return turing_lab_result.Success(
           ParseResult.success(
             inputString: inputString,
-            derivations: [result],
+            derivations: [result.derivation],
             executionTime: stopwatch.elapsed,
+            tree: DerivationTree(root: result.tree, isShallow: false),
           ),
         );
       } else if (_timedOut) {
@@ -159,7 +163,7 @@ class SimpleRecursiveDescentParser {
   }
 
   /// Parses the string using recursive descent
-  List<String>? _parseString(String inputString, Duration timeout) {
+  _RecursiveMatch? _parseString(String inputString, Duration timeout) {
     final startTime = DateTime.now();
     _farthestPosition = 0;
     _timedOut = false;
@@ -181,7 +185,7 @@ class SimpleRecursiveDescentParser {
       0,
     );
     for (final match in matches) {
-      if (match.nextToken == tokens.length) return match.derivation;
+      if (match.nextToken == tokens.length) return match;
     }
     return null;
   }
@@ -236,6 +240,7 @@ class SimpleRecursiveDescentParser {
       int symbolIndex,
       int nextToken,
       List<String> derivation,
+      List<DerivationTreeNode> children,
     ) {
       if (DateTime.now().difference(startTime) > timeout) {
         _timedOut = true;
@@ -246,6 +251,12 @@ class SimpleRecursiveDescentParser {
           _RecursiveMatch(
             nextToken: nextToken,
             derivation: [nonTerminal, ...derivation],
+            tree: DerivationTreeNode(
+              symbol: nonTerminal,
+              children: children.isEmpty
+                  ? const [DerivationTreeNode(symbol: 'ε')]
+                  : children,
+            ),
           ),
         );
         return;
@@ -254,10 +265,21 @@ class SimpleRecursiveDescentParser {
       if (grammar.terminals.contains(symbol)) {
         if (nextToken < tokens.length && tokens[nextToken].lexeme == symbol) {
           _recordFarthest(tokens[nextToken].end);
-          parseSequence(symbols, symbolIndex + 1, nextToken + 1, [
-            ...derivation,
-            symbol,
-          ]);
+          parseSequence(
+            symbols,
+            symbolIndex + 1,
+            nextToken + 1,
+            [...derivation, symbol],
+            [
+              ...children,
+              DerivationTreeNode(
+                symbol: symbol,
+                lexeme: tokens[nextToken].lexeme,
+                start: tokens[nextToken].start,
+                end: tokens[nextToken].end,
+              ),
+            ],
+          );
         }
         return;
       }
@@ -272,10 +294,13 @@ class SimpleRecursiveDescentParser {
         nextActive,
         depth + 1,
       )) {
-        parseSequence(symbols, symbolIndex + 1, child.nextToken, [
-          ...derivation,
-          ...child.derivation,
-        ]);
+        parseSequence(
+          symbols,
+          symbolIndex + 1,
+          child.nextToken,
+          [...derivation, ...child.derivation],
+          [...children, child.tree],
+        );
       }
     }
 
@@ -284,6 +309,7 @@ class SimpleRecursiveDescentParser {
         production.isLambda ? const [] : production.rightSide,
         0,
         tokenIndex,
+        const [],
         const [],
       );
     }
@@ -298,8 +324,13 @@ class SimpleRecursiveDescentParser {
 }
 
 final class _RecursiveMatch {
-  const _RecursiveMatch({required this.nextToken, required this.derivation});
+  const _RecursiveMatch({
+    required this.nextToken,
+    required this.derivation,
+    required this.tree,
+  });
 
   final int nextToken;
   final List<String> derivation;
+  final DerivationTreeNode tree;
 }

@@ -17,6 +17,7 @@ import 'injection/data_providers.dart';
 import 'app.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/localization/app_locale_policy.dart';
+import 'presentation/providers/empty_string_symbol_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 
 part 'startup_error_helpers.dart';
@@ -28,6 +29,9 @@ void main() async {
 
   try {
     final prefs = await initializeSharedPreferences();
+    await migrateEmptyStringSymbolPreferences(
+      SharedPreferencesEmptyStringSymbolStore(prefs),
+    );
     final settingsRepository = SharedPreferencesSettingsRepository(
       storage: SharedPreferencesSettingsStorage(
         preferencesProvider: () async => prefs,

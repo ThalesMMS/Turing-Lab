@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,30 @@ import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart'
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 
 void main() {
+  testWidgets('secondary click opens Mealy state options', (tester) async {
+    final notifier = TransducerEditorNotifier<MealyMachine>(_machine());
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [mealyEditorProvider.overrideWith((_) => notifier)],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MealyPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tapAt(
+      tester.getCenter(find.text('Idle')),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transducer-state-label')), findsOneWidget);
+  });
+
   testWidgets(
     'Mealy publishes one action set and opens compact Simulation without running',
     (tester) async {

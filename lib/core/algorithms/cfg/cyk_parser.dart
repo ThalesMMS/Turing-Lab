@@ -12,6 +12,8 @@
 //
 import '../../models/grammar.dart';
 import '../../models/cyk_step.dart';
+import '../../models/derivation_tree.dart';
+import '../../models/derivation_tree_node.dart';
 import '../../result.dart';
 import '../../models/grammar_parse_report.dart';
 import '../../messages/structured_message.dart';
@@ -590,6 +592,17 @@ class CYKDerivation {
       CYKDerivation._(nt, children);
   factory CYKDerivation.leaf(String t) => CYKDerivation._(t, const []);
   bool get isLeaf => children.isEmpty;
+
+  /// Converts the algorithm's back-pointer tree to the shared tree model used
+  /// by parse reports and the grammar-analysis UI.
+  DerivationTree toDerivationTree() {
+    DerivationTreeNode convert(CYKDerivation derivation) => DerivationTreeNode(
+      symbol: derivation.label,
+      children: derivation.children.map(convert).toList(growable: false),
+    );
+
+    return DerivationTree(root: convert(this), isShallow: false);
+  }
 }
 
 class CYKBackptr {

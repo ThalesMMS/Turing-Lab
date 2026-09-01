@@ -3,13 +3,13 @@
   "ownerIssue": 210,
   "status": "migration-in-progress",
   "zeroUserVisibleProseClaim": false,
-  "sourceDigestSha256": "4b42a106d3b32b4229e2fc5a9090ef7222162ccb92a3cab6e8ed251fd6c50f43",
+  "sourceDigestSha256": "b59d5a56254df3489cab1de9c01aea5203324e298b58b8951855507ad9690146",
   "summary": {
     "familyCount": 13,
     "producerCount": 211,
-    "occurrenceCount": 3217,
-    "migrationRequiredCount": 799,
-    "compatibilityDescriptionCount": 807
+    "occurrenceCount": 3216,
+    "migrationRequiredCount": 797,
+    "compatibilityDescriptionCount": 808
   },
   "families": [
     {
@@ -45,8 +45,8 @@
           "status": "structured-compatibility",
           "occurrenceCount": 22,
           "firstLine": 32,
-          "lastLine": 632,
-          "sourceDigestSha256": "c17ef63fc0f5d2709975a6a4d1d6e618aff38738c77d040bd5c8137f7a998d6f",
+          "lastLine": 647,
+          "sourceDigestSha256": "80ac7630cd3e16f5977b180593f3e9c357feb44498d1dada6c05fadcfd2e58db",
           "classificationCounts": {
             "protocolDescription": 19,
             "supportedCompatibilityDescription": 3
@@ -62,9 +62,9 @@
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
           "occurrenceCount": 15,
-          "firstLine": 36,
-          "lastLine": 555,
-          "sourceDigestSha256": "6a6ece83009402850f3fe3dfc638154d5cca3578f070e601ced6899043423a86",
+          "firstLine": 38,
+          "lastLine": 557,
+          "sourceDigestSha256": "a0dcf6f053054877da9f5d1c027b6de0282d2d7a4a08b8f9f317a98c98aff6c4",
           "classificationCounts": {
             "developerDiagnostic": 1,
             "protocolDescription": 10,
@@ -397,8 +397,8 @@
           "status": "migration-required",
           "occurrenceCount": 36,
           "firstLine": 58,
-          "lastLine": 1176,
-          "sourceDigestSha256": "3e31f52373b7e7f5299e0bb79580e9795797d094d73760440db79057b91145a9",
+          "lastLine": 1295,
+          "sourceDigestSha256": "57e98e7dae29fca3e177ba5c1c264bba2cd378d4feb1ab430a0797bb2956e78d",
           "classificationCounts": {
             "developerDiagnostic": 1,
             "legacyUserVisible": 16,
@@ -436,9 +436,9 @@
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
           "occurrenceCount": 7,
-          "firstLine": 62,
-          "lastLine": 217,
-          "sourceDigestSha256": "dd8f5f6ab619218646ff765c15c5dc3b1363619cad5025577de0c184f27394f9",
+          "firstLine": 65,
+          "lastLine": 221,
+          "sourceDigestSha256": "7b15f16b2a95296ed83e860eb517e71a2c198f72229443f94c9466217c8d8e9d",
           "classificationCounts": {
             "protocolDescription": 1,
             "supportedCompatibilityDescription": 6
@@ -747,8 +747,8 @@
           "status": "migration-required",
           "occurrenceCount": 26,
           "firstLine": 35,
-          "lastLine": 358,
-          "sourceDigestSha256": "95b36477d8ca34e2db9076eb2b5f68688710a18c18b6c6d758c3a9b1f1f443ef",
+          "lastLine": 369,
+          "sourceDigestSha256": "359275bc6910c86879e4476b5e17a8dbf31695ccbd1240d609f84ef3203c575f",
           "classificationCounts": {
             "legacyUserVisible": 8,
             "protocolDescription": 5,
@@ -1370,17 +1370,17 @@
           "owner": "interoperability",
           "targetNamespace": "codec",
           "status": "migration-required",
-          "occurrenceCount": 28,
+          "occurrenceCount": 29,
           "firstLine": 28,
-          "lastLine": 405,
-          "sourceDigestSha256": "c35c1ca7d603716af448219389360b201b29a1775383ca97d0960d8c6fed820c",
+          "lastLine": 444,
+          "sourceDigestSha256": "5254ab7e63f25ed49fa610bd638517f16c0763b9e4ff4811fbbb2022abfb4712",
           "classificationCounts": {
             "legacyUserVisible": 1,
             "protocolDescription": 18,
-            "supportedCompatibilityDescription": 9
+            "supportedCompatibilityDescription": 10
           },
           "surfaces": {
-            "message": 9,
+            "message": 10,
             "positionalProducer": 4,
             "returnedMessage": 15
           }
@@ -2299,17 +2299,17 @@
           "owner": "domain-core-data",
           "targetNamespace": "domain",
           "status": "migration-required",
-          "occurrenceCount": 13,
-          "firstLine": 23,
-          "lastLine": 118,
-          "sourceDigestSha256": "95c564bb50144bdf009d201cad52cdc25f21ba6d98f0e1ad891e38a85ae01f28",
+          "occurrenceCount": 11,
+          "firstLine": 22,
+          "lastLine": 100,
+          "sourceDigestSha256": "62e6408b31c3c4e3fbd897a3fa0743742d419ae8be87d55b773ad57f9bc6c2ca",
           "classificationCounts": {
             "developerDiagnostic": 1,
-            "legacyUserVisible": 12
+            "legacyUserVisible": 10
           },
           "surfaces": {
             "developerDiagnostic": 1,
-            "returnedMessage": 12
+            "returnedMessage": 10
           }
         },
         {
@@ -3644,9 +3644,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 4,
-          "firstLine": 266,
-          "lastLine": 270,
-          "sourceDigestSha256": "68efaa21e22a7b7f7d4f1a777fcb4ea468f3d55d311781629c580d8ebb583204",
+          "firstLine": 278,
+          "lastLine": 282,
+          "sourceDigestSha256": "e5672fff68a5e83505dcbb1f6d1b152664776cc26ed64a2f32a3bba03e4e8bb6",
           "classificationCounts": {
             "protocolDescription": 4
           },
@@ -3661,9 +3661,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 9,
-          "firstLine": 227,
-          "lastLine": 579,
-          "sourceDigestSha256": "e1dafd18d3ebbf9c96fe79539564d97e35c9e36165e04b8fe462bd5522bb7c27",
+          "firstLine": 228,
+          "lastLine": 597,
+          "sourceDigestSha256": "6079d300f68f57217fb75e712aabf3a29bff305e640be06f19f8461cbbf4a006",
           "classificationCounts": {
             "protocolDescription": 9
           },
@@ -3677,9 +3677,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 5,
-          "firstLine": 164,
-          "lastLine": 252,
-          "sourceDigestSha256": "09696511e0f2c13b35b6ef42ca5974c507cd4bb562617fc40ff5c395136736bf",
+          "firstLine": 167,
+          "lastLine": 266,
+          "sourceDigestSha256": "6bf18c5cc171fe47e1b9a9fa9d88dfa65a0636028caba42f9729918a4008d1c5",
           "classificationCounts": {
             "protocolDescription": 5
           },

@@ -97,7 +97,9 @@ class GrammarInputTokenizer {
   static List<String> _sortedTerminals(Grammar grammar) =>
       grammar.terminals
           .where(
-            (terminal) => terminal.isNotEmpty && !isEpsilonSymbol(terminal),
+            (terminal) =>
+                terminal.isNotEmpty &&
+                (terminal.trim().isEmpty || !isEpsilonSymbol(terminal)),
           )
           .toList()
         ..sort((left, right) {

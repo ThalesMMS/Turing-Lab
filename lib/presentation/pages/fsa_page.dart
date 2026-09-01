@@ -167,6 +167,7 @@ class _FSAPageState extends ConsumerState<FSAPage>
             identical(previous?.currentAutomaton, next.currentAutomaton)) {
           return;
         }
+        ref.read(algorithmStepProvider.notifier).clearSteps();
         _highlightRevision++;
         _highlightCoordinator.retarget(_highlightTarget(next.currentAutomaton));
         final target = _highlightCoordinator.target;

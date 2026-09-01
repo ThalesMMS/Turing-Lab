@@ -80,6 +80,18 @@ final class UnrestrictedGrammarWorkspaceStrings {
       usesPortuguese ? 'Editar gramática' : 'Edit grammar';
   String get editProduction =>
       usesPortuguese ? 'Editar produção' : 'Edit production';
+  String get productionActions =>
+      usesPortuguese ? 'Ações da produção' : 'Production actions';
+  String get moveUp => usesPortuguese ? 'Mover para cima' : 'Move up';
+  String get moveDown => usesPortuguese ? 'Mover para baixo' : 'Move down';
+  String reorderProduction(String id) =>
+      usesPortuguese ? 'Reordenar produção $id' : 'Reorder production $id';
+  String productionPosition(int position, int total) => usesPortuguese
+      ? 'Posição $position de $total'
+      : 'Position $position of $total';
+  String productionMoved(String id, int position, int total) => usesPortuguese
+      ? 'Produção $id movida para a posição $position de $total'
+      : 'Moved production $id to position $position of $total';
   String get saveProduction =>
       usesPortuguese ? 'Salvar produção' : 'Save production';
   String get cancelEdit => usesPortuguese ? 'Cancelar edição' : 'Cancel edit';

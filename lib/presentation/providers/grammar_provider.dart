@@ -9,6 +9,7 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/algorithms/grammar_to_fsa_converter.dart';
@@ -115,6 +116,40 @@ const _noStructuredErrorUpdate = Object();
 const _noActiveConversionUpdate = Object();
 const _noPdaResultUpdate = Object();
 
+const _symbolListEquality = ListEquality<String>();
+
+/// Normalized right-side input used by atomic production-group mutations.
+class ProductionAlternativeDraft {
+  const ProductionAlternativeDraft({
+    required this.rightSide,
+    this.isLambda = false,
+  });
+
+  final List<String> rightSide;
+  final bool isLambda;
+
+  bool get isValid => isLambda
+      ? rightSide.isEmpty
+      : rightSide.isNotEmpty && !rightSide.contains('');
+}
+
+/// Describes the outcome of an atomic production-group mutation.
+class ProductionGroupMutationResult {
+  const ProductionGroupMutationResult({
+    required this.changed,
+    this.addedCount = 0,
+    this.duplicateCount = 0,
+    this.removedCount = 0,
+    this.invalid = false,
+  });
+
+  final bool changed;
+  final int addedCount;
+  final int duplicateCount;
+  final int removedCount;
+  final bool invalid;
+}
+
 /// Provider notifier responsible for updating grammar state and running conversions.
 class GrammarProvider extends StateNotifier<GrammarState> {
   GrammarProvider() : super(GrammarState.initial());
@@ -144,11 +179,76 @@ class GrammarProvider extends StateNotifier<GrammarState> {
       isLambda: isLambda,
       order: state.productions.length,
     );
-
     state = state.copyWith(
       productions: [...state.productions, production],
       nextProductionId: state.nextProductionId + 1,
       error: null,
+    );
+  }
+
+  /// Adds all new alternatives in one state update and ignores duplicates.
+  ProductionGroupMutationResult addProductionAlternatives({
+    required List<String> leftSide,
+    required Iterable<ProductionAlternativeDraft> alternatives,
+  }) {
+    final drafts = alternatives.toList(growable: false);
+    if (!_validLeftSide(leftSide) ||
+        drafts.isEmpty ||
+        drafts.any((draft) => !draft.isValid)) {
+      return const ProductionGroupMutationResult(changed: false, invalid: true);
+    }
+
+    final accepted = <ProductionAlternativeDraft>[];
+    var duplicateCount = 0;
+    for (final draft in drafts) {
+      final alreadyExists = state.productions.any(
+        (production) =>
+            _sameLeftSide(production.leftSide, leftSide) &&
+            _sameAlternative(production, draft),
+      );
+      final repeatedInBatch = accepted.any(
+        (candidate) => _sameDraft(candidate, draft),
+      );
+      if (alreadyExists || repeatedInBatch) {
+        duplicateCount++;
+      } else {
+        accepted.add(draft);
+      }
+    }
+
+    if (accepted.isEmpty) {
+      return ProductionGroupMutationResult(
+        changed: false,
+        duplicateCount: duplicateCount,
+      );
+    }
+
+    var nextId = state.nextProductionId;
+    final additions = <Production>[];
+    for (final draft in accepted) {
+      additions.add(
+        Production(
+          id: 'p$nextId',
+          leftSide: List<String>.from(leftSide),
+          rightSide: List<String>.from(draft.rightSide),
+          isLambda: draft.isLambda,
+          order: state.productions.length + additions.length,
+        ),
+      );
+      nextId++;
+    }
+
+    state = state.copyWith(
+      productions: _withSequentialOrder([...state.productions, ...additions]),
+      nextProductionId: nextId,
+      error: null,
+      lastPdaResult: null,
+    );
+
+    return ProductionGroupMutationResult(
+      changed: true,
+      addedCount: additions.length,
+      duplicateCount: duplicateCount,
     );
   }
 
@@ -176,10 +276,181 @@ class GrammarProvider extends StateNotifier<GrammarState> {
   }
 
   void deleteProduction(String id) {
+    final remaining = state.productions.where((p) => p.id != id).toList();
     state = state.copyWith(
-      productions: state.productions.where((p) => p.id != id).toList(),
+      productions: _withSequentialOrder(remaining),
       error: null,
+      lastPdaResult: null,
     );
+  }
+
+  /// Replaces one left-side group atomically, preserving retained IDs.
+  ProductionGroupMutationResult replaceProductionGroup({
+    required List<String> originalLeftSide,
+    required List<String> leftSide,
+    required Iterable<ProductionAlternativeDraft> alternatives,
+  }) {
+    final drafts = alternatives.toList(growable: false);
+    final sourceProductions = state.productions
+        .where(
+          (production) => _sameLeftSide(production.leftSide, originalLeftSide),
+        )
+        .toList(growable: false);
+    if (!_validLeftSide(leftSide) ||
+        drafts.isEmpty ||
+        drafts.any((draft) => !draft.isValid) ||
+        sourceProductions.isEmpty) {
+      return const ProductionGroupMutationResult(changed: false, invalid: true);
+    }
+
+    final desired = <ProductionAlternativeDraft>[];
+    var duplicateCount = 0;
+    for (final draft in drafts) {
+      if (desired.any((candidate) => _sameDraft(candidate, draft))) {
+        duplicateCount++;
+      } else {
+        desired.add(draft);
+      }
+    }
+
+    final sameGroup = _sameLeftSide(originalLeftSide, leftSide);
+    final targetProductions = sameGroup
+        ? const <Production>[]
+        : state.productions
+              .where(
+                (production) => _sameLeftSide(production.leftSide, leftSide),
+              )
+              .toList(growable: false);
+    final retainedSourceIds = <String>{};
+    var nextId = state.nextProductionId;
+    var addedCount = 0;
+    final replacement = <Production>[...targetProductions];
+
+    for (final draft in desired) {
+      final targetDuplicate = targetProductions.any(
+        (production) => _sameAlternative(production, draft),
+      );
+      if (targetDuplicate) {
+        duplicateCount++;
+        continue;
+      }
+
+      final retained = sourceProductions.firstWhereOrNull(
+        (production) =>
+            !retainedSourceIds.contains(production.id) &&
+            _sameAlternative(production, draft),
+      );
+      if (retained != null) {
+        retainedSourceIds.add(retained.id);
+        replacement.add(
+          sameGroup
+              ? retained
+              : retained.copyWith(leftSide: List<String>.from(leftSide)),
+        );
+      } else {
+        replacement.add(
+          Production(
+            id: 'p$nextId',
+            leftSide: List<String>.from(leftSide),
+            rightSide: List<String>.from(draft.rightSide),
+            isLambda: draft.isLambda,
+          ),
+        );
+        nextId++;
+        addedCount++;
+      }
+    }
+
+    final sourceIds = sourceProductions
+        .map((production) => production.id)
+        .toSet();
+    final targetIds = targetProductions
+        .map((production) => production.id)
+        .toSet();
+    final removedIds = {...sourceIds, ...targetIds};
+    final anchorId = targetProductions.isNotEmpty
+        ? targetProductions.first.id
+        : sourceProductions.first.id;
+    final anchorIndex = state.productions.indexWhere(
+      (production) => production.id == anchorId,
+    );
+    final insertionIndex = state.productions
+        .take(anchorIndex)
+        .where((production) => !removedIds.contains(production.id))
+        .length;
+    final rebuilt = state.productions
+        .where((production) => !removedIds.contains(production.id))
+        .toList();
+    rebuilt.insertAll(insertionIndex, replacement);
+    final ordered = _withSequentialOrder(rebuilt);
+
+    if (const ListEquality<Production>().equals(ordered, state.productions)) {
+      return ProductionGroupMutationResult(
+        changed: false,
+        duplicateCount: duplicateCount,
+      );
+    }
+
+    state = state.copyWith(
+      productions: ordered,
+      nextProductionId: nextId,
+      error: null,
+      lastPdaResult: null,
+    );
+    return ProductionGroupMutationResult(
+      changed: true,
+      addedCount: addedCount,
+      duplicateCount: duplicateCount,
+      removedCount: sourceProductions.length - retainedSourceIds.length,
+    );
+  }
+
+  /// Deletes every alternative for [leftSide] and returns the removed count.
+  int deleteProductionGroup(List<String> leftSide) {
+    final remaining = state.productions
+        .where((production) => !_sameLeftSide(production.leftSide, leftSide))
+        .toList();
+    final removedCount = state.productions.length - remaining.length;
+    if (removedCount == 0) {
+      return 0;
+    }
+    state = state.copyWith(
+      productions: _withSequentialOrder(remaining),
+      error: null,
+      lastPdaResult: null,
+    );
+    return removedCount;
+  }
+
+  /// Moves one structural left-side group without changing its alternatives.
+  bool reorderProductionGroup(int oldIndex, int newIndex) {
+    final groups = <List<Production>>[];
+    for (final production in state.productions) {
+      final index = groups.indexWhere(
+        (group) => _sameLeftSide(group.first.leftSide, production.leftSide),
+      );
+      if (index == -1) {
+        groups.add([production]);
+      } else {
+        groups[index].add(production);
+      }
+    }
+    if (oldIndex < 0 ||
+        oldIndex >= groups.length ||
+        newIndex < 0 ||
+        newIndex >= groups.length ||
+        oldIndex == newIndex) {
+      return false;
+    }
+
+    final moved = groups.removeAt(oldIndex);
+    groups.insert(newIndex, moved);
+    state = state.copyWith(
+      productions: _withSequentialOrder(groups.expand((group) => group)),
+      error: null,
+      lastPdaResult: null,
+    );
+    return true;
   }
 
   void clearProductions() {
@@ -315,6 +586,39 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     final match = _productionIdPattern.firstMatch(id);
     return match == null ? 0 : int.parse(match.group(1)!);
   }
+
+  static bool _validLeftSide(List<String> leftSide) =>
+      leftSide.isNotEmpty && !leftSide.contains('');
+
+  static bool _sameLeftSide(List<String> left, List<String> right) =>
+      _symbolListEquality.equals(left, right);
+
+  static bool _sameAlternative(
+    Production production,
+    ProductionAlternativeDraft draft,
+  ) =>
+      production.isLambda == draft.isLambda &&
+      _symbolListEquality.equals(production.rightSide, draft.rightSide);
+
+  static bool _sameDraft(
+    ProductionAlternativeDraft left,
+    ProductionAlternativeDraft right,
+  ) =>
+      left.isLambda == right.isLambda &&
+      _symbolListEquality.equals(left.rightSide, right.rightSide);
+
+  static List<Production> _withSequentialOrder(
+    Iterable<Production> productions,
+  ) => productions
+      .toList(growable: false)
+      .asMap()
+      .entries
+      .map(
+        (entry) => entry.value.order == entry.key
+            ? entry.value
+            : entry.value.copyWith(order: entry.key),
+      )
+      .toList(growable: false);
 
   Future<Result<FSA>> convertToAutomaton() async {
     if (state.productions.isEmpty) {

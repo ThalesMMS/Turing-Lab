@@ -16,29 +16,36 @@ void main() {
   const jsonCodec = UnrestrictedGrammarJsonCodec();
   const jflapCodec = UnrestrictedGrammarJflapCodec();
 
-  test('JSON round-trip preserves token boundaries, IDs, order, and extensions',
-      () {
-    final source = InteroperableDocument<Object>(
-      document: _grammar(),
-      systemKey: UnrestrictedGrammarCapabilities.systemKey,
-      schema: UnrestrictedGrammarCapabilities.schema,
-      extensions: DocumentExtensionBag({'future': 'preserved'}),
-    );
+  test(
+    'JSON round-trip preserves token boundaries, IDs, order, and extensions',
+    () {
+      final source = InteroperableDocument<Object>(
+        document: _grammar(),
+        systemKey: UnrestrictedGrammarCapabilities.systemKey,
+        schema: UnrestrictedGrammarCapabilities.schema,
+        extensions: DocumentExtensionBag({'future': 'preserved'}),
+      );
 
-    final encoded = jsonCodec.encode(source) as CodecSuccess<EncodedDocument>;
-    expect(encoded.fidelity, DocumentFidelity.exact);
-    final decoded = jsonCodec.decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'grammar.json'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
-    final grammar = decoded.value.document as UnrestrictedGrammar;
+      final encoded = jsonCodec.encode(source) as CodecSuccess<EncodedDocument>;
+      expect(encoded.fidelity, DocumentFidelity.exact);
+      final decoded =
+          jsonCodec.decode(
+                DocumentPayload(
+                  bytes: encoded.value.bytes,
+                  filename: 'grammar.json',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
+      final grammar = decoded.value.document as UnrestrictedGrammar;
 
-    expect(grammar.toJson(), _grammar().toJson());
-    expect(decoded.value.extensions.values['future'], 'preserved');
-    expect(grammar.productions.first.left.symbols, const [
-      TerminalGrammarSymbol('a,b'),
-      NonterminalGrammarSymbol('Context'),
-    ]);
-  });
+      expect(grammar.toJson(), _grammar().toJson());
+      expect(decoded.value.extensions.values['future'], 'preserved');
+      expect(grammar.productions.first.left.symbols, const [
+        TerminalGrammarSymbol('a,b'),
+        NonterminalGrammarSymbol('Context'),
+      ]);
+    },
+  );
 
   test('JFLAP extension round-trip is exact locally and warns on export', () {
     final source = InteroperableDocument<Object>(
@@ -53,15 +60,63 @@ void main() {
       encoded.diagnostics.map((diagnostic) => diagnostic.code),
       contains('jflap.unrestricted-turing-lab-extension-portability'),
     );
-    final decoded = jflapCodec.decode(
-      DocumentPayload(bytes: encoded.value.bytes, filename: 'grammar.jff'),
-    ) as CodecSuccess<InteroperableDocument<Object>>;
+    final decoded =
+        jflapCodec.decode(
+              DocumentPayload(
+                bytes: encoded.value.bytes,
+                filename: 'grammar.jff',
+              ),
+            )
+            as CodecSuccess<InteroperableDocument<Object>>;
 
     expect(decoded.fidelity, DocumentFidelity.exact);
     expect(
       (decoded.value.document as UnrestrictedGrammar).toJson(),
       _grammar().toJson(),
     );
+  });
+
+  test('reordered native and JFLAP round-trips preserve exact order', () {
+    final sourceGrammar = _grammar();
+    final reordered = sourceGrammar.copyWith(
+      revision: sourceGrammar.revision + 1,
+      productions: [
+        PhraseStructureProduction(
+          id: sourceGrammar.productions[1].id,
+          left: sourceGrammar.productions[1].left,
+          right: sourceGrammar.productions[1].right,
+          order: 0,
+        ),
+        PhraseStructureProduction(
+          id: sourceGrammar.productions[0].id,
+          left: sourceGrammar.productions[0].left,
+          right: sourceGrammar.productions[0].right,
+          order: 1,
+        ),
+      ],
+    );
+    final source = InteroperableDocument<Object>(
+      document: reordered,
+      systemKey: UnrestrictedGrammarCapabilities.systemKey,
+      schema: UnrestrictedGrammarCapabilities.schema,
+    );
+
+    for (final codec in [jsonCodec, jflapCodec]) {
+      final encoded = codec.encode(source) as CodecSuccess<EncodedDocument>;
+      final decoded =
+          codec.decode(
+                DocumentPayload(
+                  bytes: encoded.value.bytes,
+                  filename: 'grammar',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
+
+      expect(
+        (decoded.value.document as UnrestrictedGrammar).toJson(),
+        reordered.toJson(),
+      );
+    }
   });
 
   test('standard JFLAP import normalizes text and is reorder-stable', () {
@@ -74,10 +129,12 @@ void main() {
       <production><left>S</left><right>aS</right></production>
     ''');
 
-    final left = jflapCodec.decode(_payload(first))
-        as CodecSuccess<InteroperableDocument<Object>>;
-    final right = jflapCodec.decode(_payload(reordered))
-        as CodecSuccess<InteroperableDocument<Object>>;
+    final left =
+        jflapCodec.decode(_payload(first))
+            as CodecSuccess<InteroperableDocument<Object>>;
+    final right =
+        jflapCodec.decode(_payload(reordered))
+            as CodecSuccess<InteroperableDocument<Object>>;
     final leftGrammar = left.value.document as UnrestrictedGrammar;
     final rightGrammar = right.value.document as UnrestrictedGrammar;
 
@@ -97,20 +154,28 @@ void main() {
       jsonCodec.decode(_payload('{"schema":false}')),
       isA<CodecMalformed<InteroperableDocument<Object>>>(),
     );
-    final outcome = jflapCodec.decode(_payload(_jflap('''
+    final outcome = jflapCodec.decode(
+      _payload(
+        _jflap('''
       <production><left></left><right>a</right></production>
-    ''')));
+    '''),
+      ),
+    );
     expect(outcome, isA<CodecMalformed<InteroperableDocument<Object>>>());
     final malformed = outcome as CodecMalformed<InteroperableDocument<Object>>;
     expect(malformed.location?.path, '/structure/production[0]/left');
   });
 
   test('future JSON schema is unsupported rather than malformed', () {
-    final encoded = jsonCodec.encode(InteroperableDocument<Object>(
-      document: _grammar(),
-      systemKey: UnrestrictedGrammarCapabilities.systemKey,
-      schema: UnrestrictedGrammarCapabilities.schema,
-    )) as CodecSuccess<EncodedDocument>;
+    final encoded =
+        jsonCodec.encode(
+              InteroperableDocument<Object>(
+                document: _grammar(),
+                systemKey: UnrestrictedGrammarCapabilities.systemKey,
+                schema: UnrestrictedGrammarCapabilities.schema,
+              ),
+            )
+            as CodecSuccess<EncodedDocument>;
     final future = jsonDecode(utf8.decode(encoded.value.bytes)) as Map;
     (future['schema'] as Map)['version'] = 2;
 
@@ -144,10 +209,7 @@ void main() {
       bounds: const math.Rectangle(0, 0, 800, 600),
       tapeAlphabet: const {'token', 'Ω', 'B'},
     );
-    final grammar = TMToGrammarConverter.build(
-      tm,
-      sourceRevision: 3,
-    ).grammar!;
+    final grammar = TMToGrammarConverter.build(tm, sourceRevision: 3).grammar!;
     final source = InteroperableDocument<Object>(
       document: grammar,
       systemKey: UnrestrictedGrammarCapabilities.systemKey,
@@ -156,9 +218,14 @@ void main() {
 
     for (final codec in [jsonCodec, jflapCodec]) {
       final encoded = codec.encode(source) as CodecSuccess<EncodedDocument>;
-      final decoded = codec.decode(
-        DocumentPayload(bytes: encoded.value.bytes, filename: 'grammar'),
-      ) as CodecSuccess<InteroperableDocument<Object>>;
+      final decoded =
+          codec.decode(
+                DocumentPayload(
+                  bytes: encoded.value.bytes,
+                  filename: 'grammar',
+                ),
+              )
+              as CodecSuccess<InteroperableDocument<Object>>;
       final roundTripped = decoded.value.document as UnrestrictedGrammar;
 
       expect(roundTripped.toJson(), grammar.toJson());
@@ -171,46 +238,42 @@ void main() {
 }
 
 UnrestrictedGrammar _grammar() => UnrestrictedGrammar(
-      id: 'unrestricted',
-      name: 'Token-safe grammar',
-      revision: 7,
-      terminals: const [
+  id: 'unrestricted',
+  name: 'Token-safe grammar',
+  revision: 7,
+  terminals: const [TerminalGrammarSymbol('a,b'), TerminalGrammarSymbol('🙂')],
+  nonterminals: const [
+    NonterminalGrammarSymbol('S'),
+    NonterminalGrammarSymbol('Context'),
+  ],
+  startSymbol: const NonterminalGrammarSymbol('S'),
+  productions: [
+    PhraseStructureProduction(
+      id: 'context-rule',
+      order: 0,
+      left: GrammarSymbolSequence(const [
         TerminalGrammarSymbol('a,b'),
-        TerminalGrammarSymbol('🙂'),
-      ],
-      nonterminals: const [
-        NonterminalGrammarSymbol('S'),
         NonterminalGrammarSymbol('Context'),
-      ],
-      startSymbol: const NonterminalGrammarSymbol('S'),
-      productions: [
-        PhraseStructureProduction(
-          id: 'context-rule',
-          order: 0,
-          left: GrammarSymbolSequence(const [
-            TerminalGrammarSymbol('a,b'),
-            NonterminalGrammarSymbol('Context'),
-          ]),
-          right: GrammarSymbolSequence(const [
-            NonterminalGrammarSymbol('Context'),
-            TerminalGrammarSymbol('🙂'),
-          ]),
-        ),
-        PhraseStructureProduction(
-          id: 'start-rule',
-          order: 1,
-          left: GrammarSymbolSequence(const [
-            NonterminalGrammarSymbol('S'),
-          ]),
-          right: GrammarSymbolSequence(const [
-            TerminalGrammarSymbol('a,b'),
-            NonterminalGrammarSymbol('Context'),
-          ]),
-        ),
-      ],
-    );
+      ]),
+      right: GrammarSymbolSequence(const [
+        NonterminalGrammarSymbol('Context'),
+        TerminalGrammarSymbol('🙂'),
+      ]),
+    ),
+    PhraseStructureProduction(
+      id: 'start-rule',
+      order: 1,
+      left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('S')]),
+      right: GrammarSymbolSequence(const [
+        TerminalGrammarSymbol('a,b'),
+        NonterminalGrammarSymbol('Context'),
+      ]),
+    ),
+  ],
+);
 
-String _jflap(String productions) => '''
+String _jflap(String productions) =>
+    '''
 <?xml version="1.0" encoding="UTF-8"?>
 <structure>
   <type>grammar</type>
@@ -218,6 +281,5 @@ String _jflap(String productions) => '''
 </structure>
 ''';
 
-DocumentPayload _payload(String value) => DocumentPayload(
-      bytes: Uint8List.fromList(utf8.encode(value)),
-    );
+DocumentPayload _payload(String value) =>
+    DocumentPayload(bytes: Uint8List.fromList(utf8.encode(value)));

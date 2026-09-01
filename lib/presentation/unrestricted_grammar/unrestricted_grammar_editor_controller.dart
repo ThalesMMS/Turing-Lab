@@ -42,7 +42,7 @@ final class UnrestrictedGrammarEditorController extends ChangeNotifier {
     _commit(
       _grammar.copyWith(
         revision: _grammar.revision + 1,
-        productions: productions,
+        productions: _withSequentialOrder(productions),
       ),
     );
   }
@@ -55,9 +55,31 @@ final class UnrestrictedGrammarEditorController extends ChangeNotifier {
     _commit(
       _grammar.copyWith(
         revision: _grammar.revision + 1,
-        productions: productions,
+        productions: _withSequentialOrder(productions),
       ),
     );
+  }
+
+  /// Moves one production and records the completed move as one history step.
+  bool reorderProduction(int oldIndex, int newIndex) {
+    final productions = [..._grammar.productions];
+    if (oldIndex < 0 ||
+        oldIndex >= productions.length ||
+        newIndex < 0 ||
+        newIndex >= productions.length ||
+        oldIndex == newIndex) {
+      return false;
+    }
+
+    final moved = productions.removeAt(oldIndex);
+    productions.insert(newIndex, moved);
+    _commit(
+      _grammar.copyWith(
+        revision: _grammar.revision + 1,
+        productions: _withSequentialOrder(productions),
+      ),
+    );
+    return true;
   }
 
   void replaceGrammar(
@@ -102,4 +124,22 @@ final class UnrestrictedGrammarEditorController extends ChangeNotifier {
     _grammar = next;
     notifyListeners();
   }
+
+  static List<PhraseStructureProduction> _withSequentialOrder(
+    Iterable<PhraseStructureProduction> productions,
+  ) => productions
+      .toList(growable: false)
+      .asMap()
+      .entries
+      .map(
+        (entry) => entry.value.order == entry.key
+            ? entry.value
+            : PhraseStructureProduction(
+                id: entry.value.id,
+                left: entry.value.left,
+                right: entry.value.right,
+                order: entry.key,
+              ),
+      )
+      .toList(growable: false);
 }

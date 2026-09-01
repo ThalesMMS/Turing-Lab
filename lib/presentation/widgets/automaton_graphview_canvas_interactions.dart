@@ -117,8 +117,9 @@ extension _AutomatonGraphViewCanvasInteractions
 
     for (final edge in _controller.edges) {
       final graphEdge = _controller.graphEdgeById(edge.id);
-      final geometry =
-          graphEdge == null ? null : _edgeRenderer.geometryForEdge(graphEdge);
+      final geometry = graphEdge == null
+          ? null
+          : _edgeRenderer.geometryForEdge(graphEdge);
       if (geometry == null) {
         continue;
       }
@@ -215,9 +216,7 @@ extension _AutomatonGraphViewCanvasInteractions
     _handleCanvasContextGesture(details.globalPosition);
   }
 
-  Future<void> _handleCanvasContextGesture(
-    Offset globalPosition,
-  ) async {
+  Future<void> _handleCanvasContextGesture(Offset globalPosition) async {
     // Long-press and secondary tap open the state options or transition
     // editor in every tool, so add-state and transition modes never freeze
     // the editing affordances.
@@ -395,7 +394,8 @@ extension _AutomatonGraphViewCanvasInteractions
     final pointerStart = _dragPointerStartLocalPosition;
     final pointerCurrent = _dragPointerCurrentLocalPosition;
     final hitSlop = _dragHitSlop;
-    final shouldCommit = didMove &&
+    final shouldCommit =
+        didMove &&
         pointerStart != null &&
         pointerCurrent != null &&
         hitSlop != null &&
@@ -474,6 +474,13 @@ extension _AutomatonGraphViewCanvasInteractions
       _setTransitionSourceId(null);
     }
     _showStateOptions(node);
+  }
+
+  void _handleSelectedStateContextAction() {
+    final selectedNodeId = _selectedNodeId;
+    if (selectedNodeId != null) {
+      _handleNodeContextTap(selectedNodeId);
+    }
   }
 
   void _registerNodeTap(String nodeId) {

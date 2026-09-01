@@ -19,6 +19,7 @@ import 'package:vector_math/vector_math_64.dart';
 import '../../../core/constants/automaton_canvas_constants.dart';
 import '../../../core/annotations/annotations.dart';
 import '../../../core/constants/svg_export_defaults.dart';
+import '../../empty_string_notation.dart';
 import '../../../core/entities/grammar_entity.dart';
 import '../../../core/entities/turing_machine_entity.dart';
 import '../../../core/models/fsa.dart';
@@ -314,14 +315,16 @@ class SvgExporter {
     final tapeTop = math.max(40.0, height * 0.12);
     final availableWidth = width * 0.8;
     final cellsCount = math.max(7, (availableWidth / minCellWidth).floor());
-    final cellWidth =
-        cellsCount > 0 ? availableWidth / cellsCount : minCellWidth;
+    final cellWidth = cellsCount > 0
+        ? availableWidth / cellsCount
+        : minCellWidth;
     final tapeStartX = (width - cellWidth * cellsCount) / 2;
 
     final colorScheme = options.colorScheme;
     final tapeFill =
         colorScheme?.surfaceContainerHighest ?? const Color(0xFFF5F5F5);
-    final tapeStroke = colorScheme?.outlineVariant ??
+    final tapeStroke =
+        colorScheme?.outlineVariant ??
         colorScheme?.outline ??
         const Color(0xFF424242);
     final textColor = colorScheme?.onSurface ?? const Color(0xFF000000);
@@ -492,8 +495,11 @@ class SvgExporter {
       );
 
       if (state.isInitial) {
-        _addInitialArrow(buffer, position,
-            strokeColor: _colorToHex(strokeColor));
+        _addInitialArrow(
+          buffer,
+          position,
+          strokeColor: _colorToHex(strokeColor),
+        );
       }
 
       buffer.writeln('    </g>');
@@ -533,6 +539,7 @@ class SvgExporter {
       indent: '    ',
       strokeColor: _colorToHex(strokeColor),
       textColor: _colorToHex(textColor),
+      emptyStringSymbol: options.emptyStringSymbol,
     );
   }
 
@@ -543,7 +550,8 @@ class SvgExporter {
     SvgExportOptions options,
   ) {
     final colorScheme = options.colorScheme;
-    final textColor = colorScheme?.onSurfaceVariant ??
+    final textColor =
+        colorScheme?.onSurfaceVariant ??
         colorScheme?.onSurface ??
         const Color(0xFF424242);
     final legendY = height - 30;
@@ -554,9 +562,7 @@ class SvgExporter {
     buffer.writeln(
       '      <text x="$legendXText" y="$legendYText" text-anchor="middle" fill="${_colorToHex(textColor)}">',
     );
-    buffer.writeln(
-      '        ${_escapeXml(options.tmLegendLabel)}',
-    );
+    buffer.writeln('        ${_escapeXml(options.tmLegendLabel)}');
     buffer.writeln('      </text>');
     buffer.writeln('    </g>');
   }
@@ -810,6 +816,7 @@ class SvgExporter {
       indent: '  ',
       strokeColor: _defaultStrokeHex,
       textColor: _defaultStrokeHex,
+      emptyStringSymbol: options.emptyStringSymbol,
     );
   }
 
@@ -846,6 +853,7 @@ class SvgExporter {
     required String indent,
     required String strokeColor,
     required String textColor,
+    required String emptyStringSymbol,
   }) {
     if (groups.isEmpty) {
       return;
@@ -897,7 +905,10 @@ class SvgExporter {
       if (plan == null) {
         continue;
       }
-      final label = group.labels.join(', ');
+      final label = formatEmptyStringMarkers(
+        group.labels.join(', '),
+        emptyStringSymbol,
+      );
       if (group.isSelfLoop) {
         _writeSelfLoop(
           buffer,
@@ -934,16 +945,18 @@ class SvgExporter {
   }) {
     // Opposing traffic takes one lane each side of the straight line, the
     // same split the canvas applies to a two-way pair.
-    final hasOpposing =
-        directedPairs.contains('${group.toId}->${group.fromId}');
+    final hasOpposing = directedPairs.contains(
+      '${group.toId}->${group.fromId}',
+    );
     final laneOffset = !hasOpposing || group.isSelfLoop
         ? 0.0
         : (group.fromId.compareTo(group.toId) <= 0 ? -1 : 1) *
-            (_stateRadius * _laneSpacingFactor / 2);
+              (_stateRadius * _laneSpacingFactor / 2);
 
     return AutomaticTransitionRouteRequest(
       // Index-keyed so the planner's ordering follows the drawing order.
-      stableId: '${index.toString().padLeft(4, '0')}:'
+      stableId:
+          '${index.toString().padLeft(4, '0')}:'
           '${group.fromId}->${group.toId}',
       sourceId: group.fromId,
       destinationId: group.toId,
@@ -1081,7 +1094,8 @@ class SvgExporter {
     // SVG text grows upwards from its baseline: centre it on the anchor, and
     // drop it a full line more when the anchor sits below what it labels, so
     // the text never prints back over the path.
-    final baselineY = anchor.dy +
+    final baselineY =
+        anchor.dy +
         _transitionFontSize * (0.36 + 0.44 * math.max(0.0, normal.dy));
     buffer.writeln(
       '$indent  <text x="${_formatDimension(anchor.dx)}" '
@@ -1143,14 +1157,15 @@ class SvgExporter {
             math.max(DocumentAnnotation.minimumWidth, width - x),
           )
           .toDouble();
-      final noteHeight = (annotation.collapsed
-              ? DocumentAnnotation.minimumHeight
-              : annotation.height)
-          .clamp(
-            DocumentAnnotation.minimumHeight,
-            math.max(DocumentAnnotation.minimumHeight, height - y),
-          )
-          .toDouble();
+      final noteHeight =
+          (annotation.collapsed
+                  ? DocumentAnnotation.minimumHeight
+                  : annotation.height)
+              .clamp(
+                DocumentAnnotation.minimumHeight,
+                math.max(DocumentAnnotation.minimumHeight, height - y),
+              )
+              .toDouble();
       final (fill, stroke) = switch (annotation.styleRole) {
         AnnotationStyleRole.note => ('#fff3b0', '#8a6d00'),
         AnnotationStyleRole.information => ('#dbeafe', '#1d4ed8'),
@@ -1159,7 +1174,8 @@ class SvgExporter {
         AnnotationStyleRole.todo => ('#e5e7eb', '#374151'),
       };
       buffer.writeln(
-          '    <g class="annotation" data-id="${_escapeXml(annotation.id)}">');
+        '    <g class="annotation" data-id="${_escapeXml(annotation.id)}">',
+      );
       buffer.writeln(
         '      <rect x="${_formatDimension(x)}" y="${_formatDimension(y)}" '
         'width="${_formatDimension(noteWidth)}" height="${_formatDimension(noteHeight)}" '
@@ -1201,9 +1217,7 @@ class SvgExporter {
     buffer.writeln(
       '      stroke="$strokeColor" stroke-width="${_formatDimension(_strokeWidth)}"',
     );
-    buffer.writeln(
-      '      marker-end="url(#${_arrowMarkerId(strokeColor)})"/>',
-    );
+    buffer.writeln('      marker-end="url(#${_arrowMarkerId(strokeColor)})"/>');
   }
 
   static void _addTitle(
@@ -1231,9 +1245,9 @@ class SvgExporter {
       for (final symbol in symbols) {
         final label = normalizeToEpsilon(symbol);
         final key = '${transition.fromState.id}|$label';
-        transitions.putIfAbsent(key, () => <String>[]).add(
-              transition.toState.id,
-            );
+        transitions
+            .putIfAbsent(key, () => <String>[])
+            .add(transition.toState.id);
       }
     }
 
@@ -1313,12 +1327,14 @@ class SvgExporter {
 
     // Create transitions based on productions (simplified)
     for (final production in grammar.productions) {
-      final from =
-          production.leftSide.isNotEmpty ? production.leftSide.first : '';
+      final from = production.leftSide.isNotEmpty
+          ? production.leftSide.first
+          : '';
       for (final symbol in production.rightSide) {
         if (symbol.isNotEmpty) {
-          final to =
-              grammar.nonTerminals.contains(symbol) ? symbol : 'terminal';
+          final to = grammar.nonTerminals.contains(symbol)
+              ? symbol
+              : 'terminal';
           transitions.putIfAbsent(from, () => []);
           transitions[from]!.add(to);
         }
@@ -1400,6 +1416,7 @@ class SvgExportOptions {
   final String tmLegendLabel;
   final bool includeAnnotations;
   final DocumentAnnotationCollection? annotations;
+  final String emptyStringSymbol;
 
   const SvgExportOptions({
     this.includeTitle = true,
@@ -1410,6 +1427,7 @@ class SvgExportOptions {
     this.tmLegendLabel = kDefaultSvgTmLegendLabel,
     this.includeAnnotations = false,
     this.annotations,
+    this.emptyStringSymbol = kEpsilonSymbol,
   });
 }
 

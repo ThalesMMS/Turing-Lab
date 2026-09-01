@@ -15,6 +15,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../empty_string_notation.dart';
+
 import '../../core/algorithms/grammar_parser.dart';
 import '../../core/algorithms/grammar_analyzer.dart';
 import '../../core/algorithms/brute_force_cfg_parser.dart';
@@ -23,6 +25,7 @@ import '../../core/batch_execution/batch_execution.dart';
 import '../../core/algorithms/cfg/cyk_parser.dart';
 import '../../core/models/cyk_step.dart';
 import '../../core/models/brute_force_parse_models.dart';
+import '../../core/models/derivation_tree.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/grammar_parse_report.dart';
 import '../../core/models/ll1_parse_step.dart';
@@ -120,14 +123,23 @@ class _GrammarSimulationPanelState
     );
   }
 
-  static Result<CYKParseResult> _parseCykWithStepsInBackground(
+  static ({Result<CYKParseResult> outcome, DerivationTree? tree})
+  _parseCykWithStepsInBackground(
     ({Grammar grammar, String inputString}) request,
   ) {
-    return CYKParser.parseWithSteps(
+    final outcome = CYKParser.parseWithSteps(
       request.grammar,
       request.inputString,
       timeout: const Duration(seconds: 5),
     );
+    final tree = outcome.isSuccess && outcome.data!.accepted
+        ? GrammarParser.treeFromCykDerivation(
+            request.grammar,
+            request.inputString,
+            outcome.data!.derivation,
+          )
+        : null;
+    return (outcome: outcome, tree: tree);
   }
 
   static _LL1TeachingWorkspace _parseLl1WorkspaceInBackground(
@@ -374,14 +386,9 @@ class _GrammarSimulationPanelState
               if (value == null) {
                 return;
               }
+              _invalidateStaleResult();
               setState(() {
-                _stopPlayback();
                 _selectedAlgorithm = value;
-                _clearLl1Workspace();
-                _clearLr1Workspace();
-                _clearBruteWorkspace();
-                _parseReport = null;
-                _cykStepsResult = null;
               });
             },
           ),
@@ -612,6 +619,12 @@ class _GrammarSimulationPanelState
           if (cykSteps != null && cykSteps.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildCykStepsSection(context, cykSteps),
+            if (isAccepted &&
+                report.trees.isNotEmpty &&
+                report.bruteForceResult == null) ...[
+              const SizedBox(height: 16),
+              _buildDerivationTreesSection(context, report),
+            ],
             if (!isAccepted && reportMessage != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -702,33 +715,7 @@ class _GrammarSimulationPanelState
                 report.trees.isNotEmpty &&
                 report.bruteForceResult == null) ...[
               const SizedBox(height: 16),
-              Material(
-                type: MaterialType.transparency,
-                child: ExpansionTile(
-                  initiallyExpanded: false,
-                  tilePadding: EdgeInsets.zero,
-                  title: Text(
-                    report.isAmbiguous
-                        ? appLocalizationsOf(
-                            context,
-                          ).derivationTreesAmbiguous(report.trees.length)
-                        : appLocalizationsOf(context).derivationTree,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  children: [
-                    for (final tree in report.trees)
-                      Card(
-                        margin: const EdgeInsets.only(top: 8),
-                        child: DerivationTreeView(
-                          tree: tree,
-                          initiallyExpanded: true,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+              _buildDerivationTreesSection(context, report),
             ],
           ],
         ],
@@ -809,7 +796,7 @@ class _GrammarSimulationPanelState
           return;
         }
 
-        if (!cykOutcome.isSuccess) {
+        if (!cykOutcome.outcome.isSuccess) {
           setState(() {
             _isParsing = false;
             _parseReport = null;
@@ -817,14 +804,15 @@ class _GrammarSimulationPanelState
           });
           _showError(
             _failureText(
-              cykOutcome,
+              cykOutcome.outcome,
               appLocalizationsOf(context).failedToParseString,
             ),
           );
           return;
         }
 
-        final cyk = cykOutcome.data!;
+        final cyk = cykOutcome.outcome.data!;
+        final cykTree = cykOutcome.tree;
         setState(() {
           _isParsing = false;
           _parseReport = GrammarParseReport(
@@ -834,7 +822,7 @@ class _GrammarSimulationPanelState
             expectedSymbols: const <String>{},
             message: cyk.message,
             structuredMessage: cyk.structuredMessage,
-            trees: const [],
+            trees: cykTree == null ? const [] : [cykTree],
             isAmbiguous: false,
             executionTime: cyk.executionTime,
           );
@@ -1127,6 +1115,36 @@ class _GrammarSimulationPanelState
       return '${formatter.integer(duration.inMilliseconds)} ms';
     }
     return '${formatter.decimal(duration.inMilliseconds / 1000, decimalDigits: 3)} s';
+  }
+
+  Widget _buildDerivationTreesSection(
+    BuildContext context,
+    GrammarParseReport report,
+  ) {
+    return Material(
+      type: MaterialType.transparency,
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: EdgeInsets.zero,
+        title: Text(
+          report.isAmbiguous
+              ? appLocalizationsOf(
+                  context,
+                ).derivationTreesAmbiguous(report.trees.length)
+              : appLocalizationsOf(context).derivationTree,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        children: [
+          for (final tree in report.trees)
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 4),
+              child: DerivationTreeView(tree: tree),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCykStepsSection(BuildContext context, List<CYKStep> steps) {
@@ -1480,7 +1498,7 @@ class _GrammarSimulationPanelState
               ),
               child: Text(
                 '${production.id}: ${production.leftSide.join(' ')} → '
-                '${production.isLambda || production.rightSide.isEmpty ? 'ε' : production.rightSide.join(' ')}',
+                '${production.isLambda || production.rightSide.isEmpty ? EmptyStringNotation.symbolOf(context) : production.rightSide.join(' ')}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontFamilyFallback: kMonospaceFontFamilyFallback,
                 ),
@@ -1736,7 +1754,7 @@ class _GrammarSimulationPanelState
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
                     '${production.leftSide.join(' ')} → '
-                    '${production.isLambda || production.rightSide.isEmpty ? 'ε' : production.rightSide.join(' ')}',
+                    '${production.isLambda || production.rightSide.isEmpty ? EmptyStringNotation.symbolOf(context) : production.rightSide.join(' ')}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontFamilyFallback: kMonospaceFontFamilyFallback,
                     ),

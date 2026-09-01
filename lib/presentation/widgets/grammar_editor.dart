@@ -10,16 +10,19 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/monospace_typography.dart';
 import '../../core/models/production.dart';
 import '../../core/utils/epsilon_utils.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_help.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../empty_string_notation.dart';
 import '../providers/grammar_provider.dart';
 import 'grammar_editor_section.dart';
-import '../../core/constants/monospace_typography.dart';
 
 /// Comprehensive grammar editor widget
 class GrammarEditor extends ConsumerStatefulWidget {
@@ -51,10 +54,15 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
   );
 
   String? _selectedProductionId;
+  List<String>? _editingLeftSide;
   bool _isEditing = false;
 
   String? _leftSideErrorText;
   String? _rightSideErrorText;
+  final Map<String, FocusNode> _reorderFocusNodes = {};
+  String? _focusedReorderKey;
+  String? _draggingReorderKey;
+  _ProductionGroup? _pendingInitialEditingGroup;
 
   AppLocalizations get _l10n => jflapLocalizationsOf(context);
 
@@ -65,11 +73,22 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     _startSymbolController.text = state.startSymbol;
     _grammarNameController.text = state.name;
     if (widget.productionToEdit case final production?) {
+      final group = _groupForProduction(state.productions, production);
       _selectedProductionId = production.id;
+      _editingLeftSide = List<String>.from(production.leftSide);
       _isEditing = true;
       _leftSideController.text = _formatSymbols(production.leftSide);
-      _rightSideController.text = _formatRightSide(production);
+      _pendingInitialEditingGroup = group;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final group = _pendingInitialEditingGroup;
+    if (group == null) return;
+    _rightSideController.text = _formatGroupForInput(group);
+    _pendingInitialEditingGroup = null;
   }
 
   @override
@@ -78,6 +97,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     _leftSideController.dispose();
     _rightSideController.dispose();
     _grammarNameController.dispose();
+    for (final focusNode in _reorderFocusNodes.values) {
+      focusNode.dispose();
+    }
     super.dispose();
   }
 
@@ -100,33 +122,142 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
   @override
   Widget build(BuildContext context) {
     final grammarState = ref.watch(grammarProvider);
-    return Card(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.section != GrammarEditorSection.details) ...[
-                _buildHeader(context),
-                const SizedBox(height: 16),
-              ],
-              if (widget.section != GrammarEditorSection.productions) ...[
-                _buildGrammarInfo(context),
-                const SizedBox(height: 16),
-                _buildProductionEditor(context),
-              ],
-              if (widget.section == GrammarEditorSection.all)
-                const SizedBox(height: 16),
-              if (widget.section != GrammarEditorSection.details)
-                _buildProductionsList(context, grammarState.productions),
-            ],
+    final leadingSections = <Widget>[
+      if (widget.section != GrammarEditorSection.details) ...[
+        _buildHeader(context),
+        const SizedBox(height: 16),
+      ],
+      if (widget.section != GrammarEditorSection.productions) ...[
+        _buildGrammarInfo(context),
+        const SizedBox(height: 16),
+        _buildProductionEditor(context),
+      ],
+      if (widget.section == GrammarEditorSection.all)
+        const SizedBox(height: 16),
+    ];
+
+    if (widget.section == GrammarEditorSection.details) {
+      return Card(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: leadingSections,
+            ),
           ),
         ),
+      );
+    }
+
+    final productions = grammarState.productions;
+    final groups = _groupProductions(productions);
+    return Card(
+      child: CustomScrollView(
+        key: const ValueKey('grammar-production-scroll-view'),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList.list(
+              children: [
+                ...leadingSections,
+                Text(
+                  _l10n.productionRulesCount(productions.length),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (productions.isEmpty) _buildEmptyState(context),
+              ],
+            ),
+          ),
+          if (groups.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              sliver: SliverReorderableList(
+                itemCount: groups.length,
+                // Flutter 3.32 compatibility.
+                // ignore: deprecated_member_use
+                onReorder: _reorderProductionGroup,
+                onReorderStart: (index) {
+                  setState(
+                    () => _draggingReorderKey = _productionGroupKey(
+                      groups[index].leftSide,
+                    ),
+                  );
+                },
+                onReorderEnd: (_) {
+                  if (mounted) setState(() => _draggingReorderKey = null);
+                },
+                proxyDecorator: (child, index, animation) => Material(
+                  color: Colors.transparent,
+                  elevation: 6,
+                  borderRadius: BorderRadius.circular(8),
+                  child: child,
+                ),
+                itemBuilder: (context, index) {
+                  final group = groups[index];
+                  return KeyedSubtree(
+                    key: ValueKey(
+                      'grammar-production-group-${group.productions.first.id}',
+                    ),
+                    child: _buildProductionGroupItem(
+                      context,
+                      group,
+                      index,
+                      groups.length,
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
   }
+
+  void _reorderProductionGroup(int oldIndex, int newIndex) {
+    final groups = _groupProductions(ref.read(grammarProvider).productions);
+    if (oldIndex < 0 || oldIndex >= groups.length) return;
+    final group = groups[oldIndex];
+    final adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+    _moveProductionGroup(group, oldIndex, adjustedNewIndex, groups.length);
+  }
+
+  void _moveProductionGroup(
+    _ProductionGroup group,
+    int oldIndex,
+    int newIndex,
+    int total,
+  ) {
+    final changed = ref
+        .read(grammarProvider.notifier)
+        .reorderProductionGroup(oldIndex, newIndex);
+    if (!changed || !mounted) return;
+    final leftSide = _formatSymbols(group.leftSide);
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      _l10n.productionGroupMoved(leftSide, newIndex + 1, total),
+      Directionality.of(context),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNodeFor(group).requestFocus();
+    });
+  }
+
+  FocusNode _focusNodeFor(_ProductionGroup group) {
+    final key = _productionGroupKey(group.leftSide);
+    return _reorderFocusNodes.putIfAbsent(
+      key,
+      () => FocusNode(debugLabel: 'Reorder productions for $key'),
+    );
+  }
+
+  static String _productionGroupKey(List<String> leftSide) =>
+      leftSide.join('\u0000');
 
   Widget _buildHeader(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -327,9 +458,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                     Text(
                       _l10n.leftSideHelper,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Icon(
@@ -369,9 +499,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                     Text(
                       _l10n.rightSideHelper,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 );
@@ -396,12 +525,12 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                         const SizedBox(height: 4),
                         Text(
                           _l10n.leftSideHelper,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),
@@ -448,12 +577,12 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                         const SizedBox(height: 4),
                         Text(
                           _l10n.rightSideHelper,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),
@@ -472,8 +601,9 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ElevatedButton.icon(
-                      onPressed:
-                          _isEditing ? _updateProduction : _addProduction,
+                      onPressed: _isEditing
+                          ? _updateProduction
+                          : _addProduction,
                       icon: Icon(_isEditing ? Icons.save : Icons.add),
                       label: Text(_isEditing ? _l10n.update : _l10n.add),
                     ),
@@ -527,36 +657,6 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     );
   }
 
-  Widget _buildProductionsList(
-    BuildContext context,
-    List<Production> productions,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          _l10n.productionRulesCount(productions.length),
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        if (productions.isEmpty)
-          _buildEmptyState(context)
-        else
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: productions.asMap().entries.map((entry) {
-              final index = entry.key;
-              final production = entry.value;
-              return _buildProductionItem(context, production, index);
-            }).toList(),
-          ),
-      ],
-    );
-  }
-
   Widget _buildEmptyState(BuildContext context) {
     final l10n = jflapLocalizationsOf(context);
     return Center(
@@ -570,31 +670,34 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No production rules yet',
+            _l10n.noProductionRulesYet,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.section == GrammarEditorSection.productions
                 ? l10n.grammarEmptyProductionEditInstruction
-                : 'Add your first production rule above',
+                : _l10n.addFirstProductionRule,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProductionItem(
+  Widget _buildProductionGroupItem(
     BuildContext context,
-    Production production,
+    _ProductionGroup group,
     int index,
+    int total,
   ) {
-    final isSelected = _selectedProductionId == production.id;
+    final isSelected = group.productions.any(
+      (production) => production.id == _selectedProductionId,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -612,50 +715,71 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
       child: Material(
         type: MaterialType.transparency,
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          leading: _buildProductionGroupDragHandle(
+            context,
+            group,
+            index,
+            total,
           ),
           title: Text(
-            '${_formatSymbols(production.leftSide)} → ${_formatRightSide(production)}',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            '${_formatSymbols(group.leftSide)} → ${_formatGroupForDisplay(group)}',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontFamilyFallback: kMonospaceFontFamilyFallback,
-                  fontWeight: FontWeight.w600,
-                ),
+              fontFamilyFallback: kMonospaceFontFamilyFallback,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           subtitle: Text(
-            'Rule ${index + 1}',
+            _l10n.productionAlternativesCount(group.productions.length),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           trailing: PopupMenuButton<String>(
-            onSelected: (value) {
+            tooltip: _l10n.productionGroupActions,
+            onSelected: (value) async {
               if (value == 'edit') {
                 final onEditProduction = widget.onEditProduction;
                 if (onEditProduction != null) {
-                  onEditProduction(production);
+                  onEditProduction(group.productions.first);
                 } else {
-                  _editProduction(production);
+                  _editProductionGroup(group);
                 }
               } else if (value == 'delete') {
-                _deleteProduction(production);
+                await _confirmDeleteGroup(group);
+              } else if (value == 'move-up') {
+                _moveProductionGroup(group, index, index - 1, total);
+              } else if (value == 'move-down') {
+                _moveProductionGroup(group, index, index + 1, total);
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'move-up',
+                enabled: index > 0,
+                child: Row(
+                  children: [
+                    const Icon(Icons.arrow_upward, size: 18),
+                    const SizedBox(width: 8),
+                    Text(_l10n.moveUp),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'move-down',
+                enabled: index < total - 1,
+                child: Row(
+                  children: [
+                    const Icon(Icons.arrow_downward, size: 18),
+                    const SizedBox(width: 8),
+                    Text(_l10n.moveDown),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
                     const Icon(Icons.edit, size: 18),
                     const SizedBox(width: 8),
-                    Text(_l10n.edit),
+                    Text(_l10n.editAlternatives),
                   ],
                 ),
               ),
@@ -665,15 +789,77 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
                   children: [
                     const Icon(Icons.delete, size: 18),
                     const SizedBox(width: 8),
-                    Text(_l10n.delete),
+                    Text(_l10n.deleteGroup),
                   ],
                 ),
               ),
             ],
             child: const Icon(Icons.more_vert),
           ),
-          onTap: () => _selectProduction(production),
+          onTap: () => _selectProductionGroup(group),
           selected: isSelected,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductionGroupDragHandle(
+    BuildContext context,
+    _ProductionGroup group,
+    int index,
+    int total,
+  ) {
+    final leftSide = _formatSymbols(group.leftSide);
+    final label = _l10n.reorderProductionsFor(leftSide);
+    final position = _l10n.productionPosition(index + 1, total);
+    final groupKey = _productionGroupKey(group.leftSide);
+    final focusNode = _focusNodeFor(group);
+    final focused = _focusedReorderKey == groupKey;
+    final colors = Theme.of(context).colorScheme;
+    return ReorderableDragStartListener(
+      index: index,
+      child: Semantics(
+        key: ValueKey(
+          'grammar-production-group-handle-${group.productions.first.id}',
+        ),
+        container: true,
+        focusable: true,
+        focused: focused,
+        label: label,
+        value: position,
+        excludeSemantics: true,
+        child: Tooltip(
+          message: label,
+          child: Focus(
+            focusNode: focusNode,
+            onFocusChange: (hasFocus) {
+              if (!mounted) return;
+              setState(() => _focusedReorderKey = hasFocus ? groupKey : null);
+            },
+            child: Listener(
+              onPointerDown: (_) => focusNode.requestFocus(),
+              child: MouseRegion(
+                cursor: _draggingReorderKey == groupKey
+                    ? SystemMouseCursors.grabbing
+                    : SystemMouseCursors.grab,
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: focused
+                          ? Border.all(color: colors.primary, width: 2)
+                          : null,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -685,21 +871,19 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     }
 
     final leftSide = _leftSideController.text.trim();
-    final rightSide = _rightSideController.text.trim();
-
     final parsedLeft = _parseLeftSide(leftSide);
-    final parsedRight = _parseRightSide(rightSide);
-    final isLambda =
-        parsedRight.length == 1 && _isEmptyStringSymbol(parsedRight.first);
-    final normalizedRight = isLambda ? <String>[] : parsedRight;
-
-    ref.read(grammarProvider.notifier).addProduction(
+    final parsed = _parseAlternatives(_rightSideController.text)!;
+    final result = ref
+        .read(grammarProvider.notifier)
+        .addProductionAlternatives(
           leftSide: parsedLeft,
-          rightSide: normalizedRight,
-          isLambda: isLambda,
+          alternatives: parsed.alternatives,
         );
 
-    _clearFields();
+    _showDuplicateFeedback(result);
+    if (result.changed) {
+      _clearFields();
+    }
   }
 
   void _updateProduction() {
@@ -710,52 +894,75 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     }
 
     final leftSide = _leftSideController.text.trim();
-    final rightSide = _rightSideController.text.trim();
-
     final parsedLeft = _parseLeftSide(leftSide);
-    final parsedRight = _parseRightSide(rightSide);
-    final isLambda =
-        parsedRight.length == 1 && _isEmptyStringSymbol(parsedRight.first);
-    final normalizedRight = isLambda ? <String>[] : parsedRight;
-
-    ref.read(grammarProvider.notifier).updateProduction(
-          _selectedProductionId!,
+    final parsed = _parseAlternatives(_rightSideController.text)!;
+    final originalLeftSide = _editingLeftSide;
+    if (originalLeftSide == null) return;
+    final result = ref
+        .read(grammarProvider.notifier)
+        .replaceProductionGroup(
+          originalLeftSide: originalLeftSide,
           leftSide: parsedLeft,
-          rightSide: normalizedRight,
-          isLambda: isLambda,
+          alternatives: parsed.alternatives,
         );
+    _showDuplicateFeedback(result);
     setState(() {
       _isEditing = false;
       _selectedProductionId = null;
+      _editingLeftSide = null;
     });
     _clearFields();
   }
 
-  void _editProduction(Production production) {
+  void _editProductionGroup(_ProductionGroup group) {
     setState(() {
-      _selectedProductionId = production.id;
+      _selectedProductionId = group.productions.first.id;
+      _editingLeftSide = List<String>.from(group.leftSide);
       _isEditing = true;
       _leftSideErrorText = null;
       _rightSideErrorText = null;
-      _leftSideController.text = _formatSymbols(production.leftSide);
-      _rightSideController.text = _formatRightSide(production);
+      _leftSideController.text = _formatSymbols(group.leftSide);
+      _rightSideController.text = _formatGroupForInput(group);
     });
   }
 
-  void _deleteProduction(Production production) {
-    ref.read(grammarProvider.notifier).deleteProduction(production.id);
-    if (_selectedProductionId == production.id) {
+  Future<void> _confirmDeleteGroup(_ProductionGroup group) async {
+    final count = group.productions.length;
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_l10n.deleteProductionGroupTitle),
+        content: Text(_l10n.deleteProductionGroupMessage(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(_l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(_l10n.deleteGroup),
+          ),
+        ],
+      ),
+    );
+    if (shouldDelete != true || !mounted) return;
+
+    ref.read(grammarProvider.notifier).deleteProductionGroup(group.leftSide);
+    if (group.productions.any(
+      (production) => production.id == _selectedProductionId,
+    )) {
       setState(() {
         _selectedProductionId = null;
+        _editingLeftSide = null;
         _isEditing = false;
       });
       _clearFields();
     }
   }
 
-  void _selectProduction(Production production) {
+  void _selectProductionGroup(_ProductionGroup group) {
     setState(() {
-      _selectedProductionId = production.id;
+      _selectedProductionId = group.productions.first.id;
     });
   }
 
@@ -763,6 +970,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     setState(() {
       _isEditing = false;
       _selectedProductionId = null;
+      _editingLeftSide = null;
       _leftSideErrorText = null;
       _rightSideErrorText = null;
     });
@@ -809,6 +1017,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     ref.read(grammarProvider.notifier).clearProductions();
     setState(() {
       _selectedProductionId = null;
+      _editingLeftSide = null;
       _isEditing = false;
     });
     _clearFields();
@@ -873,30 +1082,32 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     String? rightError;
 
     if (leftSide.isEmpty || rightSide.isEmpty) {
-      leftError = leftSide.isEmpty
-          ? 'Both left side and right side must be specified'
-          : null;
-      rightError = rightSide.isEmpty
-          ? 'Both left side and right side must be specified'
-          : null;
+      leftError = leftSide.isEmpty ? _l10n.bothSidesRequired : null;
+      rightError = rightSide.isEmpty ? _l10n.bothSidesRequired : null;
     } else {
       final parsedLeft = _parseLeftSide(leftSide);
       if (parsedLeft.isEmpty) {
-        leftError = 'Left side must contain a non-terminal symbol';
+        leftError = _l10n.leftSideMustBeNonterminal;
       } else if (parsedLeft.length != 1) {
-        leftError = 'Left side must contain exactly one non-terminal symbol';
+        leftError = _l10n.leftSideExactlyOneNonterminal;
       }
 
-      final parsedRight = _parseRightSide(rightSide);
-      if (parsedRight.isEmpty) {
-        rightError = _l10n.rightSideAtLeastOneSymbol;
-      } else {
-        final emptyStringCount = parsedRight.where(_isEmptyStringSymbol).length;
-        if (emptyStringCount > 1) {
+      final parsed = _parseAlternatives(rightSide);
+      switch (parsed?.error) {
+        case _AlternativeParseError.emptyAlternative:
+          rightError = _l10n.rightSideEmptyAlternative;
+          break;
+        case _AlternativeParseError.arrowExpression:
+          rightError = _l10n.rightSideArrowNotAccepted;
+          break;
+        case _AlternativeParseError.repeatedEmptyString:
           rightError = _l10n.rightSideSingleLambda;
-        } else if (emptyStringCount == 1 && parsedRight.length > 1) {
+          break;
+        case _AlternativeParseError.mixedEmptyString:
           rightError = _l10n.lambdaMustBeOnlySymbol;
-        }
+          break;
+        case null:
+          break;
       }
     }
 
@@ -939,6 +1150,66 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     return trimmed.split('');
   }
 
+  _ParsedAlternatives? _parseAlternatives(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    if (trimmed.contains('->') || trimmed.contains('→')) {
+      return const _ParsedAlternatives.error(
+        _AlternativeParseError.arrowExpression,
+      );
+    }
+
+    final rawAlternatives = <String>[];
+    var buffer = StringBuffer();
+    for (var index = 0; index < trimmed.length; index++) {
+      final character = trimmed[index];
+      if (character == '\\' &&
+          index + 1 < trimmed.length &&
+          trimmed[index + 1] == '|') {
+        buffer.write('|');
+        index++;
+      } else if (character == '|') {
+        rawAlternatives.add(buffer.toString().trim());
+        buffer = StringBuffer();
+      } else {
+        buffer.write(character);
+      }
+    }
+    rawAlternatives.add(buffer.toString().trim());
+    if (rawAlternatives.any((alternative) => alternative.isEmpty)) {
+      return const _ParsedAlternatives.error(
+        _AlternativeParseError.emptyAlternative,
+      );
+    }
+
+    final alternatives = <ProductionAlternativeDraft>[];
+    for (final alternative in rawAlternatives) {
+      if (_isEmptyStringSymbol(alternative)) {
+        alternatives.add(
+          const ProductionAlternativeDraft(rightSide: [], isLambda: true),
+        );
+        continue;
+      }
+
+      final symbols = _parseRightSide(alternative);
+      final emptyStringCount = symbols.where(_isEmptyStringSymbol).length;
+      if (emptyStringCount > 1) {
+        return const _ParsedAlternatives.error(
+          _AlternativeParseError.repeatedEmptyString,
+        );
+      }
+      if (emptyStringCount == 1) {
+        return const _ParsedAlternatives.error(
+          _AlternativeParseError.mixedEmptyString,
+        );
+      }
+      alternatives.add(ProductionAlternativeDraft(rightSide: symbols));
+    }
+    return _ParsedAlternatives(alternatives);
+  }
+
   bool _isEmptyStringSymbol(String symbol) => isEpsilonSymbol(symbol);
 
   String _formatSymbols(List<String> symbols) {
@@ -950,10 +1221,94 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
 
   String _formatRightSide(Production production) {
     if (production.isLambda || production.rightSide.isEmpty) {
-      return kEpsilonSymbol;
+      return EmptyStringNotation.symbolOf(context);
     }
-    return _formatSymbols(production.rightSide);
+    return _formatSymbolsForInput(production.rightSide);
   }
+
+  String _formatSymbolsForInput(List<String> symbols) {
+    final escaped = symbols
+        .map((symbol) => symbol.replaceAll('|', r'\|'))
+        .toList(growable: false);
+    return symbols.any((symbol) => symbol.length > 1)
+        ? escaped.join(' ')
+        : escaped.join();
+  }
+
+  String _formatGroupForInput(_ProductionGroup group) =>
+      group.productions.map(_formatRightSide).join(' | ');
+
+  String _formatGroupForDisplay(_ProductionGroup group) =>
+      group.productions.map(_formatRightSide).join(' | ');
+
+  void _showDuplicateFeedback(ProductionGroupMutationResult result) {
+    if (result.duplicateCount == 0 || !mounted) return;
+    final message = result.addedCount > 0
+        ? _l10n.productionAlternativesSkippedDuplicates(
+            result.addedCount,
+            result.duplicateCount,
+          )
+        : _l10n.productionAlternativesAlreadyExist(result.duplicateCount);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static List<_ProductionGroup> _groupProductions(
+    Iterable<Production> productions,
+  ) {
+    final groups = <_ProductionGroup>[];
+    for (final production in productions) {
+      final index = groups.indexWhere(
+        (group) => listEquals(group.leftSide, production.leftSide),
+      );
+      if (index == -1) {
+        groups.add(
+          _ProductionGroup(
+            leftSide: List<String>.from(production.leftSide),
+            productions: [production],
+          ),
+        );
+      } else {
+        groups[index].productions.add(production);
+      }
+    }
+    return groups;
+  }
+
+  static _ProductionGroup _groupForProduction(
+    Iterable<Production> productions,
+    Production selected,
+  ) => _groupProductions(productions).firstWhere(
+    (group) => listEquals(group.leftSide, selected.leftSide),
+    orElse: () => _ProductionGroup(
+      leftSide: List<String>.from(selected.leftSide),
+      productions: [selected],
+    ),
+  );
+}
+
+class _ProductionGroup {
+  _ProductionGroup({required this.leftSide, required this.productions});
+
+  final List<String> leftSide;
+  final List<Production> productions;
+}
+
+enum _AlternativeParseError {
+  emptyAlternative,
+  arrowExpression,
+  repeatedEmptyString,
+  mixedEmptyString,
+}
+
+class _ParsedAlternatives {
+  const _ParsedAlternatives(this.alternatives) : error = null;
+
+  const _ParsedAlternatives.error(this.error) : alternatives = const [];
+
+  final List<ProductionAlternativeDraft> alternatives;
+  final _AlternativeParseError? error;
 }
 
 class _EpsilonShortcutButton extends StatelessWidget {

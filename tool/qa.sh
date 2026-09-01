@@ -734,6 +734,10 @@ category_format() {
     exec_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" -- \
       python3 tool/check_comment_docs_english.py
+    exec_step format empty-string-notation \
+      "Reviewed epsilon/lambda presentation literal inventory" \
+      "python3 tool/check_empty_string_notation_literals.py" -- \
+      python3 tool/check_empty_string_notation_literals.py
     exec_step format stale-branding "Active instructions use Turing Lab branding" \
       "python3 tool/check_stale_branding.py" -- \
       python3 tool/check_stale_branding.py
@@ -771,6 +775,9 @@ category_format() {
   if [[ "$ALLOW_MISSING_TOOLCHAIN" == "1" ]]; then
     skip_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" missing_python3_opt_in
+    skip_step format empty-string-notation \
+      "Reviewed epsilon/lambda presentation literal inventory" \
+      "python3 tool/check_empty_string_notation_literals.py" missing_python3_opt_in
     skip_step format stale-branding "Active instructions use Turing Lab branding" \
       "python3 tool/check_stale_branding.py" missing_python3_opt_in
     skip_step format issue-roadmap "Issue roadmap schema and dependencies" \
@@ -800,6 +807,10 @@ category_format() {
   else
     record_step format comment-language "Comments and docs are English" \
       "python3 tool/check_comment_docs_english.py" failed missing_python3 - 0
+    record_step format empty-string-notation \
+      "Reviewed epsilon/lambda presentation literal inventory" \
+      "python3 tool/check_empty_string_notation_literals.py" \
+      failed missing_python3 - 0
     record_step format stale-branding "Active instructions use Turing Lab branding" \
       "python3 tool/check_stale_branding.py" failed missing_python3 - 0
     record_step format issue-roadmap "Issue roadmap schema and dependencies" \

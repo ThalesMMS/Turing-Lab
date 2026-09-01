@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/models/tm_space_profile.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_presentation_primitives.dart';
@@ -164,13 +165,21 @@ class TMSpaceResultView extends StatelessWidget {
           buildTMMetricRow(
             context,
             'Visited span maximum',
-            _formatSpaceMaximum(row.maximumVisitedSpan, valueFormatter),
+            _formatSpaceMaximum(
+              context,
+              row.maximumVisitedSpan,
+              valueFormatter,
+            ),
             highlight: row.maximumVisitedSpan != null,
           ),
           buildTMMetricRow(
             context,
             'Maximum nonblank cells',
-            _formatSpaceMaximum(row.maximumNonBlankCells, valueFormatter),
+            _formatSpaceMaximum(
+              context,
+              row.maximumNonBlankCells,
+              valueFormatter,
+            ),
             highlight: row.maximumNonBlankCells != null,
           ),
           if (row.inconclusiveInputs > 0)
@@ -195,11 +204,14 @@ class TMSpaceResultView extends StatelessWidget {
   }
 
   String _formatSpaceMaximum(
+    BuildContext context,
     TMSpaceMaximum? maximum,
     LocaleValueFormatter valueFormatter,
   ) {
     if (maximum == null) return 'Not observed';
-    final witness = maximum.witnessInput.isEmpty ? 'ε' : maximum.witnessInput;
+    final witness = maximum.witnessInput.isEmpty
+        ? EmptyStringNotation.symbolOf(context)
+        : maximum.witnessInput;
     return '${valueFormatter.integer(maximum.value)} cell(s) • witness $witness';
   }
 }

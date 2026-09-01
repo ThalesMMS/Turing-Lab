@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/constants/help_catalog.dart';
 import 'package:turing_lab/core/constants/help_topic_ids.dart';
@@ -28,9 +29,7 @@ final _searchCatalog = HelpCatalog(
     HelpCategoryDefinition(
       id: 'grammar',
       icon: 'grammar',
-      children: [
-        HelpTopicDefinition(id: 'topic.unrelated', icon: 'topic'),
-      ],
+      children: [HelpTopicDefinition(id: 'topic.unrelated', icon: 'topic')],
     ),
   ],
 );
@@ -138,10 +137,7 @@ void main() {
         copy: enHelpCatalogCopy,
       );
 
-      expect(
-        () => controller.expandedIds.add('fsa'),
-        throwsUnsupportedError,
-      );
+      expect(() => controller.expandedIds.add('fsa'), throwsUnsupportedError);
       expect(controller.expandedIds, {'getting-started'});
     });
 
@@ -188,14 +184,16 @@ void main() {
       );
 
       expect(result.matchingTopicIds, {'topic.title'});
-      expect(
-        result.visibleNodeIds,
-        {'automata', 'automata.editor', 'topic.title'},
-      );
-      expect(
-        result.expandedNodeIds,
-        {'automata', 'automata.editor', 'topic.title'},
-      );
+      expect(result.visibleNodeIds, {
+        'automata',
+        'automata.editor',
+        'topic.title',
+      });
+      expect(result.expandedNodeIds, {
+        'automata',
+        'automata.editor',
+        'topic.title',
+      });
     });
 
     test('body match finds only the topic containing the literal text', () {
@@ -219,26 +217,20 @@ void main() {
     });
 
     test('group title match retains all topics below that group', () {
-      final result = searchHelpCatalog(
-        _searchCatalog,
-        _searchCopy,
-        'automata',
-      );
+      final result = searchHelpCatalog(_searchCatalog, _searchCopy, 'automata');
 
-      expect(
-        result.matchingTopicIds,
-        {'topic.title', 'topic.body', 'topic.keyword', 'topic.literal'},
-      );
+      expect(result.matchingTopicIds, {
+        'topic.title',
+        'topic.body',
+        'topic.keyword',
+        'topic.literal',
+      });
       expect(result.visibleNodeIds, isNot(contains('grammar')));
       expect(result.visibleNodeIds, isNot(contains('topic.unrelated')));
     });
 
     test('regex metacharacters stay literal', () {
-      final result = searchHelpCatalog(
-        _searchCatalog,
-        _searchCopy,
-        'a?',
-      );
+      final result = searchHelpCatalog(_searchCatalog, _searchCopy, 'a?');
 
       expect(result.matchingTopicIds, {'topic.literal'});
     });
@@ -255,6 +247,35 @@ void main() {
       expect(result.expandedNodeIds, isEmpty);
     });
 
+    test('epsilon and lambda names and glyphs return equivalent topics', () {
+      final results = [
+        for (final query in ['epsilon', 'ε', 'ϵ', 'lambda', 'λ'])
+          searchHelpCatalog(kHelpCatalog, enHelpCatalogCopy, query),
+      ];
+
+      for (final result in results.skip(1)) {
+        expect(result.matchingTopicIds, results.first.matchingTopicIds);
+      }
+      expect(
+        results.first.matchingTopicIds,
+        contains(HelpTopicIds.fsaTheoryEpsilon),
+      );
+    });
+
+    test('epsilon aliases highlight the formatted lambda copy', () {
+      final spans = buildHelpHighlightSpans(
+        'Use λ and lambda closure.',
+        'epsilon',
+        const TextStyle(),
+        const TextStyle(backgroundColor: Colors.yellow),
+      );
+      final highlighted = spans.where(
+        (span) => span.style?.backgroundColor == Colors.yellow,
+      );
+
+      expect(highlighted.map((span) => span.text), ['λ', 'lambda']);
+    });
+
     test('clearing search restores prior expansions', () {
       final controller = HelpTreeController(
         catalog: _searchCatalog,
@@ -266,10 +287,11 @@ void main() {
       controller.toggle('grammar');
 
       controller.setQuery('needle');
-      expect(
-        controller.expandedIds,
-        {'automata', 'automata.editor', 'topic.body'},
-      );
+      expect(controller.expandedIds, {
+        'automata',
+        'automata.editor',
+        'topic.body',
+      });
 
       controller.clearQuery();
       expect(controller.expandedIds, {'automata', 'grammar'});
@@ -302,10 +324,11 @@ void main() {
       controller.toggle('automata.editor');
       controller.toggle('topic.body');
 
-      expect(
-        controller.expandedIds,
-        {'automata', 'automata.editor', 'topic.body'},
-      );
+      expect(controller.expandedIds, {
+        'automata',
+        'automata.editor',
+        'topic.body',
+      });
     });
 
     test('an empty query is not a search', () {

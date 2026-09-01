@@ -14,9 +14,12 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/language_comparison_outcome.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/data/services/file_operations_service.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_controller.dart';
 import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
@@ -81,6 +84,9 @@ class _FakeFilePicker extends FilePicker {
   final Queue<FilePickerResult?> pickResults = Queue<FilePickerResult?>();
   final Queue<String?> saveResults = Queue<String?>();
   Uint8List? lastSaveBytes;
+  FileType? lastPickType;
+  List<String>? lastAllowedExtensions;
+  Object? pickError;
 
   @override
   Future<FilePickerResult?> pickFiles({
@@ -97,6 +103,9 @@ class _FakeFilePicker extends FilePicker {
     bool lockParentWindow = false,
     bool readSequential = false,
   }) async {
+    lastPickType = type;
+    lastAllowedExtensions = allowedExtensions;
+    if (pickError != null) throw pickError!;
     if (pickResults.isEmpty) return null;
     return pickResults.removeFirst();
   }
@@ -157,43 +166,47 @@ Future<void> _pumpAlgorithmPanel(
   String? equivalenceDetails,
   LanguageComparisonRunner? languageComparisonRunner,
   FileOperationsService? fileService,
+  String emptyStringSymbol = kEpsilonSymbol,
 }) async {
   final automatonNotifier = AutomatonStateNotifier();
   if (currentAutomaton != null) {
     automatonNotifier.updateAutomaton(currentAutomaton);
   }
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        automatonStateProvider.overrideWith((ref) => automatonNotifier),
-      ],
-      child: MaterialApp(
-        home: Scaffold(
-          body: AlgorithmPanel(
-            currentAutomaton: currentAutomaton,
-            onNfaToDfa: onNfaToDfa,
-            onMinimizeDfa: onMinimizeDfa,
-            onClear: onClear,
-            onRegexToNfa: onRegexToNfa,
-            onFaToRegex: onFaToRegex,
-            onRemoveLambda: onRemoveLambda,
-            onCompleteDfa: onCompleteDfa,
-            onComplementDfa: onComplementDfa,
-            onUnionDfa: onUnionDfa,
-            onConcatenateFsa: onConcatenateFsa,
-            onKleeneStarFsa: onKleeneStarFsa,
-            onReverseFsa: onReverseFsa,
-            onIntersectionDfa: onIntersectionDfa,
-            onDifferenceDfa: onDifferenceDfa,
-            onPrefixClosure: onPrefixClosure,
-            onSuffixClosure: onSuffixClosure,
-            onFsaToGrammar: onFsaToGrammar,
-            onAutoLayout: onAutoLayout,
-            onCompareEquivalence: onCompareEquivalence,
-            equivalenceResult: equivalenceResult,
-            equivalenceDetails: equivalenceDetails,
-            languageComparisonRunner: languageComparisonRunner,
-            fileService: fileService,
+    EmptyStringNotation(
+      symbol: emptyStringSymbol,
+      child: ProviderScope(
+        overrides: [
+          automatonStateProvider.overrideWith((ref) => automatonNotifier),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: AlgorithmPanel(
+              currentAutomaton: currentAutomaton,
+              onNfaToDfa: onNfaToDfa,
+              onMinimizeDfa: onMinimizeDfa,
+              onClear: onClear,
+              onRegexToNfa: onRegexToNfa,
+              onFaToRegex: onFaToRegex,
+              onRemoveLambda: onRemoveLambda,
+              onCompleteDfa: onCompleteDfa,
+              onComplementDfa: onComplementDfa,
+              onUnionDfa: onUnionDfa,
+              onConcatenateFsa: onConcatenateFsa,
+              onKleeneStarFsa: onKleeneStarFsa,
+              onReverseFsa: onReverseFsa,
+              onIntersectionDfa: onIntersectionDfa,
+              onDifferenceDfa: onDifferenceDfa,
+              onPrefixClosure: onPrefixClosure,
+              onSuffixClosure: onSuffixClosure,
+              onFsaToGrammar: onFsaToGrammar,
+              onAutoLayout: onAutoLayout,
+              onCompareEquivalence: onCompareEquivalence,
+              equivalenceResult: equivalenceResult,
+              equivalenceDetails: equivalenceDetails,
+              languageComparisonRunner: languageComparisonRunner,
+              fileService: fileService,
+            ),
           ),
         ),
       ),
@@ -300,6 +313,31 @@ void main() {
         findsOneWidget,
       );
     });
+
+    testWidgets(
+      'uses lambda label without changing the canonical selection key',
+      (tester) async {
+        var calls = 0;
+        await _pumpAlgorithmPanel(
+          tester,
+          emptyStringSymbol: kLambdaSymbol,
+          onRemoveLambda: () => calls++,
+        );
+
+        final label = find.text('Remove λ-transitions');
+        expect(label, findsOneWidget);
+
+        await tester.tap(label);
+        await tester.pump();
+
+        expect(calls, 1);
+        final button = tester.widget<AlgorithmButton>(
+          find.ancestor(of: label, matching: find.byType(AlgorithmButton)),
+        );
+        expect(button.isSelected, isTrue);
+        expect(button.executionStatus, 'Completed successfully');
+      },
+    );
 
     testWidgets('triggers auto layout callback when button is tapped', (
       tester,
@@ -537,7 +575,64 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(picker.lastPickType, FileType.any);
+      expect(picker.lastAllowedExtensions, isNull);
     });
+
+    testWidgets(
+      'binary operations use the Android-compatible picker and load a second FSA',
+      (tester) async {
+        final picker = _FakeFilePicker()
+          ..pickResults.add(_pickedComparisonFile('other'));
+        FilePicker.platform = picker;
+        final fileService = _MockFileOperationsService()
+          ..automatonLoadResults.add(Success<FSA>(_loadedAutomaton()));
+        FSA? loadedOther;
+
+        await _pumpAlgorithmPanel(
+          tester,
+          currentAutomaton: _loadedAutomaton(),
+          fileService: fileService,
+          onUnionDfa: (other) async {
+            loadedOther = other;
+          },
+        );
+
+        await tester.ensureVisible(find.text('Union of DFAs'));
+        await tester.tap(find.text('Union of DFAs'));
+        await tester.pumpAndSettle();
+
+        expect(loadedOther, isNotNull);
+        expect(picker.lastPickType, FileType.any);
+        expect(picker.lastAllowedExtensions, isNull);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'binary picker failures are handled without an unhandled error',
+      (tester) async {
+        final picker = _FakeFilePicker()
+          ..pickError = StateError('picker unavailable');
+        FilePicker.platform = picker;
+
+        await _pumpAlgorithmPanel(
+          tester,
+          currentAutomaton: _loadedAutomaton(),
+          onUnionDfa: (_) async {},
+        );
+
+        await tester.ensureVisible(find.text('Union of DFAs'));
+        await tester.tap(find.text('Union of DFAs'));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(
+          find.textContaining('Could not open the automaton file picker'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets(
       'production comparison ignores an old revision after a newer request',

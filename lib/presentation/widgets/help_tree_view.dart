@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/models/help_catalog.dart';
 import '../../l10n/help_catalog_copy.dart';
 import '../controllers/help_tree_controller.dart';
+import '../empty_string_notation.dart';
 import 'help_icon_mapper.dart';
 import 'help_search_highlight.dart';
 
@@ -13,15 +14,11 @@ const _noResultsHelpEntryKey = ValueKey<String>('help-entry-no-results');
 ValueKey<String> _helpNodeEntryKey(String nodeId) =>
     ValueKey<String>('help-entry-$nodeId');
 
-typedef HelpTopicContentBuilder = Widget? Function(
-  BuildContext context,
-  HelpTopicDefinition topic,
-);
+typedef HelpTopicContentBuilder =
+    Widget? Function(BuildContext context, HelpTopicDefinition topic);
 
-typedef HelpDisclosureSemanticLabel = String Function(
-  String title, {
-  required bool expanded,
-});
+typedef HelpDisclosureSemanticLabel =
+    String Function(String title, {required bool expanded});
 
 class HelpTreeView extends StatelessWidget {
   const HelpTreeView({
@@ -37,6 +34,7 @@ class HelpTreeView extends StatelessWidget {
     required this.noResultsTitle,
     required this.noResultsDescription,
     this.topicContentBuilder,
+    this.preserveNotationComparisonTopicIds = const {},
   });
 
   final HelpTreeController controller;
@@ -50,6 +48,7 @@ class HelpTreeView extends StatelessWidget {
   final String noResultsTitle;
   final String noResultsDescription;
   final HelpTopicContentBuilder? topicContentBuilder;
+  final Set<String> preserveNotationComparisonTopicIds;
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +62,8 @@ class HelpTreeView extends StatelessWidget {
         final feedbackOffset = controller.topicUnavailable ? 1 : 0;
         final noResultsOffset =
             controller.isSearching && controller.matchingTopicIds.isEmpty
-                ? 1
-                : 0;
+            ? 1
+            : 0;
         final entryIndexes = <Key, int>{
           if (feedbackOffset == 1) _unavailableHelpEntryKey: 0,
           if (noResultsOffset == 1) _noResultsHelpEntryKey: feedbackOffset,
@@ -133,19 +132,17 @@ class HelpTreeView extends StatelessWidget {
     if (copy == null) return const SizedBox.shrink();
 
     final expanded = controller.expandedIds.contains(node.id);
+    final displayTitle = _formatNotation(context, copy.title, node.id);
     final topic = node is HelpTopicDefinition ? node : null;
     final row = _HelpNodeRow(
       rowKey: ValueKey('help-node-${node.id}'),
       node: node,
-      title: copy.title,
+      title: displayTitle,
       query: controller.query,
       depth: entry.depth,
       expanded: expanded,
       focusNode: nodeFocusNodes[node.id],
-      semanticLabel: disclosureSemanticLabel(
-        copy.title,
-        expanded: expanded,
-      ),
+      semanticLabel: disclosureSemanticLabel(displayTitle, expanded: expanded),
       onTap: () => controller.toggle(node.id),
     );
 
@@ -163,6 +160,10 @@ class HelpTreeView extends StatelessWidget {
             onRelatedTopicTap: controller.revealTopic,
             query: controller.query,
             specialContent: topicContentBuilder?.call(context, topic),
+            preserveNotationComparison: preserveNotationComparisonTopicIds
+                .contains(topic.id),
+            preserveNotationComparisonTopicIds:
+                preserveNotationComparisonTopicIds,
           );
     final content = topic == null
         ? row
@@ -214,6 +215,14 @@ class HelpTreeView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  String _formatNotation(BuildContext context, String text, String nodeId) {
+    return EmptyStringNotation.formatTerminology(
+      context,
+      text,
+      preserveComparison: preserveNotationComparisonTopicIds.contains(nodeId),
     );
   }
 }
@@ -344,6 +353,8 @@ class _HelpTopicBody extends StatelessWidget {
     required this.relatedTopicsLabel,
     required this.onRelatedTopicTap,
     required this.query,
+    required this.preserveNotationComparison,
+    required this.preserveNotationComparisonTopicIds,
     this.specialContent,
   });
 
@@ -355,6 +366,8 @@ class _HelpTopicBody extends StatelessWidget {
   final ValueChanged<String> onRelatedTopicTap;
   final String query;
   final Widget? specialContent;
+  final bool preserveNotationComparison;
+  final Set<String> preserveNotationComparisonTopicIds;
 
   @override
   Widget build(BuildContext context) {
@@ -390,6 +403,7 @@ class _HelpTopicBody extends StatelessWidget {
                     topicId: topic.id,
                     index: index,
                     block: block,
+                    preserveNotationComparison: preserveNotationComparison,
                     query: query,
                     bodyStyle: bodyStyle,
                     highlightStyle: highlightStyle,
@@ -420,7 +434,12 @@ class _HelpTopicBody extends StatelessWidget {
                       onPressed: () => onRelatedTopicTap(relatedId),
                       icon: const Icon(Icons.arrow_forward, size: 18),
                       label: Text(
-                        catalogCopy[relatedId]?.title ?? relatedId,
+                        EmptyStringNotation.formatTerminology(
+                          context,
+                          catalogCopy[relatedId]?.title ?? relatedId,
+                          preserveComparison: preserveNotationComparisonTopicIds
+                              .contains(relatedId),
+                        ),
                         softWrap: true,
                       ),
                     ),
@@ -447,6 +466,7 @@ class _HelpContentBlockView extends StatelessWidget {
     required this.query,
     required this.bodyStyle,
     required this.highlightStyle,
+    required this.preserveNotationComparison,
   });
 
   final String topicId;
@@ -455,6 +475,7 @@ class _HelpContentBlockView extends StatelessWidget {
   final String query;
   final TextStyle? bodyStyle;
   final TextStyle highlightStyle;
+  final bool preserveNotationComparison;
 
   @override
   Widget build(BuildContext context) {
@@ -465,99 +486,104 @@ class _HelpContentBlockView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: switch (block) {
         HelpParagraphBlock(:final text) => SelectableText.rich(
-            key: ValueKey('help-block-paragraph-$topicId-$index'),
-            TextSpan(
-              children: _highlight(text, bodyStyle),
-            ),
-          ),
+          key: ValueKey('help-block-paragraph-$topicId-$index'),
+          TextSpan(children: _highlight(context, text, bodyStyle)),
+        ),
         HelpHeadingBlock(:final text) => Semantics(
-            key: ValueKey('help-block-heading-$topicId-$index'),
-            header: true,
-            child: Text.rich(
-              TextSpan(
-                children: _highlight(
-                  text,
-                  theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+          key: ValueKey('help-block-heading-$topicId-$index'),
+          header: true,
+          child: Text.rich(
+            TextSpan(
+              children: _highlight(
+                context,
+                text,
+                theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
+        ),
         HelpOrderedStepsBlock(:final steps) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final (stepIndex, step) in steps.indexed)
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: stepIndex == steps.length - 1 ? 0 : 12,
-                  ),
-                  child: SelectableText.rich(
-                    key: ValueKey(
-                      'help-block-step-$topicId-$index-$stepIndex',
-                    ),
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${stepIndex + 1}.  ',
-                          style: bodyStyle?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.primary,
-                          ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final (stepIndex, step) in steps.indexed)
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: stepIndex == steps.length - 1 ? 0 : 12,
+                ),
+                child: SelectableText.rich(
+                  key: ValueKey('help-block-step-$topicId-$index-$stepIndex'),
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${stepIndex + 1}.  ',
+                        style: bodyStyle?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
                         ),
-                        ..._highlight(step, bodyStyle),
-                      ],
-                    ),
+                      ),
+                      ..._highlight(context, step, bodyStyle),
+                    ],
                   ),
                 ),
-            ],
-          ),
-        HelpCalloutBlock(:final text) => Semantics(
-            container: true,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ExcludeSemantics(
-                      child: Icon(
-                        Icons.info_outline,
-                        size: 20,
-                        color: colorScheme.onSecondaryContainer,
-                      ),
+          ],
+        ),
+        HelpCalloutBlock(:final text) => Semantics(
+          container: true,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colorScheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ExcludeSemantics(
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: colorScheme.onSecondaryContainer,
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: SelectableText.rich(
-                        key: ValueKey(
-                          'help-block-callout-$topicId-$index',
-                        ),
-                        TextSpan(
-                          children: _highlight(
-                            text,
-                            bodyStyle?.copyWith(
-                              color: colorScheme.onSecondaryContainer,
-                            ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SelectableText.rich(
+                      key: ValueKey('help-block-callout-$topicId-$index'),
+                      TextSpan(
+                        children: _highlight(
+                          context,
+                          text,
+                          bodyStyle?.copyWith(
+                            color: colorScheme.onSecondaryContainer,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
+        ),
       },
     );
   }
 
-  List<TextSpan> _highlight(String text, TextStyle? style) {
-    return buildHelpHighlightSpans(text, query, style, highlightStyle);
+  List<TextSpan> _highlight(
+    BuildContext context,
+    String text,
+    TextStyle? style,
+  ) {
+    final displayText = EmptyStringNotation.formatTerminology(
+      context,
+      text,
+      preserveComparison: preserveNotationComparison,
+    );
+    return buildHelpHighlightSpans(displayText, query, style, highlightStyle);
   }
 }
 

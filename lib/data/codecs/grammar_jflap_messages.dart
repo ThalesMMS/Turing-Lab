@@ -80,6 +80,9 @@ abstract final class GrammarJflapMessages {
         },
       );
 
+  static StructuredMessage startOrderNormalized() =>
+      _information('start-order-normalized');
+
   static StructuredMessage _error(
     String code, {
     Map<String, StructuredMessageArgument> arguments = const {},

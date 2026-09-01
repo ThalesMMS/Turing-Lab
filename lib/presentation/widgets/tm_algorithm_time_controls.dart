@@ -4,6 +4,7 @@ import '../../core/algorithms/tm_time_profiler.dart';
 import '../../core/models/tm.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_inputs.dart';
@@ -71,7 +72,10 @@ class TMTimeProfilerControls extends StatelessWidget {
               value: state.time.progress!.fraction.clamp(0, 1),
               semanticsLabel: state.time.progress!.label == null
                   ? null
-                  : strings.localizeWorkflowText(state.time.progress!.label!),
+                  : EmptyStringNotation.formatMarkers(
+                      context,
+                      strings.localizeWorkflowText(state.time.progress!.label!),
+                    ),
             ),
           ],
         ],

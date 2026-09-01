@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/lr1_parser.dart';
+import 'package:turing_lab/core/models/derivation_tree.dart';
+import 'package:turing_lab/core/models/derivation_tree_node.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/lr1_models.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -50,9 +52,13 @@ void main() {
       expect(construction.augmentedProduction.leftSide.single, "S''");
       final accepts = construction.table.actions.values
           .expand((row) => row.entries)
-          .where((entry) =>
-              entry.key == LR1Parser.endMarker &&
-              entry.value.any((action) => action.kind == LR1ActionKind.accept));
+          .where(
+            (entry) =>
+                entry.key == LR1Parser.endMarker &&
+                entry.value.any(
+                  (action) => action.kind == LR1ActionKind.accept,
+                ),
+          );
       expect(accepts, hasLength(1));
       expect(
         construction.states
@@ -105,6 +111,21 @@ void main() {
       expect(LR1Parser.parse(source, 'i').accepted, isTrue);
     });
 
+    test('reconstructs source-grammar trees for the JFLAP fixture', () {
+      final xml = File(
+        'test/fixtures/interoperability/grammar_lr1_not_slr.jff',
+      ).readAsStringSync();
+      final source = const GrammarXmlCodec().decodeGrammarXml(xml).data!;
+
+      for (final input in ['i=i', '*i=i', 'i']) {
+        final result = LR1Parser.parse(source, input);
+
+        expect(result.outcome, LR1ParseOutcome.accepted, reason: input);
+        expect(result.tree, isNotNull, reason: input);
+        _expectSourceTree(source, result.tree!, input);
+      }
+    });
+
     test('propagates FIRST(beta lookahead) through nullable chains', () {
       final source = grammar(
         terminals: {'b', 'c'},
@@ -130,57 +151,62 @@ void main() {
       expect(LR1Parser.parse(source, 'bc').accepted, isTrue);
     });
 
-    test('preserves shift/reduce and reduce/reduce actions with provenance',
-        () {
-      final shiftReduce = grammar(
-        terminals: {'id', '+'},
-        nonTerminals: {'E'},
-        start: 'E',
-        productions: [
-          p(id: 'p1', leftSide: const ['E'], rightSide: const ['E', '+', 'E']),
-          p(id: 'p2', leftSide: const ['E'], rightSide: const ['id']),
-        ],
-      );
-      final reduceReduce = grammar(
-        terminals: {'a'},
-        nonTerminals: {'S', 'A', 'B'},
-        productions: [
-          p(id: 'p1', leftSide: const ['S'], rightSide: const ['A']),
-          p(id: 'p2', leftSide: const ['S'], rightSide: const ['B']),
-          p(id: 'p3', leftSide: const ['A'], rightSide: const ['a']),
-          p(id: 'p4', leftSide: const ['B'], rightSide: const ['a']),
-        ],
-      );
+    test(
+      'preserves shift/reduce and reduce/reduce actions with provenance',
+      () {
+        final shiftReduce = grammar(
+          terminals: {'id', '+'},
+          nonTerminals: {'E'},
+          start: 'E',
+          productions: [
+            p(
+              id: 'p1',
+              leftSide: const ['E'],
+              rightSide: const ['E', '+', 'E'],
+            ),
+            p(id: 'p2', leftSide: const ['E'], rightSide: const ['id']),
+          ],
+        );
+        final reduceReduce = grammar(
+          terminals: {'a'},
+          nonTerminals: {'S', 'A', 'B'},
+          productions: [
+            p(id: 'p1', leftSide: const ['S'], rightSide: const ['A']),
+            p(id: 'p2', leftSide: const ['S'], rightSide: const ['B']),
+            p(id: 'p3', leftSide: const ['A'], rightSide: const ['a']),
+            p(id: 'p4', leftSide: const ['B'], rightSide: const ['a']),
+          ],
+        );
 
-      final sr = LR1Parser.build(shiftReduce).construction!.table.conflicts;
-      final rr = LR1Parser.build(reduceReduce).construction!.table.conflicts;
+        final sr = LR1Parser.build(shiftReduce).construction!.table.conflicts;
+        final rr = LR1Parser.build(reduceReduce).construction!.table.conflicts;
 
-      expect(sr, isNotEmpty);
-      expect(sr.first.kind, LR1ConflictKind.shiftReduce);
-      expect(
-          sr.first.actions.expand((action) => action.sourceItems), isNotEmpty);
-      expect(rr, isNotEmpty);
-      expect(rr.first.kind, LR1ConflictKind.reduceReduce);
-      expect(
-        rr.first.actions
-            .map((action) => action.productionId)
-            .whereType<String>(),
-        containsAll({'p3', 'p4'}),
-      );
-      expect(LR1Parser.parse(shiftReduce, 'id+id').outcome,
-          LR1ParseOutcome.conflict);
-    });
+        expect(sr, isNotEmpty);
+        expect(sr.first.kind, LR1ConflictKind.shiftReduce);
+        expect(
+          sr.first.actions.expand((action) => action.sourceItems),
+          isNotEmpty,
+        );
+        expect(rr, isNotEmpty);
+        expect(rr.first.kind, LR1ConflictKind.reduceReduce);
+        expect(
+          rr.first.actions
+              .map((action) => action.productionId)
+              .whereType<String>(),
+          containsAll({'p3', 'p4'}),
+        );
+        expect(
+          LR1Parser.parse(shiftReduce, 'id+id').outcome,
+          LR1ParseOutcome.conflict,
+        );
+      },
+    );
 
     test('is deterministic across production insertion orders', () {
       final productions = [
         p(id: 'p1', leftSide: const ['S'], rightSide: const ['A']),
         p(id: 'p2', leftSide: const ['A'], rightSide: const ['a', 'A']),
-        p(
-          id: 'p3',
-          leftSide: const ['A'],
-          rightSide: const [],
-          isLambda: true,
-        ),
+        p(id: 'p3', leftSide: const ['A'], rightSide: const [], isLambda: true),
       ];
       final forward = grammar(
         terminals: {'a'},
@@ -213,8 +239,9 @@ void main() {
         ],
       );
 
-      final conflict =
-          LR1Parser.build(source).construction!.table.conflicts.single;
+      final conflict = LR1Parser.build(
+        source,
+      ).construction!.table.conflicts.single;
 
       expect(conflict.kind, LR1ConflictKind.reduceReduce);
       expect(
@@ -255,25 +282,27 @@ void main() {
       expect(reduction.stateStackAfter, hasLength(2));
     });
 
-    test('distinguishes tokenization, cancellation, timeout, and step limits',
-        () {
-      expect(
-        LR1Parser.parse(source, 'x').outcome,
-        LR1ParseOutcome.tokenizationFailure,
-      );
-      expect(
-        LR1Parser.parse(source, 'token🙂', isCancelled: () => true).outcome,
-        LR1ParseOutcome.cancelled,
-      );
-      expect(
-        LR1Parser.parse(source, 'token🙂', timeout: Duration.zero).outcome,
-        LR1ParseOutcome.timedOut,
-      );
-      expect(
-        LR1Parser.parse(source, 'token🙂', maxSteps: 1).outcome,
-        LR1ParseOutcome.resourceLimit,
-      );
-    });
+    test(
+      'distinguishes tokenization, cancellation, timeout, and step limits',
+      () {
+        expect(
+          LR1Parser.parse(source, 'x').outcome,
+          LR1ParseOutcome.tokenizationFailure,
+        );
+        expect(
+          LR1Parser.parse(source, 'token🙂', isCancelled: () => true).outcome,
+          LR1ParseOutcome.cancelled,
+        );
+        expect(
+          LR1Parser.parse(source, 'token🙂', timeout: Duration.zero).outcome,
+          LR1ParseOutcome.timedOut,
+        );
+        expect(
+          LR1Parser.parse(source, 'token🙂', maxSteps: 1).outcome,
+          LR1ParseOutcome.resourceLimit,
+        );
+      },
+    );
 
     test('reports construction bounds without a false rejection', () {
       final stateBound = LR1Parser.build(source, maxStates: 1);
@@ -323,4 +352,47 @@ void main() {
       );
     });
   });
+}
+
+void _expectSourceTree(Grammar grammar, DerivationTree tree, String input) {
+  expect(tree.isShallow, isFalse);
+
+  String visit(DerivationTreeNode node) {
+    if (grammar.terminals.contains(node.symbol)) {
+      expect(node.children, isEmpty, reason: 'terminal ${node.symbol}');
+      return node.lexeme ?? node.symbol;
+    }
+
+    expect(
+      grammar.nonterminals,
+      contains(node.symbol),
+      reason: 'unknown tree symbol ${node.symbol}',
+    );
+    final children = node.children.map((child) => child.symbol).toList();
+    final hasProduction = grammar.productions
+        .where((production) => production.leftSide.single == node.symbol)
+        .any((production) {
+          final rightSide = production.isLambda
+              ? const ['ε']
+              : production.rightSide;
+          return _sameSymbols(children, rightSide);
+        });
+    expect(
+      hasProduction,
+      isTrue,
+      reason: '${node.symbol} -> ${children.join(' ')}',
+    );
+    return node.children.map(visit).join();
+  }
+
+  expect(tree.root.symbol, grammar.startSymbol);
+  expect(visit(tree.root), input);
+}
+
+bool _sameSymbols(List<String> left, List<String> right) {
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) return false;
+  }
+  return true;
 }

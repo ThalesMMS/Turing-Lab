@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_transformation_step.dart';
+import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/widgets/grammar_transformation_history.dart';
 
 void main() {
@@ -64,5 +66,55 @@ void main() {
     expect(tester.takeException(), isNull);
 
     semantics.dispose();
+  });
+
+  testWidgets('renders an empty right side with the selected notation', (
+    tester,
+  ) async {
+    final before = Grammar.empty(
+      id: 'before',
+      name: 'Before',
+      type: GrammarType.contextFree,
+    );
+    final after = before.copyWith(
+      id: 'after',
+      productions: {
+        const Production(
+          id: 'empty',
+          leftSide: ['S'],
+          rightSide: [],
+          isLambda: false,
+        ),
+      },
+    );
+    final step = GrammarTransformationStep(
+      id: 'empty-step',
+      operation: 'Keep empty production',
+      rationale: '',
+      before: before,
+      after: after,
+    );
+
+    await tester.pumpWidget(
+      EmptyStringNotation(
+        symbol: kLambdaSymbol,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: GrammarTransformationHistory(
+              steps: [step],
+              onApplyGrammar: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Step 1. Keep empty production'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('S → λ'), findsOneWidget);
   });
 }

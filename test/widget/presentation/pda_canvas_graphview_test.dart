@@ -142,8 +142,37 @@ void main() {
       expect(transitions, hasLength(1));
     });
 
-    testWidgets('initial PDA fit does not enlarge sparse content',
-        (tester) async {
+    testWidgets('secondary click opens PDA state options', (tester) async {
+      final toolController = AutomatonCanvasToolController(
+        AutomatonCanvasTool.selection,
+      );
+      addTearDown(toolController.dispose);
+      await _pumpPdaCanvas(
+        tester,
+        notifier: notifier,
+        controller: controller,
+        toolController: toolController,
+      );
+      controller.addStateAt(const Offset(120, 120));
+      await tester.pumpAndSettle();
+
+      await tester.tapAt(
+        tester.getCenter(find.text('q0')),
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('automaton-state-delete-state_0')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('initial PDA fit does not enlarge sparse content', (
+      tester,
+    ) async {
       final fitController = _FitCountingPdaCanvasController(
         editorNotifier: notifier,
       );
@@ -161,69 +190,69 @@ void main() {
       expect(fitController.currentScale, lessThanOrEqualTo(1.0001));
     });
 
-    testWidgets('groups PDA self-loops into one path with a shared label card',
-        (
-      tester,
-    ) async {
-      await _pumpPdaCanvas(
-        tester,
-        notifier: notifier,
-        controller: controller,
-      );
+    testWidgets(
+      'groups PDA self-loops into one path with a shared label card',
+      (tester) async {
+        await _pumpPdaCanvas(
+          tester,
+          notifier: notifier,
+          controller: controller,
+        );
 
-      controller.addStateAt(const Offset(160, 160));
-      await tester.pumpAndSettle();
-      final state = notifier.state.pda!.states.single;
-      controller.addOrUpdateTransition(
-        fromStateId: state.id,
-        toStateId: state.id,
-        readSymbol: 'a',
-        popSymbol: 'Z',
-        pushSymbol: 'AZ',
-        isLambdaInput: false,
-        isLambdaPop: false,
-        isLambdaPush: false,
-        transitionId: 'pda-loop-a',
-        controlPointX: 160,
-        controlPointY: 40,
-      );
-      controller.addOrUpdateTransition(
-        fromStateId: state.id,
-        toStateId: state.id,
-        readSymbol: 'b',
-        popSymbol: 'A',
-        pushSymbol: '',
-        isLambdaInput: false,
-        isLambdaPop: false,
-        isLambdaPush: true,
-        transitionId: 'pda-loop-b',
-        controlPointX: 160,
-        controlPointY: 40,
-      );
-      await tester.pumpAndSettle();
+        controller.addStateAt(const Offset(160, 160));
+        await tester.pumpAndSettle();
+        final state = notifier.state.pda!.states.single;
+        controller.addOrUpdateTransition(
+          fromStateId: state.id,
+          toStateId: state.id,
+          readSymbol: 'a',
+          popSymbol: 'Z',
+          pushSymbol: 'AZ',
+          isLambdaInput: false,
+          isLambdaPop: false,
+          isLambdaPush: false,
+          transitionId: 'pda-loop-a',
+          controlPointX: 160,
+          controlPointY: 40,
+        );
+        controller.addOrUpdateTransition(
+          fromStateId: state.id,
+          toStateId: state.id,
+          readSymbol: 'b',
+          popSymbol: 'A',
+          pushSymbol: '',
+          isLambdaInput: false,
+          isLambdaPop: false,
+          isLambdaPush: true,
+          transitionId: 'pda-loop-b',
+          controlPointX: 160,
+          controlPointY: 40,
+        );
+        await tester.pumpAndSettle();
 
-      final dynamic canvasState = tester.state(
-        find.byType(AutomatonGraphViewCanvas),
-      );
-      final firstLoop = canvasState.debugGeometryForTransition('pda-loop-a')
-          as TuringLabEdgeRenderGeometry;
-      final secondLoop = canvasState.debugGeometryForTransition('pda-loop-b')
-          as TuringLabEdgeRenderGeometry;
+        final dynamic canvasState = tester.state(
+          find.byType(AutomatonGraphViewCanvas),
+        );
+        final firstLoop =
+            canvasState.debugGeometryForTransition('pda-loop-a')
+                as TuringLabEdgeRenderGeometry;
+        final secondLoop =
+            canvasState.debugGeometryForTransition('pda-loop-b')
+                as TuringLabEdgeRenderGeometry;
 
-      expect(
-          identical(firstLoop.pathGeometry, secondLoop.pathGeometry), isTrue);
-      expect(firstLoop.labelRect, isNotNull);
-      expect(firstLoop.labelRect, secondLoop.labelRect);
-    });
+        expect(
+          identical(firstLoop.pathGeometry, secondLoop.pathGeometry),
+          isTrue,
+        );
+        expect(firstLoop.labelRect, isNotNull);
+        expect(firstLoop.labelRect, secondLoop.labelRect);
+      },
+    );
 
     testWidgets('updates a PDA route before committing its dragged state', (
       tester,
     ) async {
-      await _pumpPdaCanvas(
-        tester,
-        notifier: notifier,
-        controller: controller,
-      );
+      await _pumpPdaCanvas(tester, notifier: notifier, controller: controller);
 
       controller.addStateAt(const Offset(40, 40));
       controller.addStateAt(const Offset(260, 40));
@@ -250,10 +279,11 @@ void main() {
       final dynamic canvasState = tester.state(
         find.byType(AutomatonGraphViewCanvas),
       );
-      final routeBefore = (canvasState.debugGeometryForTransition(transitionId)
-              as TuringLabEdgeRenderGeometry)
-          .pathGeometry
-          .pointAt(0.5);
+      final routeBefore =
+          (canvasState.debugGeometryForTransition(transitionId)
+                  as TuringLabEdgeRenderGeometry)
+              .pathGeometry
+              .pointAt(0.5);
 
       final gesture = await tester.startGesture(
         tester.getCenter(find.text('q0')),
@@ -261,10 +291,11 @@ void main() {
       );
       await gesture.moveBy(const Offset(60, 45));
       await tester.pump();
-      final routeDuring = (canvasState.debugGeometryForTransition(transitionId)
-              as TuringLabEdgeRenderGeometry)
-          .pathGeometry
-          .pointAt(0.5);
+      final routeDuring =
+          (canvasState.debugGeometryForTransition(transitionId)
+                  as TuringLabEdgeRenderGeometry)
+              .pathGeometry
+              .pointAt(0.5);
       final domainDuring = notifier.state.pda!.states.firstWhere(
         (state) => state.id == initialState.id,
       );
@@ -378,9 +409,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(
-          const ValueKey(
-            'automaton-transition-choice-atomic-push-transition',
-          ),
+          const ValueKey('automaton-transition-choice-atomic-push-transition'),
         ),
       );
       await tester.pumpAndSettle();
@@ -529,9 +558,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(
-          const ValueKey(
-            'automaton-transition-choice-dismiss-pda-transition',
-          ),
+          const ValueKey('automaton-transition-choice-dismiss-pda-transition'),
         ),
       );
       await tester.pumpAndSettle();
@@ -544,13 +571,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PdaTransitionEditor), findsNothing);
-      expect(
-        [
-          for (final state in notifier.state.pda!.states)
-            Offset(state.position.x, state.position.y),
-        ],
-        positionsBefore,
-      );
+      expect([
+        for (final state in notifier.state.pda!.states)
+          Offset(state.position.x, state.position.y),
+      ], positionsBefore);
     });
 
     testWidgets('keeps PDA transition actions inside a narrow canvas', (

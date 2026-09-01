@@ -64,6 +64,7 @@ class FileOperationsService
   @override
   Future<Result<Uint8List>> exportAutomatonToPngBytes(
     FSA automaton, {
+    String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -82,7 +83,7 @@ class FileOperationsService
         Paint()..color = _kBackgroundColor,
       );
 
-      final drawingData = _prepareDrawingData(automaton);
+      final drawingData = _prepareDrawingData(automaton, emptyStringSymbol);
       final painter = _AutomatonPainter(drawingData);
       painter.paint(canvas, size);
       if (includeAnnotations && annotations != null) {
@@ -373,10 +374,14 @@ class FileOperationsService
   /// Exports automaton to PNG image
   Future<StringResult> exportAutomatonToPNG(
     FSA automaton,
-    String filePath,
-  ) async {
+    String filePath, {
+    String emptyStringSymbol = 'ε',
+  }) async {
     try {
-      final pngBytesResult = await exportAutomatonToPngBytes(automaton);
+      final pngBytesResult = await exportAutomatonToPngBytes(
+        automaton,
+        emptyStringSymbol: emptyStringSymbol,
+      );
       if (pngBytesResult.isFailure) {
         return Failure(
           pngBytesResult.error!,
@@ -414,6 +419,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -425,6 +431,7 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          emptyStringSymbol: emptyStringSymbol,
           includeAnnotations: includeAnnotations,
           annotations: annotations,
         ),
@@ -442,11 +449,16 @@ class FileOperationsService
     GrammarEntity grammar,
     String filePath, {
     SvgExportOptions? options,
+    String? emptyStringSymbol,
   }) async {
     try {
       final file = File(filePath);
       await file.writeAsString(
-        exportGrammarToSvgString(grammar, options: options),
+        exportGrammarToSvgString(
+          grammar,
+          options: options,
+          emptyStringSymbol: emptyStringSymbol,
+        ),
       );
       return Success(filePath);
     } on FileSystemException catch (e) {
@@ -464,6 +476,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -475,6 +488,7 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          emptyStringSymbol: emptyStringSymbol,
           includeAnnotations: includeAnnotations,
           annotations: annotations,
         ),
@@ -495,6 +509,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -506,6 +521,7 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          emptyStringSymbol: emptyStringSymbol,
           includeAnnotations: includeAnnotations,
           annotations: annotations,
         ),
@@ -526,6 +542,7 @@ class FileOperationsService
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) async {
@@ -537,6 +554,7 @@ class FileOperationsService
           options: options,
           emptyAutomatonLabel: emptyAutomatonLabel,
           tmLegendLabel: tmLegendLabel,
+          emptyStringSymbol: emptyStringSymbol,
           includeAnnotations: includeAnnotations,
           annotations: annotations,
         ),
@@ -625,7 +643,10 @@ class FileOperationsService
     }
   }
 
-  _AutomatonDrawingData _prepareDrawingData(FSA automaton) {
+  _AutomatonDrawingData _prepareDrawingData(
+    FSA automaton,
+    String emptyStringSymbol,
+  ) {
     final states = automaton.states.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     final transitions =
@@ -659,7 +680,7 @@ class FileOperationsService
               transition.toState.position.x,
               transition.toState.position.y,
             ),
-            label: transition.symbol,
+            label: transition.symbol.replaceAll('ε', emptyStringSymbol),
           ),
         )
         .toList();

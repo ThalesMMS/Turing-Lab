@@ -5,6 +5,7 @@ import '../../core/models/tm_execution_analysis.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_presentation_primitives.dart';
@@ -94,7 +95,9 @@ class TMTapeResultView extends StatelessWidget {
           buildTMMetricRow(
             context,
             l10n.tmTapeInputLabel,
-            analysis.input.isEmpty ? 'ε' : analysis.input,
+            analysis.input.isEmpty
+                ? EmptyStringNotation.symbolOf(context)
+                : analysis.input,
           ),
           buildTMMetricRow(
             context,

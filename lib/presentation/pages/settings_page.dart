@@ -8,23 +8,25 @@
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:turing_lab/core/models/settings_model.dart';
 import 'package:turing_lab/core/repositories/settings_repository.dart';
+import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/pages/about_page.dart';
+import 'package:turing_lab/presentation/providers/empty_string_symbol_provider.dart';
 import 'package:turing_lab/presentation/providers/settings_provider.dart';
 import 'package:turing_lab/presentation/widgets/app_snackbar.dart';
 import 'package:turing_lab/presentation/widgets/switch_setting_tile.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({
-    super.key,
-    this.repository,
-  });
+  const SettingsPage({super.key, this.repository});
 
   final SettingsRepository? repository;
 
@@ -114,6 +116,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Future<void> _resetToDefaults() async {
     final previousSettings = _settings;
+    final previousEmptyStringSymbol = ref.read(emptyStringSymbolProvider);
     const defaults = SettingsModel();
 
     setState(() {
@@ -121,7 +124,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     });
 
     try {
-      await _repository.saveSettings(defaults);
+      await ref.read(emptyStringSymbolProvider.notifier).reset();
+      try {
+        await _repository.saveSettings(defaults);
+      } catch (_) {
+        await ref
+            .read(emptyStringSymbolProvider.notifier)
+            .setSymbol(previousEmptyStringSymbol);
+        rethrow;
+      }
     } catch (error, stackTrace) {
       debugPrint('Failed to reset settings: $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -182,11 +193,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _showError(String message) {
-    showAppSnackBar(
-      context,
-      message: message,
-      tone: AppSnackBarTone.error,
-    );
+    showAppSnackBar(context, message: message, tone: AppSnackBarTone.error);
+  }
+
+  Future<void> _setEmptyStringSymbol(String value) async {
+    try {
+      await ref.read(emptyStringSymbolProvider.notifier).setSymbol(value);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save empty-string notation: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      _showError(AppLocalizations.of(context).settingsSaveError);
+    }
   }
 
   @override
@@ -404,12 +422,39 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Widget _buildGeneralSettings(AppLocalizations l10n) {
+    final emptyStringSymbol = ref.watch(emptyStringSymbolProvider);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSimpleSetting(
+              l10n.settingsEmptyStringNotationTitle,
+              l10n.settingsEmptyStringNotationDescription,
+              emptyStringSymbol,
+              const [
+                (
+                  value: kEpsilonSymbol,
+                  label: kEpsilonSymbol,
+                  key: ValueKey('settings_empty_string_epsilon'),
+                ),
+                (
+                  value: kLambdaSymbol,
+                  label: kLambdaSymbol,
+                  key: ValueKey('settings_empty_string_lambda'),
+                ),
+              ],
+              (value) {
+                unawaited(_setEmptyStringSymbol(value));
+              },
+              semanticLabels: {
+                kEpsilonSymbol: l10n.emptyStringEpsilon,
+                kLambdaSymbol: l10n.emptyStringLambda,
+              },
+            ),
+            const SizedBox(height: 16),
             SwitchSettingTile(
               title: l10n.settingsAutoSaveTitle,
               subtitle: l10n.settingsAutoSaveDescription,
@@ -449,9 +494,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) => const AboutPage(),
-            ),
+            MaterialPageRoute<void>(builder: (context) => const AboutPage()),
           );
         },
       ),
@@ -494,8 +537,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     String subtitle,
     String currentValue,
     List<({String value, String label, Key key})> options,
-    ValueChanged<String> onChanged,
-  ) {
+    ValueChanged<String> onChanged, {
+    Map<String, String> semanticLabels = const {},
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -509,7 +553,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: options.map((option) {
             return FilterChip(
               key: option.key,
-              label: Text(option.label),
+              label: Semantics(
+                label: semanticLabels[option.value],
+                excludeSemantics: semanticLabels.containsKey(option.value),
+                child: Text(option.label),
+              ),
               selected: option.value == currentValue,
               onSelected: (selected) {
                 if (selected) {

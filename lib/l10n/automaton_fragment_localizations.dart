@@ -156,6 +156,8 @@ extension AppLocalizationsAutomatonFragments on AppLocalizations {
         'O XML do JFLAP não pode preservar fronteiras de tokens com vários caracteres.',
       'jflap.grammar-classification-lossy' =>
         'O XML do JFLAP não armazena a classificação explícita da gramática.',
+      'jflap.grammar-start-order-normalized' =>
+        'A exportação JFLAP moveu primeiro as produções do símbolo inicial para preservar a interoperabilidade.',
       'jflap.l-system.advanced-variant-preserved' =>
         'Produções avançadas não suportadas foram preservadas e desativadas.',
       'jflap.l-system.parameters-preserved' =>

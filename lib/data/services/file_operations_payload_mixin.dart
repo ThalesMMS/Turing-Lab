@@ -23,6 +23,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -34,6 +35,7 @@ mixin FileOperationsPayloadMixin {
       colorScheme: base.colorScheme,
       emptyAutomatonLabel: emptyAutomatonLabel ?? base.emptyAutomatonLabel,
       tmLegendLabel: tmLegendLabel ?? base.tmLegendLabel,
+      emptyStringSymbol: emptyStringSymbol ?? base.emptyStringSymbol,
       includeAnnotations: includeAnnotations || base.includeAnnotations,
       annotations: annotations ?? base.annotations,
     );
@@ -69,6 +71,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -78,6 +81,7 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       ),
@@ -90,6 +94,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -99,6 +104,7 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       ),
@@ -111,6 +117,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -119,6 +126,7 @@ mixin FileOperationsPayloadMixin {
       options: options,
       emptyAutomatonLabel: emptyAutomatonLabel,
       tmLegendLabel: tmLegendLabel,
+      emptyStringSymbol: emptyStringSymbol,
       includeAnnotations: includeAnnotations,
       annotations: annotations,
     );
@@ -130,6 +138,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -139,6 +148,7 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       ),
@@ -151,6 +161,7 @@ mixin FileOperationsPayloadMixin {
     SvgExportOptions? options,
     String? emptyAutomatonLabel,
     String? tmLegendLabel,
+    String? emptyStringSymbol,
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
   }) {
@@ -160,6 +171,7 @@ mixin FileOperationsPayloadMixin {
         options: options,
         emptyAutomatonLabel: emptyAutomatonLabel,
         tmLegendLabel: tmLegendLabel,
+        emptyStringSymbol: emptyStringSymbol,
         includeAnnotations: includeAnnotations,
         annotations: annotations,
       ),

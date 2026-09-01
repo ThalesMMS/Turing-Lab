@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../l10n/app_localizations_resolver.dart';
 import '../../../l10n/app_localizations_structured_messages.dart';
 import '../../../l10n/app_localizations_workflows.dart';
+import '../../empty_string_notation.dart';
 import 'batch_file_service.dart';
 import '../../localization/locale_value_formatter.dart';
 
@@ -126,7 +127,7 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
     final formatter = LocaleValueFormatter.of(context);
-    final resolvedMessage = _message == null
+    final rawResolvedMessage = _message == null
         ? (_structuredMessages.isEmpty
               ? null
               : _structuredMessages
@@ -136,6 +137,11 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
             l10n.localizeWorkflowText(_message!),
             _messageIntegers,
           );
+    final resolvedMessage = rawResolvedMessage == null
+        ? null
+        : _usesEmptyStringTerminology(_message)
+        ? EmptyStringNotation.formatTerminology(context, rawResolvedMessage)
+        : rawResolvedMessage;
     return FocusTraversalGroup(
       child: CallbackShortcuts(
         bindings: {
@@ -227,11 +233,17 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
               ).copyWith(
                 helperText:
                     _tokenizationMode == BatchTokenizationMode.explicitTokens
-                    ? l10n.localizeWorkflowText(
-                        'Use spaces between tokens and ε for the empty word.',
+                    ? EmptyStringNotation.formatTerminology(
+                        context,
+                        l10n.localizeWorkflowText(
+                          'Use spaces between tokens and ε for the empty word.',
+                        ),
                       )
-                    : l10n.localizeWorkflowText(
-                        'Use ε for the empty word. Whitespace is preserved.',
+                    : EmptyStringNotation.formatTerminology(
+                        context,
+                        l10n.localizeWorkflowText(
+                          'Use ε for the empty word. Whitespace is preserved.',
+                        ),
                       ),
               ),
         ),
@@ -693,7 +705,9 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
         '${formatter.compactDuration(result.elapsed)} elapsed',
       ),
     ].join(' · ');
-    final input = result.inputCase.input.isEmpty ? 'ε' : result.inputCase.input;
+    final input = result.inputCase.input.isEmpty
+        ? EmptyStringNotation.symbolOf(context)
+        : result.inputCase.input;
     final outcome = _localizedOutcomeName(l10n, result.outcome);
     final comparisonText = comparison == null
         ? null
@@ -1057,7 +1071,11 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
       setState(() {
         _preparedCases = cases;
         _inputController.text = cases
-            .map((inputCase) => inputCase.input.isEmpty ? 'ε' : inputCase.input)
+            .map(
+              (inputCase) => inputCase.input.isEmpty
+                  ? EmptyStringNotation.symbolOf(context)
+                  : inputCase.input,
+            )
             .join('\n');
         _clearResults(
           message: 'Imported ${cases.length} cases from ${selection.filename}.',
@@ -1102,7 +1120,11 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
     setState(() {
       _preparedCases = List<BatchInputCase>.unmodifiable(cases);
       _inputController.text = cases
-          .map((inputCase) => inputCase.input.isEmpty ? 'ε' : inputCase.input)
+          .map(
+            (inputCase) => inputCase.input.isEmpty
+                ? EmptyStringNotation.symbolOf(context)
+                : inputCase.input,
+          )
           .join('\n');
       _clearResults(message: message, notify: false);
     });
@@ -1135,7 +1157,11 @@ class _BatchExecutionPanelState extends State<BatchExecutionPanel> {
     setState(() {
       _preparedCases = cases;
       _inputController.text = cases
-          .map((inputCase) => inputCase.input.isEmpty ? 'ε' : inputCase.input)
+          .map(
+            (inputCase) => inputCase.input.isEmpty
+                ? EmptyStringNotation.symbolOf(context)
+                : inputCase.input,
+          )
           .join('\n');
       _clearResults(
         message: 'Generated ${cases.length} ordered cases.',
@@ -1364,6 +1390,10 @@ String _resolveInitialStrategy(BatchExecutionPanel widget) {
   }
   return widget.initialStrategyId ?? strategies.first;
 }
+
+bool _usesEmptyStringTerminology(String? message) =>
+    message == 'Add at least one case. Use ε for the empty word.' ||
+    message == 'The model has no alphabet; only ε can be generated.';
 
 String _tokenizationLabel(BatchTokenizationMode mode) => switch (mode) {
   BatchTokenizationMode.rawString => 'Raw string',

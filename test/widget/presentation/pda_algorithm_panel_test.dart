@@ -17,7 +17,9 @@ import 'package:turing_lab/core/models/transition.dart';
 import 'package:turing_lab/core/services/canvas_highlight_coordinator.dart';
 import 'package:turing_lab/core/services/highlight_channel.dart';
 import 'package:turing_lab/core/result.dart';
+import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
     show PDASimulationNotifier, pdaSimulationProvider;
@@ -64,6 +66,7 @@ class _PdaPanelHarness {
     required this.output,
     required this.coordinator,
     required this.appliedPdas,
+    required this.emptyStringSymbol,
   });
 
   final PDAEditorNotifier notifier;
@@ -71,6 +74,7 @@ class _PdaPanelHarness {
   final _RecordingHighlightChannel output;
   final CanvasHighlightCoordinator coordinator;
   final List<PDA> appliedPdas;
+  final ValueNotifier<String> emptyStringSymbol;
 }
 
 Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
@@ -87,6 +91,8 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
   final simulationNotifier = PDASimulationNotifier()
     ..setAcceptanceMode(acceptanceMode);
   final appliedPdas = <PDA>[];
+  final emptyStringSymbol = ValueNotifier<String>(kEpsilonSymbol);
+  addTearDown(emptyStringSymbol.dispose);
   final output = _RecordingHighlightChannel();
   final coordinator = CanvasHighlightCoordinator(
     target: CanvasHighlightTarget(
@@ -106,18 +112,24 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
         pdaSimulationProvider.overrideWith((ref) => simulationNotifier),
         canvasHighlightCoordinatorProvider.overrideWithValue(coordinator),
       ],
-      child: MaterialApp(
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: PDAAlgorithmPanel(
-            useExpanded: false,
-            examplesDataSource: examplesDataSource,
-            onApplyPda: (pda) {
-              appliedPdas.add(pda);
-              pdaNotifier.setPda(pda);
-            },
+      child: ValueListenableBuilder<String>(
+        valueListenable: emptyStringSymbol,
+        builder: (context, symbol, child) => EmptyStringNotation(
+          symbol: symbol,
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: PDAAlgorithmPanel(
+                useExpanded: false,
+                examplesDataSource: examplesDataSource,
+                onApplyPda: (pda) {
+                  appliedPdas.add(pda);
+                  pdaNotifier.setPda(pda);
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -136,6 +148,7 @@ Future<_PdaPanelHarness> _pumpPdaAlgorithmPanel(
     output: output,
     coordinator: coordinator,
     appliedPdas: appliedPdas,
+    emptyStringSymbol: emptyStringSymbol,
   );
 }
 
@@ -185,6 +198,30 @@ AssetExample<PDA> _buildPdaExample() {
     complexityLevel: ExampleComplexityLevel.low,
     tags: const ['test'],
     payload: pda,
+  );
+}
+
+PDA _buildEmptyWordPda() {
+  final acceptingStart = automaton_state.State(
+    id: 'empty-word-start',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+    isAccepting: true,
+  );
+  return PDA(
+    id: 'empty-word-pda',
+    name: 'Empty-word PDA',
+    states: {acceptingStart},
+    transitions: const {},
+    alphabet: const {},
+    initialState: acceptingStart,
+    acceptingStates: {acceptingStart},
+    created: DateTime(2026),
+    modified: DateTime(2026),
+    bounds: const math.Rectangle(0, 0, 400, 300),
+    stackAlphabet: const {'Z'},
+    initialStackSymbol: 'Z',
   );
 }
 
@@ -452,6 +489,25 @@ void main() {
     expect(simulation.result?.steps, isNotEmpty);
   });
 
+  testWidgets('reformats a stored empty-word witness after notation changes', (
+    tester,
+  ) async {
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: _buildEmptyWordPda(),
+    );
+
+    await tester.ensureVisible(find.text('Language Analysis'));
+    await tester.tap(find.text('Language Analysis'));
+    await _pumpUntilFound(tester, find.textContaining('Shortest witness: ε'));
+
+    harness.emptyStringSymbol.value = kLambdaSymbol;
+    await tester.pump();
+
+    expect(find.textContaining('Shortest witness: λ'), findsOneWidget);
+    expect(find.textContaining('Shortest witness: ε'), findsNothing);
+  });
+
   testWidgets('PDA action still reports missing editor PDA', (tester) async {
     await _pumpPdaAlgorithmPanel(tester);
 
@@ -697,6 +753,36 @@ void main() {
       expect(pda.initialStackSymbol, equals('Z'));
     },
   );
+
+  testWidgets('clears analysis results when loading another PDA example', (
+    tester,
+  ) async {
+    final harness = await _pumpPdaAlgorithmPanel(
+      tester,
+      initialPda: _buildEmptyWordPda(),
+    );
+
+    await tester.ensureVisible(find.text('Stack Operations'));
+    await tester.tap(find.text('Stack Operations'));
+    await _pumpUntilFound(
+      tester,
+      find.textContaining('=== Stack Operations Analysis ==='),
+    );
+
+    final exampleLabel = AppLocalizationsEn().localizedExampleName(
+      'APD - Palíndromo',
+    );
+    await tester.ensureVisible(find.text(exampleLabel));
+    await tester.tap(find.text(exampleLabel));
+    await _pumpUntilPdaLoaded(tester, harness.notifier);
+    await tester.pump();
+
+    expect(find.text('No analysis results yet'), findsOneWidget);
+    expect(
+      find.textContaining('=== Stack Operations Analysis ==='),
+      findsNothing,
+    );
+  });
 
   testWidgets('reachable-state analysis emits stable PDA state ids', (
     tester,

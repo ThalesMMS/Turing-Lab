@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/grammar/phrase_structure/phrase_structure.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
@@ -144,6 +145,140 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('reorders with localized handle semantics and menu actions', (
+    tester,
+  ) async {
+    final controller = UnrestrictedGrammarEditorController(_orderedGrammar());
+    await _pumpWorkspace(
+      tester,
+      controller: controller,
+      locale: const Locale('en'),
+    );
+
+    final handle = find.byKey(
+      const ValueKey('unrestricted-production-handle-p1'),
+    );
+    final semantics = tester.getSemantics(handle);
+    expect(semantics.label, contains('Reorder production p1'));
+    expect(semantics.value, contains('Position 1 of 3'));
+    expect(tester.getSize(handle), const Size(48, 48));
+
+    await tester.tap(find.byTooltip('Production actions').first);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<PopupMenuItem<String>>(
+            find.ancestor(
+              of: find.text('Move up'),
+              matching: find.byType(PopupMenuItem<String>),
+            ),
+          )
+          .enabled,
+      isFalse,
+    );
+    await tester.tap(find.text('Move down'));
+    await tester.pumpAndSettle();
+
+    expect(controller.grammar.productions.map((production) => production.id), [
+      'p2',
+      'p1',
+      'p3',
+    ]);
+    final movedSemantics = tester.getSemantics(handle);
+    // Flutter 3.32 compatibility.
+    // ignore: deprecated_member_use
+    expect(movedSemantics.hasFlag(SemanticsFlag.isFocused), isTrue);
+  });
+
+  testWidgets('drags an unrestricted production from last to first', (
+    tester,
+  ) async {
+    final controller = UnrestrictedGrammarEditorController(_orderedGrammar());
+    await _pumpWorkspace(tester, controller: controller);
+
+    final lastHandle = find.byKey(
+      const ValueKey('unrestricted-production-handle-p3'),
+    );
+    final firstHandle = find.byKey(
+      const ValueKey('unrestricted-production-handle-p1'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(lastHandle));
+    await tester.pump();
+    await gesture.moveTo(tester.getCenter(firstHandle));
+    await tester.pump(const Duration(milliseconds: 500));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(controller.grammar.productions.map((production) => production.id), [
+      'p3',
+      'p1',
+      'p2',
+    ]);
+    expect(controller.grammar.revision, 1);
+  });
+
+  testWidgets('auto-scrolls a long production list during handle drag', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(500, 500);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final controller = UnrestrictedGrammarEditorController(_orderedGrammar(14));
+    await _pumpWorkspace(tester, controller: controller);
+
+    final firstHandle = find.byKey(
+      const ValueKey('unrestricted-production-handle-p1'),
+    );
+    final surface = find.byKey(
+      const ValueKey('unrestricted-grammar-productions-surface'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(firstHandle));
+    await tester.pump();
+    await gesture.moveTo(tester.getBottomRight(surface) - const Offset(80, 1));
+    for (var frame = 0; frame < 24; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final scrollable = tester.state<ScrollableState>(
+      find.descendant(of: surface, matching: find.byType(Scrollable)).first,
+    );
+    expect(scrollable.position.pixels, greaterThan(0));
+    await gesture.moveBy(const Offset(0, -1));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, 1));
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    final movedIndex = controller.grammar.productions.indexWhere(
+      (production) => production.id == 'p1',
+    );
+    expect(movedIndex, greaterThan(0));
+    expect(
+      controller.grammar.productions.map((production) => production.order),
+      List.generate(14, (index) => index),
+    );
+  });
+
+  testWidgets('localizes unrestricted reorder semantics in Portuguese', (
+    tester,
+  ) async {
+    final controller = UnrestrictedGrammarEditorController(_orderedGrammar());
+    await _pumpWorkspace(tester, controller: controller);
+
+    final handle = find.byKey(
+      const ValueKey('unrestricted-production-handle-p2'),
+    );
+    final semantics = tester.getSemantics(handle);
+    expect(semantics.label, contains('Reordenar produção p2'));
+    expect(semantics.value, contains('Posição 2 de 3'));
+
+    await tester.tap(find.byTooltip('Ações da produção').at(1));
+    await tester.pumpAndSettle();
+    expect(find.text('Mover para cima'), findsOneWidget);
+    expect(find.text('Mover para baixo'), findsOneWidget);
+  });
+
   testWidgets('wide actions swap one dock while productions remain mounted', (
     tester,
   ) async {
@@ -188,6 +323,38 @@ void main() {
       findsOneWidget,
     );
     expect(surface, findsOneWidget);
+  });
+
+  testWidgets('reorder immediately synchronizes the duplicate editor list', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final controller = UnrestrictedGrammarEditorController(_orderedGrammar());
+    final actions = await _pumpWorkspace(tester, controller: controller);
+    actions.value!.onEdit!();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Ações da produção').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mover para baixo'));
+    await tester.pumpAndSettle();
+
+    final editorPanel = find.byKey(WorkspaceDock.panelKey('unrestricted-edit'));
+    final editorP1 = find.descendant(
+      of: editorPanel,
+      matching: find.byKey(const ValueKey('grammar-production-p1')),
+    );
+    final editorP2 = find.descendant(
+      of: editorPanel,
+      matching: find.byKey(const ValueKey('grammar-production-p2')),
+    );
+    expect(
+      tester.getTopLeft(editorP2).dy,
+      lessThan(tester.getTopLeft(editorP1).dy),
+    );
   });
 
   testWidgets(
@@ -356,6 +523,18 @@ void main() {
         ).diagnostic(diagnostic),
         contains('nonterminal'),
       );
+      expect(
+        UnrestrictedGrammarWorkspaceStrings.forLocale(
+          const Locale('pt', 'BR'),
+        ).reorderProduction('p3'),
+        'Reordenar produção p3',
+      );
+      expect(
+        UnrestrictedGrammarWorkspaceStrings.forLocale(
+          const Locale('en'),
+        ).productionPosition(2, 4),
+        'Position 2 of 4',
+      );
     },
   );
 }
@@ -414,5 +593,26 @@ UnrestrictedGrammar _grammar() => UnrestrictedGrammar(
       left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('S')]),
       right: GrammarSymbolSequence(const [TerminalGrammarSymbol('a,b')]),
     ),
+  ],
+);
+
+UnrestrictedGrammar _orderedGrammar([int count = 3]) => UnrestrictedGrammar(
+  id: 'ordered-widget-grammar',
+  name: 'Ordered widget grammar',
+  revision: 0,
+  terminals: [
+    for (var index = 0; index < count; index++)
+      TerminalGrammarSymbol('t$index'),
+  ],
+  nonterminals: const [NonterminalGrammarSymbol('S')],
+  startSymbol: const NonterminalGrammarSymbol('S'),
+  productions: [
+    for (var index = 0; index < count; index++)
+      PhraseStructureProduction(
+        id: 'p${index + 1}',
+        order: index,
+        left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('S')]),
+        right: GrammarSymbolSequence([TerminalGrammarSymbol('t$index')]),
+      ),
   ],
 );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_inputs.dart';
 
@@ -36,8 +37,11 @@ class TMReachabilityControls extends StatelessWidget {
               labelText: strings.localizeWorkflowText(
                 'Reachability input scope',
               ),
-              helperText: strings.localizeWorkflowText(
-                'Separate inputs with commas; use ε for the empty string.',
+              helperText: EmptyStringNotation.formatTerminology(
+                context,
+                strings.localizeWorkflowText(
+                  'Separate inputs with commas; use ε for the empty string.',
+                ),
               ),
               border: const OutlineInputBorder(),
             ),
@@ -46,9 +50,15 @@ class TMReachabilityControls extends StatelessWidget {
             const SizedBox(height: 4),
             Semantics(
               liveRegion: true,
-              label: strings.localizeWorkflowText(progress),
-              child: Text(
+              label: EmptyStringNotation.format(
+                context,
                 strings.localizeWorkflowText(progress),
+              ),
+              child: Text(
+                EmptyStringNotation.format(
+                  context,
+                  strings.localizeWorkflowText(progress),
+                ),
                 key: const Key('tm-operation-progress'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),

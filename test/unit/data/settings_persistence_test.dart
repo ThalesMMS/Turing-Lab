@@ -150,31 +150,43 @@ SettingsModel _customSettings() {
 
 void main() {
   group('Settings persistence', () {
-    test('removes obsolete empty-string symbol preferences on load', () async {
-      final storage = _RecordingSettingsStorage({
-        'settings_empty_string_symbol': 'λ',
-        'settings_epsilon_symbol': 'λ',
-      });
-      final repository = SharedPreferencesSettingsRepository(storage: storage);
+    test(
+      'leaves dedicated empty-string preference keys untouched on load',
+      () async {
+        final storage = _RecordingSettingsStorage({
+          'settings_empty_string_symbol': 'λ',
+          'settings_epsilon_symbol': 'λ',
+        });
+        final repository = SharedPreferencesSettingsRepository(
+          storage: storage,
+        );
 
-      await repository.loadSettings();
+        await repository.loadSettings();
 
-      expect(storage.values, isNot(contains('settings_empty_string_symbol')));
-      expect(storage.values, isNot(contains('settings_epsilon_symbol')));
-    });
+        expect(storage.values['settings_empty_string_symbol'], 'λ');
+        expect(storage.values['settings_epsilon_symbol'], 'λ');
+      },
+    );
 
-    test('saveSettings writes all 10 keys correctly', () async {
-      final storage = _RecordingSettingsStorage({
+    test('saveSettings does not change dedicated notation keys', () async {
+      final notationValues = <String, Object?>{
         'settings_empty_string_symbol': 'λ',
         'settings_epsilon_symbol': 'ε',
-      });
+      };
+      final storage = _RecordingSettingsStorage(notationValues);
       final repository = SharedPreferencesSettingsRepository(storage: storage);
       final settings = _customSettings();
 
       await repository.saveSettings(settings);
 
-      expect(storage.values, equals(_settingsValues(settings)));
-      expect(storage.values.length, equals(10));
+      expect(
+        storage.values,
+        equals(<String, Object?>{
+          ...notationValues,
+          ..._settingsValues(settings),
+        }),
+      );
+      expect(storage.values.length, equals(12));
     });
 
     test('loadSettings restores all persisted settings accurately', () async {

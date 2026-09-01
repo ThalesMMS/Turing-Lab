@@ -19,9 +19,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   SharedPreferencesSettingsRepository({SettingsStorage? storage})
       : _storage = storage ?? const SharedPreferencesSettingsStorage();
 
-  static const String _obsoleteEmptyStringSymbolKey =
-      'settings_empty_string_symbol';
-  static const String _legacyEpsilonSymbolKey = 'settings_epsilon_symbol';
   static const String _themeModeKey = 'settings_theme_mode';
   static const String _localeCodeKey = 'settings_locale_code';
   static const String _showGridKey = 'settings_show_grid';
@@ -40,7 +37,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   @override
   Future<SettingsModel> loadSettings() async {
     const defaults = SettingsModel();
-    await _discardObsoleteEmptyStringSymbolPreferences();
 
     final settings = SettingsModel(
       themeMode: await _readStringSetting(
@@ -73,19 +69,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     return settings;
   }
 
-  Future<void> _discardObsoleteEmptyStringSymbolPreferences() async {
-    for (final key in const {
-      _obsoleteEmptyStringSymbolKey,
-      _legacyEpsilonSymbolKey,
-    }) {
-      try {
-        await _storage.remove(key);
-      } catch (_) {
-        // A stale, unused preference must not make settings loading fail.
-      }
-    }
-  }
-
   @override
   Future<void> saveSettings(SettingsModel settings) {
     final pendingSave = _saveQueue.then(
@@ -99,7 +82,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
   }
 
   Future<void> _saveSettingsAtomically(SettingsModel settings) async {
-    await _discardObsoleteEmptyStringSymbolPreferences();
     final previousValues = await _snapshotPersistedSettings();
     var saved = false;
 

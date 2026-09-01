@@ -1649,6 +1649,9 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
       codecGrammarJflapClassificationLossy(
         _stringArgument(message, 'classification'),
       ),
+    'codec.grammar-jflap.start-order-normalized'
+        when _matchesArguments(message, const {}) =>
+      codecGrammarJflapStartOrderNormalized,
     'codec.l-system-jflap.invalid-root'
         when _matchesArguments(message, const {}) =>
       codecLSystemJflapInvalidRoot,

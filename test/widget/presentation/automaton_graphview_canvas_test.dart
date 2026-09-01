@@ -11,6 +11,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 
+import 'dart:async' show unawaited;
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsFlag;
 
@@ -40,6 +41,7 @@ import 'package:turing_lab/features/canvas/graphview/graphview_label_field_edito
 import 'package:turing_lab/features/canvas/graphview/graphview_link_overlay_utils.dart';
 import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_renderer.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/presentation/platform/canvas_context_menu_policy.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/providers/document_annotations_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_document_actions.dart';
@@ -95,6 +97,7 @@ class _RecordingGraphViewCanvasController extends GraphViewCanvasController {
   Offset? lastAddStateWorldOffset;
   int moveStateCallCount = 0;
   int previewStatePositionCallCount = 0;
+  int fitToContentCallCount = 0;
   String? lastMoveStateId;
   Offset? lastMoveStatePosition;
   Offset? lastPreviewStatePosition;
@@ -123,6 +126,12 @@ class _RecordingGraphViewCanvasController extends GraphViewCanvasController {
     previewStatePositionCallCount++;
     lastPreviewStatePosition = position;
     super.previewStatePosition(id, position);
+  }
+
+  @override
+  void fitToContent() {
+    fitToContentCallCount++;
+    super.fitToContent();
   }
 }
 
@@ -448,6 +457,49 @@ void main() {
       } finally {
         semantics.dispose();
       }
+    });
+
+    testWidgets('refits after a structural automaton replacement', (
+      tester,
+    ) async {
+      final initial = _singleStateAutomaton('viewport-initial');
+      final replacement = _singleStateAutomaton('viewport-replacement');
+      provider.updateAutomaton(initial);
+      controller.synchronize(initial);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AutomatonGraphViewCanvas(
+              automaton: initial,
+              canvasKey: GlobalKey(),
+              controller: controller,
+              toolController: toolController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      controller.fitToContentCallCount = 0;
+
+      provider.updateAutomaton(replacement);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AutomatonGraphViewCanvas(
+              automaton: replacement,
+              canvasKey: GlobalKey(),
+              controller: controller,
+              toolController: toolController,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.fitToContentCallCount, greaterThan(0));
+      expect(find.text('A'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('affine layout transforms free notes in the same undo entry', (
@@ -948,6 +1000,185 @@ void main() {
       );
     });
 
+    testWidgets('editable canvas owns the browser menu only while hovered', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('scoped-context-menu');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            navigatorObservers: [canvasContextMenuNavigatorObserver],
+            home: Scaffold(
+              body: Column(
+                children: [
+                  SizedBox(
+                    height: 300,
+                    child: AutomatonGraphViewCanvas(
+                      automaton: automaton,
+                      canvasKey: GlobalKey(),
+                      controller: controller,
+                      toolController: toolController,
+                    ),
+                  ),
+                  const Expanded(
+                    child: TextField(
+                      key: ValueKey('outside-canvas-text-field'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      addTearDown(mouse.removePointer);
+
+      await mouse.moveTo(tester.getCenter(find.text('A')));
+      await tester.pump();
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 1);
+
+      await tester.tapAt(
+        tester.getCenter(find.text('A')),
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNWidgets(2));
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 0);
+
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 1);
+
+      await mouse.moveTo(
+        tester.getCenter(
+          find.byKey(const ValueKey('outside-canvas-text-field')),
+        ),
+      );
+      await tester.pump();
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 0);
+    });
+
+    testWidgets(
+      'canvas updates context-menu ownership when editability changes',
+      (tester) async {
+        final automaton = _singleStateAutomaton('read-only-context-menu');
+        provider.updateAutomaton(automaton);
+        controller.synchronize(automaton);
+        final canvasKey = GlobalKey();
+
+        Future<void> pumpCanvas(
+          AutomatonGraphViewCanvasCustomization customization,
+        ) async {
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                home: Scaffold(
+                  body: AutomatonGraphViewCanvas(
+                    automaton: automaton,
+                    canvasKey: canvasKey,
+                    controller: controller,
+                    toolController: toolController,
+                    customization: customization,
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+
+        await pumpCanvas(AutomatonGraphViewCanvasCustomization.readOnly());
+        final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        addTearDown(mouse.removePointer);
+
+        await mouse.moveTo(tester.getCenter(find.text('A')));
+        await tester.pump();
+        expect(CanvasContextMenuPolicy.instance.ownerCount, 0);
+
+        await pumpCanvas(AutomatonGraphViewCanvasCustomization.fsa());
+        expect(CanvasContextMenuPolicy.instance.ownerCount, 1);
+
+        await pumpCanvas(AutomatonGraphViewCanvasCustomization.readOnly());
+        expect(CanvasContextMenuPolicy.instance.ownerCount, 0);
+      },
+    );
+
+    testWidgets('route changes release browser context-menu ownership', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('route-context-menu');
+      provider.updateAutomaton(automaton);
+      controller.synchronize(automaton);
+      final navigatorKey = GlobalKey<NavigatorState>();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            navigatorObservers: [canvasContextMenuNavigatorObserver],
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: automaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      addTearDown(mouse.removePointer);
+      await mouse.moveTo(tester.getCenter(find.text('A')));
+      await tester.pump();
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 1);
+
+      unawaited(
+        navigatorKey.currentState!.push<void>(
+          MaterialPageRoute<void>(builder: (_) => const Scaffold()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(CanvasContextMenuPolicy.instance.ownerCount, 0);
+    });
+
+    testWidgets('Shift+F10 opens options for the selected state', (
+      tester,
+    ) async {
+      toolController.setActiveTool(AutomatonCanvasTool.selection);
+      final automaton = _singleStateAutomaton('keyboard-context-state');
+      final center = await _pumpSingleStateCanvas(
+        tester,
+        automaton: automaton,
+        provider: provider,
+        controller: controller,
+        toolController: toolController,
+      );
+
+      await tester.tapAt(center);
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('automaton-state-delete-A')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('bare canvas shortcuts do not run while editing state text', (
       tester,
     ) async {
@@ -1252,6 +1483,123 @@ void main() {
         expect(
           find.bySemanticsLabel('Transition t0 from A to B labeled a.'),
           findsOneWidget,
+        );
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('refreshes transition semantics after a graph replacement', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        final stateA = automaton_state.State(
+          id: 'A',
+          label: 'A',
+          position: Vector2(40, 40),
+          isInitial: true,
+        );
+        final stateB = automaton_state.State(
+          id: 'B',
+          label: 'B',
+          position: Vector2(160, 40),
+          isAccepting: true,
+        );
+        final initialAutomaton = FSA(
+          id: 'semantic-replacement',
+          name: 'Semantic Replacement',
+          states: {stateA, stateB},
+          transitions: {
+            FSATransition(
+              id: 't0',
+              fromState: stateA,
+              toState: stateB,
+              inputSymbols: const {'a'},
+            ),
+          },
+          alphabet: const <String>{'a'},
+          initialState: stateA,
+          acceptingStates: <automaton_state.State>{stateB},
+          created: DateTime.utc(2024, 1, 1),
+          modified: DateTime.utc(2024, 1, 1),
+          bounds: const math.Rectangle<double>(0, 0, 400, 300),
+          zoomLevel: 1,
+          panOffset: Vector2.zero(),
+        );
+
+        provider.updateAutomaton(initialAutomaton);
+        controller.synchronize(initialAutomaton);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: initialAutomaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final updatedStateA = automaton_state.State(
+          id: 'A',
+          label: 'A',
+          position: Vector2(40, 40),
+          isInitial: true,
+        );
+        final updatedStateB = automaton_state.State(
+          id: 'B',
+          label: 'B',
+          position: Vector2(160, 40),
+          isAccepting: true,
+        );
+        final updatedAutomaton = FSA(
+          id: initialAutomaton.id,
+          name: initialAutomaton.name,
+          states: {updatedStateA, updatedStateB},
+          transitions: {
+            FSATransition(
+              id: 't0',
+              fromState: updatedStateB,
+              toState: updatedStateA,
+              inputSymbols: const {'b'},
+            ),
+          },
+          alphabet: const <String>{'b'},
+          initialState: updatedStateA,
+          acceptingStates: <automaton_state.State>{updatedStateB},
+          created: initialAutomaton.created,
+          modified: initialAutomaton.modified.add(const Duration(seconds: 1)),
+          bounds: initialAutomaton.bounds,
+          zoomLevel: initialAutomaton.zoomLevel,
+          panOffset: initialAutomaton.panOffset,
+        );
+
+        provider.updateAutomaton(updatedAutomaton);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AutomatonGraphViewCanvas(
+                automaton: updatedAutomaton,
+                canvasKey: GlobalKey(),
+                controller: controller,
+                toolController: toolController,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.bySemanticsLabel('Transition t0 from B to A labeled b.'),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel('Transition t0 from A to B labeled a.'),
+          findsNothing,
         );
       } finally {
         semantics.dispose();
@@ -1785,6 +2133,48 @@ void main() {
       final field = tester.widget<TextField>(find.byType(TextField));
       expect(field.controller?.text, 'x');
     });
+
+    testWidgets(
+      'secondary click edits a transition after pan, zoom, and high DPR',
+      (tester) async {
+        tester.view.devicePixelRatio = 2.5;
+        addTearDown(tester.view.resetDevicePixelRatio);
+        toolController.setActiveTool(AutomatonCanvasTool.selection);
+        const transitionId = 'secondary-transformed-edge';
+        final transition = FSATransition(
+          id: transitionId,
+          fromState: stateA,
+          toState: stateB,
+          label: 'x',
+          inputSymbols: const {'x'},
+        );
+        final automaton = buildAutomaton({transition});
+        final canvasKey = GlobalKey();
+        await pumpCanvas(tester, automaton, canvasKey: canvasKey);
+        controller.graphController.transformationController!.value =
+            Matrix4.identity()
+              ..translateByDouble(70.0, 40.0, 0.0, 1.0)
+              ..scaleByDouble(1.5, 1.5, 1.5, 1.0);
+        await tester.pump();
+        final geometry = _paintedGeometry(tester, transitionId);
+        final labelRect = geometry.labelRect;
+        expect(labelRect, isNotNull);
+        final localPosition = _worldToViewport(controller, labelRect!.center);
+        final canvasBox =
+            canvasKey.currentContext!.findRenderObject()! as RenderBox;
+
+        await tester.tapAt(
+          canvasBox.localToGlobal(localPosition),
+          kind: PointerDeviceKind.mouse,
+          buttons: kSecondaryMouseButton,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GraphViewLabelFieldEditor), findsOneWidget);
+        final field = tester.widget<TextField>(find.byType(TextField));
+        expect(field.controller?.text, 'x');
+      },
+    );
 
     testWidgets(
       'long-pressing a transition label opens its editor in add-state mode',

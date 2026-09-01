@@ -5,6 +5,7 @@ import '../../core/models/tm_reachability_report.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
+import '../empty_string_notation.dart';
 import '../localization/locale_value_formatter.dart';
 import 'tm_algorithm_execution_controller.dart';
 import 'tm_algorithm_presentation_primitives.dart';
@@ -30,7 +31,7 @@ class TMReachabilityResultView extends StatelessWidget {
     String witnessSummary(TMReachabilityWitness witness) => localizeTMInteger(
       valueFormatter,
       (marker) => l10n.localizeWorkflowText(
-        'Input ${witness.input.isEmpty ? 'ε' : witness.input} '
+        'Input ${witness.input.isEmpty ? EmptyStringNotation.symbolOf(context) : witness.input} '
         '• step $marker',
       ),
       witness.step,
@@ -79,7 +80,11 @@ class TMReachabilityResultView extends StatelessWidget {
             context,
             localized('Input scope'),
             report.inputs
-                .map((input) => input.isEmpty ? 'ε' : input)
+                .map(
+                  (input) => input.isEmpty
+                      ? EmptyStringNotation.symbolOf(context)
+                      : input,
+                )
                 .join(', '),
           ),
           buildTMMetricRow(

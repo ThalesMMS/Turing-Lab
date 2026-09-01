@@ -215,6 +215,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
           '${widget.automaton!.name}.svg',
           emptyAutomatonLabel: _svgEmptyAutomatonLabel,
           tmLegendLabel: _svgTmLegendLabel,
+          emptyStringSymbol: _emptyStringSymbol,
           includeAnnotations: _includeAnnotationsInVisualExports,
           annotations: widget.annotations,
         );
@@ -227,6 +228,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
             widget.automaton!,
             emptyAutomatonLabel: _svgEmptyAutomatonLabel,
             tmLegendLabel: _svgTmLegendLabel,
+            emptyStringSymbol: _emptyStringSymbol,
             includeAnnotations: _includeAnnotationsInVisualExports,
             annotations: widget.annotations,
           ),
@@ -235,6 +237,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
             path,
             emptyAutomatonLabel: _svgEmptyAutomatonLabel,
             tmLegendLabel: _svgTmLegendLabel,
+            emptyStringSymbol: _emptyStringSymbol,
             includeAnnotations: _includeAnnotationsInVisualExports,
             annotations: widget.annotations,
           ),
@@ -278,6 +281,7 @@ extension _FileOperationsPanelFsaActions on _FileOperationsPanelState {
       Result<String>? exportResult;
       final pngBytesResult = await _fileService.exportAutomatonToPngBytes(
         widget.automaton!,
+        emptyStringSymbol: _emptyStringSymbol,
         includeAnnotations: _includeAnnotationsInVisualExports,
         annotations: widget.annotations,
       );

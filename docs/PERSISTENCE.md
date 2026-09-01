@@ -29,7 +29,7 @@ Turing Lab restores the active editor session on cold start when the user's Auto
 
 | Key | Owner | Purpose |
 | --- | --- | --- |
-| `settings_empty_string_symbol` | `SharedPreferencesSettingsRepository` | User-selected symbol for the empty string. |
+| `settings_empty_string_symbol` | `EmptyStringSymbolNotifier` | User-selected display symbol for the empty string (`ε` by default). |
 | `settings_theme_mode` | `SharedPreferencesSettingsRepository` | Theme preference: `system`, `light`, or `dark`. |
 | `settings_show_grid` | `SharedPreferencesSettingsRepository` | Whether the editor grid is shown. |
 | `settings_show_coordinates` | `SharedPreferencesSettingsRepository` | Whether node coordinates are shown. |
@@ -72,6 +72,24 @@ flowchart LR
     Provider --> UI
     Repo -. "read error or bad value" .-> Defaults["SettingsModel() defaults"]
 ```
+
+### Empty-string notation
+
+- `emptyStringSymbolProvider` and `EmptyStringSymbolNotifier` own the active
+  `settings_empty_string_symbol` value independently from `SettingsModel`.
+- Cold-start migration completes before `runApp`, so the first visible frame
+  uses the persisted notation. The current key wins over the legacy
+  `settings_epsilon_symbol` key when both contain supported values.
+- Migration stores a valid legacy value under the current key before removing
+  either legacy key. A failed write keeps the previous valid value and leaves
+  migration data available for the next start.
+- Missing or malformed values repair to the canonical display default `ε`.
+  Reset to defaults also writes `ε`; failure is reported independently from
+  the remaining Settings repository writes.
+- The preference is presentation-only. Domain models, undo history, session
+  snapshots, JSON, and JFLAP remain canonical and are never rewritten when the
+  user switches notation. SVG and PNG are visual exports and deliberately use
+  the symbol visible in the interface.
 
 ### Unified Trace History
 

@@ -9,6 +9,7 @@ import '../../core/models/state.dart' as automaton;
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/conversion_preview_localizations.dart';
+import '../empty_string_notation.dart';
 
 typedef _PreviewTextBuilder = String Function(AppLocalizations l10n);
 
@@ -135,8 +136,11 @@ class ManualConversionDocumentPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
-    final heading = _headingBuilder(l10n);
-    final lines = [for (final builder in _lineBuilders) builder(l10n)];
+    final heading = EmptyStringNotation.format(context, _headingBuilder(l10n));
+    final lines = [
+      for (final builder in _lineBuilders)
+        EmptyStringNotation.format(context, builder(l10n)),
+    ];
     final theme = Theme.of(context);
     return Semantics(
       container: true,

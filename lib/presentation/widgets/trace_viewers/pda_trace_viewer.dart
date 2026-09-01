@@ -6,8 +6,7 @@
 //  generic SimulationResult so BaseTraceViewer can be reused, highlighting
 //  remaining input, stack contents, and used transitions.
 //  Harmonizes accept/reject messages, integrates with the canvas
-//  highlight service, and reinforces theoretical conventions such as ε
-//  for the empty string and emptied stacks.
+//  highlight service, and reinforces the configured empty-string notation.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -17,8 +16,8 @@ import '../../../core/algorithms/pda_simulator.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
-import '../../../core/utils/epsilon_utils.dart';
 import '../../../l10n/app_localizations_resolver.dart';
+import '../../empty_string_notation.dart';
 import 'base_trace_viewer.dart';
 import '../../../core/constants/monospace_typography.dart';
 
@@ -58,6 +57,7 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
+    final emptyStringSymbol = EmptyStringNotation.symbolOf(context);
     return BaseTraceViewer(
       result: _adaptedResult,
       title: l10n.pdaTrace(widget.result.steps.length),
@@ -65,11 +65,12 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
       onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
         final remaining =
-            step.remainingInput.isEmpty ? kEpsilonSymbol : step.remainingInput;
+            step.remainingInput.isEmpty ? emptyStringSymbol : step.remainingInput;
         final stack =
-            step.stackContents.isEmpty ? kEpsilonSymbol : step.stackContents;
-        final transition =
-            step.usedTransition != null ? ' | ${step.usedTransition}' : '';
+            step.stackContents.isEmpty ? emptyStringSymbol : step.stackContents;
+        final transition = step.usedTransition != null
+            ? ' | ${EmptyStringNotation.format(context, step.usedTransition!)}'
+            : '';
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
@@ -89,10 +90,9 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
                 child: Text(
                   'q=${step.currentState} | ${l10n.traceRemaining}=$remaining | '
                   '${l10n.traceStack}=$stack$transition',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(
-                      fontFamilyFallback: kMonospaceFontFamilyFallback),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFamilyFallback: kMonospaceFontFamilyFallback,
+                      ),
                 ),
               ),
             ],
@@ -102,7 +102,6 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
     );
   }
 
-  // Convert PDASimulationResult to the core SimulationResult used by BaseTraceViewer.
   SimulationResult _asSimulationResult(PDASimulationResult result) {
     if (result.accepted) {
       return SimulationResult.success(

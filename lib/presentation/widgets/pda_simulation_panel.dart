@@ -25,6 +25,7 @@ import '../../l10n/app_localizations_resolver.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../../l10n/app_localizations_workflows.dart';
 import '../../l10n/automata_diagnostics_localizations.dart';
+import '../empty_string_notation.dart';
 import '../providers/pda_editor_provider.dart';
 import '../providers/pda_simulation_provider.dart';
 import 'base_simulation_panel.dart';
@@ -176,7 +177,10 @@ class _PDASimulationPanelState extends ConsumerState<PDASimulationPanel> {
             SimulationTextField(
               controller: _inputController,
               labelText: 'Input String',
-              hintText: 'Leave blank for ε; whitespace is preserved',
+              hintText: EmptyStringNotation.formatTerminology(
+                context,
+                'Leave blank for ε; whitespace is preserved',
+              ),
               isDense: useDenseFields,
             ),
             const SizedBox(height: 12),

@@ -14,7 +14,11 @@ import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
+import 'package:turing_lab/l10n/app_localizations_en.dart';
+import 'package:turing_lab/l10n/app_localizations_workflows.dart';
+import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
+import 'package:turing_lab/presentation/providers/empty_string_symbol_provider.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
@@ -22,6 +26,8 @@ import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
+
+import 'examples_test_helpers.dart';
 
 class _MockGrammarNotifier extends GrammarProvider {
   _MockGrammarNotifier({
@@ -345,6 +351,7 @@ Future<void> _pumpGrammarAlgorithmPanel(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(preferences),
+        examplesRepositoryProvider.overrideWithValue(TestExamplesRepository()),
         grammarProvider.overrideWith((ref) => mockGrammarNotifier),
         automatonStateProvider.overrideWith(
           (ref) => mockAutomatonStateNotifier,
@@ -352,13 +359,18 @@ Future<void> _pumpGrammarAlgorithmPanel(
         pdaEditorProvider.overrideWith((ref) => mockPdaNotifier),
         homeNavigationProvider.overrideWith((ref) => mockNavNotifier),
       ],
-      child: MaterialApp(
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(
-          body: SingleChildScrollView(
-            child: GrammarAlgorithmPanel(useExpanded: false),
+      child: Consumer(
+        builder: (context, ref, child) => EmptyStringNotation(
+          symbol: ref.watch(emptyStringSymbolProvider),
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(
+              body: SingleChildScrollView(
+                child: GrammarAlgorithmPanel(useExpanded: false),
+              ),
+            ),
           ),
         ),
       ),
@@ -436,6 +448,38 @@ void main() {
 
       expect(find.text('Grammar Analysis'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+    });
+
+    testWidgets('reformats an existing FIRST result after notation changes', (
+      tester,
+    ) async {
+      final grammarState = GrammarState.initial().copyWith(
+        productions: const [
+          Production(
+            id: 'empty',
+            leftSide: ['S'],
+            rightSide: [],
+            isLambda: true,
+          ),
+        ],
+      );
+      await _pumpGrammarAlgorithmPanel(tester, grammarState: grammarState);
+
+      await tester.ensureVisible(find.text('Find First Sets'));
+      await tester.tap(find.text('Find First Sets'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('FIRST(S) = {ε}'), findsOneWidget);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(GrammarAlgorithmPanel)),
+      );
+      await container
+          .read(emptyStringSymbolProvider.notifier)
+          .setSymbol(kLambdaSymbol);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('FIRST(S) = {λ}'), findsOneWidget);
+      expect(find.textContaining('FIRST(S) = {ε}'), findsNothing);
     });
 
     testWidgets('opens the variable dependency graph from the CFG flow', (
@@ -604,6 +648,36 @@ void main() {
         find.text('Select an algorithm above to analyze your grammar'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('clears analysis results when loading another example', (
+      tester,
+    ) async {
+      final grammarState = GrammarState.initial().copyWith(
+        startSymbol: 'S',
+        type: GrammarType.contextFree,
+        productions: const [
+          Production(id: 'p1', leftSide: ['S'], rightSide: ['S', 'S']),
+          Production(id: 'p2', leftSide: ['S'], rightSide: ['a']),
+          Production(id: 'p3', leftSide: ['S'], rightSide: [], isLambda: true),
+        ],
+      );
+      await _pumpGrammarAlgorithmPanel(tester, grammarState: grammarState);
+
+      await tester.ensureVisible(find.text('Check Ambiguity'));
+      await tester.tap(find.text('Check Ambiguity'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('LL(1) Classification'), findsOneWidget);
+
+      final example = find.text(
+        AppLocalizationsEn().localizedExampleName('GLC - a^n b^n'),
+      );
+      await tester.ensureVisible(example);
+      await tester.tap(example);
+      await tester.pumpAndSettle();
+
+      expect(find.text('No analysis results yet'), findsOneWidget);
+      expect(find.textContaining('LL(1) Classification'), findsNothing);
     });
 
     testWidgets('displays help text when no productions exist', (tester) async {

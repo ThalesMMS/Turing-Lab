@@ -323,18 +323,19 @@ void main() {
     );
   });
 
-  testWidgets('editing an existing rule opens the same modal prefilled', (
+  testWidgets('editing a group opens the same modal with all alternatives', (
     tester,
   ) async {
     final grammar = GrammarProvider()
-      ..addProduction(leftSide: const ['S'], rightSide: const ['a', 'S']);
+      ..addProduction(leftSide: const ['S'], rightSide: const ['a', 'S'])
+      ..addProduction(leftSide: const ['S'], rightSide: const ['b']);
     await _pumpGrammarPage(tester, grammar: grammar);
 
     await tester.tap(find.byType(PopupMenuButton<String>));
     await tester.pumpAndSettle();
     await tester.tap(
       find.ancestor(
-        of: find.text('Edit'),
+        of: find.text('Edit alternatives'),
         matching: find.byWidgetPredicate(
           (widget) => widget is PopupMenuItem<String>,
         ),
@@ -345,7 +346,7 @@ void main() {
     final sheet = find.byType(BottomSheet);
     expect(sheet, findsOneWidget);
     expect(
-      find.descendant(of: sheet, matching: find.text('Edit Production Rule')),
+      find.descendant(of: sheet, matching: find.text('Edit alternatives')),
       findsOneWidget,
     );
     expect(
@@ -355,10 +356,40 @@ void main() {
     expect(
       find.descendant(
         of: sheet,
-        matching: find.widgetWithText(TextField, 'aS'),
+        matching: find.widgetWithText(TextField, 'aS | b'),
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Portuguese localizes production group actions', (tester) async {
+    final grammar = GrammarProvider()
+      ..addProduction(leftSide: const ['S'], rightSide: const ['a'])
+      ..addProduction(leftSide: const ['S'], rightSide: const ['b']);
+    await _pumpGrammarPage(
+      tester,
+      grammar: grammar,
+      locale: const Locale('pt'),
+    );
+
+    expect(find.text('S → a | b'), findsOneWidget);
+    expect(find.text('2 alternativas'), findsOneWidget);
+    expect(find.byTooltip('Reordenar produções de S'), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(
+            find.byKey(const ValueKey('grammar-production-group-handle-p1')),
+          )
+          .value,
+      contains('Posição 1 de 1'),
+    );
+    await tester.tap(find.byTooltip('Ações do grupo de produções'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Editar alternativas'), findsOneWidget);
+    expect(find.text('Excluir grupo'), findsOneWidget);
+    expect(find.text('Mover para cima'), findsOneWidget);
+    expect(find.text('Mover para baixo'), findsOneWidget);
   });
 
   testWidgets('tablet names the secondary workspace tab Parser', (

@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
+import '../empty_string_notation.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import '../../core/manual_conversions/manual_conversion_session.dart';
@@ -284,7 +286,7 @@ class _RegexToFaFragmentEditorState extends State<RegexToFaFragmentEditor> {
     final l10n = appLocalizationsOf(context);
     final transition = _transitions[index];
     final label = transition.isEpsilon
-        ? 'ε'
+        ? EmptyStringNotation.symbolOf(context)
         : (transition.symbols.toList()..sort()).join(', ');
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
