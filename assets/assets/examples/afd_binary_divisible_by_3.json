@@ -1,0 +1,42 @@
+{
+  "id": "example_afd_binary_divisible_by_3",
+  "name": "AFD - Binário divisível por 3",
+  "alphabet": ["0", "1"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": true
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 300.0,
+      "y": 120.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 300.0,
+      "y": 280.0,
+      "isInitial": false,
+      "isFinal": false
+    }
+  ],
+  "transitions": {
+    "q0|0": ["q0"],
+    "q0|1": ["q1"],
+    "q1|0": ["q2"],
+    "q1|1": ["q0"],
+    "q2|0": ["q1"],
+    "q2|1": ["q2"]
+  },
+  "initialId": "q0",
+  "nextId": 3,
+  "type": "dfa"
+}

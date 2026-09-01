@@ -1,0 +1,51 @@
+{
+  "id": "example_apda_palindrome",
+  "name": "APD - Palíndromo",
+  "type": "pda",
+  "alphabet": ["a", "b"],
+  "stackAlphabet": ["a", "b", "Z"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 320.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 520.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a|Z": ["q0|aZ", "q1|Z"],
+    "q0|b|Z": ["q0|bZ", "q1|Z"],
+    "q0|a|a": ["q0|aa", "q1|a"],
+    "q0|a|b": ["q0|ab", "q1|b"],
+    "q0|b|a": ["q0|ba", "q1|a"],
+    "q0|b|b": ["q0|bb", "q1|b"],
+    "q0||a": ["q1|a"],
+    "q0||b": ["q1|b"],
+    "q0||Z": ["q1|Z"],
+    "q1|a|a": ["q1|"],
+    "q1|b|b": ["q1|"],
+    "q1||Z": ["q2|Z"]
+  },
+  "initialId": "q0",
+  "initialStack": ["Z"],
+  "finalStates": ["q2"],
+  "description": "Autômato de pilha não determinístico que empilha a primeira metade da palavra e desempilha a segunda para reconhecer palíndromos"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "tm_palindrome",
+  "name": "MT - Verificador de palíndromo",
+  "type": "tm",
+  "alphabet": ["0", "1"],
+  "tapeAlphabet": ["0", "1", "X", "B"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 300.0,
+      "y": 100.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 300.0,
+      "y": 300.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q3",
+      "name": "q3",
+      "x": 500.0,
+      "y": 100.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q4",
+      "name": "q4",
+      "x": 500.0,
+      "y": 300.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "qBackLeft",
+      "name": "qBackLeft",
+      "x": 500.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "qAccept",
+      "name": "qAccept",
+      "x": 700.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|0|0": ["q1|X|R"],
+    "q0|1|1": ["q2|X|R"],
+    "q0|X|X": ["q0|X|R"],
+    "q0|B|B": ["qAccept|B|S"],
+    "q1|0|0": ["q1|0|R"],
+    "q1|1|1": ["q1|1|R"],
+    "q1|B|B": ["q3|B|L"],
+    "q1|X|X": ["q3|X|L"],
+    "q2|0|0": ["q2|0|R"],
+    "q2|1|1": ["q2|1|R"],
+    "q2|B|B": ["q4|B|L"],
+    "q2|X|X": ["q4|X|L"],
+    "q3|0|0": ["qBackLeft|X|L"],
+    "q3|X|X": ["qBackLeft|X|L"],
+    "q4|1|1": ["qBackLeft|X|L"],
+    "q4|X|X": ["qBackLeft|X|L"],
+    "qBackLeft|0|0": ["qBackLeft|0|L"],
+    "qBackLeft|1|1": ["qBackLeft|1|L"],
+    "qBackLeft|X|X": ["qBackLeft|X|L"],
+    "qBackLeft|B|B": ["q0|B|R"]
+  },
+  "initialId": "q0",
+  "finalStates": ["qAccept"],
+  "description": "Máquina de Turing que verifica se uma string binária é um palíndromo"
+}

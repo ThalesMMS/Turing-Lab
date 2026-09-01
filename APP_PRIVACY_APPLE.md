@@ -33,7 +33,7 @@ Implementation references:
 
 Recommended App Privacy label: **Data Not Collected**
 
-JFlutter currently qualifies for that status because:
+Turing Lab currently qualifies for that status because:
 
 - No data is collected by the developer.
 - No user data is transmitted to developer-controlled servers.
@@ -145,7 +145,7 @@ Note:
 
 ## Rationale
 
-JFlutter is currently an offline-only educational app:
+Turing Lab is currently an offline-only educational app:
 
 - Settings are stored locally in `SharedPreferences`.
 - Simulation traces are stored locally in `SharedPreferences`.
@@ -166,18 +166,18 @@ Apple review.
 - `ios/Runner/PrivacyInfo.xcprivacy` and `macos/Runner/PrivacyInfo.xcprivacy`
   declare app-level `UserDefaults` and file-metadata usage for local-only
   storage and document flows.
-- `ios/Podfile` disables `file_picker` media/audio support because JFlutter
+- `ios/Podfile` disables `file_picker` media/audio support because Turing Lab
   ships document import/export only on iOS.
 
 ## Suggested Reviewer Note
 
 Suggested App Review note:
 
-> JFlutter is an offline educational automata tool. It stores settings and simulation traces locally on-device, loads bundled examples from app assets, and supports user-initiated import/export through the system file picker. It does not use analytics, crash reporting, accounts, ads, tracking, or developer-operated network services.
+> Turing Lab is an offline educational automata tool. It stores settings and simulation traces locally on-device, loads bundled examples from app assets, and supports user-initiated import/export through the system file picker. It does not use analytics, crash reporting, accounts, ads, tracking, or developer-operated network services.
 
 Current Apple submission note update:
 
-> The iOS build disables unused media and audio picker support from `file_picker`. JFlutter ships document import/export only, with local preferences storage and no camera, microphone, or photo-library workflow exposed to users.
+> The iOS build disables unused media and audio picker support from `file_picker`. Turing Lab ships document import/export only, with local preferences storage and no camera, microphone, or photo-library workflow exposed to users.
 
 ## Maintenance Trigger
 

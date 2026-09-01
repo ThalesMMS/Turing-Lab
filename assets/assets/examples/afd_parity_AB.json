@@ -1,0 +1,52 @@
+{
+  "id": "example_afd_parity_ab",
+  "name": "AFD - Paridade AB",
+  "alphabet": ["a", "b"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 160.0,
+      "isInitial": true,
+      "isFinal": true
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 320.0,
+      "y": 80.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 320.0,
+      "y": 240.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q3",
+      "name": "q3",
+      "x": 540.0,
+      "y": 160.0,
+      "isInitial": false,
+      "isFinal": false
+    }
+  ],
+  "transitions": {
+    "q0|a": ["q1"],
+    "q0|b": ["q2"],
+    "q1|a": ["q0"],
+    "q1|b": ["q3"],
+    "q2|a": ["q3"],
+    "q2|b": ["q0"],
+    "q3|a": ["q2"],
+    "q3|b": ["q1"]
+  },
+  "initialId": "q0",
+  "nextId": 4,
+  "type": "dfa"
+}

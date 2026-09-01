@@ -1,0 +1,43 @@
+{
+  "id": "example_afd_contains_ab",
+  "name": "AFD - Contém AB",
+  "type": "dfa",
+  "alphabet": ["a", "b"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 300.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 500.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a": ["q1"],
+    "q0|b": ["q0"],
+    "q1|a": ["q1"],
+    "q1|b": ["q2"],
+    "q2|a": ["q2"],
+    "q2|b": ["q2"]
+  },
+  "initialId": "q0",
+  "finalStates": ["q2"],
+  "description": "Autômato finito determinístico que aceita cadeias contendo a sequência ab"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "example_glc_even_zeros",
+  "name": "GLC - Zeros em quantidade par",
+  "type": "cfg",
+  "alphabet": ["0", "1"],
+  "variables": ["S", "A"],
+  "initialSymbol": "S",
+  "productions": {
+    "S": ["1S", "0A", ""],
+    "A": ["1A", "0S"]
+  },
+  "description": "Gramática regular que gera cadeias binárias com quantidade par de zeros"
+}

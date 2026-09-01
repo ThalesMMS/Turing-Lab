@@ -1,164 +1,38 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JFlutter</title>
-  <meta name="description" content="JFlutter is an educational automata and formal language tool for iPhone, iPad, Mac, and other platforms.">
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #f7f8fb;
-      --text: #18212f;
-      --muted: #536171;
-      --panel: #ffffff;
-      --border: #d9e0e8;
-      --accent: #155e75;
-      --accent-soft: #e6f4f7;
-    }
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #101418;
-        --text: #edf2f7;
-        --muted: #b8c3cf;
-        --panel: #171d24;
-        --border: #2b3642;
-        --accent: #67c7dc;
-        --accent-soft: #12313a;
-      }
-    }
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
 
-    * {
-      box-sizing: border-box;
-    }
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
 
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-    }
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/Turing-Lab/">
 
-    main {
-      width: min(880px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 56px 0;
-    }
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Interactive toolkit for finite automata, grammars, pushdown automata, Turing machines, and regular expressions.">
 
-    header {
-      margin-bottom: 32px;
-    }
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Turing Lab">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2rem, 7vw, 3.5rem);
-      line-height: 1.05;
-      letter-spacing: 0;
-    }
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
-    h2 {
-      margin: 0 0 12px;
-      font-size: 1.25rem;
-      line-height: 1.3;
-    }
-
-    p {
-      margin: 0 0 16px;
-    }
-
-    a {
-      color: var(--accent);
-      font-weight: 650;
-    }
-
-    .lead {
-      max-width: 760px;
-      color: var(--muted);
-      font-size: 1.125rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin: 28px 0;
-    }
-
-    .card {
-      min-height: 180px;
-      padding: 22px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      padding: 10px 16px;
-      color: #ffffff;
-      background: var(--accent);
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .button.secondary {
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
-
-    footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
-  </style>
+  <title>Turing Lab Formal Language Toolkit</title>
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <main>
-    <header>
-      <h1>JFlutter</h1>
-      <p class="lead">An educational automata and formal language tool for building, testing, and studying finite-state automata, grammars, pushdown automata, Turing machines, and regular expressions.</p>
-      <div class="button-row" aria-label="Primary links">
-        <a class="button" href="support.html">Support</a>
-        <a class="button secondary" href="privacy.html">Privacy Policy</a>
-      </div>
-    </header>
-
-    <section class="grid" aria-label="Site links">
-      <article class="card">
-        <h2>Support</h2>
-        <p>Get help, report issues, or request improvements for JFlutter.</p>
-        <p><a href="support.html">Open support information</a></p>
-      </article>
-      <article class="card">
-        <h2>Privacy</h2>
-        <p>Review how JFlutter handles data. The app is designed for local, offline use and does not collect user data.</p>
-        <p><a href="privacy.html">Read the privacy policy</a></p>
-      </article>
-      <article class="card">
-        <h2>Repository</h2>
-        <p>View source code, documentation, license information, and the project README.</p>
-        <p><a href="https://github.com/ThalesMMS/jflutter#readme">Open GitHub README</a></p>
-      </article>
-    </section>
-
-    <footer>
-      <p>JFlutter is a Flutter reimplementation inspired by the original JFLAP project. JFlutter is not affiliated with, endorsed by, or an official release of JFLAP, Duke University, or Susan H. Rodger.</p>
-    </footer>
-  </main>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

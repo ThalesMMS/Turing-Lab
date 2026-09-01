@@ -1,0 +1,64 @@
+{
+  "id": "pda_anbn",
+  "name": "APD - a^n b^n",
+  "type": "pda",
+  "alphabet": [
+    "a",
+    "b"
+  ],
+  "stackAlphabet": [
+    "Z",
+    "a"
+  ],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 150.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 250.0,
+      "y": 150.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 400.0,
+      "y": 150.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a|Z": [
+      "q0|aZ"
+    ],
+    "q0|a|a": [
+      "q0|aa"
+    ],
+    "q0|b|a": [
+      "q1|"
+    ],
+    "q1|b|a": [
+      "q1|"
+    ],
+    "q1||Z": [
+      "q2|"
+    ]
+  },
+  "initialId": "q0",
+  "initialStack": [
+    "Z"
+  ],
+  "finalStates": [
+    "q2"
+  ],
+  "description": "Autômato de pilha que reconhece a linguagem a^n b^n, empilhando um símbolo para cada a e desempilhando um símbolo para cada b"
+}

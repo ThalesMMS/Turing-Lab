@@ -1,0 +1,8 @@
+{
+  "id": "example_regex_ends_with_ab",
+  "name": "Regex - Termina com AB",
+  "type": "regex",
+  "expression": "(a|b)*ab",
+  "alphabet": ["a", "b"],
+  "description": "Cadeias sobre a e b que terminam em ab"
+}

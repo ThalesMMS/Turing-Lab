@@ -1,0 +1,53 @@
+{
+  "id": "pda_balanced_parens",
+  "name": "APD - Parênteses Balanceados",
+  "type": "pda",
+  "alphabet": [
+    "(",
+    ")"
+  ],
+  "stackAlphabet": [
+    "Z",
+    "("
+  ],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 150.0,
+      "y": 150.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 350.0,
+      "y": 150.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|(|Z": [
+      "q0|(Z"
+    ],
+    "q0|(|(": [
+      "q0|(("
+    ],
+    "q0|)|(": [
+      "q0|"
+    ],
+    "q0||Z": [
+      "q1|"
+    ]
+  },
+  "initialId": "q0",
+  "initialStack": [
+    "Z"
+  ],
+  "finalStates": [
+    "q1"
+  ],
+  "description": "Autômato de pilha que reconhece cadeias de parênteses balanceados usando a pilha para rastrear aberturas pendentes"
+}

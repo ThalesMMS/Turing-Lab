@@ -1,0 +1,98 @@
+{
+  "id": "tm_anbn",
+  "name": "MT - a^n b^n",
+  "type": "tm",
+  "alphabet": [
+    "a",
+    "b"
+  ],
+  "tapeAlphabet": [
+    "a",
+    "b",
+    "X",
+    "Y",
+    "B"
+  ],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 300.0,
+      "y": 100.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 500.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q3",
+      "name": "q3",
+      "x": 650.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q4",
+      "name": "q4",
+      "x": 800.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a|a": [
+      "q1|X|R"
+    ],
+    "q0|Y|Y": [
+      "q3|Y|R"
+    ],
+    "q1|a|a": [
+      "q1|a|R"
+    ],
+    "q1|Y|Y": [
+      "q1|Y|R"
+    ],
+    "q1|b|b": [
+      "q2|Y|L"
+    ],
+    "q2|a|a": [
+      "q2|a|L"
+    ],
+    "q2|Y|Y": [
+      "q2|Y|L"
+    ],
+    "q2|X|X": [
+      "q0|X|R"
+    ],
+    "q3|Y|Y": [
+      "q3|Y|R"
+    ],
+    "q0|B|B": [
+      "q4|B|S"
+    ],
+    "q3|B|B": [
+      "q4|B|S"
+    ]
+  },
+  "initialId": "q0",
+  "finalStates": [
+    "q4"
+  ],
+  "description": "Máquina de Turing que reconhece a linguagem a^n b^n marcando pares correspondentes de a e b na fita"
+}

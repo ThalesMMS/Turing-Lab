@@ -1,0 +1,12 @@
+{
+  "id": "example_glc_balanced_parentheses",
+  "name": "GLC - Parênteses balanceados",
+  "type": "cfg",
+  "alphabet": ["(", ")"],
+  "variables": ["S"],
+  "initialSymbol": "S",
+  "productions": {
+    "S": ["SS", "(S)", ""]
+  },
+  "description": "Gramática que gera strings de parênteses balanceados"
+}

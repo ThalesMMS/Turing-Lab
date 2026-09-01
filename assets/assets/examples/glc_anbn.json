@@ -1,0 +1,12 @@
+{
+  "id": "example_glc_anbn",
+  "name": "GLC - a^n b^n",
+  "type": "cfg",
+  "alphabet": ["a", "b"],
+  "variables": ["S"],
+  "initialSymbol": "S",
+  "productions": {
+    "S": ["aSb", ""]
+  },
+  "description": "Gramática livre de contexto que gera a linguagem a^n b^n"
+}

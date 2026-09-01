@@ -1,0 +1,21 @@
+{
+  "id": "tm_multitape_copy",
+  "name": "MT multifitas - Cópia em duas fitas",
+  "type": "tm",
+  "alphabet": ["0", "1"],
+  "tapeAlphabet": ["0", "1", "B"],
+  "blankSymbol": "B",
+  "tapeCount": 2,
+  "states": [
+    {"id": "q0", "name": "q0", "x": 120.0, "y": 180.0, "isInitial": true, "isFinal": false},
+    {"id": "qa", "name": "accept", "x": 420.0, "y": 180.0, "isInitial": false, "isFinal": true}
+  ],
+  "initialId": "q0",
+  "finalStates": ["qa"],
+  "transitions": [
+    {"id": "copy-0", "fromState": "q0", "toState": "q0", "label": "T1: 0/0R | T2: B/0R", "controlPoint": {"x": 120.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["0", "B"], "writeSymbols": ["0", "0"], "directions": ["right", "right"]},
+    {"id": "copy-1", "fromState": "q0", "toState": "q0", "label": "T1: 1/1R | T2: B/1R", "controlPoint": {"x": 160.0, "y": 80.0}, "type": "deterministic", "readSymbols": ["1", "B"], "writeSymbols": ["1", "1"], "directions": ["right", "right"]},
+    {"id": "copy-done", "fromState": "q0", "toState": "qa", "label": "T1: B/BS | T2: B/BS", "type": "deterministic", "readSymbols": ["B", "B"], "writeSymbols": ["B", "B"], "directions": ["stay", "stay"]}
+  ],
+  "description": "Tape 0 receives the input; tape 1 starts blank and receives the copy."
+}

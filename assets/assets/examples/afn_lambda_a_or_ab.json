@@ -1,0 +1,56 @@
+{
+  "id": "example_afn_lambda_a_or_ab",
+  "name": "AFNλ - A ou AB",
+  "alphabet": ["a", "b", "λ"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 320.0,
+      "y": 120.0,
+      "isInitial": false,
+      "isFinal": true
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 320.0,
+      "y": 280.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q3",
+      "name": "q3",
+      "x": 520.0,
+      "y": 280.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q4",
+      "name": "q4",
+      "x": 520.0,
+      "y": 120.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a": ["q1"],
+    "q0|λ": ["q2"],
+    "q2|a": ["q3"],
+    "q3|b": ["q4"]
+  },
+  "initialId": "q0",
+  "nextId": 5,
+  "type": "nfaLambda"
+}

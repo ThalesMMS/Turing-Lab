@@ -1,0 +1,51 @@
+{
+  "id": "pda_mirrored_separator",
+  "name": "APD - w#reverse(w)",
+  "type": "pda",
+  "alphabet": ["a", "b", "#"],
+  "stackAlphabet": ["Z", "a", "b"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 180.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 320.0,
+      "y": 180.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 540.0,
+      "y": 180.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a|Z": ["q0|aZ"],
+    "q0|a|a": ["q0|aa"],
+    "q0|a|b": ["q0|ab"],
+    "q0|b|Z": ["q0|bZ"],
+    "q0|b|a": ["q0|ba"],
+    "q0|b|b": ["q0|bb"],
+    "q0|#|Z": ["q1|Z"],
+    "q0|#|a": ["q1|a"],
+    "q0|#|b": ["q1|b"],
+    "q1|a|a": ["q1|"],
+    "q1|b|b": ["q1|"],
+    "q1||Z": ["q2|"]
+  },
+  "initialId": "q0",
+  "initialStack": ["Z"],
+  "finalStates": ["q2"],
+  "description": "Autômato de pilha que aceita palavras no formato w#reverse(w)"
+}

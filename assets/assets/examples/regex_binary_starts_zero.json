@@ -1,0 +1,8 @@
+{
+  "id": "example_regex_binary_starts_zero",
+  "name": "Regex - Binário iniciado por 0",
+  "type": "regex",
+  "expression": "0(0|1)*",
+  "alphabet": ["0", "1"],
+  "description": "Cadeias binárias não vazias iniciadas por zero"
+}

@@ -1,0 +1,14 @@
+{
+  "schema": {"id": "turing-lab.mealy", "version": 1},
+  "id": "mealy_partial",
+  "name": "Partial transducer",
+  "revision": 1,
+  "inputAlphabet": ["a", "b"],
+  "outputAlphabet": ["x"],
+  "states": [
+    {"id": "q0", "label": "q0", "position": {"x": 120, "y": 160}, "isInitial": true}
+  ],
+  "transitions": [
+    {"id": "only_a", "from": "q0", "to": "q0", "input": "a", "output": ["x"]}
+  ]
+}

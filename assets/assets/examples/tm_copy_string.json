@@ -1,0 +1,106 @@
+{
+  "id": "tm_copy_string",
+  "name": "MT - Cópia de string",
+  "type": "tm",
+  "alphabet": ["0", "1"],
+  "tapeAlphabet": ["0", "1", "X", "#", "B"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 250.0,
+      "y": 100.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q2",
+      "name": "q2",
+      "x": 250.0,
+      "y": 300.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q3",
+      "name": "q3",
+      "x": 400.0,
+      "y": 100.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q4",
+      "name": "q4",
+      "x": 400.0,
+      "y": 300.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q5",
+      "name": "q5",
+      "x": 550.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "q6",
+      "name": "q6",
+      "x": 700.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": false
+    },
+    {
+      "id": "qAccept",
+      "name": "qAccept",
+      "x": 850.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|0|0": ["q1|X|R"],
+    "q0|1|1": ["q2|X|R"],
+    "q0|X|X": ["q0|X|R"],
+    "q0|B|B": ["q6|#|R"],
+    "q1|0|0": ["q1|0|R"],
+    "q1|1|1": ["q1|1|R"],
+    "q1|X|X": ["q1|X|R"],
+    "q1|#|#": ["q3|#|R"],
+    "q1|B|B": ["q3|#|R"],
+    "q2|0|0": ["q2|0|R"],
+    "q2|1|1": ["q2|1|R"],
+    "q2|X|X": ["q2|X|R"],
+    "q2|#|#": ["q4|#|R"],
+    "q2|B|B": ["q4|#|R"],
+    "q3|0|0": ["q3|0|R"],
+    "q3|1|1": ["q3|1|R"],
+    "q3|B|B": ["q5|0|L"],
+    "q4|0|0": ["q4|0|R"],
+    "q4|1|1": ["q4|1|R"],
+    "q4|B|B": ["q5|1|L"],
+    "q5|0|0": ["q5|0|L"],
+    "q5|1|1": ["q5|1|L"],
+    "q5|#|#": ["q5|#|L"],
+    "q5|X|X": ["q0|X|R"],
+    "q0|#|#": ["q6|#|R"],
+    "q6|0|0": ["q6|0|R"],
+    "q6|1|1": ["q6|1|R"],
+    "q6|B|B": ["qAccept|B|R"]
+  },
+  "initialId": "q0",
+  "finalStates": ["qAccept"],
+  "description": "Máquina de Turing que copia uma string binária (ex: '101' → '101#101')"
+}

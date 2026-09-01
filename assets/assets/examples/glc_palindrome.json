@@ -1,0 +1,14 @@
+{
+  "id": "example_glc_palindrome",
+  "name": "GLC - Palíndromo",
+  "type": "cfg",
+  "alphabet": ["a", "b"],
+  "variables": ["S", "A", "B"],
+  "initialSymbol": "S",
+  "productions": {
+    "S": ["aSa", "bSb", "a", "b", ""],
+    "A": ["a"],
+    "B": ["b"]
+  },
+  "description": "Gramática livre de contexto que gera palíndromos sobre {a,b}"
+}

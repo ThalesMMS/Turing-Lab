@@ -1,0 +1,32 @@
+{
+  "id": "example_afd_ends_with_a",
+  "name": "AFD - Termina com A",
+  "alphabet": ["a", "b"],
+  "states": [
+    {
+      "id": "q0",
+      "name": "q0",
+      "x": 100.0,
+      "y": 200.0,
+      "isInitial": true,
+      "isFinal": false
+    },
+    {
+      "id": "q1",
+      "name": "q1",
+      "x": 300.0,
+      "y": 200.0,
+      "isInitial": false,
+      "isFinal": true
+    }
+  ],
+  "transitions": {
+    "q0|a": ["q1"],
+    "q0|b": ["q0"],
+    "q1|a": ["q1"],
+    "q1|b": ["q0"]
+  },
+  "initialId": "q0",
+  "nextId": 2,
+  "type": "dfa"
+}
