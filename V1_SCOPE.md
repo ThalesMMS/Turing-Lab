@@ -1,62 +1,61 @@
-# Turing Lab Apple v1.0 Scope
+# Turing Lab Apple 1.0 Scope
 
-This document is the authoritative scope for the first Apple release of Turing Lab on iPhone, iPad, and native macOS.
+This document describes the feature surface in the current Apple 1.0 build
+line. Feature availability does not imply App Store approval, tester access, or
+completed physical-device QA.
 
-## Shipping modules
+## Shipping workspaces
 
-Turing Lab Apple v1.0 ships these six modules:
+The application exposes these registered formal-system families:
 
-1. FSA
-2. Grammar
-3. PDA
-4. TM
-5. Regex
-6. Pumping Lemma
+1. Finite-state automata
+2. Context-free grammars
+3. Unrestricted grammars
+4. Pushdown automata
+5. Turing machines
+6. Regular expressions
+7. Regular and context-free Pumping Lemma exercises
+8. Mealy transducers
+9. Moore transducers
+10. L-systems
 
-## Module scope
+The TM workspace supports single-tape, multi-tape, and reusable building-block
+documents. The grammar surface includes bounded brute-force parsing and guided
+derivation tools.
 
-### FSA
-- In scope: creation, editing, simulation, and validated algorithm flows
-- File support:
-  - JFLAP XML import/export
-  - JSON import/export
-  - SVG export
-  - PNG export on native platforms
+## Interoperability surface
 
-### Grammar
-- In scope: stable grammar editing, parsing, and conversion workflows that are ready for public release
-- File support:
-  - JFLAP grammar import/export
-  - SVG export
+- FSA: JFLAP XML and versioned JSON import/export, SVG, and native PNG.
+- Context-free grammar: JFLAP grammar import/export and SVG.
+- Unrestricted grammar: JFLAP XML and versioned JSON import/export.
+- PDA: JFLAP XML and versioned JSON import/export, plus SVG.
+- TM: JFLAP XML and versioned JSON import/export for supported single-tape,
+  multi-tape, and building-block documents, plus SVG.
+- Regex: JFLAP XML and versioned JSON import/export.
+- Pumping Lemma: JFLAP XML and versioned JSON with explicit loss reporting.
+- Mealy and Moore: JFLAP XML and versioned JSON import/export, SVG, and PNG.
+- L-system: JFLAP XML and versioned JSON import/export, SVG, and PNG.
 
-### PDA
-- In scope: Apple-ready canvas editing, examples, and simulation flows
-- File support:
-  - SVG export only
+`docs/JFLAP_COMPATIBILITY.md` and `docs/JFLAP_PARITY_MATRIX.md` are the detailed
+sources for supported semantics, intentional deviations, and loss policy.
 
-### TM
-- In scope: Apple-ready canvas editing, examples, and simulation flows
-- File support:
-  - SVG export only
+## Release boundaries
 
-### Regex
-- In scope: stable regex validation, testing, comparison, simplification, and automaton-conversion workflows
-- File support:
-  - No file import/export in v1.0
+- PNG export is unavailable in web builds.
+- Parametric L-system expressions are preserved but not executed.
+- Lossy JFLAP conversions require visible diagnostics and consent where the
+  source format cannot represent local semantics.
+- Apple archive, compliance, tester assignment, review, and physical-device QA
+  remain release operations, not feature flags.
+- Native macOS release readiness still requires the manual checklist under
+  `release/`.
 
-### Pumping Lemma
-- In scope: guided pumping lemma practice and validation workflow
-- File support:
-  - No file import/export in v1.0
+## Public-copy guidance
 
-## Release limitations
+Public copy may name every shipping workspace above. It must describe format
+support as scoped rather than implying that every format is lossless for every
+formal system.
 
-- PNG export is unavailable on web builds.
-- PDA JFLAP XML and JSON import/export are deferred because they do not yet have round-trip validation coverage for v1.0.
-- TM JFLAP XML and JSON import/export are deferred because they do not yet have round-trip validation coverage for v1.0.
-- Two known PDA validation test failures remain in the existing baseline; they are non-blocking for Apple v1.0 and must not expand into broader regressions.
-
-## Release copy guidance
-
-- Public-facing copy must describe Turing Lab as shipping FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workflows.
-- In-app navigation and help content must only expose supported v1.0 capabilities.
+Do not describe a build as App Store-available, TestFlight-ready, or macOS
+release-ready unless the current live service state and manual QA evidence
+support that claim.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Turing Lab | Formal Language and Automata Toolkit</title>
-  <meta name="description" content="Technical overview of Turing Lab, a Flutter toolkit for formal languages, automata construction, transformations, and simulation.">
+  <meta name="description" content="Turing Lab is a Flutter environment for formal languages, automata, grammars, transducers, Turing machines, and L-systems.">
   <link rel="canonical" href="https://thalesmms.github.io/Turing-Lab/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Turing Lab | Formal Language and Automata Toolkit">
@@ -48,8 +48,8 @@
           <p class="eyebrow">Formal languages and automata</p>
           <h1 id="overview-title">Turing Lab</h1>
           <p class="overview-lead">A Flutter-based toolkit for constructing, transforming, and simulating formal language models.</p>
-          <p class="overview-detail">It provides dedicated workspaces for finite-state automata, context-free grammars, pushdown automata, Turing machines, regular expressions, and pumping lemma exercises.</p>
-          <p class="development-status"><strong>Development status:</strong> Apple and Android builds are currently under testing.</p>
+          <p class="overview-detail">It provides dedicated workspaces for automata, context-free and unrestricted grammars, transducers, Turing machines, regular expressions, Pumping Lemma exercises, and L-systems.</p>
+          <p class="development-status"><strong>Development status:</strong> Core workflows are feature-complete. Apple and Android distribution validation remains in progress, and the web app is published here.</p>
           <div class="action-row" aria-label="Project actions">
             <a class="action action-primary" href="https://github.com/ThalesMMS/Turing-Lab">View source</a>
             <a class="action action-secondary" href="https://github.com/ThalesMMS/Turing-Lab#readme">Read documentation</a>
@@ -68,7 +68,7 @@
         <div class="section-heading">
           <p class="section-index">01 / Capabilities</p>
           <h2 id="capabilities-title">Supported models and workflows</h2>
-          <p>The current scope is organized around six independent workspaces. File support and transformations vary by model.</p>
+          <p>The current scope is organized through a typed formal-system registry. File support and transformations remain explicit for each model.</p>
         </div>
 
         <table class="capability-table">
@@ -93,37 +93,58 @@
             <tr>
               <th scope="row" data-label="Workspace">Context-free grammars</th>
               <td data-label="Editing">Grammar and production editor</td>
-              <td data-label="Simulation">Parsing and validation</td>
-              <td data-label="Transformations">FIRST/FOLLOW analysis, LL(1) diagnostics, and CNF conversion</td>
+              <td data-label="Simulation">Bounded parsing, derivations, and validation</td>
+              <td data-label="Transformations">FIRST/FOLLOW, LL/LR diagnostics, normalization, FSA/PDA conversions</td>
               <td data-label="Import/export">JFLAP grammar and SVG</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Unrestricted grammars</th>
+              <td data-label="Editing">Token-aware production editor</td>
+              <td data-label="Simulation">Bounded derivation search</td>
+              <td data-label="Transformations">Dependency and derivation analysis</td>
+              <td data-label="Import/export">JFLAP XML and versioned JSON</td>
             </tr>
             <tr>
               <th scope="row" data-label="Workspace">Pushdown automata</th>
               <td data-label="Editing">State and transition canvas</td>
               <td data-label="Simulation">Input and stack traces</td>
-              <td data-label="Transformations">Not applicable</td>
-              <td data-label="Import/export">SVG export</td>
+              <td data-label="Transformations">PDA-to-grammar and grammar-to-PDA</td>
+              <td data-label="Import/export">JFLAP XML, versioned JSON, and SVG</td>
             </tr>
             <tr>
               <th scope="row" data-label="Workspace">Turing machines</th>
-              <td data-label="Editing">State and transition canvas</td>
-              <td data-label="Simulation">Tape and transition traces</td>
-              <td data-label="Transformations">Not applicable</td>
-              <td data-label="Import/export">SVG export</td>
+              <td data-label="Editing">Single/multi-tape canvas and reusable building blocks</td>
+              <td data-label="Simulation">Tape, transition, and resource traces</td>
+              <td data-label="Transformations">Supported TM-to-grammar construction</td>
+              <td data-label="Import/export">JFLAP XML, versioned JSON, and SVG</td>
             </tr>
             <tr>
               <th scope="row" data-label="Workspace">Regular expressions</th>
               <td data-label="Editing">Expression editor</td>
               <td data-label="Simulation">Match testing and comparison</td>
               <td data-label="Transformations">Simplification and automaton conversion</td>
-              <td data-label="Import/export">Not applicable</td>
+              <td data-label="Import/export">JFLAP XML and versioned JSON</td>
             </tr>
             <tr>
               <th scope="row" data-label="Workspace">Pumping lemma</th>
               <td data-label="Editing">Guided case workflow</td>
               <td data-label="Simulation">Decomposition validation</td>
               <td data-label="Transformations">Not applicable</td>
-              <td data-label="Import/export">Not applicable</td>
+              <td data-label="Import/export">JFLAP XML and versioned JSON with loss reporting</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">Mealy and Moore</th>
+              <td data-label="Editing">Typed input/output transducer canvas</td>
+              <td data-label="Simulation">Step traces and generated output</td>
+              <td data-label="Transformations">Analysis and diagnostics</td>
+              <td data-label="Import/export">JFLAP XML, versioned JSON, SVG, and PNG</td>
+            </tr>
+            <tr>
+              <th scope="row" data-label="Workspace">L-systems</th>
+              <td data-label="Editing">Axiom, productions, and turtle settings</td>
+              <td data-label="Simulation">Bounded parallel generation</td>
+              <td data-label="Transformations">Turtle geometry rendering</td>
+              <td data-label="Import/export">JFLAP XML, versioned JSON, SVG, and PNG</td>
             </tr>
           </tbody>
         </table>
@@ -160,11 +181,15 @@
           </div>
           <div>
             <dt>Grammar</dt>
-            <dd>JFLAP grammar import/export and SVG export.</dd>
+            <dd>Context-free JFLAP grammar import/export and SVG; unrestricted grammar JFLAP/JSON round trips.</dd>
           </div>
           <div>
             <dt>PDA and TM</dt>
-            <dd>SVG export. JFLAP XML and JSON round trips are outside the current release scope.</dd>
+            <dd>JFLAP XML and versioned JSON round trips with compatibility diagnostics, plus SVG export.</dd>
+          </div>
+          <div>
+            <dt>Transducers and L-systems</dt>
+            <dd>JFLAP XML and versioned JSON round trips, SVG export, and native PNG export.</dd>
           </div>
           <div>
             <dt>Web limitation</dt>
@@ -193,7 +218,7 @@
             <tr><th scope="row">iOS and iPadOS</th><td><span class="status status-testing">Testing</span></td></tr>
             <tr><th scope="row">macOS</th><td><span class="status status-testing">Testing</span></td></tr>
             <tr><th scope="row">Android</th><td><span class="status status-testing">Testing</span></td></tr>
-            <tr><th scope="row">Web</th><td><span class="status status-experimental">Experimental</span></td></tr>
+            <tr><th scope="row">Web</th><td><span class="status status-testing">Published</span></td></tr>
             <tr><th scope="row">Windows</th><td><span class="status status-experimental">Experimental</span></td></tr>
             <tr><th scope="row">Linux</th><td><span class="status status-experimental">Experimental</span></td></tr>
           </tbody>

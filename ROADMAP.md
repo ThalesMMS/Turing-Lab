@@ -1,95 +1,71 @@
 # Turing Lab Roadmap
 
-This roadmap explains the intended direction after the Apple v1.0 baseline.
-It is not a commitment to specific dates. `V1_SCOPE.md` remains authoritative
-for the current release scope, while this document records what is planned,
-deferred, or explicitly out of scope.
+This roadmap records durable engineering priorities after completion of the
+large JFLAP-parity implementation program. It is not a commitment to dates or
+store availability.
 
-GitHub issue #306 is the sole live implementation Epic. The machine-readable
-phase and dependency map for its children is
-[`docs/issue-roadmap.json`](docs/issue-roadmap.json). Validate the map locally
-with `python3 tool/check_issue_roadmap.py --github` before changing phases or
-adding work to the Epic.
+The historical implementation Epic `#306` closed on August 27, 2026. No issue
+was open in `ThalesMMS/Turing-Lab-dev` when this document was refreshed on
+September 1, 2026. Re-query GitHub before treating that snapshot as current.
 
-## Current Baseline: v1.0
+## Current product baseline
 
-Turing Lab v1.0 focuses on a stable educational core:
+The registered application surface now includes:
 
-- FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workspaces.
-- Validated FSA and grammar file workflows where release coverage exists.
-- PDA and TM simulation/editing workflows with SVG export, but without PDA/TM
-  JFLAP or JSON round-trip file support.
-- Apple release validation for iPhone, iPad, and macOS, plus an Android signing
-  workflow.
+- FSA, PDA, and TM editors with simulation, traces, diagnostics, and exports;
+- single-tape, multi-tape, and building-block TM documents;
+- context-free and unrestricted grammar workflows;
+- bounded grammar parsers, guided derivations, and conversion workspaces;
+- regular-expression editing, comparison, generation, and conversion;
+- regular and context-free Pumping Lemma exercises;
+- Mealy and Moore transducer editors and simulators;
+- L-system generation, turtle rendering, examples, and exports;
+- typed JFLAP/JSON interoperability with explicit compatibility diagnostics;
+- offline examples, session restoration, responsive Material 3 UI, and help.
 
-## v1.1 Direction: Stabilization And Interoperability
+The detailed implementation evidence lives in `docs/JFLAP_PARITY_MATRIX.md`.
 
-The next milestone should prioritize reliability and file compatibility before
-adding new machine families.
+## Near-term priorities
 
-- Complete PDA JFLAP XML import/export with round-trip validation.
-- Complete PDA JSON import/export with round-trip validation.
-- Complete TM JFLAP XML import/export with round-trip validation.
-- Complete TM JSON import/export with round-trip validation.
-- Expand import/export diagnostics so malformed files explain the exact
-  unsupported construct.
-- Keep release documentation synchronized with the actual QA matrix for each
-  shipped platform.
+### Release completion
 
-Rationale: users moving from JFLAP need dependable file workflows. This work
-also reduces data-loss risk before the project expands into new model types.
+- Complete App Store Connect compliance and tester/review decisions with live
+  evidence and explicit authorization.
+- Complete native macOS manual QA and synchronize its build number before the
+  next archive.
+- Keep Android closed-testing and signing evidence current.
+- Preserve a reproducible GitHub Pages publication for the web app and its
+  support/privacy pages.
 
-## v1.2 Direction: JFLAP Parity Gaps
+### Reliability and interoperability
 
-After the existing workspaces have stronger persistence and release coverage,
-Turing Lab can broaden feature parity.
+- Continue hard-edge certification for malformed, adversarial, and lossy file
+  inputs.
+- Keep the compatibility corpus deterministic and versioned.
+- Preserve explicit unsupported results instead of silently approximating
+  semantics.
+- Expand differential evidence when a stable upstream reference exists.
 
-- Multi-tape Turing machines.
-- Mealy and Moore machines.
-- Brute-force parser visualization for grammar workflows.
-- Richer visual explanations for algorithm steps.
-- Guided tutorials and classroom-oriented walkthroughs.
+### Classroom experience
 
-Rationale: these are visible JFLAP capability gaps, but they touch modeling,
-UI, simulation, persistence, and file interoperability. They should follow the
-v1.1 stabilization work rather than ship as partial features.
+- Improve guided tutorials without duplicating algorithm implementations.
+- Extend visual explanations and accessibility for complex traces.
+- Keep phone, tablet, desktop, and web interaction patterns aligned.
+- Add features only through the typed formal-system extension boundary.
 
-## Capability Matrix
+### Platform maturity
 
-| Capability | Turing Lab v1.0 status | Roadmap |
+| Platform | Current status | Next evidence |
 | --- | --- | --- |
-| DFA/NFA editing and simulation | Shipped | Continue hardening |
-| DFA minimization and FSA conversions | Shipped | Continue hardening |
-| FSA JFLAP XML round-trip | Shipped | Continue compatibility testing |
-| FSA JSON round-trip | Shipped | Continue compatibility testing |
-| Grammar editing and parsing workflows | Shipped | Continue hardening |
-| Grammar JFLAP import/export | Shipped | Continue compatibility testing |
-| PDA editing and simulation | Shipped | Continue hardening |
-| PDA SVG export | Shipped | Continue hardening |
-| PDA JFLAP/XML round-trip | Deferred | v1.1 target |
-| PDA JSON round-trip | Deferred | v1.1 target |
-| Single-tape TM editing and simulation | Shipped | Continue hardening |
-| TM SVG export | Shipped | Continue hardening |
-| TM JFLAP/XML round-trip | Deferred | v1.1 target |
-| TM JSON round-trip | Deferred | v1.1 target |
-| Multi-tape TM | Not implemented | v1.2 candidate |
-| Regex workflows | Shipped | Continue hardening |
-| Pumping Lemma practice | Shipped | Continue hardening |
-| Mealy/Moore machines | Not implemented | v1.2 candidate |
-| Brute-force parser visualization | Not implemented | v1.2 candidate |
+| iPhone / iPad | Apple 1.0 release line under distribution validation | Live App Store/TestFlight state and physical-device QA |
+| macOS | Native archive path exists | Manual archived-build desktop QA and synchronized version |
+| Android | Signed build and closed-testing path exists | Maintain release checklist and live track evidence |
+| Web | Published Flutter target | Repeatable build/deploy verification and browser smoke tests |
+| Windows | Development/community target | Add a release checklist before claiming support |
+| Linux | Development/community target | Add a release checklist before claiming support |
 
-## Platform Roadmap
+## Planning rule
 
-| Platform | Current status | Next step |
-| --- | --- | --- |
-| iPhone / iPad | Apple v1.0 release target | Keep `release/APPLE_QA_MATRIX.md` current |
-| macOS | Apple v1.0 release target | Complete manual archived-build desktop QA |
-| Android | Supported build target with signing workflow | Add a formal Android QA/release checklist |
-| Web | Preview/classroom demo target | Document web-specific QA and export limitations |
-| Windows | Preview/community-supported target | Add release checklist before claiming release support |
-| Linux | Preview/community-supported target | Add release checklist before claiming release support |
-
-Windows and Linux directories are present because Flutter supports those
-desktop targets, but the repository does not yet include platform release
-evidence equivalent to Apple or Android. Until those checklists exist, treat
-Windows and Linux as development or community-supported builds.
+New work belongs in a live issue with acceptance criteria and validation. Do not
+reintroduce completed parity items as roadmap promises merely because an older
+README or release draft still mentions them.

@@ -1,6 +1,13 @@
 # Turing Lab
 
-Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offers an interactive, touch-first workspace for creating, analysing, and simulating finite automata, grammars, pushdown automata, Turing machines, and regular expressions. The current release focus is Apple v1.0 for iPhone, iPad, and macOS, with Android build support and preview web/desktop targets tracked separately.
+Turing Lab is a mobile-first Flutter environment for studying formal languages
+and automata. It combines touch-friendly editors, bounded simulations,
+step-by-step traces, conversions, diagnostics, and offline examples.
+
+The current application includes finite automata, context-free and unrestricted
+grammars, pushdown automata, single- and multi-tape Turing machines, reusable TM
+building blocks, regular expressions, Pumping Lemma exercises, Mealy and Moore
+transducers, and L-systems.
 
 <p align="center">
   <img src="./screenshots/screenshot1.png" alt="Automaton canvas screenshot" width="600" />
@@ -10,11 +17,13 @@ Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offer
 
 ## Project Status
 
-**Status:** Work in Progress. The Apple v1.0 release scope is frozen to the FSA, Grammar, PDA, TM, Regex, and Pumping Lemma workspaces documented in `V1_SCOPE.md`.
+**Status:** Work in progress, with core formal-system workflows feature-complete.
+Store distribution, device validation, and platform packaging remain separate
+release gates and must not be inferred from feature availability.
 
 - Release notes: `CHANGELOG.md`
-- Roadmap and deferred JFLAP parity work: `ROADMAP.md`
-- Current Apple v1.0 scope and limitations: `V1_SCOPE.md`
+- Current engineering roadmap: `ROADMAP.md`
+- Current Apple 1.0 scope and explicit boundaries: `V1_SCOPE.md`
 - Quality gate: local and manual, via `tool/qa.sh`. GitHub-hosted test CI is
   intentionally disabled; see [Testing](#testing) and
   [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
@@ -30,25 +39,30 @@ Turing Lab is a Flutter reimplementation of the JFLAP educational tool. It offer
 
 ### Learning tools
 - Touch-friendly canvas for creating and editing automata
-- Step-by-step simulators for finite automata, pushdown automata, and Turing machines
-- Grammar editors with validation and conversion helpers
+- Step-by-step simulators for FSA, PDA, TM, Mealy, and Moore machines
+- Context-free and unrestricted grammar editors with bounded parsing workflows
 - Regular-expression workflows for validation, testing, comparison, and conversion
+- L-system generation with turtle rendering and bounded execution
+- Regular and context-free Pumping Lemma exercises
 - Inline explanations and diagnostics to support classroom use
 
 ### Algorithms shipped in the app
 - Conversions between NFA, DFA, and regular expressions
 - DFA minimisation and automaton simulation traces
-- Grammar analysis utilities for the shipped release workflows
-- Single-tape Turing machine construction and execution
+- Grammar parsing, normalization, dependency, and automata conversions
+- Single-tape, multi-tape, and building-block Turing machine execution
+- PDA-to-grammar and grammar-to-PDA construction workflows
 
 ### User experience and performance
 - Material 3 interface with light and dark themes
 - Adaptive layouts for phones, tablets, desktops, and the web
 - Optimised canvas rendering (viewport culling, level-of-detail drawing, and highlight tracing)
-- Workspace-scoped import/export flows aligned to the v1.0 release contract in `V1_SCOPE.md`
+- Registry-driven import/export with explicit compatibility and loss diagnostics
 
 ### Offline examples
-The repository bundles ready-to-use examples covering DFAs, NFAs, CFGs, PDAs, and Turing Machines in `assets/examples/`. They are declared in `pubspec.yaml` so the material is available without a network connection.
+The repository bundles ready-to-use examples for its registered workspaces.
+Asset-backed examples live under `assets/examples/`; additional typed catalogs
+cover transducers and L-systems. No network connection is required.
 
 ## Architecture
 
@@ -113,6 +127,7 @@ lib/
 ### Prerequisites
 - Flutter SDK 3.32.0+
 - Dart SDK 3.8.0+
+- Current release validation uses Flutter 3.47.2 and Dart 3.13.2
 - Android Studio / VS Code (recommended)
 
 ### Installation
@@ -149,14 +164,13 @@ credentials from `android/key.properties`, which can now be generated from envir
 Turing Lab is a Flutter project with multiple build targets, but release support
 depends on documented signing, QA, and distribution evidence.
 
-- **iOS / iPadOS** - Apple v1.0 release target. Signing and store validation
-  must be completed manually before distribution.
-- **macOS** - Apple v1.0 release target. Signing, archive validation, and
-  desktop QA must be completed manually before distribution.
-- **Android** - Supported build target with release signing documented above.
-  A full Android QA checklist is still a follow-up item.
-- **Web** - Preview/classroom-demo target. The responsive UI is maintained, but
-  web has platform-specific limitations such as no PNG export.
+- **iOS / iPadOS** - Apple 1.0 release line. Archive, signing, TestFlight,
+  compliance, and store state are verified separately.
+- **macOS** - Native Flutter target. Archive validation exists; complete manual
+  desktop release QA is still required.
+- **Android** - Signed release builds and closed-testing delivery are supported.
+- **Web** - Published at the project website as a responsive classroom and
+  browser target. Platform-specific limitations remain, including no PNG export.
 - **Windows / Linux** - Development and community-supported preview targets.
   The platform folders are present, but release validation is not yet
   maintained for these platforms.
@@ -188,11 +202,12 @@ depends on documented signing, QA, and distribution evidence.
 **Root Flutter QA is local and manual.** GitHub-hosted test CI is intentionally
 disabled for this repository: the Actions limits are too small for the combined
 Flutter, GraphView, golden, screenshot, integration and Apple surface. The root
-`.github/workflows/ci.yml` workflow was deleted and must not be reintroduced,
-here or on another hosted provider. The only workflow left,
-`.github/workflows/deploy-pages.yml`, deploys the website and is not test CI.
-See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for the full policy
-and the workflow inventory.
+`.github/workflows/ci.yml` workflow was deleted and must not be reintroduced
+here or on another hosted provider. No repository-owned GitHub Actions workflow
+is committed. The public web artifact is published separately to the public
+repository's `gh-pages` branch; GitHub's system-managed Pages deployment is not
+test CI. See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for the full
+policy.
 
 Consequences for contributors:
 

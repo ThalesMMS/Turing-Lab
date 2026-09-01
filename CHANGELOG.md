@@ -1,71 +1,67 @@
 # Changelog
 
-All notable release-facing changes for Turing Lab are tracked here. The project
-is still work in progress; `V1_SCOPE.md` remains the source of truth for the
-Apple v1.0 release scope.
+This file summarizes release-facing changes. It records implemented behavior,
+not App Store approval or tester availability; live distribution state belongs
+in the release evidence.
 
 ## Unreleased
 
-- Complete the product rename to Turing Lab across Dart identifiers, package
-  imports, platform runners, release tooling, documentation, examples, and
-  tracked paths; CI now rejects accidental reintroduction of the former name.
-- Continue stabilizing the Apple v1.0 release path for iPhone, iPad, and
-  native macOS.
-- Track known test-suite baselines and release blockers in `AGENTS.md` and the
-  `release/` documentation.
-- Keep the roadmap in `ROADMAP.md` aligned with deferred JFLAP parity work.
+- Completed the Turing Lab identity migration across code, packages, platform
+  runners, release tooling, documentation, and public links.
+- Expanded the typed formal-system registry with unrestricted grammar, Mealy,
+  Moore, and L-system modules.
+- Added single-tape, multi-tape, and building-block TM document workflows.
+- Added bounded brute-force parsing, guided derivations, dependency analysis,
+  and additional grammar/automata conversions.
+- Added typed JFLAP and JSON codecs for PDA, TM, regex, Pumping Lemma,
+  transducers, unrestricted grammar, and L-system documents.
+- Added explicit compatibility, loss-consent, cancellation, and bounded-unknown
+  results across hard-edge workflows.
+- Published the Flutter web app with co-located support and privacy pages under
+  the canonical GitHub Pages root.
+- Kept QA local and manual through `tool/qa.sh`; no repository-owned GitHub
+  Actions workflow is committed.
 
-## 1.0.0 Baseline
+## 1.0.0 build line
 
-This baseline describes the public v1.0 app scope currently documented for
-Apple platforms.
+### Workspaces
 
-### Added
+- Finite-state automata with editing, simulation, minimization, conversions,
+  traces, and visual exports.
+- Context-free and unrestricted grammars with parsing, transformations,
+  derivations, conversions, and examples.
+- Pushdown automata with configurable acceptance, simulation, diagnostics,
+  conversions, codecs, and exports.
+- Turing machines with single/multi-tape execution, reusable building blocks,
+  diagnostics, codecs, and exports.
+- Regular expressions with validation, testing, comparison, generation,
+  simplification, persistence, and automaton conversion.
+- Regular and context-free Pumping Lemma exercises with persisted progress.
+- Mealy and Moore transducers with editing, simulation, examples, codecs, and
+  visual exports.
+- L-systems with bounded generation, advanced supported rule semantics, turtle
+  rendering, examples, codecs, and visual exports.
 
-- FSA workspace for creating, editing, simulating, minimizing, and converting
-  finite automata.
-- Grammar workspace with editing, parsing, FIRST/FOLLOW, CNF/GNF, and supported
-  conversion workflows.
-- PDA workspace with canvas editing, examples, simulation, trace visualization,
-  and SVG export.
-- TM workspace for single-tape Turing machines with canvas editing, examples,
-  simulation, trace visualization, and SVG export.
-- Regex workspace for validation, sample testing, comparison, simplification,
-  sample generation, and automaton conversion.
-- Pumping Lemma practice workflow.
-- Offline examples bundled from `assets/examples/`.
-- Material 3 UI with responsive layouts for phone, tablet, desktop, and web
-  form factors.
+### Application shell
 
-### File Interoperability
+- Material 3 UI with light/dark themes and responsive phone, tablet, desktop,
+  and web layouts.
+- Offline examples, contextual help, session restoration, undo/redo, and
+  model-aware import/export actions.
+- Registry-driven navigation and capability filtering.
 
-- FSA: JFLAP XML import/export, JSON import/export, SVG export, and PNG export
-  on native platforms.
-- Grammar: JFLAP grammar import/export and SVG export.
-- PDA: SVG export only in v1.0.
-- TM: SVG export only in v1.0.
-- Regex and Pumping Lemma: no file import/export in v1.0.
+### Distribution surfaces
 
-### Platform Status
+- iOS/iPadOS and native macOS archive paths with manual Apple release gates.
+- Signed Android build and closed-testing workflow.
+- Flutter web publication at `https://thalesmms.github.io/Turing-Lab/` with
+  support and privacy pages in the same artifact.
 
-- iPhone and iPad are Apple v1.0 release targets with release QA tracked in
-  `release/APPLE_QA_MATRIX.md`.
-- macOS is an Apple v1.0 release target with supplemental validation tracked in
-  `release/MACOS_QA_CHECKLIST.md` and
-  `release/MACOS_PLATFORM_VALIDATION.md`.
-- Android has a release signing workflow documented in the README.
-- Web, Windows, and Linux are maintained as Flutter targets but do not yet have
-  release checklists equivalent to the Apple and Android paths.
+### Explicit boundaries
 
-### Known Limitations
-
-- PDA JFLAP XML and JSON import/export are deferred until round-trip validation
-  is complete.
-- TM JFLAP XML and JSON import/export are deferred until round-trip validation
-  is complete.
-- TM support is single-tape only.
-- Mealy and Moore machines are not implemented.
-- Brute-force parser visualization is not implemented.
 - PNG export is unavailable on web builds.
-- Manual archived-build desktop QA is still tracked separately in the release
-  documentation before macOS is called fully release-ready.
+- Parametric L-system expressions are preserved but not executed.
+- Some JFLAP fields cannot represent richer local semantics; affected exports
+  report losses instead of silently discarding them.
+- Store approval, compliance, tester assignment, and physical-device QA remain
+  independent release evidence.
