@@ -90,7 +90,14 @@ class GraphViewCanvasController
     synchronizeGraph(automaton);
   }
 
-  /// Adds or updates a transition between [fromStateId] and [toStateId].
+  /// Adds or updates transitions between [fromStateId] and [toStateId].
+  ///
+  /// The FSA editor uses commas as separators between alternative input
+  /// symbols. Persist every alternative as its own domain transition instead
+  /// of storing one transition whose symbol is the literal text `a,b` (or a
+  /// grouped multi-symbol transition). This keeps the editor representation
+  /// aligned with the usual automaton semantics: `a,b` means one transition
+  /// for `a` and one transition for `b` to the same destination.
   void addOrUpdateTransition({
     required String fromStateId,
     required String toStateId,
@@ -99,20 +106,47 @@ class GraphViewCanvasController
     double? controlPointX,
     double? controlPointY,
   }) {
-    final edgeId = transitionId ?? generateEdgeId();
+    final labels = _splitEditorTransitionLabels(label);
+    var edgeId = transitionId ?? generateEdgeId();
     _logGraphViewCanvas(
-      'addOrUpdateTransition -> id=$edgeId from=$fromStateId to=$toStateId label=$label cp=(${controlPointX?.toStringAsFixed(2)}, ${controlPointY?.toStringAsFixed(2)})',
+      'addOrUpdateTransition -> id=$edgeId from=$fromStateId to=$toStateId labels=${labels.join('|')} cp=(${controlPointX?.toStringAsFixed(2)}, ${controlPointY?.toStringAsFixed(2)})',
     );
     performMutation(() {
-      _provider.addOrUpdateTransition(
-        id: edgeId,
-        fromStateId: fromStateId,
-        toStateId: toStateId,
-        label: label,
-        controlPointX: controlPointX,
-        controlPointY: controlPointY,
-      );
+      for (var index = 0; index < labels.length; index++) {
+        if (index > 0) {
+          // generateEdgeId reads the notifier's current document, so each
+          // preceding insertion is already reserved when the next id is made.
+          edgeId = generateEdgeId();
+        }
+        _provider.addOrUpdateTransition(
+          id: edgeId,
+          fromStateId: fromStateId,
+          toStateId: toStateId,
+          label: labels[index],
+          controlPointX: controlPointX,
+          controlPointY: controlPointY,
+        );
+      }
     });
+  }
+
+  static List<String> _splitEditorTransitionLabels(String label) {
+    final trimmed = label.trim();
+    if (!trimmed.contains(',')) {
+      return <String>[trimmed];
+    }
+
+    final labels = <String>[];
+    for (final part in trimmed.split(',')) {
+      final symbol = part.trim();
+      if (symbol.isNotEmpty && !labels.contains(symbol)) {
+        labels.add(symbol);
+      }
+    }
+
+    // Preserve the provider's existing validation/epsilon behavior for an
+    // input made only of separators instead of silently dropping the edit.
+    return labels.isEmpty ? <String>[trimmed] : labels;
   }
 
   /// Removes the transition identified by [id] from the automaton.

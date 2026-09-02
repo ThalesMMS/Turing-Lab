@@ -514,7 +514,23 @@ class GrammarProvider extends StateNotifier<GrammarState> {
       }
     }
 
-    for (final production in state.productions) {
+    final productions = state.productions.map((production) {
+      if (production.isLambda || production.rightSide.length < 2) {
+        return production;
+      }
+      final normalizedRightSide = _mergeDeclaredNonterminalFragments(
+        production.rightSide,
+        nonTerminals,
+      );
+      return _symbolListEquality.equals(
+            normalizedRightSide,
+            production.rightSide,
+          )
+          ? production
+          : production.copyWith(rightSide: normalizedRightSide);
+    }).toList(growable: false);
+
+    for (final production in productions) {
       if (production.isLambda) {
         continue;
       }
@@ -540,11 +556,60 @@ class GrammarProvider extends StateNotifier<GrammarState> {
       terminals: terminals,
       nonterminals: nonTerminals,
       startSymbol: state.startSymbol,
-      productions: state.productions.toSet(),
+      productions: productions.toSet(),
       type: state.type,
       created: now,
       modified: now,
     );
+  }
+
+  static List<String> _mergeDeclaredNonterminalFragments(
+    List<String> symbols,
+    Set<String> declaredNonterminals,
+  ) {
+    final candidates = declaredNonterminals
+        .where((symbol) => symbol.length > 1)
+        .toSet();
+    if (symbols.length < 2 || candidates.isEmpty) {
+      return List<String>.from(symbols);
+    }
+
+    var maximumCandidateLength = 0;
+    for (final candidate in candidates) {
+      if (candidate.length > maximumCandidateLength) {
+        maximumCandidateLength = candidate.length;
+      }
+    }
+
+    final normalized = <String>[];
+    var index = 0;
+    while (index < symbols.length) {
+      String? bestMatch;
+      var bestEnd = index;
+      final buffer = StringBuffer();
+
+      for (var end = index; end < symbols.length; end++) {
+        buffer.write(symbols[end]);
+        final joined = buffer.toString();
+        if (joined.length > maximumCandidateLength) {
+          break;
+        }
+        if (candidates.contains(joined)) {
+          bestMatch = joined;
+          bestEnd = end + 1;
+        }
+      }
+
+      if (bestMatch != null && bestEnd > index + 1) {
+        normalized.add(bestMatch);
+        index = bestEnd;
+      } else {
+        normalized.add(symbols[index]);
+        index++;
+      }
+    }
+
+    return normalized;
   }
 
   /// Restores an exact editor snapshot after a failed document replacement.

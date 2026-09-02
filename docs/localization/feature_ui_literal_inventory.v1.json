@@ -13,8 +13,8 @@
   "entries": [
     {
       "path": "lib/features/canvas/graphview/graphview_canvas_controller.dart",
-      "sourceDigestSha256": "cf7de275674cc30514c0f9b4d2e915bd7271944d0332653f82462fd7c6f5681e",
-      "violationDigestSha256": "f9d15a576165520c35452f9ad49e09ea1804f31b80898c5c4d0904b837536255",
+      "sourceDigestSha256": "62861f7bd877b0965248d119b1628c99e32e668dc8529cbda1d48f5c38b3d021",
+      "violationDigestSha256": "b6b361d7eddabbd4054a76001a44de969d93c1c3535cceac13bf932ec4ec7489",
       "violationCount": 1
     },
     {
@@ -205,8 +205,8 @@
     },
     {
       "path": "lib/presentation/providers/grammar_provider.dart",
-      "sourceDigestSha256": "5cf0e04c094a73675eea7de155a0925513a23aafda63146b4a93132258eaf9af",
-      "violationDigestSha256": "f043c18dd69a2aa50e8299de74782362f321e83f05bbad5f1af92e68d1dbc01e",
+      "sourceDigestSha256": "f763ec076339afdc994f32e28ad61c121c56ba74ad2dfd2301c7b2ca5956b2e6",
+      "violationDigestSha256": "69c85ce75159f311af85f625fe1d4cc39516278ed04176eea99e2adbf7a38805",
       "violationCount": 4
     },
     {
