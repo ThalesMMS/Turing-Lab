@@ -6,10 +6,10 @@ Current performance notes for the Turing Lab graphview-based automaton canvas.
 
 This document summarizes the current local benchmark results, practical size limits observed in the widget-test harness, and how to rerun the benchmarks.
 
-For Apple release profiling workflow and trace capture, use:
+For Apple release profiling and trace capture, use the tracked helpers:
 
-- [release/APPLE_PERFORMANCE_PROFILING.md](../release/APPLE_PERFORMANCE_PROFILING.md)
-- [release/APPLE_PERFORMANCE_BASELINE.md](../release/APPLE_PERFORMANCE_BASELINE.md)
+- [`tool/start_apple_profile_run.sh`](../tool/start_apple_profile_run.sh)
+- [`tool/record_xctrace_attach.sh`](../tool/record_xctrace_attach.sh)
 
 ## Tested Limits
 

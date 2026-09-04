@@ -4,7 +4,7 @@ This file summarizes release-facing changes. It records implemented behavior,
 not App Store approval or tester availability; live distribution state belongs
 in the release evidence.
 
-## Unreleased
+## 1.0.0 (2026-09-04)
 
 - Completed the Turing Lab identity migration across code, packages, platform
   runners, release tooling, documentation, and public links.
@@ -21,8 +21,6 @@ in the release evidence.
   the canonical GitHub Pages root.
 - Kept QA local and manual through `tool/qa.sh`; no repository-owned GitHub
   Actions workflow is committed.
-
-## 1.0.0 build line
 
 ### Workspaces
 

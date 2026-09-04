@@ -13,9 +13,8 @@
 //
 //  A live binding only makes progress while the host keeps delivering frames.
 //  A macOS session that cannot foreground the app window ("Failed to foreground
-//  app; open returned 1") stops doing that, and the run stalls; see the
-//  "macOS L2 Window Prerequisite" section of release/APPLE_QA_MATRIX.md. Prefer
-//  a booted iOS simulator, and treat a stalled run as not run.
+//  app; open returned 1") stops doing that, and the run stalls. Prefer a
+//  booted iOS simulator; if the session stalls, treat the run as not run.
 //
 //  Run with:
 //    flutter test integration_test/apple_release_user_journeys_test.dart \

@@ -19,8 +19,7 @@ enum AppleReleaseTestLevel {
   widgetPlatformSmoke(
     id: 'L1',
     title: 'Widget/platform smoke',
-    command:
-        'flutter test test/integration/apple_release_smoke_test.dart --concurrency=1',
+    command: 'flutter test test/integration/apple_release_smoke_test.dart --concurrency=1',
     prerequisites:
         'None. Runs headless under the standard Flutter test runner, with no '
         'simulator, signing identity or hardware.',
@@ -47,7 +46,8 @@ enum AppleReleaseTestLevel {
     id: 'L3',
     title: 'Release artifact/manual QA',
     command:
-        'release/APPLE_QA_MATRIX.md workflow rows, driven by the release scripts',
+        'Apple release artifact and manual QA workflow, driven by the '
+        'release scripts',
     prerequisites:
         'Signed archives, signing identities, App Store Connect credentials '
         'and real hardware. Never executed by `flutter test`.',

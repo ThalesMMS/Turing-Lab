@@ -12,7 +12,6 @@ Implementation references:
 
 - `ios/Runner/PrivacyInfo.xcprivacy`
 - `macos/Runner/PrivacyInfo.xcprivacy`
-- `release/APPLE_DEPENDENCY_REVIEW.md`
 
 ## Apple App Privacy Answers
 

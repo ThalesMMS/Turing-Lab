@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reject stale JFlutter branding outside reviewed historical records."""
+"""Reject stale JFlutter branding in maintained text files."""
 
 from __future__ import annotations
 
@@ -9,18 +9,13 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LEGACY_TERMS = ("J" + "Flutter", "j" + "flutter")
-ALLOWLIST_COUNTS = {
-    "release/APP_STORE_CONNECT_RECORDS.md": 36,
-    "release/APPLE_QA_MATRIX.md": 17,
-    "release/APPLE_RELEASE_IDENTITY.md": 9,
-    "release/MACOS_QA_CHECKLIST.md": 1,
-}
 EXCLUDED_DIRECTORIES = {
     ".dart_tool",
     ".git",
     ".idea",
     ".vscode",
     "build",
+    "release",
 }
 TEXT_SUFFIXES = {
     ".dart",
@@ -47,8 +42,6 @@ def is_scannable(path: Path) -> bool:
 
 def main() -> int:
     unexpected: list[str] = []
-    allowlist_counts = {path: 0 for path in ALLOWLIST_COUNTS}
-
     for path in sorted(REPO_ROOT.rglob("*")):
         if not path.is_file() or not is_scannable(path):
             continue
@@ -62,20 +55,11 @@ def main() -> int:
             matches = sum(line.count(term) for term in LEGACY_TERMS)
             if matches == 0:
                 continue
-            if relative in ALLOWLIST_COUNTS:
-                allowlist_counts[relative] += matches
-            else:
-                unexpected.append(f"{relative}:{line_number}:{line.strip()}")
+            unexpected.append(f"{relative}:{line_number}:{line.strip()}")
 
-    count_mismatches = [
-        f"{path}: expected {expected} approved occurrences, found {allowlist_counts[path]}"
-        for path, expected in ALLOWLIST_COUNTS.items()
-        if allowlist_counts[path] != expected
-    ]
-
-    if unexpected or count_mismatches:
+    if unexpected:
         print("Stale branding check failed:", file=sys.stderr)
-        for finding in unexpected + count_mismatches:
+        for finding in unexpected:
             print(f"  {finding}", file=sys.stderr)
         return 1
 

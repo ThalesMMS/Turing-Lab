@@ -126,9 +126,9 @@ Exit codes:
   127  required Flutter/Dart toolchain unavailable and no explicit opt-in
 
 The `apple` category always ends `not_run`, and therefore exits 2, because
-level L3 is the manual release matrix in release/APPLE_QA_MATRIX.md and no
-local command can close it. `--preset all` inherits that; add `--skip apple`
-when you want the rest of the matrix to report a clean exit 0.
+level L3 is the manual Apple release workflow and no local command can close
+it. `--preset all` inherits that; add `--skip apple` when you want the rest of
+the matrix to report a clean exit 0.
 
 Examples:
   tool/qa.sh
@@ -969,7 +969,7 @@ category_apple() {
   fi
 
   unrun_step apple l3-manual "Apple L3 release artifacts and manual matrix" \
-    "release/APPLE_QA_MATRIX.md" manual_only
+    "manual Apple release artifacts and QA" manual_only
 }
 
 if [[ "$TOOLCHAIN_BLOCKED" -eq 0 ]]; then

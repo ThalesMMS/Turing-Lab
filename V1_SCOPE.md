@@ -47,8 +47,7 @@ sources for supported semantics, intentional deviations, and loss policy.
   source format cannot represent local semantics.
 - Apple archive, compliance, tester assignment, review, and physical-device QA
   remain release operations, not feature flags.
-- Native macOS release readiness still requires the manual checklist under
-  `release/`.
+- Native macOS release readiness still requires manual archived-build QA.
 
 ## Public-copy guidance
 

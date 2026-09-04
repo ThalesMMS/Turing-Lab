@@ -15,6 +15,6 @@ keywords:
   - "Turing machines"
   - "regular expressions"
   - "Flutter"
-version: "1.0.0+4"
+version: "1.0.0+15"
 repository-code: "https://github.com/ThalesMMS/Turing-Lab"
 url: "https://thalesmms.github.io/Turing-Lab/"

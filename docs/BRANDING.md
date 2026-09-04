@@ -26,8 +26,6 @@ The former project name may appear only where changing it would falsify a
 historical record or break a live external locator:
 
 - The development repository slug remains `ThalesMMS/Turing-Lab-dev`.
-- `release/APP_STORE_CONNECT_RECORDS.md` records the pre-rename App Store
-  Connect app, bundle ID, SKU, and artifacts.
 - Dated QA records may retain the exact pre-rename bundle IDs and artifact
   names that were observed during those runs.
 - The existing Android upload certificate retains its original subject common

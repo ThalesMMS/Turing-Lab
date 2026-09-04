@@ -267,9 +267,9 @@ tool/qa.sh --only analyze,unit             # any explicit category list
 Exit codes: `0` passed or skipped by opt-in, `1` something failed, `2` nothing
 failed but a selected category could not run, `64` usage error, `127` the
 required toolchain is missing and no opt-in flag was given. The `apple` category
-always ends `not_run` because level L3 is the manual matrix in
-[release/APPLE_QA_MATRIX.md](release/APPLE_QA_MATRIX.md), which no local command
-can close; add `--skip apple` when you want the rest to report a clean `0`.
+always ends `not_run` because level L3 is manual Apple QA, which no local
+command can close; add `--skip apple` when you want the rest to report a clean
+`0`.
 
 Each run writes a concise local summary to `build/qa/qa-summary.md`,
 `build/qa/qa-summary.json` and per-step logs under `build/qa/logs/`. Paste the
