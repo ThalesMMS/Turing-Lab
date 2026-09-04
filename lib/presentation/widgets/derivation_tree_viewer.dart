@@ -91,7 +91,7 @@ class _DerivationTreeViewerState extends State<DerivationTreeViewer> {
     _fittedViewport = viewport;
     _transformationController.value = Matrix4.identity()
       ..translateByDouble(dx, dy, 0, 1)
-      ..scaleByDouble(scale, scale, 1, 1);
+      ..scaleByDouble(scale, scale, scale, 1);
   }
 
   void _zoomBy(double factor, Size viewport) {
@@ -105,7 +105,7 @@ class _DerivationTreeViewerState extends State<DerivationTreeViewer> {
     // Zoom about the viewport center: apply the scale in viewport space.
     final zoom = Matrix4.identity()
       ..translateByDouble(focal.dx, focal.dy, 0, 1)
-      ..scaleByDouble(ratio, ratio, 1, 1)
+      ..scaleByDouble(ratio, ratio, ratio, 1)
       ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
     _transformationController.value = zoom.multiplied(
       _transformationController.value,

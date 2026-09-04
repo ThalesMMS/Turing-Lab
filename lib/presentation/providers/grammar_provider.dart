@@ -684,8 +684,10 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     );
   }
 
-  /// Classifies [symbol] the same way [buildGrammar] will, preferring explicit
-  /// declarations, then left-hand sides, then the uppercase-letter heuristic.
+  /// Classifies [symbol] for the editor chips, preferring explicit
+  /// declarations, then left-hand sides, then the single-letter heuristic.
+  /// Multi-character capitalized symbols remain explicit in the editor so an
+  /// ambiguous token such as `Expr` can be chosen as either kind.
   GrammarSymbolKind symbolKindOf(String symbol) {
     if (state.declaredNonterminals.contains(symbol)) {
       return GrammarSymbolKind.nonterminal;
@@ -699,7 +701,7 @@ class GrammarProvider extends StateNotifier<GrammarState> {
               production.leftSide.isNotEmpty &&
               production.leftSide.first == symbol,
         ) ||
-        _looksLikeNonTerminal(symbol)) {
+        _looksLikeSingleLetterNonTerminal(symbol)) {
       return GrammarSymbolKind.nonterminal;
     }
     return GrammarSymbolKind.terminal;
@@ -893,9 +895,17 @@ class GrammarProvider extends StateNotifier<GrammarState> {
   bool _isLambda(String symbol) =>
       symbol == 'ε' || symbol == 'λ' || symbol.toLowerCase() == 'lambda';
 
-  /// JFLAP convention: a single uppercase letter, optionally followed by
-  /// prime marks (`S`, `S'`, `A''`), reads as a nonterminal.
+  /// JFLAP convention: a capitalized symbol, optionally followed by prime
+  /// marks (`S`, `S'`, `Expr`, `A''`), reads as a nonterminal.
   bool _looksLikeNonTerminal(String symbol) {
+    final capitalizedRegex = RegExp(
+      r"^\p{Lu}[\p{L}\p{N}_]*(?:'|′|’)*$",
+      unicode: true,
+    );
+    return capitalizedRegex.hasMatch(symbol);
+  }
+
+  bool _looksLikeSingleLetterNonTerminal(String symbol) {
     final uppercaseRegex = RegExp(r"^[A-Z](?:'|′|’)*$");
     return uppercaseRegex.hasMatch(symbol);
   }

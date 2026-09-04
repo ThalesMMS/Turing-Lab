@@ -6,7 +6,7 @@
   "zeroUserVisibleProseClaim": false,
   "scope": "tool/localization/feature_ui_scope.v1.json",
   "summary": {
-    "fileCount": 297,
+    "fileCount": 298,
     "legacyViolationFileCount": 113,
     "legacyViolationCount": 2035
   },
@@ -205,8 +205,8 @@
     },
     {
       "path": "lib/presentation/providers/grammar_provider.dart",
-      "sourceDigestSha256": "f763ec076339afdc994f32e28ad61c121c56ba74ad2dfd2301c7b2ca5956b2e6",
-      "violationDigestSha256": "69c85ce75159f311af85f625fe1d4cc39516278ed04176eea99e2adbf7a38805",
+      "sourceDigestSha256": "f975526aa5eaff6d26cdf9a9a34a589a9dd567948f9f9f4ca48d7e4a0d293827",
+      "violationDigestSha256": "8d1c7db2143f4d35f0c30e585d0c4874dc742bb39027d828dd6a29fae2525e27",
       "violationCount": 4
     },
     {
@@ -385,8 +385,8 @@
     },
     {
       "path": "lib/presentation/widgets/derivation_tree_view.dart",
-      "sourceDigestSha256": "3c087edea5fec92fbc6680eb6f63929194dd756eb98f0b537fbf95943e23f1af",
-      "violationDigestSha256": "e91b42e3502df339d11d671aadc1a8c8bf39d63ca2414657f29f8db9bac068b0",
+      "sourceDigestSha256": "3ab34c04a07964b679c1ac21ea6912137ba812a5dfaf09915131efeb5e54990f",
+      "violationDigestSha256": "cc87aa292640bcb2a760af48610c2242dcf5d021a3d6dcfffca007b0bb1ca067",
       "violationCount": 1
     },
     {
@@ -445,8 +445,8 @@
     },
     {
       "path": "lib/presentation/widgets/grammar_editor.dart",
-      "sourceDigestSha256": "a0dbef910e88220ce1587f86e621de18de55ea1805f4260457272966af5c6432",
-      "violationDigestSha256": "7a8549d5f59242583adb2bc0ee997e7777a5a8dbf65bb38ede2e9593f2efa8ff",
+      "sourceDigestSha256": "a8b10750d0b18405d987d1f4ed417ce2b8c7cf8a6acf99e354ef4ad7e0f0ba52",
+      "violationDigestSha256": "2de5c606a1a0499f2e66eaf867ce47ebbc09146001d15365f6a0c68bfff81d80",
       "violationCount": 2
     },
     {
@@ -457,8 +457,8 @@
     },
     {
       "path": "lib/presentation/widgets/grammar_simulation_panel.dart",
-      "sourceDigestSha256": "7c5e7d3ff89de94490cc93798aff5393303eb4ddc9b08944d3306b9bcef8ab05",
-      "violationDigestSha256": "cd9fa2815a251c5028c0e3bd59df481b56148a2a25bf5ce2dc8ef4e1bea256f4",
+      "sourceDigestSha256": "97656a8c9345568191d8dd633869396b74364e06f66fa42e4dbe1ebf4f356717",
+      "violationDigestSha256": "5daefad7134deca578f9873e916b5f57d9cc3143db41582191a940063a754caa",
       "violationCount": 15
     },
     {
