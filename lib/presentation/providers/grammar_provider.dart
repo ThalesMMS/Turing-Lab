@@ -10,6 +10,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/algorithms/grammar_to_fsa_converter.dart';
@@ -44,6 +45,16 @@ class GrammarState {
   final GrammarConversionKind? activeConversion;
   final Result<PDA>? lastPdaResult;
 
+  /// Symbols the user explicitly marked as terminals in the editor.
+  ///
+  /// Explicit declarations win over the single-uppercase-letter heuristic used
+  /// by [GrammarProvider.buildGrammar] and keep multi-character symbols such as
+  /// `id` or `num` intact when compact right-hand sides are tokenized.
+  final Set<String> declaredTerminals;
+
+  /// Symbols the user explicitly marked as nonterminals in the editor.
+  final Set<String> declaredNonterminals;
+
   const GrammarState({
     required this.documentId,
     required this.documentGeneration,
@@ -57,6 +68,8 @@ class GrammarState {
     this.lastPdaResult,
     this.error,
     this.structuredError,
+    this.declaredTerminals = const <String>{},
+    this.declaredNonterminals = const <String>{},
   });
 
   factory GrammarState.initial() {
@@ -87,6 +100,8 @@ class GrammarState {
     int? nextProductionId,
     Object? activeConversion = _noActiveConversionUpdate,
     Object? lastPdaResult = _noPdaResultUpdate,
+    Set<String>? declaredTerminals,
+    Set<String>? declaredNonterminals,
   }) {
     return GrammarState(
       documentId: documentId ?? this.documentId,
@@ -107,9 +122,14 @@ class GrammarState {
       lastPdaResult: lastPdaResult == _noPdaResultUpdate
           ? this.lastPdaResult
           : lastPdaResult as Result<PDA>?,
+      declaredTerminals: declaredTerminals ?? this.declaredTerminals,
+      declaredNonterminals: declaredNonterminals ?? this.declaredNonterminals,
     );
   }
 }
+
+/// Explicit classification of a right-hand-side symbol chosen by the user.
+enum GrammarSymbolKind { terminal, nonterminal }
 
 const _noErrorUpdate = Object();
 const _noStructuredErrorUpdate = Object();
@@ -456,6 +476,8 @@ class GrammarProvider extends StateNotifier<GrammarState> {
   void clearProductions() {
     state = state.copyWith(
       productions: const <Production>[],
+      declaredTerminals: const <String>{},
+      declaredNonterminals: const <String>{},
       nextProductionId: 1,
       error: null,
       lastPdaResult: null,
@@ -505,30 +527,40 @@ class GrammarProvider extends StateNotifier<GrammarState> {
 
   Grammar buildGrammar() {
     final now = DateTime.now();
-    final nonTerminals = <String>{state.startSymbol};
-    final terminals = <String>{};
+    final nonTerminals = <String>{
+      state.startSymbol,
+      ...state.declaredNonterminals,
+    };
+    final terminals = <String>{
+      for (final symbol in state.declaredTerminals)
+        if (!nonTerminals.contains(symbol)) symbol,
+    };
 
     for (final production in state.productions) {
       if (production.leftSide.isNotEmpty) {
         nonTerminals.add(production.leftSide.first);
       }
     }
+    terminals.removeAll(nonTerminals);
 
-    final productions = state.productions.map((production) {
-      if (production.isLambda || production.rightSide.length < 2) {
-        return production;
-      }
-      final normalizedRightSide = _mergeDeclaredNonterminalFragments(
-        production.rightSide,
-        nonTerminals,
-      );
-      return _symbolListEquality.equals(
-            normalizedRightSide,
+    final declaredSymbols = <String>{...nonTerminals, ...terminals};
+    final productions = state.productions
+        .map((production) {
+          if (production.isLambda || production.rightSide.length < 2) {
+            return production;
+          }
+          final normalizedRightSide = _mergeDeclaredSymbolFragments(
             production.rightSide,
-          )
-          ? production
-          : production.copyWith(rightSide: normalizedRightSide);
-    }).toList(growable: false);
+            declaredSymbols,
+          );
+          return _symbolListEquality.equals(
+                normalizedRightSide,
+                production.rightSide,
+              )
+              ? production
+              : production.copyWith(rightSide: normalizedRightSide);
+        })
+        .toList(growable: false);
 
     for (final production in productions) {
       if (production.isLambda) {
@@ -540,6 +572,9 @@ class GrammarProvider extends StateNotifier<GrammarState> {
           continue;
         }
 
+        if (terminals.contains(symbol)) {
+          continue;
+        }
         if (nonTerminals.contains(symbol) || _looksLikeNonTerminal(symbol)) {
           nonTerminals.add(symbol);
         } else {
@@ -563,11 +598,14 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     );
   }
 
-  static List<String> _mergeDeclaredNonterminalFragments(
+  /// Re-joins character-split fragments into the declared multi-character
+  /// symbols (nonterminals from left-hand sides plus explicitly declared
+  /// terminals and nonterminals) using a longest-match scan.
+  static List<String> _mergeDeclaredSymbolFragments(
     List<String> symbols,
-    Set<String> declaredNonterminals,
+    Set<String> declaredSymbols,
   ) {
-    final candidates = declaredNonterminals
+    final candidates = declaredSymbols
         .where((symbol) => symbol.length > 1)
         .toSet();
     if (symbols.length < 2 || candidates.isEmpty) {
@@ -612,6 +650,71 @@ class GrammarProvider extends StateNotifier<GrammarState> {
     return normalized;
   }
 
+  /// Records the user's explicit terminal/nonterminal choices.
+  ///
+  /// A symbol declared with one kind is removed from the other set so the
+  /// latest choice always wins.
+  void declareSymbolKinds(Map<String, GrammarSymbolKind> kinds) {
+    if (kinds.isEmpty) {
+      return;
+    }
+    final terminals = Set<String>.from(state.declaredTerminals);
+    final nonterminals = Set<String>.from(state.declaredNonterminals);
+    for (final entry in kinds.entries) {
+      final symbol = entry.key.trim();
+      if (symbol.isEmpty || _isLambda(symbol)) {
+        continue;
+      }
+      switch (entry.value) {
+        case GrammarSymbolKind.terminal:
+          nonterminals.remove(symbol);
+          terminals.add(symbol);
+        case GrammarSymbolKind.nonterminal:
+          terminals.remove(symbol);
+          nonterminals.add(symbol);
+      }
+    }
+    if (setEquals(terminals, state.declaredTerminals) &&
+        setEquals(nonterminals, state.declaredNonterminals)) {
+      return;
+    }
+    state = state.copyWith(
+      declaredTerminals: Set<String>.unmodifiable(terminals),
+      declaredNonterminals: Set<String>.unmodifiable(nonterminals),
+    );
+  }
+
+  /// Classifies [symbol] the same way [buildGrammar] will, preferring explicit
+  /// declarations, then left-hand sides, then the uppercase-letter heuristic.
+  GrammarSymbolKind symbolKindOf(String symbol) {
+    if (state.declaredNonterminals.contains(symbol)) {
+      return GrammarSymbolKind.nonterminal;
+    }
+    if (state.declaredTerminals.contains(symbol)) {
+      return GrammarSymbolKind.terminal;
+    }
+    if (symbol == state.startSymbol ||
+        state.productions.any(
+          (production) =>
+              production.leftSide.isNotEmpty &&
+              production.leftSide.first == symbol,
+        ) ||
+        _looksLikeNonTerminal(symbol)) {
+      return GrammarSymbolKind.nonterminal;
+    }
+    return GrammarSymbolKind.terminal;
+  }
+
+  /// Every symbol whose spelling is already known to the grammar: declared
+  /// terminals and nonterminals, the start symbol, and all left-hand sides.
+  Set<String> get knownSymbols => <String>{
+    ...state.declaredTerminals,
+    ...state.declaredNonterminals,
+    state.startSymbol,
+    for (final production in state.productions)
+      if (production.leftSide.isNotEmpty) production.leftSide.first,
+  };
+
   /// Restores an exact editor snapshot after a failed document replacement.
   void restoreDocumentCheckpoint(GrammarState checkpoint) {
     state = checkpoint;
@@ -619,6 +722,8 @@ class GrammarProvider extends StateNotifier<GrammarState> {
 
   void applyGrammar(Grammar grammar) {
     state = state.copyWith(
+      declaredTerminals: Set<String>.unmodifiable(grammar.terminals),
+      declaredNonterminals: Set<String>.unmodifiable(grammar.nonterminals),
       documentId: grammar.id,
       documentGeneration: state.documentGeneration + 1,
       name: grammar.name,
@@ -788,8 +893,10 @@ class GrammarProvider extends StateNotifier<GrammarState> {
   bool _isLambda(String symbol) =>
       symbol == 'ε' || symbol == 'λ' || symbol.toLowerCase() == 'lambda';
 
+  /// JFLAP convention: a single uppercase letter, optionally followed by
+  /// prime marks (`S`, `S'`, `A''`), reads as a nonterminal.
   bool _looksLikeNonTerminal(String symbol) {
-    final uppercaseRegex = RegExp(r'^[A-Z]$');
+    final uppercaseRegex = RegExp(r"^[A-Z](?:'|′|’)*$");
     return uppercaseRegex.hasMatch(symbol);
   }
 }

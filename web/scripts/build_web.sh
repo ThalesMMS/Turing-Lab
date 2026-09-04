@@ -91,9 +91,21 @@ fi
 
 copy_pages_extra "${REPO_ROOT}/docs/support.html" "${WEB_OUTPUT}/support.html"
 copy_pages_extra "${REPO_ROOT}/docs/privacy.html" "${WEB_OUTPUT}/privacy.html"
+copy_pages_extra "${REPO_ROOT}/docs/marketing.html" "${WEB_OUTPUT}/marketing.html"
 copy_pages_extra \
   "${REPO_ROOT}/docs/APP_PRIVACY_APPLE.md" \
   "${WEB_OUTPUT}/APP_PRIVACY_APPLE.md"
+mkdir -p "${WEB_OUTPUT}/assets/screenshots"
+copy_pages_extra "${REPO_ROOT}/docs/assets/site.css" "${WEB_OUTPUT}/assets/site.css"
+copy_pages_extra \
+  "${REPO_ROOT}/docs/assets/icon-192.png" \
+  "${WEB_OUTPUT}/assets/icon-192.png"
+copy_pages_extra \
+  "${REPO_ROOT}/docs/assets/social-preview.png" \
+  "${WEB_OUTPUT}/assets/social-preview.png"
+copy_pages_extra \
+  "${REPO_ROOT}/docs/assets/screenshots/fsa.webp" \
+  "${WEB_OUTPUT}/assets/screenshots/fsa.webp"
 : >"${WEB_OUTPUT}/.nojekyll"
 
 echo "Release web build ready at ${WEB_OUTPUT}"

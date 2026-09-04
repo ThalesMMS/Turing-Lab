@@ -461,6 +461,8 @@ class _PersistedGrammarState {
     required this.startSymbol,
     required this.productions,
     required this.type,
+    required this.declaredTerminals,
+    required this.declaredNonterminals,
   });
 
   factory _PersistedGrammarState.fromState(GrammarState state) {
@@ -469,6 +471,8 @@ class _PersistedGrammarState {
       startSymbol: state.startSymbol,
       productions: state.productions,
       type: state.type,
+      declaredTerminals: state.declaredTerminals,
+      declaredNonterminals: state.declaredNonterminals,
     );
   }
 
@@ -476,6 +480,8 @@ class _PersistedGrammarState {
   final String startSymbol;
   final List<Production> productions;
   final GrammarType type;
+  final Set<String> declaredTerminals;
+  final Set<String> declaredNonterminals;
 
   @override
   bool operator ==(Object other) {
@@ -486,7 +492,9 @@ class _PersistedGrammarState {
         other.name == name &&
         other.startSymbol == startSymbol &&
         other.type == type &&
-        _listEquals(other.productions, productions);
+        _listEquals(other.productions, productions) &&
+        setEquals(other.declaredTerminals, declaredTerminals) &&
+        setEquals(other.declaredNonterminals, declaredNonterminals);
   }
 
   @override
@@ -495,6 +503,8 @@ class _PersistedGrammarState {
         startSymbol,
         type,
         Object.hashAll(productions),
+        Object.hashAllUnordered(declaredTerminals),
+        Object.hashAllUnordered(declaredNonterminals),
       );
 }
 

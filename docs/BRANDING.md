@@ -14,6 +14,7 @@ Use the following identifiers in maintained code and release configuration:
 | Apple bundle ID | `thalesmms.turinglab` |
 | Public repository | `https://github.com/ThalesMMS/Turing-Lab` |
 | Public web app | `https://thalesmms.github.io/Turing-Lab/` |
+| Public marketing page | `https://thalesmms.github.io/Turing-Lab/marketing.html` |
 | Public support | `https://thalesmms.github.io/Turing-Lab/support.html` |
 | Public privacy policy | `https://thalesmms.github.io/Turing-Lab/privacy.html` |
 | Offline examples | `assets/examples/` |

@@ -16,7 +16,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:turing_lab/core/models/production.dart';
-import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/widgets/grammar_editor.dart';
@@ -184,8 +183,11 @@ void main() {
       expect(find.text('Add Production Rule'), findsOneWidget);
       expect(find.text('Production Rules (0)'), findsOneWidget);
 
-      expect(find.text(AppLocalizationsEn().leftSideHelper), findsOneWidget);
-      expect(find.text(AppLocalizationsEn().rightSideHelper), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        findsOneWidget,
+      );
+      expect(find.text('e.g., aA | bB | ε'), findsOneWidget);
     });
 
     testWidgets('displays empty state when no productions exist', (
@@ -207,8 +209,11 @@ void main() {
       final grammarNameField = find.widgetWithText(TextField, 'My Grammar');
       expect(grammarNameField, findsOneWidget);
 
-      final startSymbolField = find.widgetWithText(TextField, 'S');
+      final startSymbolField = find.byKey(
+        const ValueKey('grammar-editor-start-symbol'),
+      );
       expect(startSymbolField, findsOneWidget);
+      expect(tester.widget<TextField>(startSymbolField).controller?.text, 'S');
     });
 
     testWidgets('formats an initially edited group after dependencies exist', (
@@ -261,10 +266,10 @@ void main() {
       expect(startSymbolField.keyboardType, TextInputType.visiblePassword);
 
       final leftSideField = tester.widget<TextField>(
-        find.widgetWithText(TextField, 'e.g., S, A, B').first,
+        find.byKey(const ValueKey('grammar-editor-left-side')).first,
       );
       final rightSideField = tester.widget<TextField>(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε').first,
+        find.byKey(const ValueKey('grammar-editor-right-side')).first,
       );
 
       expect(leftSideField.autocorrect, isFalse);
@@ -303,12 +308,15 @@ void main() {
   });
 
   group('GrammarEditor production management', () {
-    testWidgets('helper text is visible by default', (tester) async {
+    testWidgets('field hints are visible by default', (tester) async {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      expect(find.text(AppLocalizationsEn().leftSideHelper), findsOneWidget);
-      expect(find.text(AppLocalizationsEn().rightSideHelper), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        findsOneWidget,
+      );
+      expect(find.text('e.g., aA | bB | ε'), findsOneWidget);
     });
 
     testWidgets(
@@ -317,15 +325,14 @@ void main() {
         final provider = _RecordingGrammarProvider();
         await pumpEditor(tester, provider);
 
-        final rightSideField = find.widgetWithText(
-          TextField,
-          'e.g., aA, bB, ε',
+        final rightSideField = find.byKey(
+          const ValueKey('grammar-editor-right-side'),
         );
         await tester.tap(rightSideField);
         await tester.pump();
 
         expect(find.text('Insert λ'), findsNothing);
-        await tester.tap(find.text('Insert ε'));
+        await tester.tap(find.byTooltip('Insert ε'));
         await tester.pump();
 
         final rightSideTextField = tester.widget<TextField>(rightSideField);
@@ -340,10 +347,10 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'S',
       );
-      await tester.tap(find.text('Insert ε'));
+      await tester.tap(find.byTooltip('Insert ε'));
       await tester.pump();
 
       await tester.tap(_findButtonWithText('Add'));
@@ -367,11 +374,16 @@ void main() {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'S');
       await tester.pump();
 
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
       await tester.enterText(rightSideField, 'aA');
       await tester.pump();
 
@@ -390,11 +402,16 @@ void main() {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'S');
       await tester.pump();
 
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
       await tester.enterText(rightSideField, 'ε');
       await tester.pump();
 
@@ -416,11 +433,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'S',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'λε',
       );
       await tester.pump();
@@ -446,11 +463,11 @@ void main() {
         await pumpEditor(tester, provider);
 
         await tester.enterText(
-          find.widgetWithText(TextField, 'e.g., S, A, B'),
+          find.byKey(const ValueKey('grammar-editor-left-side')),
           'S',
         );
         await tester.enterText(
-          find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+          find.byKey(const ValueKey('grammar-editor-right-side')),
           'λA',
         );
         await tester.pump();
@@ -472,9 +489,8 @@ void main() {
         final provider = _RecordingGrammarProvider();
         await pumpEditor(tester, provider);
 
-        final rightSideField = find.widgetWithText(
-          TextField,
-          'e.g., aA, bB, ε',
+        final rightSideField = find.byKey(
+          const ValueKey('grammar-editor-right-side'),
         );
         await tester.enterText(rightSideField, 'aA');
         await tester.pump();
@@ -485,11 +501,23 @@ void main() {
 
         expect(provider.addProductionCalls, hasLength(0));
         expect(
-          find.text('Both left side and right side must be specified'),
+          tester
+              .widget<TextField>(
+                find.byKey(const ValueKey('grammar-editor-left-side')),
+              )
+              .decoration
+              ?.errorText,
+          '',
+        );
+        expect(
+          find.text('Enter the variable and its production.'),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('grammar-editor-left-side')),
           findsOneWidget,
         );
-        expect(find.text(AppLocalizationsEn().leftSideHelper), findsOneWidget);
-        expect(find.text(AppLocalizationsEn().rightSideHelper), findsOneWidget);
+        expect(find.text('e.g., aA | bB | ε'), findsOneWidget);
       },
     );
 
@@ -499,7 +527,9 @@ void main() {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'S');
       await tester.pump();
 
@@ -509,20 +539,31 @@ void main() {
 
       expect(provider.addProductionCalls, hasLength(0));
       expect(
-        find.text('Both left side and right side must be specified'),
-        findsOneWidget,
+        tester
+            .widget<TextField>(
+              find.byKey(const ValueKey('grammar-editor-right-side')),
+            )
+            .decoration
+            ?.errorText,
+        '',
       );
+      expect(find.text('Enter the variable and its production.'), findsNothing);
     });
 
     testWidgets('clears input fields after adding production', (tester) async {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'S');
       await tester.pump();
 
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
       await tester.enterText(rightSideField, 'aA');
       await tester.pump();
 
@@ -546,11 +587,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'AA | Aa',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -572,11 +613,11 @@ void main() {
 
       Future<void> add(String rightSide) async {
         await tester.enterText(
-          find.widgetWithText(TextField, 'e.g., S, A, B'),
+          find.byKey(const ValueKey('grammar-editor-left-side')),
           'A',
         );
         await tester.enterText(
-          find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+          find.byKey(const ValueKey('grammar-editor-right-side')),
           rightSide,
         );
         await tester.tap(_findButtonWithText('Add'));
@@ -599,11 +640,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'a || b',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -622,11 +663,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'a | aλ',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -645,11 +686,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         r'\|',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -666,11 +707,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'id A | number',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -680,10 +721,254 @@ void main() {
         provider.state.productions.map((production) => production.rightSide),
         [
           ['id', 'A'],
-          ['n', 'u', 'm', 'b', 'e', 'r'],
+          ['number'],
         ],
       );
       expect(find.text('A → id A | number'), findsOneWidget);
+    });
+
+    testWidgets(
+      'keeps compact multi-character alternatives whole when any alternative '
+      'uses whitespace',
+      (tester) async {
+        final provider = _RecordingGrammarProvider();
+        await pumpEditor(tester, provider);
+
+        await tester.enterText(
+          find.byKey(const ValueKey('grammar-editor-left-side')),
+          'Fator',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('grammar-editor-right-side')),
+          'num | id | ( Expr )',
+        );
+        await tester.tap(_findButtonWithText('Add'));
+        await tester.pumpAndSettle();
+
+        expect(
+          provider.state.productions.map((production) => production.rightSide),
+          [
+            ['num'],
+            ['id'],
+            ['(', 'Expr', ')'],
+          ],
+        );
+        final grammar = provider.buildGrammar();
+        expect(grammar.terminals, containsAll(['num', 'id', '(', ')']));
+        expect(grammar.terminals, isNot(contains('i')));
+        expect(grammar.nonterminals, containsAll(['Fator', 'Expr']));
+      },
+    );
+
+    testWidgets(
+      'keeps declared multi-character symbols whole in compact input',
+      (tester) async {
+        final provider = _RecordingGrammarProvider();
+        provider.declareSymbolKinds({'id': GrammarSymbolKind.terminal});
+        await pumpEditor(tester, provider);
+
+        await tester.enterText(
+          find.byKey(const ValueKey('grammar-editor-left-side')),
+          'A',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('grammar-editor-right-side')),
+          'idA | id',
+        );
+        await tester.tap(_findButtonWithText('Add'));
+        await tester.pumpAndSettle();
+
+        expect(
+          provider.state.productions.map((production) => production.rightSide),
+          [
+            ['id', 'A'],
+            ['id'],
+          ],
+        );
+      },
+    );
+
+    testWidgets('symbol chips set explicit kinds and commit the declaration', (
+      tester,
+    ) async {
+      final provider = _RecordingGrammarProvider();
+      await pumpEditor(tester, provider);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        'Fator',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-right-side')),
+        'num | ( Expr )',
+      );
+      await tester.pumpAndSettle();
+
+      final numChip = find.byKey(
+        const ValueKey('grammar-editor-symbol-chip-0-0'),
+      );
+      final exprChip = find.byKey(
+        const ValueKey('grammar-editor-symbol-chip-1-1'),
+      );
+      expect(numChip, findsOneWidget);
+      expect(exprChip, findsOneWidget);
+
+      // Both symbols are inferred as terminals; flip Expr to nonterminal.
+      await tester.tap(exprChip);
+      await tester.pumpAndSettle();
+
+      await tester.tap(_findButtonWithText('Add'));
+      await tester.pumpAndSettle();
+
+      expect(
+        provider.state.productions.map((production) => production.rightSide),
+        [
+          ['num'],
+          ['(', 'Expr', ')'],
+        ],
+      );
+      expect(provider.state.declaredNonterminals, contains('Expr'));
+      final grammar = provider.buildGrammar();
+      expect(grammar.terminals, contains('num'));
+      expect(grammar.nonterminals, contains('Expr'));
+    });
+
+    testWidgets('join control and long-press merge compact symbols', (
+      tester,
+    ) async {
+      final provider = _RecordingGrammarProvider();
+      await pumpEditor(tester, provider);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        'S',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-right-side')),
+        'id | Expr',
+      );
+      await tester.pumpAndSettle();
+
+      // `id` is split into characters; the link between them joins the pair.
+      expect(find.text('i'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('grammar-editor-merge-0-1')));
+      await tester.pumpAndSettle();
+      expect(find.text('id'), findsOneWidget);
+      expect(find.text('i'), findsNothing);
+
+      // Long-pressing any chip of `Expr` joins the whole alternative.
+      await tester.longPress(
+        find.byKey(const ValueKey('grammar-editor-symbol-chip-1-0')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Expr'), findsOneWidget);
+      expect(find.text('E'), findsNothing);
+
+      // Long-pressing the joined symbol splits it again, and once more joins.
+      await tester.longPress(
+        find.byKey(const ValueKey('grammar-editor-symbol-chip-1-0')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Expr'), findsNothing);
+      expect(find.text('E'), findsOneWidget);
+      await tester.longPress(
+        find.byKey(const ValueKey('grammar-editor-symbol-chip-1-0')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Expr'), findsOneWidget);
+
+      await tester.tap(_findButtonWithText('Add'));
+      await tester.pumpAndSettle();
+
+      expect(
+        provider.state.productions.map((production) => production.rightSide),
+        [
+          ['id'],
+          ['Expr'],
+        ],
+      );
+      final grammar = provider.buildGrammar();
+      expect(grammar.terminals, contains('id'));
+      expect(grammar.nonterminals, contains('Expr'));
+    });
+
+    testWidgets('prime marks stay attached to the preceding symbol', (
+      tester,
+    ) async {
+      final provider = _RecordingGrammarProvider();
+      await pumpEditor(tester, provider);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        "S'",
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-right-side')),
+        "aS'b | Expr'",
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text("S'"), findsWidgets);
+      expect(find.text("'"), findsNothing);
+      // `S'` and `E` both read as nonterminals.
+      expect(
+        find.byTooltip('Nonterminal. Tap to mark as terminal.'),
+        findsNWidgets(2),
+      );
+
+      await tester.longPress(
+        find.byKey(const ValueKey('grammar-editor-symbol-chip-1-0')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text("Expr'"), findsOneWidget);
+
+      await tester.tap(_findButtonWithText('Add'));
+      await tester.pumpAndSettle();
+
+      expect(
+        provider.state.productions.map((production) => production.rightSide),
+        [
+          ['a', "S'", 'b'],
+          ["Expr'"],
+        ],
+      );
+      final grammar = provider.buildGrammar();
+      expect(grammar.nonterminals, containsAll(["S'", "Expr'"]));
+      expect(grammar.terminals, containsAll(['a', 'b']));
+      expect(grammar.terminals, isNot(contains("'")));
+    });
+
+    testWidgets('tapping a symbol chip toggles its kind', (tester) async {
+      final provider = _RecordingGrammarProvider();
+      await pumpEditor(tester, provider);
+
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-left-side')),
+        'S',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-editor-right-side')),
+        'x',
+      );
+      await tester.pumpAndSettle();
+
+      final chip = find.byKey(const ValueKey('grammar-editor-symbol-chip-0-0'));
+      expect(chip, findsOneWidget);
+      expect(
+        find.byTooltip('Terminal. Tap to mark as nonterminal.'),
+        findsOneWidget,
+      );
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(
+        find.byTooltip('Nonterminal. Tap to mark as terminal.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(_findButtonWithText('Add'));
+      await tester.pumpAndSettle();
+      expect(provider.state.declaredNonterminals, contains('x'));
+      expect(provider.buildGrammar().nonterminals, contains('x'));
     });
 
     testWidgets('normalizes all supported empty-string input aliases', (
@@ -693,11 +978,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'lambda | λ | ε',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -720,11 +1005,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'A -> a | b',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -745,11 +1030,11 @@ void main() {
       await pumpEditor(tester, provider);
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'a | b',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -772,11 +1057,11 @@ void main() {
       final before = provider.state;
 
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., S, A, B'),
+        find.byKey(const ValueKey('grammar-editor-left-side')),
         'A',
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'e.g., aA, bB, ε'),
+        find.byKey(const ValueKey('grammar-editor-right-side')),
         'a',
       );
       await tester.tap(_findButtonWithText('Add'));
@@ -983,10 +1268,15 @@ void main() {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'S');
 
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
       await tester.enterText(rightSideField, 'aA');
 
       final addButton = _findButtonWithText('Add');
@@ -1004,10 +1294,15 @@ void main() {
       final provider = _RecordingGrammarProvider();
       await pumpEditor(tester, provider);
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
       await tester.enterText(leftSideField, 'A');
 
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
       await tester.enterText(rightSideField, 'ε');
 
       final addButton = _findButtonWithText('Add');
@@ -1121,10 +1416,7 @@ void main() {
 
       // In edit mode, the left side field has 'S' as its controller text.
       // The start symbol field also has 'S', so disambiguate by label.
-      final leftField = find.ancestor(
-        of: find.text('Left Side (Variable)'),
-        matching: find.byType(TextField),
-      );
+      final leftField = find.byKey(const ValueKey('grammar-editor-left-side'));
       final rightField = find.widgetWithText(TextField, 'aB');
 
       expect(leftField, findsOneWidget);
@@ -1225,8 +1517,13 @@ void main() {
       await tester.tap(cancelButton);
       await tester.pumpAndSettle();
 
-      final leftSideField = find.widgetWithText(TextField, 'e.g., S, A, B');
-      final rightSideField = find.widgetWithText(TextField, 'e.g., aA, bB, ε');
+      final leftSideField = find.byKey(
+        const ValueKey('grammar-editor-left-side'),
+      );
+      final rightSideField = find.widgetWithText(
+        TextField,
+        'e.g., aA | bB | ε',
+      );
 
       final leftField = tester.widget<TextField>(leftSideField);
       final rightField = tester.widget<TextField>(rightSideField);
@@ -1540,27 +1837,27 @@ void main() {
       expect(find.text('Grammar Editor'), findsOneWidget);
     });
 
-    testWidgets(
-      'displays vertical layout for production editor on small screens',
-      (tester) async {
-        final provider = _RecordingGrammarProvider();
+    testWidgets('keeps production fields side by side on small screens', (
+      tester,
+    ) async {
+      final provider = _RecordingGrammarProvider();
 
-        tester.view.physicalSize = const Size(400, 800);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [grammarProvider.overrideWith((ref) => provider)],
-            child: const MaterialApp(home: Scaffold(body: GrammarEditor())),
-          ),
-        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [grammarProvider.overrideWith((ref) => provider)],
+          child: const MaterialApp(home: Scaffold(body: GrammarEditor())),
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.arrow_downward), findsOneWidget);
-      },
-    );
+      expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_downward), findsNothing);
+    });
 
     testWidgets(
       'displays horizontal layout for production editor on large screens',

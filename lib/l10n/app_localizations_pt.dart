@@ -2077,26 +2077,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addProductionRule => 'Adicionar regra de produção';
 
   @override
-  String get leftSideVariable => 'Lado esquerdo (variável)';
+  String get leftSideVariable => 'NT';
 
   @override
-  String get rightSideProduction => 'Lado direito (produção)';
+  String get rightSideProduction => 'Produção';
 
   @override
-  String get leftSideHint => 'ex.: S, A, B';
+  String get leftSideHint => 'S';
 
   @override
-  String get rightSideHint => 'ex.: aA, bB, ε';
-
-  @override
-  String get leftSideHelper => 'Informe exatamente um símbolo não terminal.';
-
-  @override
-  String get rightSideHelper =>
-      'Separe alternativas com |. Use \\| para uma barra vertical literal e ε para a cadeia vazia.';
+  String get rightSideHint => 'ex.: aA | bB | ε';
 
   @override
   String get insertEpsilon => 'Inserir ε';
+
+  @override
+  String get symbolKindLegend =>
+      'Toque em um símbolo para alternar não-terminal (amarelo) / terminal (verde). Toque no elo entre dois símbolos para juntá-los; segure para juntar ou separar a alternativa inteira.';
+
+  @override
+  String mergeSymbolsTooltip(String left, String right) {
+    return 'Juntar $left e $right em um símbolo';
+  }
+
+  @override
+  String get symbolChipNonterminalTooltip =>
+      'Não-terminal. Toque para marcar como terminal.';
+
+  @override
+  String get symbolChipTerminalTooltip =>
+      'Terminal. Toque para marcar como não-terminal.';
 
   @override
   String get noProductionRulesYet => 'Ainda não há regras de produção';
@@ -2116,8 +2126,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get productionsCleared => 'Produções limpas.';
 
   @override
-  String get bothSidesRequired =>
-      'Os lados esquerdo e direito devem ser informados';
+  String get bothSidesRequired => 'Informe a variável e a produção.';
 
   @override
   String get leftSideMustBeNonterminal =>
@@ -4136,6 +4145,23 @@ class AppLocalizationsPt extends AppLocalizations {
   String derivationTreesAmbiguous(int count) {
     return 'Árvores de derivação (mostrando as primeiras $count; ambígua)';
   }
+
+  @override
+  String get derivationTreeFullscreen =>
+      'Mostrar árvore de derivação em tela cheia';
+
+  @override
+  String get derivationTreeZoomIn => 'Ampliar';
+
+  @override
+  String get derivationTreeZoomOut => 'Reduzir';
+
+  @override
+  String get derivationTreeFitToScreen => 'Ajustar à tela';
+
+  @override
+  String get derivationTreePanZoomHint =>
+      'Arraste para mover; faça pinça ou rolagem para ampliar.';
 
   @override
   String get cykSteps => 'Passos CYK';

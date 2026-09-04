@@ -42,11 +42,17 @@ prepare_worktree() {
     worktree="$TMP_DIR/worktree"
     rm -rf "$worktree"
     mkdir -p "$worktree/web/scripts" "$worktree/docs"
+    mkdir -p "$worktree/docs/assets/screenshots"
     cp "$SCRIPT" "$worktree/web/scripts/build_web.sh"
     chmod +x "$worktree/web/scripts/build_web.sh"
     printf '<html>support</html>\n' >"$worktree/docs/support.html"
     printf '<html>privacy</html>\n' >"$worktree/docs/privacy.html"
+    printf '<html>marketing</html>\n' >"$worktree/docs/marketing.html"
     printf '# apple privacy\n' >"$worktree/docs/APP_PRIVACY_APPLE.md"
+    printf 'site css\n' >"$worktree/docs/assets/site.css"
+    printf 'marketing icon\n' >"$worktree/docs/assets/icon-192.png"
+    printf 'social preview\n' >"$worktree/docs/assets/social-preview.png"
+    printf 'fsa screenshot\n' >"$worktree/docs/assets/screenshots/fsa.webp"
     printf '%s\n' "$worktree"
 }
 
@@ -86,8 +92,28 @@ if [ ! -f "$WORKTREE/build/web/privacy.html" ]; then
     echo "expected privacy.html in the web build" >&2
     exit 1
 fi
+if [ ! -f "$WORKTREE/build/web/marketing.html" ]; then
+    echo "expected marketing.html in the web build" >&2
+    exit 1
+fi
 if [ ! -f "$WORKTREE/build/web/APP_PRIVACY_APPLE.md" ]; then
     echo "expected APP_PRIVACY_APPLE.md in the web build" >&2
+    exit 1
+fi
+if [ ! -f "$WORKTREE/build/web/assets/site.css" ]; then
+    echo "expected marketing site stylesheet in the web build" >&2
+    exit 1
+fi
+if [ ! -f "$WORKTREE/build/web/assets/icon-192.png" ]; then
+    echo "expected marketing icon in the web build" >&2
+    exit 1
+fi
+if [ ! -f "$WORKTREE/build/web/assets/social-preview.png" ]; then
+    echo "expected social preview in the web build" >&2
+    exit 1
+fi
+if [ ! -f "$WORKTREE/build/web/assets/screenshots/fsa.webp" ]; then
+    echo "expected marketing screenshot in the web build" >&2
     exit 1
 fi
 if [ ! -f "$WORKTREE/build/web/.nojekyll" ]; then

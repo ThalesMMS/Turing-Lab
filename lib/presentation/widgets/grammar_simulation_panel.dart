@@ -47,7 +47,7 @@ import 'base_simulation_panel.dart';
 import 'batch_execution/batch_execution_panel.dart';
 import 'brute_force_search_options.dart';
 import 'brute_force_teaching_workspace.dart';
-import 'derivation_tree_view.dart';
+import 'derivation_tree_viewer.dart';
 import 'grammar_sentential_form_card.dart';
 import 'lr1_teaching_workspace.dart';
 import 'parse_table_teaching_workspace.dart';
@@ -1140,7 +1140,12 @@ class _GrammarSimulationPanelState
           for (final tree in report.trees)
             Padding(
               padding: const EdgeInsets.only(top: 12, bottom: 4),
-              child: DerivationTreeView(tree: tree),
+              child: DerivationTreeViewer(
+                tree: tree,
+                height: 360,
+                onOpenFullscreen: () =>
+                    showDerivationTreeFullscreen(context, tree),
+              ),
             ),
         ],
       ),

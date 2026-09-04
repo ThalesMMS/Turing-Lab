@@ -6,7 +6,7 @@
     "lib/l10n/app_*.arb (generated localization files excluded)"
   ],
   "glyphTotals": {
-    "ε": 211,
+    "ε": 210,
     "ϵ": 2,
     "λ": 9
   },
@@ -501,15 +501,7 @@
     },
     {
       "path": "lib/l10n/app_en.arb",
-      "text": "\"rightSideHelper\": \"Separate alternatives with |. Use \\\\| for a literal pipe and ε for the empty string.\",",
-      "glyphs": {
-        "ε": 1
-      },
-      "reason": "reviewed canonical presentation source; the owning widget formats display output"
-    },
-    {
-      "path": "lib/l10n/app_en.arb",
-      "text": "\"rightSideHint\": \"e.g., aA, bB, ε\",",
+      "text": "\"rightSideHint\": \"e.g., aA | bB | ε\",",
       "glyphs": {
         "ε": 1
       },
@@ -1158,15 +1150,7 @@
     },
     {
       "path": "lib/l10n/app_pt.arb",
-      "text": "\"rightSideHelper\": \"Separe alternativas com |. Use \\\\| para uma barra vertical literal e ε para a cadeia vazia.\",",
-      "glyphs": {
-        "ε": 1
-      },
-      "reason": "reviewed canonical presentation source; the owning widget formats display output"
-    },
-    {
-      "path": "lib/l10n/app_pt.arb",
-      "text": "\"rightSideHint\": \"ex.: aA, bB, ε\",",
+      "text": "\"rightSideHint\": \"ex.: aA | bB | ε\",",
       "glyphs": {
         "ε": 1
       },
@@ -1465,6 +1449,14 @@
     {
       "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
       "text": "if (hasEpsilonTransitions) return 'ε-NFA';",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_editor.dart",
+      "text": "// problems (arrow, empty alternative, misplaced ε) get a message.",
       "glyphs": {
         "ε": 1
       },

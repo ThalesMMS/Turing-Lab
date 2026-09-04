@@ -1,6 +1,4 @@
-### Flutter app .gitignore
-
-# Dart/Flutter
+# Dart / Flutter
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -8,7 +6,7 @@
 .pub/
 build/
 
-# IntelliJ / VS Code / macOS cruft
+# IDE / OS
 .idea/
 .vscode/
 .DS_Store
@@ -49,7 +47,7 @@ test/**/failures/
 **/macos/**/xcuserdata/
 **/macos/Pods/
 
-# Windows/Linux generated sources
+# Windows / Linux
 **/windows/flutter/generated_plugin_registrant.*
 **/windows/flutter/generated_plugins.cmake
 **/linux/flutter/generated_plugin_registrant.*
@@ -58,25 +56,18 @@ test/**/failures/
 # Web
 **/web/.dart_tool/
 
-# Logs/temp
+# Logs / temp
 *.log
 *.swp
 *.tmp
+/test/tool/__pycache__
+/tool/__pycache__
 
+# Local tooling
 .gemini/
 .playwright-cli/
+/.playwright-mcp
 gha-creds-*.json
-
-# Vendored GraphView Auto Claude data
-graphview/.auto-claude/
-graphview/.auto-claude-security.json
-graphview/.auto-claude-status
-graphview/.claude_settings.json
-graphview/.worktrees/
-graphview/.security-key
-graphview/logs/security/
-
-# Aperant data directory
 .auto-claude/
 /.auto-claude
 /.taskforge/
@@ -85,9 +76,17 @@ graphview/logs/security/
 /output/playwright
 AGENTS.md
 CLAUDE.md
+
+# Vendored GraphView
+graphview/.auto-claude/
+graphview/.auto-claude-security.json
+graphview/.auto-claude-status
+graphview/.claude_settings.json
+graphview/.worktrees/
+graphview/.security-key
+graphview/logs/security/
+
+# Local docs (not for git)
 docs/BRANCH_PROTECTION.md
 docs/reference-deviations.md
-/.playwright-mcp
 docs/JFLAP_PARITY_MATRIX.md
-/test/tool/__pycache__
-/tool/__pycache__

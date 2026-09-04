@@ -3639,44 +3639,56 @@ abstract class AppLocalizations {
   /// No description provided for @leftSideVariable.
   ///
   /// In en, this message translates to:
-  /// **'Left Side (Variable)'**
+  /// **'NT'**
   String get leftSideVariable;
 
   /// No description provided for @rightSideProduction.
   ///
   /// In en, this message translates to:
-  /// **'Right Side (Production)'**
+  /// **'Production'**
   String get rightSideProduction;
 
   /// No description provided for @leftSideHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g., S, A, B'**
+  /// **'S'**
   String get leftSideHint;
 
   /// No description provided for @rightSideHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g., aA, bB, ε'**
+  /// **'e.g., aA | bB | ε'**
   String get rightSideHint;
-
-  /// No description provided for @leftSideHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter exactly one non-terminal symbol.'**
-  String get leftSideHelper;
-
-  /// No description provided for @rightSideHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'Separate alternatives with |. Use \\| for a literal pipe and ε for the empty string.'**
-  String get rightSideHelper;
 
   /// No description provided for @insertEpsilon.
   ///
   /// In en, this message translates to:
   /// **'Insert ε'**
   String get insertEpsilon;
+
+  /// No description provided for @symbolKindLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a symbol to switch nonterminal (yellow) / terminal (green). Tap the link between two symbols to join them; long-press to join or split a whole alternative.'**
+  String get symbolKindLegend;
+
+  /// No description provided for @mergeSymbolsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {left} and {right} into one symbol'**
+  String mergeSymbolsTooltip(String left, String right);
+
+  /// No description provided for @symbolChipNonterminalTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Nonterminal. Tap to mark as terminal.'**
+  String get symbolChipNonterminalTooltip;
+
+  /// No description provided for @symbolChipTerminalTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal. Tap to mark as nonterminal.'**
+  String get symbolChipTerminalTooltip;
 
   /// No description provided for @noProductionRulesYet.
   ///
@@ -3711,7 +3723,7 @@ abstract class AppLocalizations {
   /// No description provided for @bothSidesRequired.
   ///
   /// In en, this message translates to:
-  /// **'Both left side and right side must be specified'**
+  /// **'Enter the variable and its production.'**
   String get bothSidesRequired;
 
   /// No description provided for @leftSideMustBeNonterminal.
@@ -6943,6 +6955,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Derivation Trees (showing first {count}; ambiguous)'**
   String derivationTreesAmbiguous(int count);
+
+  /// No description provided for @derivationTreeFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Show derivation tree in full screen'**
+  String get derivationTreeFullscreen;
+
+  /// No description provided for @derivationTreeZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get derivationTreeZoomIn;
+
+  /// No description provided for @derivationTreeZoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get derivationTreeZoomOut;
+
+  /// No description provided for @derivationTreeFitToScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to screen'**
+  String get derivationTreeFitToScreen;
+
+  /// No description provided for @derivationTreePanZoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to pan; pinch or scroll to zoom.'**
+  String get derivationTreePanZoomHint;
 
   /// No description provided for @cykSteps.
   ///

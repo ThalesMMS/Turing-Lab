@@ -2060,26 +2060,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addProductionRule => 'Add Production Rule';
 
   @override
-  String get leftSideVariable => 'Left Side (Variable)';
+  String get leftSideVariable => 'NT';
 
   @override
-  String get rightSideProduction => 'Right Side (Production)';
+  String get rightSideProduction => 'Production';
 
   @override
-  String get leftSideHint => 'e.g., S, A, B';
+  String get leftSideHint => 'S';
 
   @override
-  String get rightSideHint => 'e.g., aA, bB, ε';
-
-  @override
-  String get leftSideHelper => 'Enter exactly one non-terminal symbol.';
-
-  @override
-  String get rightSideHelper =>
-      'Separate alternatives with |. Use \\| for a literal pipe and ε for the empty string.';
+  String get rightSideHint => 'e.g., aA | bB | ε';
 
   @override
   String get insertEpsilon => 'Insert ε';
+
+  @override
+  String get symbolKindLegend =>
+      'Tap a symbol to switch nonterminal (yellow) / terminal (green). Tap the link between two symbols to join them; long-press to join or split a whole alternative.';
+
+  @override
+  String mergeSymbolsTooltip(String left, String right) {
+    return 'Join $left and $right into one symbol';
+  }
+
+  @override
+  String get symbolChipNonterminalTooltip =>
+      'Nonterminal. Tap to mark as terminal.';
+
+  @override
+  String get symbolChipTerminalTooltip =>
+      'Terminal. Tap to mark as nonterminal.';
 
   @override
   String get noProductionRulesYet => 'No production rules yet';
@@ -2098,8 +2108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productionsCleared => 'Productions cleared.';
 
   @override
-  String get bothSidesRequired =>
-      'Both left side and right side must be specified';
+  String get bothSidesRequired => 'Enter the variable and its production.';
 
   @override
   String get leftSideMustBeNonterminal =>
@@ -4096,6 +4105,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String derivationTreesAmbiguous(int count) {
     return 'Derivation Trees (showing first $count; ambiguous)';
   }
+
+  @override
+  String get derivationTreeFullscreen => 'Show derivation tree in full screen';
+
+  @override
+  String get derivationTreeZoomIn => 'Zoom in';
+
+  @override
+  String get derivationTreeZoomOut => 'Zoom out';
+
+  @override
+  String get derivationTreeFitToScreen => 'Fit to screen';
+
+  @override
+  String get derivationTreePanZoomHint =>
+      'Drag to pan; pinch or scroll to zoom.';
 
   @override
   String get cykSteps => 'CYK Steps';

@@ -53,6 +53,15 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     text: 'My Grammar',
   );
 
+  /// Explicit terminal/nonterminal choices made while composing the current
+  /// production; committed to the provider when the rule is saved.
+  final Map<String, GrammarSymbolKind> _symbolKinds = {};
+
+  /// Multi-character symbols the user split back into characters in this
+  /// form; they are hidden from compact matching even when the grammar
+  /// already knows them.
+  final Set<String> _splitSymbols = {};
+
   String? _selectedProductionId;
   List<String>? _editingLeftSide;
   bool _isEditing = false;
@@ -104,14 +113,21 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
   }
 
   Widget _buildFormalLanguageTextField({
+    Key? key,
     required TextEditingController controller,
     required InputDecoration decoration,
     ValueChanged<String>? onChanged,
-    String? errorText,
+    bool hasError = false,
   }) {
+    // Errors are reported below the whole row (see `_buildProductionErrors`)
+    // so narrow fields only carry the red outline, not the message.
     return TextField(
+      key: key,
       controller: controller,
-      decoration: decoration.copyWith(errorText: errorText),
+      decoration: decoration.copyWith(
+        errorText: hasError ? '' : null,
+        errorStyle: const TextStyle(fontSize: 0, height: 0),
+      ),
       autocorrect: false,
       enableSuggestions: false,
       keyboardType: TextInputType.visiblePassword,
@@ -352,68 +368,35 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmallScreen = constraints.maxWidth < 500;
-
-              if (isSmallScreen) {
-                return Column(
-                  children: [
-                    TextField(
-                      controller: _grammarNameController,
-                      onChanged: (value) => ref
-                          .read(grammarProvider.notifier)
-                          .updateName(value.trim()),
-                      decoration: InputDecoration(
-                        labelText: _l10n.grammarNameLabel,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFormalLanguageTextField(
-                      controller: _startSymbolController,
-                      onChanged: (value) => ref
-                          .read(grammarProvider.notifier)
-                          .updateStartSymbol(value.trim()),
-                      decoration: InputDecoration(
-                        labelText: _l10n.startSymbolLabel,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                );
-              }
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _grammarNameController,
-                      onChanged: (value) => ref
-                          .read(grammarProvider.notifier)
-                          .updateName(value.trim()),
-                      decoration: InputDecoration(
-                        labelText: _l10n.grammarNameLabel,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _grammarNameController,
+                  onChanged: (value) => ref
+                      .read(grammarProvider.notifier)
+                      .updateName(value.trim()),
+                  decoration: InputDecoration(
+                    labelText: _l10n.grammarNameLabel,
+                    border: const OutlineInputBorder(),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildFormalLanguageTextField(
-                      controller: _startSymbolController,
-                      onChanged: (value) => ref
-                          .read(grammarProvider.notifier)
-                          .updateStartSymbol(value.trim()),
-                      decoration: InputDecoration(
-                        labelText: _l10n.startSymbolLabel,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFormalLanguageTextField(
+                  key: const ValueKey('grammar-editor-start-symbol'),
+                  controller: _startSymbolController,
+                  onChanged: (value) => ref
+                      .read(grammarProvider.notifier)
+                      .updateStartSymbol(value.trim()),
+                  decoration: InputDecoration(
+                    labelText: _l10n.startSymbolLabel,
+                    border: const OutlineInputBorder(),
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -437,159 +420,62 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmallScreen = constraints.maxWidth < 500;
-
-              if (isSmallScreen) {
-                return Column(
-                  children: [
-                    _buildFormalLanguageTextField(
-                      controller: _leftSideController,
-                      onChanged: (_) => _validateProductionEditorInputs(),
-                      errorText: _leftSideErrorText,
-                      decoration: InputDecoration(
-                        labelText: _l10n.leftSideVariable,
-                        hintText: _l10n.leftSideHint,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _l10n.leftSideHelper,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Icon(
-                      Icons.arrow_downward,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildFormalLanguageTextField(
-                      controller: _rightSideController,
-                      onChanged: (_) => _validateProductionEditorInputs(),
-                      errorText: _rightSideErrorText,
-                      decoration: InputDecoration(
-                        labelText: _l10n.rightSideProduction,
-                        hintText: _l10n.rightSideHint,
-                        border: const OutlineInputBorder(),
-                        suffixIcon: _EpsilonShortcutButton(
-                          onInsert: () => _insertIntoController(
-                            controller: _rightSideController,
-                            symbol: kEpsilonSymbol,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        TextButton(
-                          onPressed: () => _insertIntoController(
-                            controller: _rightSideController,
-                            symbol: kEpsilonSymbol,
-                          ),
-                          child: Text(_l10n.insertEpsilon),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _l10n.rightSideHelper,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                );
-              }
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildFormalLanguageTextField(
-                          controller: _leftSideController,
-                          onChanged: (_) => _validateProductionEditorInputs(),
-                          errorText: _leftSideErrorText,
-                          decoration: InputDecoration(
-                            labelText: _l10n.leftSideVariable,
-                            hintText: _l10n.leftSideHint,
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _l10n.leftSideHelper,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: _buildFormalLanguageTextField(
+                  key: const ValueKey('grammar-editor-left-side'),
+                  controller: _leftSideController,
+                  onChanged: (_) => _validateProductionEditorInputs(),
+                  hasError: _leftSideErrorText != null,
+                  decoration: InputDecoration(
+                    labelText: _l10n.leftSideVariable,
+                    hintText: _l10n.leftSideHint,
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 16,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildFormalLanguageTextField(
-                          controller: _rightSideController,
-                          onChanged: (_) => _validateProductionEditorInputs(),
-                          errorText: _rightSideErrorText,
-                          decoration: InputDecoration(
-                            labelText: _l10n.rightSideProduction,
-                            hintText: _l10n.rightSideHint,
-                            border: const OutlineInputBorder(),
-                            suffixIcon: _EpsilonShortcutButton(
-                              onInsert: () => _insertIntoController(
-                                controller: _rightSideController,
-                                symbol: kEpsilonSymbol,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            TextButton(
-                              onPressed: () => _insertIntoController(
-                                controller: _rightSideController,
-                                symbol: kEpsilonSymbol,
-                              ),
-                              child: Text(_l10n.insertEpsilon),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _l10n.rightSideHelper,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  Icons.arrow_forward,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: _buildFormalLanguageTextField(
+                  key: const ValueKey('grammar-editor-right-side'),
+                  controller: _rightSideController,
+                  onChanged: (_) => _validateProductionEditorInputs(),
+                  hasError: _rightSideErrorText != null,
+                  decoration: InputDecoration(
+                    labelText: _l10n.rightSideProduction,
+                    hintText: _l10n.rightSideHint,
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _EpsilonShortcutButton(
+                      onInsert: () => _insertIntoController(
+                        controller: _rightSideController,
+                        symbol: kEpsilonSymbol,
+                      ),
                     ),
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
+          ),
+          _buildProductionErrors(context),
+          ListenableBuilder(
+            listenable: Listenable.merge([
+              _leftSideController,
+              _rightSideController,
+            ]),
+            builder: (context, _) => _buildSymbolPreview(context),
           ),
           const SizedBox(height: 12),
           LayoutBuilder(
@@ -655,6 +541,231 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
         ],
       ),
     );
+  }
+
+  /// Single full-width line listing the current production errors, so the
+  /// message never has to wrap inside the narrow variable field.
+  Widget _buildProductionErrors(BuildContext context) {
+    // An empty field is signalled by its red outline alone; only content
+    // problems (arrow, empty alternative, misplaced ε) get a message.
+    final required = _l10n.bothSidesRequired;
+    final messages = <String>{
+      if (_leftSideErrorText case final left? when left != required) left,
+      if (_rightSideErrorText case final right? when right != required) right,
+    };
+    if (messages.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, left: 4),
+      child: Text(
+        messages.join('\n'),
+        key: const ValueKey('grammar-editor-production-errors'),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.error,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSymbolPreview(BuildContext context) {
+    final parsed = _parseAlternatives(_rightSideController.text);
+    if (parsed == null || parsed.error != null || parsed.alternatives.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final theme = Theme.of(context);
+    final emptyString = EmptyStringNotation.symbolOf(context);
+    final chips = <Widget>[];
+    final alternatives = parsed.alternatives;
+    for (var altIndex = 0; altIndex < alternatives.length; altIndex++) {
+      if (altIndex > 0) {
+        chips.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '|',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        );
+      }
+      final alternative = alternatives[altIndex];
+      if (alternative.isLambda) {
+        chips.add(
+          Chip(
+            key: ValueKey('grammar-editor-symbol-chip-$altIndex-0'),
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+            label: Text(
+              emptyString,
+              style: const TextStyle(
+                fontSize: 12,
+                fontFamilyFallback: kMonospaceFontFamilyFallback,
+              ),
+            ),
+          ),
+        );
+        continue;
+      }
+      final rightSide = alternative.rightSide;
+      // Merging only makes sense for compact input, where the symbols of an
+      // alternative are written contiguously (`id` -> `i`, `d`).
+      final compact = _rightSideController.text.contains(rightSide.join());
+      final canMergeAll = compact && rightSide.length > 1;
+      for (var symIndex = 0; symIndex < rightSide.length; symIndex++) {
+        final symbol = rightSide[symIndex];
+        final kind = _kindOf(symbol);
+        final isNonterminal = kind == GrammarSymbolKind.nonterminal;
+        if (symIndex > 0 && compact) {
+          chips.add(
+            _MergeSymbolsButton(
+              key: ValueKey('grammar-editor-merge-$altIndex-$symIndex'),
+              tooltip: _l10n.mergeSymbolsTooltip(
+                rightSide[symIndex - 1],
+                symbol,
+              ),
+              onPressed: () => _mergeSymbols([rightSide[symIndex - 1], symbol]),
+            ),
+          );
+        }
+        final canSplit = compact && symbol.length > 1;
+        chips.add(
+          Tooltip(
+            message: isNonterminal
+                ? _l10n.symbolChipNonterminalTooltip
+                : _l10n.symbolChipTerminalTooltip,
+            triggerMode: TooltipTriggerMode.manual,
+            child: GestureDetector(
+              onLongPress: canMergeAll
+                  ? () => _mergeSymbols(rightSide)
+                  : canSplit
+                  ? () => _splitSymbol(symbol)
+                  : null,
+              child: ActionChip(
+                key: ValueKey('grammar-editor-symbol-chip-$altIndex-$symIndex'),
+                backgroundColor: _kindColor(theme.colorScheme, kind),
+                side: BorderSide(
+                  color: _kindBorderColor(theme.colorScheme, kind),
+                ),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                label: Text(
+                  symbol,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                onPressed: () => _toggleSymbolKind(symbol),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: chips,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _l10n.symbolKindLegend,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Color _kindColor(ColorScheme scheme, GrammarSymbolKind kind) {
+    final tint = kind == GrammarSymbolKind.nonterminal
+        ? const Color(0xFFFFC107)
+        : const Color(0xFF4CAF50);
+    return Color.alphaBlend(tint.withValues(alpha: 0.24), scheme.surface);
+  }
+
+  static Color _kindBorderColor(ColorScheme scheme, GrammarSymbolKind kind) {
+    final tint = kind == GrammarSymbolKind.nonterminal
+        ? const Color(0xFFFFC107)
+        : const Color(0xFF4CAF50);
+    return Color.alphaBlend(tint.withValues(alpha: 0.6), scheme.outline);
+  }
+
+  GrammarSymbolKind _kindOf(String symbol) {
+    final explicit = _symbolKinds[symbol];
+    if (explicit != null) {
+      return explicit;
+    }
+    if (_parseLeftSide(_leftSideController.text).contains(symbol)) {
+      return GrammarSymbolKind.nonterminal;
+    }
+    return ref.read(grammarProvider.notifier).symbolKindOf(symbol);
+  }
+
+  void _toggleSymbolKind(String symbol) {
+    final next = _kindOf(symbol) == GrammarSymbolKind.nonterminal
+        ? GrammarSymbolKind.terminal
+        : GrammarSymbolKind.nonterminal;
+    setState(() {
+      _symbolKinds[symbol] = next;
+    });
+  }
+
+  /// Declares the concatenation of [symbols] as one multi-character symbol so
+  /// the compact right-hand side keeps it whole (`id` instead of `i`, `d`).
+  void _mergeSymbols(List<String> symbols) {
+    final merged = symbols.join();
+    if (merged.length < 2) {
+      return;
+    }
+    final notifier = ref.read(grammarProvider.notifier);
+    setState(() {
+      _splitSymbols.remove(merged);
+      for (final symbol in symbols) {
+        if (symbol.length > 1) {
+          _symbolKinds.remove(symbol);
+        }
+      }
+      // A capitalised multi-character name (`Expr`) reads as a variable;
+      // otherwise fall back to what the grammar already knows.
+      final startsUppercase = RegExp(
+        r'^\p{Lu}',
+        unicode: true,
+      ).hasMatch(merged);
+      _symbolKinds[merged] = startsUppercase
+          ? GrammarSymbolKind.nonterminal
+          : notifier.symbolKindOf(merged);
+    });
+  }
+
+  /// Forgets a multi-character symbol declared in this editor session so the
+  /// compact right-hand side splits it into characters again.
+  void _splitSymbol(String symbol) {
+    setState(() {
+      _symbolKinds.remove(symbol);
+      _splitSymbols.add(symbol);
+    });
+  }
+
+  void _commitSymbolKinds() {
+    if (_symbolKinds.isEmpty) {
+      return;
+    }
+    ref.read(grammarProvider.notifier).declareSymbolKinds(_symbolKinds);
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -873,6 +984,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final leftSide = _leftSideController.text.trim();
     final parsedLeft = _parseLeftSide(leftSide);
     final parsed = _parseAlternatives(_rightSideController.text)!;
+    _commitSymbolKinds();
     final result = ref
         .read(grammarProvider.notifier)
         .addProductionAlternatives(
@@ -898,6 +1010,7 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     final parsed = _parseAlternatives(_rightSideController.text)!;
     final originalLeftSide = _editingLeftSide;
     if (originalLeftSide == null) return;
+    _commitSymbolKinds();
     final result = ref
         .read(grammarProvider.notifier)
         .replaceProductionGroup(
@@ -1042,6 +1155,8 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
   void _clearFields() {
     _leftSideController.clear();
     _rightSideController.clear();
+    _symbolKinds.clear();
+    _splitSymbols.clear();
     setState(() {
       _leftSideErrorText = null;
       _rightSideErrorText = null;
@@ -1136,18 +1251,90 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
     return [trimmed];
   }
 
-  List<String> _parseRightSide(String input) {
+  List<String> _parseRightSide(
+    String input, {
+    bool whitespaceDelimited = false,
+    Set<String>? knownSymbols,
+  }) {
     final trimmed = input.trim();
     if (trimmed.isEmpty) {
       return const [];
     }
-    if (trimmed.contains(RegExp(r'\s+'))) {
+    if (whitespaceDelimited || trimmed.contains(RegExp(r'\s+'))) {
       return trimmed
           .split(RegExp(r'\s+'))
           .where((token) => token.isNotEmpty)
           .toList();
     }
-    return trimmed.split('');
+    return _splitCompactSymbols(trimmed, knownSymbols ?? _knownSymbols());
+  }
+
+  /// Splits a compact (whitespace-free) alternative such as `aA` or `idA`.
+  ///
+  /// Multi-character symbols already known to the grammar (declared
+  /// terminals/nonterminals, left-hand sides, and symbols marked in this form)
+  /// are matched first, longest match wins; everything else falls back to the
+  /// JFLAP-style one-character-per-symbol convention.
+  static List<String> _splitCompactSymbols(
+    String text,
+    Set<String> knownSymbols,
+  ) {
+    if (knownSymbols.contains(text)) {
+      return [text];
+    }
+    final candidates = knownSymbols
+        .where((symbol) => symbol.length > 1 && text.contains(symbol))
+        .toList();
+    candidates.sort((a, b) => b.length.compareTo(a.length));
+    if (candidates.isEmpty) {
+      return _attachPrimes(text.split(''));
+    }
+    final symbols = <String>[];
+    var index = 0;
+    while (index < text.length) {
+      String? match;
+      for (final candidate in candidates) {
+        if (text.startsWith(candidate, index)) {
+          match = candidate;
+          break;
+        }
+      }
+      if (match != null) {
+        symbols.add(match);
+        index += match.length;
+      } else {
+        symbols.add(text[index]);
+        index++;
+      }
+    }
+    return _attachPrimes(symbols);
+  }
+
+  /// Glues prime marks to the preceding symbol so `aS'b` reads as `a`, `S'`,
+  /// `b`: a prime never stands alone as a symbol in the compact convention.
+  static List<String> _attachPrimes(List<String> symbols) {
+    final result = <String>[];
+    for (final symbol in symbols) {
+      if (_isPrime(symbol) && result.isNotEmpty) {
+        result[result.length - 1] = result.last + symbol;
+      } else {
+        result.add(symbol);
+      }
+    }
+    return result;
+  }
+
+  /// ASCII apostrophe, typographic prime, and the curly apostrophe that iOS
+  /// smart punctuation substitutes for `'`.
+  static bool _isPrime(String symbol) =>
+      symbol == "'" || symbol == '′' || symbol == '’';
+
+  Set<String> _knownSymbols() {
+    final known = ref.read(grammarProvider.notifier).knownSymbols;
+    known.addAll(_symbolKinds.keys);
+    known.addAll(_parseLeftSide(_leftSideController.text));
+    known.removeAll(_splitSymbols);
+    return known;
   }
 
   _ParsedAlternatives? _parseAlternatives(String input) {
@@ -1184,6 +1371,13 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
       );
     }
 
+    // When any alternative is written with spaces, the whole field is read as
+    // whitespace-delimited so `num | id | ( Expr )` keeps `num` and `id` intact
+    // instead of splitting them into characters.
+    final whitespaceDelimited = rawAlternatives.any(
+      (alternative) => alternative.contains(RegExp(r'\s')),
+    );
+    final knownSymbols = _knownSymbols();
     final alternatives = <ProductionAlternativeDraft>[];
     for (final alternative in rawAlternatives) {
       if (_isEmptyStringSymbol(alternative)) {
@@ -1193,7 +1387,11 @@ class _GrammarEditorState extends ConsumerState<GrammarEditor> {
         continue;
       }
 
-      final symbols = _parseRightSide(alternative);
+      final symbols = _parseRightSide(
+        alternative,
+        whitespaceDelimited: whitespaceDelimited,
+        knownSymbols: knownSymbols,
+      );
       final emptyStringCount = symbols.where(_isEmptyStringSymbol).length;
       if (emptyStringCount > 1) {
         return const _ParsedAlternatives.error(
@@ -1330,5 +1528,32 @@ class _EpsilonShortcutButton extends StatelessWidget {
     // Note: The tooltip provides an accessibility label for screen readers and
     // hover hints on desktop/web. The icon uses a Text widget so the symbol is
     // always rendered consistently across platforms.
+  }
+}
+
+class _MergeSymbolsButton extends StatelessWidget {
+  const _MergeSymbolsButton({
+    super.key,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(Icons.link, size: 16, color: scheme.onSurfaceVariant),
+        ),
+      ),
+    );
   }
 }

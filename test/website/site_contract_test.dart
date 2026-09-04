@@ -13,12 +13,14 @@ void main() {
   late String index;
   late String support;
   late String privacy;
+  late String marketing;
   late String stylesheet;
 
   setUpAll(() {
     index = File('${docsDirectory.path}/index.html').readAsStringSync();
     support = File('${docsDirectory.path}/support.html').readAsStringSync();
     privacy = File('${docsDirectory.path}/privacy.html').readAsStringSync();
+    marketing = File('${docsDirectory.path}/marketing.html').readAsStringSync();
     stylesheet = File(
       '${docsDirectory.path}/assets/site.css',
     ).readAsStringSync();
@@ -201,17 +203,19 @@ void main() {
       );
     }
 
-    for (final target in _localTargets(index)) {
-      expect(
-        File('${docsDirectory.path}/$target').existsSync(),
-        isTrue,
-        reason: 'Missing local target: $target',
-      );
+    for (final html in <String>[index, marketing]) {
+      for (final target in _localTargets(html)) {
+        expect(
+          File('${docsDirectory.path}/$target').existsSync(),
+          isTrue,
+          reason: 'Missing local target: $target',
+        );
+      }
     }
   });
 
   test('uses canonical project links across public pages', () {
-    for (final html in <String>[index, support, privacy]) {
+    for (final html in <String>[index, support, privacy, marketing]) {
       expect(html, isNot(contains('thalesmms.github.io/$legacyProductName')));
       expect(
         html,
@@ -225,6 +229,15 @@ void main() {
       privacy,
       contains('https://thalesmms.github.io/Turing-Lab/APP_PRIVACY_APPLE.md'),
     );
+    expect(
+      marketing,
+      contains(
+        '<link rel="canonical" '
+        'href="https://thalesmms.github.io/Turing-Lab/marketing.html">',
+      ),
+    );
+    expect(marketing, contains('Open the web app'));
+    expect(marketing, contains('assets/screenshots/fsa.webp'));
   });
 }
 

@@ -31,6 +31,7 @@ release gates and must not be inferred from feature availability.
 ## Public Links
 
 - Website: https://thalesmms.github.io/Turing-Lab/
+- Marketing: https://thalesmms.github.io/Turing-Lab/marketing.html
 - Support: https://thalesmms.github.io/Turing-Lab/support.html
 - Privacy Policy: https://thalesmms.github.io/Turing-Lab/privacy.html
 - Issues: https://github.com/ThalesMMS/Turing-Lab/issues

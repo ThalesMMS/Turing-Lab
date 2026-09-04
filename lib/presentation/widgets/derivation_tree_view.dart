@@ -25,24 +25,57 @@ const _levelGap = 32.0;
 const _nodeRadius = 10.0;
 
 class DerivationTreeView extends StatelessWidget {
-  const DerivationTreeView({super.key, required this.tree});
+  const DerivationTreeView({
+    super.key,
+    required this.tree,
+    this.fitToContent = false,
+  });
 
   final DerivationTree tree;
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = appLocalizationsOf(context);
+  /// When true the tree is laid out at its natural size with no internal
+  /// scrolling, so a parent such as an `InteractiveViewer` can pan and zoom it.
+  /// When false (default) the tree centers itself in the available width and
+  /// scrolls horizontally when wider than its parent.
+  final bool fitToContent;
+
+  /// Natural (unscaled) size of [tree] rendered with the current theme.
+  static Size naturalSize(BuildContext context, DerivationTree tree) {
+    final layout = _layoutFor(context, tree);
+    return Size(layout.width, layout.height);
+  }
+
+  static _DerivationTreeLayout _layoutFor(
+    BuildContext context,
+    DerivationTree tree,
+  ) {
     final theme = Theme.of(context);
     final textStyle = theme.textTheme.bodyMedium?.copyWith(
       fontFamilyFallback: kMonospaceFontFamilyFallback,
       fontWeight: FontWeight.w600,
     );
-    final layout = _DerivationTreeLayout.build(
+    return _DerivationTreeLayout.build(
       tree.root,
       textStyle: textStyle ?? const TextStyle(),
       textDirection: Directionality.of(context),
       textScaler: MediaQuery.textScalerOf(context),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = appLocalizationsOf(context);
+    final theme = Theme.of(context);
+    final layout = _layoutFor(context, tree);
+
+    if (fitToContent) {
+      return Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: l10n.derivationTree,
+        child: _buildCanvas(context, theme, layout),
+      );
+    }
 
     return Semantics(
       container: true,
@@ -66,36 +99,41 @@ class DerivationTreeView extends StatelessWidget {
                 height: layout.height,
                 child: Align(
                   alignment: AlignmentDirectional.topCenter,
-                  child: SizedBox(
-                    key: const ValueKey('derivation-tree-canvas'),
-                    width: layout.width,
-                    height: layout.height,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned.fill(
-                          child: ExcludeSemantics(
-                            child: CustomPaint(
-                              key: const ValueKey(
-                                'derivation-tree-connections',
-                              ),
-                              painter: _TreeConnectionsPainter(
-                                branches: layout.branches,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                          ),
-                        ),
-                        for (final node in layout.nodes)
-                          _buildNode(context, node),
-                      ],
-                    ),
-                  ),
+                  child: _buildCanvas(context, theme, layout),
                 ),
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCanvas(
+    BuildContext context,
+    ThemeData theme,
+    _DerivationTreeLayout layout,
+  ) {
+    return SizedBox(
+      key: const ValueKey('derivation-tree-canvas'),
+      width: layout.width,
+      height: layout.height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: ExcludeSemantics(
+              child: CustomPaint(
+                key: const ValueKey('derivation-tree-connections'),
+                painter: _TreeConnectionsPainter(
+                  branches: layout.branches,
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+            ),
+          ),
+          for (final node in layout.nodes) _buildNode(context, node),
+        ],
       ),
     );
   }
