@@ -7,8 +7,8 @@ audited for Turing Lab v1.0 release readiness.
 The iOS-only `file_picker` media transitive pods `DKImagePickerController`,
 `DKPhotoGallery`, `SDWebImage`, and `SwiftyGif` are intentionally excluded
 from this shipped-notices file because Turing Lab prunes them from the iOS build
-with `Pod::PICKER_MEDIA = false` and `Pod::PICKER_AUDIO = false`. See
-`release/APPLE_DEPENDENCY_REVIEW.md` for the audit record.
+with `Pod::PICKER_MEDIA = false` and `Pod::PICKER_AUDIO = false`. The dependency
+choices are defined by the package metadata and the iOS Podfile.
 
 Dependencies covered in this file:
 - graphview 1.5.2 (vendored Turing Lab-maintained fork)
