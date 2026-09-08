@@ -14,7 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
-import 'package:turing_lab/core/algorithms/language_comparator.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -289,12 +289,12 @@ void main() {
         final result = LanguageComparator.compareLanguages(invalidNfa, dfa);
 
         expect(result.isFailure, true);
-        expect(result.error, 'algorithm.fsa-determinizer.failed');
+        expect(result.error, 'Accepting state must be in the states set');
         expect(
           result.structuredError?.stableCode,
-          'algorithm.fsa-determinizer.failed',
+          'automaton.nfa-to-dfa.accepting-state-outside-set',
         );
-        expect(result.structuredError?.arguments['automaton']?.value, 'A');
+        expect(result.structuredError?.arguments, isEmpty);
       });
 
       test('Single state accepting automaton should work', () {

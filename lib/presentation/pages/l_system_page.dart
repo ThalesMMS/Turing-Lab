@@ -15,6 +15,7 @@ import '../providers/formal_extension_editor_providers.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/document_interoperability_binding.dart';
 import '../widgets/file_operations_panel.dart';
+import '../widgets/export/print_document_builder.dart';
 
 final class LSystemPage extends ConsumerStatefulWidget {
   const LSystemPage({super.key});
@@ -213,6 +214,15 @@ final class _LSystemPageState extends ConsumerState<LSystemPage> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: FileOperationsPanel(
                   formalSystemRegistry: ref.watch(formalSystemRegistryProvider),
+                  printable: () => PrintableText(
+                    title: _localizedDocumentName(context, controller.document),
+                    text: [
+                      '${l10n.lSystemPrintAxiomLabel}: ${controller.document.axiom.symbols.join(' ')}',
+                      '${l10n.lSystemPrintIterationsLabel}: ${controller.document.iterations}',
+                      for (final production in controller.document.productions)
+                        '${production.predecessor} → ${production.successor.symbols.join(' ')}',
+                    ].join('\n'),
+                  ),
                   interoperability: DocumentInteroperabilityBinding(
                     registry: ref.watch(
                       documentInteroperabilityRegistryProvider,

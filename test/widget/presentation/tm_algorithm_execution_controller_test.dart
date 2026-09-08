@@ -9,7 +9,7 @@ import 'package:turing_lab/core/models/tm_execution_analysis.dart';
 import 'package:turing_lab/core/models/tm_language_explorer_models.dart';
 import 'package:turing_lab/core/services/canvas_highlight_coordinator.dart';
 import 'package:turing_lab/core/services/highlight_channel.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_execution_controller.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_execution_controller.dart';
 
 class _RecordingHighlightChannel implements HighlightChannel {
   final events = <SimulationHighlight?>[];
@@ -22,100 +22,108 @@ class _RecordingHighlightChannel implements HighlightChannel {
 }
 
 void main() {
-  test('beginning one family preserves unrelated reports and language state',
-      () {
-    final tm = TM.empty(id: 'tm-a', name: 'TM A');
-    final controller = TMAlgorithmExecutionController(
-      initialTm: tm,
-      highlights: null,
-    );
-    addTearDown(controller.dispose);
+  test(
+    'beginning one family preserves unrelated reports and language state',
+    () {
+      final tm = TM.empty(id: 'tm-a', name: 'TM A');
+      final controller = TMAlgorithmExecutionController(
+        initialTm: tm,
+        highlights: null,
+      );
+      addTearDown(controller.dispose);
 
-    final terminationRequest = controller.begin(TMAnalysisFocus.termination);
-    final termination = _analysis('termination');
-    expect(
-      controller.completeTermination(terminationRequest, termination),
-      isTrue,
-    );
+      final terminationRequest = controller.begin(TMAnalysisFocus.termination);
+      final termination = _analysis('termination');
+      expect(
+        controller.completeTermination(terminationRequest, termination),
+        isTrue,
+      );
 
-    final languageRequest = controller.begin(TMAnalysisFocus.language);
-    final progress = TMLanguageExplorerProgress(
-      evaluatedCandidates: 1,
-      plannedCandidates: 2,
-      requestedCandidates: BigInt.two,
-      counts: const {TMLanguageOutcome.accepted: 1},
-      currentInput: 'a',
-    );
-    expect(
-        controller.updateLanguageProgress(languageRequest, progress), isTrue);
-    final word = TMLanguageWordResult(
-      input: 'a',
-      outcome: TMLanguageOutcome.accepted,
-      analysis: _analysis('language'),
-    );
-    final language = TMLanguageExplorerReport(
-      limits: const TMLanguageExplorerLimits(),
-      alphabet: const ['a'],
-      requestedCandidates: BigInt.two,
-      plannedCandidates: 2,
-      results: [word],
-      cancelled: false,
-      truncatedByCandidateCap: false,
-      executionTime: Duration.zero,
-    );
-    expect(controller.completeLanguage(languageRequest, language), isTrue);
-    controller.selectLanguageWord(word);
+      final languageRequest = controller.begin(TMAnalysisFocus.language);
+      final progress = TMLanguageExplorerProgress(
+        evaluatedCandidates: 1,
+        plannedCandidates: 2,
+        requestedCandidates: BigInt.two,
+        counts: const {TMLanguageOutcome.accepted: 1},
+        currentInput: 'a',
+      );
+      expect(
+        controller.updateLanguageProgress(languageRequest, progress),
+        isTrue,
+      );
+      final word = TMLanguageWordResult(
+        input: 'a',
+        outcome: TMLanguageOutcome.accepted,
+        analysis: _analysis('language'),
+      );
+      final language = TMLanguageExplorerReport(
+        limits: const TMLanguageExplorerLimits(),
+        alphabet: const ['a'],
+        requestedCandidates: BigInt.two,
+        plannedCandidates: 2,
+        results: [word],
+        cancelled: false,
+        truncatedByCandidateCap: false,
+        executionTime: Duration.zero,
+      );
+      expect(controller.completeLanguage(languageRequest, language), isTrue);
+      controller.selectLanguageWord(word);
 
-    final reachabilityRequest = controller.begin(TMAnalysisFocus.reachability);
+      final reachabilityRequest = controller.begin(
+        TMAnalysisFocus.reachability,
+      );
 
-    expect(controller.isCurrent(languageRequest), isFalse);
-    expect(controller.isCurrent(reachabilityRequest), isTrue);
-    expect(controller.state.termination.report, same(termination));
-    expect(controller.state.language.report, same(language));
-    expect(controller.state.language.progress, same(progress));
-    expect(controller.state.language.selectedWord, same(word));
-    expect(controller.state.currentFocus, TMAnalysisFocus.reachability);
-  });
+      expect(controller.isCurrent(languageRequest), isFalse);
+      expect(controller.isCurrent(reachabilityRequest), isTrue);
+      expect(controller.state.termination.report, same(termination));
+      expect(controller.state.language.report, same(language));
+      expect(controller.state.language.progress, same(progress));
+      expect(controller.state.language.selectedWord, same(word));
+      expect(controller.state.currentFocus, TMAnalysisFocus.reachability);
+    },
+  );
 
-  test('cosmetic machine edits preserve results and active request identity',
-      () {
-    final state = automaton_state.State(
-      id: 'q0',
-      label: 'old label',
-      position: Vector2.zero(),
-      isInitial: true,
-      isAccepting: true,
-    );
-    final tm = _singleStateTm(state, name: 'Original');
-    final controller = TMAlgorithmExecutionController(
-      initialTm: tm,
-      highlights: null,
-    );
-    addTearDown(controller.dispose);
+  test(
+    'cosmetic machine edits preserve results and active request identity',
+    () {
+      final state = automaton_state.State(
+        id: 'q0',
+        label: 'old label',
+        position: Vector2.zero(),
+        isInitial: true,
+        isAccepting: true,
+      );
+      final tm = _singleStateTm(state, name: 'Original');
+      final controller = TMAlgorithmExecutionController(
+        initialTm: tm,
+        highlights: null,
+      );
+      addTearDown(controller.dispose);
 
-    final completedRequest = controller.begin(TMAnalysisFocus.termination);
-    final report = _analysis('kept');
-    expect(controller.completeTermination(completedRequest, report), isTrue);
+      final completedRequest = controller.begin(TMAnalysisFocus.termination);
+      final report = _analysis('kept');
+      expect(controller.completeTermination(completedRequest, report), isTrue);
 
-    final activeRequest = controller.begin(TMAnalysisFocus.reachability);
-    final moved = automaton_state.State(
-      id: state.id,
-      label: 'new label',
-      position: Vector2(300, 180),
-      isInitial: true,
-      isAccepting: true,
-    );
-    final cosmeticEdit = _singleStateTm(moved, name: 'Renamed');
+      final activeRequest = controller.begin(TMAnalysisFocus.reachability);
+      final moved = automaton_state.State(
+        id: state.id,
+        label: 'new label',
+        position: Vector2(300, 180),
+        isInitial: true,
+        isAccepting: true,
+      );
+      final cosmeticEdit = _singleStateTm(moved, name: 'Renamed');
 
-    expect(controller.observeMachine(cosmeticEdit), isTrue);
-    expect(controller.isCurrent(activeRequest), isTrue);
-    expect(controller.state.termination.report, same(report));
-    expect(controller.state.termination.sourceTm, same(cosmeticEdit));
-    expect(
-      controller.updateOperationProgress(activeRequest, 'still current'),
-      isTrue,
-    );
-  });
+      expect(controller.observeMachine(cosmeticEdit), isTrue);
+      expect(controller.isCurrent(activeRequest), isTrue);
+      expect(controller.state.termination.report, same(report));
+      expect(controller.state.termination.sourceTm, same(cosmeticEdit));
+      expect(
+        controller.updateOperationProgress(activeRequest, 'still current'),
+        isTrue,
+      );
+    },
+  );
 
   test('document identity edits preserve equivalent results and requests', () {
     final state = automaton_state.State(
@@ -176,10 +184,7 @@ void main() {
   test('machine replacement cancels work and clears owned highlights once', () {
     final tm = TM.empty(id: 'tm-a', name: 'TM A');
     final replacement = TM
-        .empty(
-      id: 'tm-b',
-      name: 'TM B',
-    )
+        .empty(id: 'tm-b', name: 'TM B')
         .copyWith(alphabet: const {'a'});
     final output = _RecordingHighlightChannel();
     final coordinator = CanvasHighlightCoordinator(
@@ -201,9 +206,7 @@ void main() {
     final request = controller.begin(TMAnalysisFocus.language);
     final cancellation = TMLanguageExplorerCancellationToken();
     controller.attachLanguageCancellation(request, cancellation);
-    controller.highlights!.send(
-      SimulationHighlight(stateIds: const {'q0'}),
-    );
+    controller.highlights!.send(SimulationHighlight(stateIds: const {'q0'}));
 
     expect(controller.observeMachine(replacement), isTrue);
     expect(controller.observeMachine(replacement), isFalse);
@@ -235,16 +238,16 @@ void main() {
 }
 
 TMExecutionAnalysis _analysis(String message) => TMExecutionAnalysis(
-      input: '',
-      outcome: TMExecutionOutcome.accepted,
-      message: message,
-      stepsExecuted: 0,
-      configurationsExplored: 1,
-      maxSteps: 10,
-      maxConfigurations: 10,
-      timeout: const Duration(seconds: 1),
-      executionTime: Duration.zero,
-    );
+  input: '',
+  outcome: TMExecutionOutcome.accepted,
+  message: message,
+  stepsExecuted: 0,
+  configurationsExplored: 1,
+  maxSteps: 10,
+  maxConfigurations: 10,
+  timeout: const Duration(seconds: 1),
+  executionTime: Duration.zero,
+);
 
 TM _singleStateTm(
   automaton_state.State state, {

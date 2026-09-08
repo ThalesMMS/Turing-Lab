@@ -776,7 +776,7 @@ void main() {
       await firstTap.moveBy(const Offset(1, 0));
       await firstTap.up();
       // runAsync burns real time, so keep well inside kDoubleTapTimeout
-      // (300ms) or scheduling jitter on CI degrades this into two single taps.
+      // (300ms) or scheduling jitter degrades this into two single taps.
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 80)),
       );

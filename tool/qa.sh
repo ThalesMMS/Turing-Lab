@@ -3,9 +3,8 @@
 # qa.sh
 # Turing Lab
 #
-# Canonical local QA entrypoint. GitHub-hosted test CI is intentionally
-# disabled for this repository, so this script is the gate: it orchestrates the
-# existing suites and scripts, reports every category independently as
+# Canonical local QA entrypoint. It orchestrates the existing suites and
+# scripts, reports every category independently as
 # `passed`, `failed`, `skipped` or `not_run`, and fails closed when the Flutter
 # or Dart toolchain is unavailable.
 #
@@ -47,9 +46,8 @@ usage() {
   cat <<'USAGE'
 Usage: tool/qa.sh [options]
 
-Canonical local QA entrypoint for Turing Lab. This repository does not run
-GitHub-hosted test CI; every result below is produced on this machine and is
-never remotely verified.
+Canonical local QA entrypoint for Turing Lab. Every result below is produced
+on this machine and is never remotely verified.
 
 Categories (reported independently):
   prereqs      Toolchain discovery, `flutter pub get`, and a generated-l10n
@@ -615,8 +613,7 @@ echo "Selected:    $(echo $SELECTED)"
 echo "Flutter:     ${FLUTTER:-<not found>}"
 echo "Dart:        ${DART:-<not found>}"
 echo ""
-echo "Local execution only. GitHub-hosted test CI is intentionally disabled for"
-echo "this repository; no result below was verified remotely."
+echo "Local execution only; no result below was verified remotely."
 
 if [[ "$WRITE_REPORT" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
   LOG_DIR="$REPORT_DIR/logs"
@@ -1022,8 +1019,7 @@ echo "failed  = the command exited non-zero"
 echo "skipped = not executed because of an explicit opt-in flag; not a pass"
 echo "not_run = not selected, or a prerequisite was missing; not a pass"
 echo ""
-echo "Results are local. GitHub-hosted test CI is intentionally disabled for this"
-echo "repository, so nothing above was verified remotely. Quote these exact"
+echo "Results are local; nothing above was verified remotely. Quote these exact"
 echo "commands and outcomes in the pull request."
 
 json_escape() {
@@ -1046,8 +1042,7 @@ if [[ "$WRITE_REPORT" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
     echo "- Flutter: \`$FLUTTER\`"
     echo "- Dart: \`$DART\`"
     echo ""
-    echo "Local execution only. GitHub-hosted test CI is intentionally disabled"
-    echo "for this repository; nothing in this file was verified remotely."
+    echo "Local execution only; nothing in this file was verified remotely."
     echo ""
     echo "| Category | Status | Reason |"
     echo "| --- | --- | --- |"

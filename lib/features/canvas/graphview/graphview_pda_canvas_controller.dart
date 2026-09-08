@@ -46,31 +46,32 @@ class GraphViewPdaCanvasController
   @override
   late final GraphViewStateNotifierAdapter<PDA> stateNotifierAdapter =
       GraphViewStateNotifierAdapter<PDA>(
-    currentData: () => _notifier.currentPda,
-    stateIdsOf: (automaton) => automaton.states.map((state) => state.id),
-    stateLabelsOf: (automaton) => automaton.states.map((state) => state.label),
-    transitionIdsOf: (automaton) =>
-        automaton.pdaTransitions.map((transition) => transition.id),
-    addState: ({required id, required label, required position}) =>
-        _notifier.addOrUpdateState(
-      id: id,
-      label: label,
-      x: position.dx,
-      y: position.dy,
-    ),
-    moveState: ({required id, required position}) =>
-        _notifier.moveState(id: id, x: position.dx, y: position.dy),
-    updateStateLabel: ({required id, required label}) =>
-        _notifier.updateStateLabel(id: id, label: label),
-    updateStateFlags: ({required id, isInitial, isAccepting}) =>
-        _notifier.updateStateFlags(
-      id: id,
-      isInitial: isInitial,
-      isAccepting: isAccepting,
-    ),
-    removeState: (id) => _notifier.removeState(id: id),
-    logMutation: _logPdaCanvas,
-  );
+        currentData: () => _notifier.currentPda,
+        stateIdsOf: (automaton) => automaton.states.map((state) => state.id),
+        stateLabelsOf: (automaton) =>
+            automaton.states.map((state) => state.label),
+        transitionIdsOf: (automaton) =>
+            automaton.pdaTransitions.map((transition) => transition.id),
+        addState: ({required id, required label, required position}) =>
+            _notifier.addOrUpdateState(
+              id: id,
+              label: label,
+              x: position.dx,
+              y: position.dy,
+            ),
+        moveState: ({required id, required position}) =>
+            _notifier.moveState(id: id, x: position.dx, y: position.dy),
+        updateStateLabel: ({required id, required label}) =>
+            _notifier.updateStateLabel(id: id, label: label),
+        updateStateFlags: ({required id, isInitial, isAccepting}) =>
+            _notifier.updateStateFlags(
+              id: id,
+              isInitial: isInitial,
+              isAccepting: isAccepting,
+            ),
+        removeState: (id) => _notifier.removeState(id: id),
+        logMutation: _logPdaCanvas,
+      );
 
   @override
   GraphViewAutomatonSnapshot toSnapshot(PDA? automaton) {
@@ -145,9 +146,11 @@ class GraphViewPdaCanvasController
     final stackAlphabet = snapshot.metadata.stackAlphabet.isNotEmpty
         ? snapshot.metadata.stackAlphabet.toSet()
         : <String>{initialStackSymbol};
-    final template = _notifier.currentPda ??
+    final template =
+        _notifier.currentPda ??
         PDA(
-          id: snapshot.metadata.id ??
+          id:
+              snapshot.metadata.id ??
               'pda_${DateTime.now().microsecondsSinceEpoch}',
           name: snapshot.metadata.name ?? 'Canvas PDA',
           states: const {},
@@ -164,15 +167,15 @@ class GraphViewPdaCanvasController
           zoomLevel: 1.0,
         );
 
-    final merged =
-        GraphViewPdaMapper.mergeIntoTemplate(snapshot, template).copyWith(
-      id: snapshot.metadata.id ?? template.id,
-      name: snapshot.metadata.name ?? template.name,
-      alphabet: snapshot.metadata.alphabet.isNotEmpty
-          ? snapshot.metadata.alphabet.toSet()
-          : template.alphabet,
-      modified: DateTime.now(),
-    );
+    final merged = GraphViewPdaMapper.mergeIntoTemplate(snapshot, template)
+        .copyWith(
+          id: snapshot.metadata.id ?? template.id,
+          name: snapshot.metadata.name ?? template.name,
+          alphabet: snapshot.metadata.alphabet.isNotEmpty
+              ? snapshot.metadata.alphabet.toSet()
+              : template.alphabet,
+          modified: DateTime.now(),
+        );
 
     _logPdaCanvas(
       'applySnapshotToDomain -> states=${merged.states.length} transitions=${merged.pdaTransitions.length}',

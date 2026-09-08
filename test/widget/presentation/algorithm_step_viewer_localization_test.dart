@@ -111,7 +111,7 @@ void main() {
 
     await tester.pumpWidget(
       _localizedViewer(
-        baseStep.copyWith(properties: {kRegexToNfaStepKey: payload}),
+        baseStep.copyWith(properties: payload.toProperties()),
         rendererRegistry: AlgorithmStepRendererRegistry.withDefaults(),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/presentation/widgets/example_suggested_simulations_text.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/result.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
@@ -8,8 +9,8 @@ import 'package:turing_lab/data/tm/tm_block_example_catalog.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/content/tm_block_example_content_copy.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_block_example_button.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_block_example_button.dart';
 
 // feature-localization-contract: advanced-tm-workspaces
 // feature-localization-surface: localized-building-block-workspace
@@ -90,10 +91,20 @@ void main() {
 
       expect(find.text(en.title), findsOneWidget);
       expect(find.textContaining(en.summary), findsOneWidget);
-      expect(find.text('Suggested simulation: 111'), findsOneWidget);
-      final semantics = tester.getSemantics(find.byType(TMBlockExampleButton));
-      expect(semantics.label, contains(en.accessibleDescription));
-      expect(semantics.label, contains('Suggested simulation: 111.'));
+      expect(find.text('Suggested simulation:'), findsOneWidget);
+      expect(
+        find.byKey(
+          ExampleSuggestedSimulationsText.useInputKey(
+            '111',
+            TMBlockExampleContentCopies.id,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(en.accessibleDescription))),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
 
       await tester.ensureVisible(find.byType(TMBlockExampleButton));
@@ -124,12 +135,20 @@ void main() {
       expect(find.text(pt.title), findsOneWidget);
       expect(find.text(en.title), findsNothing);
       expect(find.textContaining(pt.summary), findsOneWidget);
-      expect(find.text('Simulação sugerida: 111'), findsOneWidget);
-      final portugueseSemantics = tester.getSemantics(
-        find.byType(TMBlockExampleButton),
+      expect(find.text('Simulação sugerida:'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(pt.accessibleDescription))),
+        findsOneWidget,
       );
-      expect(portugueseSemantics.label, contains(pt.accessibleDescription));
-      expect(portugueseSemantics.label, contains('Simulação sugerida: 111.'));
+      expect(
+        find.byKey(
+          ExampleSuggestedSimulationsText.useInputKey(
+            '111',
+            TMBlockExampleContentCopies.id,
+          ),
+        ),
+        findsOneWidget,
+      );
       expect(notifier.state.tm?.toJson(), formalProject);
       expect(
         notifier.state.tm?.states.map((state) => state.id).toSet(),

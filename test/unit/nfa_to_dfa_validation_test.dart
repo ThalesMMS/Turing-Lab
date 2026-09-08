@@ -12,8 +12,8 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/transition.dart';
-import 'package:turing_lab/core/algorithms/nfa_to_dfa_converter.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/nfa_to_dfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -206,8 +206,7 @@ void main() {
         }
       });
 
-      test('Complex NFA conversion should handle multiple transitions',
-          () async {
+      test('Complex NFA conversion should handle multiple transitions', () async {
         final conversionResult = NFAToDFAConverter.convert(complexNFA);
 
         expect(conversionResult.isSuccess, true);

@@ -22,6 +22,7 @@ import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/regex_page.dart';
 import 'package:turing_lab/presentation/providers/automaton_algorithm_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
+import '../../support/workspace_dock_helpers.dart';
 
 late SharedPreferences _prefs;
 
@@ -81,6 +82,8 @@ Future<void> _pumpRegexPage(
   );
 
   await tester.pumpAndSettle();
+  expect(tester.takeException(), isNull);
+  expect(find.byType(ErrorWidget), findsNothing);
 }
 
 void main() {
@@ -140,7 +143,10 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1400, 900));
 
       // Enter valid regex
-      await tester.enterText(find.byType(TextField).first, 'a*b+');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a*b+',
+      );
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'regex_page_valid_regex_desktop');
@@ -157,7 +163,10 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1400, 900));
 
       // Enter invalid regex (unbalanced parentheses)
-      await tester.enterText(find.byType(TextField).first, '(a*b+');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        '(a*b+',
+      );
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'regex_page_invalid_regex_desktop');
@@ -174,14 +183,21 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1400, 900));
 
       // Enter valid regex
-      await tester.enterText(find.byType(TextField).first, 'a*b+');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a*b+',
+      );
       await tester.pumpAndSettle();
 
       // Enter matching test string
-      final testStringFields = find.byType(TextField);
-      await tester.enterText(testStringFields.at(1), 'aaabbb');
+      await openWorkspaceSimulationPanel(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_test_input_field')),
+        'aaabbb',
+      );
       await tester.pumpAndSettle();
 
+      expect(find.text('Matches!'), findsOneWidget);
       await screenMatchesGolden(tester, 'regex_page_test_match_desktop');
     });
 
@@ -196,14 +212,21 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1400, 900));
 
       // Enter valid regex
-      await tester.enterText(find.byType(TextField).first, 'a*b+');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a*b+',
+      );
       await tester.pumpAndSettle();
 
       // Enter non-matching test string
-      final testStringFields = find.byType(TextField);
-      await tester.enterText(testStringFields.at(1), 'bbbaa');
+      await openWorkspaceSimulationPanel(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_test_input_field')),
+        'bbbaa',
+      );
       await tester.pumpAndSettle();
 
+      expect(find.text('Does not match'), findsOneWidget);
       await screenMatchesGolden(tester, 'regex_page_test_nomatch_desktop');
     });
 
@@ -218,20 +241,23 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1400, 900));
 
       // Enter first regex
-      await tester.enterText(find.byType(TextField).first, 'a*b+');
-      await tester.pumpAndSettle();
-
-      // Scroll to comparison section
-      await tester.drag(
-        find.byType(SingleChildScrollView).first,
-        const Offset(0, -400),
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a*b+',
       );
       await tester.pumpAndSettle();
 
-      // Enter comparison regex
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.last, 'a*b');
+      await openWorkspaceAlgorithmsPanel(tester);
+      final comparisonField = find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField &&
+            widget.decoration?.hintText ==
+                lookupAppLocalizations(const Locale('en')).comparisonRegexHint,
+      );
+      await tester.ensureVisible(comparisonField);
+      await tester.enterText(comparisonField, 'a*b');
       await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(comparisonField).controller!.text, 'a*b');
 
       await screenMatchesGolden(tester, 'regex_page_comparison_desktop');
     });
@@ -256,6 +282,11 @@ void main() {
         algorithmState: algorithmState,
       );
 
+      await openWorkspaceAlgorithmsPanel(tester);
+      final result = find.text('(a|b)*c').last;
+      await tester.ensureVisible(result);
+      await tester.pumpAndSettle();
+      expect(result, findsOneWidget);
       await screenMatchesGolden(tester, 'regex_page_fa_to_regex_desktop');
     });
 
@@ -270,12 +301,18 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(1200, 800));
 
       // Enter valid regex
-      await tester.enterText(find.byType(TextField).first, 'a*b+');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a*b+',
+      );
       await tester.pumpAndSettle();
 
       // Enter test string
-      final testStringFields = find.byType(TextField);
-      await tester.enterText(testStringFields.at(1), 'aaabbb');
+      await openWorkspaceSimulationPanel(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_test_input_field')),
+        'aaabbb',
+      );
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'regex_page_features_tablet');
@@ -292,7 +329,10 @@ void main() {
       await _pumpRegexPage(tester, size: const Size(430, 932));
 
       // Enter valid regex
-      await tester.enterText(find.byType(TextField).first, 'a+b*');
+      await tester.enterText(
+        find.byKey(const ValueKey('regex_input_field')),
+        'a+b*',
+      );
       await tester.pumpAndSettle();
 
       await screenMatchesGolden(tester, 'regex_page_input_mobile');

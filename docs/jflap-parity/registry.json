@@ -141,6 +141,7 @@
         "format:pda:single-stack:jflap-xml:exportDocument",
         "format:pda:single-stack:turing-lab-json:importDocument",
         "format:pda:single-stack:turing-lab-json:exportDocument",
+        "format:pda:single-stack:png:exportDocument",
         "format:pda:single-stack:svg:exportDocument",
         "conversion:pda-to-grammar",
         "codec:pda.jflap-xml.v1",
@@ -188,6 +189,7 @@
         "format:tm:single-tape:jflap-xml:exportDocument",
         "format:tm:single-tape:turing-lab-json:importDocument",
         "format:tm:single-tape:turing-lab-json:exportDocument",
+        "format:tm:single-tape:png:exportDocument",
         "format:tm:single-tape:svg:exportDocument",
         "codec:tm.jflap-xml.v1",
         "codec:tm.turing-lab-json.v1"
@@ -354,6 +356,7 @@
       },
       "notes": "This row verifies the live registry declaration, codecs, examples, and session adapters.",
       "registryCapabilities": [
+        "conversion:mealy-to-moore",
         "workspace:transducer:mealy",
         "capability:transducer:mealy:editing",
         "capability:transducer:mealy:simulation",
@@ -403,6 +406,7 @@
       },
       "notes": "This row verifies the live registry declaration, codecs, examples, and session adapters.",
       "registryCapabilities": [
+        "conversion:moore-to-mealy",
         "workspace:transducer:moore",
         "capability:transducer:moore:editing",
         "capability:transducer:moore:simulation",

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/fsa_kleene_star_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_kleene_star_messages.dart';
 import 'package:turing_lab/core/models/algorithm_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_step_viewer.dart';

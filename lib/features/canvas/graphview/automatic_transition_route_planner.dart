@@ -173,8 +173,9 @@ class AutomaticTransitionRoutePlanner {
 
     for (final request in sorted.where((request) => !request.isSelfLoop)) {
       final delta = request.destinationCenter - request.sourceCenter;
-      final axis =
-          delta.distance < 0.001 ? _stableAxis(request.stableId) : delta;
+      final axis = delta.distance < 0.001
+          ? _stableAxis(request.stableId)
+          : delta;
       final normal = Offset(-axis.dy, axis.dx) / axis.distance;
       final midpoint = (request.sourceCenter + request.destinationCenter) / 2;
       final base =
@@ -250,7 +251,8 @@ class AutomaticTransitionRoutePlanner {
       final fade = 1 - (math.max(gap, 0.0) / _loopObstacleFalloff);
       yield AutomaticTransitionLoopRepulsor(
         direction: math.atan2(delta.dy, delta.dx),
-        halfWidth: math.asin((obstacle.radius / distance).clamp(0.0, 0.999)) +
+        halfWidth:
+            math.asin((obstacle.radius / distance).clamp(0.0, 0.999)) +
             _loopObstacleMargin,
         weight: _loopObstacleWeight * fade,
       );
@@ -297,9 +299,11 @@ class AutomaticTransitionRoutePlanner {
     var best = seed;
     var bestCost = _loopCost(best, repulsors);
     var step = _loopSampleStep;
-    for (var iteration = 0;
-        iteration < _loopRefineIterations && step > _loopRefineLimit;
-        iteration++) {
+    for (
+      var iteration = 0;
+      iteration < _loopRefineIterations && step > _loopRefineLimit;
+      iteration++
+    ) {
       var improved = false;
       for (final candidate in <double>[best - step, best + step]) {
         final cost = _loopCost(candidate, repulsors);
@@ -329,7 +333,8 @@ class AutomaticTransitionRoutePlanner {
       if (delta >= repulsor.halfWidth) {
         continue;
       }
-      cost += repulsor.weight *
+      cost +=
+          repulsor.weight *
           0.5 *
           (1 + math.cos(math.pi * delta / repulsor.halfWidth));
     }
@@ -344,9 +349,11 @@ class AutomaticTransitionRoutePlanner {
   ) {
     var best = candidates.first;
     var bestScore = double.infinity;
-    for (var candidateIndex = 0;
-        candidateIndex < candidates.length;
-        candidateIndex++) {
+    for (
+      var candidateIndex = 0;
+      candidateIndex < candidates.length;
+      candidateIndex++
+    ) {
       final control = candidates[candidateIndex];
       final path = Path()
         ..moveTo(request.sourceCenter.dx, request.sourceCenter.dy)
@@ -379,14 +386,18 @@ class AutomaticTransitionRoutePlanner {
           final clearance =
               (point - obstacle.center).distance - obstacle.radius;
           if (clearance < routeClearance) {
-            score +=
-                clearance <= 0 ? 100000 : (routeClearance - clearance) * 100;
+            score += clearance <= 0
+                ? 100000
+                : (routeClearance - clearance) * 100;
           }
         }
         final probe = Rect.fromCircle(center: point, radius: routeClearance);
         for (final segment in grid.nearby(probe)) {
-          final distance =
-              _distanceToSegment(point, segment.start, segment.end);
+          final distance = _distanceToSegment(
+            point,
+            segment.start,
+            segment.end,
+          );
           if (distance < routeClearance) {
             score += (routeClearance - distance) * 10;
           }
@@ -453,10 +464,7 @@ class _RouteSpatialGrid {
     }
   }
 
-  void addQuadratic(
-    AutomaticTransitionRouteRequest request,
-    Offset control,
-  ) {
+  void addQuadratic(AutomaticTransitionRouteRequest request, Offset control) {
     final path = Path()
       ..moveTo(request.sourceCenter.dx, request.sourceCenter.dy)
       ..quadraticBezierTo(
@@ -502,12 +510,16 @@ class _RouteSpatialGrid {
 
   void _insert(_RouteSegment segment) {
     final bounds = segment.bounds;
-    for (var row = (bounds.top / cellSize).floor();
-        row <= (bounds.bottom / cellSize).floor();
-        row++) {
-      for (var column = (bounds.left / cellSize).floor();
-          column <= (bounds.right / cellSize).floor();
-          column++) {
+    for (
+      var row = (bounds.top / cellSize).floor();
+      row <= (bounds.bottom / cellSize).floor();
+      row++
+    ) {
+      for (
+        var column = (bounds.left / cellSize).floor();
+        column <= (bounds.right / cellSize).floor();
+        column++
+      ) {
         _cells.putIfAbsent((row, column), () => []).add(segment);
       }
     }

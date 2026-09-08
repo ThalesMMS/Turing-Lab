@@ -82,8 +82,8 @@
         "status": "complete",
         "production": [
           "lib/presentation/widgets/simulation_panel.dart:199",
-          "lib/presentation/widgets/pda_simulation_panel.dart:137",
-          "lib/presentation/widgets/tm_simulation_panel.dart:150",
+          "lib/presentation/widgets/pda/pda_simulation_panel.dart:137",
+          "lib/presentation/widgets/tm/tm_simulation_panel.dart:150",
           "lib/presentation/transducers/transducer_simulation_panel.dart:25"
         ],
         "tests": [
@@ -133,8 +133,8 @@
         "production": [
           "lib/presentation/widgets/batch_execution/batch_execution_panel.dart:12",
           "lib/presentation/widgets/simulation_panel.dart:199",
-          "lib/presentation/widgets/pda_simulation_panel.dart:137",
-          "lib/presentation/widgets/tm_simulation_panel.dart:150",
+          "lib/presentation/widgets/pda/pda_simulation_panel.dart:137",
+          "lib/presentation/widgets/tm/tm_simulation_panel.dart:150",
           "lib/presentation/transducers/transducer_workspace.dart:517"
         ],
         "tests": [
@@ -183,8 +183,8 @@
           "lib/core/models/fsa_computation_branch_adapter.dart:66",
           "lib/presentation/widgets/computation_branch_inspector.dart:6",
           "lib/presentation/widgets/simulation_panel.dart:281",
-          "lib/presentation/widgets/pda_simulation_panel.dart:459",
-          "lib/presentation/widgets/tm_simulation_panel.dart:367"
+          "lib/presentation/widgets/pda/pda_simulation_panel.dart:459",
+          "lib/presentation/widgets/tm/tm_simulation_panel.dart:367"
         ],
         "tests": [
           "test/unit/core/models/computation_branch_test.dart:6",
@@ -377,20 +377,24 @@
         "status": "complete",
         "production": [
           "lib/presentation/widgets/algorithm_panel.dart:297",
+          "lib/presentation/widgets/dfa_completion_practice_section.dart:20",
+          "lib/core/algorithms/fsa/dfa_completion_practice.dart:76",
           "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:298",
           "lib/presentation/providers/automaton_algorithm_provider.dart:700"
         ],
         "tests": [
           "test/widget/presentation/algorithm_panel_test.dart:279",
+          "test/widget/presentation/dfa_completion_practice_test.dart:113",
+          "test/unit/core/algorithms/dfa_completion_practice_test.dart:12",
           "test/unit/core/algorithms/dfa_completer_test.dart:15"
         ],
-        "issues": [343],
-        "decision": "Complete the DFA atomically instead of requiring the learner to place every trap transition."
+        "issues": [343, 439],
+        "decision": "Complete the DFA atomically, and offer a guided practice mode in which the learner adds the trap state and each missing transition on the canvas while the checker lists the open (state, symbol) pairs, hints the next step, and can reveal the automatic completion."
       },
       "dimensions": {
         "domain": "covered",
         "userReachable": "covered",
-        "teaching": "partial",
+        "teaching": "covered",
         "interoperability": "covered",
         "examplesHelp": "covered",
         "persistenceUndo": "covered",
@@ -399,7 +403,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "The automatic action is an intentional interaction deviation from JFLAP's trap-state pane."
+      "notes": "The automatic action remains the default; the practice section (#439) restores JFLAP's learner-driven trap-state construction as a checked exercise."
     },
     {
       "id": "conversion.nfa-dfa-minimize",
@@ -472,7 +476,7 @@
           "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:351",
           "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:394",
           "lib/presentation/pages/fsa_page/fsa_page_behavior.dart:467",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:576",
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:576",
           "lib/core/manual_conversions/manual_conversion_factories.dart:13",
           "lib/core/manual_conversions/fa_grammar_session_factory.dart:1"
         ],
@@ -519,10 +523,10 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/pda_algorithm_panel.dart:398",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:589",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:632",
-          "lib/presentation/widgets/cfg_to_pda_construction_workspace.dart:15"
+          "lib/presentation/widgets/pda/pda_algorithm_panel.dart:399",
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:589",
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:632",
+          "lib/presentation/widgets/conversions/cfg_to_pda_construction_workspace.dart:15"
         ],
         "tests": [
           "test/widget/presentation/pda_algorithm_panel_test.dart:475",
@@ -565,18 +569,20 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/tm_algorithm_panel.dart:428",
-          "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart:75",
-          "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_converter.dart:488"
+          "lib/presentation/widgets/tm/tm_algorithm_panel.dart:428",
+          "lib/presentation/widgets/conversions/tm_to_grammar_construction_workspace.dart:75",
+          "lib/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_converter.dart:29",
+          "lib/core/algorithms/tm/tm_multi_tape_reducer.dart:300"
         ],
         "tests": [
           "test/widget/presentation/tm_algorithm_panel_test.dart:444",
           "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart:13",
           "test/widget/presentation/tm_to_grammar_construction_workspace_test.dart:44",
-          "test/unit/core/tm/tm_to_unrestricted_grammar_test.dart:13"
+          "test/unit/core/tm/tm_to_unrestricted_grammar_test.dart:13",
+          "test/unit/core/tm/tm_multi_tape_reducer_test.dart:1"
         ],
-        "issues": [],
-        "decision": "Fail closed with visible diagnostics for unsupported multi-tape/building-block documents instead of emitting an unsound grammar."
+        "issues": [438],
+        "decision": "Reduce multi-tape machines without building blocks to a single tape of composite cells (docs/TM_MULTI_TAPE_REDUCTION.md) before conversion, with provenance back to the source machine and bounded differential evidence; fail closed with visible diagnostics for building blocks, non final-state acceptance and budget overflows instead of emitting an unsound grammar."
       },
       "dimensions": {
         "domain": "covered",
@@ -590,12 +596,12 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "Multi-tape and building-block conversion remains an explicit unsupported case, with tests preventing silent degradation."
+      "notes": "Multi-tape conversion goes through the documented single-tape reduction; building-block conversion remains an explicit unsupported case, with tests preventing silent degradation."
     },
     {
       "id": "conversion.transducer",
       "area": "transducer conversion",
-      "capability": "Convert between Mealy/Moore transducers or between transducers and other automata",
+      "capability": "Convert between Mealy and Moore transducers",
       "groups": ["conversion"],
       "jflapNewTypes": ["mealy-machine", "moore-machine"],
       "jflapXmlFamilies": ["mealy", "moore"],
@@ -609,29 +615,33 @@
         ]
       },
       "turingLab": {
-        "status": "outOfScope",
+        "status": "complete",
         "production": [
-          "lib/core/transducers/transducer_formal_system_module.dart:22"
+          "lib/core/transducers/transducer_conversion.dart:81",
+          "lib/core/transducers/transducer_formal_system_module.dart:22",
+          "lib/presentation/transducers/transducer_conversion_panel.dart:1"
         ],
         "tests": [
+          "test/unit/core/transducers/transducer_conversion_test.dart:1",
+          "test/widget/presentation/transducer_conversion_panel_test.dart:1",
           "test/unit/core/transducers/transducer_integration_contract_test.dart:33"
         ],
-        "issues": [],
-        "decision": "Do not add a conversion edge solely for nominal parity because JFLAP exposes none; require a separate product requirement and semantic contract."
+        "issues": [437],
+        "decision": "Product extension beyond JFLAP: convert under the documented equivalence contract (docs/TRANSDUCER_CONVERSIONS.md). Mealy to Moore is exact through output-split state copies; Moore to Mealy is exact when the initial output is empty and otherwise reports the dropped initial output as a named convention difference instead of discarding it silently."
       },
       "dimensions": {
-        "domain": "notApplicable",
-        "userReachable": "notApplicable",
-        "teaching": "notApplicable",
+        "domain": "covered",
+        "userReachable": "covered",
+        "teaching": "covered",
         "interoperability": "notApplicable",
-        "examplesHelp": "notApplicable",
-        "persistenceUndo": "notApplicable",
-        "responsiveAccessibility": "notApplicable",
+        "examplesHelp": "partial",
+        "persistenceUndo": "covered",
+        "responsiveAccessibility": "partial",
         "testsEdgeCases": "covered",
-        "localization": "notApplicable",
-        "platform": "notApplicable"
+        "localization": "covered",
+        "platform": "covered"
       },
-      "notes": "The absence is shared with the audited JFLAP baseline, so it is not a parity gap."
+      "notes": "Added as a Turing Lab extension (#437); JFLAP has no transducer conversion, so this row records the extension rather than parity."
     },
     {
       "id": "conversion.combine-import-fragment",

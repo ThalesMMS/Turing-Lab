@@ -123,9 +123,6 @@ class GraphViewMapperHelpers {
     final baseAlphabet = metadataAlphabet.isNotEmpty
         ? metadataAlphabet
         : fallbackTapeAlphabet.toSet();
-    return {
-      ...baseAlphabet,
-      if (blankSymbol.isNotEmpty) blankSymbol,
-    };
+    return {...baseAlphabet, if (blankSymbol.isNotEmpty) blankSymbol};
   }
 }

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import '../../core/algorithms/tm_block_dependency_analyzer.dart';
+import '../../core/algorithms/tm/tm_block_dependency_analyzer.dart';
 import '../../core/messages/structured_message.dart';
 import '../../core/models/state.dart';
 import '../../core/models/tm.dart';

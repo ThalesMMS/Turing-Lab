@@ -47,31 +47,32 @@ class GraphViewCanvasController
   @override
   late final GraphViewStateNotifierAdapter<FSA> stateNotifierAdapter =
       GraphViewStateNotifierAdapter<FSA>(
-    currentData: () => _provider.currentAutomaton,
-    stateIdsOf: (automaton) => automaton.states.map((state) => state.id),
-    stateLabelsOf: (automaton) => automaton.states.map((state) => state.label),
-    transitionIdsOf: (automaton) =>
-        automaton.transitions.map((transition) => transition.id),
-    addState: ({required id, required label, required position}) =>
-        _provider.addState(
-      id: id,
-      label: label,
-      x: position.dx,
-      y: position.dy,
-    ),
-    moveState: ({required id, required position}) =>
-        _provider.moveState(id: id, x: position.dx, y: position.dy),
-    updateStateLabel: ({required id, required label}) =>
-        _provider.updateStateLabel(id: id, label: label),
-    updateStateFlags: ({required id, isInitial, isAccepting}) =>
-        _provider.updateStateFlags(
-      id: id,
-      isInitial: isInitial,
-      isAccepting: isAccepting,
-    ),
-    removeState: (id) => _provider.removeState(id: id),
-    logMutation: _logGraphViewCanvas,
-  );
+        currentData: () => _provider.currentAutomaton,
+        stateIdsOf: (automaton) => automaton.states.map((state) => state.id),
+        stateLabelsOf: (automaton) =>
+            automaton.states.map((state) => state.label),
+        transitionIdsOf: (automaton) =>
+            automaton.transitions.map((transition) => transition.id),
+        addState: ({required id, required label, required position}) =>
+            _provider.addState(
+              id: id,
+              label: label,
+              x: position.dx,
+              y: position.dy,
+            ),
+        moveState: ({required id, required position}) =>
+            _provider.moveState(id: id, x: position.dx, y: position.dy),
+        updateStateLabel: ({required id, required label}) =>
+            _provider.updateStateLabel(id: id, label: label),
+        updateStateFlags: ({required id, isInitial, isAccepting}) =>
+            _provider.updateStateFlags(
+              id: id,
+              isInitial: isInitial,
+              isAccepting: isAccepting,
+            ),
+        removeState: (id) => _provider.removeState(id: id),
+        logMutation: _logGraphViewCanvas,
+      );
 
   /// Algorithm step highlight service, if configured.
   AlgorithmStepHighlightService? algorithmStepHighlightService;
@@ -188,9 +189,11 @@ class GraphViewCanvasController
 
   @override
   void applySnapshotToDomain(GraphViewAutomatonSnapshot snapshot) {
-    final template = _provider.currentAutomaton ??
+    final template =
+        _provider.currentAutomaton ??
         FSA(
-          id: snapshot.metadata.id ??
+          id:
+              snapshot.metadata.id ??
               'automaton_${DateTime.now().microsecondsSinceEpoch}',
           name: snapshot.metadata.name ?? 'Untitled Automaton',
           states: const {},
@@ -207,13 +210,13 @@ class GraphViewCanvasController
 
     final merged =
         GraphViewAutomatonMapper.mergeIntoTemplate(snapshot, template).copyWith(
-      id: snapshot.metadata.id ?? template.id,
-      name: snapshot.metadata.name ?? template.name,
-      alphabet: snapshot.metadata.alphabet.isNotEmpty
-          ? snapshot.metadata.alphabet.toSet()
-          : template.alphabet,
-      modified: DateTime.now(),
-    );
+          id: snapshot.metadata.id ?? template.id,
+          name: snapshot.metadata.name ?? template.name,
+          alphabet: snapshot.metadata.alphabet.isNotEmpty
+              ? snapshot.metadata.alphabet.toSet()
+              : template.alphabet,
+          modified: DateTime.now(),
+        );
 
     _logGraphViewCanvas(
       'applySnapshotToDomain -> states=${merged.states.length} transitions=${merged.transitions.length}',

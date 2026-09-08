@@ -239,22 +239,14 @@ extension _AutomatonGraphViewCanvasInteractions
       source: 'pan-pointer',
       globalPosition: globalPosition,
     );
-    _doubleTapCandidateNodeId = null;
+    final now = _monotonicStopwatch.elapsed;
     if (_activeTool != AutomatonCanvasTool.selection) {
+      _dispatcher.registerPointerDown(null, now);
       return;
     }
-
     final local = _globalToCanvasLocal(globalPosition);
     final node = _hitTestNode(local, logDetails: false);
-    final previousTap = _lastTapTimestamp;
-    if (node == null || node.id != _lastTapNodeId || previousTap == null) {
-      return;
-    }
-
-    final elapsed = _monotonicStopwatch.elapsed - previousTap;
-    if (elapsed >= kDoubleTapMinTime && elapsed <= kDoubleTapTimeout) {
-      _doubleTapCandidateNodeId = node.id;
-    }
+    _dispatcher.registerPointerDown(node?.id, now);
   }
 
   void _beginNodeDrag(GraphViewCanvasNode node, Offset localPosition) {
@@ -306,52 +298,64 @@ extension _AutomatonGraphViewCanvasInteractions
       'Tap up with active tool ${_activeTool.name} local=$local',
     );
     final node = _hitTestNode(local, logDetails: false);
+    final isDragging = _isDraggingNode || _didMoveDraggedNode;
+    // Edge hit testing is only meaningful for an empty-canvas tap in
+    // selection mode; skip the geometry work otherwise.
+    final edgeHits =
+        node == null &&
+            !isDragging &&
+            _activeTool == AutomatonCanvasTool.selection
+        ? _hitTestEdges(local)
+        : const <_CanvasEdgeHit>[];
+    final outcome = _dispatcher.resolveCanvasTap(
+      nodeId: node?.id,
+      hasEdgeHits: edgeHits.isNotEmpty,
+      isDragging: isDragging,
+      now: _monotonicStopwatch.elapsed,
+    );
+    await _applyTapOutcome(
+      outcome,
+      worldPosition: () => _screenToWorld(local),
+      edgeHits: edgeHits,
+    );
+  }
 
-    if (_activeTool == AutomatonCanvasTool.addState) {
-      if (_isDraggingNode || _didMoveDraggedNode || node != null) {
+  /// Applies a dispatcher outcome. Domain mutations stay on the controller;
+  /// selection, transition preview and dialogs stay on the widget.
+  Future<void> _applyTapOutcome(
+    CanvasTapOutcome outcome, {
+    Offset Function()? worldPosition,
+    List<_CanvasEdgeHit> edgeHits = const <_CanvasEdgeHit>[],
+  }) async {
+    switch (outcome) {
+      case CanvasTapIgnored():
         return;
-      }
-      final world = _screenToWorld(local);
-      _controller.addStateAt(world);
-      return;
-    }
-
-    if (_activeTool == AutomatonCanvasTool.transition) {
-      if (node != null) {
-        _handleNodeTap(node.id);
-      }
-      return;
-    }
-
-    if (_activeTool != AutomatonCanvasTool.selection) {
-      _doubleTapCandidateNodeId = null;
-      return;
-    }
-
-    if (_isDraggingNode || _didMoveDraggedNode) {
-      _lastTapNodeId = null;
-      _lastTapTimestamp = null;
-      _doubleTapCandidateNodeId = null;
-      return;
-    }
-
-    if (node == null) {
-      final edgeHits = _hitTestEdges(local);
-      if (edgeHits.isNotEmpty) {
-        _lastTapNodeId = null;
-        _lastTapTimestamp = null;
-        _doubleTapCandidateNodeId = null;
+      case CanvasTapAddState():
+        final world = worldPosition?.call();
+        if (world != null) {
+          _controller.addStateAt(world);
+        }
+      case CanvasTapEditEdges():
         await _editHitEdge(edgeHits);
-        return;
-      }
-      _setSelectedNodeId(null);
-      _lastTapNodeId = null;
-      _lastTapTimestamp = null;
-      _doubleTapCandidateNodeId = null;
-      return;
+      case CanvasTapClearSelection():
+        _setSelectedNodeId(null);
+      case CanvasTapSelectNode(:final nodeId, :final openContext):
+        _setSelectedNodeId(nodeId);
+        if (openContext) {
+          _handleNodeContextTap(nodeId);
+        }
+      case CanvasTapBeginTransition(:final nodeId):
+        _logAutomatonGraphViewCanvasInteraction(
+          'Transition source selected -> $nodeId',
+        );
+        _syncTransitionSource();
+      case CanvasTapCompleteTransition(:final sourceId, :final targetId):
+        _syncTransitionSource();
+        _logAutomatonGraphViewCanvasInteraction(
+          'Transition target selected -> $targetId (source: $sourceId)',
+        );
+        _showTransitionEditor(sourceId, targetId);
     }
-
-    _registerNodeTap(node.id);
   }
 
   void _handleNodePanStart(DragStartDetails details) {
@@ -405,9 +409,7 @@ extension _AutomatonGraphViewCanvasInteractions
     );
     _endNodeDrag();
     if (nodeId != null) {
-      _lastTapNodeId = null;
-      _lastTapTimestamp = null;
-      _doubleTapCandidateNodeId = null;
+      _dispatcher.resetTapTracking();
     }
     if (shouldCommit && nodeId != null && finalPosition != null) {
       _controller.moveState(nodeId, finalPosition);
@@ -424,39 +426,9 @@ extension _AutomatonGraphViewCanvasInteractions
     final startPosition = _dragStartNodePosition;
     if (nodeId != null && startPosition != null) {
       _controller.previewStatePosition(nodeId, startPosition);
-      _lastTapNodeId = null;
-      _lastTapTimestamp = null;
-      _doubleTapCandidateNodeId = null;
+      _dispatcher.resetTapTracking();
     }
     _endNodeDrag();
-  }
-
-  void _handleNodeTap(String nodeId) {
-    _logAutomatonGraphViewCanvasInteraction(
-      'Node tapped $nodeId with active tool ${_activeTool.name}',
-    );
-    if (_activeTool == AutomatonCanvasTool.selection) {
-      _setSelectedNodeId(nodeId);
-      return;
-    }
-    if (_activeTool != AutomatonCanvasTool.transition) {
-      return;
-    }
-
-    if (_transitionSourceId == null) {
-      _logAutomatonGraphViewCanvasInteraction(
-        'Transition source selected -> $nodeId',
-      );
-      _setTransitionSourceId(nodeId);
-      return;
-    }
-
-    final sourceId = _transitionSourceId!;
-    _setTransitionSourceId(null);
-    _logAutomatonGraphViewCanvasInteraction(
-      'Transition target selected -> $nodeId (source: $sourceId)',
-    );
-    _showTransitionEditor(sourceId, nodeId);
   }
 
   void _handleNodeContextTap(String nodeId) {
@@ -470,8 +442,8 @@ extension _AutomatonGraphViewCanvasInteractions
     _logAutomatonGraphViewCanvasInteraction(
       'opening state options for $nodeId',
     );
-    if (_transitionSourceId == nodeId) {
-      _setTransitionSourceId(null);
+    if (_dispatcher.clearTransitionSourceIf(nodeId)) {
+      _syncTransitionSource();
     }
     _showStateOptions(node);
   }
@@ -480,20 +452,6 @@ extension _AutomatonGraphViewCanvasInteractions
     final selectedNodeId = _selectedNodeId;
     if (selectedNodeId != null) {
       _handleNodeContextTap(selectedNodeId);
-    }
-  }
-
-  void _registerNodeTap(String nodeId) {
-    _setSelectedNodeId(nodeId);
-    if (_doubleTapCandidateNodeId == nodeId) {
-      _handleNodeContextTap(nodeId);
-      _lastTapNodeId = null;
-      _lastTapTimestamp = null;
-      _doubleTapCandidateNodeId = null;
-    } else {
-      _lastTapNodeId = nodeId;
-      _lastTapTimestamp = _monotonicStopwatch.elapsed;
-      _doubleTapCandidateNodeId = null;
     }
   }
 

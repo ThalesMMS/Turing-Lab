@@ -18,8 +18,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/presentation/empty_string_notation.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
-import 'package:turing_lab/presentation/widgets/grammar_editor.dart';
-import 'package:turing_lab/presentation/widgets/grammar_editor_section.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_editor.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_editor_section.dart';
 
 class _RecordingGrammarProvider extends GrammarProvider {
   _RecordingGrammarProvider() : super();

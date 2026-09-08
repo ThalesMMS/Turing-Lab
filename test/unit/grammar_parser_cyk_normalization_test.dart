@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/derivation_tree.dart';
 import 'package:turing_lab/core/models/derivation_tree_node.dart';
 import 'package:turing_lab/core/models/grammar.dart';

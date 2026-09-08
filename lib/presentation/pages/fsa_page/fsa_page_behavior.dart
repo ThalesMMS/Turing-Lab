@@ -951,8 +951,12 @@ extension _FSAPageStateBehavior on _FSAPageState {
                       final simulationState = sheetRef.watch(
                         automatonSimulationProvider,
                       );
-                      final algorithmState = sheetRef.watch(
-                        automatonAlgorithmProvider,
+                      // Only regexResult feeds the simulation panel, so the
+                      // sheet subscribes to that field alone (#427).
+                      final regexResult = sheetRef.watch(
+                        automatonAlgorithmProvider.select(
+                          (state) => state.regexResult,
+                        ),
                       );
                       final automaton = sheetRef
                           .watch(automatonStateProvider)
@@ -965,7 +969,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
                         errorMessage: _localizedSimulationError(
                           simulationState,
                         ),
-                        regexResult: algorithmState.regexResult,
+                        regexResult: regexResult,
                         highlightService: _highlightService,
                         isDeterministic: automaton?.isDeterministic ?? true,
                         computationStateLabels: {
@@ -1042,7 +1046,11 @@ extension _FSAPageStateBehavior on _FSAPageState {
     return Consumer(
       builder: (context, panelRef, _) {
         final simulationState = panelRef.watch(automatonSimulationProvider);
-        final algorithmState = panelRef.watch(automatonAlgorithmProvider);
+        // Only regexResult feeds the simulation panel, so the dock panel
+        // subscribes to that field alone (#427).
+        final regexResult = panelRef.watch(
+          automatonAlgorithmProvider.select((state) => state.regexResult),
+        );
         final automaton = panelRef
             .watch(automatonStateProvider)
             .currentAutomaton;
@@ -1052,7 +1060,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
               .simulateAutomaton(inputString),
           simulationResult: simulationState.simulationResult,
           errorMessage: _localizedSimulationError(simulationState),
-          regexResult: algorithmState.regexResult,
+          regexResult: regexResult,
           highlightService: _highlightService,
           isDeterministic: automaton?.isDeterministic ?? true,
           computationStateLabels: {
@@ -1300,8 +1308,9 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Widget _buildDiagnosticHighlightBarContent(
-    AutomatonStateProviderState state,
-  ) {
+    AutomatonStateProviderState state, {
+    bool floating = false,
+  }) {
     final conflicts = _diagnosticHighlightService.conflictingFsaTransitionIds(
       state.currentAutomaton,
     );
@@ -1309,6 +1318,7 @@ extension _FSAPageStateBehavior on _FSAPageState {
       state.currentAutomaton,
     );
     return AutomatonDiagnosticHighlightBar(
+      floating: floating,
       activeKind: _activeDiagnosticHighlight,
       conflictCount: conflicts.length,
       epsilonCount: epsilon.length,
@@ -1326,17 +1336,6 @@ extension _FSAPageStateBehavior on _FSAPageState {
   }
 
   Widget _buildDiagnosticHighlightBar(AutomatonStateProviderState state) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SafeArea(
-        minimum: EdgeInsets.fromLTRB(
-          12,
-          _canvasToolbarInsets.top > 0 ? _canvasToolbarInsets.top + 8 : 88,
-          12,
-          12,
-        ),
-        child: _buildDiagnosticHighlightBarContent(state),
-      ),
-    );
+    return _buildDiagnosticHighlightBarContent(state, floating: true);
   }
 }

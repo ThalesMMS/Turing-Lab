@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/algorithm_step.dart';
 import 'package:turing_lab/core/models/regex_to_nfa_step.dart';

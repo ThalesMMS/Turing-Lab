@@ -19,6 +19,8 @@ import '../unrestricted_grammar/unrestricted_grammar_workspace_strings.dart';
 import '../widgets/document_interoperability_binding.dart';
 import '../widgets/example_suggested_simulations_text.dart';
 import '../widgets/file_operations_panel.dart';
+import '../empty_string_notation.dart';
+import '../widgets/export/print_document_builder.dart';
 
 final class UnrestrictedGrammarPage extends ConsumerStatefulWidget {
   const UnrestrictedGrammarPage({super.key});
@@ -288,6 +290,13 @@ final class _UnrestrictedGrammarPageState
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: FileOperationsPanel(
                 formalSystemRegistry: ref.watch(formalSystemRegistryProvider),
+                printable: () => PrintableText(
+                  title: controller.grammar.name,
+                  text: [
+                    for (final production in controller.grammar.productions)
+                      '${production.left.symbols.map((s) => s.value).join(' ')} → ${production.right.isEmpty ? EmptyStringNotation.symbolOf(context) : production.right.symbols.map((s) => s.value).join(' ')}',
+                  ].join('\n'),
+                ),
                 interoperability: DocumentInteroperabilityBinding(
                   registry: ref.watch(documentInteroperabilityRegistryProvider),
                   systemKey: UnrestrictedGrammarCapabilities.systemKey,

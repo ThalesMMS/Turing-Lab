@@ -23,10 +23,14 @@ import '../../../l10n/app_localizations_resolver.dart';
 import '../../localization/locale_value_formatter.dart';
 import '../common/simulation_speed_control.dart';
 import '../common/timer_playback_controller.dart';
+import 'go_to_step_dialog.dart';
 import 'timeline_scrubber.dart';
 
 /// Base trace viewer with folding support used by FA/PDA/TM viewers.
 class BaseTraceViewer extends StatefulWidget {
+  /// Key of the actionable step counter that opens the go-to-step dialog.
+  static const Key goToStepKey = ValueKey('trace_go_to_step');
+
   final SimulationResult result;
   final String title;
   final Widget Function(SimulationStep step, int index) buildStepLine;
@@ -64,6 +68,7 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
   Timer? _playbackTimer;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _selectedRowKey = GlobalKey();
+  BuildContext? _goToStepDialogContext;
 
   bool get _highlightEnabled =>
       widget.result.steps.isNotEmpty &&
@@ -78,6 +83,7 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
 
   @override
   void dispose() {
+    _dismissGoToStepDialog();
     _cancelPlaybackTimer();
     _isPlaying = false;
     _scrollController.dispose();
@@ -94,8 +100,45 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
         _selectedIndex = _highlightEnabled ? 0 : null;
         _isPlaying = false;
       });
+      _dismissGoToStepDialog();
       _scheduleSelectionSynchronization();
     }
+  }
+
+  /// Closes an open go-to-step dialog without applying its value, so a
+  /// replaced result never receives a stale index. Also called from dispose,
+  /// so a dialog never outlives the viewer that opened it.
+  void _dismissGoToStepDialog() {
+    final dialogContext = _goToStepDialogContext;
+    if (dialogContext == null) return;
+    _goToStepDialogContext = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+    });
+  }
+
+  Future<void> _openGoToStepDialog() async {
+    if (!_highlightEnabled || _goToStepDialogContext != null) return;
+    final result = widget.result;
+    final target = await showGoToStepDialog(
+      context,
+      totalSteps: result.steps.length,
+      currentIndex: _selectedIndex ?? 0,
+      onDialogContext: (dialogContext) =>
+          _goToStepDialogContext = dialogContext,
+    );
+    _goToStepDialogContext = null;
+    if (!mounted || target == null) return;
+    // Revalidate against the live result: the dialog may have been answered
+    // for a trace that has since been replaced.
+    if (!identical(widget.result, result) ||
+        target < 0 ||
+        target >= widget.result.steps.length) {
+      return;
+    }
+    _updateSelectedIndex(target);
   }
 
   void _handleStepTap(int index) {
@@ -229,12 +272,28 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
       if (!widget.ensureSelectedStepVisible) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final selectedContext = _selectedRowKey.currentContext;
-        if (!mounted || selectedContext == null) return;
-        Scrollable.ensureVisible(
-          selectedContext,
-          alignment: 0.5,
-          duration: const Duration(milliseconds: 150),
-        );
+        if (!mounted ||
+            selectedContext == null ||
+            !_scrollController.hasClients) {
+          return;
+        }
+        // Keep the trace and its enclosing panel vertically visible without
+        // animating horizontal ancestors such as the workspace PageView.
+        final target = selectedContext.findRenderObject()!;
+        var revealContext = selectedContext;
+        var scrollable = Scrollable.maybeOf(revealContext);
+        while (scrollable != null) {
+          if (scrollable.position.axis == Axis.vertical) {
+            scrollable.position.ensureVisible(
+              revealContext.findRenderObject()!,
+              targetRenderObject: target,
+              alignment: 0.5,
+              duration: const Duration(milliseconds: 150),
+            );
+          }
+          revealContext = scrollable.context;
+          scrollable = Scrollable.maybeOf(revealContext);
+        }
       });
     });
   }
@@ -267,10 +326,23 @@ class _BaseTraceViewerState extends State<BaseTraceViewer> {
       tooltip: l10n.nextStep,
       iconSize: 20,
     );
-    final stepCounter = Text(
-      '${formatter.integer(current + 1)} / '
-      '${formatter.integer(widget.result.steps.length)}',
-      style: Theme.of(context).textTheme.bodySmall,
+    final stepCounter = Tooltip(
+      message: l10n.goToStep,
+      child: TextButton(
+        key: BaseTraceViewer.goToStepKey,
+        onPressed: _openGoToStepDialog,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          minimumSize: const Size(0, 32),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+        ),
+        child: Text(
+          '${formatter.integer(current + 1)} / '
+          '${formatter.integer(widget.result.steps.length)}',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ),
     );
     final resetButton = IconButton(
       onPressed: _resetSteps,

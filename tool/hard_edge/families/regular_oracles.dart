@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/utils/epsilon_utils.dart';
@@ -117,20 +117,14 @@ OracleResult<bool, RegularOracleEvidence> regularOracleAccepts(
 
   var current = closure({initial});
   if (current == null) {
-    return _regularBounded(
-      visitedConfigurations,
-      maximumConfigurations,
-    );
+    return _regularBounded(visitedConfigurations, maximumConfigurations);
   }
   for (final symbol in word) {
     final moved = <State>{};
     for (final state in current!) {
       visitedConfigurations++;
       if (visitedConfigurations > maximumConfigurations) {
-        return _regularBounded(
-          visitedConfigurations,
-          maximumConfigurations,
-        );
+        return _regularBounded(visitedConfigurations, maximumConfigurations);
       }
       for (final transition in automaton.fsaTransitions) {
         if (transition.fromState == state &&
@@ -142,10 +136,7 @@ OracleResult<bool, RegularOracleEvidence> regularOracleAccepts(
     }
     current = closure(moved);
     if (current == null) {
-      return _regularBounded(
-        visitedConfigurations,
-        maximumConfigurations,
-      );
+      return _regularBounded(visitedConfigurations, maximumConfigurations);
     }
   }
 
@@ -161,19 +152,18 @@ OracleResult<bool, RegularOracleEvidence> regularOracleAccepts(
 OracleResult<bool, RegularOracleEvidence> _regularBounded(
   int observed,
   int maximum,
-) =>
-    OracleBoundedUnknown(
-      limit: ResourceLimitEvidence(
-        kind: ResourceLimitKind.configurations,
-        observed: observed,
-        maximum: maximum,
-        unit: 'configurations',
-      ),
-      evidence: RegularOracleEvidence(
-        visitedConfigurations: observed,
-        evaluatedWords: 0,
-      ),
-    );
+) => OracleBoundedUnknown(
+  limit: ResourceLimitEvidence(
+    kind: ResourceLimitKind.configurations,
+    observed: observed,
+    maximum: maximum,
+    unit: 'configurations',
+  ),
+  evidence: RegularOracleEvidence(
+    visitedConfigurations: observed,
+    evaluatedWords: 0,
+  ),
+);
 
 OracleResult<Map<String, bool>, RegularOracleEvidence> regularLanguageSignature(
   FSA automaton,
@@ -219,9 +209,9 @@ OracleResult<Map<String, bool>, RegularOracleEvidence> regularLanguageSignature(
     );
     switch (result) {
       case OracleDefinitive<bool, RegularOracleEvidence>(
-          :final value,
-          :final evidence,
-        ):
+        :final value,
+        :final evidence,
+      ):
         visitedConfigurations += evidence.visitedConfigurations;
         signature[jsonEncode(word)] = value;
       case OracleNotApplicable<bool, RegularOracleEvidence>():
@@ -233,9 +223,7 @@ OracleResult<Map<String, bool>, RegularOracleEvidence> regularLanguageSignature(
             message: 'A generated word was not applicable.',
           ),
         );
-      case OracleBoundedUnknown<bool, RegularOracleEvidence>(
-          :final limit,
-        ):
+      case OracleBoundedUnknown<bool, RegularOracleEvidence>(:final limit):
         return OracleBoundedUnknown(
           limit: limit,
           evidence: RegularOracleEvidence(
@@ -276,11 +264,11 @@ final class RegularReferenceDfa {
     required this.initialState,
     required Iterable<String> acceptingStates,
     required Map<String, Map<String, String>> transitions,
-  })  : acceptingStates = Set<String>.unmodifiable(acceptingStates),
-        transitions = Map<String, Map<String, String>>.unmodifiable({
-          for (final entry in transitions.entries)
-            entry.key: Map<String, String>.unmodifiable(entry.value),
-        });
+  }) : acceptingStates = Set<String>.unmodifiable(acceptingStates),
+       transitions = Map<String, Map<String, String>>.unmodifiable({
+         for (final entry in transitions.entries)
+           entry.key: Map<String, String>.unmodifiable(entry.value),
+       });
 
   final String initialState;
   final Set<String> acceptingStates;
@@ -301,12 +289,12 @@ RegularReferenceDfa regularReferenceSubsetConstruction(FSA automaton) {
   final initial = automaton.initialState;
   if (initial == null) {
     throw ArgumentError(
-        'Reference subset construction needs an initial state.');
+      'Reference subset construction needs an initial state.',
+    );
   }
-  final alphabet = automaton.alphabet
-      .where((symbol) => !isEpsilonSymbol(symbol))
-      .toList()
-    ..sort();
+  final alphabet =
+      automaton.alphabet.where((symbol) => !isEpsilonSymbol(symbol)).toList()
+        ..sort();
 
   Set<State> closure(Set<State> seeds) {
     final result = <State>{...seeds};
@@ -442,22 +430,23 @@ bool regularRegexOracleAccepts(
         offset < word.length && symbols.contains(word[offset])
             ? {offset + 1}
             : const {},
-      ShortcutNode(:final code) => offset < word.length &&
-              _shortcutMatches(code, word[offset], contextAlphabet)
-          ? {offset + 1}
-          : const {},
+      ShortcutNode(:final code) =>
+        offset < word.length &&
+                _shortcutMatches(code, word[offset], contextAlphabet)
+            ? {offset + 1}
+            : const {},
       UnionNode(:final left, :final right) => {
-          ...match(left, offset),
-          ...match(right, offset),
-        },
+        ...match(left, offset),
+        ...match(right, offset),
+      },
       ConcatenationNode(:final left, :final right) => {
-          for (final middle in match(left, offset)) ...match(right, middle),
-        },
+        for (final middle in match(left, offset)) ...match(right, middle),
+      },
       KleeneStarNode(:final child) => _starEnds(child, offset, match),
       PlusNode(:final child) => {
-          for (final middle in match(child, offset))
-            ..._starEnds(child, middle, match),
-        },
+        for (final middle in match(child, offset))
+          ..._starEnds(child, middle, match),
+      },
       QuestionNode(:final child) => {offset, ...match(child, offset)},
       _ => const {},
     };
@@ -482,11 +471,7 @@ Set<int> _starEnds(
   return reached;
 }
 
-bool _shortcutMatches(
-  String code,
-  String symbol,
-  Set<String> contextAlphabet,
-) {
+bool _shortcutMatches(String code, String symbol, Set<String> contextAlphabet) {
   final digits = RegExp(r'^[0-9]$').hasMatch(symbol);
   final word = RegExp(r'^[A-Za-z0-9_]$').hasMatch(symbol);
   final whitespace = symbol == ' ';

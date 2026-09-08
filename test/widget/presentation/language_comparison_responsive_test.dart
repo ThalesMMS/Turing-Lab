@@ -14,11 +14,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/language_comparison_outcome.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_semantics.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_viewer.dart';
 
 import '../../responsive/responsive_fixtures.dart';
 import '../../responsive/responsive_harness.dart';

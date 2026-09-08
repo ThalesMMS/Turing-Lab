@@ -10,10 +10,10 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
-import 'package:turing_lab/core/algorithms/regex_simplification_messages.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:turing_lab/core/algorithms/equivalence_checker.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_simplifier.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_simplification_messages.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/equivalence_checker.dart';
 import 'package:turing_lab/core/models/regex_simplification_step.dart';
 
 part 'regex_simplifier_step_cases.dart';

@@ -51,31 +51,31 @@ class GraphViewTmCanvasController
   @override
   late final GraphViewStateNotifierAdapter<TM> stateNotifierAdapter =
       GraphViewStateNotifierAdapter<TM>(
-    currentData: () => _notifier.currentTm,
-    stateIdsOf: (machine) => machine.states.map((state) => state.id),
-    stateLabelsOf: (machine) => machine.states.map((state) => state.label),
-    transitionIdsOf: (machine) =>
-        machine.tmTransitions.map((transition) => transition.id),
-    addState: ({required id, required label, required position}) =>
-        _notifier.upsertState(
-      id: id,
-      label: label,
-      x: position.dx,
-      y: position.dy,
-    ),
-    moveState: ({required id, required position}) =>
-        _notifier.moveState(id: id, x: position.dx, y: position.dy),
-    updateStateLabel: ({required id, required label}) =>
-        _notifier.updateStateLabel(id: id, label: label),
-    updateStateFlags: ({required id, isInitial, isAccepting}) =>
-        _notifier.updateStateFlags(
-      id: id,
-      isInitial: isInitial,
-      isAccepting: isAccepting,
-    ),
-    removeState: (id) => _notifier.removeState(id: id),
-    logMutation: _logTmCanvas,
-  );
+        currentData: () => _notifier.currentTm,
+        stateIdsOf: (machine) => machine.states.map((state) => state.id),
+        stateLabelsOf: (machine) => machine.states.map((state) => state.label),
+        transitionIdsOf: (machine) =>
+            machine.tmTransitions.map((transition) => transition.id),
+        addState: ({required id, required label, required position}) =>
+            _notifier.upsertState(
+              id: id,
+              label: label,
+              x: position.dx,
+              y: position.dy,
+            ),
+        moveState: ({required id, required position}) =>
+            _notifier.moveState(id: id, x: position.dx, y: position.dy),
+        updateStateLabel: ({required id, required label}) =>
+            _notifier.updateStateLabel(id: id, label: label),
+        updateStateFlags: ({required id, isInitial, isAccepting}) =>
+            _notifier.updateStateFlags(
+              id: id,
+              isInitial: isInitial,
+              isAccepting: isAccepting,
+            ),
+        removeState: (id) => _notifier.removeState(id: id),
+        logMutation: _logTmCanvas,
+      );
 
   @override
   GraphViewAutomatonSnapshot toSnapshot(TM? machine) {
@@ -174,9 +174,11 @@ class GraphViewTmCanvasController
       fallbackTapeAlphabet: snapshot.metadata.alphabet,
       blankSymbol: metadataBlankSymbol,
     );
-    final template = _notifier.currentTm ??
+    final template =
+        _notifier.currentTm ??
         TM(
-          id: snapshot.metadata.id ??
+          id:
+              snapshot.metadata.id ??
               'tm_${DateTime.now().microsecondsSinceEpoch}',
           name: snapshot.metadata.name ?? 'Canvas TM',
           states: const {},
@@ -194,12 +196,12 @@ class GraphViewTmCanvasController
           zoomLevel: 1.0,
         );
 
-    final merged =
-        GraphViewTmMapper.mergeIntoTemplate(snapshot, template).copyWith(
-      id: snapshot.metadata.id ?? template.id,
-      name: snapshot.metadata.name ?? template.name,
-      modified: DateTime.now(),
-    );
+    final merged = GraphViewTmMapper.mergeIntoTemplate(snapshot, template)
+        .copyWith(
+          id: snapshot.metadata.id ?? template.id,
+          name: snapshot.metadata.name ?? template.name,
+          modified: DateTime.now(),
+        );
 
     _logTmCanvas(
       'applySnapshotToDomain -> states=${merged.states.length} transitions=${merged.tmTransitions.length}',

@@ -22,6 +22,9 @@ import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/fsa_transition.dart';
 import '../../core/models/pda.dart';
+import '../../core/models/automaton.dart';
+import '../../core/models/tm.dart';
+import '../../core/models/transition.dart';
 import '../../core/parsers/grammar_xml_codec.dart';
 import '../../core/parsers/jflap_xml_codec.dart';
 import '../../core/result.dart';
@@ -67,11 +70,89 @@ class FileOperationsService
     String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,
-  }) async {
+  }) {
+    return _renderPng(
+      automaton,
+      _prepareDrawingData(automaton, emptyStringSymbol),
+      includeAnnotations ? annotations : null,
+    );
+  }
+
+  /// Rasterizes a PDA with the same off-screen painter used for FSAs; the
+  /// transition labels are the canonical `input, pop → push` labels.
+  @override
+  Future<Result<Uint8List>> exportPdaToPngBytes(
+    PDA pda, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) {
+    return _renderPng(
+      pda,
+      _prepareGenericDrawingData(
+        pda,
+        pda.pdaTransitions,
+        (transition) => transition.label,
+        emptyStringSymbol,
+      ),
+      includeAnnotations ? annotations : null,
+    );
+  }
+
+  /// Rasterizes a Turing machine; multi-tape transitions keep their stored
+  /// per-tape label.
+  @override
+  Future<Result<Uint8List>> exportTuringMachineToPngBytes(
+    TM machine, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) {
+    return _renderPng(
+      machine,
+      _prepareGenericDrawingData(
+        machine,
+        machine.tmTransitions,
+        (transition) => transition.label,
+        emptyStringSymbol,
+      ),
+      includeAnnotations ? annotations : null,
+    );
+  }
+
+  Future<Result<Uint8List>> _renderPng(
+    Automaton automaton,
+    _AutomatonDrawingData drawingData,
+    DocumentAnnotationCollection? annotations,
+  ) async {
     ui.Picture? picture;
+    ui.Picture? contentPicture;
     ui.Image? image;
     try {
       const size = Size(_kCanvasWidth, _kCanvasHeight);
+      final painter = _AutomatonPainter(drawingData);
+      final contentRecorder = ui.PictureRecorder();
+      final contentCanvas = Canvas(contentRecorder);
+      painter.paint(contentCanvas, size);
+      var bounds = painter.bounds;
+      if (annotations != null) {
+        final annotationBounds = _paintDocumentAnnotations(
+          contentCanvas,
+          annotations,
+          automaton,
+          Rect.fromLTWH(
+            bounds?.left ?? 0,
+            bounds?.top ?? 0,
+            math.max(size.width, bounds?.width ?? 0),
+            math.max(size.height, bounds?.height ?? 0),
+          ),
+        );
+        if (annotationBounds != null) {
+          bounds =
+              bounds?.expandToInclude(annotationBounds) ?? annotationBounds;
+        }
+      }
+      contentPicture = contentRecorder.endRecording();
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(
         recorder,
@@ -83,12 +164,24 @@ class FileOperationsService
         Paint()..color = _kBackgroundColor,
       );
 
-      final drawingData = _prepareDrawingData(automaton, emptyStringSymbol);
-      final painter = _AutomatonPainter(drawingData);
-      painter.paint(canvas, size);
-      if (includeAnnotations && annotations != null) {
-        _paintDocumentAnnotations(canvas, annotations, automaton, size);
+      if (bounds != null) {
+        // Fit world geometry, including labels and notes, inside a pixel margin.
+        const margin = 20.0;
+        final scale = math.min(
+          1.0,
+          math.min(
+            (size.width - margin * 2) / bounds.width,
+            (size.height - margin * 2) / bounds.height,
+          ),
+        );
+        canvas.translate(
+          (size.width - bounds.width * scale) / 2,
+          (size.height - bounds.height * scale) / 2,
+        );
+        canvas.scale(scale);
+        canvas.translate(-bounds.left, -bounds.top);
       }
+      canvas.drawPicture(contentPicture);
 
       picture = recorder.endRecording();
       image = await picture.toImage(size.width.toInt(), size.height.toInt());
@@ -103,21 +196,23 @@ class FileOperationsService
     } finally {
       image?.dispose();
       picture?.dispose();
+      contentPicture?.dispose();
     }
   }
 
-  void _paintDocumentAnnotations(
+  Rect? _paintDocumentAnnotations(
     Canvas canvas,
     DocumentAnnotationCollection annotations,
-    FSA automaton,
-    Size size,
+    Automaton automaton,
+    Rect sheet,
   ) {
+    Rect? bounds;
     final statePositions = {
       for (final state in automaton.states)
         state.id: Offset(state.position.x, state.position.y),
     };
     final transitionPositions = {
-      for (final transition in automaton.transitions.whereType<FSATransition>())
+      for (final transition in automaton.transitions)
         transition.id: Offset(
           (transition.fromState.position.x + transition.toState.position.x) / 2,
           (transition.fromState.position.y + transition.toState.position.y) / 2,
@@ -133,15 +228,17 @@ class FileOperationsService
       };
       final rawX = attachmentPosition?.dx ?? annotation.x;
       final rawY = attachmentPosition?.dy ?? annotation.y;
+      // Apply the SVG sheet policy in world coordinates so translating a
+      // diagram preserves its notes, while distant offsets cannot dominate fit.
       final x = (rawX + (attachmentPosition == null ? 0 : attachment!.offsetX))
-          .clamp(0, size.width - 1)
+          .clamp(sheet.left, sheet.right - DocumentAnnotation.minimumWidth)
           .toDouble();
       final y = (rawY + (attachmentPosition == null ? 0 : attachment!.offsetY))
-          .clamp(0, size.height - 1)
+          .clamp(sheet.top, sheet.bottom - DocumentAnnotation.minimumHeight)
           .toDouble();
       final width = annotation.width.clamp(
         DocumentAnnotation.minimumWidth,
-        math.max(DocumentAnnotation.minimumWidth, size.width - x),
+        math.max(DocumentAnnotation.minimumWidth, sheet.right - x),
       );
       final height =
           (annotation.collapsed
@@ -149,8 +246,15 @@ class FileOperationsService
                   : annotation.height)
               .clamp(
                 DocumentAnnotation.minimumHeight,
-                math.max(DocumentAnnotation.minimumHeight, size.height - y),
+                math.max(DocumentAnnotation.minimumHeight, sheet.bottom - y),
               );
+      final annotationBounds = Rect.fromLTWH(
+        x,
+        y,
+        width.toDouble(),
+        height.toDouble(),
+      ).inflate(1);
+      bounds = bounds?.expandToInclude(annotationBounds) ?? annotationBounds;
       final fill = switch (annotation.styleRole) {
         AnnotationStyleRole.note => const Color(0xFFFFF3B0),
         AnnotationStyleRole.information => const Color(0xFFDBEAFE),
@@ -183,6 +287,7 @@ class FileOperationsService
         painter.paint(canvas, Offset(x + 10, y + 10));
       }
     }
+    return bounds;
   }
 
   static StructuredMessage describeFileAccessFailure(
@@ -646,12 +751,26 @@ class FileOperationsService
   _AutomatonDrawingData _prepareDrawingData(
     FSA automaton,
     String emptyStringSymbol,
+  ) => _prepareGenericDrawingData<FSATransition>(
+    automaton,
+    automaton.transitions.whereType<FSATransition>(),
+    (transition) => transition.label,
+    emptyStringSymbol,
+  );
+
+  /// Drawing data for any automaton whose transitions expose a display
+  /// label (FSA, PDA and TM). Both ε and λ in a label are rendered as the
+  /// configured empty-string symbol.
+  _AutomatonDrawingData _prepareGenericDrawingData<T extends Transition>(
+    Automaton automaton,
+    Iterable<T> transitions,
+    String Function(T transition) labelOf,
+    String emptyStringSymbol,
   ) {
     final states = automaton.states.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
-    final transitions =
-        automaton.transitions.whereType<FSATransition>().toList()
-          ..sort((a, b) => a.id.compareTo(b.id));
+    final sortedTransitions = transitions.toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
 
     final drawableStates = states
         .map(
@@ -669,18 +788,34 @@ class FileOperationsService
         )
         .toList();
 
-    final drawableTransitions = transitions
+    // Parallel operations share one arrow, with one label row per operation.
+    // Keep directions separate and preserve the stable transition-id order.
+    final transitionGroups = <(String, String), List<T>>{};
+    for (final transition in sortedTransitions) {
+      transitionGroups
+          .putIfAbsent((
+            transition.fromState.id,
+            transition.toState.id,
+          ), () => [])
+          .add(transition);
+    }
+    final drawableTransitions = transitionGroups.values
         .map(
-          (transition) => _DrawableTransition(
+          (group) => _DrawableTransition(
             from: Offset(
-              transition.fromState.position.x,
-              transition.fromState.position.y,
+              group.first.fromState.position.x,
+              group.first.fromState.position.y,
             ),
             to: Offset(
-              transition.toState.position.x,
-              transition.toState.position.y,
+              group.first.toState.position.x,
+              group.first.toState.position.y,
             ),
-            label: transition.symbol.replaceAll('ε', emptyStringSymbol),
+            label: group
+                .map(labelOf)
+                .where((label) => label.isNotEmpty)
+                .join('\n')
+                .replaceAll('ε', emptyStringSymbol)
+                .replaceAll('λ', emptyStringSymbol),
           ),
         )
         .toList();
@@ -744,9 +879,117 @@ class _DrawableTransition {
 }
 
 class _AutomatonPainter extends CustomPainter {
-  _AutomatonPainter(this.data);
+  _AutomatonPainter(this.data)
+    : _directions = {for (final edge in data.transitions) (edge.from, edge.to)};
 
   final _AutomatonDrawingData data;
+  final Set<(Offset, Offset)> _directions;
+
+  TextPainter _textPainter(String text, double fontSize) => TextPainter(
+    text: TextSpan(
+      text: text,
+      style: TextStyle(
+        color: _kTextColor,
+        fontSize: fontSize,
+        fontFamily: 'Arial',
+      ),
+    ),
+    textAlign: TextAlign.center,
+    textDirection: TextDirection.ltr,
+  )..layout();
+
+  Rect? get bounds {
+    Rect? result;
+    void include(Rect rect) => result = result?.expandToInclude(rect) ?? rect;
+    for (final state in data.states) {
+      include(
+        Rect.fromCircle(
+          center: state.center,
+          radius: _kStateRadius + state.strokeWidth,
+        ),
+      );
+      final label = _textPainter(state.label, 14);
+      include(
+        Rect.fromCenter(
+          center: state.center,
+          width: label.width,
+          height: label.height,
+        ),
+      );
+      label.dispose();
+    }
+    for (final transition in data.transitions) {
+      final geometry = _geometry(transition);
+      include(geometry.path.getBounds().inflate(12));
+      final label = _textPainter(transition.label, 12);
+      include(
+        Rect.fromCenter(
+          center: geometry.labelCenter,
+          width: label.width,
+          height: label.height,
+        ),
+      );
+      label.dispose();
+    }
+    return result;
+  }
+
+  ({Path path, Offset tip, Offset tangent, Offset labelCenter}) _geometry(
+    _DrawableTransition transition,
+  ) {
+    final from = transition.from;
+    final to = transition.to;
+    if (from == to) {
+      return (
+        path: Path()
+          ..moveTo(from.dx - 18, from.dy - 24)
+          ..cubicTo(
+            from.dx - 60,
+            from.dy - 90,
+            from.dx + 60,
+            from.dy - 90,
+            from.dx + 18,
+            from.dy - 24,
+          ),
+        tip: from + const Offset(18, -24),
+        tangent: const Offset(-42, 66) / const Offset(-42, 66).distance,
+        labelCenter: from + const Offset(0, -86),
+      );
+    }
+    final direction = (to - from) / (to - from).distance;
+    final normal = Offset(-direction.dy, direction.dx);
+    final opposing = _directions.contains((to, from));
+    final midpoint = (from + to) / 2;
+    if (opposing) {
+      final label = _textPainter(transition.label, 12);
+      // Clear even multi-row labels on vertical or diagonal opposing edges.
+      final separation =
+          20 +
+          (normal.dx.abs() * label.width + normal.dy.abs() * label.height) / 2;
+      label.dispose();
+      final control = midpoint + normal * separation * 2;
+      final startDirection = (control - from) / (control - from).distance;
+      final tangent = (to - control) / (to - control).distance;
+      final start = from + startDirection * _kStateRadius;
+      final tip = to - tangent * _kStateRadius;
+      return (
+        path: Path()
+          ..moveTo(start.dx, start.dy)
+          ..quadraticBezierTo(control.dx, control.dy, tip.dx, tip.dy),
+        tip: tip,
+        tangent: tangent,
+        labelCenter: (start + control * 2 + tip) / 4,
+      );
+    }
+    return (
+      path: Path()
+        ..moveTo(from.dx, from.dy)
+        ..lineTo(to.dx, to.dy),
+      tip: to - direction * _kStateRadius,
+      tangent: direction,
+      labelCenter: midpoint,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -756,34 +999,24 @@ class _AutomatonPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     for (final transition in data.transitions) {
-      canvas.drawLine(transition.from, transition.to, transitionPaint);
-
-      if (transition.label.isNotEmpty) {
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: transition.label,
-            style: const TextStyle(
-              color: _kTextColor,
-              fontSize: 12,
-              fontFamily: 'Arial',
-            ),
-          ),
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.ltr,
-        )..layout();
-
-        final midPoint = Offset(
-          (transition.from.dx + transition.to.dx) / 2,
-          (transition.from.dy + transition.to.dy) / 2,
-        );
-
-        final textOffset = Offset(
-          midPoint.dx - (textPainter.width / 2),
-          midPoint.dy - (textPainter.height / 2),
-        );
-
-        textPainter.paint(canvas, textOffset);
-      }
+      final geometry = _geometry(transition);
+      canvas.drawPath(geometry.path, transitionPaint);
+      final normal = Offset(-geometry.tangent.dy, geometry.tangent.dx);
+      final left = geometry.tip - geometry.tangent * 10 + normal * 4;
+      final right = geometry.tip - geometry.tangent * 10 - normal * 4;
+      canvas.drawPath(
+        Path()
+          ..moveTo(left.dx, left.dy)
+          ..lineTo(geometry.tip.dx, geometry.tip.dy)
+          ..lineTo(right.dx, right.dy),
+        transitionPaint,
+      );
+      final label = _textPainter(transition.label, 12);
+      label.paint(
+        canvas,
+        geometry.labelCenter - Offset(label.width / 2, label.height / 2),
+      );
+      label.dispose();
     }
 
     for (final state in data.states) {

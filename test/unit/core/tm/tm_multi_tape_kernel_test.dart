@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_kernel.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_kernel.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -30,11 +30,10 @@ void main() {
   test('atomic kernel matches every read and updates all tapes together', () {
     final machine = _machine(
       tapeCount: 2,
-      transition: _transition(
-        ['a', 'B'],
-        ['B', 'a'],
-        [TapeDirection.right, TapeDirection.left],
-      ),
+      transition: _transition(['a', 'B'], ['B', 'a'], [
+        TapeDirection.right,
+        TapeDirection.left,
+      ]),
     );
     final tapes = TMExecutionKernel.initialTapes('a', 'B', 2);
     final heads = [0, 0];
@@ -49,11 +48,10 @@ void main() {
       'move',
     );
     expect(
-      TMExecutionKernel.transitionsForVector(
-        machine,
-        machine.initialState!,
-        ['a', 'a'],
-      ),
+      TMExecutionKernel.transitionsForVector(machine, machine.initialState!, [
+        'a',
+        'a',
+      ]),
       isEmpty,
     );
 
@@ -104,11 +102,7 @@ void main() {
   });
 
   test('single-tape JSON migrates to one-element vectors without loss', () {
-    final transition = _transition(
-      ['a'],
-      ['b'],
-      [TapeDirection.stay],
-    );
+    final transition = _transition(['a'], ['b'], [TapeDirection.stay]);
     final legacy = transition.toJson()
       ..remove('readSymbols')
       ..remove('writeSymbols')
@@ -128,11 +122,11 @@ void main() {
   test('machine validation rejects vector length and unknown tape symbols', () {
     final mismatch = _machine(
       tapeCount: 2,
-      transition: _transition(
-        ['a', 'B', 'B'],
-        ['B', 'a', 'B'],
-        [TapeDirection.right, TapeDirection.stay, TapeDirection.left],
-      ),
+      transition: _transition(['a', 'B', 'B'], ['B', 'a', 'B'], [
+        TapeDirection.right,
+        TapeDirection.stay,
+        TapeDirection.left,
+      ]),
     );
     expect(
       mismatch.validate(),
@@ -141,11 +135,10 @@ void main() {
 
     final unknown = _machine(
       tapeCount: 2,
-      transition: _transition(
-        ['a', 'outside'],
-        ['B', 'a'],
-        [TapeDirection.right, TapeDirection.stay],
-      ),
+      transition: _transition(['a', 'outside'], ['B', 'a'], [
+        TapeDirection.right,
+        TapeDirection.stay,
+      ]),
     );
     expect(
       unknown.validate(),
@@ -156,11 +149,10 @@ void main() {
   test('bounded analyzer executes a two-tape transition atomically', () async {
     final machine = _machine(
       tapeCount: 2,
-      transition: _transition(
-        ['a', 'B'],
-        ['B', 'a'],
-        [TapeDirection.right, TapeDirection.left],
-      ),
+      transition: _transition(['a', 'B'], ['B', 'a'], [
+        TapeDirection.right,
+        TapeDirection.left,
+      ]),
     );
 
     final result = await TMExecutionAnalyzer.analyze(machine, 'a');
@@ -180,11 +172,10 @@ void main() {
   test('analyzer does not enable a partially matching read vector', () async {
     final machine = _machine(
       tapeCount: 2,
-      transition: _transition(
-        ['a', 'a'],
-        ['B', 'B'],
-        [TapeDirection.stay, TapeDirection.stay],
-      ),
+      transition: _transition(['a', 'a'], ['B', 'B'], [
+        TapeDirection.stay,
+        TapeDirection.stay,
+      ]),
     );
 
     final result = await TMExecutionAnalyzer.analyze(machine, 'a');
@@ -193,138 +184,149 @@ void main() {
     expect(result.stepsExecuted, 0);
   });
 
-  test('three tapes handle empty input, simultaneous writes, left, and stay',
-      () async {
-    final from = _state('q0', initial: true);
-    final to = _state('q1', accepting: true);
-    final transition = TMTransition(
-      id: 'three-way',
-      fromState: from,
-      toState: to,
-      label: 'three-way',
-      readSymbols: const ['B', 'B', 'B'],
-      writeSymbols: const ['x', 'y', 'z'],
-      directions: const [
-        TapeDirection.left,
-        TapeDirection.stay,
-        TapeDirection.right,
-      ],
-    );
-    final machine = _machineFrom(
-      tapeCount: 3,
-      states: {from, to},
-      transitions: {transition},
-      acceptingStates: {to},
-      tapeAlphabet: const {'B', 'x', 'y', 'z'},
-      alphabet: const {},
-    );
+  test(
+    'three tapes handle empty input, simultaneous writes, left, and stay',
+    () async {
+      final from = _state('q0', initial: true);
+      final to = _state('q1', accepting: true);
+      final transition = TMTransition(
+        id: 'three-way',
+        fromState: from,
+        toState: to,
+        label: 'three-way',
+        readSymbols: const ['B', 'B', 'B'],
+        writeSymbols: const ['x', 'y', 'z'],
+        directions: const [
+          TapeDirection.left,
+          TapeDirection.stay,
+          TapeDirection.right,
+        ],
+      );
+      final machine = _machineFrom(
+        tapeCount: 3,
+        states: {from, to},
+        transitions: {transition},
+        acceptingStates: {to},
+        tapeAlphabet: const {'B', 'x', 'y', 'z'},
+        alphabet: const {},
+      );
 
-    final result = await TMExecutionAnalyzer.analyze(machine, '');
+      final result = await TMExecutionAnalyzer.analyze(machine, '');
 
-    expect(result.outcome, TMExecutionOutcome.accepted);
-    expect(
-        result.multiTapeTrace.single.configuration.headPositions, [-1, 0, 1]);
-    expect(result.multiTapeTrace.single.configuration.nonBlankCellsByTape, [
-      {0: 'x'},
-      {0: 'y'},
-      {0: 'z'},
-    ]);
-  });
+      expect(result.outcome, TMExecutionOutcome.accepted);
+      expect(result.multiTapeTrace.single.configuration.headPositions, [
+        -1,
+        0,
+        1,
+      ]);
+      expect(result.multiTapeTrace.single.configuration.nonBlankCellsByTape, [
+        {0: 'x'},
+        {0: 'y'},
+        {0: 'z'},
+      ]);
+    },
+  );
 
-  test('nondeterministic multi-tape BFS accepts when one branch accepts',
-      () async {
-    final from = _state('q0', initial: true);
-    final reject = _state('qr');
-    final accept = _state('qa', accepting: true);
-    TMTransition branch(String id, State target) => TMTransition(
-          id: id,
-          fromState: from,
-          toState: target,
-          label: id,
-          type: TransitionType.nondeterministic,
-          readSymbols: const ['a', 'B'],
-          writeSymbols: const ['a', 'B'],
-          directions: const [TapeDirection.stay, TapeDirection.stay],
-        );
-    final machine = _machineFrom(
-      tapeCount: 2,
-      states: {from, reject, accept},
-      transitions: {branch('reject', reject), branch('accept', accept)},
-      acceptingStates: {accept},
-      tapeAlphabet: const {'a', 'B'},
-      alphabet: const {'a'},
-    );
+  test(
+    'nondeterministic multi-tape BFS accepts when one branch accepts',
+    () async {
+      final from = _state('q0', initial: true);
+      final reject = _state('qr');
+      final accept = _state('qa', accepting: true);
+      TMTransition branch(String id, State target) => TMTransition(
+        id: id,
+        fromState: from,
+        toState: target,
+        label: id,
+        type: TransitionType.nondeterministic,
+        readSymbols: const ['a', 'B'],
+        writeSymbols: const ['a', 'B'],
+        directions: const [TapeDirection.stay, TapeDirection.stay],
+      );
+      final machine = _machineFrom(
+        tapeCount: 2,
+        states: {from, reject, accept},
+        transitions: {branch('reject', reject), branch('accept', accept)},
+        acceptingStates: {accept},
+        tapeAlphabet: const {'a', 'B'},
+        alphabet: const {'a'},
+      );
 
-    final result = await TMExecutionAnalyzer.analyze(machine, 'a');
+      final result = await TMExecutionAnalyzer.analyze(machine, 'a');
 
-    expect(machine.isNondeterministic, isTrue);
-    expect(result.outcome, TMExecutionOutcome.accepted);
-    expect(result.multiTapeTrace.single.transitionId, 'accept');
-  });
+      expect(machine.isNondeterministic, isTrue);
+      expect(result.outcome, TMExecutionOutcome.accepted);
+      expect(result.multiTapeTrace.single.transitionId, 'accept');
+    },
+  );
 
-  test('repeated full multi-tape configuration proves deterministic cycle',
-      () async {
-    final state = _state('q0', initial: true);
-    final loop = TMTransition(
-      id: 'loop',
-      fromState: state,
-      toState: state,
-      label: 'loop',
-      controlPoint: Vector2(20, -20),
-      readSymbols: const ['B', 'B'],
-      writeSymbols: const ['B', 'B'],
-      directions: const [TapeDirection.stay, TapeDirection.stay],
-    );
-    final machine = _machineFrom(
-      tapeCount: 2,
-      states: {state},
-      transitions: {loop},
-      acceptingStates: const {},
-      tapeAlphabet: const {'B'},
-      alphabet: const {},
-    );
+  test(
+    'repeated full multi-tape configuration proves deterministic cycle',
+    () async {
+      final state = _state('q0', initial: true);
+      final loop = TMTransition(
+        id: 'loop',
+        fromState: state,
+        toState: state,
+        label: 'loop',
+        controlPoint: Vector2(20, -20),
+        readSymbols: const ['B', 'B'],
+        writeSymbols: const ['B', 'B'],
+        directions: const [TapeDirection.stay, TapeDirection.stay],
+      );
+      final machine = _machineFrom(
+        tapeCount: 2,
+        states: {state},
+        transitions: {loop},
+        acceptingStates: const {},
+        tapeAlphabet: const {'B'},
+        alphabet: const {},
+      );
 
-    final result = await TMExecutionAnalyzer.analyze(machine, '');
+      final result = await TMExecutionAnalyzer.analyze(machine, '');
 
-    expect(result.outcome, TMExecutionOutcome.provenCycle);
-    expect(result.cycle?.period, 1);
-    expect(result.cycle?.configuration.headPositions, [0, 0]);
-  });
+      expect(result.outcome, TMExecutionOutcome.provenCycle);
+      expect(result.cycle?.period, 1);
+      expect(result.cycle?.configuration.headPositions, [0, 0]);
+    },
+  );
 
-  test('long moving run remains bounded unknown and trace can be disabled',
-      () async {
-    final state = _state('q0', initial: true);
-    final loop = TMTransition(
-      id: 'move-forever',
-      fromState: state,
-      toState: state,
-      label: 'move-forever',
-      controlPoint: Vector2(20, -20),
-      readSymbols: const ['B', 'B'],
-      writeSymbols: const ['B', 'B'],
-      directions: const [TapeDirection.right, TapeDirection.left],
-    );
-    final machine = _machineFrom(
-      tapeCount: 2,
-      states: {state},
-      transitions: {loop},
-      acceptingStates: const {},
-      tapeAlphabet: const {'B'},
-      alphabet: const {},
-    );
+  test(
+    'long moving run remains bounded unknown and trace can be disabled',
+    () async {
+      final state = _state('q0', initial: true);
+      final loop = TMTransition(
+        id: 'move-forever',
+        fromState: state,
+        toState: state,
+        label: 'move-forever',
+        controlPoint: Vector2(20, -20),
+        readSymbols: const ['B', 'B'],
+        writeSymbols: const ['B', 'B'],
+        directions: const [TapeDirection.right, TapeDirection.left],
+      );
+      final machine = _machineFrom(
+        tapeCount: 2,
+        states: {state},
+        transitions: {loop},
+        acceptingStates: const {},
+        tapeAlphabet: const {'B'},
+        alphabet: const {},
+      );
 
-    final result = await TMExecutionAnalyzer.analyze(
-      machine,
-      '',
-      maxSteps: 25,
-      includeTrace: false,
-    );
+      final result = await TMExecutionAnalyzer.analyze(
+        machine,
+        '',
+        maxSteps: 25,
+        includeTrace: false,
+      );
 
-    expect(result.outcome, TMExecutionOutcome.boundedUnknown);
-    expect(result.limit, TMExecutionLimit.steps);
-    expect(result.multiTapeTrace, isEmpty);
-    expect(result.multiTapeMetrics!.maximumVisitedSpanByTape, [26, 26]);
-  });
+      expect(result.outcome, TMExecutionOutcome.boundedUnknown);
+      expect(result.limit, TMExecutionLimit.steps);
+      expect(result.multiTapeTrace, isEmpty);
+      expect(result.multiTapeMetrics!.maximumVisitedSpanByTape, [26, 26]);
+    },
+  );
 }
 
 TMTransition _transition(
@@ -347,20 +349,20 @@ TMTransition _transition(
 }
 
 TM _machine({required int tapeCount, required TMTransition transition}) => TM(
-      id: 'multi',
-      name: 'Multi-tape',
-      states: {transition.fromState, transition.toState},
-      transitions: {transition},
-      alphabet: {'a'},
-      initialState: transition.fromState,
-      acceptingStates: {transition.toState},
-      created: DateTime.utc(2026),
-      modified: DateTime.utc(2026),
-      bounds: const math.Rectangle(0, 0, 400, 300),
-      tapeAlphabet: {'a', 'B'},
-      blankSymbol: 'B',
-      tapeCount: tapeCount,
-    );
+  id: 'multi',
+  name: 'Multi-tape',
+  states: {transition.fromState, transition.toState},
+  transitions: {transition},
+  alphabet: {'a'},
+  initialState: transition.fromState,
+  acceptingStates: {transition.toState},
+  created: DateTime.utc(2026),
+  modified: DateTime.utc(2026),
+  bounds: const math.Rectangle(0, 0, 400, 300),
+  tapeAlphabet: {'a', 'B'},
+  blankSymbol: 'B',
+  tapeCount: tapeCount,
+);
 
 TM _machineFrom({
   required int tapeCount,
@@ -369,22 +371,21 @@ TM _machineFrom({
   required Set<State> acceptingStates,
   required Set<String> tapeAlphabet,
   required Set<String> alphabet,
-}) =>
-    TM(
-      id: 'multi-custom',
-      name: 'Multi-tape custom',
-      states: states,
-      transitions: transitions,
-      alphabet: alphabet,
-      initialState: states.singleWhere((state) => state.isInitial),
-      acceptingStates: acceptingStates,
-      created: DateTime.utc(2026),
-      modified: DateTime.utc(2026),
-      bounds: const math.Rectangle(0, 0, 400, 300),
-      tapeAlphabet: tapeAlphabet,
-      blankSymbol: 'B',
-      tapeCount: tapeCount,
-    );
+}) => TM(
+  id: 'multi-custom',
+  name: 'Multi-tape custom',
+  states: states,
+  transitions: transitions,
+  alphabet: alphabet,
+  initialState: states.singleWhere((state) => state.isInitial),
+  acceptingStates: acceptingStates,
+  created: DateTime.utc(2026),
+  modified: DateTime.utc(2026),
+  bounds: const math.Rectangle(0, 0, 400, 300),
+  tapeAlphabet: tapeAlphabet,
+  blankSymbol: 'B',
+  tapeCount: tapeCount,
+);
 
 State _state(String id, {bool initial = false, bool accepting = false}) =>
     State(

@@ -349,6 +349,12 @@ abstract class AppLocalizations {
   /// **'A grammar is already loaded. Do you want to replace it?'**
   String get conversionReplaceGrammarMessage;
 
+  /// Confirmation before a conversion result replaces the loaded unrestricted grammar.
+  ///
+  /// In en, this message translates to:
+  /// **'An unrestricted grammar is already loaded. Do you want to replace it? You can undo it.'**
+  String get conversionReplaceUnrestrictedGrammarMessage;
+
   /// Shared interface message used by conversion_replacement_dialog.dart.
   ///
   /// In en, this message translates to:
@@ -2263,6 +2269,42 @@ abstract class AppLocalizations {
   /// **'Active step {current} of {total}'**
   String activeStepOf(int current, int total);
 
+  /// Tooltip of the step counter and title of the dialog that jumps to a simulation step number.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to step…'**
+  String get goToStep;
+
+  /// Label of the numeric field in the go-to-step dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Step number (1 to {total})'**
+  String goToStepFieldLabel(int total);
+
+  /// Validation error when the go-to-step field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a step number.'**
+  String get goToStepEmptyError;
+
+  /// Validation error when the go-to-step value is not an integer.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get goToStepNotIntegerError;
+
+  /// Validation error when the go-to-step value is outside the trace.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a step between 1 and {total}.'**
+  String goToStepOutOfRangeError(int total);
+
+  /// Confirm button of the go-to-step dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get goToStepConfirm;
+
   /// No description provided for @pdaTrace.
   ///
   /// In en, this message translates to:
@@ -3078,6 +3120,42 @@ abstract class AppLocalizations {
   /// **'Export SVG'**
   String get exportSvg;
 
+  /// Axiom label in the printed L-system listing.
+  ///
+  /// In en, this message translates to:
+  /// **'axiom'**
+  String get lSystemPrintAxiomLabel;
+
+  /// Iteration count label in the printed L-system listing.
+  ///
+  /// In en, this message translates to:
+  /// **'iterations'**
+  String get lSystemPrintIterationsLabel;
+
+  /// Button that opens the system print sheet with the active document.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printDocument;
+
+  /// Tooltip for the print button.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the system print sheet with a printable version of the active document.'**
+  String get printDocumentDescription;
+
+  /// Error shown when the system print sheet cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Printing failed. Try again or export the document in an available format to print from another application.'**
+  String get printFailed;
+
+  /// Error shown when the workspace has no printable document.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing to print in this workspace yet.'**
+  String get printNothingToPrint;
+
   /// Shared interface message used by file_operations_panel.dart.
   ///
   /// In en, this message translates to:
@@ -3161,6 +3239,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export Turing Machine as SVG'**
   String get exportTmAsSvg;
+
+  /// Save dialog title for the rasterized PDA export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDA as PNG'**
+  String get exportPdaAsPng;
+
+  /// Save dialog title for the rasterized Turing machine export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Turing Machine as PNG'**
+  String get exportTmAsPng;
 
   /// Shared interface message used by file_operations_panel_fsa_actions.dart.
   ///
@@ -5172,6 +5262,18 @@ abstract class AppLocalizations {
   /// **'Apply the grammar produced by this step.'**
   String get applyGrammarStep;
 
+  /// Announced summary of the grammar transformation history; only the count changes so screen readers are not flooded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 transformation step} other{{count} transformation steps}}'**
+  String transformationStepsSummary(int count);
+
+  /// Accessible label of the Apply button of one transformation step, so equal buttons in several steps stay distinguishable.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply the grammar produced by step {step}: {operation}'**
+  String applyGrammarStepSemantics(int step, String operation);
+
   /// No description provided for @apply.
   ///
   /// In en, this message translates to:
@@ -5495,6 +5597,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add trap state to make DFA complete'**
   String get completeDfaDescription;
+
+  /// Button that opens the guided practice for adding a trap state and the missing transitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice DFA completion'**
+  String get practiceDfaCompletionTitle;
+
+  /// Description of the DFA completion practice button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the trap state and the missing transitions yourself; the checker lists what is still open.'**
+  String get practiceDfaCompletionDescription;
+
+  /// Goal statement of the DFA completion practice.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal: every state needs exactly one transition for each symbol of the alphabet {alphabet}. Edit the canvas and come back to check.'**
+  String dfaPracticeGoal(String alphabet);
+
+  /// Practice status when no automaton is loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Load or draw a DFA to practice its completion.'**
+  String get dfaPracticeNoAutomaton;
+
+  /// Practice status when the automaton alphabet is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'The automaton has no input symbols yet, so there is nothing to complete.'**
+  String get dfaPracticeEmptyAlphabet;
+
+  /// Practice status when the automaton is nondeterministic.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion applies to DFAs. Remove ε-transitions and multiple transitions from the same state on the same symbol first, or convert the NFA to a DFA.'**
+  String get dfaPracticeNotDeterministic;
+
+  /// Practice status when the DFA is complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete! Every state has a transition for every symbol.'**
+  String get dfaPracticeComplete;
+
+  /// Heading of the missing (state, symbol) pair list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pair still has no transition:} other{{count} pairs still have no transition:}}'**
+  String dfaPracticeMissingCount(int count);
+
+  /// One missing (state, symbol) pair.
+  ///
+  /// In en, this message translates to:
+  /// **'State {state} on symbol {symbol}'**
+  String dfaPracticeMissingPair(String state, String symbol);
+
+  /// Heading of the practice hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint'**
+  String get dfaPracticeHintTitle;
+
+  /// Hint shown when no trap candidate exists yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new non-accepting state to act as the trap. Words that reach it can never be accepted.'**
+  String get dfaPracticeHintCreateTrap;
+
+  /// Hint shown when a trap candidate exists but other states still miss transitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Send every missing pair to the trap state {trap}: add a transition from that state on that symbol to {trap}.'**
+  String dfaPracticeHintRouteToTrap(String trap);
+
+  /// Hint shown when only the trap state itself misses transitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop the trap state {trap} on every symbol it still misses so it never escapes.'**
+  String dfaPracticeHintLoopTrap(String trap);
+
+  /// Lists the non-accepting sink states that can serve as the trap.
+  ///
+  /// In en, this message translates to:
+  /// **'Trap candidates: {states}'**
+  String dfaPracticeTrapCandidates(String states);
+
+  /// Button that reveals the solution by running the automatic DFA completion.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete automatically'**
+  String get dfaPracticeReveal;
+
+  /// Button that hides the DFA completion practice section.
+  ///
+  /// In en, this message translates to:
+  /// **'Close practice'**
+  String get dfaPracticeClose;
 
   /// No description provided for @complementDfaTitle.
   ///
@@ -9026,6 +9224,76 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Suggested simulation: {inputs}.} other{Suggested simulations: {inputs}.}}'**
   String exampleSuggestedSimulationSemantics(int count, String inputs);
 
+  /// Label shown before the commented boundary inputs and counterexamples of an example.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Commented input} other{Commented inputs}}'**
+  String exampleCounterexampleLabel(int count);
+
+  /// Expected outcome badge for a commented example input that belongs to the language.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected: accepted'**
+  String get exampleExpectationAccepted;
+
+  /// Expected outcome badge for a commented example input that is not in the language.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected: rejected'**
+  String get exampleExpectationRejected;
+
+  /// Expected outcome badge for a commented example input that uses a symbol outside the alphabet.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid for the alphabet'**
+  String get exampleExpectationInvalidSymbol;
+
+  /// Accessible description of one commented example input.
+  ///
+  /// In en, this message translates to:
+  /// **'{input}: {expectation}. {rationale}'**
+  String exampleCounterexampleSemantics(
+    String input,
+    String expectation,
+    String rationale,
+  );
+
+  /// Tooltip of the action that fills the simulation field with a suggested example input.
+  ///
+  /// In en, this message translates to:
+  /// **'Use input'**
+  String get useSuggestedInput;
+
+  /// Confirmation shown when a suggested input was handed to the simulation field of the workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Input “{input}” sent to the simulation field.'**
+  String suggestedInputSent(String input);
+
+  /// Title of the dialog shown when a suggested input would overwrite an edited simulation field.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace current input?'**
+  String get replaceSimulationInputTitle;
+
+  /// Body of the replace-input dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'The simulation field contains “{current}”. Replace it with “{input}”?'**
+  String replaceSimulationInputBody(String current, String input);
+
+  /// Button that keeps the edited simulation input.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep current'**
+  String get keepCurrentInput;
+
+  /// Button that replaces the simulation input with the suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replaceInput;
+
   /// No description provided for @transducerBatch.
   ///
   /// In en, this message translates to:
@@ -9073,6 +9341,161 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Comparison mode'**
   String get transducerComparisonMode;
+
+  /// Tab title of the Mealy/Moore conversion tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get transducerConversion;
+
+  /// Button that converts the current Mealy machine into a Moore machine.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to Moore'**
+  String get transducerConvertToMoore;
+
+  /// Button that converts the current Moore machine into a Mealy machine.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to Mealy'**
+  String get transducerConvertToMealy;
+
+  /// Explanation of the equivalence contract shown above the conversion action.
+  ///
+  /// In en, this message translates to:
+  /// **'Two transducers are equivalent when they produce the same output for every input word. A Mealy machine emits nothing for the empty word, while a Moore machine first emits the output of its initial state.'**
+  String get transducerConversionContract;
+
+  /// Explains the Mealy to Moore construction and its domain.
+  ///
+  /// In en, this message translates to:
+  /// **'Each state is split into one copy per distinct incoming output, so the result is exact for every Mealy machine, including the empty word.'**
+  String get transducerConversionMealyToMooreHint;
+
+  /// Explains the Moore to Mealy construction and its limitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Each transition carries the output of its target state. The result is exact only when the initial state output is empty; otherwise that output cannot be emitted before reading and is reported below.'**
+  String get transducerConversionMooreToMealyHint;
+
+  /// Result badge when the converted machine is equivalent under the contract.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact conversion: the same output for every input word.'**
+  String get transducerConversionExact;
+
+  /// Result badge when the Moore initial output had to be dropped.
+  ///
+  /// In en, this message translates to:
+  /// **'Convention difference: the Moore initial output {output} is not emitted by the Mealy machine. Every input word agrees after that prefix.'**
+  String transducerConversionConventionDifference(String output);
+
+  /// Size summary of a transducer conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'{sourceStates, plural, =0{{sourceStates} states} =1{{sourceStates} state} other{{sourceStates} states}} and {sourceTransitions, plural, =0{{sourceTransitions} transitions} =1{{sourceTransitions} transition} other{{sourceTransitions} transitions}} became {targetStates, plural, =0{{targetStates} states} =1{{targetStates} state} other{{targetStates} states}} and {targetTransitions, plural, =0{{targetTransitions} transitions} =1{{targetTransitions} transition} other{{targetTransitions} transitions}}.'**
+  String transducerConversionSummary(
+    int sourceStates,
+    int sourceTransitions,
+    int targetStates,
+    int targetTransitions,
+  );
+
+  /// Differential evidence line after a conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'{words, plural, =0{No input words were checked: output agreement was not verified.} =1{Checked {words} input word up to length {length}: outputs agree. This is evidence for the tested word; the construction is the proof.} other{Checked {words} input words up to length {length}: outputs agree. This is evidence for the tested words; the construction is the proof.}}'**
+  String transducerConversionEvidence(int words, int length);
+
+  /// Evidence stopped at the word budget without a mismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{words, plural, =0 {No input words were checked; output agreement has not been verified.} =1 {Stopped after 1 input word: outputs agree for the tested word. Additional words were not checked.} other {Stopped after {words} input words: outputs agree for the tested words. Additional words were not checked.}}'**
+  String transducerConversionEvidenceTruncated(int words);
+
+  /// Differential evidence line when a mismatch was found.
+  ///
+  /// In en, this message translates to:
+  /// **'A tested input word produced different outputs: {word}.'**
+  String transducerConversionEvidenceMismatch(String word);
+
+  /// Heading of the didactic step list of a transducer conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'Construction steps'**
+  String get transducerConversionSteps;
+
+  /// Didactic step: a Moore state copy was created.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Moore state {copy} for {state} with output {output}.'**
+  String transducerConversionStepCreateCopy(
+    String copy,
+    String state,
+    String output,
+  );
+
+  /// Didactic step: a Mealy transition was mapped onto Moore copies.
+  ///
+  /// In en, this message translates to:
+  /// **'Transition {transition} with output {output} now enters {copy} from every copy of its source.'**
+  String transducerConversionStepMapTransition(
+    String transition,
+    String output,
+    String copy,
+  );
+
+  /// Didactic step: a Moore transition became a Mealy transition with the target output.
+  ///
+  /// In en, this message translates to:
+  /// **'Transition {transition} carries the output {output} of {state}.'**
+  String transducerConversionStepCarryOutput(
+    String transition,
+    String output,
+    String state,
+  );
+
+  /// Didactic step: the Moore initial output was dropped.
+  ///
+  /// In en, this message translates to:
+  /// **'The initial output {output} of {state} cannot be emitted before reading and is dropped.'**
+  String transducerConversionStepDropInitial(String output, String state);
+
+  /// Didactic step: an unreachable Moore copy was removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {copy} is never reached and is removed.'**
+  String transducerConversionStepPrune(String copy);
+
+  /// Heading shown when the source transducer is invalid or nondeterministic.
+  ///
+  /// In en, this message translates to:
+  /// **'The machine cannot be converted until these problems are fixed:'**
+  String get transducerConversionRejected;
+
+  /// Button that loads the converted Moore machine into the Moore workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in the Moore workspace'**
+  String get transducerConversionOpenMoore;
+
+  /// Button that loads the converted Mealy machine into the Mealy workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in the Mealy workspace'**
+  String get transducerConversionOpenMealy;
+
+  /// Confirmation body before replacing the destination transducer workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'The destination workspace already holds a machine. Replace it with the converted machine?'**
+  String get transducerConversionReplaceMessage;
+
+  /// Snackbar shown after opening a converted transducer.
+  ///
+  /// In en, this message translates to:
+  /// **'Converted machine opened in the {workspace} workspace.'**
+  String transducerConversionOpened(String workspace);
 
   /// No description provided for @transducerComparisonExact.
   ///
@@ -13132,6 +13555,12 @@ abstract class AppLocalizations {
   /// **'unrestricted'**
   String get grammarCnfTypeUnrestricted;
 
+  /// Localized grammar type label for a grammar that could not be classified.
+  ///
+  /// In en, this message translates to:
+  /// **'invalid'**
+  String get grammarCnfTypeInvalid;
+
   /// Warning shown when CNF conversion receives a grammar that is not context-free.
   ///
   /// In en, this message translates to:
@@ -13153,7 +13582,7 @@ abstract class AppLocalizations {
   /// Error shown when bounded epsilon expansion during CNF conversion exceeds its configured limit.
   ///
   /// In en, this message translates to:
-  /// **'Skipping epsilon expansion for production {production}: {nullablePositions} nullable positions would require {subsets} subsets, exceeding the limit of {limit}.'**
+  /// **'Skipping epsilon expansion for production {production}: {nullablePositions} nullable positions require at least {subsets} subsets, exceeding the limit of {limit}.'**
   String grammarCnfNullableSubsetLimitExceeded(
     String production,
     int nullablePositions,
@@ -15233,6 +15662,112 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TM-to-grammar construction reached its production limit of {limit}.'**
   String tmToGrammarConstructionLimit(int limit);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The machine already has a single tape; no reduction is needed.'**
+  String get tmMultiTapeReductionAlreadySingleTape;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The multi-tape machine is invalid ({detail}).'**
+  String tmMultiTapeReductionInvalidMachine(String detail);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The multi-tape machine is invalid.'**
+  String get tmMultiTapeReductionInvalidMachineGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The multi-tape machine has no valid initial state.'**
+  String get tmMultiTapeReductionMissingInitialState;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-tape reduction does not support building blocks ({detail}).'**
+  String tmMultiTapeReductionBuildingBlocksUnsupported(String detail);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-tape reduction does not support building blocks.'**
+  String get tmMultiTapeReductionBuildingBlocksUnsupportedGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-tape reduction requires final-state acceptance; the machine uses the {detail, select, finalState {final-state} halting {halting} finalStateOrHalting {final-state-or-halting} other {selected}} policy.'**
+  String tmMultiTapeReductionAcceptancePolicyUnsupported(String detail);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'Multi-tape reduction requires final-state acceptance.'**
+  String get tmMultiTapeReductionAcceptancePolicyUnsupportedGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The blank symbol {detail} cannot also be an input symbol.'**
+  String tmMultiTapeReductionBlankInInputAlphabet(String detail);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The blank symbol cannot also be an input symbol.'**
+  String get tmMultiTapeReductionBlankInInputAlphabetGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction needs {count, plural, =0{{count} composite tape symbols} =1{{count} composite tape symbol} other{{count} composite tape symbols}}, above the limit of {limit}.'**
+  String tmMultiTapeReductionTapeSymbolBudget(int count, int limit);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction exceeds its composite tape symbol budget.'**
+  String get tmMultiTapeReductionTapeSymbolBudgetGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction reached {count, plural, =0{{count} states} =1{{count} state} other{{count} states}}, above the limit of {limit}.'**
+  String tmMultiTapeReductionStateBudget(int count, int limit);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction exceeds its state budget.'**
+  String get tmMultiTapeReductionStateBudgetGeneric;
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction reached {count, plural, =0{{count} transitions} =1{{count} transition} other{{count} transitions}}, above the limit of {limit}.'**
+  String tmMultiTapeReductionTransitionBudget(int count, int limit);
+
+  /// Multi-tape reduction message
+  ///
+  /// In en, this message translates to:
+  /// **'The reduction exceeds its transition budget.'**
+  String get tmMultiTapeReductionTransitionBudgetGeneric;
+
+  /// Note shown when a multi-tape TM was reduced before grammar conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'The {tapes}-tape machine was reduced to a single-tape machine with {states} states and {transitions} transitions before conversion.'**
+  String tmToGrammarMultiTapeReductionApplied(
+    int tapes,
+    int states,
+    int transitions,
+  );
 
   /// Analysis message with a detailed TM-to-grammar construction limit diagnostic.
   ///
@@ -17979,6 +18514,16 @@ abstract class AppLocalizations {
   /// **'The TM building-block definition {block} is ambiguous.'**
   String codecTmJflapAmbiguousBlockDefinition(String block);
 
+  /// TM building-block duplicate-identity diagnostic.
+  ///
+  /// In en, this message translates to:
+  /// **'The TM building-block tags {firstTag} and {secondTag} reuse the block ID {id}.'**
+  String codecTmJflapDuplicateBlockIdentity(
+    String id,
+    String firstTag,
+    String secondTag,
+  );
+
   /// TM building-block acceptance-policy conflict diagnostic.
   ///
   /// In en, this message translates to:
@@ -18170,6 +18715,46 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TM transition endpoints were migrated to stable IDs.'**
   String get codecTmJsonEndpointsMigratedToIds;
+
+  /// No description provided for @pdaPushSymbolsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate stack symbols with spaces.'**
+  String get pdaPushSymbolsHint;
+
+  /// No description provided for @tmSpaceSharedTapeExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'The current single tape stores both the original input and work data.'**
+  String get tmSpaceSharedTapeExplanation;
+
+  /// No description provided for @tmSpaceNondeterministicExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'NTM maxima cover every explored branch configuration within the displayed configuration bound.'**
+  String get tmSpaceNondeterministicExplanation;
+
+  /// No description provided for @tmSpaceBoundedExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'These observed maxima are a bounded profile, not an asymptotic space-complexity proof.'**
+  String get tmSpaceBoundedExplanation;
+
+  /// No description provided for @bruteForceDerivationStepLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total} • production {production}'**
+  String bruteForceDerivationStepLabel(
+    String step,
+    String total,
+    String production,
+  );
+
+  /// No description provided for @bruteForceWitnessLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Witness {witness} • {depth, plural, =0{{depthLabel} steps} =1{{depthLabel} step} other{{depthLabel} steps}}'**
+  String bruteForceWitnessLabel(String witness, int depth, String depthLabel);
 }
 
 class _AppLocalizationsDelegate

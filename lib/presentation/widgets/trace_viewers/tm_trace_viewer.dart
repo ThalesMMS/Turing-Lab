@@ -13,7 +13,7 @@
 //
 import 'package:flutter/material.dart';
 
-import '../../../core/algorithms/tm_simulator.dart';
+import '../../../core/algorithms/tm/tm_simulator.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
@@ -58,10 +58,7 @@ class _TMTraceViewerState extends State<TMTraceViewer> {
       _adaptedResult = null;
       _adaptedRejectedLabel = l10n.rejected;
     }
-    _adaptedResult ??= _asSimulationResult(
-      widget.result,
-      l10n.rejected,
-    );
+    _adaptedResult ??= _asSimulationResult(widget.result, l10n.rejected);
     return BaseTraceViewer(
       result: _adaptedResult!,
       title: l10n.tmTrace(widget.result.steps.length),
@@ -69,8 +66,9 @@ class _TMTraceViewerState extends State<TMTraceViewer> {
       onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
         final tape = step.tapeContents.isEmpty ? '□' : step.tapeContents;
-        final transition =
-            step.usedTransition != null ? ' | δ: ${step.usedTransition}' : '';
+        final transition = step.usedTransition != null
+            ? ' | δ: ${step.usedTransition}'
+            : '';
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
@@ -89,10 +87,9 @@ class _TMTraceViewerState extends State<TMTraceViewer> {
               Expanded(
                 child: Text(
                   'q=${step.currentState} | ${l10n.traceTape}=$tape$transition',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(
-                      fontFamilyFallback: kMonospaceFontFamilyFallback),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
+                  ),
                 ),
               ),
             ],
@@ -133,8 +130,9 @@ class _TMTraceViewerState extends State<TMTraceViewer> {
       );
     }
 
-    final failureMessage =
-        errorMessage.isNotEmpty ? errorMessage : rejectedMessage;
+    final failureMessage = errorMessage.isNotEmpty
+        ? errorMessage
+        : rejectedMessage;
 
     return SimulationResult.failure(
       inputString: result.inputString,

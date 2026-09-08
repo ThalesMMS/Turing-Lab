@@ -222,7 +222,7 @@ class AnimatedAdaptiveEdgeRenderer extends AdaptiveEdgeRenderer
       final basePosition = i / animationConfig.particleCount;
       final animatedPosition =
           (basePosition + animationValue * animationConfig.animationSpeed) %
-              1.0;
+          1.0;
       final tangent = metric.getTangentForOffset(
         animatedPosition * metric.length,
       );

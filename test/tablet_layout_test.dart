@@ -16,8 +16,8 @@ import 'package:turing_lab/presentation/pages/pumping_lemma_page.dart';
 import 'package:turing_lab/presentation/pages/regex_page.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
-import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
-import 'package:turing_lab/presentation/widgets/pumping_lemma_workspace.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma/pumping_lemma_progress.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart';
 import 'package:turing_lab/presentation/widgets/workspace_dock.dart';
 
 import 'responsive/responsive_harness.dart';
@@ -95,29 +95,33 @@ void main() {
       await surface.assertNoLayoutErrors('fsa dock toggling on tablet width');
     });
 
-    testWidgets('PumpingLemmaPage keeps the board clear of the progress panel',
-        (tester) async {
-      final surface = await pumpResponsiveSurface(
-        tester,
-        viewport: _tabletViewport,
-        child: const PumpingLemmaPage(),
-      );
+    testWidgets(
+      'PumpingLemmaPage keeps the board clear of the progress panel',
+      (tester) async {
+        final surface = await pumpResponsiveSurface(
+          tester,
+          viewport: _tabletViewport,
+          child: const PumpingLemmaPage(),
+        );
 
-      expect(find.byType(PumpingLemmaWorkspace), findsOneWidget);
-      expect(find.byType(PumpingLemmaProgress), findsNothing);
+        expect(find.byType(PumpingLemmaWorkspace), findsOneWidget);
+        expect(find.byType(PumpingLemmaProgress), findsNothing);
 
-      final progressRail = find.byKey(WorkspaceDock.railButtonKey('progress'));
-      await tester.tap(progressRail);
-      await surface.settle();
+        final progressRail = find.byKey(
+          WorkspaceDock.railButtonKey('progress'),
+        );
+        await tester.tap(progressRail);
+        await surface.settle();
 
-      expect(find.byType(PumpingLemmaProgress), findsOneWidget);
-      expect(
-        tester.getRect(find.byType(PumpingLemmaWorkspace)).right,
-        lessThanOrEqualTo(
-          tester.getRect(find.byType(PumpingLemmaProgress)).left,
-        ),
-      );
-      await surface.assertNoLayoutErrors('pumping lemma on tablet width');
-    });
+        expect(find.byType(PumpingLemmaProgress), findsOneWidget);
+        expect(
+          tester.getRect(find.byType(PumpingLemmaWorkspace)).right,
+          lessThanOrEqualTo(
+            tester.getRect(find.byType(PumpingLemmaProgress)).left,
+          ),
+        );
+        await surface.assertNoLayoutErrors('pumping lemma on tablet width');
+      },
+    );
   });
 }

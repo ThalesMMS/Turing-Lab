@@ -20,13 +20,9 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/language_comparison_outcome.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
-import 'package:turing_lab/presentation/widgets/language_comparison_controller.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_controller.dart';
 
-FSA _buildFsa({
-  required String id,
-  int stateCount = 2,
-  DateTime? modified,
-}) {
+FSA _buildFsa({required String id, int stateCount = 2, DateTime? modified}) {
   final states = <automaton_state.State>[];
   for (var i = 0; i < stateCount; i++) {
     states.add(
@@ -91,44 +87,45 @@ LanguageComparisonRequest _request({String suffix = ''}) {
 
 void main() {
   group('runLanguageComparison', () {
-    test('adapts a successful canonical comparison to a completed outcome',
-        () async {
-      final outcome = await runLanguageComparison(_request());
+    test(
+      'adapts a successful canonical comparison to a completed outcome',
+      () async {
+        final outcome = await runLanguageComparison(_request());
 
-      expect(outcome, isA<LanguageComparisonCompleted>());
-      expect(outcome.status, LanguageComparisonStatus.equivalent);
-    });
+        expect(outcome, isA<LanguageComparisonCompleted>());
+        expect(outcome.status, LanguageComparisonStatus.equivalent);
+      },
+    );
 
-    test('adapts malformed input to a typed failure without a verdict',
-        () async {
-      final valid = _buildFsa(id: 'valid');
-      final malformed = FSA(
-        id: 'malformed',
-        name: 'malformed',
-        states: const {},
-        transitions: const {},
-        alphabet: const {'a'},
-        initialState: null,
-        acceptingStates: const {},
-        created: DateTime.utc(2026, 1, 1),
-        modified: DateTime.utc(2026, 1, 1),
-        bounds: const math.Rectangle<double>(0, 0, 800, 600),
-      );
+    test(
+      'adapts malformed input to a typed failure without a verdict',
+      () async {
+        final valid = _buildFsa(id: 'valid');
+        final malformed = FSA(
+          id: 'malformed',
+          name: 'malformed',
+          states: const {},
+          transitions: const {},
+          alphabet: const {'a'},
+          initialState: null,
+          acceptingStates: const {},
+          created: DateTime.utc(2026, 1, 1),
+          modified: DateTime.utc(2026, 1, 1),
+          bounds: const math.Rectangle<double>(0, 0, 800, 600),
+        );
 
-      final outcome = await runLanguageComparison(
-        LanguageComparisonRequest(
-          automatonA: malformed,
-          automatonB: valid,
-        ),
-      );
+        final outcome = await runLanguageComparison(
+          LanguageComparisonRequest(automatonA: malformed, automatonB: valid),
+        );
 
-      expect(outcome, isA<LanguageComparisonFailure>());
-      expect(outcome.isEquivalent, isNull);
-      expect(
-        (outcome as LanguageComparisonFailure).reason,
-        LanguageComparisonFailureReason.malformedInput,
-      );
-    });
+        expect(outcome, isA<LanguageComparisonFailure>());
+        expect(outcome.isEquivalent, isNull);
+        expect(
+          (outcome as LanguageComparisonFailure).reason,
+          LanguageComparisonFailureReason.malformedInput,
+        );
+      },
+    );
   });
 
   group('LanguageComparisonRequest', () {
@@ -154,10 +151,7 @@ void main() {
         first.producedThis(_resultFor(second, isEquivalent: true)),
         isFalse,
       );
-      expect(
-        first.producedThis(_resultFor(first, isEquivalent: true)),
-        isTrue,
-      );
+      expect(first.producedThis(_resultFor(first, isEquivalent: true)), isTrue);
     });
   });
 
@@ -218,10 +212,7 @@ void main() {
       // The older comparison finishes last and must be discarded.
       slow.complete(
         LanguageComparisonCompleted(
-          _resultFor(
-            staleRequest,
-            isEquivalent: true,
-          ),
+          _resultFor(staleRequest, isEquivalent: true),
         ),
       );
       await staleRun;
@@ -328,9 +319,7 @@ void main() {
       expect(controller.snapshot.isRunning, isFalse);
 
       pending.complete(
-        LanguageComparisonCompleted(
-          _resultFor(_request(), isEquivalent: true),
-        ),
+        LanguageComparisonCompleted(_resultFor(_request(), isEquivalent: true)),
       );
       await run;
 

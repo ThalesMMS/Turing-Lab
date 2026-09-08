@@ -14,6 +14,7 @@ turing_lab/
 │   │   ├── models/                # Domain models and entities
 │   │   ├── entities/              # Business entities
 │   │   ├── parsers/               # File parsing utilities
+│   │   ├── pumping_lemma/         # Pumping lemma problems, sessions and progress
 │   │   ├── repositories/          # Repository interfaces
 │   │   ├── use_cases/             # Business use cases
 │   │   ├── error_handler.dart     # Error handling utilities
@@ -54,7 +55,7 @@ turing_lab/
 ├── SECURITY.md                    # Private vulnerability reporting policy
 ├── PROJECT_STRUCTURE.md           # This file
 ├── LEGAL_DISTRIBUTION.md          # Apple App Store and distribution rights determination
-├── USER_GUIDE.md                  # GraphView canvas working guide
+├── USER_GUIDE.md                  # Student and educator manual for every workspace
 ├── LICENSE.txt                    # License information
 ├── LICENSE_JFLAP.txt              # Upstream JFLAP license
 └── icon.png                       # App icon source
@@ -66,36 +67,28 @@ The core layer contains the business logic and domain models. It's independent o
 
 ### Algorithms (`lib/core/algorithms/`)
 
-The algorithms package now covers automata analysis, grammar tooling, and
-conversions, organised into focused modules plus shared helpers:
+Automata analysis, grammar tooling and conversions, grouped by formal system.
+Every module keeps its `*_messages.dart` companion next to it. The root only
+holds `cooperative_yield.dart` (the shared main-isolate yield helper) and
+provisional barrel files at the pre-#426 paths, which re-export the moved
+libraries; import the subdirectory path directly in new code.
 
 ```
 algorithms/
-├── automata/                      # DFA/NFA/TM helpers (builders, tracers, validators)
-├── cfg/                           # Context-free grammar utilities and analyzers
-├── common/                        # Shared math, graph, and parser utilities
-├── pda/                           # Pushdown automata specific operations
-├── regex/                         # Regular expression parsing helpers
-├── automaton_analyzer.dart        # Aggregate automaton statistics and metrics
-├── automaton_simulator.dart       # DFA/NFA simulation core with step tracing
-├── dfa_completer.dart             # Automates completion of partial DFAs
-├── dfa_minimizer.dart             # Hopcroft-based DFA minimization
-├── dfa_operations.dart            # Set and language operations across DFAs
-├── equivalence_checker.dart       # DFA language equivalence checking
-├── fa_to_regex_converter.dart     # FA to regular expression conversion
-├── fsa_to_grammar_converter.dart  # Grammar conversion entrypoints for FSAs
-├── grammar_analyzer.dart          # Grammar consistency and diagnostics
-├── grammar_parser.dart            # Hand-rolled parser façade
-├── grammar_parser_earley.dart     # Earley parser implementation
-├── grammar_parser_simple_recursive.dart # Recursive-descent derivation helper
-├── grammar_to_fsa_converter.dart  # Convert grammars to FSAs
-├── grammar_to_pda_converter.dart  # Convert grammars to PDAs
-├── nfa_to_dfa_converter.dart      # Subset construction converter
-├── pumping_lemma_game.dart        # Interactive pumping lemma simulation
-├── pda_simulator.dart             # PDA execution engine
-├── pda_to_cfg_converter.dart      # PDA to CFG transformer
-├── regex_to_nfa_converter.dart    # Thompson-style regex conversion
-└── tm_simulator.dart              # Deterministic TM simulation
+├── cfg/                           # CYK parser and CFG toolkit
+├── fsa/                           # DFA/NFA simulation, minimization, determinization,
+│                                  # completion practice, operations, equivalence,
+│                                  # FA↔regex/grammar conversion, language comparison
+├── grammar/                       # Grammar parsers (Earley, recursive, LR(1), brute force),
+│                                  # analyzer, CNF/GNF transformers, grammar↔FSA/PDA converters
+├── grammar_analysis/              # Parts of grammar_analyzer.dart (FIRST/FOLLOW, LL(1), ...)
+├── grammar_to_pda/                # CFG→PDA LL/LR constructions
+├── pda/                           # PDA simulator, normalizer, simplifier, emptiness, PDA→CFG
+├── regex/                         # Regex analyzer, simplifier and regex→NFA converter
+├── tm/                            # TM simulator, execution kernel, profilers, reachability,
+│                                  # language explorer, building-block engine
+├── tm_to_unrestricted_grammar/    # TM→unrestricted grammar reduction
+└── cooperative_yield.dart         # Time-sliced yielding for long main-isolate loops
 ```
 
 ### Models (`lib/core/models/`)
@@ -115,7 +108,6 @@ models/
 ├── pda_transition.dart            # PDA transition metadata
 ├── production.dart                # Grammar production rule
 ├── pumping_attempt.dart           # Pumping lemma attempt state
-├── pumping_lemma_game.dart        # Pumping lemma game session
 ├── settings_model.dart            # Persisted user preference values
 ├── simulation_highlight.dart      # Highlight overlays for simulations
 ├── simulation_result.dart         # Result payload returned by simulators
@@ -228,32 +220,40 @@ pages/
 
 ### Widgets (`lib/presentation/widgets/`)
 
-Reusable UI components:
+Reusable UI components. Domain-specific widgets live in subdirectories; the
+root keeps the shared panels, canvas, shell and dialog widgets, plus provisional
+barrel files at the pre-#426 paths that re-export the moved widgets.
 
 ```
 widgets/
-├── algorithm_panel.dart             # Shared algorithm control surface
-├── grammar_algorithm_panel.dart     # Grammar-specific controls
-├── pda_algorithm_panel.dart         # PDA algorithm shortcuts
-├── tm_algorithm_panel.dart          # Turing machine tooling
+├── automaton_graphview/             # Canvas coordinators: lifecycle, sync, viewport, tool dispatch
+├── batch_execution/                 # Batch input runner panel
+├── common/                          # Algorithm buttons, example-load flow, snackbar helpers
+├── conversions/                     # Manual FA/regex/grammar constructions, CFG→PDA and
+│                                    # TM→grammar workspaces, replacement dialog, comparison panel
+├── export/                          # SVG exporter, renderers under export/svg/, PNG/SVG bindings
+├── file_operations/                 # Import/export panel parts
+├── fsa/                             # FSA-specific panels
+├── grammar/                         # Grammar editor, algorithm and simulation panels, teaching
+│                                    # workspaces (LL(1), LR(1), brute force, normalization)
+├── grammar_algorithm/               # Sections and formatters of the grammar algorithm panel
+├── language_comparison/             # Language comparison viewer and controller
+├── pda/                             # PDA algorithm/simulation panels and canvas
+├── pumping_lemma/                   # Pumping lemma workspace and progress
+├── tm/                              # TM algorithm/simulation panels, runner, result views, canvas
+├── trace_viewers/                   # Simulation trace renderers
+├── transition_editors/              # Editors for transitions across automata types
+├── utils/                           # Widget utilities and shared helpers
+├── algorithm_panel.dart             # FSA algorithm control surface
 ├── automaton_graphview_canvas.dart  # GraphView-backed canvas implementation
-├── diagnostics_panel.dart           # Runtime diagnostics and logs
 ├── file_operations_panel.dart       # Import/export actions
+├── simulation_panel.dart            # DFA/NFA simulation interface
 ├── workspace_selector.dart          # App-bar workspace switcher (wide viewports)
 ├── workspace_dock.dart              # Canvas-first shell with a collapsible panel rail
 ├── mobile_navigation.dart           # Mobile bottom navigation
-├── mobile_automaton_controls.dart   # Compact controls for touch devices
 ├── error_banner.dart                # Inline error messaging
 ├── import_error_dialog.dart         # Import failure dialog
-├── retry_button.dart                # Retry CTA used across error states
-├── simulation_panel.dart            # DFA/NFA simulation interface
-├── pda_simulation_panel.dart        # PDA simulation controls
-├── tm_simulation_panel.dart         # Turing machine simulation controls
-├── export/                          # SVG/PNG exporters and dialogs
-├── pumping_lemma_game/              # Interactive pumping lemma widgets
-├── trace_viewers/                   # Simulation trace renderers
-├── transition_editors/              # Editors for transitions across automata types
-└── utils/                           # Widget utilities and shared helpers
+└── retry_button.dart                # Retry CTA used across error states
 ```
 
 ### Providers (`lib/presentation/providers/`)
@@ -382,7 +382,7 @@ web/
 ### Documentation
 
 - `docs/` - Static project website, policy pages, and deployment assets
-- `USER_GUIDE.md` - GraphView canvas working guide
+- `USER_GUIDE.md` - Student and educator manual for every workspace
 - `PROJECT_STRUCTURE.md` - This file
 - `CONTRIBUTING.md` - Contribution workflow and local validation requirements
 - `SECURITY.md` - Supported versions and private vulnerability reporting

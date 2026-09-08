@@ -14,6 +14,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/formal_systems/formal_systems.dart';
+import 'common/simulation_input_request_binding.dart';
 import '../../core/batch_execution/batch_execution.dart';
 import '../../core/models/computation_branch.dart';
 import '../../core/models/fsa_computation_branch_adapter.dart';
@@ -32,7 +35,7 @@ import '../../core/constants/monospace_typography.dart';
 import 'error_banner.dart';
 
 /// Panel for automaton simulation
-class SimulationPanel extends StatefulWidget {
+class SimulationPanel extends ConsumerStatefulWidget {
   final FutureOr<void> Function(String) onSimulate;
   final SimulationResult? simulationResult;
   final String? errorMessage;
@@ -68,11 +71,12 @@ class SimulationPanel extends StatefulWidget {
   });
 
   @override
-  State<SimulationPanel> createState() => _SimulationPanelState();
+  ConsumerState<SimulationPanel> createState() => _SimulationPanelState();
 }
 
-class _SimulationPanelState extends State<SimulationPanel> {
+class _SimulationPanelState extends ConsumerState<SimulationPanel> {
   final TextEditingController _inputController = TextEditingController();
+  late final SimulationInputRequestBinding _inputRequestBinding;
   final FocusNode _branchInspectorButtonFocusNode = FocusNode();
   late final SimulationHighlightService _fallbackHighlightService;
   bool _isSimulating = false;
@@ -90,6 +94,11 @@ class _SimulationPanelState extends State<SimulationPanel> {
   void initState() {
     super.initState();
     _fallbackHighlightService = SimulationHighlightService();
+    _inputRequestBinding = SimulationInputRequestBinding(
+      workspace: DefaultFormalSystemIds.fsa,
+      controller: _inputController,
+      contextProvider: () => mounted ? context : null,
+    )..attach(ref);
     _scheduleHighlightSynchronization();
   }
 
@@ -114,6 +123,7 @@ class _SimulationPanelState extends State<SimulationPanel> {
   void dispose() {
     _simulationGeneration++;
     _highlightSyncGeneration++;
+    _inputRequestBinding.detach();
     _inputController.dispose();
     _branchInspectorButtonFocusNode.dispose();
     _fallbackHighlightService.clear();

@@ -1830,7 +1830,9 @@ LSystemDocument _unsupportedLSystem(int seed) => LSystemDocument(
       iterations: 1,
       turtle: LSystemTurtleSettings(),
       commandMapping: LSystemCommandMapping.standard,
-      unsupportedVariants: const {LSystemUnsupportedVariant.parametric},
+      // Parametric rules execute since #436; context-sensitive rules are
+      // still preserved without expanding.
+      unsupportedVariants: const {LSystemUnsupportedVariant.contextSensitive},
     );
 
 List<String> _mutantSequentialExpand(LSystemDocument system, int generations) {

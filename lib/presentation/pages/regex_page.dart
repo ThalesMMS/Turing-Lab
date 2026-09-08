@@ -15,6 +15,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/batch_execution/batch_execution.dart';
 import '../../core/constants/help_topic_ids.dart';
 import '../../core/formal_systems/formal_systems.dart';
+import '../widgets/common/simulation_input_request_binding.dart';
+import '../widgets/common/suggested_input_dispatcher.dart';
 import '../../core/annotations/annotations.dart';
 import '../../core/models/asset_example.dart';
 import '../../core/models/fsa.dart';
@@ -46,17 +48,18 @@ import '../widgets/batch_execution/batch_execution_panel.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/common/help_navigation.dart';
-import '../widgets/conversion_replacement_dialog.dart';
+import '../widgets/conversions/conversion_replacement_dialog.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/document_interoperability_binding.dart';
 import '../widgets/document_interoperability_preview.dart';
+import '../widgets/export/print_document_builder.dart';
 import '../widgets/file_operations_panel.dart';
 import '../widgets/interoperability_presentation_labels.dart';
 import '../widgets/document_annotations.dart';
 import '../widgets/switch_setting_tile.dart';
-import '../widgets/manual_conversion_document_preview.dart';
-import '../widgets/manual_conversion_workspace.dart';
-import '../widgets/regex_to_fa_fragment_editor.dart';
+import '../widgets/conversions/manual_conversion_document_preview.dart';
+import '../widgets/conversions/manual_conversion_workspace.dart';
+import '../widgets/conversions/regex_to_fa_fragment_editor.dart';
 import '../widgets/workspace_dock.dart';
 import '../../core/constants/monospace_typography.dart';
 
@@ -77,6 +80,7 @@ class RegexPage extends ConsumerStatefulWidget {
 class _RegexPageState extends ConsumerState<RegexPage> {
   final TextEditingController _regexController = TextEditingController();
   final TextEditingController _testStringController = TextEditingController();
+  SimulationInputRequestBinding? _testStringRequestBinding;
   final TextEditingController _alphabetController = TextEditingController();
   final TextEditingController _comparisonRegexController =
       TextEditingController();
@@ -95,10 +99,17 @@ class _RegexPageState extends ConsumerState<RegexPage> {
       regexEditorProvider,
       (_, next) => _syncInputControllers(next),
     );
+    _testStringRequestBinding = SimulationInputRequestBinding(
+      workspace: DefaultFormalSystemIds.regex,
+      controller: _testStringController,
+      contextProvider: () => mounted ? context : null,
+      onApplied: (_) => _testStringMatch(),
+    )..attach(ref);
   }
 
   @override
   void dispose() {
+    _testStringRequestBinding?.detach();
     _regexEditorSub?.close();
     _loadingExampleName.dispose();
     _regexController.dispose();
@@ -149,6 +160,30 @@ class _RegexPageState extends ConsumerState<RegexPage> {
     await ref
         .read(regexEditorProvider.notifier)
         .testStringMatch(_testStringController.text);
+  }
+
+  /// Loads [example] when its expression is not the active one, then hands
+  /// [input] to the test-string field.
+  Future<void> _useSuggestedInput(
+    BuildContext surfaceContext,
+    AssetExample<RegexPreset> example,
+    String input,
+  ) {
+    bool isActive() =>
+        ref.read(regexEditorProvider).currentRegex ==
+        example.payload.expression;
+    return dispatchSuggestedInput(
+      surfaceContext,
+      ref,
+      workspace: DefaultFormalSystemIds.regex,
+      exampleId: example.id,
+      input: input,
+      ensureLoaded: () async {
+        if (isActive()) return true;
+        await _loadSelectedRegexExample(example.name);
+        return mounted && isActive();
+      },
+    );
   }
 
   Future<void> _convertToNFA() async {
@@ -421,7 +456,15 @@ class _RegexPageState extends ConsumerState<RegexPage> {
           builder: (context, scrollController) {
             return Consumer(
               builder: (context, sheetRef, _) {
-                final algorithmState = sheetRef.watch(
+                // The regex panel shows only FA-to-regex results, so it
+                // subscribes to those fields and reads the rest (#427).
+                sheetRef.watch(
+                  automatonAlgorithmProvider.select(
+                    (state) =>
+                        (state.rawRegexResult, state.simplifiedRegexResult),
+                  ),
+                );
+                final algorithmState = sheetRef.read(
                   automatonAlgorithmProvider,
                 );
                 sheetRef.watch(regexEditorProvider);
@@ -644,8 +687,14 @@ class _RegexPageState extends ConsumerState<RegexPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch algorithm provider to get FA→Regex conversion results
-    final algorithmState = ref.watch(automatonAlgorithmProvider);
+    // Subscribe only to the FA→Regex conversion results; loading flags and
+    // step reports of other operations never change this page (#427).
+    ref.watch(
+      automatonAlgorithmProvider.select(
+        (state) => (state.rawRegexResult, state.simplifiedRegexResult),
+      ),
+    );
+    final algorithmState = ref.read(automatonAlgorithmProvider);
 
     publishWorkspaceQuickActionsForKey(
       ref,

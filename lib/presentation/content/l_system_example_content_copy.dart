@@ -150,6 +150,31 @@ abstract final class LSystemExampleContentCopies {
       ),
     ),
     _entry(
+      id: 'l-system.parametric-tree',
+      en: const LSystemExampleContentCopy(
+        title: 'Parametric tree',
+        summary:
+            'A single rule A(x) rewrites into branches whose lengths are arithmetic expressions of x.',
+        learningObjective:
+            'See how a parameter bound by the predecessor flows through expressions such as x*0.68 into the turtle commands of the next generation.',
+        limitation:
+            'Expressions use + - * / ^ and parentheses over bound identifiers only; conditions and functions are not part of the rule language.',
+        accessibleVisualizationDescription:
+            'The turtle visualization draws a trunk that splits into progressively shorter left and right branches, each level scaled by the rule expressions.',
+      ),
+      pt: const LSystemExampleContentCopy(
+        title: 'Árvore paramétrica',
+        summary:
+            'Uma única regra A(x) reescreve ramos cujos comprimentos são expressões aritméticas de x.',
+        learningObjective:
+            'Veja como um parâmetro ligado pelo predecessor flui por expressões como x*0.68 até os comandos da tartaruga da próxima geração.',
+        limitation:
+            'As expressões usam + - * / ^ e parênteses apenas sobre identificadores ligados; condições e funções não fazem parte da linguagem de regras.',
+        accessibleVisualizationDescription:
+            'A visualização da tartaruga desenha um tronco que se divide em ramos à esquerda e à direita cada vez mais curtos, cada nível escalado pelas expressões da regra.',
+      ),
+    ),
+    _entry(
       id: 'l-system.seeded-context-turtle',
       en: const LSystemExampleContentCopy(
         title: 'Seeded context turtle',

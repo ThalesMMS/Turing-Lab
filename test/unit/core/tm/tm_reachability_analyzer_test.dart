@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_reachability_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_reachability_analyzer.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -11,31 +11,33 @@ import 'package:vector_math/vector_math_64.dart';
 
 void main() {
   group('TMReachabilityAnalyzer', () {
-    test('separates structural edges from concrete semantic reachability',
-        () async {
-      final q0 = _state('q0', initial: true);
-      final guarded = _state('guarded');
-      final tm = _tm(
-        states: {q0, guarded},
-        initial: q0,
-        alphabet: const {'1'},
-        tapeAlphabet: const {'1', 'B'},
-        transitions: {
-          _transition('never', q0, guarded, '1', '1', TapeDirection.stay),
-        },
-      );
+    test(
+      'separates structural edges from concrete semantic reachability',
+      () async {
+        final q0 = _state('q0', initial: true);
+        final guarded = _state('guarded');
+        final tm = _tm(
+          states: {q0, guarded},
+          initial: q0,
+          alphabet: const {'1'},
+          tapeAlphabet: const {'1', 'B'},
+          transitions: {
+            _transition('never', q0, guarded, '1', '1', TapeDirection.stay),
+          },
+        );
 
-      final report = await TMReachabilityAnalyzer.analyze(
-        tm,
-        inputs: const [''],
-      );
+        final report = await TMReachabilityAnalyzer.analyze(
+          tm,
+          inputs: const [''],
+        );
 
-      expect(report.status, TMReachabilityStatus.complete);
-      expect(report.structurallyReachableStateIds, {'q0', 'guarded'});
-      expect(report.reachedWithinBoundsStateIds, {'q0'});
-      expect(report.notObservedWithinBoundsStateIds, {'guarded'});
-      expect(report.structurallyUnreachableStateIds, isEmpty);
-    });
+        expect(report.status, TMReachabilityStatus.complete);
+        expect(report.structurallyReachableStateIds, {'q0', 'guarded'});
+        expect(report.reachedWithinBoundsStateIds, {'q0'});
+        expect(report.notObservedWithinBoundsStateIds, {'guarded'});
+        expect(report.structurallyUnreachableStateIds, isEmpty);
+      },
+    );
 
     test('records a shortest stable witness after writing a marker', () async {
       final q0 = _state('q0', initial: true);
@@ -64,31 +66,33 @@ void main() {
       expect(witness.stateIds, ['q0', 'q1', 'q2']);
     });
 
-    test('combines an explicit input set and retains each witness input',
-        () async {
-      final q0 = _state('q0', initial: true);
-      final qa = _state('qa');
-      final qb = _state('qb');
-      final tm = _tm(
-        states: {q0, qa, qb},
-        initial: q0,
-        alphabet: const {'a', 'b'},
-        tapeAlphabet: const {'a', 'b', 'B'},
-        transitions: {
-          _transition('on-a', q0, qa, 'a', 'a', TapeDirection.stay),
-          _transition('on-b', q0, qb, 'b', 'b', TapeDirection.stay),
-        },
-      );
+    test(
+      'combines an explicit input set and retains each witness input',
+      () async {
+        final q0 = _state('q0', initial: true);
+        final qa = _state('qa');
+        final qb = _state('qb');
+        final tm = _tm(
+          states: {q0, qa, qb},
+          initial: q0,
+          alphabet: const {'a', 'b'},
+          tapeAlphabet: const {'a', 'b', 'B'},
+          transitions: {
+            _transition('on-a', q0, qa, 'a', 'a', TapeDirection.stay),
+            _transition('on-b', q0, qb, 'b', 'b', TapeDirection.stay),
+          },
+        );
 
-      final report = await TMReachabilityAnalyzer.analyze(
-        tm,
-        inputs: const ['b', 'a'],
-      );
+        final report = await TMReachabilityAnalyzer.analyze(
+          tm,
+          inputs: const ['b', 'a'],
+        );
 
-      expect(report.inputs, ['a', 'b']);
-      expect(report.witnessesByStateId['qa']?.input, 'a');
-      expect(report.witnessesByStateId['qb']?.input, 'b');
-    });
+        expect(report.inputs, ['a', 'b']);
+        expect(report.witnessesByStateId['qa']?.input, 'a');
+        expect(report.witnessesByStateId['qb']?.input, 'b');
+      },
+    );
 
     test('uses BFS so an NTM witness has minimum transition count', () async {
       final q0 = _state('q0', initial: true);
@@ -101,7 +105,13 @@ void main() {
           _transition('a-indirect', q0, middle, 'B', 'B', TapeDirection.stay),
           _transition('z-direct', q0, target, 'B', 'B', TapeDirection.stay),
           _transition(
-              'via-middle', middle, target, 'B', 'B', TapeDirection.stay),
+            'via-middle',
+            middle,
+            target,
+            'B',
+            'B',
+            TapeDirection.stay,
+          ),
         },
       );
 
@@ -199,35 +209,37 @@ void main() {
       expect(report.isComplete, isFalse);
     });
 
-    test('publishes transition and configuration progress after each batch',
-        () async {
-      final q0 = _state('q0', initial: true);
-      final q1 = _state('q1');
-      final tm = _tm(
-        states: {q0, q1},
-        initial: q0,
-        transitions: {
-          _transition('reach', q0, q1, 'B', 'B', TapeDirection.stay),
-        },
-      );
-      final progress = <(int, int)>[];
+    test(
+      'publishes transition and configuration progress after each batch',
+      () async {
+        final q0 = _state('q0', initial: true);
+        final q1 = _state('q1');
+        final tm = _tm(
+          states: {q0, q1},
+          initial: q0,
+          transitions: {
+            _transition('reach', q0, q1, 'B', 'B', TapeDirection.stay),
+          },
+        );
+        final progress = <(int, int)>[];
 
-      final report = await TMReachabilityAnalyzer.analyze(
-        tm,
-        inputs: const [''],
-        operationsPerBatch: 1,
-        onProgress: (transitions, configurations) {
-          progress.add((transitions, configurations));
-        },
-      );
+        final report = await TMReachabilityAnalyzer.analyze(
+          tm,
+          inputs: const [''],
+          operationsPerBatch: 1,
+          onProgress: (transitions, configurations) {
+            progress.add((transitions, configurations));
+          },
+        );
 
-      expect(report.isComplete, isTrue);
-      expect(progress, isNotEmpty);
-      expect(
-        progress.last,
-        (report.transitionsExplored, report.configurationsExplored),
-      );
-    });
+        expect(report.isComplete, isTrue);
+        expect(progress, isNotEmpty);
+        expect(progress.last, (
+          report.transitionsExplored,
+          report.configurationsExplored,
+        ));
+      },
+    );
 
     test('structural traversal is iterative for a large chain', () {
       const count = 5000;
@@ -264,12 +276,8 @@ void main() {
   });
 }
 
-State _state(String id, {bool initial = false}) => State(
-      id: id,
-      label: id,
-      position: Vector2.zero(),
-      isInitial: initial,
-    );
+State _state(String id, {bool initial = false}) =>
+    State(id: id, label: id, position: Vector2.zero(), isInitial: initial);
 
 TMTransition _transition(
   String id,

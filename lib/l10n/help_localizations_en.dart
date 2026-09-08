@@ -9,6 +9,7 @@ const enHelpUiCopy = {
   'lSystemExampleDragonCurve': 'Dragon curve',
   'lSystemExampleFractalPlant': 'Fractal plant',
   'lSystemExampleBranchingTree': 'Branching tree',
+  'lSystemExampleParametricTree': 'Parametric tree',
   'lSystemExampleSeededContextTurtle': 'Seeded context turtle',
   'relatedConcepts': 'Related Concepts',
   'hideExamples': 'Hide examples',

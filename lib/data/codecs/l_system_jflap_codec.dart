@@ -111,7 +111,6 @@ final class LSystemJflapCodec
         if (!_knownParameters.contains(name)) unknownParameters[name] = value;
       }
       final variants = <LSystemUnsupportedVariant>{};
-      final unsupportedRules = <Map<String, Object?>>[];
       final productions = <LSystemProduction>[];
       final productionIds = <String>{};
       var order = 0;
@@ -121,12 +120,6 @@ final class LSystemJflapCodec
             .findElements('right')
             .map((value) => value.innerText)
             .toList(growable: false);
-        if (_isParametric(left) ||
-            rights.any(_containsUnsupportedParametricCommand)) {
-          variants.add(LSystemUnsupportedVariant.parametric);
-          unsupportedRules.add({'left': left, 'rights': rights});
-          continue;
-        }
         final context = _decodeContext(left);
         for (final right in rights) {
           var id = _productionId(
@@ -422,7 +415,6 @@ final class LSystemJflapCodec
         unsupportedVariants: variants,
         unsupportedMetadata: {
           ...extensionMetadata,
-          if (unsupportedRules.isNotEmpty) 'jflapRules': unsupportedRules,
           if (unknownParameters.isNotEmpty)
             'jflapParameters': unknownParameters,
           if (unknownElements.isNotEmpty) 'jflapElements': unknownElements,
@@ -658,45 +650,29 @@ const _knownParameters = {
   'turingLabExtensions',
 };
 
-List<String> _tokens(String value) => value
-    .split(RegExp(r'\s+'))
-    .where((token) => token.isNotEmpty)
-    .toList(growable: false);
-
-bool _isParametric(String value) =>
-    RegExp(r'(^|\s)[^\s()]+\([^)]*\)').hasMatch(value);
-
-bool _containsUnsupportedParametricCommand(String value) => _tokens(value).any((
-  token,
-) {
-  final match = RegExp(r'^([^\s()]+)\([^)]*\)$').firstMatch(token);
-  return match != null && !_supportedArgumentCommands.contains(match.group(1));
-});
-
-const _supportedArgumentCommands = {
-  'g',
-  'f',
-  '+',
-  '-',
-  '&',
-  '^',
-  '/',
-  '*',
-  '!',
-  '~',
-  '#',
-  '@',
-  '##',
-  '@@',
-  'color',
-  'polygonColor',
-  'angle',
-  'angleIncrement',
-  'lineWidth',
-  'lineIncrement',
-  'distance',
-  'hueChange',
-};
+// Whitespace separates JFLAP symbols only outside parametric arguments.
+List<String> _tokens(String value) {
+  final tokens = <String>[];
+  var depth = 0;
+  var start = 0;
+  for (final match in RegExp(r'[()]|\s+').allMatches(value)) {
+    switch (match.group(0)) {
+      case '(':
+        depth++;
+      case ')':
+        if (depth > 0) depth--;
+      default:
+        if (depth == 0) {
+          if (start < match.start) {
+            tokens.add(value.substring(start, match.start));
+          }
+          start = match.end;
+        }
+    }
+  }
+  if (start < value.length) tokens.add(value.substring(start));
+  return tokens;
+}
 
 ({List<String> left, String predecessor, List<String> right}) _decodeContext(
   String value,

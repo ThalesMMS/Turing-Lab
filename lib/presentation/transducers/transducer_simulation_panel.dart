@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../widgets/common/simulation_input_request_binding.dart';
 
 import '../../core/models/simulation_highlight.dart';
 import '../../core/services/highlight_channel.dart';
@@ -12,10 +15,20 @@ import 'graphview_transducer_canvas_controller.dart';
 import 'transducer_editor_state.dart';
 import 'transducer_workspace_definition.dart';
 
+/// Converts a catalog suggestion to the one-token-per-line representation
+/// of the transducer input field: space-separated words stay whole, any other
+/// suggestion is split into single symbols.
+String transducerSuggestionToInputLines(String suggestion) {
+  final tokens = suggestion.contains(' ')
+      ? suggestion.split(' ').where((token) => token.isNotEmpty)
+      : suggestion.characters;
+  return tokens.join('\n');
+}
+
 final class TransducerSimulationPanel<
   TMachine extends DeterministicFiniteStateTransducer
 >
-    extends StatefulWidget {
+    extends ConsumerStatefulWidget {
   const TransducerSimulationPanel({
     super.key,
     required this.state,
@@ -43,15 +56,16 @@ final class TransducerSimulationPanel<
   final ValueChanged<List<TransducerExecutionStep>>? onViewOnCanvas;
 
   @override
-  State<TransducerSimulationPanel<TMachine>> createState() =>
+  ConsumerState<TransducerSimulationPanel<TMachine>> createState() =>
       _TransducerSimulationPanelState<TMachine>();
 }
 
 final class _TransducerSimulationPanelState<
   TMachine extends DeterministicFiniteStateTransducer
 >
-    extends State<TransducerSimulationPanel<TMachine>> {
+    extends ConsumerState<TransducerSimulationPanel<TMachine>> {
   final TextEditingController _inputController = TextEditingController();
+  late final SimulationInputRequestBinding _inputRequestBinding;
   final TextEditingController _maxStepsController = TextEditingController(
     text: '100000',
   );
@@ -60,6 +74,17 @@ final class _TransducerSimulationPanelState<
   bool _isRunning = false;
   String? _maxStepsError;
   int _runGeneration = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _inputRequestBinding = SimulationInputRequestBinding(
+      workspace: widget.definition.systemKey,
+      controller: _inputController,
+      contextProvider: () => mounted ? context : null,
+      formatInput: transducerSuggestionToInputLines,
+    )..attach(ref);
+  }
 
   @override
   void didUpdateWidget(
@@ -79,6 +104,7 @@ final class _TransducerSimulationPanelState<
   @override
   void dispose() {
     _cancellationToken?.cancel();
+    _inputRequestBinding.detach();
     _inputController.dispose();
     _maxStepsController.dispose();
     _maxStepsFocus.dispose();

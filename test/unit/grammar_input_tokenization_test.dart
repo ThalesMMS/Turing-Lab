@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive.dart';
-import 'package:turing_lab/core/algorithms/grammar_input_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_input_tokenizer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_earley.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_simple_recursive.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_input_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_input_tokenizer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/production.dart';

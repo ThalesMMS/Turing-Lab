@@ -1,13 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_language_explorer.dart';
-import 'package:turing_lab/core/algorithms/tm_messages.dart';
-import 'package:turing_lab/core/algorithms/tm_reachability_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_space_profiler.dart';
-import 'package:turing_lab/core/algorithms/tm_time_profiler.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_language_explorer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_messages.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_reachability_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_space_profiler.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_time_profiler.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';

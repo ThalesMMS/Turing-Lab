@@ -7,7 +7,7 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dar
 import 'package:turing_lab/data/services/manual_conversion_session_store.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/manual_conversion_workspace.dart';
+import 'package:turing_lab/presentation/widgets/conversions/manual_conversion_workspace.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 
 import '../../core/formal_systems/formal_systems.dart';
-import '../../core/algorithms/tm_block_dependency_analyzer.dart';
+import '../../core/algorithms/tm/tm_block_dependency_analyzer.dart';
 import '../../core/interoperability/interoperability.dart';
 import '../../core/models/tm.dart';
 import '../../core/models/tm_acceptance.dart';

@@ -1,7 +1,8 @@
 import '../../grammar/phrase_structure/phrase_structure.dart';
 import '../../models/tm.dart';
 import '../../models/tm_execution_analysis.dart';
-import '../tm_execution_analyzer.dart';
+import '../tm/tm_execution_analyzer.dart';
+import '../tm/tm_multi_tape_execution_analyzer.dart';
 import 'tm_to_grammar_models.dart';
 
 abstract final class TMToGrammarDifferentialChecker {
@@ -50,19 +51,31 @@ abstract final class TMToGrammarDifferentialChecker {
         );
         continue;
       }
-      final tmResult = await TMExecutionAnalyzer.analyzeTokens(
-        tm,
-        input,
-        maxSteps: tmMaxSteps,
-        maxConfigurations: tmMaxConfigurations,
-        timeout: perSampleTimeout,
-        includeTrace: false,
-      );
+      // The source machine runs on its own tape count; the grammar was built
+      // from the reduction, so the comparison stays against the original.
+      final tmResult = tm.tapeCount > 1
+          ? await TMMultiTapeExecutionAnalyzer.analyzeTokens(
+              tm,
+              input.join(),
+              input,
+              maxSteps: tmMaxSteps,
+              maxConfigurations: tmMaxConfigurations,
+              timeout: perSampleTimeout,
+              operationsPerBatch: 250,
+              includeTrace: false,
+            )
+          : await TMExecutionAnalyzer.analyzeTokens(
+              tm,
+              input,
+              maxSteps: tmMaxSteps,
+              maxConfigurations: tmMaxConfigurations,
+              timeout: perSampleTimeout,
+              includeTrace: false,
+            );
       final tmAccepted = switch (tmResult.outcome) {
         TMExecutionOutcome.accepted => true,
         TMExecutionOutcome.haltedRejected ||
-        TMExecutionOutcome.provenCycle =>
-          false,
+        TMExecutionOutcome.provenCycle => false,
         _ => null,
       };
       if (tmAccepted == null) {
@@ -79,9 +92,7 @@ abstract final class TMToGrammarDifferentialChecker {
       }
       final grammarResult = await BoundedDerivationSearch.run(
         grammar: construction.grammar!,
-        input: GrammarSymbolSequence(
-          input.map(TerminalGrammarSymbol.new),
-        ),
+        input: GrammarSymbolSequence(input.map(TerminalGrammarSymbol.new)),
         limits: DerivationSearchLimits(
           maxExpandedForms: grammarMaxExpandedForms,
           maxVisitedForms: grammarMaxVisitedForms,
@@ -114,8 +125,8 @@ abstract final class TMToGrammarDifferentialChecker {
           inputTokens: input,
           outcome: matches
               ? (tmAccepted
-                  ? TMToGrammarSampleOutcome.matchingAcceptance
-                  : TMToGrammarSampleOutcome.matchingRejection)
+                    ? TMToGrammarSampleOutcome.matchingAcceptance
+                    : TMToGrammarSampleOutcome.matchingRejection)
               : TMToGrammarSampleOutcome.mismatch,
           tmAccepted: tmAccepted,
           grammarAccepted: grammarAccepted,

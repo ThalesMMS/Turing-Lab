@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/messages/structured_message.dart';
-import '../../core/algorithms/automaton_simulator.dart';
-import '../../core/algorithms/dfa_completer.dart';
-import '../../core/algorithms/equivalence_checker.dart';
-import '../../core/algorithms/nfa_to_dfa_converter.dart';
-import '../../core/algorithms/regex_analyzer.dart';
-import '../../core/algorithms/regex_simplifier.dart';
-import '../../core/algorithms/regex_to_nfa_converter.dart';
+import '../../core/algorithms/fsa/automaton_simulator.dart';
+import '../../core/algorithms/fsa/dfa_completer.dart';
+import '../../core/algorithms/fsa/equivalence_checker.dart';
+import '../../core/algorithms/fsa/nfa_to_dfa_converter.dart';
+import '../../core/algorithms/regex/regex_analyzer.dart';
+import '../../core/algorithms/regex/regex_simplifier.dart';
+import '../../core/algorithms/regex/regex_to_nfa_converter.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/regex_document.dart';
 import '../../core/models/regex_analysis.dart';

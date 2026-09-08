@@ -1,14 +1,15 @@
 # Persistence
 
-Date: 2026-07-13
+Date: 2026-09-06
 
 ## Summary
 
-Turing Lab currently persists four kinds of data locally:
+Turing Lab currently persists five kinds of data locally:
 
 - Settings in `SharedPreferences`
 - Simulation traces in `SharedPreferences`
 - Active editor sessions in `SharedPreferences` when Auto Save is enabled
+- Grammar teaching and manual conversion sessions in `SharedPreferences`
 - Bundled examples in app assets
 
 Turing Lab restores the active editor session on cold start when the user's Auto Save setting is enabled. The previous unused local automata data source has been removed; active editor persistence is now handled by the Riverpod session coordinator and a compact `SharedPreferences` snapshot.
@@ -21,7 +22,8 @@ Turing Lab restores the active editor session on cold start when the user's Auto
 | Unified trace history | `SharedPreferences` | Yes | Yes | Stored by the data-layer `TracePersistenceService`, which also reads legacy core trace keys when unified keys are absent. |
 | Current unified trace position | `SharedPreferences` | Yes | Yes | Restored by `UnifiedTraceNotifier` on construction. |
 | Offline examples | Bundled assets | Yes | Yes | Loaded lazily from `assets/examples/`; no network dependency. |
-| Active editor automaton/session | `SharedPreferences` | Yes, when Auto Save is enabled | Yes, when Auto Save is enabled | Stores FSA, Grammar, PDA, TM, and Regex input state in typed schema envelopes, plus the active workspace's stable formal-system key. |
+| Active editor automaton/session | `SharedPreferences` | Yes, when Auto Save is enabled | Yes, when Auto Save is enabled | Stores the latest document of every registered formal system (FSA, CFG, unrestricted grammar, PDA, TM, Regex, both Pumping Lemma variants, Mealy, Moore, L-system) in typed schema envelopes, with annotations and the active workspace's stable formal-system key. |
+| Teaching sessions | `SharedPreferences` | Yes | Yes, while the source document revision matches | Grammar normalization/LL(1)/LR(1) sessions and manual conversion drafts. |
 
 ## SharedPreferences Keys
 
@@ -45,6 +47,11 @@ Turing Lab restores the active editor session on cold start when the user's Auto
 | `simulation_trace_history` | Data-layer `TracePersistenceService` compatibility read | Legacy/core trace history read when `trace_history` is absent. |
 | `current_simulation_trace` | Data-layer `TracePersistenceService` compatibility read | Legacy/core current trace read when `current_trace` is absent. |
 | `active_editor_session` | Data-layer `ActiveSessionPersistenceService` | Last editor session snapshot used to restore workspaces on relaunch when Auto Save is enabled. |
+| `active_editor_session_unsupported_v<N>` | Data-layer `ActiveSessionPersistenceService` | Recovery copy of a snapshot whose envelope version `N` is newer than this build supports. |
+| `active_editor_session_unsupported_<type>_<variant>_v<N>` | Data-layer `ActiveSessionPersistenceService` | Recovery copy of one document whose schema version `N` is newer than this build supports. |
+| `grammar_teaching_session.v1.<kind>.<grammarId>.<revision>` | `SharedPreferencesGrammarTeachingSessionStore` | Normalization (`normalization`), LL(1) (`parse.ll1`) and LR(1) (`parse.lr1`) teaching sessions keyed by grammar revision. |
+| `manual_conversion_session.<workspaceKey>` | `SharedPreferencesManualConversionSessionStore` | Manual FA-to-regex, FA-to-grammar and regex-to-FA conversion drafts validated against the source document id and revision. |
+| `settings_epsilon_symbol` | `EmptyStringSymbolNotifier` migration read | Legacy key migrated into `settings_empty_string_symbol` at startup and then removed. |
 
 ## Persistence Architecture
 
@@ -137,20 +144,26 @@ flowchart LR
 
 ### Active Editor Session
 
-- The active FSA, Grammar, PDA, TM, and Regex input state plus the current
+- The active document of every registered formal system plus the current
   `FormalSystemKey` live in Riverpod state during a run. Navigation positions
   are derived from registry order and are not the persisted identity.
 - `activeSessionPersistenceProvider` restores one saved snapshot during app startup and then listens to editor providers for changes.
 - `ActiveSessionPersistenceService` stores a versioned
-  `active_editor_session` JSON payload in `SharedPreferences`. Version 2 stores
-  each document with its formal-system key, schema ID, schema version, and
-  typed payload. Version 0 and 1 snapshots are migrated from the historical
-  workspace index and rewritten in the current envelope.
+  `active_editor_session` JSON payload in `SharedPreferences`. The current
+  envelope (`ActiveSessionSnapshot.currentVersion`, 3) stores each document
+  with its formal-system key, schema ID, schema version, typed payload and
+  annotation collection. Version 0 and 1 snapshots are migrated from the
+  historical workspace index and rewritten in the current envelope.
+- `ActiveSessionModuleRegistry` supplies the JSON session capability for the
+  built-in modules and keeps the capability that unrestricted grammar,
+  L-system, Mealy and Moore modules declare themselves. The full key, schema
+  and namespace table is in [persistence-audit.md](./persistence-audit.md).
 - A future envelope or document-schema version is preserved under a recovery
   backup key and surfaced as unsupported. Malformed data or a corrupt schema
   identity remains fail-open: it is cleared and startup continues.
-- Pumping Lemma explicitly declares session persistence unavailable, so the
-  active workspace can be restored without fabricating a Pumping document.
+- Both Pumping Lemma variants persist a `PumpingLemmaDocument` (problem,
+  decomposition session and challenge progress); stored progress is
+  reconciled against the current content versions on restore.
 - Saves are debounced during active editing and serialized through one write at a time. Pending snapshots are flushed when the app becomes inactive, hidden, paused, or detached and when the provider is disposed. Platform termination can still end the process before an asynchronous `SharedPreferences` write finishes, so lifecycle flushes are bounded best-effort durability rather than a synchronous shutdown guarantee. Malformed persisted session data is cleared and ignored so startup remains fail-open.
 - If `settings_auto_save` is false, startup restore is skipped and the stored session snapshot is cleared.
 
@@ -176,8 +189,8 @@ Severity: Critical (resolved when Auto Save is enabled)
 What happens:
 
 - The current editor state lives in Riverpod memory and is mirrored into `active_editor_session` while Auto Save is enabled.
-- Restarting the app restores the saved FSA, Grammar, PDA, TM, Regex input
-  state, and active workspace by stable formal-system key.
+- Restarting the app restores the saved document of every formal system and
+  the active workspace by stable formal-system key.
 - Disabling Auto Save clears the session snapshot and intentionally prevents cold-start restore.
 
 Recommendation:
@@ -292,8 +305,9 @@ Suggested scope:
 
 ## Known Gaps
 
-- **Active-session model restoration:** implemented for the latest FSA,
-  Grammar, PDA, TM, Regex input, and active workspace when Auto Save is enabled.
+- **Active-session model restoration:** implemented for the latest document of
+  every registered formal system and the active workspace when Auto Save is
+  enabled.
   It is a single versioned snapshot, not a history of recoverable sessions.
 - **Flutter UI restoration:** not implemented. Navigation stacks, scroll
   offsets, focus, dialogs, selections, and other transient widget state do not
@@ -310,6 +324,11 @@ Suggested scope:
 - `lib/data/repositories/settings_repository_impl.dart`
 - `lib/data/storage/settings_storage.dart`
 - `lib/data/services/trace_persistence_service.dart`
+- `lib/data/services/active_session_persistence_service.dart`
+- `lib/data/services/active_session_snapshot_codec.dart`
+- `lib/data/services/active_session_module_registry.dart`
+- `lib/data/services/grammar_teaching_session_store.dart`
+- `lib/data/services/manual_conversion_session_store.dart`
 - `lib/data/services/examples_service.dart`
 - `lib/data/data_sources/examples_asset_data_source.dart`
 - `lib/injection/dependency_injection.dart`

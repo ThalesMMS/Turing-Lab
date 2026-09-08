@@ -91,6 +91,706 @@
       "classification": "deliberateNotationOrAcronym",
       "rationale": "Numeric playback multiplier notation contains no translatable words.",
       "maxOccurrences": 2
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "111 is 7 in binary and 7 leaves remainder 1, so the run ends in q1, which is not accepting.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "111 é 7 em binário e 7 deixa resto 1, então a execução termina em q1, que não é final.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "A b before any a finds no marker to pop, so no configuration can continue.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "A palavra vazia não lê dígitos e permanece em q0, que é final porque o valor 0 é divisível por 3.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "A palavra vazia não tem último símbolo, então não pode terminar em a e o estado inicial continua não final.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "After the separator the stack holds the first half reversed (b then a), and the second half ab does not match it.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Cada a precisa ser compensado por dois b. Dois a exigem quatro b, então a pilha ainda guarda marcadores quando a entrada termina.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Depois do separador a pilha guarda a primeira metade invertida (b e depois a), e a segunda metade ab não corresponde.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Dois a empilham dois marcadores, mas só um b desempilha, então a pilha não volta ao marcador de fundo no final.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Dois a são pares, mas o único b é ímpar, então a execução termina no estado de quantidade ímpar de b.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Each a must be matched by two b. Two a need four b, so the stack still holds markers when the input ends.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Every branch, including the λ-moves, needs an a first; no branch can consume b from the initial state.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "O b aparece antes de qualquer a, então a subpalavra ab nunca ocorre e a execução termina antes de alcançar q2.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "O parêntese de fechamento chega sem marcador de abertura para desempilhar, então a execução trava imediatamente.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "One opening parenthesis is never closed, so a marker remains on the stack when the input ends.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Only the last symbol matters: the final b moves the machine back to the non-accepting state.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Os ramos que leem a ou ab chegam à aceitação, mas o b restante não tem transição, então nenhum ramo aceita a palavra inteira.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Seja qual for o meio que a máquina adivinhe, a segunda metade nunca espelha a primeira, então todos os ramos falham.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Só o último símbolo importa: o b final leva a máquina de volta ao estado não final.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "The b comes before any a, so the substring ab never appears and the run ends before reaching q2.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "The branches that read a or ab reach acceptance, but the remaining b has no transition, so no branch accepts the whole word.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "The closing parenthesis arrives with no opening marker to pop, so the run is stuck immediately.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "The empty word has no last symbol, so it cannot end in a and the initial state stays non-accepting.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "The empty word reads no digits and stays in q0, which is accepting because the value 0 is divisible by 3.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Todo ramo, inclusive os movimentos λ, precisa de um a primeiro; nenhum ramo consegue consumir b a partir do estado inicial.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Two a are even but the single b is odd, so the run ends in the state for odd b count.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Two a push two markers but only one b pops, so the stack is not back to the bottom marker at the end.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Um b antes de qualquer a não encontra marcador para desempilhar, então nenhuma configuração consegue continuar.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Um parêntese de abertura nunca é fechado, então um marcador permanece na pilha quando a entrada termina.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Whatever middle the machine guesses, the second half never mirrors the first, so every branch fails.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Zero a and zero b are both even counts, so the initial state is accepting for the empty word.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "Zero a e zero b são quantidades pares, então o estado inicial é final para a palavra vazia.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "c is not in the alphabet {a, b}: the simulator reports an invalid input symbol instead of rejecting a word of the language.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "c is not in the alphabet {a, b}; the run stops because no transition reads it, which is invalid input rather than a rejected palindrome.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "c não pertence ao alfabeto {a, b}: o simulador informa um símbolo de entrada inválido em vez de rejeitar uma palavra da linguagem.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "literal": "c não pertence ao alfabeto {a, b}; a execução para porque nenhuma transição o lê, o que é entrada inválida e não um palíndromo rejeitado.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: paired rationaleEn/rationalePt content selected by rationaleFor(languageCode); covered by the example counterexample locale and payload tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "A single rule A(x) rewrites into branches whose lengths are arithmetic expressions of x.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "A visualização da tartaruga desenha um tronco que se divide em ramos à esquerda e à direita cada vez mais curtos, cada nível escalado pelas expressões da regra.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "Parametric tree",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "See how a parameter bound by the predecessor flows through expressions such as x*0.68 into the turtle commands of the next generation.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "The turtle visualization draws a trunk that splits into progressively shorter left and right branches, each level scaled by the rule expressions.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "Uma única regra A(x) reescreve ramos cujos comprimentos são expressões aritméticas de x.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "Veja como um parâmetro ligado pelo predecessor flui por expressões como x*0.68 até os comandos da tartaruga da próxima geração.",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "literal": "Árvore paramétrica",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: parametric-tree educational copy has paired English and Portuguese entries, selected by the existing content resolver and covered by bilingual content tests.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/pages/unrestricted_grammar_page.dart",
+      "literal": "${production.left.symbols.map((s) => s.value).join(' ')} → ${production.right.isEmpty ? EmptyStringNotation.symbolOf(context) : production.right.symbols.map((s) => s.value).join(' ')}",
+      "classification": "deliberateNotationOrAcronym",
+      "rationale": "Issue #453: formal production/language representation or integer input value from the document; no added translatable prose.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/transducers/transducer_conversion_panel.dart",
+      "literal": "${index + 1}. ${_stepText(l10n, step)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: numbered conversion step calls _stepText with the active localization; the numeric prefix is sequence notation.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "literal": "Complete DFA",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: execution-selection identity shared by the completion action and practice reveal action; visible titles use completeDfaTitle and report text uses localizeWorkflowText.",
+      "maxOccurrences": 6
+    },
+    {
+      "path": "lib/presentation/widgets/export/print_document_builder.dart",
+      "literal": "Turing Lab",
+      "classification": "approvedPlatformConstant",
+      "rationale": "Issue #453: canonical product name in the print header, locale-neutral under docs/BRANDING.md.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/annotation_svg_renderer.dart",
+      "literal": "    <g class=\"annotation\" data-id=\"${SvgPrimitives.escapeXml(annotation.id)}\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/annotation_svg_renderer.dart",
+      "literal": "  <g class=\"annotations\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/automaton_svg_renderer.dart",
+      "literal": "      fill=\"${isInitial ? '#e3f2fd' : '#fff'}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/automaton_svg_renderer.dart",
+      "literal": "    <circle cx=\"$cx\" cy=\"$cy\" r=\"$outerRadius\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/automaton_svg_renderer.dart",
+      "literal": "    <circle cx=\"$cx\" cy=\"$cy\" r=\"$radius\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/automaton_svg_renderer.dart",
+      "literal": "  <g class=\"empty-automaton\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/automaton_svg_renderer.dart",
+      "literal": "  <g class=\"state\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "      stroke=\"$strokeColor\" stroke-width=\"${formatDimension(strokeWidth)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "      x2=\"${formatDimension(arrowEndX)}\" y2=\"${formatDimension(arrowStartY)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "    <circle cx=\"0\" cy=\"0\" r=\"${formatDimension(stateRadius)}\" fill=\"transparent\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "    <line x1=\"${formatDimension(arrowStartX)}\" y1=\"${formatDimension(arrowStartY)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "    refX=\"9\" refY=\"3.5\" orient=\"auto\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .annotation { font-family: $fontFamily; font-size: 12px; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .head { fill: #d32f2f; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .legend { font-family: $fontFamily; font-size: 12px; fill: #424242; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .state { font-family: $fontFamily; font-size: 14px; text-anchor: middle; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .tape { font-family: monospace; font-size: 16px; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .tape-cell { fill: #f5f5f5; stroke: #424242; stroke-width: 1; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .tape-symbol { font-family: monospace; font-size: 16px; text-anchor: middle; dominant-baseline: middle; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  .transition { font-family: $fontFamily; font-size: ${formatDimension(transitionFontSize)}px; text-anchor: middle; }",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  <g class=\"title\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  <marker id=\"${arrowMarkerId(hex)}\" markerWidth=\"10\" markerHeight=\"7\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  <marker id=\"${loopArrowMarkerId(hex)}\" markerUnits=\"userSpaceOnUse\" markerWidth=\"${formatDimension(loopArrowLength)}\" markerHeight=\"${formatDimension(loopArrowWidth)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "  <mask id=\"accepting-state-mask\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "#${value.toRadixString(16).padLeft(6, '0')}",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "Arial, sans-serif",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "arrowhead-${hex.replaceAll('#', '')}",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_primitives.dart",
+      "literal": "loop-arrowhead-${hex.replaceAll('#', '')}",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_transition_renderer.dart",
+      "literal": "$indent    fill=\"none\" stroke=\"$strokeColor\" stroke-width=\"${SvgPrimitives.formatDimension(SvgPrimitives.strokeWidth)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 2
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_transition_renderer.dart",
+      "literal": "$indent  <path d=\"M ${SvgPrimitives.formatDimension(arc.start.dx)} ${SvgPrimitives.formatDimension(arc.start.dy)} A ${SvgPrimitives.formatDimension(arc.radius)} ${SvgPrimitives.formatDimension(arc.radius)} 0 ${arc.isLargeArc ? 1 : 0} ${arc.sweep > 0 ? 1 : 0} ${SvgPrimitives.formatDimension(arc.end.dx)} ${SvgPrimitives.formatDimension(arc.end.dy)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_transition_renderer.dart",
+      "literal": "$indent  <path d=\"M ${SvgPrimitives.formatDimension(start.dx)} ${SvgPrimitives.formatDimension(start.dy)} Q ${SvgPrimitives.formatDimension(plan.controlPoint.dx)} ${SvgPrimitives.formatDimension(plan.controlPoint.dy)} ${SvgPrimitives.formatDimension(end.dx)} ${SvgPrimitives.formatDimension(end.dy)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_transition_renderer.dart",
+      "literal": "$indent<g class=\"transition\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 2
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/svg_transition_renderer.dart",
+      "literal": "${index.toString().padLeft(4, '0')}:${group.fromId}->${group.toId}",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "        ${SvgPrimitives.escapeXml(options.tmLegendLabel)}",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "      <circle cx=\"$cx\" cy=\"$cy\" r=\"$outerRadius\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "      <circle cx=\"$mainCx\" cy=\"$mainCy\" r=\"$radius\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "      <rect class=\"tape-cell\" x=\"$formattedX\" y=\"$formattedTapeTop\" width=\"$formattedCellWidth\" height=\"$formattedTapeHeight\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "      <text x=\"$legendXText\" y=\"$legendYText\" text-anchor=\"middle\" fill=\"${SvgPrimitives.colorToHex(textColor)}\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "    <g class=\"legend\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "    <g class=\"state\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg/tm_svg_renderer.dart",
+      "literal": "    <g class=\"tape\">",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg_exporter.dart",
+      "literal": "  viewBox=\"0 0 ${SvgPrimitives.formatDimension(width)} ${SvgPrimitives.formatDimension(height)}\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg_exporter.dart",
+      "literal": "<svg width=\"${SvgPrimitives.formatDimension(scaledWidth)}px\" height=\"${SvgPrimitives.formatDimension(scaledHeight)}px\"",
+      "classification": "debugOrInternal",
+      "rationale": "Issue #453: reviewed SVG/XML markup, CSS, geometry, escaped payload, or generated element identity; translating it would alter the serialized diagram. This allowance covers only this exact template.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "${strings.declaredGrammarType}: ${label(report.declaredClassification!)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "${strings.inferredGrammarType}: ${label(report.classification)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "${workspaceStrings.normalFormsLabel}: $normalForms",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "${workspaceStrings.regularOrientationLabel}: ${workspaceStrings.orientation(report.regularOrientation)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "- ${evidence.productionId}: ${evidence.violated.isEmpty ? workspaceStrings.allPredicatesSatisfied : workspaceStrings.violatesPredicates(predicates)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/chomsky_classification_section.dart",
+      "literal": "- ${workspaceStrings.diagnostic(diagnostic)}",
+      "classification": "localizedUserFacing",
+      "rationale": "Issue #453: report composition uses localized classification, predicate and diagnostic resolvers; production identifiers are preserved as formal data.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart",
+      "literal": "${_problem.representation}\n\n${_problem.languageDescription}",
+      "classification": "deliberateNotationOrAcronym",
+      "rationale": "Issue #453: formal production/language representation or integer input value from the document; no added translatable prose.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/go_to_step_dialog.dart",
+      "literal": "${widget.currentIndex + 1}",
+      "classification": "deliberateNotationOrAcronym",
+      "rationale": "Issue #453: formal production/language representation or integer input value from the document; no added translatable prose.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_runner.dart",
+      "literal": "Simulation failed",
+      "rationale": "Exact compatibility key resolved through AppLocalizationsWorkflows to the generated simulationFailed message before presentation.",
+      "maxOccurrences": 1,
+      "classification": "localizedUserFacing"
     }
   ]
 }

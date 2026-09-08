@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/brute_force_cfg_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/brute_force_cfg_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/brute_force_parse_models.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_parse_report.dart';
@@ -18,44 +18,45 @@ void main() {
     required Set<String> nonTerminals,
     String start = 'S',
     required Iterable<Production> productions,
-  }) =>
-      Grammar(
-        id: id,
-        name: 'Brute-force test grammar',
-        terminals: terminals,
-        nonterminals: nonTerminals,
-        startSymbol: start,
-        productions: productions.toSet(),
-        type: GrammarType.contextFree,
-        created: now,
-        modified: now,
-      );
+  }) => Grammar(
+    id: id,
+    name: 'Brute-force test grammar',
+    terminals: terminals,
+    nonterminals: nonTerminals,
+    startSymbol: start,
+    productions: productions.toSet(),
+    type: GrammarType.contextFree,
+    created: now,
+    modified: now,
+  );
 
   const p = Production.new;
 
   group('bounded CFG brute-force search', () {
-    test('parses the ambiguous JFLAP grammar fixture without flattening tokens',
-        () {
-      final xml = File(
-        'test/fixtures/interoperability/grammar_brute_force_ambiguous.jff',
-      ).readAsStringSync();
-      final decoded = const GrammarXmlCodec().decodeGrammarXml(xml);
+    test(
+      'parses the ambiguous JFLAP grammar fixture without flattening tokens',
+      () {
+        final xml = File(
+          'test/fixtures/interoperability/grammar_brute_force_ambiguous.jff',
+        ).readAsStringSync();
+        final decoded = const GrammarXmlCodec().decodeGrammarXml(xml);
 
-      expect(decoded.isSuccess, isTrue);
-      final result = BruteForceCFGParser.search(
-        decoded.data!,
-        'ididid',
-        limits: const BruteForceSearchLimits(resultCap: 3),
-      );
+        expect(decoded.isSuccess, isTrue);
+        final result = BruteForceCFGParser.search(
+          decoded.data!,
+          'ididid',
+          limits: const BruteForceSearchLimits(resultCap: 3),
+        );
 
-      expect(result.outcome, BruteForceParseOutcome.accepted);
-      expect(result.witnessCount, 2);
-      expect(result.witnesses, hasLength(2));
-      expect(
-        result.witnesses.map((witness) => witness.steps.last.after),
-        everyElement(equals(const ['id', 'id', 'id'])),
-      );
-    });
+        expect(result.outcome, BruteForceParseOutcome.accepted);
+        expect(result.witnessCount, 2);
+        expect(result.witnesses, hasLength(2));
+        expect(
+          result.witnesses.map((witness) => witness.steps.last.after),
+          everyElement(equals(const ['id', 'id', 'id'])),
+        );
+      },
+    );
 
     test('BFS returns the shortest production-ID witness', () {
       final source = grammar(
@@ -78,119 +79,126 @@ void main() {
 
       expect(result.outcome, BruteForceParseOutcome.accepted);
       expect(result.witnesses.single.depth, 2);
-      expect(
-        result.witnesses.single.steps.map((step) => step.productionId),
-        ['short-1', 'short-2'],
-      );
+      expect(result.witnesses.single.steps.map((step) => step.productionId), [
+        'short-1',
+        'short-2',
+      ]);
       expect(result.witnesses.single.tree.root.symbol, 'S');
       expect(result.witnesses.single.tree.root.children.single.symbol, 'A');
     });
 
-    test('leftmost, rightmost, and all-position modes choose token positions',
-        () {
-      final source = grammar(
-        terminals: {'a'},
-        nonTerminals: {'S', 'A'},
-        productions: [
-          p(id: 'split', leftSide: ['S'], rightSide: ['A', 'A']),
-          p(id: 'leaf', leftSide: ['A'], rightSide: ['a']),
-        ],
-      );
+    test(
+      'leftmost, rightmost, and all-position modes choose token positions',
+      () {
+        final source = grammar(
+          terminals: {'a'},
+          nonTerminals: {'S', 'A'},
+          productions: [
+            p(id: 'split', leftSide: ['S'], rightSide: ['A', 'A']),
+            p(id: 'leaf', leftSide: ['A'], rightSide: ['a']),
+          ],
+        );
 
-      final left = BruteForceCFGParser.search(
-        source,
-        'aa',
-        mode: BruteForceDerivationMode.leftmost,
-      );
-      final right = BruteForceCFGParser.search(
-        source,
-        'aa',
-        mode: BruteForceDerivationMode.rightmost,
-      );
-      final all = BruteForceCFGParser.search(
-        source,
-        'aa',
-        mode: BruteForceDerivationMode.allPositions,
-        limits: const BruteForceSearchLimits(resultCap: 2),
-      );
+        final left = BruteForceCFGParser.search(
+          source,
+          'aa',
+          mode: BruteForceDerivationMode.leftmost,
+        );
+        final right = BruteForceCFGParser.search(
+          source,
+          'aa',
+          mode: BruteForceDerivationMode.rightmost,
+        );
+        final all = BruteForceCFGParser.search(
+          source,
+          'aa',
+          mode: BruteForceDerivationMode.allPositions,
+          limits: const BruteForceSearchLimits(resultCap: 2),
+        );
 
-      expect(left.witnesses.single.steps.map((step) => step.occurrenceIndex),
-          [0, 0, 1]);
-      expect(right.witnesses.single.steps.map((step) => step.occurrenceIndex),
-          [0, 1, 0]);
-      expect(all.witnesses, hasLength(2));
-      expect(
-        all.witnesses.map((witness) => witness.stableKey).toSet(),
-        hasLength(2),
-      );
-    });
+        expect(
+          left.witnesses.single.steps.map((step) => step.occurrenceIndex),
+          [0, 0, 1],
+        );
+        expect(
+          right.witnesses.single.steps.map((step) => step.occurrenceIndex),
+          [0, 1, 0],
+        );
+        expect(all.witnesses, hasLength(2));
+        expect(
+          all.witnesses.map((witness) => witness.stableKey).toSet(),
+          hasLength(2),
+        );
+      },
+    );
 
-    test('retains ambiguous and duplicate-production witnesses up to the cap',
-        () {
-      final ambiguous = grammar(
-        terminals: {'a'},
-        nonTerminals: {'S', 'A', 'B'},
-        productions: [
-          p(id: 'to-a', leftSide: ['S'], rightSide: ['A']),
-          p(id: 'to-b', leftSide: ['S'], rightSide: ['B']),
-          p(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
-          p(id: 'b-leaf', leftSide: ['B'], rightSide: ['a']),
-        ],
-      );
-      final duplicates = grammar(
-        terminals: {'a'},
-        nonTerminals: {'S'},
-        productions: [
-          p(id: 'first', leftSide: ['S'], rightSide: ['a']),
-          p(id: 'second', leftSide: ['S'], rightSide: ['a']),
-        ],
-      );
+    test(
+      'retains ambiguous and duplicate-production witnesses up to the cap',
+      () {
+        final ambiguous = grammar(
+          terminals: {'a'},
+          nonTerminals: {'S', 'A', 'B'},
+          productions: [
+            p(id: 'to-a', leftSide: ['S'], rightSide: ['A']),
+            p(id: 'to-b', leftSide: ['S'], rightSide: ['B']),
+            p(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
+            p(id: 'b-leaf', leftSide: ['B'], rightSide: ['a']),
+          ],
+        );
+        final duplicates = grammar(
+          terminals: {'a'},
+          nonTerminals: {'S'},
+          productions: [
+            p(id: 'first', leftSide: ['S'], rightSide: ['a']),
+            p(id: 'second', leftSide: ['S'], rightSide: ['a']),
+          ],
+        );
 
-      final ambiguousResult = BruteForceCFGParser.search(
-        ambiguous,
-        'a',
-        limits: const BruteForceSearchLimits(resultCap: 2),
-      );
-      final duplicateResult = BruteForceCFGParser.search(
-        duplicates,
-        'a',
-        limits: const BruteForceSearchLimits(resultCap: 2),
-      );
+        final ambiguousResult = BruteForceCFGParser.search(
+          ambiguous,
+          'a',
+          limits: const BruteForceSearchLimits(resultCap: 2),
+        );
+        final duplicateResult = BruteForceCFGParser.search(
+          duplicates,
+          'a',
+          limits: const BruteForceSearchLimits(resultCap: 2),
+        );
 
-      expect(ambiguousResult.witnesses, hasLength(2));
-      expect(
-        duplicateResult.witnesses
-            .map((witness) => witness.steps.single.productionId),
-        {'first', 'second'},
-      );
-    });
-
-    test('supports epsilon, recursion, and Unicode multi-character terminals',
-        () {
-      final source = grammar(
-        terminals: {'token🙂'},
-        nonTerminals: {'S'},
-        productions: [
-          p(id: 'grow', leftSide: ['S'], rightSide: ['token🙂', 'S']),
-          p(
-            id: 'empty',
-            leftSide: ['S'],
-            rightSide: [],
-            isLambda: true,
+        expect(ambiguousResult.witnesses, hasLength(2));
+        expect(
+          duplicateResult.witnesses.map(
+            (witness) => witness.steps.single.productionId,
           ),
-        ],
-      );
+          {'first', 'second'},
+        );
+      },
+    );
 
-      final empty = BruteForceCFGParser.search(source, '');
-      final repeated = BruteForceCFGParser.search(source, 'token🙂token🙂');
+    test(
+      'supports epsilon, recursion, and Unicode multi-character terminals',
+      () {
+        final source = grammar(
+          terminals: {'token🙂'},
+          nonTerminals: {'S'},
+          productions: [
+            p(id: 'grow', leftSide: ['S'], rightSide: ['token🙂', 'S']),
+            p(id: 'empty', leftSide: ['S'], rightSide: [], isLambda: true),
+          ],
+        );
 
-      expect(empty.accepted, isTrue);
-      expect(empty.witnesses.single.tree.root.prettyPrint(), contains('ε'));
-      expect(repeated.accepted, isTrue);
-      expect(repeated.witnesses.single.depth, 3);
-      final terminalLeaves = repeated.witnesses.single.tree.root.prettyPrint();
-      expect(terminalLeaves, contains('token🙂("token🙂")'));
-    });
+        final empty = BruteForceCFGParser.search(source, '');
+        final repeated = BruteForceCFGParser.search(source, 'token🙂token🙂');
+
+        expect(empty.accepted, isTrue);
+        expect(empty.witnesses.single.tree.root.prettyPrint(), contains('ε'));
+        expect(repeated.accepted, isTrue);
+        expect(repeated.witnesses.single.depth, 3);
+        final terminalLeaves = repeated.witnesses.single.tree.root
+            .prettyPrint();
+        expect(terminalLeaves, contains('token🙂("token🙂")'));
+      },
+    );
 
     test('uses sound prefix/suffix/yield pruning and can prove exhaustion', () {
       final source = grammar(
@@ -273,12 +281,7 @@ void main() {
         nonTerminals: {'S', 'A'},
         productions: [
           p(id: 'split', leftSide: ['S'], rightSide: ['A', 'A']),
-          p(
-            id: 'empty',
-            leftSide: ['A'],
-            rightSide: [],
-            isLambda: true,
-          ),
+          p(id: 'empty', leftSide: ['A'], rightSide: [], isLambda: true),
         ],
       );
       final symbolLimit = BruteForceCFGParser.search(
@@ -293,48 +296,42 @@ void main() {
         'a',
         limits: const BruteForceSearchLimits(maxSymbolCount: 0),
       );
-      expect(
-        initialSymbolLimit.outcome,
-        BruteForceParseOutcome.boundedUnknown,
-      );
+      expect(initialSymbolLimit.outcome, BruteForceParseOutcome.boundedUnknown);
       expect(initialSymbolLimit.limit, BruteForceSearchLimit.symbolCount);
     });
 
-    test('supports cooperative cancellation and progress on the async path',
-        () async {
-      final source = grammar(
-        terminals: {'a'},
-        nonTerminals: {'S'},
-        productions: [
-          p(id: 'branch', leftSide: ['S'], rightSide: ['S', 'S']),
-          p(
-            id: 'empty',
-            leftSide: ['S'],
-            rightSide: [],
-            isLambda: true,
+    test(
+      'supports cooperative cancellation and progress on the async path',
+      () async {
+        final source = grammar(
+          terminals: {'a'},
+          nonTerminals: {'S'},
+          productions: [
+            p(id: 'branch', leftSide: ['S'], rightSide: ['S', 'S']),
+            p(id: 'empty', leftSide: ['S'], rightSide: [], isLambda: true),
+          ],
+        );
+        final token = BruteForceCancellationToken();
+        var progressCalls = 0;
+
+        final result = await BruteForceCFGParser.searchAsync(
+          source,
+          'a',
+          cancellationToken: token,
+          limits: const BruteForceSearchLimits(
+            operationsPerBatch: 1,
+            maxSymbolCount: 100,
           ),
-        ],
-      );
-      final token = BruteForceCancellationToken();
-      var progressCalls = 0;
+          onProgress: (_) {
+            progressCalls++;
+            token.cancel();
+          },
+        );
 
-      final result = await BruteForceCFGParser.searchAsync(
-        source,
-        'a',
-        cancellationToken: token,
-        limits: const BruteForceSearchLimits(
-          operationsPerBatch: 1,
-          maxSymbolCount: 100,
-        ),
-        onProgress: (_) {
-          progressCalls++;
-          token.cancel();
-        },
-      );
-
-      expect(progressCalls, greaterThan(0));
-      expect(result.outcome, BruteForceParseOutcome.cancelled);
-    });
+        expect(progressCalls, greaterThan(0));
+        expect(result.outcome, BruteForceParseOutcome.cancelled);
+      },
+    );
 
     test('batch inputs are independent and omit traces by default', () {
       final source = grammar(
@@ -353,7 +350,9 @@ void main() {
       expect(batch.items[0].result.witnesses, isEmpty);
       expect(batch.items[1].result.outcome, BruteForceParseOutcome.rejected);
       expect(
-          batch.items[2].result.outcome, BruteForceParseOutcome.invalidInput);
+        batch.items[2].result.outcome,
+        BruteForceParseOutcome.invalidInput,
+      );
     });
 
     test('is deterministic across production insertion order', () {
@@ -442,12 +441,7 @@ void main() {
       );
       final malformedProduction = source.copyWith(
         productions: {
-          p(
-            id: 'broken',
-            leftSide: ['S'],
-            rightSide: ['a'],
-            isLambda: true,
-          ),
+          p(id: 'broken', leftSide: ['S'], rightSide: ['a'], isLambda: true),
         },
       );
       expect(
@@ -496,10 +490,7 @@ void main() {
       expect(bounded.isSuccess, isTrue);
       expect(bounded.data!.accepted, isFalse);
       expect(bounded.data!.outcome, GrammarParseOutcome.boundedUnknown);
-      expect(
-        bounded.data!.bruteForceResult!.limit,
-        BruteForceSearchLimit.time,
-      );
+      expect(bounded.data!.bruteForceResult!.limit, BruteForceSearchLimit.time);
     });
   });
 }

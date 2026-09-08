@@ -12,10 +12,10 @@ import 'package:turing_lab/presentation/pages/help_page.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
-import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/grammar_editor.dart';
-import 'package:turing_lab/presentation/widgets/grammar_editor_section.dart';
-import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_editor.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_editor_section.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
 import '../../support/workspace_dock_helpers.dart';

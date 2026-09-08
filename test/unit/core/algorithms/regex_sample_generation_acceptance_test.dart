@@ -10,9 +10,9 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_analyzer.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
 
 void main() {
   group('Sample String Generation Acceptance Tests', () {
@@ -34,8 +34,11 @@ void main() {
         reason:
             'Failed to generate samples for "$regex": ${samplesResult.error}',
       );
-      expect(samplesResult.data!.samples, isNotEmpty,
-          reason: 'No samples generated for "$regex"');
+      expect(
+        samplesResult.data!.samples,
+        isNotEmpty,
+        reason: 'No samples generated for "$regex"',
+      );
 
       // Convert regex to NFA
       final nfaResult = RegexToNFAConverter.convert(regex);
@@ -65,28 +68,30 @@ void main() {
       }
     }
 
-    test('a*b+ generates samples matching pattern (e.g., b, ab, aab, abbb)',
-        () async {
-      // This is the key acceptance criterion from the spec
-      await validateSamplesMatchRegex('a*b+');
+    test(
+      'a*b+ generates samples matching pattern (e.g., b, ab, aab, abbb)',
+      () async {
+        // This is the key acceptance criterion from the spec
+        await validateSamplesMatchRegex('a*b+');
 
-      // Also verify we get the expected structure of samples
-      final result = RegexAnalyzer.generateSampleStrings('a*b+');
-      expect(result.isSuccess, true);
+        // Also verify we get the expected structure of samples
+        final result = RegexAnalyzer.generateSampleStrings('a*b+');
+        expect(result.isSuccess, true);
 
-      // Verify shortest string is 'b' (a* = 0 a's, b+ = 1 b)
-      expect(result.data!.shortestString, 'b');
+        // Verify shortest string is 'b' (a* = 0 a's, b+ = 1 b)
+        expect(result.data!.shortestString, 'b');
 
-      // Verify samples exist and follow the pattern
-      for (final sample in result.data!.samples) {
-        // Sample should be zero or more 'a's followed by one or more 'b's
-        expect(
-          RegExp(r'^a*b+$').hasMatch(sample),
-          true,
-          reason: 'Sample "$sample" does not match pattern a*b+',
-        );
-      }
-    });
+        // Verify samples exist and follow the pattern
+        for (final sample in result.data!.samples) {
+          // Sample should be zero or more 'a's followed by one or more 'b's
+          expect(
+            RegExp(r'^a*b+$').hasMatch(sample),
+            true,
+            reason: 'Sample "$sample" does not match pattern a*b+',
+          );
+        }
+      },
+    );
 
     test('simple symbol generates matching samples', () async {
       await validateSamplesMatchRegex('a');
@@ -226,18 +231,22 @@ void main() {
       }
     });
 
-    test('character class with star [abc]* generates matching samples',
-        () async {
-      await validateSamplesMatchRegex('[abc]*');
-    });
+    test(
+      'character class with star [abc]* generates matching samples',
+      () async {
+        await validateSamplesMatchRegex('[abc]*');
+      },
+    );
 
     test('complex nested expression generates matching samples', () async {
       await validateSamplesMatchRegex('((a|b)c)*d+');
     });
 
     test('samples are sorted by length', () {
-      final result =
-          RegexAnalyzer.generateSampleStrings('(ab)*', maxSamples: 10);
+      final result = RegexAnalyzer.generateSampleStrings(
+        '(ab)*',
+        maxSamples: 10,
+      );
       expect(result.isSuccess, true);
 
       final samples = result.data!.samples;
@@ -332,11 +341,16 @@ void main() {
       expect(nfaResult.isSuccess, true);
 
       for (final sample in result.data!.samples) {
-        final simResult =
-            await AutomatonSimulator.simulate(nfaResult.data!, sample);
+        final simResult = await AutomatonSimulator.simulate(
+          nfaResult.data!,
+          sample,
+        );
         expect(simResult.isSuccess, true);
-        expect(simResult.data!.accepted, true,
-            reason: 'Sample "$sample" should be accepted');
+        expect(
+          simResult.data!.accepted,
+          true,
+          reason: 'Sample "$sample" should be accepted',
+        );
       }
     });
   });

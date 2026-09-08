@@ -19,12 +19,16 @@ final class TransducerExamplesPanel<TDocument extends Object>
     super.key,
     required this.catalog,
     required this.onLoad,
+    this.onUseInput,
     this.textResolver,
     this.payloadFilter,
   });
 
   final ExampleCatalogCapability<TDocument>? catalog;
   final ValueChanged<TDocument> onLoad;
+
+  /// Loads [TDocument] and fills the simulation field with the suggestion.
+  final void Function(TDocument document, String input)? onUseInput;
   final TransducerExampleTextResolver? textResolver;
   final bool Function(Object payload)? payloadFilter;
 
@@ -110,6 +114,14 @@ final class _TransducerExamplesPanelState<TDocument extends Object>
                         example.descriptionMessage!,
                       ));
             final suggestions = ExampleSuggestedSimulations.resolve(example.id);
+            final onUseInput = widget.onUseInput;
+            final suggestionsWidget = ExampleSuggestedSimulationsText(
+              suggestions: suggestions,
+              exampleId: example.id,
+              onUseInput: onUseInput == null
+                  ? null
+                  : (input) => onUseInput(example.payload, input),
+            );
             return Card(
               key: ValueKey('transducer-example-${example.id}'),
               child: LayoutBuilder(
@@ -130,9 +142,7 @@ final class _TransducerExamplesPanelState<TDocument extends Object>
                         children: [
                           Text(description),
                           const SizedBox(height: 8),
-                          ExampleSuggestedSimulationsText(
-                            suggestions: suggestions,
-                          ),
+                          suggestionsWidget,
                         ],
                       ),
                       trailing: action,
@@ -150,9 +160,7 @@ final class _TransducerExamplesPanelState<TDocument extends Object>
                         const SizedBox(height: 4),
                         Text(description),
                         const SizedBox(height: 8),
-                        ExampleSuggestedSimulationsText(
-                          suggestions: suggestions,
-                        ),
+                        suggestionsWidget,
                         const SizedBox(height: 12),
                         Align(
                           alignment: AlignmentDirectional.centerEnd,

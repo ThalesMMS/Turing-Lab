@@ -28,12 +28,12 @@ final class MealyGraphNode extends TransducerGraphNode {
 
   @override
   Map<String, Object?> toJson() => {
-        'id': id.value,
-        'label': label,
-        'x': position.x,
-        'y': position.y,
-        'isInitial': isInitial,
-      };
+    'id': id.value,
+    'label': label,
+    'x': position.x,
+    'y': position.y,
+    'isInitial': isInitial,
+  };
 }
 
 final class MooreGraphNode extends TransducerGraphNode {
@@ -49,13 +49,13 @@ final class MooreGraphNode extends TransducerGraphNode {
 
   @override
   Map<String, Object?> toJson() => {
-        'id': id.value,
-        'label': label,
-        'x': position.x,
-        'y': position.y,
-        'isInitial': isInitial,
-        'output': output.values,
-      };
+    'id': id.value,
+    'label': label,
+    'x': position.x,
+    'y': position.y,
+    'isInitial': isInitial,
+    'output': output.values,
+  };
 }
 
 sealed class TransducerGraphEdge {
@@ -87,12 +87,12 @@ final class MealyGraphEdge extends TransducerGraphEdge {
 
   @override
   Map<String, Object?> toJson() => {
-        'id': id.value,
-        'from': from.value,
-        'to': to.value,
-        'input': input.value,
-        'output': output.values,
-      };
+    'id': id.value,
+    'from': from.value,
+    'to': to.value,
+    'input': input.value,
+    'output': output.values,
+  };
 }
 
 final class MooreGraphEdge extends TransducerGraphEdge {
@@ -105,60 +105,59 @@ final class MooreGraphEdge extends TransducerGraphEdge {
 
   @override
   Map<String, Object?> toJson() => {
-        'id': id.value,
-        'from': from.value,
-        'to': to.value,
-        'input': input.value,
-      };
+    'id': id.value,
+    'from': from.value,
+    'to': to.value,
+    'input': input.value,
+  };
 }
 
 final class TransducerGraphMapping {
   TransducerGraphMapping({
     required Iterable<TransducerGraphNode> nodes,
     required Iterable<TransducerGraphEdge> edges,
-  })  : nodes = List<TransducerGraphNode>.unmodifiable(nodes),
-        edges = List<TransducerGraphEdge>.unmodifiable(edges);
+  }) : nodes = List<TransducerGraphNode>.unmodifiable(nodes),
+       edges = List<TransducerGraphEdge>.unmodifiable(edges);
 
   final List<TransducerGraphNode> nodes;
   final List<TransducerGraphEdge> edges;
 
   factory TransducerGraphMapping.fromMachine(
     DeterministicFiniteStateTransducer machine,
-  ) =>
-      TransducerGraphMapping(
-        nodes: machine.states.map(
-          (state) => switch (state) {
-            MealyState() => MealyGraphNode(
-                id: state.id,
-                label: state.label,
-                position: state.position,
-                isInitial: state.isInitial,
-              ),
-            MooreState(:final output) => MooreGraphNode(
-                id: state.id,
-                label: state.label,
-                position: state.position,
-                isInitial: state.isInitial,
-                output: output,
-              ),
-          },
+  ) => TransducerGraphMapping(
+    nodes: machine.states.map(
+      (state) => switch (state) {
+        MealyState() => MealyGraphNode(
+          id: state.id,
+          label: state.label,
+          position: state.position,
+          isInitial: state.isInitial,
         ),
-        edges: machine.transitions.map(
-          (transition) => switch (transition) {
-            MealyTransition(:final output) => MealyGraphEdge(
-                id: transition.id,
-                from: transition.from,
-                to: transition.to,
-                input: transition.input,
-                output: output,
-              ),
-            MooreTransition() => MooreGraphEdge(
-                id: transition.id,
-                from: transition.from,
-                to: transition.to,
-                input: transition.input,
-              ),
-          },
+        MooreState(:final output) => MooreGraphNode(
+          id: state.id,
+          label: state.label,
+          position: state.position,
+          isInitial: state.isInitial,
+          output: output,
         ),
-      );
+      },
+    ),
+    edges: machine.transitions.map(
+      (transition) => switch (transition) {
+        MealyTransition(:final output) => MealyGraphEdge(
+          id: transition.id,
+          from: transition.from,
+          to: transition.to,
+          input: transition.input,
+          output: output,
+        ),
+        MooreTransition() => MooreGraphEdge(
+          id: transition.id,
+          from: transition.from,
+          to: transition.to,
+          input: transition.input,
+        ),
+      },
+    ),
+  );
 }

@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/annotations/annotations.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
@@ -18,6 +18,33 @@ import 'package:turing_lab/data/codecs/tm_jflap_document_codec.dart';
 import 'package:turing_lab/data/codecs/tm_json_document_codec.dart';
 
 void main() {
+  for (final duplicate in [false, true]) {
+    test('building-block IDs across distinct tags (duplicate: $duplicate)', () {
+      final secondId = duplicate ? 'shared' : 'other';
+      final source =
+          '''
+<structure><type>turing</type><automaton>
+  <block id="0" name="First"><x>0</x><y>0</y><initial/><tag>first</tag></block>
+  <block id="1" name="Second"><x>100</x><y>0</y><final/><tag>second</tag></block>
+  <first turingLabBlockId="shared"><state id="0" name="q0"><x>0</x><y>0</y><initial/><final/></state></first>
+  <second turingLabBlockId="$secondId"><state id="0" name="q0"><x>0</x><y>0</y><initial/><final/></state></second>
+</automaton></structure>''';
+      final result = const TmJflapDocumentCodec().decode(
+        _textPayload(source, 'block-identities.jff'),
+      );
+      if (duplicate) {
+        final malformed =
+            result as CodecMalformed<InteroperableDocument<Object>>;
+        expect(malformed.reason, CodecMalformedReason.duplicateIdentity);
+        expect(malformed.location?.path, '/structure/automaton/second');
+      } else {
+        final success = result as CodecSuccess<InteroperableDocument<Object>>;
+        final machine = success.value.document as TM;
+        expect(machine.blockDefinitions.keys, containsAll(['shared', 'other']));
+      }
+    });
+  }
+
   test('building-block failures preserve exact structured arguments', () {
     const source = '''
 <structure><type>turing</type><automaton>

@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/equivalence_checker.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/equivalence_checker.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -74,27 +74,30 @@ void main() {
     );
   });
 
-  test('deterministic fragment identities stay distinct in repeated branches',
-      () {
-    final converted = RegexToNFAConverter.convert('(ab)|(ab)');
+  test(
+    'deterministic fragment identities stay distinct in repeated branches',
+    () {
+      final converted = RegexToNFAConverter.convert('(ab)|(ab)');
 
-    expect(converted.isSuccess, isTrue);
-    final automaton = converted.data!;
-    expect(
-      automaton.states.map((state) => state.id).toSet(),
-      hasLength(automaton.states.length),
-    );
-    expect(
-      automaton.fsaTransitions.map((transition) => transition.id).toSet(),
-      hasLength(automaton.fsaTransitions.length),
-    );
-    expect(
+      expect(converted.isSuccess, isTrue);
+      final automaton = converted.data!;
+      expect(
+        automaton.states.map((state) => state.id).toSet(),
+        hasLength(automaton.states.length),
+      );
+      expect(
+        automaton.fsaTransitions.map((transition) => transition.id).toSet(),
+        hasLength(automaton.fsaTransitions.length),
+      );
+      expect(
         EquivalenceChecker.areEquivalent(
           automaton,
           RegexToNFAConverter.convert('ab').data!,
         ),
-        isTrue);
-  });
+        isTrue,
+      );
+    },
+  );
 
   test('Unicode scalar ranges validate and expand by scalar value', () {
     final validation = RegexToNFAConverter.validate('[😀-😁]');
@@ -135,11 +138,7 @@ void main() {
   });
 }
 
-State _state(
-  String id, {
-  bool initial = false,
-  bool accepting = false,
-}) =>
+State _state(String id, {bool initial = false, bool accepting = false}) =>
     State(
       id: id,
       label: id,
@@ -154,16 +153,15 @@ FSA _fsa({
   required Set<State> accepting,
   required Set<String> alphabet,
   required Set<FSATransition> transitions,
-}) =>
-    FSA(
-      id: 'regular-regression',
-      name: 'Regular regression',
-      states: states,
-      transitions: transitions,
-      alphabet: alphabet,
-      initialState: initial,
-      acceptingStates: accepting,
-      created: DateTime.utc(2026),
-      modified: DateTime.utc(2026),
-      bounds: const math.Rectangle(0, 0, 100, 100),
-    );
+}) => FSA(
+  id: 'regular-regression',
+  name: 'Regular regression',
+  states: states,
+  transitions: transitions,
+  alphabet: alphabet,
+  initialState: initial,
+  acceptingStates: accepting,
+  created: DateTime.utc(2026),
+  modified: DateTime.utc(2026),
+  bounds: const math.Rectangle(0, 0, 100, 100),
+);

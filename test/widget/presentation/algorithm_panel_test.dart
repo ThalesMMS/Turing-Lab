@@ -21,9 +21,9 @@ import 'package:turing_lab/presentation/providers/automaton_state_provider.dart'
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_controller.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_controller.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_semantics.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_viewer.dart';
 
 class _TestCallbacks {
   int autoLayoutCallCount = 0;

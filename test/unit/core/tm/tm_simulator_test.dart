@@ -10,7 +10,7 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/step_explanation.dart';
@@ -115,11 +115,7 @@ TM _dtmAcceptingInitialWithOutgoingTransition() {
     isInitial: true,
     isAccepting: true,
   );
-  final q1 = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(100, 0),
-  );
+  final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
 
   final transition = TMTransition(
     id: 't0',
@@ -164,11 +160,7 @@ TM _dtmNondeterministicConflict() {
     position: Vector2(100, 0),
     isAccepting: true,
   );
-  final qR = State(
-    id: 'qR',
-    label: 'qR',
-    position: Vector2(200, 0),
-  );
+  final qR = State(id: 'qR', label: 'qR', position: Vector2(200, 0));
 
   final transitions = <TMTransition>{
     TMTransition(
@@ -311,99 +303,107 @@ TM _ntmDuplicateLoop() {
 
 void main() {
   group('TM simulator (single-tape, deterministic and nondeterministic)', () {
-    test('synchronous DTM trace preserves display text and stable edge IDs',
-        () {
-      final result = TMSimulator.simulateDTM(
-        _dtmAppendOne(),
-        '1',
-        stepByStep: true,
-      );
+    test(
+      'synchronous DTM trace preserves display text and stable edge IDs',
+      () {
+        final result = TMSimulator.simulateDTM(
+          _dtmAppendOne(),
+          '1',
+          stepByStep: true,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
-      final step = steps.firstWhere(
-        (step) => step.usedTransition == 'q0,1 → q0,1,R',
-      );
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['tm-dtm-opaque-move-edge'],
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation, isNull);
+        final step = steps.firstWhere(
+          (step) => step.usedTransition == 'q0,1 → q0,1,R',
+        );
+        expect(
+          step.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['tm-dtm-opaque-move-edge'],
+        );
+      },
+    );
 
-    test('cooperative DTM trace preserves display text and stable edge IDs',
-        () async {
-      final result = await TMSimulator.simulateCooperative(
-        _dtmAppendOne(),
-        '1',
-        stepByStep: true,
-        operationsPerBatch: 1,
-      );
+    test(
+      'cooperative DTM trace preserves display text and stable edge IDs',
+      () async {
+        final result = await TMSimulator.simulateCooperative(
+          _dtmAppendOne(),
+          '1',
+          stepByStep: true,
+          operationsPerBatch: 1,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
-      final step = steps.firstWhere(
-        (step) => step.usedTransition == 'q0,1 → q0,1,R',
-      );
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['tm-dtm-opaque-move-edge'],
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation, isNull);
+        final step = steps.firstWhere(
+          (step) => step.usedTransition == 'q0,1 → q0,1,R',
+        );
+        expect(
+          step.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['tm-dtm-opaque-move-edge'],
+        );
+      },
+    );
 
-    test('synchronous NTM trace preserves display text and stable edge IDs',
-        () {
-      final result = TMSimulator.simulateNTM(
-        _ntmSimple(),
-        '1',
-        stepByStep: true,
-      );
+    test(
+      'synchronous NTM trace preserves display text and stable edge IDs',
+      () {
+        final result = TMSimulator.simulateNTM(
+          _ntmSimple(),
+          '1',
+          stepByStep: true,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
-      final step = steps.firstWhere(
-        (step) => step.usedTransition == 'q0,1 → qA,A,S',
-      );
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['tm-ntm-opaque-accept-a-edge'],
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation, isNull);
+        final step = steps.firstWhere(
+          (step) => step.usedTransition == 'q0,1 → qA,A,S',
+        );
+        expect(
+          step.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['tm-ntm-opaque-accept-a-edge'],
+        );
+      },
+    );
 
-    test('cooperative NTM trace preserves display text and stable edge IDs',
-        () async {
-      final result = await TMSimulator.simulateCooperative(
-        _ntmSimple(),
-        '1',
-        stepByStep: true,
-        operationsPerBatch: 1,
-      );
+    test(
+      'cooperative NTM trace preserves display text and stable edge IDs',
+      () async {
+        final result = await TMSimulator.simulateCooperative(
+          _ntmSimple(),
+          '1',
+          stepByStep: true,
+          operationsPerBatch: 1,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation, isNull);
-      final step = steps.firstWhere(
-        (step) => step.usedTransition == 'q0,1 → qA,A,S',
-      );
-      expect(
-        step.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['tm-ntm-opaque-accept-a-edge'],
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation, isNull);
+        final step = steps.firstWhere(
+          (step) => step.usedTransition == 'q0,1 → qA,A,S',
+        );
+        expect(
+          step.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['tm-ntm-opaque-accept-a-edge'],
+        );
+      },
+    );
 
     test('DTM appends one and accepts', () {
       final tm = _dtmAppendOne();
@@ -422,52 +422,61 @@ void main() {
       // Steps: initial(q0) → step1(q0, read '1', stay q0) → step2(qA, read 'B', write '1') → final(qA)
       // After Bug 2 fix, intermediate steps should show the destination state.
       // Find the step where we transition to qA
-      final acceptingSteps =
-          steps.where((s) => s.currentState == 'qA').toList();
-      expect(acceptingSteps, isNotEmpty,
-          reason: 'At least one step should show the accepting state qA');
-    });
-
-    test('DTM accepts empty string when initial state is accepting (Bug 4 fix)',
-        () {
-      final tm = _dtmAcceptEmpty();
-      final res = TMSimulator.simulateDTM(tm, '');
-      expect(res.isSuccess, true);
-      expect(res.data!.accepted, true);
-    });
-
-    test('DTM accepts an accepting initial state before applying transitions',
-        () {
-      final tm = _dtmAcceptingInitialWithOutgoingTransition();
-
-      final dtmResult = TMSimulator.simulateDTM(tm, 'a');
-      final routedResult = TMSimulator.simulate(tm, 'a');
-      final ntmResult = TMSimulator.simulateNTM(tm, 'a');
-
-      expect(dtmResult.isSuccess, true);
-      expect(routedResult.isSuccess, true);
-      expect(ntmResult.isSuccess, true);
-      expect(dtmResult.data!.accepted, true);
-      expect(routedResult.data!.accepted, true);
-      expect(ntmResult.data!.accepted, true);
-      expect(dtmResult.data!.steps.last.currentState, 'q0');
+      final acceptingSteps = steps
+          .where((s) => s.currentState == 'qA')
+          .toList();
       expect(
-        dtmResult.data!.steps.any((step) => step.currentState == 'q1'),
-        isFalse,
-        reason: 'DTM should accept before taking the outgoing transition.',
+        acceptingSteps,
+        isNotEmpty,
+        reason: 'At least one step should show the accepting state qA',
       );
     });
 
     test(
-        'DTM rejects empty string when initial state is not accepting (Bug 4 fix)',
-        () {
-      final tm = _dtmAppendOne();
-      // q0 is not accepting, and the machine reads 'B' → transitions to qA (which is accepting).
-      // So this should actually accept because of the B→1 transition.
-      final res = TMSimulator.simulateDTM(tm, '');
-      expect(res.isSuccess, true);
-      expect(res.data!.accepted, true);
-    });
+      'DTM accepts empty string when initial state is accepting (Bug 4 fix)',
+      () {
+        final tm = _dtmAcceptEmpty();
+        final res = TMSimulator.simulateDTM(tm, '');
+        expect(res.isSuccess, true);
+        expect(res.data!.accepted, true);
+      },
+    );
+
+    test(
+      'DTM accepts an accepting initial state before applying transitions',
+      () {
+        final tm = _dtmAcceptingInitialWithOutgoingTransition();
+
+        final dtmResult = TMSimulator.simulateDTM(tm, 'a');
+        final routedResult = TMSimulator.simulate(tm, 'a');
+        final ntmResult = TMSimulator.simulateNTM(tm, 'a');
+
+        expect(dtmResult.isSuccess, true);
+        expect(routedResult.isSuccess, true);
+        expect(ntmResult.isSuccess, true);
+        expect(dtmResult.data!.accepted, true);
+        expect(routedResult.data!.accepted, true);
+        expect(ntmResult.data!.accepted, true);
+        expect(dtmResult.data!.steps.last.currentState, 'q0');
+        expect(
+          dtmResult.data!.steps.any((step) => step.currentState == 'q1'),
+          isFalse,
+          reason: 'DTM should accept before taking the outgoing transition.',
+        );
+      },
+    );
+
+    test(
+      'DTM rejects empty string when initial state is not accepting (Bug 4 fix)',
+      () {
+        final tm = _dtmAppendOne();
+        // q0 is not accepting, and the machine reads 'B' → transitions to qA (which is accepting).
+        // So this should actually accept because of the B→1 transition.
+        final res = TMSimulator.simulateDTM(tm, '');
+        expect(res.isSuccess, true);
+        expect(res.data!.accepted, true);
+      },
+    );
 
     test('DTM returns error on nondeterministic conflict (Bug 5 fix)', () {
       final tm = _dtmNondeterministicConflict();
@@ -533,31 +542,38 @@ void main() {
     });
 
     test(
-        'currentTapeSymbol returns symbol at headPosition, not index 0 (Bug A fix)',
-        () {
-      // Create a simulation step with tape 'ABC' and head at position 2
-      final step = SimulationStep.tm(
-        currentState: 'q0',
-        remainingInput: '',
-        tapeContents: 'ABC',
-        stepNumber: 1,
-        headPosition: 2,
-      );
+      'currentTapeSymbol returns symbol at headPosition, not index 0 (Bug A fix)',
+      () {
+        // Create a simulation step with tape 'ABC' and head at position 2
+        final step = SimulationStep.tm(
+          currentState: 'q0',
+          remainingInput: '',
+          tapeContents: 'ABC',
+          stepNumber: 1,
+          headPosition: 2,
+        );
 
-      expect(step.currentTapeSymbol, 'C',
-          reason: 'Should return symbol at headPosition (2), not index 0');
+        expect(
+          step.currentTapeSymbol,
+          'C',
+          reason: 'Should return symbol at headPosition (2), not index 0',
+        );
 
-      // Verify index 0 would have returned 'A' (the old buggy behavior)
-      expect(step.tapeContents[0], 'A');
-    });
+        // Verify index 0 would have returned 'A' (the old buggy behavior)
+        expect(step.tapeContents[0], 'A');
+      },
+    );
 
     test('NTM is correctly routed via simulate() (Bug C fix)', () {
       final tm = _ntmSimple();
       // Using simulate() (the main entry point) — should detect NTM and route correctly
       final res = TMSimulator.simulate(tm, '1');
       expect(res.isSuccess, true);
-      expect(res.data!.accepted, true,
-          reason: 'NTM should accept via at least one branch');
+      expect(
+        res.data!.accepted,
+        true,
+        reason: 'NTM should accept via at least one branch',
+      );
     });
 
     test('Initial step has tape contents and head position (Bug D fix)', () {
@@ -566,103 +582,122 @@ void main() {
       expect(res.isSuccess, true);
 
       final initialStep = res.data!.steps.first;
-      expect(initialStep.tapeContents, '11',
-          reason: 'Initial step should have the input on the tape');
-      expect(initialStep.headPosition, 0,
-          reason: 'Initial step should have head at position 0');
+      expect(
+        initialStep.tapeContents,
+        '11',
+        reason: 'Initial step should have the input on the tape',
+      );
+      expect(
+        initialStep.headPosition,
+        0,
+        reason: 'Initial step should have head at position 0',
+      );
     });
 
     test(
-        'DTM with >1000 steps does not falsely report infinite loop (Bug F fix)',
-        () {
-      // Create a TM that loops through many steps before accepting.
-      // q0 reads '1', writes '1', moves right — loops until it hits blank.
-      // With input of 1500 '1's, it needs >1500 steps.
-      final q0 = State(
-        id: 'q0',
-        label: 'q0',
-        position: Vector2(0, 0),
-        isInitial: true,
-      );
-      final qA = State(
-        id: 'qA',
-        label: 'qA',
-        position: Vector2(100, 0),
-        isAccepting: true,
-      );
+      'DTM with >1000 steps does not falsely report infinite loop (Bug F fix)',
+      () {
+        // Create a TM that loops through many steps before accepting.
+        // q0 reads '1', writes '1', moves right — loops until it hits blank.
+        // With input of 1500 '1's, it needs >1500 steps.
+        final q0 = State(
+          id: 'q0',
+          label: 'q0',
+          position: Vector2(0, 0),
+          isInitial: true,
+        );
+        final qA = State(
+          id: 'qA',
+          label: 'qA',
+          position: Vector2(100, 0),
+          isAccepting: true,
+        );
 
-      final transitions = <TMTransition>{
-        TMTransition(
-          id: 't0',
-          fromState: q0,
-          toState: q0,
-          label: '1/1,R',
-          readSymbol: '1',
-          writeSymbol: '1',
-          direction: TapeDirection.right,
-          tapeNumber: 0,
-        ),
-        TMTransition(
-          id: 't1',
-          fromState: q0,
-          toState: qA,
-          label: 'B/B,S',
-          readSymbol: 'B',
-          writeSymbol: 'B',
-          direction: TapeDirection.stay,
-          tapeNumber: 0,
-        ),
-      };
+        final transitions = <TMTransition>{
+          TMTransition(
+            id: 't0',
+            fromState: q0,
+            toState: q0,
+            label: '1/1,R',
+            readSymbol: '1',
+            writeSymbol: '1',
+            direction: TapeDirection.right,
+            tapeNumber: 0,
+          ),
+          TMTransition(
+            id: 't1',
+            fromState: q0,
+            toState: qA,
+            label: 'B/B,S',
+            readSymbol: 'B',
+            writeSymbol: 'B',
+            direction: TapeDirection.stay,
+            tapeNumber: 0,
+          ),
+        };
 
-      final tm = TM(
-        id: 'tm_long',
-        name: 'Long Running DTM',
-        states: {q0, qA},
-        transitions: transitions,
-        alphabet: const {'1'},
-        initialState: q0,
-        acceptingStates: {qA},
-        created: DateTime.now(),
-        modified: DateTime.now(),
-        bounds: const math.Rectangle(0, 0, 400, 300),
-        tapeAlphabet: const {'1', 'B'},
-        blankSymbol: 'B',
-        tapeCount: 1,
-      );
+        final tm = TM(
+          id: 'tm_long',
+          name: 'Long Running DTM',
+          states: {q0, qA},
+          transitions: transitions,
+          alphabet: const {'1'},
+          initialState: q0,
+          acceptingStates: {qA},
+          created: DateTime.now(),
+          modified: DateTime.now(),
+          bounds: const math.Rectangle(0, 0, 400, 300),
+          tapeAlphabet: const {'1', 'B'},
+          blankSymbol: 'B',
+          tapeCount: 1,
+        );
 
-      // Input with 1500 '1's — will need >1500 steps
-      final input = '1' * 1500;
-      final res = TMSimulator.simulateDTM(tm, input,
-          stepByStep: true, timeout: const Duration(seconds: 30));
-      expect(res.isSuccess, true);
-      expect(res.data!.accepted, true,
-          reason: 'Should accept without falsely reporting infinite loop');
-      expect(res.data!.steps.length, greaterThan(1000),
-          reason: 'Should have more than 1000 steps');
-    });
+        // Input with 1500 '1's — will need >1500 steps
+        final input = '1' * 1500;
+        final res = TMSimulator.simulateDTM(
+          tm,
+          input,
+          stepByStep: true,
+          timeout: const Duration(seconds: 30),
+        );
+        expect(res.isSuccess, true);
+        expect(
+          res.data!.accepted,
+          true,
+          reason: 'Should accept without falsely reporting infinite loop',
+        );
+        expect(
+          res.data!.steps.length,
+          greaterThan(1000),
+          reason: 'Should have more than 1000 steps',
+        );
+      },
+    );
 
-    test('cooperative DTM detects a loop without recording every step',
-        () async {
-      final loopingNtm = _ntmDuplicateLoop();
-      final tm = loopingNtm.copyWith(
-        transitions: {loopingNtm.tmTransitions.first},
-      );
+    test(
+      'cooperative DTM detects a loop without recording every step',
+      () async {
+        final loopingNtm = _ntmDuplicateLoop();
+        final tm = loopingNtm.copyWith(
+          transitions: {loopingNtm.tmTransitions.first},
+        );
 
-      final result = await TMSimulator.simulateCooperative(
-        tm,
-        '1',
-        stepByStep: false,
-        timeout: const Duration(seconds: 30),
-      );
+        final result = await TMSimulator.simulateCooperative(
+          tm,
+          '1',
+          stepByStep: false,
+          timeout: const Duration(seconds: 30),
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.data!.errorMessage, 'Infinite loop detected');
-      expect(
-        result.data!.steps,
-        hasLength(1),
-        reason: 'Cooperative mode should retain only the initial snapshot',
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.data!.errorMessage, 'Infinite loop detected');
+        expect(
+          result.data!.steps,
+          hasLength(1),
+          reason: 'Cooperative mode should retain only the initial snapshot',
+        );
+      },
+    );
 
     test('Final step has headPosition (Bug G fix)', () {
       final tm = _dtmAppendOne();
@@ -670,8 +705,11 @@ void main() {
       expect(res.isSuccess, true);
 
       final finalStep = res.data!.steps.last;
-      expect(finalStep.headPosition, isNotNull,
-          reason: 'Final step must have headPosition for tape visualization');
+      expect(
+        finalStep.headPosition,
+        isNotNull,
+        reason: 'Final step must have headPosition for tape visualization',
+      );
     });
 
     test('NTM step records destination state, not source (Bug I fix)', () {
@@ -681,14 +719,18 @@ void main() {
       expect(res.data!.accepted, true);
 
       // Skip initial step; intermediate steps should show the destination state
-      final intermediateSteps =
-          res.data!.steps.where((s) => s.usedTransition != null).toList();
+      final intermediateSteps = res.data!.steps
+          .where((s) => s.usedTransition != null)
+          .toList();
       expect(intermediateSteps, isNotEmpty);
 
       for (final step in intermediateSteps) {
         // The NTM branches go q0→qA or q0→qB, so steps must show qA or qB
-        expect(step.currentState, isNot('q0'),
-            reason: 'Step should record the destination state, not source');
+        expect(
+          step.currentState,
+          isNot('q0'),
+          reason: 'Step should record the destination state, not source',
+        );
       }
     });
 
@@ -698,10 +740,16 @@ void main() {
       expect(res.isSuccess, true);
 
       final initialStep = res.data!.steps.first;
-      expect(initialStep.tapeContents, '1',
-          reason: 'NTM initial step should have the input on the tape');
-      expect(initialStep.headPosition, 0,
-          reason: 'NTM initial step should have head at position 0');
+      expect(
+        initialStep.tapeContents,
+        '1',
+        reason: 'NTM initial step should have the input on the tape',
+      );
+      expect(
+        initialStep.headPosition,
+        0,
+        reason: 'NTM initial step should have head at position 0',
+      );
     });
 
     test('NTM rejection preserves trace steps (Bug K fix)', () {
@@ -712,11 +760,7 @@ void main() {
         position: Vector2(0, 0),
         isInitial: true,
       );
-      final q1 = State(
-        id: 'q1',
-        label: 'q1',
-        position: Vector2(100, 0),
-      );
+      final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
 
       final transitions = <TMTransition>{
         TMTransition(
@@ -750,8 +794,11 @@ void main() {
       final res = TMSimulator.simulate(tm, '1');
       expect(res.isSuccess, true);
       expect(res.data!.accepted, false);
-      expect(res.data!.steps, isNotEmpty,
-          reason: 'Rejected NTM should preserve trace steps, not discard them');
+      expect(
+        res.data!.steps,
+        isNotEmpty,
+        reason: 'Rejected NTM should preserve trace steps, not discard them',
+      );
     });
 
     test('NTM rejects after deduplicating repeated configurations', () {

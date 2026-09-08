@@ -5,7 +5,7 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dar
 import 'package:turing_lab/core/utils/epsilon_utils.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/empty_string_notation.dart';
-import 'package:turing_lab/presentation/widgets/fa_to_regex_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_to_regex_requirement_editor.dart';
 
 // feature-localization-contract: automata-conversions-and-fragments
 // feature-localization-surface: localized-editor-fields

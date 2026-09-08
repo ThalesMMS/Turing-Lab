@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import '../messages/structured_message.dart';
 import 'l_system_model.dart';
+import 'parametric_evaluator.dart';
 
 final class LSystemCancellationToken {
   bool _isCancelled = false;
@@ -198,14 +199,17 @@ final class LSystemExpander {
           );
         }
         final symbol = current.word.symbols[sourceIndex];
-        final production = _selectProduction(
+        final selection = _selectProduction(
           system,
           current.word,
           sourceIndex,
-          bySymbol[symbol] ?? const [],
+          bySymbol[ParametricSymbol.baseName(symbol)] ?? const [],
           random,
         );
-        final replacement = production?.successor.symbols ?? [symbol];
+        final production = selection?.production;
+        final replacement = selection == null
+            ? [symbol]
+            : _emit(selection.production, selection.bindings);
         final start = output.length;
         output.addAll(replacement);
         provenance.add(
@@ -288,14 +292,17 @@ final class LSystemExpander {
           );
         }
         final symbol = current.word.symbols[sourceIndex];
-        final production = _selectProduction(
+        final selection = _selectProduction(
           system,
           current.word,
           sourceIndex,
-          bySymbol[symbol] ?? const [],
+          bySymbol[ParametricSymbol.baseName(symbol)] ?? const [],
           random,
         );
-        final replacement = production?.successor.symbols ?? [symbol];
+        final production = selection?.production;
+        final replacement = selection == null
+            ? [symbol]
+            : _emit(selection.production, selection.bindings);
         final start = output.length;
         output.addAll(replacement);
         provenance.add(
@@ -354,6 +361,15 @@ final class LSystemExpander {
       }
     }
     for (final variant in system.unsupportedVariants) {
+      // Older imports preserved rules outside productions. Keep the diagnostic
+      // until those rules are migrated; ignoring them would silently change
+      // the expansion. A flag alone does not block executable productions.
+      final preservedRules = system.unsupportedMetadata['jflapRules'];
+      if (variant == LSystemUnsupportedVariant.parametric &&
+          (preservedRules == null ||
+              (preservedRules is List && preservedRules.isEmpty))) {
+        continue;
+      }
       diagnostics.add(
         LSystemExpansionDiagnostic(
           code: LSystemExpansionDiagnosticCode.unsupportedVariant,
@@ -391,7 +407,7 @@ final class LSystemExpander {
   ) {
     var result = 0;
     for (final symbol in word.symbols) {
-      final candidates = bySymbol[symbol];
+      final candidates = bySymbol[ParametricSymbol.baseName(symbol)];
       result += candidates == null || candidates.isEmpty
           ? 1
           : candidates
@@ -402,43 +418,81 @@ final class LSystemExpander {
     return result;
   }
 
+  /// Productions are indexed by the base name of their predecessor, so a
+  /// parametric rule `A(x)` is found for the symbol `A(3)` as well as a plain
+  /// rule `A` for the symbol `A`.
   static Map<String, List<LSystemProduction>> _indexProductions(
     Iterable<LSystemProduction> productions,
   ) {
     final result = <String, List<LSystemProduction>>{};
     for (final production in productions) {
-      result.putIfAbsent(production.predecessor, () => []).add(production);
+      result
+          .putIfAbsent(
+            ParametricSymbol.baseName(production.predecessor),
+            () => [],
+          )
+          .add(production);
     }
     return result;
   }
 
-  static LSystemProduction? _selectProduction(
+  static const _evaluator = ParametricEvaluator();
+
+  /// Plain predecessors match the symbol exactly; parametric predecessors
+  /// bind their identifiers to the symbol's numeric arguments.
+  static Map<String, double>? _bindPredecessor(
+    LSystemProduction production,
+    String symbol,
+  ) {
+    if (ParametricEvaluator.parameterNames(production.predecessor) == null) {
+      return production.predecessor == symbol ? const {} : null;
+    }
+    return _evaluator.bind(production.predecessor, symbol);
+  }
+
+  static List<String> _emit(
+    LSystemProduction production,
+    Map<String, double> bindings,
+  ) {
+    if (bindings.isEmpty &&
+        !production.successor.symbols.any((s) => s.contains('('))) {
+      return production.successor.symbols;
+    }
+    return [
+      for (final token in production.successor.symbols)
+        _evaluator.rewriteToken(token, bindings),
+    ];
+  }
+
+  static _Selection? _selectProduction(
     LSystemDocument system,
     LSystemWord source,
     int sourceIndex,
     List<LSystemProduction> candidates,
     math.Random random,
   ) {
-    final matching = candidates
-        .where(
-          (production) => _matchesContext(
-            source.symbols,
-            sourceIndex,
-            production,
-            system.ignoredContextSymbols,
-          ),
-        )
-        .toList(growable: false);
+    final symbol = source.symbols[sourceIndex];
+    final matching = <_Selection>[
+      for (final production in candidates)
+        if (_matchesContext(
+          source.symbols,
+          sourceIndex,
+          production,
+          system.ignoredContextSymbols,
+        ))
+          if (_bindPredecessor(production, symbol) case final bindings?)
+            _Selection(production, bindings),
+    ];
     if (matching.isEmpty) return null;
     if (matching.length == 1) return matching.single;
     final total = matching.fold<double>(
       0,
-      (sum, production) => sum + production.weight,
+      (sum, selection) => sum + selection.production.weight,
     );
     var selected = random.nextDouble() * total;
-    for (final production in matching) {
-      selected -= production.weight;
-      if (selected < 0) return production;
+    for (final selection in matching) {
+      selected -= selection.production.weight;
+      if (selected < 0) return selection;
     }
     return matching.last;
   }
@@ -555,4 +609,11 @@ final class LSystemExpander {
       retained.removeAt(0);
     }
   }
+}
+
+final class _Selection {
+  const _Selection(this.production, this.bindings);
+
+  final LSystemProduction production;
+  final Map<String, double> bindings;
 }

@@ -1,4 +1,4 @@
-import '../../algorithms/grammar_input_tokenizer.dart';
+import '../../algorithms/grammar/grammar_input_tokenizer.dart';
 import '../../models/grammar.dart';
 import '../../result.dart';
 import 'grammar_symbol.dart';

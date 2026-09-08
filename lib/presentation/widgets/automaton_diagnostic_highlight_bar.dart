@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations_resolver.dart';
+import 'collapsible_canvas_panel.dart';
+import 'movable_canvas_panel_host.dart';
 
 enum AutomatonDiagnosticHighlightKind { conflicts, epsilon }
 
@@ -11,10 +13,12 @@ class AutomatonDiagnosticHighlightBar extends StatelessWidget {
     required this.activeKind,
     required this.conflictCount,
     required this.onConflictSelected,
+    this.floating = false,
     this.epsilonCount,
     this.onEpsilonSelected,
   });
 
+  final bool floating;
   final AutomatonDiagnosticHighlightKind? activeKind;
   final int conflictCount;
   final ValueChanged<bool>? onConflictSelected;
@@ -24,7 +28,7 @@ class AutomatonDiagnosticHighlightBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
-    return Semantics(
+    final content = Semantics(
       container: true,
       label: l10n.automataDiagnosticsCanvas,
       child: Material(
@@ -72,6 +76,19 @@ class AutomatonDiagnosticHighlightBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+    if (!floating) return content;
+    return MovableCanvasPanelHost(
+      anchor: Alignment.topLeft,
+      builder: (context, {required onDragDelta, required onPanelSizeChanged}) =>
+          CollapsibleCanvasPanel(
+            label: l10n.automataDiagnosticsCanvas,
+            icon: Icons.rule,
+            showCollapseButton: true,
+            onDragDelta: onDragDelta,
+            onPanelSizeChanged: onPanelSizeChanged,
+            child: content,
+          ),
     );
   }
 }

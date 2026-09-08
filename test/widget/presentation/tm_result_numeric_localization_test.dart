@@ -7,13 +7,13 @@ import 'package:turing_lab/core/models/tm_space_profile.dart';
 import 'package:turing_lab/core/models/tm_time_profile.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
-import 'package:turing_lab/presentation/widgets/tm_language_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_presentation_primitives.dart';
-import 'package:turing_lab/presentation/widgets/tm_reachability_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_space_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_tape_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_termination_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_time_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_language_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_presentation_primitives.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_reachability_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_space_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_tape_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_termination_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_time_result_view.dart';
 
 void main() {
   test('formats BigInt values beyond native integer range by locale', () {

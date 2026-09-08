@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:test/test.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -21,68 +21,71 @@ import '../../../tool/hard_edge/runner.dart';
 
 void main() {
   group('TM independent oracle', () {
-    test('agrees on acceptance, rejection, cycles, and negative heads',
-        () async {
-      final cases = [
-        (_acceptor(), const ['a']),
-        (_rejector(), const <String>[]),
-        (_cycle(), const <String>[]),
-        (_leftAcceptor(), const <String>[]),
-      ];
-      const oracle = IndependentTmOracle();
+    test(
+      'agrees on acceptance, rejection, cycles, and negative heads',
+      () async {
+        final cases = [
+          (_acceptor(), const ['a']),
+          (_rejector(), const <String>[]),
+          (_cycle(), const <String>[]),
+          (_leftAcceptor(), const <String>[]),
+        ];
+        const oracle = IndependentTmOracle();
 
-      for (final (machine, input) in cases) {
-        final expected = oracle.run(machine, input);
-        final actual = await TMExecutionAnalyzer.analyzeTokens(machine, input);
-        expect(
-          expected.outcome.name,
-          switch (actual.outcome) {
+        for (final (machine, input) in cases) {
+          final expected = oracle.run(machine, input);
+          final actual = await TMExecutionAnalyzer.analyzeTokens(
+            machine,
+            input,
+          );
+          expect(expected.outcome.name, switch (actual.outcome) {
             TMExecutionOutcome.accepted => 'accepted',
             TMExecutionOutcome.haltedRejected => 'haltedRejected',
             TMExecutionOutcome.provenCycle => 'provenCycle',
             TMExecutionOutcome.boundedUnknown ||
-            TMExecutionOutcome.cancelled =>
-              'boundedUnknown',
+            TMExecutionOutcome.cancelled => 'boundedUnknown',
             TMExecutionOutcome.invalidMachine => 'invalidMachine',
-          },
-          reason: machine.id,
+          }, reason: machine.id);
+        }
+        expect(oracle.run(_leftAcceptor(), const []).trace.single.heads, [-1]);
+      },
+    );
+
+    test(
+      'does not turn an NTM repeated branch into global nontermination',
+      () async {
+        final machine = _acceptingAndCyclicNtm();
+
+        expect(
+          const IndependentTmOracle().run(machine, const []).outcome,
+          TmOracleOutcome.accepted,
         );
-      }
-      expect(oracle.run(_leftAcceptor(), const []).trace.single.heads, [-1]);
-    });
+        expect(
+          (await TMExecutionAnalyzer.analyze(machine, '')).outcome,
+          TMExecutionOutcome.accepted,
+        );
+      },
+    );
 
-    test('does not turn an NTM repeated branch into global nontermination',
-        () async {
-      final machine = _acceptingAndCyclicNtm();
+    test(
+      'checks the complete step-limit frontier before returning bounded',
+      () async {
+        final machine = _acceptingAtLimitAfterTruncatedBranch();
 
-      expect(
-        const IndependentTmOracle().run(machine, const []).outcome,
-        TmOracleOutcome.accepted,
-      );
-      expect(
-        (await TMExecutionAnalyzer.analyze(machine, '')).outcome,
-        TMExecutionOutcome.accepted,
-      );
-    });
+        final oracle = const IndependentTmOracle(
+          maximumSteps: 1,
+        ).run(machine, const []);
+        final production = await TMExecutionAnalyzer.analyze(
+          machine,
+          '',
+          maxSteps: 1,
+        );
 
-    test('checks the complete step-limit frontier before returning bounded',
-        () async {
-      final machine = _acceptingAtLimitAfterTruncatedBranch();
-
-      final oracle = const IndependentTmOracle(maximumSteps: 1).run(
-        machine,
-        const [],
-      );
-      final production = await TMExecutionAnalyzer.analyze(
-        machine,
-        '',
-        maxSteps: 1,
-      );
-
-      expect(oracle.outcome, TmOracleOutcome.accepted);
-      expect(oracle.steps, 1);
-      expect(production.outcome, TMExecutionOutcome.accepted);
-    });
+        expect(oracle.outcome, TmOracleOutcome.accepted);
+        expect(oracle.steps, 1);
+        expect(production.outcome, TMExecutionOutcome.accepted);
+      },
+    );
   });
 
   group('TM hard-edge family', () {
@@ -109,8 +112,9 @@ void main() {
       expect(first.status, TmCertificationStatus.passed);
       expect(first.checks, hasLength(13));
       expect(first.toJson(), second.toJson());
-      final inventory =
-          first.checks.singleWhere((check) => check.id == 'tm.inventory');
+      final inventory = first.checks.singleWhere(
+        (check) => check.id == 'tm.inventory',
+      );
       expect(
         inventory.evidence['executedEntrypoints'],
         hasLength(
@@ -123,37 +127,37 @@ void main() {
       expect(inventory.evidence['missingEntrypointEvidence'], isEmpty);
     });
 
-    test('catalog fragment has current digests and full descriptor coverage',
-        () async {
-      final catalog = await HardEdgeCatalog.load(
-        repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/tm/catalog.fragment.json',
-        ),
-      );
+    test(
+      'catalog fragment has current digests and full descriptor coverage',
+      () async {
+        final catalog = await HardEdgeCatalog.load(
+          repositoryRoot: Directory.current,
+          manifestFile: File(
+            'test/fixtures/hard_edge/tm/catalog.fragment.json',
+          ),
+        );
 
-      expect(catalog.manifest.cases, hasLength(19));
-      expect(catalog.manifest.mutations, hasLength(4));
-      expect(
-        catalog.manifest.cases.map((testCase) => testCase.id).toSet(),
-        tmHardEdgeDescriptors.map((descriptor) => descriptor.id).toSet(),
-      );
-      final descriptors = {
-        for (final descriptor in tmHardEdgeDescriptors)
-          descriptor.id: descriptor,
-      };
-      for (final testCase in catalog.manifest.cases) {
-        expect(testCase.algorithm, descriptors[testCase.id]!.algorithm);
-        expect(testCase.property, descriptors[testCase.id]!.property);
-      }
-    });
+        expect(catalog.manifest.cases, hasLength(19));
+        expect(catalog.manifest.mutations, hasLength(4));
+        expect(
+          catalog.manifest.cases.map((testCase) => testCase.id).toSet(),
+          tmHardEdgeDescriptors.map((descriptor) => descriptor.id).toSet(),
+        );
+        final descriptors = {
+          for (final descriptor in tmHardEdgeDescriptors)
+            descriptor.id: descriptor,
+        };
+        for (final testCase in catalog.manifest.cases) {
+          expect(testCase.algorithm, descriptors[testCase.id]!.algorithm);
+          expect(testCase.property, descriptors[testCase.id]!.property);
+        }
+      },
+    );
 
     test('catalog adapter executes every inventoried descriptor', () async {
       final catalog = await HardEdgeCatalog.load(
         repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/tm/catalog.fragment.json',
-        ),
+        manifestFile: File('test/fixtures/hard_edge/tm/catalog.fragment.json'),
       );
       final executor = TmHardEdgeExecutor();
 
@@ -173,13 +177,8 @@ void main() {
       final executor = TmHardEdgeExecutor();
       final testCase = (await HardEdgeCatalog.load(
         repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/tm/catalog.fragment.json',
-        ),
-      ))
-          .manifest
-          .cases
-          .first;
+        manifestFile: File('test/fixtures/hard_edge/tm/catalog.fragment.json'),
+      )).manifest.cases.first;
       const valid = {
         'family': 'tm',
         'scenario': 'core-oracle',
@@ -191,78 +190,79 @@ void main() {
         HardEdgeExecutionOutcome.pass,
       );
       expect(
-        await executor.execute(
-          testCase,
-          {...valid, 'scenario': 'wrong'},
-        ),
+        await executor.execute(testCase, {...valid, 'scenario': 'wrong'}),
         HardEdgeExecutionOutcome.violation,
       );
       expect(
-        await executor.execute(
-          testCase,
-          {...valid, 'expectedStatus': 'failed'},
-        ),
+        await executor.execute(testCase, {
+          ...valid,
+          'expectedStatus': 'failed',
+        }),
         HardEdgeExecutionOutcome.violation,
       );
     });
 
-    test('external shrink fixture is valid, applicable, and reducible',
-        () async {
-      final fixture = jsonDecode(
-        await File('test/fixtures/hard_edge/tm/shrink_probe.json')
-            .readAsString(),
-      );
+    test(
+      'external shrink fixture is valid, applicable, and reducible',
+      () async {
+        final fixture = jsonDecode(
+          await File(
+            'test/fixtures/hard_edge/tm/shrink_probe.json',
+          ).readAsString(),
+        );
 
-      expect(tmFailureFixtureIsValid(fixture), isTrue);
-      expect(tmFailureFixtureIsApplicable(fixture), isTrue);
-      final candidates = tmFailureFixtureShrinker.candidates(fixture).toList();
-      expect(candidates, isNotEmpty);
-      expect(
-        candidates.any(
-          (candidate) =>
-              tmFailureFixtureIsValid(candidate) &&
-              tmFailureFixtureIsApplicable(candidate),
-        ),
-        isTrue,
-      );
-      final minimized = minimizeTmFailureFixture(fixture);
-      expect(
-        tmFailureFixtureSignature(minimized),
-        tmFailureFixtureSignature(fixture),
-      );
-      expect(tmFailureFixtureIsMinimal(minimized), isTrue);
-      final minimizedMap = minimized! as Map;
-      expect(minimizedMap['inputTokens'], ['a']);
-      expect(
-        ((minimizedMap['machine'] as Map)['transitions'] as List),
-        hasLength(1),
-      );
-      expect((minimizedMap['machine'] as Map)['alphabet'], ['a']);
-      expect((minimizedMap['machine'] as Map)['tapeAlphabet'], ['a', 'B']);
+        expect(tmFailureFixtureIsValid(fixture), isTrue);
+        expect(tmFailureFixtureIsApplicable(fixture), isTrue);
+        final candidates = tmFailureFixtureShrinker
+            .candidates(fixture)
+            .toList();
+        expect(candidates, isNotEmpty);
+        expect(
+          candidates.any(
+            (candidate) =>
+                tmFailureFixtureIsValid(candidate) &&
+                tmFailureFixtureIsApplicable(candidate),
+          ),
+          isTrue,
+        );
+        final minimized = minimizeTmFailureFixture(fixture);
+        expect(
+          tmFailureFixtureSignature(minimized),
+          tmFailureFixtureSignature(fixture),
+        );
+        expect(tmFailureFixtureIsMinimal(minimized), isTrue);
+        final minimizedMap = minimized! as Map;
+        expect(minimizedMap['inputTokens'], ['a']);
+        expect(
+          ((minimizedMap['machine'] as Map)['transitions'] as List),
+          hasLength(1),
+        );
+        expect((minimizedMap['machine'] as Map)['alphabet'], ['a']);
+        expect((minimizedMap['machine'] as Map)['tapeAlphabet'], ['a', 'B']);
 
-      final withDistinctTokens = <String, Object?>{
-        ...(fixture as Map).cast<String, Object?>(),
-        'inputTokens': ['a', 'x', 'a'],
-      };
-      final tokenCandidates = tmFailureFixtureCandidates(withDistinctTokens)
-          .map((candidate) => (candidate as Map)['inputTokens'])
-          .whereType<List>()
-          .toList();
-      expect(tokenCandidates, contains(equals(['a', 'a'])));
-      expect(tokenCandidates, contains(equals(['a', 'x'])));
-    });
+        final withDistinctTokens = <String, Object?>{
+          ...(fixture as Map).cast<String, Object?>(),
+          'inputTokens': ['a', 'x', 'a'],
+        };
+        final tokenCandidates = tmFailureFixtureCandidates(withDistinctTokens)
+            .map((candidate) => (candidate as Map)['inputTokens'])
+            .whereType<List>()
+            .toList();
+        expect(tokenCandidates, contains(equals(['a', 'a'])));
+        expect(tokenCandidates, contains(equals(['a', 'x'])));
+      },
+    );
 
     test('all registered semantic mutants are killed independently', () async {
       final fixture = jsonDecode(
-        await File('test/fixtures/hard_edge/tm/mutation_probes.json')
-            .readAsString(),
+        await File(
+          'test/fixtures/hard_edge/tm/mutation_probes.json',
+        ).readAsString(),
       );
       final executor = TmHardEdgeMutationExecutor();
       final catalog = await HardEdgeCatalog.load(
         repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/tm/catalog.fragment.json',
-        ),
+        manifestFile: File('test/fixtures/hard_edge/tm/catalog.fragment.json'),
       );
 
       for (final mutation in catalog.manifest.mutations) {
@@ -292,10 +292,7 @@ TM _acceptor() {
   );
 }
 
-TM _rejector() => _tm(
-      id: 'rejector',
-      states: [_state('q0', initial: true)],
-    );
+TM _rejector() => _tm(id: 'rejector', states: [_state('q0', initial: true)]);
 
 TM _cycle() {
   final q0 = _state('q0', initial: true);
@@ -342,20 +339,8 @@ TM _acceptingAtLimitAfterTruncatedBranch() {
     states: [q0, bounded, accept],
     accepting: [accept],
     transitions: [
-      _transition(
-        'a-bounded-first',
-        q0,
-        bounded,
-        'B',
-        nondeterministic: true,
-      ),
-      _transition(
-        'z-accept-second',
-        q0,
-        accept,
-        'B',
-        nondeterministic: true,
-      ),
+      _transition('a-bounded-first', q0, bounded, 'B', nondeterministic: true),
+      _transition('z-accept-second', q0, accept, 'B', nondeterministic: true),
       _transition(
         'bounded-continues',
         bounded,
@@ -383,20 +368,19 @@ TMTransition _transition(
   String read, {
   TapeDirection direction = TapeDirection.stay,
   bool nondeterministic = false,
-}) =>
-    TMTransition(
-      id: id,
-      fromState: from,
-      toState: to,
-      label: id,
-      readSymbol: read,
-      writeSymbol: read,
-      direction: direction,
-      type: nondeterministic
-          ? TransitionType.nondeterministic
-          : TransitionType.deterministic,
-      controlPoint: from == to ? Vector2(20, -20) : Vector2.zero(),
-    );
+}) => TMTransition(
+  id: id,
+  fromState: from,
+  toState: to,
+  label: id,
+  readSymbol: read,
+  writeSymbol: read,
+  direction: direction,
+  type: nondeterministic
+      ? TransitionType.nondeterministic
+      : TransitionType.deterministic,
+  controlPoint: from == to ? Vector2(20, -20) : Vector2.zero(),
+);
 
 TM _tm({
   required String id,

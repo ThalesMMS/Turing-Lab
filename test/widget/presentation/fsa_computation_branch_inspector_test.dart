@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 import 'package:turing_lab/core/models/fsa.dart';
@@ -31,11 +32,7 @@ void main() {
         await _pumpPanel(
           tester,
           result: _branchingResult(),
-          stateLabels: const {
-            'q0-id': 'q0',
-            'q1-id': 'q1',
-            'q2-id': 'q2',
-          },
+          stateLabels: const {'q0-id': 'q0', 'q1-id': 'q1', 'q2-id': 'q2'},
         );
 
         await _openInspector(tester);
@@ -192,17 +189,19 @@ Future<void> _pumpPanel(
   SimulationHighlightService? highlightService,
 }) async {
   await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SimulationPanel(
-              onSimulate: (_) {},
-              simulationResult: result,
-              isDeterministic: isDeterministic,
-              computationStateLabels: stateLabels,
-              highlightService: highlightService,
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SimulationPanel(
+                onSimulate: (_) {},
+                simulationResult: result,
+                isDeterministic: isDeterministic,
+                computationStateLabels: stateLabels,
+                highlightService: highlightService,
+              ),
             ),
           ),
         ),
@@ -213,9 +212,7 @@ Future<void> _pumpPanel(
 }
 
 Future<void> _openInspector(WidgetTester tester) async {
-  final action = find.byKey(
-    const ValueKey('fsa-computation-branches-action'),
-  );
+  final action = find.byKey(const ValueKey('fsa-computation-branches-action'));
   await tester.ensureVisible(action);
   await tester.tap(action);
   await tester.pumpAndSettle();

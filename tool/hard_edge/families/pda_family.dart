@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:turing_lab/core/algorithms/grammar_to_pda/cfg_to_pda.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:turing_lab/core/algorithms/pda_language_emptiness_analyzer.dart';
-import 'package:turing_lab/core/algorithms/pda_normalizer.dart';
-import 'package:turing_lab/core/algorithms/pda_simplifier.dart';
-import 'package:turing_lab/core/algorithms/pda_simulation_semantic_variant.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_language_emptiness_analyzer.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_normalizer.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simplifier.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulation_semantic_variant.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_converter.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/grammar.dart';
@@ -63,17 +63,16 @@ final class PdaHardEdgeFixture {
     int? seed,
     VerificationOutcomeCode? expectedOutcome,
     Map<String, Object?>? propertyPayload,
-  }) =>
-      PdaHardEdgeFixture(
-        id: id ?? this.id,
-        seed: seed ?? this.seed,
-        property: property ?? this.property,
-        pda: pda ?? this.pda,
-        input: input ?? this.input,
-        mode: mode,
-        expectedOutcome: expectedOutcome ?? this.expectedOutcome,
-        propertyPayload: propertyPayload ?? this.propertyPayload,
-      );
+  }) => PdaHardEdgeFixture(
+    id: id ?? this.id,
+    seed: seed ?? this.seed,
+    property: property ?? this.property,
+    pda: pda ?? this.pda,
+    input: input ?? this.input,
+    mode: mode,
+    expectedOutcome: expectedOutcome ?? this.expectedOutcome,
+    propertyPayload: propertyPayload ?? this.propertyPayload,
+  );
 
   factory PdaHardEdgeFixture.fromJson(Object? source) {
     if (source is! Map) {
@@ -111,16 +110,16 @@ final class PdaHardEdgeFixture {
   }
 
   Map<String, Object?> toJson() => {
-        'expectedOutcome': expectedOutcome.name,
-        'id': id,
-        'input': input,
-        'mode': mode.name,
-        'pda': _canonicalPdaJson(pda),
-        'property': property,
-        'propertyPayload': propertyPayload,
-        'schema': pdaFamilySchema,
-        'seed': seed,
-      };
+    'expectedOutcome': expectedOutcome.name,
+    'id': id,
+    'input': input,
+    'mode': mode.name,
+    'pda': _canonicalPdaJson(pda),
+    'property': property,
+    'propertyPayload': propertyPayload,
+    'schema': pdaFamilySchema,
+    'seed': seed,
+  };
 }
 
 final class PdaFixtureGenerator implements DomainGenerator<PdaHardEdgeFixture> {
@@ -191,23 +190,22 @@ final class PdaFixtureGenerator implements DomainGenerator<PdaHardEdgeFixture> {
 GeneratedCase<PdaHardEdgeFixture> generatePdaHardEdgeCase({
   required int seed,
   int caseIndex = 0,
-}) =>
-    generateCase(
-      family: 'pda',
-      property: 'oracle-simulator-parity',
-      generatorVersion: '1',
-      seed: seed,
-      caseIndex: caseIndex,
-      mode: GenerationMode.valid,
-      budget: const GenerationBudget(
-        maxStates: 4,
-        maxTransitions: 8,
-        maxSymbols: 4,
-        maxStackDepth: 8,
-      ),
-      generator: const PdaFixtureGenerator(),
-      encodeValue: (value) => value.toJson(),
-    );
+}) => generateCase(
+  family: 'pda',
+  property: 'oracle-simulator-parity',
+  generatorVersion: '1',
+  seed: seed,
+  caseIndex: caseIndex,
+  mode: GenerationMode.valid,
+  budget: const GenerationBudget(
+    maxStates: 4,
+    maxTransitions: 8,
+    maxSymbols: 4,
+    maxStackDepth: 8,
+  ),
+  generator: const PdaFixtureGenerator(),
+  encodeValue: (value) => value.toJson(),
+);
 
 PdaHardEdgeFixture materializePdaPropertyFixture({
   required String property,
@@ -220,56 +218,56 @@ PdaHardEdgeFixture materializePdaPropertyFixture({
   PdaHardEdgeFixture metadata(
     PdaHardEdgeFixture fixture, {
     Map<String, Object?> propertyPayload = const {},
-  }) =>
-      fixture.copyWith(
-        id: 'pda-$property-$seed',
-        seed: seed,
-        property: property,
-        propertyPayload: propertyPayload,
-      );
+  }) => fixture.copyWith(
+    id: 'pda-$property-$seed',
+    seed: seed,
+    property: property,
+    propertyPayload: propertyPayload,
+  );
 
   return switch (property) {
     'unicode-prefix-stack-symbols' => metadata(pdaUnicodePrefixFixture()),
     'invalid-model' => metadata(
-        _invalidPdaFixture(seed),
-        propertyPayload: _invalidDocumentPayload(seed),
-      ),
+      _invalidPdaFixture(seed),
+      propertyPayload: _invalidDocumentPayload(seed),
+    ),
     'shortest-bfs-witness' => metadata(_shortestWitnessFixture(seed)),
     'resource-outcomes' => metadata(
-        pdaMutationFixture(PdaOracleMutation.omitStackFromConfiguration),
-        propertyPayload: const {
-          'maxConfigurations': 0,
-          'maxDepth': 0,
-          'maxMemoryBytes': 0,
-          'timeoutMicroseconds': 0,
-        },
-      ),
+      pdaMutationFixture(PdaOracleMutation.omitStackFromConfiguration),
+      propertyPayload: const {
+        'maxConfigurations': 0,
+        'maxDepth': 0,
+        'maxMemoryBytes': 0,
+        'timeoutMicroseconds': 0,
+      },
+    ),
     'cfg-conversions' => metadata(
-        base,
-        propertyPayload: {
-          'llGrammar': _llGrammar().toJson(),
-          'lrGrammar': _lrGrammar().toJson(),
-          'greibachGrammar': _greibachGrammar().toJson(),
-        },
-      ),
+      base,
+      propertyPayload: {
+        'llGrammar': _llGrammar().toJson(),
+        'lrGrammar': _lrGrammar().toJson(),
+        'greibachGrammar': _greibachGrammar().toJson(),
+      },
+    ),
     'compound-conversions' => metadata(
-        base.copyWith(pda: _singlePopConversionPda(), input: 'a'),
-        propertyPayload: {'sourceGrammar': _greibachGrammar().toJson()},
-      ),
+      base.copyWith(pda: _singlePopConversionPda(), input: 'a'),
+      propertyPayload: {'sourceGrammar': _greibachGrammar().toJson()},
+    ),
     'bounded-language-evidence' => metadata(
-        base,
-        propertyPayload: {'llGrammar': _llGrammar().toJson()},
-      ),
+      base,
+      propertyPayload: {'llGrammar': _llGrammar().toJson()},
+    ),
     'mutation-checks' => metadata(
-        base,
-        propertyPayload: {
-          'mutationFixtures': {
-            for (final mutation in PdaOracleMutation.values.skip(1))
-              mutation.name:
-                  pdaMutationFixture(mutation).copyWith(seed: seed).toJson(),
-          },
+      base,
+      propertyPayload: {
+        'mutationFixtures': {
+          for (final mutation in PdaOracleMutation.values.skip(1))
+            mutation.name: pdaMutationFixture(
+              mutation,
+            ).copyWith(seed: seed).toJson(),
         },
-      ),
+      },
+    ),
     _ => metadata(base),
   };
 }
@@ -305,8 +303,9 @@ Map<String, Object?> _invalidDocumentPayload(int seed) {
   final duplicateTransitions = (valid['transitions'] as List)
       .map((item) => Map<String, dynamic>.from(item as Map))
       .toList();
-  duplicateTransitions
-      .add(Map<String, dynamic>.from(duplicateTransitions.first));
+  duplicateTransitions.add(
+    Map<String, dynamic>.from(duplicateTransitions.first),
+  );
   duplicate['transitions'] = duplicateTransitions;
 
   final dangling = Map<String, dynamic>.from(valid);
@@ -320,10 +319,7 @@ Map<String, Object?> _invalidDocumentPayload(int seed) {
   return {
     'duplicateTransitionDocument': duplicate,
     'danglingEndpointDocument': dangling,
-    'staleEndpointCopies': {
-      'fromState': staleFrom,
-      'toState': staleTo,
-    },
+    'staleEndpointCopies': {'fromState': staleFrom, 'toState': staleTo},
   };
 }
 
@@ -426,8 +422,9 @@ PdaHardEdgeFixture _fixtureMutation(
   PdaOracleMutation mutation,
 ) {
   final encodedFixtures = fixture.propertyPayload['mutationFixtures'];
-  final encoded =
-      encodedFixtures is Map ? encodedFixtures[mutation.name] : null;
+  final encoded = encodedFixtures is Map
+      ? encodedFixtures[mutation.name]
+      : null;
   if (encoded is! Map) {
     throw FormatException(
       'PDA fixture ${fixture.id} is missing mutation payload '
@@ -463,17 +460,19 @@ final class PdaFixtureShrinker implements DomainShrinker<PdaHardEdgeFixture> {
         ),
       );
     }
-    final removableStates = value.pda.states
-        .where(
-          (state) =>
-              state != value.pda.initialState &&
-              !value.pda.acceptingStates.contains(state),
-        )
-        .toList()
-      ..sort((left, right) => left.id.compareTo(right.id));
+    final removableStates =
+        value.pda.states
+            .where(
+              (state) =>
+                  state != value.pda.initialState &&
+                  !value.pda.acceptingStates.contains(state),
+            )
+            .toList()
+          ..sort((left, right) => left.id.compareTo(right.id));
     for (final removed in removableStates.reversed) {
-      final states =
-          value.pda.states.where((state) => state != removed).toSet();
+      final states = value.pda.states
+          .where((state) => state != removed)
+          .toSet();
       final retainedIds = states.map((state) => state.id).toSet();
       yield value.copyWith(
         pda: value.pda.copyWith(
@@ -501,10 +500,7 @@ final class PdaFixtureShrinker implements DomainShrinker<PdaHardEdgeFixture> {
         try {
           final grammar = Grammar.fromJson(Map<String, dynamic>.from(encoded));
           for (final candidate in _grammarCandidates(grammar)) {
-            yield {
-              ...payload,
-              key: candidate.toJson(),
-            };
+            yield {...payload, key: candidate.toJson()};
           }
         } on Object {
           // The family runner reports malformed payloads. A shrinker only
@@ -549,10 +545,7 @@ final class PdaFixtureShrinker implements DomainShrinker<PdaHardEdgeFixture> {
       if (production.rightSide.isEmpty) continue;
       final shorterRightSide = production.rightSide.length == 1
           ? const <String>[]
-          : production.rightSide.sublist(
-              0,
-              production.rightSide.length ~/ 2,
-            );
+          : production.rightSide.sublist(0, production.rightSide.length ~/ 2);
       final replacement = production.copyWith(
         rightSide: shorterRightSide,
         isLambda: shorterRightSide.isEmpty,
@@ -599,11 +592,11 @@ final class PdaCertificationCheck {
   final String message;
 
   Map<String, Object?> toJson() => {
-        'algorithmIds': algorithmIds,
-        'id': id,
-        'message': message,
-        'status': status.name,
-      };
+    'algorithmIds': algorithmIds,
+    'id': id,
+    'message': message,
+    'status': status.name,
+  };
 }
 
 final class PdaAlgorithmDescriptor {
@@ -621,7 +614,7 @@ final class PdaAlgorithmDescriptor {
 const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   PdaAlgorithmDescriptor(
     id: 'simulation-sync',
-    productionPath: 'lib/core/algorithms/pda_simulator.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator.dart',
     certificationCheckIds: [
       'oracle-parity',
       'invalid-model',
@@ -633,12 +626,12 @@ const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   ),
   PdaAlgorithmDescriptor(
     id: 'simulation-cooperative',
-    productionPath: 'lib/core/algorithms/pda_simulator.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator.dart',
     certificationCheckIds: ['cooperative-parity', 'resource-outcomes'],
   ),
   PdaAlgorithmDescriptor(
     id: 'configuration-search',
-    productionPath: 'lib/core/algorithms/pda_simulator_search.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator_search.dart',
     certificationCheckIds: [
       'oracle-parity',
       'resource-outcomes',
@@ -650,7 +643,7 @@ const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   ),
   PdaAlgorithmDescriptor(
     id: 'normalization',
-    productionPath: 'lib/core/algorithms/pda_normalizer.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_normalizer.dart',
     certificationCheckIds: [
       'normalization-conversion',
       'validation-determinism-analysis',
@@ -658,22 +651,23 @@ const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   ),
   PdaAlgorithmDescriptor(
     id: 'simplification',
-    productionPath: 'lib/core/algorithms/pda_simplifier.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simplifier.dart',
     certificationCheckIds: ['simplification', 'bounded-language-evidence'],
   ),
   PdaAlgorithmDescriptor(
     id: 'language-emptiness',
-    productionPath: 'lib/core/algorithms/pda_language_emptiness_analyzer.dart',
+    productionPath:
+        'lib/core/algorithms/pda/pda_language_emptiness_analyzer.dart',
     certificationCheckIds: ['language-emptiness'],
   ),
   PdaAlgorithmDescriptor(
     id: 'pda-to-cfg',
-    productionPath: 'lib/core/algorithms/pda_to_cfg_converter.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_to_cfg_converter.dart',
     certificationCheckIds: ['normalization-conversion'],
   ),
   PdaAlgorithmDescriptor(
     id: 'cfg-to-pda-general-standard-greibach',
-    productionPath: 'lib/core/algorithms/grammar_to_pda_converter.dart',
+    productionPath: 'lib/core/algorithms/grammar/grammar_to_pda_converter.dart',
     certificationCheckIds: ['cfg-conversions'],
   ),
   PdaAlgorithmDescriptor(
@@ -704,20 +698,20 @@ const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   ),
   PdaAlgorithmDescriptor(
     id: 'pda-analysis',
-    productionPath: 'lib/core/algorithms/pda_simulator_analysis.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator_analysis.dart',
     certificationCheckIds: ['validation-determinism-analysis'],
   ),
   PdaAlgorithmDescriptor(
     id: 'bounded-string-generation',
-    productionPath: 'lib/core/algorithms/pda_simulator_generation.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator_generation.dart',
     certificationCheckIds: ['validation-determinism-analysis'],
   ),
   PdaAlgorithmDescriptor(
     id: 'trace-stack-reconstruction',
-    productionPath: 'lib/core/algorithms/pda_simulator_search.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simulator_search.dart',
     certificationCheckIds: [
       'trace-reconstruction',
-      'unicode-prefix-stack-symbols'
+      'unicode-prefix-stack-symbols',
     ],
   ),
   PdaAlgorithmDescriptor(
@@ -727,17 +721,17 @@ const pdaAlgorithmMatrix = <PdaAlgorithmDescriptor>[
   ),
   PdaAlgorithmDescriptor(
     id: 'compound-cfg-pda-cfg',
-    productionPath: 'lib/core/algorithms/grammar_to_pda_converter.dart',
+    productionPath: 'lib/core/algorithms/grammar/grammar_to_pda_converter.dart',
     certificationCheckIds: ['compound-conversions'],
   ),
   PdaAlgorithmDescriptor(
     id: 'compound-pda-cfg-pda',
-    productionPath: 'lib/core/algorithms/pda_to_cfg_converter.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_to_cfg_converter.dart',
     certificationCheckIds: ['compound-conversions'],
   ),
   PdaAlgorithmDescriptor(
     id: 'bounded-language-comparison',
-    productionPath: 'lib/core/algorithms/pda_simplifier.dart',
+    productionPath: 'lib/core/algorithms/pda/pda_simplifier.dart',
     certificationCheckIds: ['bounded-language-evidence'],
   ),
 ];
@@ -756,10 +750,7 @@ final pdaHardEdgeCaseDescriptors = List<PdaHardEdgeCaseDescriptor>.unmodifiable(
   [
     for (final algorithm in pdaAlgorithmMatrix)
       for (final property in algorithm.certificationCheckIds)
-        PdaHardEdgeCaseDescriptor(
-          algorithm: algorithm.id,
-          property: property,
-        ),
+        PdaHardEdgeCaseDescriptor(algorithm: algorithm.id, property: property),
   ],
 );
 
@@ -792,28 +783,27 @@ final class PdaCertificationReport {
   final int seed;
   final List<PdaCertificationCheck> checks;
 
-  bool get passed => checks.every(
-        (check) => check.status == PdaCertificationStatus.passed,
-      );
+  bool get passed =>
+      checks.every((check) => check.status == PdaCertificationStatus.passed);
 
   Set<String> get coveredAlgorithmIds => {
-        for (final check in checks) ...check.algorithmIds,
-      };
+    for (final check in checks) ...check.algorithmIds,
+  };
 
   Map<String, Object?> toJson() => {
-        'checks': checks.map((check) => check.toJson()).toList(),
-        'coverage': {
-          'algorithms': coveredAlgorithmIds.toList()..sort(),
-          'properties': checks.map((check) => check.id).toList()..sort(),
-          'seeds': [seed],
-        },
-        'family': 'pda',
-        'matrixAlgorithms': pdaAlgorithmMatrix.map((item) => item.id).toList(),
-        'passed': passed,
-        'remotelyVerified': false,
-        'schema': 'turing-lab.hard-edge.pda-report.v1',
-        'seed': seed,
-      };
+    'checks': checks.map((check) => check.toJson()).toList(),
+    'coverage': {
+      'algorithms': coveredAlgorithmIds.toList()..sort(),
+      'properties': checks.map((check) => check.id).toList()..sort(),
+      'seeds': [seed],
+    },
+    'family': 'pda',
+    'matrixAlgorithms': pdaAlgorithmMatrix.map((item) => item.id).toList(),
+    'passed': passed,
+    'remotelyVerified': false,
+    'schema': 'turing-lab.hard-edge.pda-report.v1',
+    'seed': seed,
+  };
 }
 
 final class PdaCertificationRunner {
@@ -853,8 +843,9 @@ final class PdaCertificationRunner {
       'serialization' => _serialization(fixture),
       'resource-outcomes' => _resourceOutcomes(fixture),
       'mutation-checks' => _mutationChecks(fixture),
-      'validation-determinism-analysis' =>
-        _validationDeterminismAnalysis(fixture),
+      'validation-determinism-analysis' => _validationDeterminismAnalysis(
+        fixture,
+      ),
       'trace-reconstruction' => _traceReconstruction(fixture),
       'invalid-model' => _invalidModel(fixture),
       'metamorphic-renaming-order' => _metamorphicRenamingOrder(fixture),
@@ -862,9 +853,7 @@ final class PdaCertificationRunner {
       'bounded-language-evidence' => _boundedLanguageEvidence(fixture),
       'unicode-prefix-stack-symbols' => _unicodePrefixStackSymbols(fixture),
       'shortest-bfs-witness' => _shortestBfsWitness(fixture),
-      _ => throw FormatException(
-          'Unknown PDA hard-edge property "$property".',
-        ),
+      _ => throw FormatException('Unknown PDA hard-edge property "$property".'),
     };
   }
 
@@ -884,7 +873,8 @@ final class PdaCertificationRunner {
     return _check(
       id: 'oracle-parity',
       algorithmIds: const ['simulation-sync', 'configuration-search'],
-      passed: oracle.outcome == canonical &&
+      passed:
+          oracle.outcome == canonical &&
           oracle.outcome == fixture.expectedOutcome &&
           oracle.witness.isNotEmpty,
       message: 'oracle=${oracle.outcome.name}, canonical=${canonical.name}',
@@ -915,9 +905,7 @@ final class PdaCertificationRunner {
     );
   }
 
-  PdaCertificationCheck _normalizationConversion(
-    PdaHardEdgeFixture fixture,
-  ) {
+  PdaCertificationCheck _normalizationConversion(PdaHardEdgeFixture fixture) {
     final normalization = PDANormalizer.normalize(
       fixture.pda,
       sourceMode: fixture.mode,
@@ -938,7 +926,8 @@ final class PdaCertificationRunner {
             ),
           )
         : VerificationOutcomeCode.modelError;
-    final passed = normalization.isSuccess &&
+    final passed =
+        normalization.isSuccess &&
         conversion!.isSuccess &&
         normalizedOutcome == fixture.expectedOutcome &&
         normalization.data!.provenance.isNotEmpty;
@@ -978,7 +967,8 @@ final class PdaCertificationRunner {
       fixture.pda,
       acceptanceMode: fixture.mode,
     );
-    final passed = result is PDALanguageEmptinessProof &&
+    final passed =
+        result is PDALanguageEmptinessProof &&
         !result.isEmpty &&
         result.witnessTrace?.accepted == true;
     return _check(
@@ -996,31 +986,36 @@ final class PdaCertificationRunner {
     final canConvert = GrammarToPDAConverter.canConvertToPDA(llGrammar);
     final analysis = GrammarToPDAConverter.analyzeConversion(llGrammar);
     final general = GrammarToPDAConverter.convertGrammarToPDA(llGrammar);
-    final standard =
-        GrammarToPDAConverter.convertGrammarToPDAStandard(llGrammar);
+    final standard = GrammarToPDAConverter.convertGrammarToPDAStandard(
+      llGrammar,
+    );
     final greibach = GrammarToPDAConverter.convertGrammarToPDAGreibach(
       _fixtureGrammar(fixture, 'greibachGrammar'),
     );
     final legacyCan = GrammarToPDAConverter.canConvertGrammarToPDA(llGrammar);
-    final legacyAnalysis =
-        GrammarToPDAConverter.analyzeGrammarToPDAConversion(llGrammar);
+    final legacyAnalysis = GrammarToPDAConverter.analyzeGrammarToPDAConversion(
+      llGrammar,
+    );
     final ll = CfgToPdaConverter.buildLl(llGrammar, sourceRevision: 1);
     final lr = CfgToPdaConverter.buildLr(lrGrammar, sourceRevision: 1);
     final llDiff = ll.isCompleted
-        ? CfgToPdaDifferentialChecker.check(
-            llGrammar,
-            ll,
-            ['', 'identifier', 'identifierplusidentifier', 'plus'],
-          )
+        ? CfgToPdaDifferentialChecker.check(llGrammar, ll, [
+            '',
+            'identifier',
+            'identifierplusidentifier',
+            'plus',
+          ])
         : null;
     final lrDiff = lr.isCompleted
-        ? CfgToPdaDifferentialChecker.check(
-            lrGrammar,
-            lr,
-            ['', 'dd', 'cddd', 'c'],
-          )
+        ? CfgToPdaDifferentialChecker.check(lrGrammar, lr, [
+            '',
+            'dd',
+            'cddd',
+            'c',
+          ])
         : null;
-    final passed = facade.isSuccess &&
+    final passed =
+        facade.isSuccess &&
         canConvert &&
         analysis.isSuccess &&
         analysis.data!.canConvert &&
@@ -1046,7 +1041,8 @@ final class PdaCertificationRunner {
         'cfg-pda-differential',
       ],
       passed: passed,
-      message: 'facade=${facade.isSuccess}, can=$canConvert, '
+      message:
+          'facade=${facade.isSuccess}, can=$canConvert, '
           'analysis=${analysis.isSuccess}, general=${general.isSuccess}, '
           'standard=${standard.isSuccess}, '
           'greibach=${greibach.isSuccess}, ll=${ll.outcome.name}, '
@@ -1102,7 +1098,8 @@ final class PdaCertificationRunner {
         .map((outcome) => outcome.value.document)
         .whereType<PDA>()
         .toList();
-    final codecsPreserveOutcome = codecPdas.length == 2 &&
+    final codecsPreserveOutcome =
+        codecPdas.length == 2 &&
         codecPdas.every(
           (pda) =>
               _simulationOutcome(
@@ -1117,14 +1114,16 @@ final class PdaCertificationRunner {
     return _check(
       id: 'serialization',
       algorithmIds: const ['model-json-round-trip', 'document-codecs'],
-      passed: canonicalJsonEncode(fixture.toJson()) ==
+      passed:
+          canonicalJsonEncode(fixture.toJson()) ==
               canonicalJsonEncode(decoded.toJson()) &&
           left.outcome == right.outcome &&
           codecsPreserveOutcome &&
           (fixture.pda.stackAlphabet.contains('stack-token')
               ? atomicPushes > 0
               : true),
-      message: 'before=${left.outcome.name}, after=${right.outcome.name}, '
+      message:
+          'before=${left.outcome.name}, after=${right.outcome.name}, '
           'codecRoundTrips=${codecPdas.length}',
     );
   }
@@ -1228,7 +1227,8 @@ final class PdaCertificationRunner {
         'simulation-sync',
         'simulation-cooperative',
       ],
-      passed: bounded.outcome == VerificationOutcomeCode.boundedUnknown &&
+      passed:
+          bounded.outcome == VerificationOutcomeCode.boundedUnknown &&
           configured.outcome == VerificationOutcomeCode.configurationLimit &&
           timeout.outcome == VerificationOutcomeCode.timeout &&
           memory.limit?.kind == ResourceLimitKind.memoryBytes &&
@@ -1241,7 +1241,8 @@ final class PdaCertificationRunner {
           productionMemory.data?.outcome == PDASimulationOutcome.memoryLimit &&
           productionStale.data?.outcome == PDASimulationOutcome.staleRequest &&
           productionCancelled,
-      message: '${bounded.outcome.name}, ${configured.outcome.name}, '
+      message:
+          '${bounded.outcome.name}, ${configured.outcome.name}, '
           '${timeout.outcome.name}, memoryBytes, ${cancelled.outcome.name}, '
           '${stale.outcome.name}; production='
           '${productionConfigurations.data?.outcome.name},'
@@ -1257,10 +1258,7 @@ final class PdaCertificationRunner {
     final survivors = <PdaOracleMutation>[];
     for (final mutation in PdaOracleMutation.values.skip(1)) {
       final mutationFixture = _fixtureMutation(fixture, mutation);
-      final evidence = evaluatePdaProductionMutation(
-        mutationFixture,
-        mutation,
-      );
+      final evidence = evaluatePdaProductionMutation(mutationFixture, mutation);
       if (evidence.killed) {
         killed.add(mutation);
       } else {
@@ -1271,7 +1269,8 @@ final class PdaCertificationRunner {
       id: 'mutation-checks',
       algorithmIds: const ['configuration-search'],
       passed: killed.length >= pdaMutationKillThreshold && survivors.isEmpty,
-      message: 'threshold=$pdaMutationKillThreshold, '
+      message:
+          'threshold=$pdaMutationKillThreshold, '
           'killed=${killed.map((item) => item.name).join(',')}, '
           'survivors=${survivors.map((item) => item.name).join(',')}',
     );
@@ -1313,9 +1312,11 @@ final class PdaCertificationRunner {
       targetForm: PDANormalForm.finalStateAndEmptyStackAndSinglePop,
     );
     final analyzed = analysis.data;
-    final passed = fixture.pda.validate().isEmpty &&
-        fixture.pda.pdaTransitions
-            .every((transition) => transition.validate().isEmpty) &&
+    final passed =
+        fixture.pda.validate().isEmpty &&
+        fixture.pda.pdaTransitions.every(
+          (transition) => transition.validate().isEmpty,
+        ) &&
         analysis.isSuccess &&
         analyzed!.stateAnalysis.totalStates == fixture.pda.states.length &&
         analyzed.transitionAnalysis.pdaTransitions ==
@@ -1339,7 +1340,8 @@ final class PdaCertificationRunner {
         'normalization',
       ],
       passed: passed,
-      message: 'valid=${fixture.pda.validate().isEmpty}, '
+      message:
+          'valid=${fixture.pda.validate().isEmpty}, '
           'analysis=${analysis.isSuccess}, '
           'deterministic=${deterministic.data?.sourceWasDeterministic}, '
           'nondeterministic=${nondeterministic.data?.sourceWasDeterministic}, '
@@ -1359,7 +1361,8 @@ final class PdaCertificationRunner {
       input: fixture.input,
       mode: fixture.mode,
     );
-    final passed = simulation.isSuccess &&
+    final passed =
+        simulation.isSuccess &&
         simulation.data!.accepted &&
         _traceMatchesOracle(
           fixture.pda,
@@ -1375,7 +1378,8 @@ final class PdaCertificationRunner {
         'configuration-search',
       ],
       passed: passed,
-      message: 'steps=${simulation.data?.steps.length}, '
+      message:
+          'steps=${simulation.data?.steps.length}, '
           'witness=${oracle.witness.length}, '
           'outcome=${simulation.data?.accepted}',
     );
@@ -1430,7 +1434,7 @@ final class PdaCertificationRunner {
     );
     final staleCopiesAreDistinct =
         !identical(canonicalFrom, staleTransition.fromState) &&
-            !identical(canonicalTo, staleTransition.toState);
+        !identical(canonicalTo, staleTransition.toState);
     final staleOracle = const PdaExhaustiveExplorer().explore(
       pda: staleEndpointPda,
       input: 'a',
@@ -1443,7 +1447,8 @@ final class PdaCertificationRunner {
     );
     final canonicalized = PDA.fromJson(staleEndpointPda.toJson());
     final canonicalizedTransition = canonicalized.pdaTransitions.single;
-    final staleEndpointCanonicalized = identical(
+    final staleEndpointCanonicalized =
+        identical(
           canonicalizedTransition.fromState,
           canonicalized.states.singleWhere(
             (state) => state.id == canonicalizedTransition.fromState.id,
@@ -1455,7 +1460,8 @@ final class PdaCertificationRunner {
             (state) => state.id == canonicalizedTransition.toState.id,
           ),
         );
-    final staleEndpointAccepted = staleCopiesAreDistinct &&
+    final staleEndpointAccepted =
+        staleCopiesAreDistinct &&
         staleOracle.outcome == VerificationOutcomeCode.accepted &&
         staleSimulation.isSuccess &&
         staleSimulation.data!.accepted;
@@ -1467,7 +1473,8 @@ final class PdaCertificationRunner {
         'simulation-sync',
         'configuration-search',
       ],
-      passed: invalid.validate().isNotEmpty &&
+      passed:
+          invalid.validate().isNotEmpty &&
           oracle.outcome == VerificationOutcomeCode.invalidInput &&
           simulation.isFailure &&
           analysis.isFailure &&
@@ -1476,7 +1483,8 @@ final class PdaCertificationRunner {
           danglingDecode is CodecMalformed &&
           staleEndpointAccepted &&
           staleEndpointCanonicalized,
-      message: 'modelErrors=${invalid.validate().length}, '
+      message:
+          'modelErrors=${invalid.validate().length}, '
           'oracle=${oracle.outcome.name}, simulationFailure=${simulation.isFailure}, '
           'analysisFailure=${analysis.isFailure}, '
           'normalizationFailure=${normalization.isFailure}, '
@@ -1487,9 +1495,7 @@ final class PdaCertificationRunner {
     );
   }
 
-  PdaCertificationCheck _metamorphicRenamingOrder(
-    PdaHardEdgeFixture fixture,
-  ) {
+  PdaCertificationCheck _metamorphicRenamingOrder(PdaHardEdgeFixture fixture) {
     final renamed = _renamedFixture(fixture);
     final reordered = fixture.copyWith(
       pda: fixture.pda.copyWith(
@@ -1514,11 +1520,7 @@ final class PdaCertificationRunner {
       mode: reordered.mode,
     );
     final renamedSimulation = _simulationOutcome(
-      PDASimulator.simulateNPDA(
-        renamed.pda,
-        renamed.input,
-        mode: renamed.mode,
-      ),
+      PDASimulator.simulateNPDA(renamed.pda, renamed.input, mode: renamed.mode),
     );
     final reorderedSimulation = _simulationOutcome(
       PDASimulator.simulateNPDA(
@@ -1530,11 +1532,13 @@ final class PdaCertificationRunner {
     return _check(
       id: 'metamorphic-renaming-order',
       algorithmIds: const ['metamorphic-invariance'],
-      passed: source.outcome == renamedOutcome.outcome &&
+      passed:
+          source.outcome == renamedOutcome.outcome &&
           source.outcome == reorderedOutcome.outcome &&
           source.outcome == renamedSimulation &&
           source.outcome == reorderedSimulation,
-      message: 'source=${source.outcome.name}, '
+      message:
+          'source=${source.outcome.name}, '
           'renamed=${renamedOutcome.outcome.name}, '
           'reordered=${reorderedOutcome.outcome.name}',
     );
@@ -1557,17 +1561,13 @@ final class PdaCertificationRunner {
           )
         : null;
     final cfgRoundTrip = cfgPdaCfg?.isSuccess == true
-        ? GrammarToPDAConverter.convertGrammarToPDA(
-            cfgPdaCfg!.data!.grammar,
-          )
+        ? GrammarToPDAConverter.convertGrammarToPDA(cfgPdaCfg!.data!.grammar)
         : null;
     final cfgComparison = cfgPda.isSuccess && cfgRoundTrip?.isSuccess == true
-        ? _boundedPdaComparison(
-            cfgPda.data!,
-            cfgRoundTrip!.data!,
-            const {'a', 'b'},
-            2,
-          )
+        ? _boundedPdaComparison(cfgPda.data!, cfgRoundTrip!.data!, const {
+            'a',
+            'b',
+          }, 2)
         : const PdaBoundedComparison(
             outcome: PdaBoundedComparisonOutcome.boundedUnknown,
             wordsChecked: 0,
@@ -1587,12 +1587,7 @@ final class PdaCertificationRunner {
         ? GrammarToPDAConverter.convertGrammarToPDA(pdaCfg.data!.grammar)
         : null;
     final pdaComparison = pdaCfgPda?.isSuccess == true
-        ? _boundedPdaComparison(
-            sourcePda,
-            pdaCfgPda!.data!,
-            const {'a'},
-            2,
-          )
+        ? _boundedPdaComparison(sourcePda, pdaCfgPda!.data!, const {'a'}, 2)
         : const PdaBoundedComparison(
             outcome: PdaBoundedComparisonOutcome.boundedUnknown,
             wordsChecked: 0,
@@ -1606,11 +1601,9 @@ final class PdaCertificationRunner {
     );
     return _check(
       id: 'compound-conversions',
-      algorithmIds: const [
-        'compound-cfg-pda-cfg',
-        'compound-pda-cfg-pda',
-      ],
-      passed: cfgPdaCfg?.isSuccess == true &&
+      algorithmIds: const ['compound-cfg-pda-cfg', 'compound-pda-cfg-pda'],
+      passed:
+          cfgPdaCfg?.isSuccess == true &&
           pdaCfg.isSuccess &&
           limitedPdaCfg.isFailure &&
           limitedPdaCfg.error!.startsWith(
@@ -1621,7 +1614,8 @@ final class PdaCertificationRunner {
           cfgComparison.outcome == PdaBoundedComparisonOutcome.match &&
           pdaComparison.outcome == PdaBoundedComparisonOutcome.match &&
           unknown.outcome == PdaBoundedComparisonOutcome.boundedUnknown,
-      message: 'cfg-pda-cfg=${cfgComparison.outcome.name}, '
+      message:
+          'cfg-pda-cfg=${cfgComparison.outcome.name}, '
           'pda-cfg-pda=${pdaComparison.outcome.name}, '
           'limited=${unknown.outcome.name}, '
           'pdaCfgLimit=${limitedPdaCfg.error}, '
@@ -1629,9 +1623,7 @@ final class PdaCertificationRunner {
     );
   }
 
-  PdaCertificationCheck _boundedLanguageEvidence(
-    PdaHardEdgeFixture fixture,
-  ) {
+  PdaCertificationCheck _boundedLanguageEvidence(PdaHardEdgeFixture fixture) {
     final simplification = PDASimplifier.simplify(
       fixture.pda,
       acceptanceMode: fixture.mode,
@@ -1660,20 +1652,20 @@ final class PdaCertificationRunner {
         'cfg-to-pda-ll-lr',
         'simplification',
       ],
-      passed: simplification.isSuccess &&
+      passed:
+          simplification.isSuccess &&
           evidence != null &&
           evidence.wordsChecked > 0 &&
           !evidence.isProof &&
           unknown.outcome == CfgToPdaSampleOutcome.boundedUnknown &&
           !differential.hasMismatch,
-      message: 'words=${evidence?.wordsChecked}, proof=${evidence?.isProof}, '
+      message:
+          'words=${evidence?.wordsChecked}, proof=${evidence?.isProof}, '
           'limitedDifferential=${unknown.outcome.name}',
     );
   }
 
-  PdaCertificationCheck _unicodePrefixStackSymbols(
-    PdaHardEdgeFixture fixture,
-  ) {
+  PdaCertificationCheck _unicodePrefixStackSymbols(PdaHardEdgeFixture fixture) {
     final oracle = const PdaExhaustiveExplorer().explore(
       pda: fixture.pda,
       input: fixture.input,
@@ -1695,7 +1687,8 @@ final class PdaCertificationRunner {
         'simulation-sync',
         'configuration-search',
       ],
-      passed: pushed.length == 4 &&
+      passed:
+          pushed.length == 4 &&
           pushed[0] == 'α' &&
           pushed[1].startsWith(pushed[0]) &&
           pushed[3].startsWith(pushed[2]) &&
@@ -1708,7 +1701,8 @@ final class PdaCertificationRunner {
             oracle,
             fixture.input,
           ),
-      message: 'tokens=${jsonEncode(pushed)}, '
+      message:
+          'tokens=${jsonEncode(pushed)}, '
           'oracle=${oracle.outcome.name}, simulation=${simulation.data?.accepted}',
     );
   }
@@ -1725,10 +1719,9 @@ final class PdaCertificationRunner {
       mode: fixture.mode,
       stepByStep: true,
     );
-    final transitionIds = simulation.data?.steps
-            .expand(
-              (step) => step.explanation?.highlights ?? const [],
-            )
+    final transitionIds =
+        simulation.data?.steps
+            .expand((step) => step.explanation?.highlights ?? const [])
             .where((target) => target.type == HighlightTargetType.transition)
             .map((target) => target.id)
             .toList() ??
@@ -1736,7 +1729,8 @@ final class PdaCertificationRunner {
     return _check(
       id: 'shortest-bfs-witness',
       algorithmIds: const ['configuration-search', 'simulation-sync'],
-      passed: oracle.outcome == VerificationOutcomeCode.accepted &&
+      passed:
+          oracle.outcome == VerificationOutcomeCode.accepted &&
           oracle.witness.length == 1 &&
           oracle.witness.single.transitionId == 'z-short' &&
           simulation.isSuccess &&
@@ -1744,7 +1738,8 @@ final class PdaCertificationRunner {
           simulation.data!.steps.length == 3 &&
           transitionIds.contains('z-short') &&
           !transitionIds.contains('a-long-first'),
-      message: 'oracleTransitions='
+      message:
+          'oracleTransitions='
           '${oracle.witness.map((item) => item.transitionId).join(',')}, '
           'productionTransitions=${transitionIds.join(',')}',
     );
@@ -1839,7 +1834,8 @@ bool _traceMatchesOracle(
     final index = pair.$1;
     final step = pair.$2;
     final witness = oracle.witness[index];
-    final transitionHighlights = step.explanation?.highlights
+    final transitionHighlights =
+        step.explanation?.highlights
             .where((target) => target.type == HighlightTargetType.transition)
             .map((target) => target.id)
             .toList() ??
@@ -1919,8 +1915,9 @@ PdaHardEdgeFixture _renamedFixture(PdaHardEdgeFixture fixture) {
         id: 'renamed-transition-$index',
         fromState: statesById[source.fromState.id],
         toState: statesById[source.toState.id],
-        inputSymbol:
-            source.isLambdaInput ? '' : inputRename[source.inputSymbol],
+        inputSymbol: source.isLambdaInput
+            ? ''
+            : inputRename[source.inputSymbol],
         popSymbol: source.isLambdaPop ? '' : stackRename[source.popSymbol],
         pushSymbols: renamedPush,
         pushSymbol: renamedPush.join(),
@@ -2057,15 +2054,14 @@ PdaCertificationCheck _check({
   required List<String> algorithmIds,
   required bool passed,
   required String message,
-}) =>
-    PdaCertificationCheck(
-      id: id,
-      algorithmIds: algorithmIds,
-      status: passed
-          ? PdaCertificationStatus.passed
-          : PdaCertificationStatus.failed,
-      message: message,
-    );
+}) => PdaCertificationCheck(
+  id: id,
+  algorithmIds: algorithmIds,
+  status: passed
+      ? PdaCertificationStatus.passed
+      : PdaCertificationStatus.failed,
+  message: message,
+);
 
 VerificationOutcomeCode _simulationOutcome(Object result) {
   final simulation = result as dynamic;
@@ -2081,8 +2077,7 @@ VerificationOutcomeCode _simulationOutcome(Object result) {
     PDASimulationOutcome.provenCycle =>
       VerificationOutcomeCode.configurationLimit,
     PDASimulationOutcome.depthLimit ||
-    PDASimulationOutcome.memoryLimit =>
-      VerificationOutcomeCode.boundedUnknown,
+    PDASimulationOutcome.memoryLimit => VerificationOutcomeCode.boundedUnknown,
     PDASimulationOutcome.staleRequest => VerificationOutcomeCode.staleRequest,
   };
 }
@@ -2128,11 +2123,7 @@ PdaProductionMutationEvidence evaluatePdaProductionMutation(
       .explore(pda: source.pda, input: source.input, mode: source.mode)
       .outcome;
   final canonicalProduction = _simulationOutcome(
-    PDASimulator.simulateNPDA(
-      source.pda,
-      source.input,
-      mode: source.mode,
-    ),
+    PDASimulator.simulateNPDA(source.pda, source.input, mode: source.mode),
   );
   final mutantProduction = _simulationOutcome(
     // The hard-edge campaign is the sole non-test caller of this certification
@@ -2154,21 +2145,20 @@ PdaProductionMutationEvidence evaluatePdaProductionMutation(
 
 PDASimulationSemanticVariant _productionSemanticVariant(
   PdaOracleMutation mutation,
-) =>
-    switch (mutation) {
-      PdaOracleMutation.ignorePush => PDASimulationSemanticVariant.ignorePush,
-      PdaOracleMutation.reversePushOrder =>
-        PDASimulationSemanticVariant.reversePushOrder,
-      PdaOracleMutation.omitStackFromConfiguration =>
-        PDASimulationSemanticVariant.omitStackFromConfiguration,
-      PdaOracleMutation.acceptBeforeInputConsumed =>
-        PDASimulationSemanticVariant.acceptBeforeInputConsumed,
-      PdaOracleMutation.none => throw ArgumentError.value(
-          mutation,
-          'mutation',
-          'must name a non-control PDA mutation',
-        ),
-    };
+) => switch (mutation) {
+  PdaOracleMutation.ignorePush => PDASimulationSemanticVariant.ignorePush,
+  PdaOracleMutation.reversePushOrder =>
+    PDASimulationSemanticVariant.reversePushOrder,
+  PdaOracleMutation.omitStackFromConfiguration =>
+    PDASimulationSemanticVariant.omitStackFromConfiguration,
+  PdaOracleMutation.acceptBeforeInputConsumed =>
+    PDASimulationSemanticVariant.acceptBeforeInputConsumed,
+  PdaOracleMutation.none => throw ArgumentError.value(
+    mutation,
+    'mutation',
+    'must name a non-control PDA mutation',
+  ),
+};
 
 PdaHardEdgeFixture pdaMutationFixture(PdaOracleMutation mutation) {
   final q0 = _state('q0', initial: true, x: 0);
@@ -2179,23 +2169,28 @@ PdaHardEdgeFixture pdaMutationFixture(PdaOracleMutation mutation) {
     PDA pda,
     String input,
     VerificationOutcomeCode expected,
-  ) =>
-      PdaHardEdgeFixture(
-        id: id,
-        seed: 337,
-        property: 'mutation-kill',
-        pda: pda,
-        input: input,
-        mode: PDAAcceptanceMode.finalState,
-        expectedOutcome: expected,
-      );
+  ) => PdaHardEdgeFixture(
+    id: id,
+    seed: 337,
+    property: 'mutation-kill',
+    pda: pda,
+    input: input,
+    mode: PDAAcceptanceMode.finalState,
+    expectedOutcome: expected,
+  );
 
   final pushRequired = _pda(
     id: 'push-required',
     states: {q0, q1, q2},
     transitions: {
       _transition(
-          id: 'push', from: q0, to: q1, input: 'a', pop: '', push: ['X']),
+        id: 'push',
+        from: q0,
+        to: q1,
+        input: 'a',
+        pop: '',
+        push: ['X'],
+      ),
       _transition(id: 'pop', from: q1, to: q2, input: '', pop: 'X'),
     },
     initial: q0,
@@ -2228,7 +2223,13 @@ PdaHardEdgeFixture pdaMutationFixture(PdaOracleMutation mutation) {
     transitions: {
       _transition(id: 'a-dead', from: q0, to: q1, input: '', pop: ''),
       _transition(
-          id: 'b-live', from: q0, to: q1, input: '', pop: '', push: ['X']),
+        id: 'b-live',
+        from: q0,
+        to: q1,
+        input: '',
+        pop: '',
+        push: ['X'],
+      ),
       _transition(id: 'consume', from: q1, to: q2, input: 'a', pop: 'X'),
     },
     initial: q0,
@@ -2283,98 +2284,86 @@ PdaHardEdgeFixture pdaMutationFixture(PdaOracleMutation mutation) {
 }
 
 Grammar _llGrammar() => _grammar(
-      id: 'll-source',
-      terminals: {'identifier', 'plus'},
-      nonterminals: {'S', 'Tail'},
-      productions: {
-        const Production(
-          id: 'start',
-          leftSide: ['S'],
-          rightSide: ['identifier', 'Tail'],
-        ),
-        const Production(
-          id: 'tail-more',
-          leftSide: ['Tail'],
-          rightSide: ['plus', 'identifier', 'Tail'],
-          order: 1,
-        ),
-        const Production(
-          id: 'tail-empty',
-          leftSide: ['Tail'],
-          rightSide: [],
-          isLambda: true,
-          order: 2,
-        ),
-      },
-    );
+  id: 'll-source',
+  terminals: {'identifier', 'plus'},
+  nonterminals: {'S', 'Tail'},
+  productions: {
+    const Production(
+      id: 'start',
+      leftSide: ['S'],
+      rightSide: ['identifier', 'Tail'],
+    ),
+    const Production(
+      id: 'tail-more',
+      leftSide: ['Tail'],
+      rightSide: ['plus', 'identifier', 'Tail'],
+      order: 1,
+    ),
+    const Production(
+      id: 'tail-empty',
+      leftSide: ['Tail'],
+      rightSide: [],
+      isLambda: true,
+      order: 2,
+    ),
+  },
+);
 
 Grammar _lrGrammar() => _grammar(
-      id: 'lr-source',
-      terminals: {'c', 'd'},
-      nonterminals: {'S', 'C'},
-      productions: {
-        const Production(id: 's-cc', leftSide: ['S'], rightSide: ['C', 'C']),
-        const Production(
-          id: 'c-c',
-          leftSide: ['C'],
-          rightSide: ['c', 'C'],
-          order: 1,
-        ),
-        const Production(
-          id: 'c-d',
-          leftSide: ['C'],
-          rightSide: ['d'],
-          order: 2,
-        ),
-      },
-    );
+  id: 'lr-source',
+  terminals: {'c', 'd'},
+  nonterminals: {'S', 'C'},
+  productions: {
+    const Production(id: 's-cc', leftSide: ['S'], rightSide: ['C', 'C']),
+    const Production(
+      id: 'c-c',
+      leftSide: ['C'],
+      rightSide: ['c', 'C'],
+      order: 1,
+    ),
+    const Production(id: 'c-d', leftSide: ['C'], rightSide: ['d'], order: 2),
+  },
+);
 
 Grammar _greibachGrammar() => _grammar(
-      id: 'greibach-source',
-      terminals: {'a', 'b'},
-      nonterminals: {'S'},
-      productions: {
-        const Production(id: 'more', leftSide: ['S'], rightSide: ['a', 'S']),
-        const Production(
-          id: 'end',
-          leftSide: ['S'],
-          rightSide: ['b'],
-          order: 1,
-        ),
-      },
-    );
+  id: 'greibach-source',
+  terminals: {'a', 'b'},
+  nonterminals: {'S'},
+  productions: {
+    const Production(id: 'more', leftSide: ['S'], rightSide: ['a', 'S']),
+    const Production(id: 'end', leftSide: ['S'], rightSide: ['b'], order: 1),
+  },
+);
 
 Grammar _grammar({
   required String id,
   required Set<String> terminals,
   required Set<String> nonterminals,
   required Set<Production> productions,
-}) =>
-    Grammar(
-      id: id,
-      name: id,
-      terminals: terminals,
-      nonterminals: nonterminals,
-      startSymbol: 'S',
-      productions: productions,
-      type: GrammarType.contextFree,
-      created: DateTime.utc(2026, 8, 26),
-      modified: DateTime.utc(2026, 8, 26),
-    );
+}) => Grammar(
+  id: id,
+  name: id,
+  terminals: terminals,
+  nonterminals: nonterminals,
+  startSymbol: 'S',
+  productions: productions,
+  type: GrammarType.contextFree,
+  created: DateTime.utc(2026, 8, 26),
+  modified: DateTime.utc(2026, 8, 26),
+);
 
 State _state(
   String id, {
   bool initial = false,
   bool accepting = false,
   required double x,
-}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2(x, 100),
-      isInitial: initial,
-      isAccepting: accepting,
-    );
+}) => State(
+  id: id,
+  label: id,
+  position: Vector2(x, 100),
+  isInitial: initial,
+  isAccepting: accepting,
+);
 
 PDATransition _transition({
   required String id,
@@ -2384,28 +2373,27 @@ PDATransition _transition({
   required String pop,
   List<String> push = const [],
   Vector2? controlPoint,
-}) =>
-    PDATransition(
-      id: id,
-      fromState: from,
-      toState: to,
-      label: PDATransition.formatLabel(
-        inputSymbol: input,
-        popSymbol: pop,
-        pushSymbol: push.join(),
-        isLambdaInput: input.isEmpty,
-        isLambdaPop: pop.isEmpty,
-        isLambdaPush: push.isEmpty,
-      ),
-      controlPoint: controlPoint,
-      inputSymbol: input,
-      popSymbol: pop,
-      pushSymbol: push.join(),
-      pushSymbols: push,
-      isLambdaInput: input.isEmpty,
-      isLambdaPop: pop.isEmpty,
-      isLambdaPush: push.isEmpty,
-    );
+}) => PDATransition(
+  id: id,
+  fromState: from,
+  toState: to,
+  label: PDATransition.formatLabel(
+    inputSymbol: input,
+    popSymbol: pop,
+    pushSymbol: push.join(),
+    isLambdaInput: input.isEmpty,
+    isLambdaPop: pop.isEmpty,
+    isLambdaPush: push.isEmpty,
+  ),
+  controlPoint: controlPoint,
+  inputSymbol: input,
+  popSymbol: pop,
+  pushSymbol: push.join(),
+  pushSymbols: push,
+  isLambdaInput: input.isEmpty,
+  isLambdaPop: pop.isEmpty,
+  isLambdaPush: push.isEmpty,
+);
 
 PDA _pda({
   required String id,
@@ -2416,22 +2404,21 @@ PDA _pda({
   required Set<String> alphabet,
   required Set<String> stackAlphabet,
   PDAAcceptanceMode mode = PDAAcceptanceMode.finalState,
-}) =>
-    PDA(
-      id: id,
-      name: id,
-      states: states,
-      transitions: transitions,
-      alphabet: alphabet,
-      initialState: initial,
-      acceptingStates: accepting,
-      created: DateTime.utc(2026, 8, 26),
-      modified: DateTime.utc(2026, 8, 26),
-      bounds: const math.Rectangle(0.0, 0.0, 400.0, 300.0),
-      stackAlphabet: stackAlphabet,
-      initialStackSymbol: 'bottom',
-      acceptanceMode: mode,
-    );
+}) => PDA(
+  id: id,
+  name: id,
+  states: states,
+  transitions: transitions,
+  alphabet: alphabet,
+  initialState: initial,
+  acceptingStates: accepting,
+  created: DateTime.utc(2026, 8, 26),
+  modified: DateTime.utc(2026, 8, 26),
+  bounds: const math.Rectangle(0.0, 0.0, 400.0, 300.0),
+  stackAlphabet: stackAlphabet,
+  initialStackSymbol: 'bottom',
+  acceptanceMode: mode,
+);
 
 final class _AlwaysCancelled implements CancellationProbe {
   @override

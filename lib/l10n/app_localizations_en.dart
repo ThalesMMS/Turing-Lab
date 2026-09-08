@@ -193,6 +193,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'A grammar is already loaded. Do you want to replace it?';
 
   @override
+  String get conversionReplaceUnrestrictedGrammarMessage =>
+      'An unrestricted grammar is already loaded. Do you want to replace it? You can undo it.';
+
+  @override
   String get conversionReplacePushdownAutomatonMessage =>
       'A pushdown automaton is already loaded. Do you want to replace it?';
 
@@ -1233,6 +1237,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get goToStep => 'Go to step…';
+
+  @override
+  String goToStepFieldLabel(int total) {
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Step number (1 to $totalString)';
+  }
+
+  @override
+  String get goToStepEmptyError => 'Enter a step number.';
+
+  @override
+  String get goToStepNotIntegerError => 'Enter a whole number.';
+
+  @override
+  String goToStepOutOfRangeError(int total) {
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Enter a step between 1 and $totalString.';
+  }
+
+  @override
+  String get goToStepConfirm => 'Go';
+
+  @override
   String pdaTrace(int count) {
     return 'PDA Trace ($count steps)';
   }
@@ -1721,6 +1755,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportSvg => 'Export SVG';
 
   @override
+  String get lSystemPrintAxiomLabel => 'axiom';
+
+  @override
+  String get lSystemPrintIterationsLabel => 'iterations';
+
+  @override
+  String get printDocument => 'Print';
+
+  @override
+  String get printDocumentDescription =>
+      'Opens the system print sheet with a printable version of the active document.';
+
+  @override
+  String get printFailed =>
+      'Printing failed. Try again or export the document in an available format to print from another application.';
+
+  @override
+  String get printNothingToPrint =>
+      'There is nothing to print in this workspace yet.';
+
+  @override
   String get downloadSvg => 'Download SVG';
 
   @override
@@ -1762,6 +1817,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportTmAsSvg => 'Export Turing Machine as SVG';
+
+  @override
+  String get exportPdaAsPng => 'Export PDA as PNG';
+
+  @override
+  String get exportTmAsPng => 'Export Turing Machine as PNG';
 
   @override
   String get automatonSavedSuccessfully => 'Automaton saved successfully';
@@ -2971,6 +3032,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applyGrammarStep => 'Apply the grammar produced by this step.';
 
   @override
+  String transformationStepsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transformation steps',
+      one: '1 transformation step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String applyGrammarStepSemantics(int step, String operation) {
+    return 'Apply the grammar produced by step $step: $operation';
+  }
+
+  @override
   String get apply => 'Apply';
 
   @override
@@ -3150,6 +3227,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get completeDfaDescription => 'Add trap state to make DFA complete';
+
+  @override
+  String get practiceDfaCompletionTitle => 'Practice DFA completion';
+
+  @override
+  String get practiceDfaCompletionDescription =>
+      'Add the trap state and the missing transitions yourself; the checker lists what is still open.';
+
+  @override
+  String dfaPracticeGoal(String alphabet) {
+    return 'Goal: every state needs exactly one transition for each symbol of the alphabet $alphabet. Edit the canvas and come back to check.';
+  }
+
+  @override
+  String get dfaPracticeNoAutomaton =>
+      'Load or draw a DFA to practice its completion.';
+
+  @override
+  String get dfaPracticeEmptyAlphabet =>
+      'The automaton has no input symbols yet, so there is nothing to complete.';
+
+  @override
+  String get dfaPracticeNotDeterministic =>
+      'Completion applies to DFAs. Remove ε-transitions and multiple transitions from the same state on the same symbol first, or convert the NFA to a DFA.';
+
+  @override
+  String get dfaPracticeComplete =>
+      'Complete! Every state has a transition for every symbol.';
+
+  @override
+  String dfaPracticeMissingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pairs still have no transition:',
+      one: '1 pair still has no transition:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dfaPracticeMissingPair(String state, String symbol) {
+    return 'State $state on symbol $symbol';
+  }
+
+  @override
+  String get dfaPracticeHintTitle => 'Hint';
+
+  @override
+  String get dfaPracticeHintCreateTrap =>
+      'Create a new non-accepting state to act as the trap. Words that reach it can never be accepted.';
+
+  @override
+  String dfaPracticeHintRouteToTrap(String trap) {
+    return 'Send every missing pair to the trap state $trap: add a transition from that state on that symbol to $trap.';
+  }
+
+  @override
+  String dfaPracticeHintLoopTrap(String trap) {
+    return 'Loop the trap state $trap on every symbol it still misses so it never escapes.';
+  }
+
+  @override
+  String dfaPracticeTrapCandidates(String states) {
+    return 'Trap candidates: $states';
+  }
+
+  @override
+  String get dfaPracticeReveal => 'Complete automatically';
+
+  @override
+  String get dfaPracticeClose => 'Close practice';
 
   @override
   String get complementDfaTitle => 'Complement DFA';
@@ -5516,6 +5665,57 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String exampleCounterexampleLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Commented inputs',
+      one: 'Commented input',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exampleExpectationAccepted => 'Expected: accepted';
+
+  @override
+  String get exampleExpectationRejected => 'Expected: rejected';
+
+  @override
+  String get exampleExpectationInvalidSymbol => 'Invalid for the alphabet';
+
+  @override
+  String exampleCounterexampleSemantics(
+    String input,
+    String expectation,
+    String rationale,
+  ) {
+    return '$input: $expectation. $rationale';
+  }
+
+  @override
+  String get useSuggestedInput => 'Use input';
+
+  @override
+  String suggestedInputSent(String input) {
+    return 'Input “$input” sent to the simulation field.';
+  }
+
+  @override
+  String get replaceSimulationInputTitle => 'Replace current input?';
+
+  @override
+  String replaceSimulationInputBody(String current, String input) {
+    return 'The simulation field contains “$current”. Replace it with “$input”?';
+  }
+
+  @override
+  String get keepCurrentInput => 'Keep current';
+
+  @override
+  String get replaceInput => 'Replace';
+
+  @override
   String get transducerBatch => 'Batch inputs';
 
   @override
@@ -5539,6 +5739,167 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transducerComparisonMode => 'Comparison mode';
+
+  @override
+  String get transducerConversion => 'Convert';
+
+  @override
+  String get transducerConvertToMoore => 'Convert to Moore';
+
+  @override
+  String get transducerConvertToMealy => 'Convert to Mealy';
+
+  @override
+  String get transducerConversionContract =>
+      'Two transducers are equivalent when they produce the same output for every input word. A Mealy machine emits nothing for the empty word, while a Moore machine first emits the output of its initial state.';
+
+  @override
+  String get transducerConversionMealyToMooreHint =>
+      'Each state is split into one copy per distinct incoming output, so the result is exact for every Mealy machine, including the empty word.';
+
+  @override
+  String get transducerConversionMooreToMealyHint =>
+      'Each transition carries the output of its target state. The result is exact only when the initial state output is empty; otherwise that output cannot be emitted before reading and is reported below.';
+
+  @override
+  String get transducerConversionExact =>
+      'Exact conversion: the same output for every input word.';
+
+  @override
+  String transducerConversionConventionDifference(String output) {
+    return 'Convention difference: the Moore initial output $output is not emitted by the Mealy machine. Every input word agrees after that prefix.';
+  }
+
+  @override
+  String transducerConversionSummary(
+    int sourceStates,
+    int sourceTransitions,
+    int targetStates,
+    int targetTransitions,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sourceStates,
+      locale: localeName,
+      other: '$sourceStates states',
+      one: '$sourceStates state',
+      zero: '$sourceStates states',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      sourceTransitions,
+      locale: localeName,
+      other: '$sourceTransitions transitions',
+      one: '$sourceTransitions transition',
+      zero: '$sourceTransitions transitions',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      targetStates,
+      locale: localeName,
+      other: '$targetStates states',
+      one: '$targetStates state',
+      zero: '$targetStates states',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      targetTransitions,
+      locale: localeName,
+      other: '$targetTransitions transitions',
+      one: '$targetTransitions transition',
+      zero: '$targetTransitions transitions',
+    );
+    return '$_temp0 and $_temp1 became $_temp2 and $_temp3.';
+  }
+
+  @override
+  String transducerConversionEvidence(int words, int length) {
+    String _temp0 = intl.Intl.pluralLogic(
+      words,
+      locale: localeName,
+      other:
+          'Checked $words input words up to length $length: outputs agree. This is evidence for the tested words; the construction is the proof.',
+      one:
+          'Checked $words input word up to length $length: outputs agree. This is evidence for the tested word; the construction is the proof.',
+      zero: 'No input words were checked: output agreement was not verified.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transducerConversionEvidenceTruncated(int words) {
+    String _temp0 = intl.Intl.pluralLogic(
+      words,
+      locale: localeName,
+      other:
+          'Stopped after $words input words: outputs agree for the tested words. Additional words were not checked.',
+      one:
+          'Stopped after 1 input word: outputs agree for the tested word. Additional words were not checked.',
+      zero:
+          'No input words were checked; output agreement has not been verified.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transducerConversionEvidenceMismatch(String word) {
+    return 'A tested input word produced different outputs: $word.';
+  }
+
+  @override
+  String get transducerConversionSteps => 'Construction steps';
+
+  @override
+  String transducerConversionStepCreateCopy(
+    String copy,
+    String state,
+    String output,
+  ) {
+    return 'Create Moore state $copy for $state with output $output.';
+  }
+
+  @override
+  String transducerConversionStepMapTransition(
+    String transition,
+    String output,
+    String copy,
+  ) {
+    return 'Transition $transition with output $output now enters $copy from every copy of its source.';
+  }
+
+  @override
+  String transducerConversionStepCarryOutput(
+    String transition,
+    String output,
+    String state,
+  ) {
+    return 'Transition $transition carries the output $output of $state.';
+  }
+
+  @override
+  String transducerConversionStepDropInitial(String output, String state) {
+    return 'The initial output $output of $state cannot be emitted before reading and is dropped.';
+  }
+
+  @override
+  String transducerConversionStepPrune(String copy) {
+    return 'Copy $copy is never reached and is removed.';
+  }
+
+  @override
+  String get transducerConversionRejected =>
+      'The machine cannot be converted until these problems are fixed:';
+
+  @override
+  String get transducerConversionOpenMoore => 'Open in the Moore workspace';
+
+  @override
+  String get transducerConversionOpenMealy => 'Open in the Mealy workspace';
+
+  @override
+  String get transducerConversionReplaceMessage =>
+      'The destination workspace already holds a machine. Replace it with the converted machine?';
+
+  @override
+  String transducerConversionOpened(String workspace) {
+    return 'Converted machine opened in the $workspace workspace.';
+  }
 
   @override
   String get transducerComparisonExact => 'Exact';
@@ -8985,6 +9346,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get grammarCnfTypeUnrestricted => 'unrestricted';
 
   @override
+  String get grammarCnfTypeInvalid => 'invalid';
+
+  @override
   String grammarCnfGrammarNotCfg(String type) {
     return 'CNF conversion expects a context-free grammar; received grammar type $type. The conversion will be attempted anyway.';
   }
@@ -9005,7 +9369,7 @@ class AppLocalizationsEn extends AppLocalizations {
     int subsets,
     int limit,
   ) {
-    return 'Skipping epsilon expansion for production $production: $nullablePositions nullable positions would require $subsets subsets, exceeding the limit of $limit.';
+    return 'Skipping epsilon expansion for production $production: $nullablePositions nullable positions require at least $subsets subsets, exceeding the limit of $limit.';
   }
 
   @override
@@ -10602,6 +10966,113 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String tmToGrammarConstructionLimit(int limit) {
     return 'TM-to-grammar construction reached its production limit of $limit.';
+  }
+
+  @override
+  String get tmMultiTapeReductionAlreadySingleTape =>
+      'The machine already has a single tape; no reduction is needed.';
+
+  @override
+  String tmMultiTapeReductionInvalidMachine(String detail) {
+    return 'The multi-tape machine is invalid ($detail).';
+  }
+
+  @override
+  String get tmMultiTapeReductionInvalidMachineGeneric =>
+      'The multi-tape machine is invalid.';
+
+  @override
+  String get tmMultiTapeReductionMissingInitialState =>
+      'The multi-tape machine has no valid initial state.';
+
+  @override
+  String tmMultiTapeReductionBuildingBlocksUnsupported(String detail) {
+    return 'Multi-tape reduction does not support building blocks ($detail).';
+  }
+
+  @override
+  String get tmMultiTapeReductionBuildingBlocksUnsupportedGeneric =>
+      'Multi-tape reduction does not support building blocks.';
+
+  @override
+  String tmMultiTapeReductionAcceptancePolicyUnsupported(String detail) {
+    String _temp0 = intl.Intl.selectLogic(detail, {
+      'finalState': 'final-state',
+      'halting': 'halting',
+      'finalStateOrHalting': 'final-state-or-halting',
+      'other': 'selected',
+    });
+    return 'Multi-tape reduction requires final-state acceptance; the machine uses the $_temp0 policy.';
+  }
+
+  @override
+  String get tmMultiTapeReductionAcceptancePolicyUnsupportedGeneric =>
+      'Multi-tape reduction requires final-state acceptance.';
+
+  @override
+  String tmMultiTapeReductionBlankInInputAlphabet(String detail) {
+    return 'The blank symbol $detail cannot also be an input symbol.';
+  }
+
+  @override
+  String get tmMultiTapeReductionBlankInInputAlphabetGeneric =>
+      'The blank symbol cannot also be an input symbol.';
+
+  @override
+  String tmMultiTapeReductionTapeSymbolBudget(int count, int limit) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count composite tape symbols',
+      one: '$count composite tape symbol',
+      zero: '$count composite tape symbols',
+    );
+    return 'The reduction needs $_temp0, above the limit of $limit.';
+  }
+
+  @override
+  String get tmMultiTapeReductionTapeSymbolBudgetGeneric =>
+      'The reduction exceeds its composite tape symbol budget.';
+
+  @override
+  String tmMultiTapeReductionStateBudget(int count, int limit) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count states',
+      one: '$count state',
+      zero: '$count states',
+    );
+    return 'The reduction reached $_temp0, above the limit of $limit.';
+  }
+
+  @override
+  String get tmMultiTapeReductionStateBudgetGeneric =>
+      'The reduction exceeds its state budget.';
+
+  @override
+  String tmMultiTapeReductionTransitionBudget(int count, int limit) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transitions',
+      one: '$count transition',
+      zero: '$count transitions',
+    );
+    return 'The reduction reached $_temp0, above the limit of $limit.';
+  }
+
+  @override
+  String get tmMultiTapeReductionTransitionBudgetGeneric =>
+      'The reduction exceeds its transition budget.';
+
+  @override
+  String tmToGrammarMultiTapeReductionApplied(
+    int tapes,
+    int states,
+    int transitions,
+  ) {
+    return 'The $tapes-tape machine was reduced to a single-tape machine with $states states and $transitions transitions before conversion.';
   }
 
   @override
@@ -12742,6 +13213,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String codecTmJflapDuplicateBlockIdentity(
+    String id,
+    String firstTag,
+    String secondTag,
+  ) {
+    return 'The TM building-block tags $firstTag and $secondTag reuse the block ID $id.';
+  }
+
+  @override
   String get codecTmJflapAcceptancePolicyConflict =>
       'The TM root and machine acceptance policies conflict.';
 
@@ -12873,4 +13353,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get codecTmJsonEndpointsMigratedToIds =>
       'TM transition endpoints were migrated to stable IDs.';
+
+  @override
+  String get pdaPushSymbolsHint => 'Separate stack symbols with spaces.';
+
+  @override
+  String get tmSpaceSharedTapeExplanation =>
+      'The current single tape stores both the original input and work data.';
+
+  @override
+  String get tmSpaceNondeterministicExplanation =>
+      'NTM maxima cover every explored branch configuration within the displayed configuration bound.';
+
+  @override
+  String get tmSpaceBoundedExplanation =>
+      'These observed maxima are a bounded profile, not an asymptotic space-complexity proof.';
+
+  @override
+  String bruteForceDerivationStepLabel(
+    String step,
+    String total,
+    String production,
+  ) {
+    return 'Step $step of $total • production $production';
+  }
+
+  @override
+  String bruteForceWitnessLabel(String witness, int depth, String depthLabel) {
+    String _temp0 = intl.Intl.pluralLogic(
+      depth,
+      locale: localeName,
+      other: '$depthLabel steps',
+      one: '$depthLabel step',
+      zero: '$depthLabel steps',
+    );
+    return 'Witness $witness • $_temp0';
+  }
 }

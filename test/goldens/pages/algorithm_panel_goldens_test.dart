@@ -74,9 +74,13 @@ Future<void> _pumpAlgorithmPanel(
         ),
       ),
     ),
+    surfaceSize: size,
   );
 
   await tester.pumpAndSettle();
+  expect(tester.getSize(find.byType(Scaffold)), size);
+  expect(tester.takeException(), isNull);
+  expect(find.byType(ErrorWidget), findsNothing);
 }
 
 void main() {
@@ -181,6 +185,12 @@ void main() {
         size: const Size(400, 900),
       );
 
+      final resultDetails = find.text('Automata are equivalent').last;
+      await tester.ensureVisible(resultDetails);
+      await tester.pumpAndSettle();
+      expect(resultDetails.hitTestable(), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle).hitTestable(), findsOneWidget);
+
       await screenMatchesGolden(tester, 'algorithm_panel_equivalence_true');
     });
 
@@ -200,6 +210,14 @@ void main() {
         equivalenceDetails: 'Automata are not equivalent: counterexample "ab"',
         size: const Size(400, 900),
       );
+
+      final resultDetails = find.text(
+        'Automata are not equivalent: counterexample "ab"',
+      );
+      await tester.ensureVisible(resultDetails);
+      await tester.pumpAndSettle();
+      expect(resultDetails.hitTestable(), findsOneWidget);
+      expect(find.byIcon(Icons.cancel).hitTestable(), findsOneWidget);
 
       await screenMatchesGolden(tester, 'algorithm_panel_equivalence_false');
     });
@@ -315,6 +333,14 @@ void main() {
       // Enter regex
       await tester.enterText(find.byType(TextField), 'a*b+');
       await tester.pumpAndSettle();
+
+      final resultDetails = find.text(
+        'The two automata accept the same language',
+      );
+      await tester.ensureVisible(resultDetails);
+      await tester.pumpAndSettle();
+      expect(resultDetails.hitTestable(), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle).hitTestable(), findsOneWidget);
 
       await screenMatchesGolden(tester, 'algorithm_panel_regex_equiv_tablet');
     });

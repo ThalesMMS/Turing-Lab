@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/lr1_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/lr1_parser.dart';
 import 'package:turing_lab/core/models/derivation_tree.dart';
 import 'package:turing_lab/core/models/derivation_tree_node.dart';
 import 'package:turing_lab/core/models/grammar.dart';

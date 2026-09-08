@@ -1,6 +1,7 @@
 import '../../grammar/phrase_structure/phrase_structure.dart';
 import '../../messages/structured_message.dart';
 import '../../models/tm_transition.dart';
+import '../tm/tm_multi_tape_reducer.dart';
 
 enum TMToGrammarOutcome {
   completed,
@@ -45,6 +46,7 @@ enum TMToGrammarAssumption {
   atomicTokenSymbols,
   finiteWindowChosenByDerivation,
   sampledEvidenceNotProof,
+  multiTapeReducedToSingleTape,
 }
 
 final class TMToGrammarDiagnostic {
@@ -129,6 +131,7 @@ final class TMToGrammarConstructionReport {
     Iterable<TMToGrammarProductionProvenance> productionProvenance = const [],
     Map<String, String> symbolDescriptions = const {},
     this.grammar,
+    this.reduction,
   }) : assumptions = Set<TMToGrammarAssumption>.unmodifiable(assumptions),
        diagnostics = List<TMToGrammarDiagnostic>.unmodifiable(diagnostics),
        productionProvenance =
@@ -153,6 +156,39 @@ final class TMToGrammarConstructionReport {
   final Map<String, TMToGrammarProductionProvenance> _provenanceByProductionId;
   final Map<String, String> symbolDescriptions;
   final UnrestrictedGrammar? grammar;
+
+  /// The multi-tape to single-tape reduction that preceded the construction,
+  /// when the source machine had more than one tape. Production provenance
+  /// then references the reduced machine; use [sourceReferencesForOriginal]
+  /// to map it back to the source states and transitions.
+  final TMMultiTapeReductionReport? reduction;
+
+  /// [provenance] sources expressed in terms of the original machine. Sweep
+  /// transitions of the reduction map to the source state they serve.
+  List<TMToGrammarSourceReference> sourceReferencesForOriginal(
+    TMToGrammarProductionProvenance provenance,
+  ) {
+    final reduction = this.reduction;
+    if (reduction == null) return provenance.sources;
+    final mapped = <String, TMToGrammarSourceReference>{};
+    for (final source in provenance.sources) {
+      final state = source.stateId == null
+          ? null
+          : reduction.stateProvenance[source.stateId!];
+      final transition = source.transitionId == null
+          ? null
+          : reduction.transitionProvenance[source.transitionId!];
+      final reference = TMToGrammarSourceReference(
+        stateId: transition?.sourceStateId ?? state?.sourceStateId,
+        transitionId: transition?.sourceTransitionId,
+      );
+      if (reference.stateId == null && reference.transitionId == null) {
+        continue;
+      }
+      mapped.putIfAbsent(reference.toJson().toString(), () => reference);
+    }
+    return List<TMToGrammarSourceReference>.unmodifiable(mapped.values);
+  }
 
   bool get isCompleted =>
       outcome == TMToGrammarOutcome.completed && grammar != null;
@@ -194,6 +230,7 @@ final class TMToGrammarConstructionReport {
         .map((value) => value.toJson())
         .toList(),
     'symbolDescriptions': symbolDescriptions,
+    if (reduction != null) 'reduction': reduction!.toStructuredJson(),
     if (grammar != null) ...{
       'counts': {
         'terminals': grammar!.terminals.length,

@@ -11,7 +11,7 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -236,90 +236,94 @@ void main() {
   });
 
   group('NPDA step recording', () {
-    test('synchronous trace preserves PDA display text and stable edge IDs',
-        () {
-      final result = PDASimulator.simulateNPDA(
-        _pdaAcceptsABoth(),
-        'a',
-        stepByStep: true,
-        mode: PDAAcceptanceMode.finalState,
-      );
+    test(
+      'synchronous trace preserves PDA display text and stable edge IDs',
+      () {
+        final result = PDASimulator.simulateNPDA(
+          _pdaAcceptsABoth(),
+          'a',
+          stepByStep: true,
+          mode: PDAAcceptanceMode.finalState,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation?.title, 'Accepted by final state');
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation?.title, 'Accepted by final state');
 
-      final epsilonStep = steps.firstWhere(
-        (step) =>
-            step.explanation?.highlights.any(
-              (target) =>
-                  target.type == HighlightTargetType.transition &&
-                  target.id == 'pda-opaque-epsilon-edge',
-            ) ??
-            false,
-      );
-      final consumingStep = steps.firstWhere(
-        (step) => step.consumedInput == 'a',
-      );
-      expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
-      expect(consumingStep.usedTransition, 'a,Z\u2192Z');
-      expect(
-        epsilonStep.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['pda-opaque-epsilon-edge'],
-      );
-      expect(
-        consumingStep.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['pda-opaque-consuming-edge'],
-      );
-    });
+        final epsilonStep = steps.firstWhere(
+          (step) =>
+              step.explanation?.highlights.any(
+                (target) =>
+                    target.type == HighlightTargetType.transition &&
+                    target.id == 'pda-opaque-epsilon-edge',
+              ) ??
+              false,
+        );
+        final consumingStep = steps.firstWhere(
+          (step) => step.consumedInput == 'a',
+        );
+        expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
+        expect(consumingStep.usedTransition, 'a,Z\u2192Z');
+        expect(
+          epsilonStep.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['pda-opaque-epsilon-edge'],
+        );
+        expect(
+          consumingStep.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['pda-opaque-consuming-edge'],
+        );
+      },
+    );
 
-    test('cooperative trace preserves PDA display text and stable edge IDs',
-        () async {
-      final result = await PDASimulator.simulateCooperative(
-        _pdaAcceptsABoth(),
-        'a',
-        stepByStep: true,
-        mode: PDAAcceptanceMode.finalState,
-        configurationsPerBatch: 1,
-      );
+    test(
+      'cooperative trace preserves PDA display text and stable edge IDs',
+      () async {
+        final result = await PDASimulator.simulateCooperative(
+          _pdaAcceptsABoth(),
+          'a',
+          stepByStep: true,
+          mode: PDAAcceptanceMode.finalState,
+          configurationsPerBatch: 1,
+        );
 
-      expect(result.isSuccess, isTrue);
-      final steps = result.data!.steps;
-      expect(steps.first.explanation, isNull);
-      expect(steps.last.explanation?.title, 'Accepted by final state');
+        expect(result.isSuccess, isTrue);
+        final steps = result.data!.steps;
+        expect(steps.first.explanation, isNull);
+        expect(steps.last.explanation?.title, 'Accepted by final state');
 
-      final epsilonStep = steps.firstWhere(
-        (step) =>
-            step.explanation?.highlights.any(
-              (target) =>
-                  target.type == HighlightTargetType.transition &&
-                  target.id == 'pda-opaque-epsilon-edge',
-            ) ??
-            false,
-      );
-      final consumingStep = steps.firstWhere(
-        (step) => step.consumedInput == 'a',
-      );
-      expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
-      expect(consumingStep.usedTransition, 'a,Z\u2192Z');
-      expect(
-        epsilonStep.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['pda-opaque-epsilon-edge'],
-      );
-      expect(
-        consumingStep.explanation!.highlights
-            .where((target) => target.type == HighlightTargetType.transition)
-            .map((target) => target.id),
-        ['pda-opaque-consuming-edge'],
-      );
-    });
+        final epsilonStep = steps.firstWhere(
+          (step) =>
+              step.explanation?.highlights.any(
+                (target) =>
+                    target.type == HighlightTargetType.transition &&
+                    target.id == 'pda-opaque-epsilon-edge',
+              ) ??
+              false,
+        );
+        final consumingStep = steps.firstWhere(
+          (step) => step.consumedInput == 'a',
+        );
+        expect(epsilonStep.usedTransition, '\u03b5,\u03b5\u2192\u03b5');
+        expect(consumingStep.usedTransition, 'a,Z\u2192Z');
+        expect(
+          epsilonStep.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['pda-opaque-epsilon-edge'],
+        );
+        expect(
+          consumingStep.explanation!.highlights
+              .where((target) => target.type == HighlightTargetType.transition)
+              .map((target) => target.id),
+          ['pda-opaque-consuming-edge'],
+        );
+      },
+    );
 
     test('Step records destination state, not source', () {
       final pda = _pdaAcceptsAByFinal();
@@ -335,14 +339,16 @@ void main() {
       // Find intermediate steps (not initial step 0, not final step)
       final intermediateSteps = steps
           .where(
-              (s) => s.stepNumber > 0 && s.stepNumber < steps.last.stepNumber)
+            (s) => s.stepNumber > 0 && s.stepNumber < steps.last.stepNumber,
+          )
           .toList();
       expect(intermediateSteps, isNotEmpty);
 
       // Intermediate steps should show destination states (q1 or qf), not
       // always the source (q0)
-      final hasDestination =
-          intermediateSteps.any((s) => s.currentState != 'q0');
+      final hasDestination = intermediateSteps.any(
+        (s) => s.currentState != 'q0',
+      );
       expect(hasDestination, true);
     });
 

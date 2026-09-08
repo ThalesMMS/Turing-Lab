@@ -30,7 +30,7 @@ void main() {
     expect(unrestrictedExamples.map((example) => example.category).toSet(), {
       ExampleCategory.unrestrictedGrammar,
     });
-    expect(lSystemExamples, hasLength(6));
+    expect(lSystemExamples, hasLength(7));
     expect(lSystemExamples.map((example) => example.category).toSet(), {
       ExampleCategory.lSystem,
     });

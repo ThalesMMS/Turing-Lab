@@ -10,8 +10,9 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     }
 
     _ensureEdgeCaches();
-    final edgeSignature =
-        Object.hashAll(currentGraph.edges.map(identityHashCode));
+    final edgeSignature = Object.hashAll(
+      currentGraph.edges.map(identityHashCode),
+    );
     final currentNodeStamps = <String, _NodeGeometryStamp>{
       for (final node in currentGraph.nodes)
         _nodeId(node): _NodeGeometryStamp.quantized(
@@ -26,15 +27,25 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     if (_automaticRouteEdgeSignature == edgeSignature &&
         _automaticRouteRenderMode == renderMode &&
         mapEquals(_automaticRouteNodeStamps, currentNodeStamps)) {
+      debugRouteCacheHits++;
       return;
     }
 
+    final phase = Stopwatch()..start();
     final groups = _visibleRouteGroups();
-    final structureChanged = _automaticRouteEdgeSignature != edgeSignature ||
+    debugLastRoutePhaseMicros['groups'] = phase.elapsedMicroseconds;
+    phase.reset();
+    final structureChanged =
+        _automaticRouteEdgeSignature != edgeSignature ||
         _automaticRouteRenderMode != renderMode;
     final affectedGroups = structureChanged
         ? groups.toSet()
         : _affectedRouteGroups(groups, currentNodeStamps);
+    debugRouteLayoutRuns++;
+    debugRouteGroupsPlanned += affectedGroups.length;
+    if (structureChanged) debugRouteFullReplans++;
+    debugLastRoutePhaseMicros['affected'] = phase.elapsedMicroseconds;
+    phase.reset();
 
     if (structureChanged) {
       _automaticRouteGeometry.clear();
@@ -46,10 +57,40 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
       }
     }
 
+    // A partial replan only needs the paths and states that can influence
+    // the affected groups. The planner scores obstacles within
+    // `routeClearance` of a candidate curve (which stays inside the hull of
+    // its endpoints and control candidates) and loop repulsors within the
+    // loop reach plus its falloff, so everything outside an inflated box
+    // around each affected group is provably ignored (#434).
+    final interestRects = structureChanged
+        ? const <Rect>[]
+        : [
+            for (final group in affectedGroups)
+              Rect.fromPoints(
+                getNodeCenter(group.representative.source),
+                getNodeCenter(group.representative.destination),
+              ).inflate(
+                _partialReplanInterestMargin +
+                    (group.isSelfLoop
+                        ? _nodeRadius(group.representative.source)
+                        : 0),
+              ),
+          ];
+    bool isRelevantPath(EdgePathGeometry geometry) =>
+        structureChanged ||
+        interestRects.any((rect) => rect.overlaps(geometry.bounds));
+    bool isRelevantObstacle(Offset center, double radius) =>
+        structureChanged ||
+        interestRects.any((rect) => rect.inflate(radius).contains(center));
+
     final unaffectedPaths = <EdgePathGeometry>[
       for (final group in groups)
         if (!affectedGroups.contains(group) &&
-            _automaticRouteGeometry[group.representative] != null)
+            _automaticRouteGeometry[group.representative] != null &&
+            isRelevantPath(
+              _automaticRouteGeometry[group.representative]!.pathGeometry,
+            ))
           _automaticRouteGeometry[group.representative]!.pathGeometry,
     ];
     final laneOffsets = _laneOffsetsForGroups(groups);
@@ -82,17 +123,22 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     ];
     final obstacles = <AutomaticTransitionObstacle>[
       for (final node in currentGraph.nodes)
-        AutomaticTransitionObstacle(
-          id: _nodeId(node),
-          center: getNodeCenter(node),
-          radius: _nodeRadius(node),
-        ),
+        if (isRelevantObstacle(getNodeCenter(node), _nodeRadius(node)))
+          AutomaticTransitionObstacle(
+            id: _nodeId(node),
+            center: getNodeCenter(node),
+            radius: _nodeRadius(node),
+          ),
     ];
+    debugLastRoutePhaseMicros['requests'] = phase.elapsedMicroseconds;
+    phase.reset();
     final plans = _routePlanner.plan(
       requests: requests,
       obstacles: obstacles,
       existingPaths: unaffectedPaths,
     );
+    debugLastRoutePhaseMicros['plan'] = phase.elapsedMicroseconds;
+    phase.reset();
 
     for (final group in affectedGroups) {
       final plan = plans[group.stableId];
@@ -110,6 +156,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
       }
     }
 
+    debugLastRoutePhaseMicros['geometry'] = phase.elapsedMicroseconds;
     _automaticRouteEdgeSignature = edgeSignature;
     _automaticRouteRenderMode = renderMode;
     _automaticRouteNodeStamps = currentNodeStamps;
@@ -135,8 +182,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
       for (final id in movedNodeIds)
         if (_automaticRouteNodeStamps[id] != null &&
             currentNodeStamps[id] != null)
-          _automaticRouteNodeStamps[id]!
-              .bounds
+          _automaticRouteNodeStamps[id]!.bounds
               .expandToInclude(currentNodeStamps[id]!.bounds)
               .inflate(_routePlanner.routeClearance),
     ];
@@ -149,9 +195,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
       return cached == null ||
           sweptBounds.any(
             (bounds) => bounds.overlaps(
-              cached.pathGeometry.bounds.inflate(
-                _routePlanner.routeClearance,
-              ),
+              cached.pathGeometry.bounds.inflate(_routePlanner.routeClearance),
             ),
           );
     }).toSet();
@@ -197,9 +241,7 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     return groups;
   }
 
-  Map<String, double> _laneOffsetsForGroups(
-    List<_VisibleRouteGroup> groups,
-  ) {
+  Map<String, double> _laneOffsetsForGroups(List<_VisibleRouteGroup> groups) {
     final byUnorderedPair = <String, List<_VisibleRouteGroup>>{};
     for (final group in groups.where((group) => !group.isSelfLoop)) {
       final orderedIds = <String>[group.sourceId, group.destinationId]..sort();
@@ -217,8 +259,8 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
             (index - (pairGroups.length - 1) / 2) * _groupLaneSpacing;
         result[group.stableId] =
             group.sourceId.compareTo(group.destinationId) <= 0
-                ? physicalOffset
-                : -physicalOffset;
+            ? physicalOffset
+            : -physicalOffset;
       }
     }
     return result;
@@ -335,3 +377,11 @@ extension _TuringLabAdaptiveEdgeRendererRouteLayout
     _automaticRouteRenderMode = null;
   }
 }
+
+/// Distance around an affected route group inside which states and cached
+/// paths can still influence its plan: lane offsets (48), candidate
+/// displacement (48), route clearance (24), the loop reach (state radius plus
+/// padding plus clearance) and the loop obstacle falloff (96), with headroom.
+/// Self-loop groups add their state's radius on top, so an oversized state
+/// never outgrows the margin.
+const double _partialReplanInterestMargin = 320;

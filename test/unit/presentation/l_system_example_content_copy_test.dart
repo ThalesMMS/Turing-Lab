@@ -3,13 +3,13 @@ import 'package:turing_lab/data/l_systems/l_system_examples.dart';
 import 'package:turing_lab/presentation/content/l_system_example_content_copy.dart';
 
 void main() {
-  test('covers all six shipped stable ids in English and Portuguese', () {
+  test('covers all seven shipped stable ids in English and Portuguese', () {
     final expectedIds = LSystemExamples.values
         .map((example) => example.id)
         .toList(growable: false);
 
     expect(LSystemExampleContentCopies.ids, expectedIds);
-    expect(expectedIds, hasLength(6));
+    expect(expectedIds, hasLength(7));
     for (final id in expectedIds) {
       final en = LSystemExampleContentCopies.resolve(
         id: id,

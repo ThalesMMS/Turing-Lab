@@ -30,7 +30,7 @@ import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
-import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 
 class _FakePdaExamplesDataSource extends ExamplesAssetDataSource {

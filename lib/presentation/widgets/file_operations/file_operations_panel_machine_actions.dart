@@ -221,6 +221,102 @@ extension _FileOperationsPanelMachineActions on _FileOperationsPanelState {
     );
   }
 
+  Future<void> _exportPdaAsPNG() async {
+    if (widget.pda == null) return;
+    final pda = widget.pda!;
+    _updatePanelState(() => _isLoading = true);
+    try {
+      final pngBytesResult = await _fileService.exportPdaToPngBytes(
+        pda,
+        emptyStringSymbol: _emptyStringSymbol,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
+      );
+      if (pngBytesResult.isFailure) {
+        _showErrorMessage(
+          _l10n.failedToExportPda(_localizedFailure(pngBytesResult)),
+          retryOperation: _exportPdaAsPNG,
+        );
+        return;
+      }
+      final exportResult = await _saveBinaryFileWithPicker(
+        dialogTitle: _l10n.exportPdaAsPng,
+        fileName: '${pda.name}.png',
+        allowedExtensions: ['png'],
+        bytes: pngBytesResult.data!,
+        writeToPath: (path) =>
+            _fileService.writePngBytesToPath(pngBytesResult.data!, path),
+      );
+      if (exportResult == null) return;
+      if (exportResult.isSuccess) {
+        _showSuccessMessage(_l10n.pdaExportedSuccessfully);
+      } else {
+        _showErrorMessage(
+          _l10n.failedToExportPda(_localizedFailure(exportResult)),
+          retryOperation: _exportPdaAsPNG,
+        );
+      }
+    } catch (e, stackTrace) {
+      _showErrorMessage(
+        _l10n.errorExportingPda(_localizedException(e)),
+        retryOperation: _exportPdaAsPNG,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      if (mounted) {
+        _updatePanelState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _exportTuringMachineAsPNG() async {
+    if (widget.turingMachine == null) return;
+    final turingMachine = widget.turingMachine!;
+    _updatePanelState(() => _isLoading = true);
+    try {
+      final pngBytesResult = await _fileService.exportTuringMachineToPngBytes(
+        turingMachine,
+        emptyStringSymbol: _emptyStringSymbol,
+        includeAnnotations: _includeAnnotationsInVisualExports,
+        annotations: widget.annotations,
+      );
+      if (pngBytesResult.isFailure) {
+        _showErrorMessage(
+          _l10n.failedToExportTm(_localizedFailure(pngBytesResult)),
+          retryOperation: _exportTuringMachineAsPNG,
+        );
+        return;
+      }
+      final exportResult = await _saveBinaryFileWithPicker(
+        dialogTitle: _l10n.exportTmAsPng,
+        fileName: '${turingMachine.name}.png',
+        allowedExtensions: ['png'],
+        bytes: pngBytesResult.data!,
+        writeToPath: (path) =>
+            _fileService.writePngBytesToPath(pngBytesResult.data!, path),
+      );
+      if (exportResult == null) return;
+      if (exportResult.isSuccess) {
+        _showSuccessMessage(_l10n.tmExportedSuccessfully);
+      } else {
+        _showErrorMessage(
+          _l10n.failedToExportTm(_localizedFailure(exportResult)),
+          retryOperation: _exportTuringMachineAsPNG,
+        );
+      }
+    } catch (e, stackTrace) {
+      _showErrorMessage(
+        _l10n.errorExportingTm(_localizedException(e)),
+        retryOperation: _exportTuringMachineAsPNG,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      if (mounted) {
+        _updatePanelState(() => _isLoading = false);
+      }
+    }
+  }
+
   Future<void> _exportTuringMachineAsSVG() async {
     if (widget.turingMachine == null) return;
     final turingMachine = widget.turingMachine!;

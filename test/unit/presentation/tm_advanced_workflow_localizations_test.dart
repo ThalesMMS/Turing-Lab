@@ -7,6 +7,30 @@ void main() {
   final en = lookupAppLocalizations(const Locale('en'));
   final pt = lookupAppLocalizations(const Locale('pt', 'BR'));
 
+  test('localizes every multi-tape acceptance policy detail', () {
+    for (final (key, english, portuguese) in [
+      ('finalState', 'final-state', 'de estado final'),
+      ('halting', 'halting', 'de parada'),
+      (
+        'finalStateOrHalting',
+        'final-state-or-halting',
+        'de estado final ou parada',
+      ),
+      ('unknown', 'selected', 'selecionada'),
+    ]) {
+      expect(
+        en.tmMultiTapeReductionAcceptancePolicyUnsupported(key),
+        'Multi-tape reduction requires final-state acceptance; '
+        'the machine uses the $english policy.',
+      );
+      expect(
+        pt.tmMultiTapeReductionAcceptancePolicyUnsupported(key),
+        'A redução multifita exige aceitação por estado final; '
+        'a máquina usa a política $portuguese.',
+      );
+    }
+  });
+
   test('localizes TM batch and building-block trace copy', () {
     const sources = [
       'Batch testing',

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:turing_lab/core/models/simulation_result.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
@@ -76,18 +77,20 @@ Future<void> _pumpSimulationPanel(
   ValueChanged<List<SimulationStep>>? onViewOnCanvas,
 }) async {
   await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: SimulationPanel(
-          onSimulate: onSimulate.call,
-          simulationResult: simulationResult,
-          errorMessage: errorMessage,
-          regexResult: regexResult,
-          highlightService:
-              highlightService ?? _TestSimulationHighlightService(),
-          animationSpeed: animationSpeed,
-          onAnimationSpeedChanged: onAnimationSpeedChanged,
-          onViewOnCanvas: onViewOnCanvas,
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(
+          body: SimulationPanel(
+            onSimulate: onSimulate.call,
+            simulationResult: simulationResult,
+            errorMessage: errorMessage,
+            regexResult: regexResult,
+            highlightService:
+                highlightService ?? _TestSimulationHighlightService(),
+            animationSpeed: animationSpeed,
+            onAnimationSpeedChanged: onAnimationSpeedChanged,
+            onViewOnCanvas: onViewOnCanvas,
+          ),
         ),
       ),
     ),

@@ -29,9 +29,9 @@ import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
 import '../providers/tm_editor_provider.dart';
 import '../providers/tm_block_library_provider.dart';
-import '../widgets/tm_canvas_graphview.dart';
-import '../widgets/tm_algorithm_panel.dart';
-import '../widgets/tm_simulation_panel.dart';
+import '../widgets/tm/tm_canvas_graphview.dart';
+import '../widgets/tm/tm_algorithm_panel.dart';
+import '../widgets/tm/tm_simulation_panel.dart';
 import '../widgets/tm/tape_drawer.dart';
 import '../widgets/tm/tm_block_library_panel.dart';
 import '../widgets/common/workspace_helpers.dart';
@@ -276,6 +276,7 @@ class _TMPageState extends ConsumerState<TMPage>
         mobileFloatingPanelBuilder:
             (context, {required onDragDelta, required onPanelSizeChanged}) =>
                 CollapsibleCanvasPanel(
+                  showCollapseButton: true,
                   label: appLocalizationsOf(context).traceTape,
                   icon: Icons.horizontal_rule,
                   onDragDelta: onDragDelta,
@@ -344,26 +345,17 @@ class _TMPageState extends ConsumerState<TMPage>
     TMEditorState editorState, {
     required bool isMobile,
   }) {
+    final bar = AutomatonDiagnosticHighlightBar(
+      floating: !isMobile,
+      activeKind: _activeDiagnosticHighlight,
+      conflictCount: editorState.nondeterministicTransitionIds.length,
+      onConflictSelected: (selected) =>
+          _setDiagnosticHighlight(selected, editorState),
+    );
+    if (!isMobile) return bar;
     return Align(
       alignment: Alignment.topCenter,
-      child: SafeArea(
-        minimum: EdgeInsets.fromLTRB(
-          12,
-          isMobile
-              ? 12
-              : (_canvasToolbarInsets.top > 0
-                    ? _canvasToolbarInsets.top + 8
-                    : 88),
-          12,
-          12,
-        ),
-        child: AutomatonDiagnosticHighlightBar(
-          activeKind: _activeDiagnosticHighlight,
-          conflictCount: editorState.nondeterministicTransitionIds.length,
-          onConflictSelected: (selected) =>
-              _setDiagnosticHighlight(selected, editorState),
-        ),
-      ),
+      child: SafeArea(minimum: const EdgeInsets.all(12), child: bar),
     );
   }
 
@@ -473,27 +465,7 @@ class _TMPageState extends ConsumerState<TMPage>
         ),
       ],
     );
-    final inspector = TMTapePanel(
-      tapeState: _currentTape,
-      tapeAlphabet: editorState.tm?.tapeAlphabet ?? const {},
-      onClear: () {
-        setState(() {
-          _currentTape = TapeState.initial(
-            blankSymbol: ref.read(tmEditorProvider).tm?.blankSymbol ?? '□',
-          );
-        });
-      },
-    );
-
-    return Column(
-      children: [
-        Expanded(child: canvasWithChrome),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
-          child: inspector,
-        ),
-      ],
-    );
+    return canvasWithChrome;
   }
 
   String _buildToolbarStatusMessage(TMEditorState editorState) {

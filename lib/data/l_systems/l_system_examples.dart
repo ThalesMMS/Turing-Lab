@@ -65,6 +65,44 @@ abstract final class LSystemExamples {
       rules: {'F': 'F[+F]F[-F]F'},
     ),
     LSystemExample(
+      id: 'l-system.parametric-tree',
+      name: 'Parametric tree',
+      description:
+          'Rules carry a length parameter that each branch scales with an arithmetic expression.',
+      document: LSystemDocument(
+        id: 'l-system.parametric-tree',
+        name: 'Parametric tree',
+        revision: 0,
+        axiom: LSystemWord(const ['A(48)']),
+        productions: [
+          LSystemProduction(
+            id: 'parametric-tree-branch',
+            predecessor: 'A(x)',
+            successor: LSystemWord(const [
+              'g(x)',
+              '[',
+              '+(28)',
+              'A(x*0.68)',
+              ']',
+              '[',
+              '-(22)',
+              'A(x*0.72)',
+              ']',
+              'g(x*0.25)',
+              'A(x*0.5)',
+            ]),
+          ),
+        ],
+        iterations: 6,
+        turtle: LSystemTurtleSettings(
+          angleDegrees: 25,
+          stepLength: 10,
+          initialHeadingDegrees: 90,
+        ),
+        commandMapping: LSystemCommandMapping.jflap,
+      ),
+    ),
+    LSystemExample(
       id: 'l-system.seeded-context-turtle',
       name: 'Seeded context turtle',
       description:

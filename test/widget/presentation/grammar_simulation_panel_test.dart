@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/presentation/providers/grammar_provider.dart';
-import 'package:turing_lab/presentation/widgets/derivation_tree_view.dart';
-import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/derivation_tree_view.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_simulation_panel.dart';
 
 void main() {
   testWidgets('exposes only available parser strategies', (tester) async {
@@ -167,68 +167,66 @@ void main() {
     expect(find.byTooltip('Pause execution'), findsOneWidget);
   });
 
-  testWidgets(
-    'shows a source-grammar tree for the LR(1)-but-not-SLR fixture',
-    (tester) async {
-      final grammar = GrammarProvider()
-        ..addProduction(leftSide: ['S'], rightSide: const ['L', '=', 'R'])
-        ..addProduction(leftSide: ['S'], rightSide: const ['R'])
-        ..addProduction(leftSide: ['L'], rightSide: const ['*', 'R'])
-        ..addProduction(leftSide: ['L'], rightSide: const ['i'])
-        ..addProduction(leftSide: ['R'], rightSide: const ['L']);
+  testWidgets('shows a source-grammar tree for the LR(1)-but-not-SLR fixture', (
+    tester,
+  ) async {
+    final grammar = GrammarProvider()
+      ..addProduction(leftSide: ['S'], rightSide: const ['L', '=', 'R'])
+      ..addProduction(leftSide: ['S'], rightSide: const ['R'])
+      ..addProduction(leftSide: ['L'], rightSide: const ['*', 'R'])
+      ..addProduction(leftSide: ['L'], rightSide: const ['i'])
+      ..addProduction(leftSide: ['R'], rightSide: const ['L']);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [grammarProvider.overrideWith((ref) => grammar)],
-          child: const MaterialApp(
-            home: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
-          ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [grammarProvider.overrideWith((ref) => grammar)],
+        child: const MaterialApp(
+          home: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
         ),
-      );
+      ),
+    );
 
-      await tester.tap(
-        find.byType(DropdownButtonFormField<ParsingStrategyHint>),
+    await tester.tap(find.byType(DropdownButtonFormField<ParsingStrategyHint>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Canonical LR(1)').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('grammar-parser-input')),
+      'i=i',
+    );
+    await tester.tap(find.text('Parse String'));
+    for (var attempt = 0; attempt < 100; attempt++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
       );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Canonical LR(1)').last);
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const ValueKey('grammar-parser-input')),
-        'i=i',
-      );
-      await tester.tap(find.text('Parse String'));
-      for (var attempt = 0; attempt < 100; attempt++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 10)),
-        );
-        await tester.pump(const Duration(milliseconds: 50));
-        if (find.text('Accepted').evaluate().isNotEmpty) break;
-      }
+      await tester.pump(const Duration(milliseconds: 50));
+      if (find.text('Accepted').evaluate().isNotEmpty) break;
+    }
 
-      expect(find.text('Accepted'), findsOneWidget);
-      expect(find.byKey(const ValueKey('lr1-parse-table')), findsOneWidget);
-      final treeTitle = find.text('Derivation Tree');
-      await tester.ensureVisible(treeTitle);
-      await tester.tap(treeTitle);
-      await tester.pumpAndSettle();
+    expect(find.text('Accepted'), findsOneWidget);
+    expect(find.byKey(const ValueKey('lr1-parse-table')), findsOneWidget);
+    final treeTitle = find.text('Derivation Tree');
+    await tester.ensureVisible(treeTitle);
+    await tester.tap(treeTitle);
+    await tester.pumpAndSettle();
 
-      final tree = tester.widget<DerivationTreeView>(
-        find.byType(DerivationTreeView).last,
-      );
-      expect(tree.tree.root.symbol, 'S');
-      expect(
-        tree.tree.root.children.map((child) => child.symbol),
-        ['L', '=', 'R'],
-      );
-      expect(tree.tree.root.children.first.children.single.symbol, 'i');
-      expect(
-        tree.tree.root.children.last.children.single.children.single.symbol,
-        'i',
-      );
-      expect(find.text('T_i'), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    final tree = tester.widget<DerivationTreeView>(
+      find.byType(DerivationTreeView).last,
+    );
+    expect(tree.tree.root.symbol, 'S');
+    expect(tree.tree.root.children.map((child) => child.symbol), [
+      'L',
+      '=',
+      'R',
+    ]);
+    expect(tree.tree.root.children.first.children.single.symbol, 'i');
+    expect(
+      tree.tree.root.children.last.children.single.children.single.symbol,
+      'i',
+    );
+    expect(find.text('T_i'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('preserves and explains canonical LR(1) conflicts', (
     tester,
@@ -509,55 +507,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shows an Automatic tree when whitespace is a declared terminal', (
-    tester,
-  ) async {
-    final grammar = GrammarProvider()
-      ..addProduction(
-        leftSide: ['S'],
-        rightSide: const ['id', ' ', '+', ' ', 'id'],
-      );
+  testWidgets(
+    'shows an Automatic tree when whitespace is a declared terminal',
+    (tester) async {
+      final grammar = GrammarProvider()
+        ..addProduction(
+          leftSide: ['S'],
+          rightSide: const ['id', ' ', '+', ' ', 'id'],
+        );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [grammarProvider.overrideWith((ref) => grammar)],
-        child: const MaterialApp(
-          home: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [grammarProvider.overrideWith((ref) => grammar)],
+          child: const MaterialApp(
+            home: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
+          ),
         ),
-      ),
-    );
-
-    await tester.enterText(
-      find.byKey(const ValueKey('grammar-parser-input')),
-      'id + id',
-    );
-    await tester.tap(find.text('Parse String'));
-    for (var attempt = 0; attempt < 100; attempt++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 10)),
       );
-      await tester.pump(const Duration(milliseconds: 50));
-      if (find.text('Accepted').evaluate().isNotEmpty) break;
-    }
 
-    expect(find.text('Accepted'), findsOneWidget);
-    final treeTitle = find.text('Derivation Tree');
-    await tester.ensureVisible(treeTitle);
-    await tester.tap(treeTitle);
-    await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('grammar-parser-input')),
+        'id + id',
+      );
+      await tester.tap(find.text('Parse String'));
+      for (var attempt = 0; attempt < 100; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+        if (find.text('Accepted').evaluate().isNotEmpty) break;
+      }
 
-    final tree = tester.widget<DerivationTreeView>(
-      find.byType(DerivationTreeView).last,
-    );
-    expect(tree.tree.root.symbol, 'S');
-    expect(
-      tree.tree.root.children.map((child) => child.symbol),
-      ['id', ' ', '+', ' ', 'id'],
-    );
-    expect(tree.tree.root.children[1].lexeme, ' ');
-    expect(tree.tree.root.children[3].lexeme, ' ');
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Accepted'), findsOneWidget);
+      final treeTitle = find.text('Derivation Tree');
+      await tester.ensureVisible(treeTitle);
+      await tester.tap(treeTitle);
+      await tester.pumpAndSettle();
+
+      final tree = tester.widget<DerivationTreeView>(
+        find.byType(DerivationTreeView).last,
+      );
+      expect(tree.tree.root.symbol, 'S');
+      expect(tree.tree.root.children.map((child) => child.symbol), [
+        'id',
+        ' ',
+        '+',
+        ' ',
+        'id',
+      ]);
+      expect(tree.tree.root.children[1].lexeme, ' ');
+      expect(tree.tree.root.children[3].lexeme, ' ');
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('does not attach a result after the grammar or input changes', (
     tester,

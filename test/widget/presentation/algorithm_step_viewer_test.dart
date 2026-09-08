@@ -366,7 +366,7 @@ void main() {
         title: 'Test Step',
         explanation: 'Test explanation',
         type: AlgorithmType.nfaToDfa,
-        properties: {kNfaToDfaStepKey: _nfaToDfaStep()},
+        properties: _nfaToDfaStep().toProperties(),
       );
 
       await _pumpStepViewer(

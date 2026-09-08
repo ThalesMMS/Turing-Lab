@@ -39,13 +39,13 @@ import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dar
 import 'package:turing_lab/presentation/widgets/document_interoperability_failure_dialog.dart';
 import 'package:turing_lab/presentation/widgets/error_banner.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
-import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
-import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 
 import '../support/apple_release_harness.dart';
 import '../support/apple_release_module.dart';
@@ -231,7 +231,16 @@ Future<void> _loadOfflineExample(
       'Rendered panel text: $renderedText',
     );
   }
-  await harness.tap(example, description: 'the offline example "$visibleName"');
+  // The entry hosts the load button plus suggested-input actions, so the
+  // load button itself is the tap target rather than the entry's center.
+  final exampleButton = find.descendant(
+    of: example,
+    matching: find.byType(OutlinedButton),
+  );
+  await harness.tap(
+    exampleButton.evaluate().isEmpty ? example : exampleButton.first,
+    description: 'the offline example "$visibleName"',
+  );
   await harness.waitUntilAsync(
     isLoaded,
     description: 'the offline example "$canonicalName" to update its editor',

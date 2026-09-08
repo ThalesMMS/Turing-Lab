@@ -470,7 +470,7 @@ def _is_l_system_protocol_literal(path: str, literal: str) -> bool:
 def _is_regex_simplification_protocol_literal(
     path: str, literal: RawLiteral
 ) -> bool:
-    if path != "lib/core/algorithms/regex_simplifier_steps.dart":
+    if path != "lib/core/algorithms/regex/regex_simplifier_steps.dart":
         return False
     prefix = _local_prefix(literal.context, literal.literal)
     if literal.literal == "step_$stepNumber":
@@ -528,7 +528,7 @@ def _is_generated_identifier_protocol_literal(
 ) -> bool:
     prefix = _local_prefix(literal.context, literal.literal)
     if (
-        path == "lib/core/algorithms/state_renamer.dart"
+        path == "lib/core/algorithms/fsa/state_renamer.dart"
         and literal.literal == "q$i"
     ):
         return bool(re.search(r"\blabel\s*:\s*$", prefix))
@@ -538,7 +538,7 @@ def _is_generated_identifier_protocol_literal(
     ):
         return bool(re.search(r"\bString\s+get\s+stableKey\s*=>\s*$", prefix))
     if (
-        path == "lib/core/algorithms/dfa_completer.dart"
+        path == "lib/core/algorithms/fsa/dfa_completer.dart"
         and literal.literal == "${base}_${suffix++}"
     ):
         return bool(re.search(r"\bcandidate\s*=\s*$", prefix))
@@ -1120,7 +1120,7 @@ def _detected_classification(path: str, literal: RawLiteral) -> str:
     context = literal.context
     plain = _plain_text(literal.literal).strip()
     if (
-        path == "lib/core/algorithms/grammar_analyzer.dart"
+        path == "lib/core/algorithms/grammar/grammar_analyzer.dart"
         and literal.literal
         == "Use removeLeftRecursion, which also handles indirect cycles."
     ):

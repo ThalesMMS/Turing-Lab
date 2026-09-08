@@ -28,7 +28,7 @@ import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 
@@ -163,9 +163,7 @@ Future<void> _pumpTMPageComponents(
   }
 
   await tester.pumpWidgetBuilder(
-    MaterialApp(
-      home: _TMPageTestWidget(automaton: automaton),
-    ),
+    MaterialApp(home: _TMPageTestWidget(automaton: automaton)),
     surfaceSize: size,
   );
 

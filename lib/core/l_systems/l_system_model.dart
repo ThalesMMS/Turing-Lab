@@ -70,13 +70,13 @@ final class LSystemProduction {
   final double weight;
 
   Map<String, Object?> toJson() => {
-        'id': id,
-        'predecessor': predecessor,
-        'successor': successor.symbols,
-        if (!leftContext.isEmpty) 'leftContext': leftContext.symbols,
-        if (!rightContext.isEmpty) 'rightContext': rightContext.symbols,
-        if (weight != 1) 'weight': weight,
-      };
+    'id': id,
+    'predecessor': predecessor,
+    'successor': successor.symbols,
+    if (!leftContext.isEmpty) 'leftContext': leftContext.symbols,
+    if (!rightContext.isEmpty) 'rightContext': rightContext.symbols,
+    if (weight != 1) 'weight': weight,
+  };
 
   static LSystemProduction fromJson(Map<String, Object?> json) =>
       LSystemProduction(
@@ -200,11 +200,11 @@ final class LSystemCommandMapping {
   final Map<String, LSystemTurtleCommand> commands;
 
   Map<String, Object?> toJson() => {
-        for (final entry
-            in (commands.entries.toList()
-              ..sort((left, right) => left.key.compareTo(right.key))))
-          entry.key: entry.value.name,
-      };
+    for (final entry
+        in (commands.entries.toList()
+          ..sort((left, right) => left.key.compareTo(right.key))))
+      entry.key: entry.value.name,
+  };
 
   static LSystemCommandMapping fromJson(Object? value) {
     final json = _stringMap(value, 'commandMapping');
@@ -262,8 +262,10 @@ final class LSystemTurtleSettings {
       lineWidthIncrement: lineWidthIncrement,
       hueIncrementDegrees: hueIncrementDegrees,
       initialColorArgb: _argb(initialColorArgb, 'initialColorArgb'),
-      initialPolygonColorArgb:
-          _argb(initialPolygonColorArgb, 'initialPolygonColorArgb'),
+      initialPolygonColorArgb: _argb(
+        initialPolygonColorArgb,
+        'initialPolygonColorArgb',
+      ),
     );
   }
 
@@ -294,21 +296,19 @@ final class LSystemTurtleSettings {
   final int initialPolygonColorArgb;
 
   Map<String, Object?> toJson() => {
-        'angleDegrees': angleDegrees,
-        'stepLength': stepLength,
-        'scale': scale,
-        'initialHeadingDegrees': initialHeadingDegrees,
-        'initialX': initialX,
-        'initialY': initialY,
-        'lineWidth': lineWidth,
-        if (lineWidthIncrement != 1) 'lineWidthIncrement': lineWidthIncrement,
-        if (hueIncrementDegrees != 10)
-          'hueIncrementDegrees': hueIncrementDegrees,
-        if (initialColorArgb != 0xff111827)
-          'initialColorArgb': initialColorArgb,
-        if (initialPolygonColorArgb != 0xff111827)
-          'initialPolygonColorArgb': initialPolygonColorArgb,
-      };
+    'angleDegrees': angleDegrees,
+    'stepLength': stepLength,
+    'scale': scale,
+    'initialHeadingDegrees': initialHeadingDegrees,
+    'initialX': initialX,
+    'initialY': initialY,
+    'lineWidth': lineWidth,
+    if (lineWidthIncrement != 1) 'lineWidthIncrement': lineWidthIncrement,
+    if (hueIncrementDegrees != 10) 'hueIncrementDegrees': hueIncrementDegrees,
+    if (initialColorArgb != 0xff111827) 'initialColorArgb': initialColorArgb,
+    if (initialPolygonColorArgb != 0xff111827)
+      'initialPolygonColorArgb': initialPolygonColorArgb,
+  };
 
   static LSystemTurtleSettings fromJson(Object? value) {
     final json = _stringMap(value, 'turtle');
@@ -323,8 +323,11 @@ final class LSystemTurtleSettings {
       lineWidthIncrement: _optionalNumber(json, 'lineWidthIncrement', 1),
       hueIncrementDegrees: _optionalNumber(json, 'hueIncrementDegrees', 10),
       initialColorArgb: _optionalInteger(json, 'initialColorArgb', 0xff111827),
-      initialPolygonColorArgb:
-          _optionalInteger(json, 'initialPolygonColorArgb', 0xff111827),
+      initialPolygonColorArgb: _optionalInteger(
+        json,
+        'initialPolygonColorArgb',
+        0xff111827,
+      ),
     );
   }
 }
@@ -365,8 +368,9 @@ final class LSystemDocument {
       commandMapping: commandMapping,
       randomSeed: randomSeed,
       ignoredContextSymbols: Set<String>.unmodifiable(ignoredContextSymbols),
-      unsupportedVariants:
-          Set<LSystemUnsupportedVariant>.unmodifiable(unsupportedVariants),
+      unsupportedVariants: Set<LSystemUnsupportedVariant>.unmodifiable(
+        unsupportedVariants,
+      ),
       unsupportedMetadata: UnmodifiableMapView({
         for (final entry in unsupportedMetadata.entries)
           entry.key: _freeze(entry.value),
@@ -403,32 +407,32 @@ final class LSystemDocument {
   final Map<String, Object?> unsupportedMetadata;
 
   Map<String, Object?> toJson() => {
-        'schema': {'id': 'turing-lab.l-system', 'version': 1},
-        'id': id,
-        'name': name,
-        'revision': revision,
-        'axiom': axiom.symbols,
-        'iterations': iterations,
-        'productions': [
-          for (final production
-              in (productions.toList()
-                ..sort((left, right) => left.id.compareTo(right.id))))
-            production.toJson(),
-        ],
-        'turtle': turtle.toJson(),
-        'commandMapping': commandMapping.toJson(),
-        if (randomSeed != 0) 'randomSeed': randomSeed,
-        if (ignoredContextSymbols.isNotEmpty)
-          'ignoredContextSymbols': ignoredContextSymbols.toList()..sort(),
-        'unsupportedVariants': [
-          for (final value
-              in (unsupportedVariants.toList()
-                ..sort((left, right) => left.name.compareTo(right.name))))
-            value.name,
-        ],
-        if (unsupportedMetadata.isNotEmpty)
-          'unsupportedMetadata': unsupportedMetadata,
-      };
+    'schema': {'id': 'turing-lab.l-system', 'version': 1},
+    'id': id,
+    'name': name,
+    'revision': revision,
+    'axiom': axiom.symbols,
+    'iterations': iterations,
+    'productions': [
+      for (final production
+          in (productions.toList()
+            ..sort((left, right) => left.id.compareTo(right.id))))
+        production.toJson(),
+    ],
+    'turtle': turtle.toJson(),
+    'commandMapping': commandMapping.toJson(),
+    if (randomSeed != 0) 'randomSeed': randomSeed,
+    if (ignoredContextSymbols.isNotEmpty)
+      'ignoredContextSymbols': ignoredContextSymbols.toList()..sort(),
+    'unsupportedVariants': [
+      for (final value
+          in (unsupportedVariants.toList()
+            ..sort((left, right) => left.name.compareTo(right.name))))
+        value.name,
+    ],
+    if (unsupportedMetadata.isNotEmpty)
+      'unsupportedMetadata': unsupportedMetadata,
+  };
 
   static LSystemDocument fromJson(Map<String, Object?> json) {
     final schema = _stringMap(json['schema'], 'schema');
@@ -450,9 +454,7 @@ final class LSystemDocument {
       axiom: LSystemWord(_stringList(json['axiom'], 'axiom')),
       iterations: _integer(json, 'iterations'),
       productions: rawProductions.map(
-        (value) => LSystemProduction.fromJson(
-          _stringMap(value, 'production'),
-        ),
+        (value) => LSystemProduction.fromJson(_stringMap(value, 'production')),
       ),
       turtle: LSystemTurtleSettings.fromJson(json['turtle']),
       commandMapping: LSystemCommandMapping.fromJson(json['commandMapping']),
@@ -485,22 +487,20 @@ final class LSystemDocument {
     Iterable<String>? ignoredContextSymbols,
     Iterable<LSystemUnsupportedVariant>? unsupportedVariants,
     Map<String, Object?>? unsupportedMetadata,
-  }) =>
-      LSystemDocument(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        revision: revision ?? this.revision,
-        axiom: axiom ?? this.axiom,
-        productions: productions ?? this.productions,
-        iterations: iterations ?? this.iterations,
-        turtle: turtle ?? this.turtle,
-        commandMapping: commandMapping ?? this.commandMapping,
-        randomSeed: randomSeed ?? this.randomSeed,
-        ignoredContextSymbols:
-            ignoredContextSymbols ?? this.ignoredContextSymbols,
-        unsupportedVariants: unsupportedVariants ?? this.unsupportedVariants,
-        unsupportedMetadata: unsupportedMetadata ?? this.unsupportedMetadata,
-      );
+  }) => LSystemDocument(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    revision: revision ?? this.revision,
+    axiom: axiom ?? this.axiom,
+    productions: productions ?? this.productions,
+    iterations: iterations ?? this.iterations,
+    turtle: turtle ?? this.turtle,
+    commandMapping: commandMapping ?? this.commandMapping,
+    randomSeed: randomSeed ?? this.randomSeed,
+    ignoredContextSymbols: ignoredContextSymbols ?? this.ignoredContextSymbols,
+    unsupportedVariants: unsupportedVariants ?? this.unsupportedVariants,
+    unsupportedMetadata: unsupportedMetadata ?? this.unsupportedMetadata,
+  );
 }
 
 bool _listEquals(List<Object?> left, List<Object?> right) {
@@ -540,11 +540,7 @@ double _number(Map<String, Object?> json, String key) {
   return value.toDouble();
 }
 
-double _optionalNumber(
-  Map<String, Object?> json,
-  String key,
-  double fallback,
-) {
+double _optionalNumber(Map<String, Object?> json, String key, double fallback) {
   final value = json[key];
   if (value == null) return fallback;
   if (value is! num) throw FormatException('$key must be a number.');
@@ -578,11 +574,11 @@ Map<String, Object?> _stringMap(Object? value, String path) {
 }
 
 Object? _freeze(Object? value) => switch (value) {
-      Map() => UnmodifiableMapView({
-          for (final entry in value.entries)
-            entry.key.toString(): _freeze(entry.value),
-        }),
-      List() => List<Object?>.unmodifiable(value.map(_freeze)),
-      Set() => Set<Object?>.unmodifiable(value.map(_freeze)),
-      _ => value,
-    };
+  Map() => UnmodifiableMapView({
+    for (final entry in value.entries)
+      entry.key.toString(): _freeze(entry.value),
+  }),
+  List() => List<Object?>.unmodifiable(value.map(_freeze)),
+  Set() => Set<Object?>.unmodifiable(value.map(_freeze)),
+  _ => value,
+};

@@ -6,7 +6,7 @@ import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
 import 'package:turing_lab/presentation/providers/pumping_lemma_progress_provider.dart';
-import 'package:turing_lab/presentation/widgets/pumping_lemma_progress.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma/pumping_lemma_progress.dart';
 
 Future<void> _pumpProgress(
   WidgetTester tester, {

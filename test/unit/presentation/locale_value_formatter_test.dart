@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_simplifier.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:turing_lab/core/algorithms/tm_messages.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_messages.dart';
 import 'package:turing_lab/core/models/step_explanation.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/step_explanation_card.dart';

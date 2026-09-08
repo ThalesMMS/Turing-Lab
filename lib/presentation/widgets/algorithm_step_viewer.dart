@@ -12,9 +12,9 @@
 import 'package:flutter/material.dart';
 
 import '../empty_string_notation.dart';
-import '../../core/algorithms/fsa_concatenation_messages.dart';
-import '../../core/algorithms/fsa_kleene_star_messages.dart';
-import '../../core/algorithms/fsa_reverser_messages.dart';
+import '../../core/algorithms/fsa/fsa_concatenation_messages.dart';
+import '../../core/algorithms/fsa/fsa_kleene_star_messages.dart';
+import '../../core/algorithms/fsa/fsa_reverser_messages.dart';
 import '../../core/messages/structured_message.dart';
 import '../../core/models/algorithm_step.dart';
 import '../../core/models/cyk_step_messages.dart';

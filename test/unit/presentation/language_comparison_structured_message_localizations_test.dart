@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/language_comparison_messages.dart';
-import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparison_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';

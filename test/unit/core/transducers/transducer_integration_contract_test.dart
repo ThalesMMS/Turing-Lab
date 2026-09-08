@@ -32,8 +32,9 @@ void main() {
   group('formal-system registry hooks', () {
     test('publishes stable schemas without modifying the default registry', () {
       expect(
-        FormalSystemRegistry.defaultRegistry
-            .descriptorFor(TransducerFormalSystemIds.mealy),
+        FormalSystemRegistry.defaultRegistry.descriptorFor(
+          TransducerFormalSystemIds.mealy,
+        ),
         isNull,
       );
       expect(
@@ -68,25 +69,32 @@ void main() {
       expect(restoredMoore.toJson(), _moore().toJson());
     });
 
-    test('injects an example catalog without a central dispatch edit',
-        () async {
-      final module = TransducerFormalSystemModule<MealyMachine>(
-        descriptor: TransducerFormalSystemModules.mealy.descriptor,
-        session: TransducerFormalSystemModules.mealy.session,
-        examples: const _MealyExamples(),
-      );
-      final registry = FormalSystemRegistry(
-        modules: <FormalSystemModule<Object>>[module],
-        formats: FormalSystemRegistry.defaultRegistry.formats.formats,
-      );
+    test(
+      'injects an example catalog without a central dispatch edit',
+      () async {
+        final module = TransducerFormalSystemModule<MealyMachine>(
+          descriptor: TransducerFormalSystemModules.mealy.descriptor,
+          session: TransducerFormalSystemModules.mealy.session,
+          examples: const _MealyExamples(),
+        );
+        // The Mealy descriptor declares its conversion to Moore, so a
+        // registry that includes one transducer includes its sibling.
+        final registry = FormalSystemRegistry(
+          modules: <FormalSystemModule<Object>>[
+            module,
+            TransducerFormalSystemModules.moore,
+          ],
+          formats: FormalSystemRegistry.defaultRegistry.formats.formats,
+        );
 
-      final examples = await registry
-          .moduleFor(TransducerFormalSystemIds.mealy)!
-          .examples!
-          .loadExamples();
-      expect(examples.single.name, 'Identity');
-      expect(examples.single.payload, isA<MealyMachine>());
-    });
+        final examples = await registry
+            .moduleFor(TransducerFormalSystemIds.mealy)!
+            .examples!
+            .loadExamples();
+        expect(examples.single.name, 'Identity');
+        expect(examples.single.payload, isA<MealyMachine>());
+      },
+    );
   });
 }
 
@@ -99,64 +107,64 @@ final class _MealyExamples implements ExampleCatalogCapability<MealyMachine> {
 
   @override
   Future<List<AssetExample<MealyMachine>>> loadExamples() async => [
-        AssetExample(
-          name: 'Identity',
-          description: 'Test-only Mealy machine.',
-          category: ExampleCategory.dfa,
-          difficultyLevel: DifficultyLevel.easy,
-          complexityLevel: ExampleComplexityLevel.low,
-          tags: ['transducer'],
-          payload: _mealy(),
-        ),
-      ];
+    AssetExample(
+      name: 'Identity',
+      description: 'Test-only Mealy machine.',
+      category: ExampleCategory.mealy,
+      difficultyLevel: DifficultyLevel.easy,
+      complexityLevel: ExampleComplexityLevel.low,
+      tags: ['transducer'],
+      payload: _mealy(),
+    ),
+  ];
 }
 
 MealyMachine _mealy() => MealyMachine(
-      id: const TransducerMachineId('mealy'),
-      name: 'Mealy',
-      revision: const TransducerRevision(1),
-      inputAlphabet: {TransducerInputSymbol('a')},
-      outputAlphabet: {TransducerOutputSymbol('x')},
-      states: [
-        MealyState(
-          id: TransducerStateId('q0'),
-          label: 'zero',
-          position: TransducerPoint(0, 0),
-          isInitial: true,
-        ),
-      ],
-      transitions: [
-        MealyTransition(
-          id: TransducerTransitionId('t0'),
-          from: TransducerStateId('q0'),
-          to: TransducerStateId('q0'),
-          input: TransducerInputSymbol('a'),
-          output: TransducerOutputWord([TransducerOutputSymbol('x')]),
-        ),
-      ],
-    );
+  id: const TransducerMachineId('mealy'),
+  name: 'Mealy',
+  revision: const TransducerRevision(1),
+  inputAlphabet: {TransducerInputSymbol('a')},
+  outputAlphabet: {TransducerOutputSymbol('x')},
+  states: [
+    MealyState(
+      id: TransducerStateId('q0'),
+      label: 'zero',
+      position: TransducerPoint(0, 0),
+      isInitial: true,
+    ),
+  ],
+  transitions: [
+    MealyTransition(
+      id: TransducerTransitionId('t0'),
+      from: TransducerStateId('q0'),
+      to: TransducerStateId('q0'),
+      input: TransducerInputSymbol('a'),
+      output: TransducerOutputWord([TransducerOutputSymbol('x')]),
+    ),
+  ],
+);
 
 MooreMachine _moore() => MooreMachine(
-      id: const TransducerMachineId('moore'),
-      name: 'Moore',
-      revision: const TransducerRevision(1),
-      inputAlphabet: {TransducerInputSymbol('a')},
-      outputAlphabet: {TransducerOutputSymbol('x')},
-      states: [
-        MooreState(
-          id: TransducerStateId('q0'),
-          label: 'zero',
-          position: TransducerPoint(0, 0),
-          isInitial: true,
-          output: TransducerOutputWord([TransducerOutputSymbol('x')]),
-        ),
-      ],
-      transitions: [
-        MooreTransition(
-          id: TransducerTransitionId('t0'),
-          from: TransducerStateId('q0'),
-          to: TransducerStateId('q0'),
-          input: TransducerInputSymbol('a'),
-        ),
-      ],
-    );
+  id: const TransducerMachineId('moore'),
+  name: 'Moore',
+  revision: const TransducerRevision(1),
+  inputAlphabet: {TransducerInputSymbol('a')},
+  outputAlphabet: {TransducerOutputSymbol('x')},
+  states: [
+    MooreState(
+      id: TransducerStateId('q0'),
+      label: 'zero',
+      position: TransducerPoint(0, 0),
+      isInitial: true,
+      output: TransducerOutputWord([TransducerOutputSymbol('x')]),
+    ),
+  ],
+  transitions: [
+    MooreTransition(
+      id: TransducerTransitionId('t0'),
+      from: TransducerStateId('q0'),
+      to: TransducerStateId('q0'),
+      input: TransducerInputSymbol('a'),
+    ),
+  ],
+);

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_language_explorer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_language_explorer.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -11,6 +11,44 @@ import 'package:vector_math/vector_math_64.dart';
 
 void main() {
   group('TMLanguageExplorer', () {
+    test(
+      'enumeration preserves atomic multi-character input symbols',
+      () async {
+        final q0 = _state('q0', initial: true);
+        final qa = _state('qa', accepting: true);
+        final machine = _tm(
+          states: {q0, qa},
+          initial: q0,
+          accepting: {qa},
+          alphabet: {'token'},
+          tapeAlphabet: {'token', 'B'},
+          transitions: {
+            _transition(
+              'accept-token',
+              q0,
+              qa,
+              'token',
+              'token',
+              TapeDirection.right,
+            ),
+          },
+        );
+        final result = await TMLanguageExplorer.explore(
+          machine,
+          limits: const TMLanguageExplorerLimits(
+            maxInputLength: 1,
+            maxCandidates: 2,
+          ),
+        );
+        expect(result.isSuccess, isTrue, reason: result.error);
+        final word = result.data!.results.singleWhere(
+          (word) => word.input == 'token',
+        );
+        expect(word.inputTokens, ['token']);
+        expect(word.outcome, TMLanguageOutcome.accepted);
+      },
+    );
+
     test(
       'classifies accept, halt rejection, cycle, and bounded unknown',
       () async {

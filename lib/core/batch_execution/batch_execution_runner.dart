@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../algorithms/cooperative_yield.dart';
 import 'batch_execution_models.dart';
 
 final class BatchCancellationToken {
@@ -112,6 +113,7 @@ final class BatchExecutionRunner {
       }
     }
 
+    final yielder = CooperativeYield();
     Future<void> worker() async {
       while (true) {
         final index = nextIndex++;
@@ -127,6 +129,7 @@ final class BatchExecutionRunner {
                   : 'batch.cancelled-before-start',
             ),
           );
+          await yielder.maybeYield();
           continue;
         }
         if (request.modelRevision != executor.modelRevision) {
@@ -139,12 +142,18 @@ final class BatchExecutionRunner {
               diagnosticCode: 'batch.stale-model-revision',
             ),
           );
+          await yielder.maybeYield();
           continue;
         }
         await publish(
           index,
           await _executeCase(request, executor, inputCase, cancellationToken),
         );
+        // Synchronous executors (for example the grammar parsers) never
+        // yield on their own; handing the event loop back after every
+        // published case, including cancelled and stale ones, keeps progress
+        // and cancellation responsive without changing results.
+        await yielder.maybeYield();
       }
     }
 

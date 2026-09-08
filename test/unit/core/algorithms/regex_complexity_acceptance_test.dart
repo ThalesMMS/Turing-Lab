@@ -9,7 +9,7 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_analyzer.dart';
 import 'package:turing_lab/core/models/regex_analysis.dart';
 
 void main() {
@@ -154,7 +154,9 @@ void main() {
 
       test('alphabet is extracted correctly', () {
         expect(
-            analysis.structureAnalysis.alphabet, containsAll(['a', 'b', 'c']));
+          analysis.structureAnalysis.alphabet,
+          containsAll(['a', 'b', 'c']),
+        );
         expect(analysis.alphabetSize, equals(3));
       });
 

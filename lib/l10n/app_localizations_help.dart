@@ -68,6 +68,7 @@ extension AppHelpLocalizations on AppLocalizations {
       'l-system.dragon-curve' => 'lSystemExampleDragonCurve',
       'l-system.fractal-plant' => 'lSystemExampleFractalPlant',
       'l-system.branching-tree' => 'lSystemExampleBranchingTree',
+      'l-system.parametric-tree' => 'lSystemExampleParametricTree',
       'l-system.seeded-context-turtle' => 'lSystemExampleSeededContextTurtle',
       _ => null,
     };

@@ -23,7 +23,7 @@
         "production": [
           "lib/core/grammar/phrase_structure/grammar_classification.dart:149",
           "lib/core/grammar/phrase_structure/grammar_classification.dart:416",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:230"
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:230"
         ],
         "tests": [
           "test/unit/core/grammar/phrase_structure_grammar_test.dart:31",
@@ -66,11 +66,11 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/core/algorithms/grammar_analyzer.dart:45",
-          "lib/core/algorithms/grammar_analyzer.dart:84",
-          "lib/core/algorithms/grammar_analyzer.dart:91",
-          "lib/core/algorithms/grammar_analyzer.dart:97",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:1315"
+          "lib/core/algorithms/grammar/grammar_analyzer.dart:45",
+          "lib/core/algorithms/grammar/grammar_analyzer.dart:84",
+          "lib/core/algorithms/grammar/grammar_analyzer.dart:91",
+          "lib/core/algorithms/grammar/grammar_analyzer.dart:97",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:1315"
         ],
         "tests": [
           "test/unit/core/algorithms/grammar_analyzer_characterization_test.dart:167",
@@ -115,11 +115,11 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/core/algorithms/grammar_cnf_transformer.dart:44",
-          "lib/core/algorithms/grammar_gnf_transformer.dart:20",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:256",
-          "lib/presentation/widgets/grammar_algorithm_panel.dart:267",
-          "lib/presentation/widgets/grammar_transformation_history.dart:41"
+          "lib/core/algorithms/grammar/grammar_cnf_transformer.dart:44",
+          "lib/core/algorithms/grammar/grammar_gnf_transformer.dart:20",
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:256",
+          "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart:267",
+          "lib/presentation/widgets/grammar/grammar_transformation_history.dart:41"
         ],
         "tests": [
           "test/unit/grammar_cnf_transformer_test.dart:31",
@@ -167,7 +167,7 @@
           "lib/core/grammar/teaching/grammar_teaching_sessions.dart:129",
           "lib/core/grammar/teaching/grammar_teaching_sessions.dart:235",
           "lib/data/services/grammar_teaching_session_store.dart:11",
-          "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart:12"
+          "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart:12"
         ],
         "tests": [
           "test/unit/core/grammar/grammar_teaching_sessions_test.dart:8",
@@ -210,9 +210,9 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:334",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:752",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:1079"
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:334",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:752",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:1079"
         ],
         "tests": [
           "test/unit/grammar_input_tokenization_test.dart:98",
@@ -254,10 +254,10 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:714",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:725",
-          "lib/presentation/widgets/brute_force_teaching_workspace.dart:52",
-          "lib/presentation/widgets/brute_force_teaching_workspace.dart:267"
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:714",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:725",
+          "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart:52",
+          "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart:267"
         ],
         "tests": [
           "test/widget/presentation/grammar_simulation_panel_test.dart:448",
@@ -299,10 +299,10 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:798",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:1164",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:1315",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:1466"
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:798",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:1164",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:1315",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:1466"
         ],
         "tests": [
           "test/unit/grammar_parser_ll1_test.dart:42",
@@ -346,10 +346,10 @@
       "turingLab": {
         "status": "intentionalDeviation",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:831",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:584",
-          "lib/presentation/widgets/lr1_teaching_workspace.dart:59",
-          "lib/presentation/widgets/lr1_teaching_workspace.dart:243"
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:831",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:584",
+          "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart:59",
+          "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart:243"
         ],
         "tests": [
           "test/unit/grammar_parser_lr_capability_test.dart:23",
@@ -393,8 +393,8 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:260",
-          "lib/presentation/widgets/grammar_simulation_panel.dart:272",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:260",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:272",
           "lib/core/batch_execution/canonical_batch_executors.dart:418",
           "lib/core/batch_execution/canonical_batch_executors.dart:438"
         ],
@@ -439,10 +439,10 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/grammar_simulation_panel.dart:418",
-          "lib/presentation/widgets/user_derivation_workspace.dart:183",
-          "lib/presentation/widgets/user_derivation_workspace.dart:390",
-          "lib/presentation/widgets/user_derivation_workspace.dart:411",
+          "lib/presentation/widgets/grammar/grammar_simulation_panel.dart:418",
+          "lib/presentation/widgets/grammar/user_derivation_workspace.dart:183",
+          "lib/presentation/widgets/grammar/user_derivation_workspace.dart:390",
+          "lib/presentation/widgets/grammar/user_derivation_workspace.dart:411",
           "lib/core/grammar/phrase_structure/user_derivation_session.dart:419"
         ],
         "tests": [
@@ -489,8 +489,8 @@
         "production": [
           "lib/core/grammar/teaching/grammar_teaching_sessions.dart:411",
           "lib/core/grammar/teaching/grammar_teaching_sessions.dart:520",
-          "lib/presentation/widgets/parse_table_teaching_workspace.dart:13",
-          "lib/presentation/widgets/parse_table_teaching_workspace.dart:269"
+          "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart:13",
+          "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart:269"
         ],
         "tests": [
           "test/unit/core/grammar/grammar_teaching_sessions_test.dart:87",
@@ -536,7 +536,7 @@
           "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:72",
           "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:95",
           "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:124",
-          "lib/presentation/widgets/pumping_lemma_workspace.dart:948"
+          "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart:948"
         ],
         "tests": [
           "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:6",
@@ -582,7 +582,7 @@
           "lib/core/pumping_lemma/pumping_decomposition.dart:267",
           "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:124",
           "lib/core/pumping_lemma/pumping_lemma_session_controller.dart:181",
-          "lib/presentation/widgets/pumping_lemma_workspace.dart:644"
+          "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart:644"
         ],
         "tests": [
           "test/unit/core/pumping_lemma/pumping_lemma_foundation_test.dart:30",
@@ -630,7 +630,7 @@
           "lib/data/codecs/pumping_lemma_jflap_codec.dart:232",
           "lib/data/codecs/pumping_lemma_jflap_codec.dart:248",
           "lib/core/pumping_lemma/pumping_lemma_document.dart:49",
-          "lib/presentation/widgets/pumping_lemma_workspace.dart:689"
+          "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart:689"
         ],
         "tests": [
           "test/unit/data/pumping_lemma_codecs_test.dart:14",
@@ -680,7 +680,7 @@
           "lib/core/pumping_lemma/pumping_lemma_problem.dart:235",
           "lib/core/pumping_lemma/pumping_lemma_problem.dart:435",
           "lib/core/pumping_lemma/pumping_lemma_problem.dart:704",
-          "lib/presentation/widgets/pumping_lemma_workspace.dart:726"
+          "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart:726"
         ],
         "tests": [
           "test/unit/core/pumping_lemma/pumping_lemma_problem_catalog_test.dart:12",
@@ -832,8 +832,8 @@
           "test/unit/data/l_system_codecs_test.dart:46",
           "test/unit/data/l_system_codecs_test.dart:112"
         ],
-        "issues": [352],
-        "decision": "Use seed-reproducible weighted alternatives and source-generation context matching; preserve and block parametric expressions until a safe portable evaluator exists."
+        "issues": [352, 436],
+        "decision": "Use seed-reproducible weighted alternatives and source-generation context matching. Parametric rules bind predecessor identifiers such as A(x) and evaluate successor arguments with a deterministic arithmetic evaluator (+ - * / ^, parentheses, bound identifiers only); imported documents can never execute code."
       },
       "dimensions": {
         "domain": "covered",
@@ -847,7 +847,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "JFLAP alternatives are uniform by default; positive local weights, seed, and ignored context symbols round-trip through diagnosed XML parameters. Parametric syntax is preserved and rejected explicitly as the signed-off #352 boundary."
+      "notes": "JFLAP alternatives are uniform by default; positive local weights, seed, and ignored context symbols round-trip through diagnosed XML parameters. Parametric rules bind predecessor identifiers and evaluate successor arguments with the deterministic arithmetic evaluator (#436)."
     },
     {
       "id": "lsystem.persistence-examples",
@@ -883,8 +883,8 @@
           "test/unit/data/default_formal_system_registry_test.dart:9",
           "test/unit/data/default_formal_system_registry_test.dart:29"
         ],
-        "issues": [339, 343, 344, 352],
-        "decision": "Keep two typed codecs, session restoration, six bundled examples including an advanced seeded/context system, and explicit diagnostics for local XML extensions and parametric rules."
+        "issues": [339, 343, 344, 352, 436],
+        "decision": "Keep two typed codecs, session restoration, seven bundled examples including an advanced seeded/context system and a parametric tree, and explicit diagnostics for local XML extensions."
       },
       "dimensions": {
         "domain": "covered",
@@ -898,7 +898,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "Supported advanced rules round-trip as typed productions. Parametric rules remain preserved unsupported metadata and are covered by the preceding row."
+      "notes": "Supported advanced rules round-trip as typed productions. Parametric examples execute through the arithmetic evaluator and are covered by the preceding row."
     },
     {
       "id": "preference.empty-string-glyph",
@@ -965,7 +965,7 @@
         "status": "complete",
         "production": [
           "lib/core/models/pda_acceptance_mode.dart:5",
-          "lib/presentation/widgets/pda_acceptance_mode_control.dart:7",
+          "lib/presentation/widgets/pda/pda_acceptance_mode_control.dart:7",
           "lib/presentation/providers/pda_editor_provider.dart:424",
           "lib/core/batch_execution/canonical_batch_executors.dart:222"
         ],
@@ -1015,7 +1015,7 @@
           "lib/core/models/tm_acceptance.dart:2",
           "lib/core/models/tm_acceptance.dart:25",
           "lib/core/models/tm.dart:44",
-          "lib/presentation/widgets/tm_simulation_panel.dart:218"
+          "lib/presentation/widgets/tm/tm_simulation_panel.dart:218"
         ],
         "tests": [
           "test/unit/core/tm/tm_acceptance_policy_test.dart:18",

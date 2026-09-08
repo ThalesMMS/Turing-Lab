@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../algorithms/brute_force_messages.dart';
+import '../algorithms/grammar/brute_force_messages.dart';
 import '../messages/structured_message.dart';
 import 'derivation_tree.dart';
 

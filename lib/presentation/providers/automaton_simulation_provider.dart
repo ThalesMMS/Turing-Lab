@@ -11,7 +11,7 @@
 //
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/algorithms/automaton_simulator.dart';
+import '../../core/algorithms/fsa/automaton_simulator.dart';
 import '../../core/messages/structured_message.dart';
 import '../../core/models/simulation_result.dart';
 import '../../core/repositories/trace_repository.dart';

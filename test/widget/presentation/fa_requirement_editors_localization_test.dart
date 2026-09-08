@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_content.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
-import 'package:turing_lab/presentation/widgets/fa_to_regex_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_grammar_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_to_regex_requirement_editor.dart';
 
 void main() {
   testWidgets('localizes both editor surfaces and semantics in EN and PT', (

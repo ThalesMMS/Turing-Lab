@@ -1438,6 +1438,26 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
           ),
         }) =>
       codecTmJflapAmbiguousBlockDefinition(_stringArgument(message, 'block')),
+    'codec.tm-jflap.duplicate-block-identity'
+        when _matchesArguments(message, const {
+          'id': (
+            kind: StructuredMessageArgumentKind.identifier,
+            role: 'block-id',
+          ),
+          'first-tag': (
+            kind: StructuredMessageArgumentKind.identifier,
+            role: 'block-tag',
+          ),
+          'second-tag': (
+            kind: StructuredMessageArgumentKind.identifier,
+            role: 'block-tag',
+          ),
+        }) =>
+      codecTmJflapDuplicateBlockIdentity(
+        _stringArgument(message, 'id'),
+        _stringArgument(message, 'first-tag'),
+        _stringArgument(message, 'second-tag'),
+      ),
     'codec.tm-jflap.acceptance-policy-conflict'
         when _matchesArguments(message, const {}) =>
       codecTmJflapAcceptancePolicyConflict,
@@ -5263,6 +5283,64 @@ extension AppLocalizationsStructuredMessages on AppLocalizations {
       message.arguments.isEmpty
           ? tmToGrammarUnreachableStateGeneric
           : tmToGrammarUnreachableState(_stringArgument(message, 'state')),
+    'tm.multi-tape-reduction.already-single-tape'
+        when _matchesArguments(message, const {}) =>
+      tmMultiTapeReductionAlreadySingleTape,
+    'tm.multi-tape-reduction.invalid-machine'
+        when _tmMultiTapeReductionDetailContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionInvalidMachineGeneric
+          : tmMultiTapeReductionInvalidMachine(
+              _stringArgument(message, 'detail'),
+            ),
+    'tm.multi-tape-reduction.missing-initial-state'
+        when _matchesArguments(message, const {}) =>
+      tmMultiTapeReductionMissingInitialState,
+    'tm.multi-tape-reduction.building-blocks-unsupported'
+        when _tmMultiTapeReductionDetailContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionBuildingBlocksUnsupportedGeneric
+          : tmMultiTapeReductionBuildingBlocksUnsupported(
+              _stringArgument(message, 'detail'),
+            ),
+    'tm.multi-tape-reduction.acceptance-policy-unsupported'
+        when _tmMultiTapeReductionDetailContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionAcceptancePolicyUnsupportedGeneric
+          : tmMultiTapeReductionAcceptancePolicyUnsupported(
+              _stringArgument(message, 'detail'),
+            ),
+    'tm.multi-tape-reduction.blank-in-input-alphabet'
+        when _tmMultiTapeReductionDetailContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionBlankInInputAlphabetGeneric
+          : tmMultiTapeReductionBlankInInputAlphabet(
+              _stringArgument(message, 'detail'),
+            ),
+    'tm.multi-tape-reduction.tape-symbol-budget'
+        when _tmMultiTapeReductionBudgetContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionTapeSymbolBudgetGeneric
+          : tmMultiTapeReductionTapeSymbolBudget(
+              _intArgument(message, 'count'),
+              _intArgument(message, 'limit'),
+            ),
+    'tm.multi-tape-reduction.state-budget'
+        when _tmMultiTapeReductionBudgetContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionStateBudgetGeneric
+          : tmMultiTapeReductionStateBudget(
+              _intArgument(message, 'count'),
+              _intArgument(message, 'limit'),
+            ),
+    'tm.multi-tape-reduction.transition-budget'
+        when _tmMultiTapeReductionBudgetContract(message) =>
+      message.arguments.isEmpty
+          ? tmMultiTapeReductionTransitionBudgetGeneric
+          : tmMultiTapeReductionTransitionBudget(
+              _intArgument(message, 'count'),
+              _intArgument(message, 'limit'),
+            ),
     'algorithm.fsa-determinizer.failed'
         when _matchesArguments(message, const {
           'automaton': (
@@ -7079,6 +7157,28 @@ bool _tmToGrammarSymbolContract(
     message.arguments.isEmpty ||
     _matchesArguments(message, {
       'symbol': (kind: StructuredMessageArgumentKind.symbol, role: role),
+    });
+
+bool _tmMultiTapeReductionDetailContract(StructuredMessage message) =>
+    message.arguments.isEmpty ||
+    _matchesArguments(message, const {
+      'detail': (
+        kind: StructuredMessageArgumentKind.literal,
+        role: 'error-detail',
+      ),
+    });
+
+bool _tmMultiTapeReductionBudgetContract(StructuredMessage message) =>
+    message.arguments.isEmpty ||
+    _matchesArguments(message, const {
+      'count': (
+        kind: StructuredMessageArgumentKind.count,
+        role: 'expansion-count',
+      ),
+      'limit': (
+        kind: StructuredMessageArgumentKind.bound,
+        role: 'expansion-limit',
+      ),
     });
 
 bool _tmToGrammarConstructionLimitContract(StructuredMessage message) {

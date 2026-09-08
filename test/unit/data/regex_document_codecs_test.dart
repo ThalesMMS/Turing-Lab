@@ -4,8 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/fsa.dart';

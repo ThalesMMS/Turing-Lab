@@ -42,10 +42,14 @@ final class LSystemSvgExporter {
     if (padding < 0 || stroke.isEmpty) {
       throw ArgumentError('SVG padding and stroke must be valid.');
     }
-    final width =
-        (geometry.bounds.width + padding * 2).clamp(1.0, double.infinity);
-    final height =
-        (geometry.bounds.height + padding * 2).clamp(1.0, double.infinity);
+    final width = (geometry.bounds.width + padding * 2).clamp(
+      1.0,
+      double.infinity,
+    );
+    final height = (geometry.bounds.height + padding * 2).clamp(
+      1.0,
+      double.infinity,
+    );
     final translateX = padding - geometry.bounds.minX;
     final translateY = padding - geometry.bounds.minY;
     final drawing = StringBuffer();
@@ -71,10 +75,7 @@ final class LSystemSvgExporter {
           : _color(geometry.segmentColorsArgb[segment]);
       final opacity = geometry.segmentColorsArgb[segment] == 0xff111827
           ? ''
-          : _opacityAttribute(
-              'stroke',
-              geometry.segmentColorsArgb[segment],
-            );
+          : _opacityAttribute('stroke', geometry.segmentColorsArgb[segment]);
       drawing
         ..write('<path d="M')
         ..write(_number(geometry.segmentCoordinates[index] + translateX))
@@ -95,7 +96,8 @@ final class LSystemSvgExporter {
       'generation': metadata.generation,
       'turtle': metadata.settings.toJson(),
     });
-    final svg = '<svg xmlns="http://www.w3.org/2000/svg" '
+    final svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" '
         'width="${_number(width)}" height="${_number(height)}" '
         'viewBox="0 0 ${_number(width)} ${_number(height)}">'
         '<metadata>${_xml(encodedMetadata)}</metadata>'

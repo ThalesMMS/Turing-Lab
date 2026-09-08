@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:turing_lab/core/algorithms/tm_block_dependency_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
-import 'package:turing_lab/core/algorithms/tm_block_inline_expander.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_kernel.dart';
-import 'package:turing_lab/core/algorithms/tm_language_explorer.dart';
-import 'package:turing_lab/core/algorithms/tm_multi_tape_execution_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_reachability_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_space_profiler.dart';
-import 'package:turing_lab/core/algorithms/tm_time_profiler.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_dependency_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_inline_expander.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_kernel.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_language_explorer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_multi_tape_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_reachability_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_space_profiler.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_time_profiler.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_unrestricted_grammar.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
@@ -50,11 +50,11 @@ final class TmCertificationCheck {
   final Map<String, Object?> evidence;
 
   Map<String, Object?> toJson() => {
-        'evidence': evidence,
-        'id': id,
-        'message': message,
-        'status': status.name,
-      };
+    'evidence': evidence,
+    'id': id,
+    'message': message,
+    'status': status.name,
+  };
 }
 
 final class TmCertificationOptions {
@@ -113,20 +113,19 @@ final class TmCertificationReport {
   }
 
   Map<String, Object?> toJson() => {
-        'checks': checks.map((check) => check.toJson()).toList(),
-        'family': 'tm',
-        'inventory':
-            tmAlgorithmInventory.map((entry) => entry.toJson()).toList(),
-        'options': {
-          'cases': options.cases,
-          'maximumConfigurations': options.maximumConfigurations,
-          'maximumSteps': options.maximumSteps,
-          'seed': options.seed,
-        },
-        'remotelyVerified': false,
-        'schemaVersion': 1,
-        'status': status.name,
-      };
+    'checks': checks.map((check) => check.toJson()).toList(),
+    'family': 'tm',
+    'inventory': tmAlgorithmInventory.map((entry) => entry.toJson()).toList(),
+    'options': {
+      'cases': options.cases,
+      'maximumConfigurations': options.maximumConfigurations,
+      'maximumSteps': options.maximumSteps,
+      'seed': options.seed,
+    },
+    'remotelyVerified': false,
+    'schemaVersion': 1,
+    'status': status.name,
+  };
 
   String toMarkdown() {
     final buffer = StringBuffer()
@@ -163,7 +162,7 @@ final class TmCertificationReport {
 
 final class TmCertificationRunner {
   TmCertificationRunner({required Directory repositoryRoot})
-      : repositoryRoot = repositoryRoot.absolute;
+    : repositoryRoot = repositoryRoot.absolute;
 
   final Directory repositoryRoot;
 
@@ -207,8 +206,9 @@ final class TmCertificationRunner {
       }
       executed.addAll(probed.map((entryPoint) => '${entry.id}::$entryPoint'));
     }
-    final inventoryIndex =
-        checks.indexWhere((check) => check.id == 'tm.inventory');
+    final inventoryIndex = checks.indexWhere(
+      (check) => check.id == 'tm.inventory',
+    );
     final prior = checks[inventoryIndex];
     checks[inventoryIndex] = TmCertificationCheck(
       id: prior.id,
@@ -237,10 +237,7 @@ final class TmCertificationRunner {
     return checks.single;
   }
 
-  Future<_TmEvidence> _check(
-    String property,
-    TmCertificationOptions options,
-  ) =>
+  Future<_TmEvidence> _check(String property, TmCertificationOptions options) =>
       switch (property) {
         'tm.inventory' => _checkInventory(),
         'tm.model-serialization' => _checkModelSerialization(),
@@ -300,7 +297,9 @@ final class TmCertificationRunner {
       _require(entry.properties.isNotEmpty, '${entry.id} has no property.');
       for (final property in entry.properties) {
         _require(
-            tmPropertyIds.contains(property), 'Unknown property $property.');
+          tmPropertyIds.contains(property),
+          'Unknown property $property.',
+        );
       }
       final evidenceProperty =
           tmEntrypointEvidencePropertyByAlgorithmId[entry.id];
@@ -319,7 +318,9 @@ final class TmCertificationRunner {
         '${entry.sourcePath.replaceAll('/', Platform.pathSeparator)}',
       );
       _require(
-          source.existsSync(), 'Missing inventory source ${entry.sourcePath}.');
+        source.existsSync(),
+        'Missing inventory source ${entry.sourcePath}.',
+      );
     }
     return _TmEvidence(
       'Audited ${tmAlgorithmInventory.length} live TM implementation paths.',
@@ -335,10 +336,14 @@ final class TmCertificationRunner {
       transition.toJson(),
       statesById: {for (final state in machine.states) state.id: state},
     );
-    _require(restored.documentVariant == TMDocumentVariant.multiTape,
-        'Multi-tape variant was not preserved.');
-    _require(restored.tmTransitions.single.readSymbols.join('|') == 'a|B',
-        'Operation vectors changed during JSON replay.');
+    _require(
+      restored.documentVariant == TMDocumentVariant.multiTape,
+      'Multi-tape variant was not preserved.',
+    );
+    _require(
+      restored.tmTransitions.single.readSymbols.join('|') == 'a|B',
+      'Operation vectors changed during JSON replay.',
+    );
     _require(
       TMTransition.formatLabel(
             readSymbol: 'a',
@@ -381,10 +386,14 @@ final class TmCertificationRunner {
       blankSymbol: 'B',
     );
     _require(
-        paddedA.key == paddedB.key, 'Outer blank padding changed identity.');
+      paddedA.key == paddedB.key,
+      'Outer blank padding changed identity.',
+    );
     final errors = machine.copyWith(tapeCount: 3).validate();
-    _require(errors.any((error) => error.contains('tape count 3')),
-        'Vector/tape mismatch was accepted.');
+    _require(
+      errors.any((error) => error.contains('tape count 3')),
+      'Vector/tape mismatch was accepted.',
+    );
     return const _TmEvidence(
       'JSON vectors, variants, canonical padding, and invalid lengths agree.',
       {'tapes': 2, 'negativeHead': -1},
@@ -431,7 +440,7 @@ final class TmCertificationRunner {
       (
         'accept-after-reject',
         _acceptingAfterRejectingBranchNtm(),
-        TmOracleOutcome.accepted
+        TmOracleOutcome.accepted,
       ),
       ('accept-and-cycle', _acceptingAndCyclicNtm(), TmOracleOutcome.accepted),
       ('finite-cycle', _finiteCyclicNtm(), TmOracleOutcome.haltedRejected),
@@ -474,8 +483,10 @@ final class TmCertificationRunner {
           timeout: const Duration(seconds: 5),
         )
         .outcome;
-    _require(sync.isSuccess && dtm.isSuccess && cooperative.isSuccess,
-        'A direct simulator failed.');
+    _require(
+      sync.isSuccess && dtm.isSuccess && cooperative.isSuccess,
+      'A direct simulator failed.',
+    );
     final outcomes = {
       sync.data!.outcome,
       dtm.data!.outcome,
@@ -484,12 +495,17 @@ final class TmCertificationRunner {
       web.result?.outcome,
     };
     _require(
-        outcomes.length == 1 && outcomes.single == TMExecutionOutcome.accepted,
-        'Sync/native/web outcomes diverged: $outcomes.');
-    _require(TMSimulator.accepts(machine, 'a').data == true,
-        'accepts adapter disagreed.');
-    _require(TMSimulator.rejects(machine, '').data == true,
-        'rejects adapter disagreed.');
+      outcomes.length == 1 && outcomes.single == TMExecutionOutcome.accepted,
+      'Sync/native/web outcomes diverged: $outcomes.',
+    );
+    _require(
+      TMSimulator.accepts(machine, 'a').data == true,
+      'accepts adapter disagreed.',
+    );
+    _require(
+      TMSimulator.rejects(machine, '').data == true,
+      'rejects adapter disagreed.',
+    );
     _require(
       TMSimulator.findAcceptedStrings(machine, 1).data!.contains('a'),
       'Accepted-language adapter omitted a.',
@@ -498,12 +514,16 @@ final class TmCertificationRunner {
       TMSimulator.findRejectedStrings(machine, 1).data!.contains(''),
       'Rejected-language adapter omitted epsilon.',
     );
-    _require(TMSimulator.analyzeTM(machine).isSuccess,
-        'Structural TM analysis failed.');
+    _require(
+      TMSimulator.analyzeTM(machine).isSuccess,
+      'Structural TM analysis failed.',
+    );
 
     final ntm = _acceptingAndCyclicNtm();
-    _require(TMSimulator.simulateNTM(ntm, '').data!.accepted,
-        'NTM entry point missed the accepting branch.');
+    _require(
+      TMSimulator.simulateNTM(ntm, '').data!.accepted,
+      'NTM entry point missed the accepting branch.',
+    );
     final nativeLimit = await SimulationRunner()
         .runTm(
           _movingForever(),
@@ -582,11 +602,7 @@ final class TmCertificationRunner {
     return _TmEvidence(
       'Sync, DTM, NTM, native worker, and cooperative web paths agreed on '
       'acceptance and typed step/configuration/timeout/cancel outcomes.',
-      {
-        'outcome': 'accepted',
-        'runners': 5,
-        'runtimeSnapshot': nativeSnapshot,
-      },
+      {'outcome': 'accepted', 'runners': 5, 'runtimeSnapshot': nativeSnapshot},
     );
   }
 
@@ -630,9 +646,10 @@ final class TmCertificationRunner {
     };
     _require(outcomes.length == 6, 'Typed outcome categories collapsed.');
     _require(
-        timeout.outcome == TMExecutionOutcome.boundedUnknown &&
-            timeout.limit == TMExecutionLimit.timeout,
-        'Timeout became rejection.');
+      timeout.outcome == TMExecutionOutcome.boundedUnknown &&
+          timeout.limit == TMExecutionLimit.timeout,
+      'Timeout became rejection.',
+    );
     _require(bounded.limit == TMExecutionLimit.steps, 'Step bound was lost.');
     _require(
       configurationBound.outcome == TMExecutionOutcome.boundedUnknown &&
@@ -686,15 +703,18 @@ final class TmCertificationRunner {
     );
     _require(
       TMExecutionKernel.transitionsForVector(
-                  machine, machine.initialState!, readVector)
-              .single
-              .id ==
+            machine,
+            machine.initialState!,
+            readVector,
+          ).single.id ==
           transition.id,
       'Complete read vector did not enable the transition.',
     );
     _require(
-      TMExecutionKernel.transitionsForVector(
-          machine, machine.initialState!, ['a', 'x']).isEmpty,
+      TMExecutionKernel.transitionsForVector(machine, machine.initialState!, [
+        'a',
+        'x',
+      ]).isEmpty,
       'A partial vector match enabled the transition.',
     );
     final applied = TMExecutionKernel.applyTransition(
@@ -703,34 +723,39 @@ final class TmCertificationRunner {
       transition: transition,
       blankSymbol: 'B',
     );
-    _require(source[0][0] == 'a' && source[1].isEmpty,
-        'Atomic application mutated its input tapes.');
-    _require(applied.tapes[0].isEmpty && applied.tapes[1][0] == 'a',
-        'Atomic writes did not update both tapes.');
     _require(
-        applied.heads.join(',') == '1,-1', 'Head vectors were not atomic.');
+      source[0][0] == 'a' && source[1].isEmpty,
+      'Atomic application mutated its input tapes.',
+    );
+    _require(
+      applied.tapes[0].isEmpty && applied.tapes[1][0] == 'a',
+      'Atomic writes did not update both tapes.',
+    );
+    _require(
+      applied.heads.join(',') == '1,-1',
+      'Head vectors were not atomic.',
+    );
     _require(
       initialSnapshot.headPositions.join(',') == '0,0' &&
           TMExecutionKernel.moveHead(0, TapeDirection.left) == -1,
       'Snapshot or unbounded head movement entry point diverged.',
     );
-    final metricsAccumulator = TMTraceMetricsAccumulator(
-      blankSymbol: 'B',
-      initialTape: const {0: 'a'},
-    )..record(
-        transition: _transition(
-          'metric-write',
-          machine.initialState!,
-          machine.acceptingStates.single,
-          read: 'a',
-          write: 'x',
-          direction: TapeDirection.left,
-        ),
-        oldSymbol: 'a',
-        headBefore: 0,
-        headAfter: -1,
-        step: 1,
-      );
+    final metricsAccumulator =
+        TMTraceMetricsAccumulator(blankSymbol: 'B', initialTape: const {0: 'a'})
+          ..record(
+            transition: _transition(
+              'metric-write',
+              machine.initialState!,
+              machine.acceptingStates.single,
+              read: 'a',
+              write: 'x',
+              direction: TapeDirection.left,
+            ),
+            oldSymbol: 'a',
+            headBefore: 0,
+            headAfter: -1,
+            step: 1,
+          );
     final directMetrics = metricsAccumulator.finish(
       tm: _singleSymbolAcceptor(),
       branchSelection: TMExecutionBranchSelection.deterministic,
@@ -742,8 +767,10 @@ final class TmCertificationRunner {
       'Direct trace-metrics accumulator entry point was not write/head aware.',
     );
     final analyzed = await TMExecutionAnalyzer.analyze(machine, 'a');
-    _require(analyzed.outcome == TMExecutionOutcome.accepted,
-        'Two-tape execution did not accept.');
+    _require(
+      analyzed.outcome == TMExecutionOutcome.accepted,
+      'Two-tape execution did not accept.',
+    );
     final direct = await TMMultiTapeExecutionAnalyzer.analyze(
       machine,
       'a',
@@ -808,14 +835,15 @@ final class TmCertificationRunner {
     final scalarResult = await TMExecutionAnalyzer.analyze(single, 'a');
     final vectorResult = await TMExecutionAnalyzer.analyze(oneTapeVector, 'a');
     _require(
-        scalarResult.outcome == vectorResult.outcome &&
-            scalarResult.stepsExecuted == vectorResult.stepsExecuted,
-        'k=1 vector execution diverged from scalar semantics.');
+      scalarResult.outcome == vectorResult.outcome &&
+          scalarResult.stepsExecuted == vectorResult.stepsExecuted,
+      'k=1 vector execution diverged from scalar semantics.',
+    );
     return const _TmEvidence(
       'Two-tape reads/writes/moves were atomic and k=1 collapsed exactly.',
       {
         'headPositions': [1, -1],
-        'tapeCounts': [1, 2]
+        'tapeCounts': [1, 2],
       },
     );
   }
@@ -838,14 +866,19 @@ final class TmCertificationRunner {
       machine,
       inputs: const [''],
     );
-    _require(reachability.status == TMReachabilityStatus.complete,
-        'Reachability did not complete.');
     _require(
-        reachability.structurallyReachableStateIds.contains('guarded') &&
-            !reachability.reachedWithinBoundsStateIds.contains('guarded'),
-        'Structural and semantic reachability collapsed.');
-    _require(reachability.witnessesByStateId['direct']?.step == 1,
-        'BFS did not retain the shortest witness.');
+      reachability.status == TMReachabilityStatus.complete,
+      'Reachability did not complete.',
+    );
+    _require(
+      reachability.structurallyReachableStateIds.contains('guarded') &&
+          !reachability.reachedWithinBoundsStateIds.contains('guarded'),
+      'Structural and semantic reachability collapsed.',
+    );
+    _require(
+      reachability.witnessesByStateId['direct']?.step == 1,
+      'BFS did not retain the shortest witness.',
+    );
 
     final language = await TMLanguageExplorer.explore(
       _languageOutcomeMachine(),
@@ -856,22 +889,25 @@ final class TmCertificationRunner {
       ),
     );
     _require(
-      TMReachabilityAnalyzer.structurallyReachableStateIds(machine)
-              .contains('guarded') &&
+      TMReachabilityAnalyzer.structurallyReachableStateIds(
+            machine,
+          ).contains('guarded') &&
           TMLanguageExplorer.countCandidates(const ['a'], 1) == BigInt.from(2),
       'Declared reachability/language counting entry points diverged.',
     );
     _require(language.isSuccess, language.error ?? 'Language explorer failed.');
-    final classes =
-        language.data!.results.map((result) => result.outcome).toSet();
+    final classes = language.data!.results
+        .map((result) => result.outcome)
+        .toSet();
     _require(
-        classes.containsAll({
-          TMLanguageOutcome.accepted,
-          TMLanguageOutcome.rejected,
-          TMLanguageOutcome.provenCycle,
-          TMLanguageOutcome.inconclusive,
-        }),
-        'Language exploration merged a typed outcome.');
+      classes.containsAll({
+        TMLanguageOutcome.accepted,
+        TMLanguageOutcome.rejected,
+        TMLanguageOutcome.provenCycle,
+        TMLanguageOutcome.inconclusive,
+      }),
+      'Language exploration merged a typed outcome.',
+    );
     return const _TmEvidence(
       'Structural/semantic reachability and four language outcomes remained separate.',
       {'languageOutcomes': 4},
@@ -881,32 +917,44 @@ final class TmCertificationRunner {
   Future<_TmEvidence> _checkMetrics() async {
     final machine = _rightScanner();
     final execution = await TMExecutionAnalyzer.analyze(machine, 'aaa');
-    _require(execution.outcome == TMExecutionOutcome.accepted,
-        'Metric witness did not accept.');
+    _require(
+      execution.outcome == TMExecutionOutcome.accepted,
+      'Metric witness did not accept.',
+    );
     _require(execution.stepsExecuted == 4, 'Transition count was not four.');
-    _require(execution.traceMetrics?.readCounts['a'] == 3,
-        'Read counters lost input symbols.');
-    _require(execution.traceMetrics?.movementCounts['right'] == 3,
-        'Movement counters lost right moves.');
-    _require(execution.spaceMetrics?.maximumVisitedSpan == 4,
-        'Visited tape span was not four.');
+    _require(
+      execution.traceMetrics?.readCounts['a'] == 3,
+      'Read counters lost input symbols.',
+    );
+    _require(
+      execution.traceMetrics?.movementCounts['right'] == 3,
+      'Movement counters lost right moves.',
+    );
+    _require(
+      execution.spaceMetrics?.maximumVisitedSpan == 4,
+      'Visited tape span was not four.',
+    );
 
     final space = await TMSpaceProfiler.profile(
       machine,
       limits: const TMSpaceProfileLimits(maxInputLength: 2),
     );
     _require(
-        space.isSuccess && space.data!.rows[2].maximumVisitedSpan?.value == 3,
-        'Space profile invariant failed.');
+      space.isSuccess && space.data!.rows[2].maximumVisitedSpan?.value == 3,
+      'Space profile invariant failed.',
+    );
     final time = await TMTimeProfiler.profile(
       machine,
       bounds: const TMTimeProfileBounds(maxLength: 2),
     );
-    _require(time.status == TMTimeProfileStatus.complete,
-        'Time profile was incomplete.');
     _require(
-        time.rows.map((row) => row.maximumTransitionSteps).join(',') == '1,2,3',
-        'Time profile did not count transitions directly.');
+      time.status == TMTimeProfileStatus.complete,
+      'Time profile was incomplete.',
+    );
+    _require(
+      time.rows.map((row) => row.maximumTransitionSteps).join(',') == '1,2,3',
+      'Time profile did not count transitions directly.',
+    );
     const profileLimits = TMSpaceProfileLimits(
       maxInputLength: 2,
       maxCandidatesPerLength: 2,
@@ -914,15 +962,12 @@ final class TmCertificationRunner {
     _require(
       TMSpaceProfiler.countCandidatesForLength(const ['a', 'b'], 2) ==
               BigInt.from(4) &&
-          TMSpaceProfiler.countCandidatesThroughLength(
-                const ['a', 'b'],
-                2,
-              ) ==
+          TMSpaceProfiler.countCandidatesThroughLength(const ['a', 'b'], 2) ==
               BigInt.from(7) &&
-          TMSpaceProfiler.countScheduledCandidates(
-                const ['a', 'b'],
-                profileLimits,
-              ) ==
+          TMSpaceProfiler.countScheduledCandidates(const [
+                'a',
+                'b',
+              ], profileLimits) ==
               5,
       'Space profiler candidate accounting diverged.',
     );
@@ -949,24 +994,30 @@ final class TmCertificationRunner {
     _require(dependencies.isValid, 'Valid block dependency graph failed.');
     final nested = TMBlockExecutionEngine.execute(project, '0');
     _require(
-        nested.outcome == TMExecutionOutcome.accepted &&
-            nested.finalTapes.single[0] == '1',
-        'Nested execution did not share tape contents.');
+      nested.outcome == TMExecutionOutcome.accepted &&
+          nested.finalTapes.single[0] == '1',
+      'Nested execution did not share tape contents.',
+    );
     _require(
-        nested.metrics.blockEntries == 1 && nested.metrics.blockReturns == 1,
-        'Call/return metrics were not retained.');
+      nested.metrics.blockEntries == 1 && nested.metrics.blockReturns == 1,
+      'Call/return metrics were not retained.',
+    );
     final expandedA = TMBlockInlineExpander.expand(project);
     final expandedB = TMBlockInlineExpander.expand(project);
     _require(
-        expandedA.isSuccess && expandedB.isSuccess, 'Inline expansion failed.');
+      expandedA.isSuccess && expandedB.isSuccess,
+      'Inline expansion failed.',
+    );
     _require(
       _sortedStateIds(expandedA.machine!) ==
           _sortedStateIds(expandedB.machine!),
       'Inline IDs were nondeterministic.',
     );
     final flat = await TMExecutionAnalyzer.analyze(expandedA.machine!, '0');
-    _require(flat.outcome == nested.outcome,
-        'Inline expansion changed block semantics.');
+    _require(
+      flat.outcome == nested.outcome,
+      'Inline expansion changed block semantics.',
+    );
     _require(
       expandedA.stateSources.values.any(
         (source) =>
@@ -997,9 +1048,10 @@ final class TmCertificationRunner {
     final recursiveReport = TMBlockDependencyAnalyzer.analyze(recursive);
     final recursiveExecution = TMBlockExecutionEngine.execute(recursive, '');
     _require(
-        !recursiveReport.isValid &&
-            recursiveExecution.outcome == TMExecutionOutcome.invalidMachine,
-        'Direct recursion policy was not enforced.');
+      !recursiveReport.isValid &&
+          recursiveExecution.outcome == TMExecutionOutcome.invalidMachine,
+      'Direct recursion policy was not enforced.',
+    );
     final indirect = _indirectRecursiveProject();
     _require(
       !TMBlockDependencyAnalyzer.analyze(indirect).isValid &&
@@ -1008,10 +1060,9 @@ final class TmCertificationRunner {
       'Indirect recursion policy was not enforced.',
     );
     final invalidReferences = _invalidReferenceProject();
-    final invalidCodes = TMBlockDependencyAnalyzer.analyze(invalidReferences)
-        .diagnostics
-        .map((diagnostic) => diagnostic.code)
-        .toSet();
+    final invalidCodes = TMBlockDependencyAnalyzer.analyze(
+      invalidReferences,
+    ).diagnostics.map((diagnostic) => diagnostic.code).toSet();
     _require(
       invalidCodes.contains(TMBlockDiagnosticCode.missingReference) &&
           invalidCodes.contains(TMBlockDiagnosticCode.revisionMismatch),
@@ -1064,8 +1115,11 @@ final class TmCertificationRunner {
       'Nested step limit was not preserved.',
     );
     _require(
-      TMBlockExecutionEngine.execute(project, '0', isCancelled: () => true)
-              .outcome ==
+      TMBlockExecutionEngine.execute(
+            project,
+            '0',
+            isCancelled: () => true,
+          ).outcome ==
           TMExecutionOutcome.cancelled,
       'Nested cancellation was not preserved.',
     );
@@ -1078,25 +1132,29 @@ final class TmCertificationRunner {
   Future<_TmEvidence> _checkGrammarConversion() async {
     final machine = _grammarMovementMachine();
     final report = TMToGrammarConverter.build(machine, sourceRevision: 338);
-    _require(report.outcome == TMToGrammarOutcome.completed,
-        'TM to grammar conversion failed.');
-    final families =
-        report.productionProvenance.map((item) => item.family).toSet();
     _require(
-        families.containsAll({
-          TMToGrammarProductionFamily.moveRight,
-          TMToGrammarProductionFamily.moveLeft,
-          TMToGrammarProductionFamily.stay,
-          TMToGrammarProductionFamily.boundaryBlank,
-          TMToGrammarProductionFamily.acceptingState,
-          TMToGrammarProductionFamily.cleanupLeft,
-          TMToGrammarProductionFamily.cleanupRight,
-        }),
-        'A production family was omitted.');
+      report.outcome == TMToGrammarOutcome.completed,
+      'TM to grammar conversion failed.',
+    );
+    final families = report.productionProvenance
+        .map((item) => item.family)
+        .toSet();
     _require(
-        report.productionProvenance.length ==
-            report.grammar!.productions.length,
-        'Production provenance was incomplete.');
+      families.containsAll({
+        TMToGrammarProductionFamily.moveRight,
+        TMToGrammarProductionFamily.moveLeft,
+        TMToGrammarProductionFamily.stay,
+        TMToGrammarProductionFamily.boundaryBlank,
+        TMToGrammarProductionFamily.acceptingState,
+        TMToGrammarProductionFamily.cleanupLeft,
+        TMToGrammarProductionFamily.cleanupRight,
+      }),
+      'A production family was omitted.',
+    );
+    _require(
+      report.productionProvenance.length == report.grammar!.productions.length,
+      'Production provenance was incomplete.',
+    );
 
     final immediate = _blankAcceptor(alphabet: const {'a'});
     final immediateReport = TMToGrammarConverter.build(
@@ -1114,17 +1172,52 @@ final class TmCertificationRunner {
       grammarMaxVisitedForms: 20000,
     );
     _require(
-        !differential.hasMismatch, 'Bounded TM/grammar evidence diverged.');
-    _require(!differential.isProof, 'Sampled evidence claimed proof.');
-    final unsupported = TMToGrammarConverter.build(
-      _twoTapeTransfer(),
-      sourceRevision: 338,
+      !differential.hasMismatch,
+      'Bounded TM/grammar evidence diverged.',
     );
-    _require(unsupported.outcome == TMToGrammarOutcome.unsupportedMachine,
-        'Multi-tape conversion was approximated.');
+    _require(!differential.isProof, 'Sampled evidence claimed proof.');
+    // Multi-tape machines convert only through the documented single-tape
+    // reduction (#438); without it the conversion still fails closed.
+    final twoTape = _twoTapeTransfer();
+    final unsupported = TMToGrammarConverter.build(
+      twoTape,
+      sourceRevision: 338,
+      reduceMultiTape: false,
+    );
+    _require(
+      unsupported.outcome == TMToGrammarOutcome.unsupportedMachine,
+      'Multi-tape conversion was approximated.',
+    );
+    final reduced = TMToGrammarConverter.build(twoTape, sourceRevision: 338);
+    _require(
+      reduced.outcome == TMToGrammarOutcome.completed,
+      'Multi-tape reduction did not complete.',
+    );
+    _require(
+      reduced.reduction != null && reduced.sourceTmId == twoTape.id,
+      'Multi-tape reduction lost its provenance.',
+    );
+    final reductionEvidence = await TMMultiTapeReductionChecker.check(
+      twoTape,
+      reduced.reduction!,
+      const [
+        [],
+        ['a'],
+      ],
+    );
+    _require(
+      !reductionEvidence.hasMismatch,
+      'Multi-tape reduction evidence diverged.',
+    );
+    _require(!reductionEvidence.isProof, 'Reduction evidence claimed proof.');
     return _TmEvidence(
       'All production families had provenance and bounded samples agreed.',
-      {'families': families.length, 'samples': differential.samples.length},
+      {
+        'families': families.length,
+        'samples': differential.samples.length,
+        'reductionSamples': reductionEvidence.samples.length,
+        'reducedStates': reduced.reduction!.machine!.states.length,
+      },
     );
   }
 
@@ -1161,8 +1254,10 @@ final class TmCertificationRunner {
         'Trace replay diverged at ${transition.id}.',
       );
     }
-    _require(state.isAccepting && result.outcome == TMExecutionOutcome.accepted,
-        'Trace final state disagreed with the outcome.');
+    _require(
+      state.isAccepting && result.outcome == TMExecutionOutcome.accepted,
+      'Trace final state disagreed with the outcome.',
+    );
     return const _TmEvidence(
       'Every vector operation replayed to the recorded final configuration.',
       {'steps': 1, 'tapes': 2},
@@ -1172,8 +1267,10 @@ final class TmCertificationRunner {
   Future<_TmEvidence> _checkGeneratedShrink() async {
     final fixture = tmShrinkProbeFixture();
     _require(tmFailureFixtureIsValid(fixture), 'Shrink seed was invalid.');
-    _require(tmFailureFixtureIsApplicable(fixture),
-        'Shrink seed did not kill its mutant.');
+    _require(
+      tmFailureFixtureIsApplicable(fixture),
+      'Shrink seed did not kill its mutant.',
+    );
     final candidates = tmFailureFixtureCandidates(fixture).toList();
     _require(candidates.isNotEmpty, 'TM shrinker emitted no candidates.');
     _require(
@@ -1223,8 +1320,10 @@ final class TmCertificationRunner {
       'Production failed its oracle/property for '
       '${tmMutationOperatorIds.difference(productionPassed.toSet()).join(', ')}.',
     );
-    _require(killed.length == tmMutationOperatorIds.length,
-        'Mutation score was ${killed.length}/${tmMutationOperatorIds.length}.');
+    _require(
+      killed.length == tmMutationOperatorIds.length,
+      'Mutation score was ${killed.length}/${tmMutationOperatorIds.length}.',
+    );
     return _TmEvidence(
       'Killed all ${killed.length} registered semantic mutants.',
       {'killed': killed, 'minimumScore': tmMutationMinimumScore},
@@ -1268,7 +1367,8 @@ Future<TmMutationProbeResult> runTmMutationProbe(String operatorId) async {
       final mutantHead = _mutantMoveHeadClampAtZero(0, TapeDirection.left);
       return TmMutationProbeResult(
         operatorId: operatorId,
-        productionPassed: expected.outcome == TmOracleOutcome.accepted &&
+        productionPassed:
+            expected.outcome == TmOracleOutcome.accepted &&
             productionHead == expectedHead,
         mutantRejected: mutantHead != expectedHead,
       );
@@ -1276,12 +1376,14 @@ Future<TmMutationProbeResult> runTmMutationProbe(String operatorId) async {
       final machine = _twoTapeTransfer();
       const reads = ['a', 'x'];
       final expected = machine.tmTransitions
-          .where((transition) => _independentVectorMatch(
-                transition,
-                reads,
-                machine.tapeCount,
-                machine.blankSymbol,
-              ))
+          .where(
+            (transition) => _independentVectorMatch(
+              transition,
+              reads,
+              machine.tapeCount,
+              machine.blankSymbol,
+            ),
+          )
           .map((transition) => transition.id)
           .toSet();
       final production = TMExecutionKernel.transitionsForVector(
@@ -1306,7 +1408,8 @@ Future<TmMutationProbeResult> runTmMutationProbe(String operatorId) async {
       final mutant = _mutantRejectOnFirstHaltedBranch(machine);
       return TmMutationProbeResult(
         operatorId: operatorId,
-        productionPassed: expected.outcome == TmOracleOutcome.accepted &&
+        productionPassed:
+            expected.outcome == TmOracleOutcome.accepted &&
             production.outcome == TMExecutionOutcome.accepted,
         mutantRejected: mutant != expected.outcome,
       );
@@ -1321,7 +1424,8 @@ Future<TmMutationProbeResult> runTmMutationProbe(String operatorId) async {
       final mutant = await _mutantSkipBuildingBlockReturn(project, '0');
       return TmMutationProbeResult(
         operatorId: operatorId,
-        productionPassed: expanded.isSuccess &&
+        productionPassed:
+            expanded.isSuccess &&
             production.outcome == expected.outcome &&
             production.outcome == TMExecutionOutcome.accepted,
         mutantRejected: mutant != expected.outcome,
@@ -1332,14 +1436,14 @@ Future<TmMutationProbeResult> runTmMutationProbe(String operatorId) async {
 }
 
 int _mutantMoveHeadClampAtZero(int head, TapeDirection direction) => math.max(
-      0,
-      head +
-          switch (direction) {
-            TapeDirection.left => -1,
-            TapeDirection.right => 1,
-            TapeDirection.stay => 0,
-          },
-    );
+  0,
+  head +
+      switch (direction) {
+        TapeDirection.left => -1,
+        TapeDirection.right => 1,
+        TapeDirection.stay => 0,
+      },
+);
 
 bool _independentVectorMatch(
   TMTransition transition,
@@ -1347,43 +1451,48 @@ bool _independentVectorMatch(
   int tapeCount,
   String blankSymbol,
 ) {
-  final expected =
-      transition.operationsForTapeCount(tapeCount, blankSymbol).readSymbols;
+  final expected = transition
+      .operationsForTapeCount(tapeCount, blankSymbol)
+      .readSymbols;
   return expected.length == reads.length &&
-      List.generate(reads.length, (index) => expected[index] == reads[index])
-          .every((matches) => matches);
+      List.generate(
+        reads.length,
+        (index) => expected[index] == reads[index],
+      ).every((matches) => matches);
 }
 
 List<TMTransition> _mutantPartialVectorTransitions(
   TM machine,
   State state,
   List<String> reads,
-) =>
-    machine.tmTransitions.where((transition) {
-      if (transition.fromState.id != state.id) return false;
-      final expected = transition
-          .operationsForTapeCount(machine.tapeCount, machine.blankSymbol)
-          .readSymbols;
-      return List.generate(
-        reads.length,
-        (index) => expected[index] == reads[index],
-      ).any((matches) => matches);
-    }).toList();
+) => machine.tmTransitions.where((transition) {
+  if (transition.fromState.id != state.id) return false;
+  final expected = transition
+      .operationsForTapeCount(machine.tapeCount, machine.blankSymbol)
+      .readSymbols;
+  return List.generate(
+    reads.length,
+    (index) => expected[index] == reads[index],
+  ).any((matches) => matches);
+}).toList();
 
 TmOracleOutcome _mutantRejectOnFirstHaltedBranch(TM machine) {
   final state = machine.initialState!;
   final reads = List<String>.filled(machine.tapeCount, machine.blankSymbol);
-  final enabled = machine.tmTransitions
-      .where((transition) =>
-          transition.fromState.id == state.id &&
-          _independentVectorMatch(
-            transition,
-            reads,
-            machine.tapeCount,
-            machine.blankSymbol,
-          ))
-      .toList()
-    ..sort((left, right) => left.id.compareTo(right.id));
+  final enabled =
+      machine.tmTransitions
+          .where(
+            (transition) =>
+                transition.fromState.id == state.id &&
+                _independentVectorMatch(
+                  transition,
+                  reads,
+                  machine.tapeCount,
+                  machine.blankSymbol,
+                ),
+          )
+          .toList()
+        ..sort((left, right) => left.id.compareTo(right.id));
   if (enabled.isEmpty) return TmOracleOutcome.haltedRejected;
   return enabled.first.toState.isAccepting
       ? TmOracleOutcome.accepted
@@ -1409,31 +1518,30 @@ Map<String, String> _runtimeSnapshot({
   required TMExecutionAnalysis typedTimeout,
   required SimulationOutcomeKind timeoutKind,
   required SimulationOutcomeKind cancelKind,
-}) =>
-    {
-      'accepted.kind': accepted.kind.name,
-      'accepted.outcome': accepted.result!.outcome.name,
-      'step.outcome': stepLimit.outcome.name,
-      'step.limit': stepLimit.limit!.name,
-      'configuration.outcome': configurationLimit.outcome.name,
-      'configuration.limit': configurationLimit.limit!.name,
-      'timeout.kind': timeoutKind.name,
-      'timeout.outcome': typedTimeout.outcome.name,
-      'timeout.limit': typedTimeout.limit!.name,
-      'cancel.kind': cancelKind.name,
-    };
+}) => {
+  'accepted.kind': accepted.kind.name,
+  'accepted.outcome': accepted.result!.outcome.name,
+  'step.outcome': stepLimit.outcome.name,
+  'step.limit': stepLimit.limit!.name,
+  'configuration.outcome': configurationLimit.outcome.name,
+  'configuration.limit': configurationLimit.limit!.name,
+  'timeout.kind': timeoutKind.name,
+  'timeout.outcome': typedTimeout.outcome.name,
+  'timeout.limit': typedTimeout.limit!.name,
+  'cancel.kind': cancelKind.name,
+};
 
 bool _mapEquals<K, V>(Map<K, V> left, Map<K, V> right) =>
     left.length == right.length &&
     left.entries.every((entry) => right[entry.key] == entry.value);
 
 Map<String, Object?> tmShrinkProbeFixture() => {
-      'family': 'tm',
-      'property': 'tm.generated-shrink',
-      'operator': 'partial-multi-tape-read-match',
-      'inputTokens': ['a', 'a'],
-      'machine': _shrinkCounterexampleMachine().toJson(),
-    };
+  'family': 'tm',
+  'property': 'tm.generated-shrink',
+  'operator': 'partial-multi-tape-read-match',
+  'inputTokens': ['a', 'a'],
+  'machine': _shrinkCounterexampleMachine().toJson(),
+};
 
 Iterable<Object?> tmFailureFixtureCandidates(Object? value) sync* {
   final source = _objectMap(value);
@@ -1518,8 +1626,9 @@ bool tmFailureFixtureIsValid(Object? value) {
     return false;
   }
   try {
-    final machine =
-        TM.fromJson(Map<String, dynamic>.from(source['machine']! as Map));
+    final machine = TM.fromJson(
+      Map<String, dynamic>.from(source['machine']! as Map),
+    );
     final input = (source['inputTokens']! as List).cast<String>();
     return machine.validate().isEmpty &&
         machine.tapeCount >= 2 &&
@@ -1537,11 +1646,12 @@ bool tmFailureFixtureIsApplicable(Object? value) {
 }
 
 ({List<String> reads, Set<String> production, Set<String> mutant})?
-    _tmFailureObservation(Object? value) {
+_tmFailureObservation(Object? value) {
   if (!tmFailureFixtureIsValid(value)) return null;
   final source = _objectMap(value);
-  final machine =
-      TM.fromJson(Map<String, dynamic>.from(source['machine']! as Map));
+  final machine = TM.fromJson(
+    Map<String, dynamic>.from(source['machine']! as Map),
+  );
   final input = (source['inputTokens']! as List).cast<String>();
   final tapes = List<Map<int, String>>.generate(
     machine.tapeCount,
@@ -1613,14 +1723,13 @@ bool tmFailureFixtureIsMinimal(Object? value) {
 }
 
 TmOracleOutcome _oracleOutcome(TMExecutionOutcome outcome) => switch (outcome) {
-      TMExecutionOutcome.accepted => TmOracleOutcome.accepted,
-      TMExecutionOutcome.haltedRejected => TmOracleOutcome.haltedRejected,
-      TMExecutionOutcome.provenCycle => TmOracleOutcome.provenCycle,
-      TMExecutionOutcome.boundedUnknown ||
-      TMExecutionOutcome.cancelled =>
-        TmOracleOutcome.boundedUnknown,
-      TMExecutionOutcome.invalidMachine => TmOracleOutcome.invalidMachine,
-    };
+  TMExecutionOutcome.accepted => TmOracleOutcome.accepted,
+  TMExecutionOutcome.haltedRejected => TmOracleOutcome.haltedRejected,
+  TMExecutionOutcome.provenCycle => TmOracleOutcome.provenCycle,
+  TMExecutionOutcome.boundedUnknown ||
+  TMExecutionOutcome.cancelled => TmOracleOutcome.boundedUnknown,
+  TMExecutionOutcome.invalidMachine => TmOracleOutcome.invalidMachine,
+};
 
 TM _generatedDecisionMachine(int index, TapeDirection direction) {
   final q0 = _state('g$index-q0', initial: true);
@@ -1721,10 +1830,8 @@ TM _blankAcceptor({Set<String> alphabet = const {}}) {
   );
 }
 
-TM _rejector() => _machine(
-      id: 'rejector',
-      states: [_state('q0', initial: true)],
-    );
+TM _rejector() =>
+    _machine(id: 'rejector', states: [_state('q0', initial: true)]);
 
 TM _stationaryCycle() {
   final q0 = _state('q0', initial: true);
@@ -1741,13 +1848,7 @@ TM _movingForever() {
     id: 'moving',
     states: [q0],
     transitions: [
-      _transition(
-        'move',
-        q0,
-        q0,
-        read: 'B',
-        direction: TapeDirection.right,
-      ),
+      _transition('move', q0, q0, read: 'B', direction: TapeDirection.right),
     ],
   );
 }
@@ -1930,21 +2031,21 @@ TM _stationaryMultiTapeCycle() {
 }
 
 TM _vectorizedCopy(TM source) => source.copyWith(
-      transitions: source.tmTransitions
-          .map(
-            (transition) => TMTransition(
-              id: transition.id,
-              fromState: transition.fromState,
-              toState: transition.toState,
-              label: transition.label,
-              type: transition.type,
-              readSymbols: [transition.readSymbol],
-              writeSymbols: [transition.writeSymbol],
-              directions: [transition.direction],
-            ),
-          )
-          .toSet(),
-    );
+  transitions: source.tmTransitions
+      .map(
+        (transition) => TMTransition(
+          id: transition.id,
+          fromState: transition.fromState,
+          toState: transition.toState,
+          label: transition.label,
+          type: transition.type,
+          readSymbols: [transition.readSymbol],
+          writeSymbols: [transition.writeSymbol],
+          directions: [transition.direction],
+        ),
+      )
+      .toSet(),
+);
 
 TM _languageOutcomeMachine() {
   final q0 = _state('q0', initial: true);
@@ -1962,10 +2063,20 @@ TM _languageOutcomeMachine() {
       _transition('a-accept', q0, accept, read: 'a'),
       _transition('c-cycle-start', q0, cycle, read: 'c'),
       _transition('c-cycle', cycle, cycle, read: 'c'),
-      _transition('d-move-start', q0, moving,
-          read: 'd', direction: TapeDirection.right),
-      _transition('d-move', moving, moving,
-          read: 'B', direction: TapeDirection.right),
+      _transition(
+        'd-move-start',
+        q0,
+        moving,
+        read: 'd',
+        direction: TapeDirection.right,
+      ),
+      _transition(
+        'd-move',
+        moving,
+        moving,
+        read: 'B',
+        direction: TapeDirection.right,
+      ),
     ],
   );
 }
@@ -2059,17 +2170,10 @@ TMBlockProject _nestedProject() {
       alphabet: const {'0', '1'},
       tapeAlphabet: const {'0', '1', 'B'},
       transitions: [
-        _transition(
-          'outer-finish',
-          outerCall,
-          outerHalt,
-          read: '1',
-        ),
+        _transition('outer-finish', outerCall, outerHalt, read: '1'),
       ],
     ),
-    invocations: [
-      _invocation('outer-to-inner', outerCall.id, 'inner'),
-    ],
+    invocations: [_invocation('outer-to-inner', outerCall.id, 'inner')],
   );
   final rootCall = _state('root-call', initial: true);
   final rootAccept = _state('root-accept', accepting: true);
@@ -2084,9 +2188,7 @@ TMBlockProject _nestedProject() {
         _transition('root-finish', rootCall, rootAccept, read: '1'),
       ],
       definitions: {'inner': inner, 'outer': outer},
-      invocations: [
-        _invocation('root-to-outer', rootCall.id, 'outer'),
-      ],
+      invocations: [_invocation('root-to-outer', rootCall.id, 'outer')],
     ),
   );
 }
@@ -2215,32 +2317,30 @@ TMTransition _transition(
   String? write,
   TapeDirection direction = TapeDirection.stay,
   bool nondeterministic = false,
-}) =>
-    TMTransition(
-      id: id,
-      fromState: from,
-      toState: to,
-      label: id,
-      readSymbol: read,
-      writeSymbol: write ?? read,
-      direction: direction,
-      type: nondeterministic
-          ? TransitionType.nondeterministic
-          : TransitionType.deterministic,
-      controlPoint: from == to ? Vector2(20, -20) : Vector2.zero(),
-    );
+}) => TMTransition(
+  id: id,
+  fromState: from,
+  toState: to,
+  label: id,
+  readSymbol: read,
+  writeSymbol: write ?? read,
+  direction: direction,
+  type: nondeterministic
+      ? TransitionType.nondeterministic
+      : TransitionType.deterministic,
+  controlPoint: from == to ? Vector2(20, -20) : Vector2.zero(),
+);
 
 TMBlockInvocationNode _invocation(
   String id,
   String stateId,
   String blockId, {
   int revision = 1,
-}) =>
-    TMBlockInvocationNode(
-      id: id,
-      stateId: stateId,
-      reference: TMBlockReference(blockId: blockId, revision: revision),
-    );
+}) => TMBlockInvocationNode(
+  id: id,
+  stateId: stateId,
+  reference: TMBlockReference(blockId: blockId, revision: revision),
+);
 
 TM _machine({
   required String id,

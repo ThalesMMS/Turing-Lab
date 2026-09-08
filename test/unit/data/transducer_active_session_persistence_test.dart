@@ -13,6 +13,7 @@ void main() {
     final registry = FormalSystemRegistry(
       modules: <FormalSystemModule<Object>>[
         TransducerFormalSystemModules.mealy,
+        TransducerFormalSystemModules.moore,
       ],
       formats: FormalSystemRegistry.defaultRegistry.formats.formats,
     );

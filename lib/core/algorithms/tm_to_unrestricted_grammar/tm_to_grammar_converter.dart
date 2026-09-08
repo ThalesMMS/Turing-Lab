@@ -1,7 +1,9 @@
 import '../../grammar/phrase_structure/phrase_structure.dart';
 import '../../models/tm.dart';
 import '../../models/tm_transition.dart';
-import '../tm_to_grammar_messages.dart';
+import '../tm/tm_multi_tape_reducer.dart';
+import '../tm/tm_multi_tape_reduction_messages.dart';
+import '../tm/tm_to_grammar_messages.dart';
 import 'tm_to_grammar_models.dart';
 
 abstract final class TMToGrammarConverter {
@@ -15,10 +17,109 @@ abstract final class TMToGrammarConverter {
     TMToGrammarAssumption.sampledEvidenceNotProof,
   };
 
+  /// Builds the grammar. Multi-tape machines without building blocks are
+  /// first reduced to a single-tape machine (see TMMultiTapeReducer) unless
+  /// [reduceMultiTape] is false; the report then carries the reduction and
+  /// its provenance maps back to the original machine.
   static TMToGrammarConstructionReport build(
     TM tm, {
     required int sourceRevision,
     int maxProductions = 50000,
+    bool reduceMultiTape = true,
+    TMMultiTapeReductionLimits reductionLimits =
+        const TMMultiTapeReductionLimits(),
+  }) {
+    if (tm.tapeCount > 1 &&
+        reduceMultiTape &&
+        tm.blockDefinitions.isEmpty &&
+        tm.blockInvocations.isEmpty) {
+      final reduction = TMMultiTapeReducer.reduce(
+        tm,
+        sourceRevision: sourceRevision,
+        limits: reductionLimits,
+      );
+      if (!reduction.isCompleted) {
+        return _reductionFailure(tm, sourceRevision, reduction);
+      }
+      return _buildSingleTape(
+        reduction.machine!,
+        sourceRevision: sourceRevision,
+        maxProductions: maxProductions,
+        sourceTmId: tm.id,
+        sourceTmName: tm.name,
+        reduction: reduction,
+      );
+    }
+    return _buildSingleTape(
+      tm,
+      sourceRevision: sourceRevision,
+      maxProductions: maxProductions,
+      sourceTmId: tm.id,
+      sourceTmName: tm.name,
+    );
+  }
+
+  static TMToGrammarConstructionReport _reductionFailure(
+    TM tm,
+    int sourceRevision,
+    TMMultiTapeReductionReport reduction,
+  ) {
+    final outcome = switch (reduction.outcome) {
+      TMMultiTapeReductionOutcome.budgetExceeded =>
+        TMToGrammarOutcome.constructionLimit,
+      TMMultiTapeReductionOutcome.invalidMachine =>
+        TMToGrammarOutcome.invalidMachine,
+      _ => TMToGrammarOutcome.unsupportedMachine,
+    };
+    return TMToGrammarConstructionReport(
+      sourceTmId: tm.id,
+      sourceRevision: sourceRevision,
+      outcome: outcome,
+      assumptions: {
+        ..._assumptions,
+        TMToGrammarAssumption.multiTapeReducedToSingleTape,
+      },
+      diagnostics: [
+        ..._validate(tm).where(
+          (diagnostic) =>
+              diagnostic.code != TMToGrammarDiagnosticCode.multiTapeUnsupported,
+        ),
+        for (final diagnostic in reduction.diagnostics)
+          TMToGrammarDiagnostic(
+            code: switch (diagnostic.code) {
+              TMMultiTapeReductionDiagnosticCode.tapeSymbolBudget ||
+              TMMultiTapeReductionDiagnosticCode.stateBudget ||
+              TMMultiTapeReductionDiagnosticCode.transitionBudget =>
+                TMToGrammarDiagnosticCode.constructionLimit,
+              TMMultiTapeReductionDiagnosticCode.buildingBlocksUnsupported =>
+                TMToGrammarDiagnosticCode.buildingBlocksUnsupported,
+              TMMultiTapeReductionDiagnosticCode.missingInitialState =>
+                TMToGrammarDiagnosticCode.missingInitialState,
+              TMMultiTapeReductionDiagnosticCode.blankInInputAlphabet =>
+                TMToGrammarDiagnosticCode.blankInInputAlphabet,
+              TMMultiTapeReductionDiagnosticCode.acceptancePolicyUnsupported =>
+                TMToGrammarDiagnosticCode.multiTapeUnsupported,
+              _ => TMToGrammarDiagnosticCode.invalidMachine,
+            },
+            severity: diagnostic.severity == TMMultiTapeReductionSeverity.error
+                ? TMToGrammarDiagnosticSeverity.error
+                : TMToGrammarDiagnosticSeverity.warning,
+            detailCode:
+                'multi-tape-reduction-${TmMultiTapeReductionMessages.codeFor(diagnostic.code)}',
+            structuredMessage: diagnostic.structuredMessage,
+          ),
+      ],
+      reduction: reduction,
+    );
+  }
+
+  static TMToGrammarConstructionReport _buildSingleTape(
+    TM tm, {
+    required int sourceRevision,
+    required int maxProductions,
+    required String sourceTmId,
+    required String sourceTmName,
+    TMMultiTapeReductionReport? reduction,
   }) {
     final diagnostics = _validate(tm);
     final errors = diagnostics.where(
@@ -39,6 +140,8 @@ abstract final class TMToGrammarConverter {
             ? TMToGrammarOutcome.unsupportedMachine
             : TMToGrammarOutcome.invalidMachine,
         diagnostics,
+        sourceTmId: sourceTmId,
+        reduction: reduction,
       );
     }
 
@@ -50,11 +153,13 @@ abstract final class TMToGrammarConverter {
       ..sort((a, b) => a.id.compareTo(b.id));
     final allocator = _SymbolAllocator(terminals);
     final builder = _GrammarBuilder(
-      tm: tm,
       sourceRevision: sourceRevision,
       allocator: allocator,
       terminals: terminals,
       maxProductions: maxProductions,
+      sourceTmId: sourceTmId,
+      sourceTmName: sourceTmName,
+      reduction: reduction,
     );
 
     try {
@@ -289,6 +394,8 @@ abstract final class TMToGrammarConverter {
         tm,
         sourceRevision,
         TMToGrammarOutcome.constructionLimit,
+        sourceTmId: sourceTmId,
+        reduction: reduction,
         [
           ...diagnostics,
           _diagnostic(
@@ -418,31 +525,44 @@ abstract final class TMToGrammarConverter {
     );
   }
 
+  static Set<TMToGrammarAssumption> _assumptionsFor(
+    TMMultiTapeReductionReport? reduction,
+  ) => reduction == null
+      ? _assumptions
+      : {..._assumptions, TMToGrammarAssumption.multiTapeReducedToSingleTape};
+
   static TMToGrammarConstructionReport _failure(
     TM tm,
     int sourceRevision,
     TMToGrammarOutcome outcome,
-    List<TMToGrammarDiagnostic> diagnostics,
-  ) => TMToGrammarConstructionReport(
-    sourceTmId: tm.id,
+    List<TMToGrammarDiagnostic> diagnostics, {
+    String? sourceTmId,
+    TMMultiTapeReductionReport? reduction,
+  }) => TMToGrammarConstructionReport(
+    sourceTmId: sourceTmId ?? tm.id,
     sourceRevision: sourceRevision,
     outcome: outcome,
-    assumptions: _assumptions,
+    assumptions: _assumptionsFor(reduction),
     diagnostics: diagnostics,
+    reduction: reduction,
   );
 }
 
 final class _GrammarBuilder {
   _GrammarBuilder({
-    required this.tm,
     required this.sourceRevision,
     required this.allocator,
     required this.terminals,
     required this.maxProductions,
+    required this.sourceTmId,
+    required this.sourceTmName,
+    this.reduction,
   });
 
-  final TM tm;
   final int sourceRevision;
+  final String sourceTmId;
+  final String sourceTmName;
+  final TMMultiTapeReductionReport? reduction;
   final _SymbolAllocator allocator;
   final List<String> terminals;
   final int maxProductions;
@@ -508,8 +628,8 @@ final class _GrammarBuilder {
     required List<TMToGrammarDiagnostic> diagnostics,
   }) {
     final grammar = UnrestrictedGrammar(
-      id: 'tm-to-grammar:${tm.id}',
-      name: '${tm.name} — unrestricted grammar',
+      id: 'tm-to-grammar:$sourceTmId',
+      name: '$sourceTmName — unrestricted grammar',
       revision: sourceRevision,
       terminals: terminals.map(TerminalGrammarSymbol.new),
       nonterminals: allocator.symbols,
@@ -520,10 +640,11 @@ final class _GrammarBuilder {
     if (!classification.isValid) {
       final errors = classification.errors.toList();
       return TMToGrammarConstructionReport(
-        sourceTmId: tm.id,
+        sourceTmId: sourceTmId,
         sourceRevision: sourceRevision,
         outcome: TMToGrammarOutcome.outputInvalid,
-        assumptions: TMToGrammarConverter._assumptions,
+        assumptions: TMToGrammarConverter._assumptionsFor(reduction),
+        reduction: reduction,
         diagnostics: [
           ...diagnostics,
           for (var index = 0; index < errors.length; index++)
@@ -538,14 +659,15 @@ final class _GrammarBuilder {
       );
     }
     return TMToGrammarConstructionReport(
-      sourceTmId: tm.id,
+      sourceTmId: sourceTmId,
       sourceRevision: sourceRevision,
       outcome: TMToGrammarOutcome.completed,
-      assumptions: TMToGrammarConverter._assumptions,
+      assumptions: TMToGrammarConverter._assumptionsFor(reduction),
       diagnostics: diagnostics,
       productionProvenance: _provenance,
       symbolDescriptions: allocator.descriptions,
       grammar: grammar,
+      reduction: reduction,
     );
   }
 }

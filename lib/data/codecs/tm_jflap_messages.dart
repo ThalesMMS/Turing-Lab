@@ -230,6 +230,25 @@ abstract final class TmJflapMessages {
     },
   );
 
+  static StructuredMessage duplicateBlockIdentity(
+    String id,
+    String firstTag,
+    String secondTag,
+  ) => _malformed(
+    'duplicate-block-identity',
+    arguments: {
+      'id': StructuredMessageArgument.identifier(id, role: 'block-id'),
+      'first-tag': StructuredMessageArgument.identifier(
+        firstTag,
+        role: 'block-tag',
+      ),
+      'second-tag': StructuredMessageArgument.identifier(
+        secondTag,
+        role: 'block-tag',
+      ),
+    },
+  );
+
   static StructuredMessage acceptancePolicyConflict() =>
       _malformed('acceptance-policy-conflict');
 

@@ -26,15 +26,13 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       }
       final groupedGeometry =
           representative.source == representative.destination
-              ? _buildGroupedSelfLoopGeometry(representative, groupedEdges)
-              : _buildGroupedNormalGeometry(representative);
+          ? _buildGroupedSelfLoopGeometry(representative, groupedEdges)
+          : _buildGroupedNormalGeometry(representative);
       if (groupedGeometry == null) {
         continue;
       }
       final labelEntries = labeledEdges
-          .map(
-            (edge) => _GroupedLabelEntry(painter: _buildLabelPainter(edge)),
-          )
+          .map((edge) => _GroupedLabelEntry(painter: _buildLabelPainter(edge)))
           .toList(growable: false);
       try {
         final labelRect = _resolveGroupedLabelRect(
@@ -45,8 +43,9 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
         for (final member in groupedEdges) {
           final memberGeometry = _automaticRouteGeometry[member];
           if (memberGeometry != null) {
-            _automaticRouteGeometry[member] =
-                memberGeometry.withLabelRect(labelRect);
+            _automaticRouteGeometry[member] = memberGeometry.withLabelRect(
+              labelRect,
+            );
           }
         }
       } finally {
@@ -57,8 +56,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
 
   void _clearGroupedLabelRects() {
     for (final edge in _automaticRouteGeometry.keys.toList(growable: false)) {
-      _automaticRouteGeometry[edge] =
-          _automaticRouteGeometry[edge]!.withLabelRect(null);
+      _automaticRouteGeometry[edge] = _automaticRouteGeometry[edge]!
+          .withLabelRect(null);
     }
   }
 
@@ -80,7 +79,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       );
       final totalHeight = _sumLabelHeights(labelEntries);
       final visibleHeight = _sumLabelHeights(labelEntries.take(maxVisible));
-      final cardRect = _automaticRouteGeometry[edge]?.labelRect ??
+      final cardRect =
+          _automaticRouteGeometry[edge]?.labelRect ??
           _resolveGroupedLabelRect(edge, groupedGeometry, labelEntries);
       _paintLabelCard(
         canvas,
@@ -95,9 +95,9 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       final cycleDistance = overflowHeight + _labelScrollGap;
       final scrollOffset =
           labelEntries.length > _maxVisibleGroupedLabels && cycleDistance > 0
-              ? (_continuousAnimationValue * _labelScrollPixelsPerTurn) %
-                  cycleDistance
-              : 0.0;
+          ? (_continuousAnimationValue * _labelScrollPixelsPerTurn) %
+                cycleDistance
+          : 0.0;
 
       canvas.save();
       canvas.clipRect(
@@ -134,9 +134,9 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
     required bool selected,
     bool paintEntries = true,
   }) {
-    final borderColor = _colorFor(highlighted: highlighted).withValues(
-      alpha: highlighted || selected ? 0.55 : 0.22,
-    );
+    final borderColor = _colorFor(
+      highlighted: highlighted,
+    ).withValues(alpha: highlighted || selected ? 0.55 : 0.22);
     final card = RRect.fromRectAndRadius(rect, const Radius.circular(12));
     canvas.drawShadow(
       Path()..addRRect(card),
@@ -241,9 +241,7 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       )) {
         return resolved;
       }
-      resolved = resolved.shift(
-        normal * (_labelCollisionStep + attempt * 4.0),
-      );
+      resolved = resolved.shift(normal * (_labelCollisionStep + attempt * 4.0));
     }
     return resolved;
   }
@@ -272,12 +270,7 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
             !viewport.contains(rect.bottomRight))) {
       return true;
     }
-    return _labelRectCollides(
-      rect,
-      geometry.pathGeometry.path,
-      edge,
-      null,
-    );
+    return _labelRectCollides(rect, geometry.pathGeometry.path, edge, null);
   }
 
   TextPainter _buildLabelPainter(
@@ -445,7 +438,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
     double cardHeight,
   ) {
     final metric = groupedGeometry.geometry.path.computeMetrics().firstOrNull;
-    final anchor = metric?.getTangentForOffset(metric.length * 0.5)?.position ??
+    final anchor =
+        metric?.getTangentForOffset(metric.length * 0.5)?.position ??
         groupedGeometry.geometry.path.getBounds().center;
     final sourceCenter = getNodeCenter(edge.source);
     final destinationCenter = getNodeCenter(edge.destination);
@@ -479,9 +473,11 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
   ) {
     final metric = geometry.path.computeMetrics().firstOrNull;
     final nodeCenter = getNodeCenter(edge.source);
-    final anchorOffset =
-        metric != null ? math.min(metric.length * 0.42, metric.length) : 0.0;
-    final anchor = metric?.getTangentForOffset(anchorOffset)?.position ??
+    final anchorOffset = metric != null
+        ? math.min(metric.length * 0.42, metric.length)
+        : 0.0;
+    final anchor =
+        metric?.getTangentForOffset(anchorOffset)?.position ??
         geometry.path.getBounds().topRight;
 
     var radial = anchor - nodeCenter;
@@ -490,7 +486,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
     }
     radial = radial / radial.distance;
 
-    final projectedHalfExtent = (radial.dx.abs() * (cardWidth / 2)) +
+    final projectedHalfExtent =
+        (radial.dx.abs() * (cardWidth / 2)) +
         (radial.dy.abs() * (cardHeight / 2));
 
     var rect = Rect.fromCenter(
@@ -515,7 +512,8 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       return null;
     }
 
-    final opposingGroup = _groupedEdgeCache[_DirectedEdgePair(
+    final opposingGroup =
+        _groupedEdgeCache[_DirectedEdgePair(
           sourceId: _nodeId(edge.destination),
           destinationId: _nodeId(edge.source),
         )] ??
@@ -548,7 +546,7 @@ extension _TuringLabAdaptiveEdgeRendererLabelLayout
       final metric = groupedGeometry.geometry.path.computeMetrics().firstOrNull;
       final anchor =
           metric?.getTangentForOffset(metric.length * 0.5)?.position ??
-              groupedGeometry.geometry.path.getBounds().center;
+          groupedGeometry.geometry.path.getBounds().center;
       final normal = resolveGroupedFsaLabelNormal(
         fromId: _nodeId(opposingRepresentative.source),
         toId: _nodeId(opposingRepresentative.destination),

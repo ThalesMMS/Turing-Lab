@@ -1,44 +1,44 @@
 {
   "schemaVersion": 1,
   "qaOwnerIssue": 346,
-  "migrationOwnerIssue": 343,
+  "migrationOwnerIssue": 453,
   "status": "migration-in-progress",
   "zeroUserVisibleProseClaim": false,
   "scope": "tool/localization/feature_ui_scope.v1.json",
   "summary": {
-    "fileCount": 298,
-    "legacyViolationFileCount": 113,
-    "legacyViolationCount": 2035
+    "fileCount": 322,
+    "legacyViolationFileCount": 114,
+    "legacyViolationCount": 1964
   },
   "entries": [
     {
       "path": "lib/features/canvas/graphview/graphview_canvas_controller.dart",
-      "sourceDigestSha256": "62861f7bd877b0965248d119b1628c99e32e668dc8529cbda1d48f5c38b3d021",
-      "violationDigestSha256": "b6b361d7eddabbd4054a76001a44de969d93c1c3535cceac13bf932ec4ec7489",
+      "sourceDigestSha256": "0f64a479c50f6f7793e9bf8654eafebdde2ffad7ee522cbc4f77b4c7c6199686",
+      "violationDigestSha256": "ad5d0a4c85d21c8731944e28cd56ace97ea666273e8814ba9251dec7846d5f28",
       "violationCount": 1
     },
     {
       "path": "lib/features/canvas/graphview/graphview_canvas_models.dart",
-      "sourceDigestSha256": "4e0b8fda343b7812762ff4ccf93c1fed77271fd577d9ec5b2279c55ea33bab6a",
-      "violationDigestSha256": "5817df4d2e5c27334d17a8430b7e52d5f84956d5b661764149b660d313d13e6e",
+      "sourceDigestSha256": "ed4c23f91418446cfa0aef6e10783c70af8fe1da216e35ea7038d04433c56eac",
+      "violationDigestSha256": "80e04bf92d1b67b5b23392ac0ed474e3a7cc3cf3057338495da0994690919caf",
       "violationCount": 2
     },
     {
       "path": "lib/features/canvas/graphview/graphview_pda_canvas_controller.dart",
-      "sourceDigestSha256": "a06f58cab497574de9d6610280360683d9431731e4da582012fc622c11038508",
-      "violationDigestSha256": "0107ef0d51125a123f2db71947d58eb1f455801655ee69855d9159b3330ef898",
+      "sourceDigestSha256": "d9938353d1584fcbf7e8ed97eb29a0baa2fcf55c63461c8592c5388712fcc5fd",
+      "violationDigestSha256": "987d8055412b9646a1ec7bb8252dbff497c4dc8c41bfddedf41b112755c0bfd5",
       "violationCount": 1
     },
     {
       "path": "lib/features/canvas/graphview/graphview_tm_canvas_controller.dart",
-      "sourceDigestSha256": "a0a342d3405e65fbe33da32733512d36aeac17569f0e5c455547b6c8895f10b2",
-      "violationDigestSha256": "e1c1a71eb000ae199ace0a4b22661a921c7773515e96eec29f290b21f2f8b666",
+      "sourceDigestSha256": "09ffba3ae99268be2486d11bec11e47199074c586dd89cb652766c54a0cd4b32",
+      "violationDigestSha256": "54ebc1c77093003b3804afb0c6c30d30980533bc7ffcbe5b41c3c0b4d09d93a9",
       "violationCount": 1
     },
     {
       "path": "lib/features/canvas/graphview/graphview_tm_mapper.dart",
-      "sourceDigestSha256": "6a958e8a785192d5abf1d0158d58ea5ade1e12ffb624dc518174517f3f0ee107",
-      "violationDigestSha256": "7967e29a369df62c7a80b4d2c00c06f6d167ccde9114dd20693140fc2b3f5670",
+      "sourceDigestSha256": "bd71c7ff1108f39896a49c62ba7c51d64515d2568922a12cd929a402e5d3e1f6",
+      "violationDigestSha256": "3b8847f53eee95463ac54269b385b208a265130b34064da50a0a9e9e6131c677",
       "violationCount": 5
     },
     {
@@ -49,7 +49,7 @@
     },
     {
       "path": "lib/presentation/content/example_suggested_simulations.dart",
-      "sourceDigestSha256": "e571bf5e03176a6d256a67745f39466db159c02c2c2e1bbe860058a2575198fc",
+      "sourceDigestSha256": "c13fe37b8a521b1a8c178d4756421d1ccd8865af9c885cd1bbceb299128e2bad",
       "violationDigestSha256": "01346852b1947e971fa0c9d89311badb8394a87b6deec6e3a940846b8948c634",
       "violationCount": 1
     },
@@ -61,8 +61,8 @@
     },
     {
       "path": "lib/presentation/content/l_system_example_content_copy.dart",
-      "sourceDigestSha256": "2b1d79dcef2f1fd3e1699fa9fa3e754562de2662d03a2ec1a9d1cb2ba7aa9d43",
-      "violationDigestSha256": "7b7873f25b98c0c9cbc5a01c97d20f50f9521e5f3521ca8828850c54e745b717",
+      "sourceDigestSha256": "fdedc3bba72c4b5fc55cb8621f31391139c770be7442b04ffaf568b49a4d1bf1",
+      "violationDigestSha256": "42965d31594c3e5fc03ab9fc85cb63824a6aec8e50db645ea19df9a05a91d606",
       "violationCount": 60
     },
     {
@@ -109,26 +109,26 @@
     },
     {
       "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
-      "sourceDigestSha256": "6f5b67710b0fc9c72e96a0bc9ceea2eb83f87f1e4d747832c738f3b49f32438d",
+      "sourceDigestSha256": "1443f1de52e87284e7b184b8c3a186b66be6031676df4f43dadcfc9d899bcb7a",
       "violationDigestSha256": "c9b0a120cee0ba04386de5d27a89170676465201d806c65da01e87f63728d673",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/pages/l_system_page.dart",
-      "sourceDigestSha256": "9bced9f49f1fe32c50d1cf696063ec047c20a898d23efdcd09ac5bfcf23ceda8",
-      "violationDigestSha256": "77b9b62027018f55feeb91681ae864448273668e3d88a4b97b7d2b0c57f58d23",
-      "violationCount": 2
+      "sourceDigestSha256": "7bd7fb75937fab699fe2e99eefd68cc58764b739526e6ec56e02cda0666c2539",
+      "violationDigestSha256": "fb7261dfd256adcaf5ad4d2fd4aae3785df14f3dbe04fb141097492025ebe59e",
+      "violationCount": 5
     },
     {
       "path": "lib/presentation/pages/pda_page.dart",
-      "sourceDigestSha256": "a63ac5a376ae48290bf63d9517d5c68471ae02e276f797480e9398f052a82496",
-      "violationDigestSha256": "80ad9a59685cb9d53ebd7a1b42eaf9660612d295f4b03834dba506fd3cf8a522",
+      "sourceDigestSha256": "41249720040dd57f88b017d4fd7944ce86dd9aa43325710115a52731e03d69f4",
+      "violationDigestSha256": "7355aa4dc98cfe07151617a791ab9bcdde54de0d5fd328af3a13d06f56b52ee9",
       "violationCount": 2
     },
     {
       "path": "lib/presentation/pages/regex_page.dart",
-      "sourceDigestSha256": "de0bf2729c6daf06280837f589aceca5db66c21aed71144b7443424e9341b5ca",
-      "violationDigestSha256": "21e25ead80933bb96b36e8fc225f5bd6fa1085bbb5c414c2fc810a046be2f3fd",
+      "sourceDigestSha256": "fa75790e4da2152281ec9f8320909deb80a01c30427fffdf953c3113e21fbfa8",
+      "violationDigestSha256": "14d7cb6599e2113b1c9505448d8aff16fd06e5fa16eeecb1607dd39efabee267",
       "violationCount": 3
     },
     {
@@ -139,7 +139,7 @@
     },
     {
       "path": "lib/presentation/pages/regex_page_layout.dart",
-      "sourceDigestSha256": "fd46bc7a6e6d8bb29de2517a84cec5a54b348216023db67b0cc2700dfc8d4ca3",
+      "sourceDigestSha256": "9da5f83ff2d29c5745362d879465b815a3fb6dc54bb45283d5b57c61cf90fd38",
       "violationDigestSha256": "a12d0042978724687695188ff4ab4f97389ee55c3e6d1f0eccb41648a6302c32",
       "violationCount": 2
     },
@@ -157,14 +157,14 @@
     },
     {
       "path": "lib/presentation/pages/tm_page.dart",
-      "sourceDigestSha256": "dc79452c3b4857710898dea27ae5514911dfaf23600d1f0ebdb7bb2942496d9f",
-      "violationDigestSha256": "aa4b75ecfd6898371454688241be1e0923ac9e13215d4a0b4df978430b3d7839",
+      "sourceDigestSha256": "36fb04a4a8541a2c65c2ce098c6450ae7786281b441c094827645d33dcab2b42",
+      "violationDigestSha256": "c1daa3cede9bc4694d01575bf154862024befe87f5e91d5150d06c1c074c2202",
       "violationCount": 2
     },
     {
       "path": "lib/presentation/pages/unrestricted_grammar_page.dart",
-      "sourceDigestSha256": "82b9c22fe14c297b9dca3818ebeea9235f431c7fe4deb5df21411cb19b954747",
-      "violationDigestSha256": "7d39f4180d746e25f1e8ed47e29c66754db87d810fb22c43f06f257146b68fc5",
+      "sourceDigestSha256": "534007c43c63a26a57575aa1312d568261a59d91024e5088d17a0acc72190e3d",
+      "violationDigestSha256": "ce6db5eb252b77bb2fd7ddb6ca315a9d4932dc4a61b98f0ab909c005c3680281",
       "violationCount": 8
     },
     {
@@ -175,7 +175,7 @@
     },
     {
       "path": "lib/presentation/providers/automaton_algorithm_provider.dart",
-      "sourceDigestSha256": "936c3a262489ef2754f5942d62bb9eda38b3d2c875e97e5d6dccee3c265e75c4",
+      "sourceDigestSha256": "144c5cddafebbeedf4da84fac8df700cf2e68453855d4f5c96f4ad32350ac078",
       "violationDigestSha256": "dace5900399d3c78dc0dd71245dc69306e785201c36fcf92c9d00ac1c62c1f74",
       "violationCount": 24
     },
@@ -187,7 +187,7 @@
     },
     {
       "path": "lib/presentation/providers/automaton_simulation_provider.dart",
-      "sourceDigestSha256": "56f37e3e4e0d2a50545a4217a40c99413ec3dc85ebd9cfb5c78c57b8b2713ee9",
+      "sourceDigestSha256": "7f52dcc700ed400eeb35639dbea6a40124ed7e49cc88d29b0e53d5c3b1564b87",
       "violationDigestSha256": "16438ee94053b41695b9c429c85bd0073ea0643f99def9424329f47757c4f04b",
       "violationCount": 1
     },
@@ -205,8 +205,8 @@
     },
     {
       "path": "lib/presentation/providers/grammar_provider.dart",
-      "sourceDigestSha256": "f975526aa5eaff6d26cdf9a9a34a589a9dd567948f9f9f4ca48d7e4a0d293827",
-      "violationDigestSha256": "8d1c7db2143f4d35f0c30e585d0c4874dc742bb39027d828dd6a29fae2525e27",
+      "sourceDigestSha256": "242b075ef4eadd883605a2a1438402961f46904845adff0217f510a06adb41da",
+      "violationDigestSha256": "28ef8a6ef0407a7e047e5ee831d76c83e719a2f4258483b300da04c9781ec97f",
       "violationCount": 4
     },
     {
@@ -217,19 +217,19 @@
     },
     {
       "path": "lib/presentation/providers/pda_simulation_provider.dart",
-      "sourceDigestSha256": "770a81be399ba1fc4d3dedba8cc97ae8e98ab97159a1505fe896580e8a8ba9a5",
-      "violationDigestSha256": "9979ce7df687cdc8eefe38bd851f433d314724373a4d16ad26ba2438ca741056",
+      "sourceDigestSha256": "b169448bfd20e2132dce7db7c20092e2d0bd60d83839fd9c5be073ccabdd84b3",
+      "violationDigestSha256": "ab209fab2862fc4e9fe15f1a91c015656ed405aa194398d993fb22bb66364ece",
       "violationCount": 1
     },
     {
       "path": "lib/presentation/providers/regex_editor_provider.dart",
-      "sourceDigestSha256": "47655f7ba9e7c595b6ec5b9cb49393930520d3bb4f3521d7b3fe2476440be8ec",
+      "sourceDigestSha256": "307d962ee8be7b75f70a1cc3c06a0b8dc6e3d20d5f9ae8288a0b04464ee9bb7d",
       "violationDigestSha256": "12a87d60b82bf87a1f51d56c2b4ca85b550a17a1d1d51a0f4ff789c8e09f8a67",
       "violationCount": 18
     },
     {
       "path": "lib/presentation/providers/tm_block_library_provider.dart",
-      "sourceDigestSha256": "ac712aa95d1c94f85ce2b239bcc66200eacd08345cde7a160601a776f976608c",
+      "sourceDigestSha256": "cb8e74446d5b20b122b088c9d2d0ca147e093aeb2c447e842396897edf5faf37",
       "violationDigestSha256": "6605c960c3bc1fe02d88f23ea5e7489568cc8bb9705e0f237308f0abf5c9967d",
       "violationCount": 2
     },
@@ -265,13 +265,13 @@
     },
     {
       "path": "lib/presentation/transducers/transducer_simulation_panel.dart",
-      "sourceDigestSha256": "54757e76e39a364a027fcbaa8b88f2af4fafd4a03f4da1bdc9485a5422aa66d8",
-      "violationDigestSha256": "24ad518f15a6cc19e7f1492410333f32bedc5b3868fdb02380938d03baa3d7f0",
+      "sourceDigestSha256": "af519aef78f436dbc3079689c7a98299be5bf2d2e6adaad5faeb94677533eb43",
+      "violationDigestSha256": "c4342454b000c721649ba2c872067530703da392b2d84ee7555aa4281dbda16a",
       "violationCount": 3
     },
     {
       "path": "lib/presentation/unrestricted_grammar/unrestricted_grammar_workspace.dart",
-      "sourceDigestSha256": "79110b294bac1f706ef266c632ec1e9e1cc94e10f95edf41240b96f66224eb7c",
+      "sourceDigestSha256": "00c34c0ca544a548054ce7199aae63664a107e9632c7d4b62508d002c530b7ca",
       "violationDigestSha256": "e7bf6a06fbf4806be07fd1dc5942ed167cda2028ae141e7338d61026a1adc8cb",
       "violationCount": 11
     },
@@ -289,9 +289,9 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_panel.dart",
-      "sourceDigestSha256": "7a7dff1bee4dea2212741e9963dd45ab15b0edd60d2ea2e65584431f5d0d7910",
-      "violationDigestSha256": "63be9cf79d0e0214fafb8abc2112d7c2141d26a513181211026e00323cb6d345",
-      "violationCount": 102
+      "sourceDigestSha256": "bfee95311397cdcef1169c9ba6853c44aef4adde74c22879e0b74862c2a78558",
+      "violationDigestSha256": "59b308e35c60c6c298ed0b5258606a3ca888365cf7341df424b9dfc9d69bdda2",
+      "violationCount": 94
     },
     {
       "path": "lib/presentation/widgets/algorithm_results_section.dart",
@@ -301,20 +301,20 @@
     },
     {
       "path": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
-      "sourceDigestSha256": "913b04cf368608d980eece3f2d288a1d8960cb62a8480aa56c1efa01e19d4462",
-      "violationDigestSha256": "4cf039dc361c0b27611958d34a21ef8c772cbbbd593827a7abf6d52316d74ef1",
+      "sourceDigestSha256": "1831d593b89d05da754abb08a1d17852f78343b2b54e3d4b60f13ea47d971b8b",
+      "violationDigestSha256": "3faad82689d3835ab9ea32510fd71d949d2e2beffea9f485660d037bb2c0e34d",
       "violationCount": 27
     },
     {
       "path": "lib/presentation/widgets/algorithm_step_viewer.dart",
-      "sourceDigestSha256": "7a99a462899cccf566b97054f2299366f6018609b005235cb0c16aabbcb8c48c",
+      "sourceDigestSha256": "c5bed6ec44dd81ca6052208e8b80647a2de44d45fde742c49005ca8404d57334",
       "violationDigestSha256": "de7970e951a0e63a4f2140beac2a290f07c1ee0a6686bea507786288d7778e2e",
       "violationCount": 6
     },
     {
       "path": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
-      "sourceDigestSha256": "386249746a832859bf4191b9aca0c145420f7f7e55af84e77925c842f0b66b44",
-      "violationDigestSha256": "38c29fd35ac888e05ee5c06d3d94aa0f0126c6d8277177ee4db8edb502263edc",
+      "sourceDigestSha256": "9cc01b58f04a32025f82a00e3dca9794cdefa731560ffc81d20ce1695068e0df",
+      "violationDigestSha256": "a98ed0430c54e58da6dcba09d778081f83e11ae45485461ace3dbc5ffbe16fa8",
       "violationCount": 2
     },
     {
@@ -354,22 +354,10 @@
       "violationCount": 2
     },
     {
-      "path": "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-      "sourceDigestSha256": "7fbbaf40bb014a62f65327a76aa0f4b4cf952c7dafad271f08246ff009071da3",
-      "violationDigestSha256": "c9de7c5a8946502b1ab92b2732f7ec0348e18908c3ce5975acb8cf6c38b6bbd9",
-      "violationCount": 12
-    },
-    {
       "path": "lib/presentation/widgets/canvas_simulation_step_projection.dart",
       "sourceDigestSha256": "63d83d0cd0d6fd86be5a7fd0717e3ac2932df48adc7c4943f20b42f2b45ba3ef",
       "violationDigestSha256": "2d088ba684f1dc853e7958a3a4efe506b788a78154c6972199d34b8814834704",
       "violationCount": 1
-    },
-    {
-      "path": "lib/presentation/widgets/cfg_to_pda_construction_workspace.dart",
-      "sourceDigestSha256": "fa0146192c3fecc247b978c1996742cb746496b8a220b79ff6fb9145425ad06e",
-      "violationDigestSha256": "95017730d2ea5c8bb29d4b451bd34c1092ba6017765e3f55c4ceaae63723e5e6",
-      "violationCount": 3
     },
     {
       "path": "lib/presentation/widgets/common/simulation_result_card.dart",
@@ -384,16 +372,52 @@
       "violationCount": 32
     },
     {
-      "path": "lib/presentation/widgets/derivation_tree_view.dart",
-      "sourceDigestSha256": "3ab34c04a07964b679c1ac21ea6912137ba812a5dfaf09915131efeb5e54990f",
-      "violationDigestSha256": "cc87aa292640bcb2a760af48610c2242dcf5d021a3d6dcfffca007b0bb1ca067",
-      "violationCount": 1
+      "path": "lib/presentation/widgets/conversions/cfg_to_pda_construction_workspace.dart",
+      "sourceDigestSha256": "e295451d27cc99c939cb75b97d5cc40f188b2c2ac3108df1309fad63d5ff5c7f",
+      "violationDigestSha256": "95017730d2ea5c8bb29d4b451bd34c1092ba6017765e3f55c4ceaae63723e5e6",
+      "violationCount": 3
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/fa_grammar_requirement_editor.dart",
+      "sourceDigestSha256": "35ae414cfd62c4b60ec705fb237607f51d4b10104d8959db0020a93955e95349",
+      "violationDigestSha256": "ea872ba6c98f38bfd6bf2803cd843916d61f985e1ca3ce087379c33540e622aa",
+      "violationCount": 37
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/fa_to_regex_requirement_editor.dart",
+      "sourceDigestSha256": "f6b4f229a26c93097cfd8cb7d3b11ece70a74f0c7661b3bcc048396f11d0f61e",
+      "violationDigestSha256": "826e55758f6a6ee3a4129ef4d3053c1f865f85758e81cbbec551ab4ec7c62995",
+      "violationCount": 27
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/manual_conversion_document_preview.dart",
+      "sourceDigestSha256": "43d1bcc6910318e5c24886732890e6b34eb78ce7801f6dfba9cba33e129b5251",
+      "violationDigestSha256": "1481f21481bfba603eced169d554f0077a70cf04c9d061b32e69a0f350f03139",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/manual_conversion_workspace.dart",
+      "sourceDigestSha256": "e399e942fc25491821def83ad41d766baf9f2041c222e4e405d00b9f03ac0554",
+      "violationDigestSha256": "0b519a099ce2912e0aeeb373616d7d2a883ebf652b38f4f4cffaf405a3d60bc4",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/regex_to_fa_fragment_editor.dart",
+      "sourceDigestSha256": "2b9f739b283b96564454a590cb6f5a25fce7ce6d04e4911406b519ec995b3bb5",
+      "violationDigestSha256": "8f9b69666c6c640f90bfbb1d4fa0871d027bea374ae87a8c316efbd79d9d5b04",
+      "violationCount": 25
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/tm_to_grammar_construction_workspace.dart",
+      "sourceDigestSha256": "30ca2cff6c056c164165d8c01b6b60950b08268ada04aa5da9aeaa4c1512c00b",
+      "violationDigestSha256": "8a5379ee2d4c3a1ac94f7603de61d0838b1effb88cbed6cce4662b784c381575",
+      "violationCount": 6
     },
     {
       "path": "lib/presentation/widgets/export/svg_exporter.dart",
-      "sourceDigestSha256": "0ee020c242e8860b0f5598bbbf0d1ed91ea8f7d94f80936c3ce70cb7360ccae6",
-      "violationDigestSha256": "76501973d95fdffac13897ed56a02b36f17e78163cdcce1700d3e2b2a1e05e07",
-      "violationCount": 50
+      "sourceDigestSha256": "fa7318e6389cdae165a29035b9f1e016326499962177d9d883b3ef0f170fc576",
+      "violationDigestSha256": "4eb3cbdc892413ff0ac3597f6f18939aca7e67a329d49fc2d5ab21b823fde672",
+      "violationCount": 1
     },
     {
       "path": "lib/presentation/widgets/export/transducer_visual_exporter.dart",
@@ -420,94 +444,112 @@
       "violationCount": 3
     },
     {
-      "path": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
-      "sourceDigestSha256": "9334e152fa8815c93f0f40f21e6baa5ffbe03cd3e739c9cbe7567471f4a129ea",
-      "violationDigestSha256": "f2ed2f90d2de998aa4817cde8d6c074bda58c4c5509f778ba068dab50e1ee81a",
-      "violationCount": 37
-    },
-    {
-      "path": "lib/presentation/widgets/fa_to_regex_requirement_editor.dart",
-      "sourceDigestSha256": "d71a59cff5ad5d19407e29691a7aa7245cab31ab52fa410223fbf21599555e43",
-      "violationDigestSha256": "826e55758f6a6ee3a4129ef4d3053c1f865f85758e81cbbec551ab4ec7c62995",
-      "violationCount": 27
-    },
-    {
       "path": "lib/presentation/widgets/fsa/determinism_badge.dart",
       "sourceDigestSha256": "6502778ae1b9edfb13f30cf8ed8d613abd9a42a3764faf13c196454b55f2e396",
       "violationDigestSha256": "a123d1f93b039129df356c0209e0ebbed89157fef99931ec6f588c8411936609",
       "violationCount": 4
     },
     {
-      "path": "lib/presentation/widgets/grammar_algorithm_panel.dart",
-      "sourceDigestSha256": "c23eb3c0b953be0263c96add4d95dbb80f1e30fbb1236199e2f971c47d07388f",
-      "violationDigestSha256": "fa5a83a049f3e95a475a38db0f329456e8352f86df6b9c2c4c2030053e61e8fc",
-      "violationCount": 28
+      "path": "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+      "sourceDigestSha256": "4f22f23231391911b29b942f2f135485baae101decf60e0b0e359c53495c6bc7",
+      "violationDigestSha256": "310e59535eed9a3a0976ef155f1e1daca269f50070f5e3f9ab9948fbab21df3a",
+      "violationCount": 12
     },
     {
-      "path": "lib/presentation/widgets/grammar_editor.dart",
-      "sourceDigestSha256": "a8b10750d0b18405d987d1f4ed417ce2b8c7cf8a6acf99e354ef4ad7e0f0ba52",
+      "path": "lib/presentation/widgets/grammar/derivation_tree_view.dart",
+      "sourceDigestSha256": "9f271f48839cac5b581d6d9b1481961e10c3dc9571f09655062aee917ea6525f",
+      "violationDigestSha256": "cc87aa292640bcb2a760af48610c2242dcf5d021a3d6dcfffca007b0bb1ca067",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart",
+      "sourceDigestSha256": "cffe152f18f8abc6e8943410bcd22c11bf150efcefa4581e54300c184acb5611",
+      "violationDigestSha256": "fa33cacacef03f330a1509e421686e743459cc711f0a1d090ce666c687c0f58b",
+      "violationCount": 12
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_editor.dart",
+      "sourceDigestSha256": "e180f4ff48f486a67b5e19279c41cc623eab0986fba2417ac691dccb87c79d55",
       "violationDigestSha256": "2de5c606a1a0499f2e66eaf867ce47ebbc09146001d15365f6a0c68bfff81d80",
       "violationCount": 2
     },
     {
-      "path": "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-      "sourceDigestSha256": "f8951615a0fca4c6965cbd2a4665a9d4d5b2e69f8a0753ad4bce4f48bfb197f7",
+      "path": "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+      "sourceDigestSha256": "9073e451f34a99dd1f05dc8c6f90cd9646348f7b55611719dad1adce53d8fc20",
       "violationDigestSha256": "8b56a515c12a98ada16b8cdff746c3ae426d6c2797b8b78e1933b83ea001f4f7",
       "violationCount": 11
     },
     {
-      "path": "lib/presentation/widgets/grammar_simulation_panel.dart",
-      "sourceDigestSha256": "97656a8c9345568191d8dd633869396b74364e06f66fa42e4dbe1ebf4f356717",
-      "violationDigestSha256": "5daefad7134deca578f9873e916b5f57d9cc3143db41582191a940063a754caa",
+      "path": "lib/presentation/widgets/grammar/grammar_simulation_panel.dart",
+      "sourceDigestSha256": "9b34b78807c1e3fc06a5054088038e78759c72cba90f6978a6eaecb0a1418e6b",
+      "violationDigestSha256": "1a4c54b74f33b53b73198fb474f081ad4fbfcdbc1d341eb6b252690293df335f",
       "violationCount": 15
     },
     {
-      "path": "lib/presentation/widgets/grammar_transformation_history.dart",
-      "sourceDigestSha256": "b4355201dbef9103ef42e66e0958d49789964aefa92ffd35c9b3f14135171817",
-      "violationDigestSha256": "2638dadbba83667fb0911cb02717f4f11cf3101514729d91ea74cec5b42341eb",
+      "path": "lib/presentation/widgets/grammar/grammar_transformation_history.dart",
+      "sourceDigestSha256": "177720018baaed28eabe8610d6ed22a7502afd189a7b25c2b22de360e6066a9f",
+      "violationDigestSha256": "66b4f6a74cc2e22866291bac285766629c454b94c3954d57e0de93ce3b0bafdd",
       "violationCount": 2
     },
     {
-      "path": "lib/presentation/widgets/language_comparison_controller.dart",
-      "sourceDigestSha256": "8f24dd377875721826dc5f2cf31e05fa3776234b2f86425adb95f2e7b4a8dc05",
-      "violationDigestSha256": "81c1c8fcdafb537cb61de69137ae3cd77ad5f1487f30f2ad2b81fe2d06a8254d",
+      "path": "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+      "sourceDigestSha256": "5b1646fb22a0b47e02e90d5c9d23485ce5254ad1353bc217b54411792f58b296",
+      "violationDigestSha256": "5dc71bc19706a723423ff4adde49f217c3a6a4be62179584520de1778ff1b0c3",
+      "violationCount": 14
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+      "sourceDigestSha256": "28eecadd946eab34c083d84d64bb81f9c95732d3694af099cf11f46a96c9a4f4",
+      "violationDigestSha256": "9b0da59e1c23c921f9cca730d306ad74a77bbbe9cf211cb87680e3a7133ca6e4",
+      "violationCount": 7
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/user_derivation_workspace.dart",
+      "sourceDigestSha256": "1d1111df92dd0d2988bfbdface563ea1e3760b715fc2e5a9a57bbc2c6f9be952",
+      "violationDigestSha256": "a12042e0812c00aee20078018a2de84ce55e333d36fe74ee6e34a0ee9f8affb7",
+      "violationCount": 26
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/variable_dependency_graph_workspace.dart",
+      "sourceDigestSha256": "c43e1fdc2e90fcd77c9d1b53aeb0e1892bcf054da894a4a1c34319bbb575f307",
+      "violationDigestSha256": "19fda6733a292b67aa69988da7d5a44725de9e6ff14bc1046471d844969d8710",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/grammar_algorithm/grammar_analysis_result_formatter.dart",
+      "sourceDigestSha256": "92158076d40759a76beb943469ca884deb66330f8e1644db7b1b26c2d0fb39ad",
+      "violationDigestSha256": "c47698f0d36e7e40749b5e0308f756ccf26531749031ef0c1e2061a5e94ce00e",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison/language_comparison_controller.dart",
+      "sourceDigestSha256": "d71f69644f00a7f770f59a86caf8a9c693f5b9704a2f19a827dec55c444afa32",
+      "violationDigestSha256": "33916d39123c07945fbd31bd6369e9744dfb2c209c7e4901293778245560edc8",
       "violationCount": 3
     },
     {
-      "path": "lib/presentation/widgets/language_comparison_step_view_model.dart",
+      "path": "lib/presentation/widgets/language_comparison/language_comparison_step_view_model.dart",
       "sourceDigestSha256": "6bc91a9015809d45ecda0fe9330dee5d8c0b92cd07e1384ee1bbf28c7dbdc08a",
       "violationDigestSha256": "1617909323d51e36427b2e811f2aa25fd914727262add1a996d9671db32c11f1",
       "violationCount": 41
     },
     {
-      "path": "lib/presentation/widgets/language_comparison_viewer.dart",
-      "sourceDigestSha256": "a61f243a59d70e9a2a35e7b865cb8627deb7c76b88822eb0b4cc7344f28cc9ff",
+      "path": "lib/presentation/widgets/language_comparison/language_comparison_viewer.dart",
+      "sourceDigestSha256": "d6cfb44cb364eb667e5fb6af19565a9a0a1e816f72853a6a65a5d0e9c9bc835f",
       "violationDigestSha256": "916fd6aa2ee13a3f80d47c0a931c10028bbeb2a3fdd3d89f97a798afa8644c7d",
       "violationCount": 1
     },
     {
-      "path": "lib/presentation/widgets/lr1_teaching_workspace.dart",
-      "sourceDigestSha256": "0ea356d2abef2bafed9a5e40dfe243dfdb09bb587f1547749c048f30cf518728",
-      "violationDigestSha256": "5dc71bc19706a723423ff4adde49f217c3a6a4be62179584520de1778ff1b0c3",
+      "path": "lib/presentation/widgets/pda/pda_algorithm_panel.dart",
+      "sourceDigestSha256": "2d4551d4e890add1b7fbfcc3e68e0cbce2d91a1944fb93a278c4827803ee6314",
+      "violationDigestSha256": "2d0d73632cc11d1732c3526e7ed3de3948b6e1f4a768658f5a89b587f53b2b62",
+      "violationCount": 12
+    },
+    {
+      "path": "lib/presentation/widgets/pda/pda_simulation_panel.dart",
+      "sourceDigestSha256": "cd4437788c40bca7fb4fe447147e1a0daf7c60171cc50608b4461e4f2f3181e8",
+      "violationDigestSha256": "aa759e117af130df11863ed76e831641c2ceaf5329f8c252c3a417b2f3ec9494",
       "violationCount": 14
-    },
-    {
-      "path": "lib/presentation/widgets/manual_conversion_document_preview.dart",
-      "sourceDigestSha256": "484ca78fd1753640cc44a55ca43965cc8d01817eff7c2239e6ec115d43093d32",
-      "violationDigestSha256": "1481f21481bfba603eced169d554f0077a70cf04c9d061b32e69a0f350f03139",
-      "violationCount": 5
-    },
-    {
-      "path": "lib/presentation/widgets/manual_conversion_workspace.dart",
-      "sourceDigestSha256": "a54ceb60a285cb00aeb19617560e904a7ebe2e01b9ce67ba510e47638e52de3b",
-      "violationDigestSha256": "83f89cd6a6261f429cdab926b520ae79c0f6e38aad007960ca6a7d7b11307acf",
-      "violationCount": 2
-    },
-    {
-      "path": "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-      "sourceDigestSha256": "3941137a4d345bc7b007b0f646499db9a54219fd62146c7b597baa12a6f8cd74",
-      "violationDigestSha256": "9b0da59e1c23c921f9cca730d306ad74a77bbbe9cf211cb87680e3a7133ca6e4",
-      "violationCount": 7
     },
     {
       "path": "lib/presentation/widgets/pda/stack_drawer.dart",
@@ -517,38 +559,20 @@
     },
     {
       "path": "lib/presentation/widgets/pda/stack_operation_preview.dart",
-      "sourceDigestSha256": "2e83afc8e5d68a5e5bf614969cf302fce5da1c0f0026a5e57a821f676e269aa4",
-      "violationDigestSha256": "ad098eaaa33d2423ddceece2be346342da7a18c9f15fac1e2d502d9b0bed2684",
+      "sourceDigestSha256": "fb9407d17b8c4176c6f82deb1c68ca4283f1a665b38ec2ba6855243aa96b6a7a",
+      "violationDigestSha256": "5b2b8e7bca3c38330d247e7d03e961433e3f6bf3882b226dda16875a98b0d194",
       "violationCount": 1
     },
     {
-      "path": "lib/presentation/widgets/pda_algorithm_panel.dart",
-      "sourceDigestSha256": "71e7726519f689e7eb8644953e66e1c04affa659bb0bfadf95093289d8a27252",
-      "violationDigestSha256": "14fe3235fe87279409a9725701ae3ed95d5abcf718fb6a200f5062b63cdcf2fc",
-      "violationCount": 15
-    },
-    {
-      "path": "lib/presentation/widgets/pda_simulation_panel.dart",
-      "sourceDigestSha256": "18c3242dfd307028adf17f651b5a957fc290fe294b89a0f1fd4ae1beb82deb5a",
-      "violationDigestSha256": "6cc82b7e02a71741551b6f9c9a9475463e0c2488aa8e1818da04a64c3f38adfd",
-      "violationCount": 14
-    },
-    {
-      "path": "lib/presentation/widgets/pumping_lemma_workspace.dart",
-      "sourceDigestSha256": "edd3ad9f7b571bb4a57b4a76a87db852bc695582c95b7836107b3bd35370f9df",
-      "violationDigestSha256": "ffc852d2d4efae827ba990edeef0ffda4557871f26d690d95903cd8c218f6696",
+      "path": "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart",
+      "sourceDigestSha256": "c3ccd4f82cf15f603eba1c795a6345a5038909e4f47a370c458207e818750b37",
+      "violationDigestSha256": "c071ce0bcb498641569a4a348f2ec9b115234853cb691d7fb32c983fbadd7bcd",
       "violationCount": 9
     },
     {
-      "path": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
-      "sourceDigestSha256": "0dc149358df09c88d14e0cb491d30a07353b6d8d7cba623ba7ae24ab298f46b0",
-      "violationDigestSha256": "8f9b69666c6c640f90bfbb1d4fa0871d027bea374ae87a8c316efbd79d9d5b04",
-      "violationCount": 25
-    },
-    {
       "path": "lib/presentation/widgets/simulation_panel.dart",
-      "sourceDigestSha256": "03d35779a254a4d9990ebdc012df3a6636bbd1f6519c738c42eb6f900005589a",
-      "violationDigestSha256": "ebea62e2ed20f97fc8d4c84ad52f60666284c30f87091546b641d3b09c2f89e8",
+      "sourceDigestSha256": "f552f57d360c6d6e358f535c7df86ee281ebc28fa6cc2da8325dcfa4f95a1e4e",
+      "violationDigestSha256": "6e8af8dff7552d88df3774e1fb04bb0884501fcef2ffc65189c27a1567c1ec7b",
       "violationCount": 3
     },
     {
@@ -558,99 +582,93 @@
       "violationCount": 3
     },
     {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_language_controls.dart",
+      "sourceDigestSha256": "acf63b38dd41ef11b80f331c7c17612e3e85f7e7ad4a9767f8965d1448d0f8aa",
+      "violationDigestSha256": "5257bf0b4dca0a9b56b6fc947489d0f42e569dfc3981b9e6594dbab8efd5aa91",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_panel.dart",
+      "sourceDigestSha256": "a70b222f1a1d0155d029405ef626667eb971340be2ed822297f16a387a987435",
+      "violationDigestSha256": "b13bef3c8f0d6871fb8a64cd3a8d878541ad82ff5adf675cb0dca5ba2015703b",
+      "violationCount": 2
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_presentation_primitives.dart",
+      "sourceDigestSha256": "5284fb4446c1f7b945d0c60d47685497a7e241e66695ca4d3d028cbbf8e2f387",
+      "violationDigestSha256": "d69449db464bb6540a1003f157e44f37768e535b2c2335f5b775eb964d051d97",
+      "violationCount": 10
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_reachability_controls.dart",
+      "sourceDigestSha256": "68c1ddea235fdacb74e775f72212ebde770e9bfeef0de3824bb97d4d29dc4f89",
+      "violationDigestSha256": "2af1bce7f45b78bfaf647dba4e4cf51b1d2292658b330ced21299e1ead8682d0",
+      "violationCount": 1
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_runner.dart",
+      "sourceDigestSha256": "c42d3e8ee267d3239cf552fd20481ce2f0f759185f6d9fd751bd24b6e6cd5d26",
+      "violationDigestSha256": "f6f84ffdaa5178908041b65d65f80971db7eb93b7b2d300f8c227a7ddf063e13",
+      "violationCount": 6
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_space_controls.dart",
+      "sourceDigestSha256": "80d1d69b556c50557c7eae149e14682a5474be1ea6a0b7e5f3c86caa6e55b5df",
+      "violationDigestSha256": "605f54f12bfcb218d760c87b64e08dc2ed83388afc57954dca7d3d9d48dbb066",
+      "violationCount": 5
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_time_controls.dart",
+      "sourceDigestSha256": "295b7c1465f6af89bbecfd55c597710689a7435ca59a999807eea2b4df67f5c4",
+      "violationDigestSha256": "ae7b2e85c87c3eb82e713c13c5200e44663636a787f64521e2540a53f90eed90",
+      "violationCount": 1
+    },
+    {
       "path": "lib/presentation/widgets/tm/tm_block_library_panel.dart",
       "sourceDigestSha256": "314f59bc4c0b753b68b38bf81c0c7c92199a33b9746c14578875e25036bbe893",
       "violationDigestSha256": "e3f19b2bd362987f61003ee72ffc466e7ee63742b0a4314a340f15fde662a99e",
       "violationCount": 1
     },
     {
-      "path": "lib/presentation/widgets/tm_algorithm_language_controls.dart",
-      "sourceDigestSha256": "c83aa68eb93183217812830a7e5f304210dd1997d84c0e7380b14af0dc9faa36",
-      "violationDigestSha256": "8e51ffdbbf13d1d43d62bf276b8176b656c86d253bc4108306bded5557a5b801",
-      "violationCount": 5
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_panel.dart",
-      "sourceDigestSha256": "7dafa56022cbf960ee03798e7e4a271240377ee4909f56f040a901de0aa7240d",
-      "violationDigestSha256": "07fcec5f05eb4bfffda19788f1e2c12e40489af1119924e7d4996e24d3e49e52",
-      "violationCount": 2
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_presentation_primitives.dart",
-      "sourceDigestSha256": "6026609d5f0d09d8f43b328e509dc9866af31672c0ce5023c771afe660b4080f",
-      "violationDigestSha256": "d69449db464bb6540a1003f157e44f37768e535b2c2335f5b775eb964d051d97",
-      "violationCount": 10
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_reachability_controls.dart",
-      "sourceDigestSha256": "5aebd6837c64f9d433e8b8d9d50f66314c1e28a8d9ced8dde6f7f7800750316d",
-      "violationDigestSha256": "2af1bce7f45b78bfaf647dba4e4cf51b1d2292658b330ced21299e1ead8682d0",
-      "violationCount": 1
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_runner.dart",
-      "sourceDigestSha256": "d853f69a8e8360685f69540bc3a21b02cdf0e546e76ea4d552e9ab5c5bfa453f",
-      "violationDigestSha256": "9151cf040a5c548e2944d1267068019dedec25905e8bbc999fdad310e70e0696",
-      "violationCount": 6
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_space_controls.dart",
-      "sourceDigestSha256": "4231b453bdf1b787da1d3e2b73f5b1c6cc5eb91bbd6da228d245fea6d7444778",
-      "violationDigestSha256": "9ab3e0fc24022589bdb9c4d8379579c8fcceb3c30887d3d1d22029e6971b60b8",
-      "violationCount": 5
-    },
-    {
-      "path": "lib/presentation/widgets/tm_algorithm_time_controls.dart",
-      "sourceDigestSha256": "20ce2d2cd7e761f2cbf8c20921c42ef3506bb71c5c607c3d3033e3d96d9c1721",
-      "violationDigestSha256": "ae7b2e85c87c3eb82e713c13c5200e44663636a787f64521e2540a53f90eed90",
-      "violationCount": 1
-    },
-    {
-      "path": "lib/presentation/widgets/tm_language_result_view.dart",
-      "sourceDigestSha256": "5635e0fdcb611c4b2db103ef3ced70e143113813281a758ea918d3a572927abc",
-      "violationDigestSha256": "8d94f1740675e6c471067edf03c86e96b17545b291eb7d81d0d725bc4a2fccb0",
+      "path": "lib/presentation/widgets/tm/tm_language_result_view.dart",
+      "sourceDigestSha256": "403ed8693e3764b855a8f0c6c8eb6e30c9a93c429a8bb825ae8a6196f4e03a01",
+      "violationDigestSha256": "468ead6d5cc09df9ad02ebf31a13d643ed9f8d261451d15734995e2216428eca",
       "violationCount": 25
     },
     {
-      "path": "lib/presentation/widgets/tm_reachability_result_view.dart",
-      "sourceDigestSha256": "4d528219590ae5ed174f1c5202c3abdd01fa1005d58c89d100904b7c0258f4af",
+      "path": "lib/presentation/widgets/tm/tm_reachability_result_view.dart",
+      "sourceDigestSha256": "e77a06e8925c5d037d4fdefe241e4957ca48c0120bce1dc290d89db23d332ae5",
       "violationDigestSha256": "bd9e15f8e876f06abd74f1c391c2a2263b2559ede5856543c0aa7ae758c2629d",
       "violationCount": 22
     },
     {
-      "path": "lib/presentation/widgets/tm_simulation_panel.dart",
-      "sourceDigestSha256": "3a703c7430aa08b455eb8fb080bdcae8f26ededa45d154ca3179fc32cd430146",
-      "violationDigestSha256": "e37b33459951cbbc4e406272c85ae0f5d70cf1f7538ca8e8f5fbff3443291c4c",
+      "path": "lib/presentation/widgets/tm/tm_simulation_panel.dart",
+      "sourceDigestSha256": "ed49baf563005f90bba18b0a3f9f147cb55bed3583783e61c79f33923e72702e",
+      "violationDigestSha256": "d57254cbb33c71641f1d08cc89b735965cb478d0c4122ba793e31d4cf569e98d",
       "violationCount": 27
     },
     {
-      "path": "lib/presentation/widgets/tm_space_result_view.dart",
-      "sourceDigestSha256": "f12c8504afeeefd8707e7689f7c4a3926c942a5b20d720a469be6a81be5b7e1a",
-      "violationDigestSha256": "8f76f448b162a1f6e82cde47254aa8bb79c9735cf84b48e32ae419da961fdf34",
-      "violationCount": 20
+      "path": "lib/presentation/widgets/tm/tm_space_result_view.dart",
+      "sourceDigestSha256": "7c68b4a8181974568eb26c637cfe9feb5a0c2785b4485844d9aa3ff14a7a48f0",
+      "violationDigestSha256": "c3bcc3aeefda7b29117602baa9a6d95a331154e1c208d7c724cb2ea27b5746bb",
+      "violationCount": 17
     },
     {
-      "path": "lib/presentation/widgets/tm_termination_result_view.dart",
-      "sourceDigestSha256": "ae0eaeb25acaf97f1f0946b6f76e05b2fa9157f541d19182cc1b8535ce2a69d3",
-      "violationDigestSha256": "87ce6ff8e6ad209be941b2126fe1027694d79c2de72a69bfdcb5adc0ada74d2b",
+      "path": "lib/presentation/widgets/tm/tm_termination_result_view.dart",
+      "sourceDigestSha256": "3c344329275679d8b80522a0fb0766ca7e6224cdcbb19451a00733a982439ee4",
+      "violationDigestSha256": "18a1f8c07e2f0525b63fdde923362fa8489438fedad0a26deb88d4ce906a5e17",
       "violationCount": 21
     },
     {
-      "path": "lib/presentation/widgets/tm_time_result_view.dart",
-      "sourceDigestSha256": "9e9024094ddb452b363ad950ac75187018cef0acdda0e87ee1528901b03e23eb",
+      "path": "lib/presentation/widgets/tm/tm_time_result_view.dart",
+      "sourceDigestSha256": "6081093ceda55145b40b17c84b32284837667790110b0ad801820e11decb831b",
       "violationDigestSha256": "9e8792c5894fc5909357277d102c16828f22004e6a1080ab42680d2c68ceffb4",
       "violationCount": 25
     },
     {
-      "path": "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart",
-      "sourceDigestSha256": "e48274517113b54deecf40f54f218e53003261419d18fd79ca9591c2207e4762",
-      "violationDigestSha256": "7344ba5c78e2a6121f82f18dc128a1272f13c00636f3e2a2cd7dc2ca792c282e",
-      "violationCount": 6
-    },
-    {
       "path": "lib/presentation/widgets/trace_viewers/base_trace_viewer.dart",
-      "sourceDigestSha256": "bf24367d08a0b30c0b1a791521e61c803e0e5cf4f7b17ddfe159011447dc6c87",
-      "violationDigestSha256": "8deb4c51d155388d5d413bef446ec6cb91e8e05346f0084ea76cf69eb9fef207",
+      "sourceDigestSha256": "d04bb99b99b125940ebd5d7f55996ca6b825ff4de4f21f6b82377aa17c0c8c6e",
+      "violationDigestSha256": "8a349b1c9be095c41651c8d2bddcb9f098211bc0877bc54a7b640d0e90728985",
       "violationCount": 1
     },
     {
@@ -661,14 +679,14 @@
     },
     {
       "path": "lib/presentation/widgets/trace_viewers/pda_trace_viewer.dart",
-      "sourceDigestSha256": "60968752cca0dae79850678865378388bd6d6e11cbf8178ded1f8f0db97dd7a8",
-      "violationDigestSha256": "9cc5d3d895bc7f912758d98ae7e61bdbcddb93b86f4648c5ae0c493ae69db81f",
+      "sourceDigestSha256": "e1a8fab31ef17f44c4a9eaa2b70090da25dee5986b191fe34281b6fae800d400",
+      "violationDigestSha256": "4ff325b7862d70f508ab2248f6fc2e204ba356a01a03e98c1d9959ca38773f31",
       "violationCount": 3
     },
     {
       "path": "lib/presentation/widgets/trace_viewers/tm_trace_viewer.dart",
-      "sourceDigestSha256": "ebfdd3d0d3ae8b5cca299a5dbadab61b2d234b76ecf46488e442d9b0f72d22c8",
-      "violationDigestSha256": "0ccd1738499f4027ab571480ee775f6170714c745f017a22850a884a76a54ce5",
+      "sourceDigestSha256": "b3a093383995581f1c43137bfd6de6412d43cd7e034c1f851f8db081cf5e09da",
+      "violationDigestSha256": "59c7855f195eaa7431d13dacca4e91167e3aac833aa7deed1c2db4392a703836",
       "violationCount": 3
     },
     {
@@ -676,18 +694,7 @@
       "sourceDigestSha256": "11d038df5ea83bd562f1c61b3946639a78bbc4c14660f79a2e6045e87cf717cc",
       "violationDigestSha256": "3df6efa87e2dd7d261d7ea377dea7ad6c9193a8bb589232f8c581eb3518abecc",
       "violationCount": 5
-    },
-    {
-      "path": "lib/presentation/widgets/user_derivation_workspace.dart",
-      "sourceDigestSha256": "fe26737dae91b7858cb63117684389598f582e8218ddae4335e8f3ab73d24067",
-      "violationDigestSha256": "a12042e0812c00aee20078018a2de84ce55e333d36fe74ee6e34a0ee9f8affb7",
-      "violationCount": 26
-    },
-    {
-      "path": "lib/presentation/widgets/variable_dependency_graph_workspace.dart",
-      "sourceDigestSha256": "d5d349515a8ca7969360c4a8fabe18575ee711b38695665ffb2a2202c95d1628",
-      "violationDigestSha256": "19fda6733a292b67aa69988da7d5a44725de9e6ff14bc1046471d844969d8710",
-      "violationCount": 2
     }
-  ]
+  ],
+  "reconciliationEvidence": "docs/localization/feature_ui_reconciliation_453.json"
 }

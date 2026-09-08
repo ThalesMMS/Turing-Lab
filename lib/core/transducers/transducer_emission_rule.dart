@@ -21,8 +21,7 @@ final class MealyEmissionRule implements TransducerEmissionRule {
   TransducerOutputWord transitionOutput(
     TransducerTransition transition,
     TransducerState targetState,
-  ) =>
-      (transition as MealyTransition).output;
+  ) => (transition as MealyTransition).output;
 }
 
 final class MooreEmissionRule implements TransducerEmissionRule {
@@ -36,6 +35,5 @@ final class MooreEmissionRule implements TransducerEmissionRule {
   TransducerOutputWord transitionOutput(
     TransducerTransition transition,
     TransducerState targetState,
-  ) =>
-      (targetState as MooreState).output;
+  ) => (targetState as MooreState).output;
 }

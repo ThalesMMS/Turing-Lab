@@ -4,7 +4,7 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dar
 import 'package:turing_lab/core/manual_conversions/regex_to_fa_session_factory.dart';
 import 'package:turing_lab/core/models/regex_document.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/regex_to_fa_fragment_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/regex_to_fa_fragment_editor.dart';
 
 // feature-localization-contract: automata-conversions-and-fragments
 // feature-localization-surface: responsive-accessibility

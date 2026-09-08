@@ -11,6 +11,97 @@ void main() {
   final en = lookupAppLocalizations(const Locale('en'));
   final pt = lookupAppLocalizations(const Locale('pt'));
 
+  test('multi-count summaries and budgets distinguish one from other counts', () {
+    for (final count in [0, 1, 2]) {
+      expect(
+        en.transducerConversionSummary(count, count, count, count),
+        '$count ${count == 1 ? 'state' : 'states'} and $count ${count == 1 ? 'transition' : 'transitions'} became $count ${count == 1 ? 'state' : 'states'} and $count ${count == 1 ? 'transition' : 'transitions'}.',
+      );
+      expect(
+        pt.transducerConversionSummary(count, count, count, count),
+        '$count ${count == 1 ? 'estado' : 'estados'} e $count ${count == 1 ? 'transição' : 'transições'} viraram $count ${count == 1 ? 'estado' : 'estados'} e $count ${count == 1 ? 'transição' : 'transições'}.',
+      );
+      expect(
+        en.tmMultiTapeReductionStateBudget(count, 0),
+        contains('$count ${count == 1 ? 'state,' : 'states,'}'),
+      );
+      expect(
+        pt.tmMultiTapeReductionStateBudget(count, 0),
+        contains('$count ${count == 1 ? 'estado,' : 'estados,'}'),
+      );
+      expect(
+        en.tmMultiTapeReductionTransitionBudget(count, 0),
+        contains('$count ${count == 1 ? 'transition,' : 'transitions,'}'),
+      );
+      expect(
+        pt.tmMultiTapeReductionTapeSymbolBudget(count, 0),
+        contains(
+          '$count ${count == 1 ? 'símbolo composto' : 'símbolos compostos'}',
+        ),
+      );
+      expect(
+        en.bruteForceWitnessLabel('1', count, '$count'),
+        'Witness 1 • $count ${count == 1 ? 'step' : 'steps'}',
+      );
+      expect(
+        pt.bruteForceWitnessLabel('1', count, '$count'),
+        'Derivação 1 • $count ${count == 1 ? 'passo' : 'passos'}',
+      );
+    }
+    expect(en.transducerConversionEvidence(0, 2), contains('not verified'));
+    expect(
+      pt.transducerConversionEvidence(1, 2),
+      startsWith('Verificada 1 palavra de entrada'),
+    );
+    expect(
+      en.bruteForceDerivationStepLabel('1', '2', 'p0'),
+      'Step 1 of 2 • production p0',
+    );
+    expect(
+      pt.bruteForceDerivationStepLabel('1', '2', 'p0'),
+      'Passo 1 de 2 • produção p0',
+    );
+  });
+
+  test('zero conversion evidence does not claim output agreement', () {
+    expect(
+      en.transducerConversionEvidenceTruncated(0),
+      'No input words were checked; output agreement has not been verified.',
+    );
+    expect(
+      pt.transducerConversionEvidenceTruncated(0),
+      'Nenhuma palavra de entrada foi verificada; '
+      'a correspondência das saídas não foi confirmada.',
+    );
+  });
+
+  test('truncated conversion evidence uses singular only for one word', () {
+    expect(
+      en.transducerConversionEvidenceTruncated(1),
+      'Stopped after 1 input word: outputs agree for the tested word. '
+      'Additional words were not checked.',
+    );
+    expect(
+      pt.transducerConversionEvidenceTruncated(1),
+      'Verificação interrompida após 1 palavra de entrada: '
+      'as saídas coincidem na palavra testada. '
+      'Outras palavras não foram verificadas.',
+    );
+    for (final count in [2, 2000]) {
+      expect(
+        en.transducerConversionEvidenceTruncated(count),
+        'Stopped after $count input words: outputs agree for the tested words. '
+        'Additional words were not checked.',
+      );
+      expect(
+        pt.transducerConversionEvidenceTruncated(count),
+        'Verificação interrompida após $count palavras de entrada: '
+        'as saídas coincidem nas palavras testadas. '
+        'Outras palavras não foram verificadas.',
+      );
+    }
+  });
+
   test('every transducer execution code resolves in both locales', () {
     final messages = [
       _message(

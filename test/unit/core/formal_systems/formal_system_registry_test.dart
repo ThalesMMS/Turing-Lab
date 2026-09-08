@@ -9,30 +9,24 @@ void main() {
     test('publishes the workspaces in stable order', () {
       final registry = FormalSystemRegistry.defaultRegistry;
 
-      expect(
-        registry.descriptors.map((descriptor) => descriptor.key),
-        [
-          DefaultFormalSystemIds.fsa,
-          DefaultFormalSystemIds.grammar,
-          DefaultFormalSystemIds.pda,
-          DefaultFormalSystemIds.tm,
-          DefaultFormalSystemIds.regex,
-          DefaultFormalSystemIds.regularPumping,
-          DefaultFormalSystemIds.contextFreePumping,
-        ],
-      );
-      expect(
-        registry.descriptors.map((descriptor) => descriptor.route.value),
-        [
-          '/fsa',
-          '/grammar',
-          '/pda',
-          '/tm',
-          '/regex',
-          '/pumping-lemma/regular',
-          '/pumping-lemma/context-free',
-        ],
-      );
+      expect(registry.descriptors.map((descriptor) => descriptor.key), [
+        DefaultFormalSystemIds.fsa,
+        DefaultFormalSystemIds.grammar,
+        DefaultFormalSystemIds.pda,
+        DefaultFormalSystemIds.tm,
+        DefaultFormalSystemIds.regex,
+        DefaultFormalSystemIds.regularPumping,
+        DefaultFormalSystemIds.contextFreePumping,
+      ]);
+      expect(registry.descriptors.map((descriptor) => descriptor.route.value), [
+        '/fsa',
+        '/grammar',
+        '/pda',
+        '/tm',
+        '/regex',
+        '/pumping-lemma/regular',
+        '/pumping-lemma/context-free',
+      ]);
     });
 
     test('uses stable schemas, variants, and global document formats', () {
@@ -66,10 +60,12 @@ void main() {
             .value,
         1,
       );
-      expect(
-        registry.formats.formats.map((format) => format.id.value),
-        ['jflap-xml', 'png', 'svg', 'turing-lab-json'],
-      );
+      expect(registry.formats.formats.map((format) => format.id.value), [
+        'jflap-xml',
+        'png',
+        'svg',
+        'turing-lab-json',
+      ]);
       expect(
         registry.formats.forExtension('.CFG')?.id,
         DefaultFormalSystemIds.jflapXmlFormat,
@@ -119,10 +115,12 @@ void main() {
               DefaultFormalSystemIds.pngFormat,
               DocumentFormatDirection.exportDocument,
             )
-            .single
-            .descriptor
-            .key,
-        DefaultFormalSystemIds.fsa,
+            .map((module) => module.descriptor.key),
+        unorderedEquals([
+          DefaultFormalSystemIds.fsa,
+          DefaultFormalSystemIds.pda,
+          DefaultFormalSystemIds.tm,
+        ]),
       );
     });
 
@@ -133,7 +131,9 @@ void main() {
           .toList();
 
       expect(
-          edges.map((edge) => edge.stableKey).toSet(), hasLength(edges.length));
+        edges.map((edge) => edge.stableKey).toSet(),
+        hasLength(edges.length),
+      );
       expect(
         edges.every((edge) => registry.descriptorFor(edge.target) != null),
         isTrue,
@@ -241,10 +241,7 @@ void main() {
           FormalSystemConfigurationIssueCode.duplicateSessionNamespace,
         }),
       );
-      expect(
-        forward.issues,
-        orderedEquals(forward.issues.toList()..sort()),
-      );
+      expect(forward.issues, orderedEquals(forward.issues.toList()..sort()));
     });
 
     test('runtime validation rejects invalid and unresolved configuration', () {
@@ -384,8 +381,9 @@ FormalSystemDescriptor _validDescriptor({required FormalSystemKey key}) =>
       ),
       route: WorkspaceRouteId('/${key.type.value}'),
       category: FormalSystemCategory.learning,
-      localizationNamespace:
-          CapabilityNamespaceId('${key.type.value}.localization'),
+      localizationNamespace: CapabilityNamespaceId(
+        '${key.type.value}.localization',
+      ),
       semanticsNamespace: CapabilityNamespaceId('${key.type.value}.semantics'),
       capabilities: const FormalSystemCapabilities(),
     );
@@ -438,8 +436,7 @@ final class _DuplicateSession implements SessionCapability<Object> {
   Object decodeSession(
     Map<String, Object?> encoded, {
     required DocumentSchemaDescriptor schema,
-  }) =>
-      encoded;
+  }) => encoded;
 
   @override
   Map<String, Object?> encodeSession(Object document) => const {};
@@ -466,8 +463,7 @@ final class _EmptyNamespaceSession implements SessionCapability<Object> {
   Object decodeSession(
     Map<String, Object?> encoded, {
     required DocumentSchemaDescriptor schema,
-  }) =>
-      encoded;
+  }) => encoded;
 
   @override
   Map<String, Object?> encodeSession(Object document) => const {};
@@ -475,30 +471,31 @@ final class _EmptyNamespaceSession implements SessionCapability<Object> {
 
 final class _SampleModule implements FormalSystemModule<Map<String, Object?>> {
   _SampleModule()
-      : descriptor = FormalSystemDescriptor(
-          key: key,
-          schema: const DocumentSchemaDescriptor(
-            id: DocumentSchemaId('test.sample'),
-            version: DocumentSchemaVersion(1),
+    : descriptor = FormalSystemDescriptor(
+        key: key,
+        schema: const DocumentSchemaDescriptor(
+          id: DocumentSchemaId('test.sample'),
+          version: DocumentSchemaVersion(1),
+        ),
+        route: const WorkspaceRouteId('/sample'),
+        category: FormalSystemCategory.learning,
+        localizationNamespace: const CapabilityNamespaceId('test.sample.ui'),
+        semanticsNamespace: const CapabilityNamespaceId(
+          'test.sample.semantics',
+        ),
+        capabilities: const FormalSystemCapabilities(
+          examples: ExperimentalCapability(),
+          session: SupportedCapability(),
+        ),
+        formats: const [
+          DocumentFormatSupport(
+            formatId: formatId,
+            importAvailability: ExperimentalCapability(),
+            exportAvailability: SupportedCapability(),
+            preferredExtension: 'sample',
           ),
-          route: const WorkspaceRouteId('/sample'),
-          category: FormalSystemCategory.learning,
-          localizationNamespace: const CapabilityNamespaceId('test.sample.ui'),
-          semanticsNamespace:
-              const CapabilityNamespaceId('test.sample.semantics'),
-          capabilities: const FormalSystemCapabilities(
-            examples: ExperimentalCapability(),
-            session: SupportedCapability(),
-          ),
-          formats: const [
-            DocumentFormatSupport(
-              formatId: formatId,
-              importAvailability: ExperimentalCapability(),
-              exportAvailability: SupportedCapability(),
-              preferredExtension: 'sample',
-            ),
-          ],
-        );
+        ],
+      );
 
   static const key = FormalSystemKey(
     type: FormalSystemTypeId('test-sample'),
@@ -534,16 +531,16 @@ final class _SampleExamples
 
   @override
   Future<List<AssetExample<Map<String, Object?>>>> loadExamples() async => [
-        AssetExample(
-          name: 'Sample',
-          description: 'Test-only registry extension.',
-          category: ExampleCategory.dfa,
-          difficultyLevel: DifficultyLevel.easy,
-          complexityLevel: ExampleComplexityLevel.low,
-          tags: const ['test-only'],
-          payload: const {'value': 'example'},
-        ),
-      ];
+    AssetExample(
+      name: 'Sample',
+      description: 'Test-only registry extension.',
+      category: ExampleCategory.dfa,
+      difficultyLevel: DifficultyLevel.easy,
+      complexityLevel: ExampleComplexityLevel.low,
+      tags: const ['test-only'],
+      payload: const {'value': 'example'},
+    ),
+  ];
 }
 
 final class _SampleSession implements SessionCapability<Map<String, Object?>> {
@@ -561,6 +558,5 @@ final class _SampleSession implements SessionCapability<Map<String, Object?>> {
   Map<String, Object?> decodeSession(
     Map<String, Object?> encoded, {
     required DocumentSchemaDescriptor schema,
-  }) =>
-      Map<String, Object?>.unmodifiable(encoded);
+  }) => Map<String, Object?>.unmodifiable(encoded);
 }

@@ -12,7 +12,7 @@
 //
 import 'package:flutter/material.dart';
 
-import '../../../core/algorithms/pda_simulator.dart';
+import '../../../core/algorithms/pda/pda_simulator.dart';
 import '../../../core/models/simulation_result.dart';
 import '../../../core/models/simulation_step.dart';
 import '../../../core/services/simulation_highlight_service.dart';
@@ -64,10 +64,12 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
       highlightService: widget.highlightService,
       onStepChanged: widget.onStepChanged,
       buildStepLine: (SimulationStep step, int index) {
-        final remaining =
-            step.remainingInput.isEmpty ? emptyStringSymbol : step.remainingInput;
-        final stack =
-            step.stackContents.isEmpty ? emptyStringSymbol : step.stackContents;
+        final remaining = step.remainingInput.isEmpty
+            ? emptyStringSymbol
+            : step.remainingInput;
+        final stack = step.stackContents.isEmpty
+            ? emptyStringSymbol
+            : step.stackContents;
         final transition = step.usedTransition != null
             ? ' | ${EmptyStringNotation.format(context, step.usedTransition!)}'
             : '';
@@ -91,8 +93,8 @@ class _PDATraceViewerState extends State<PDATraceViewer> {
                   'q=${step.currentState} | ${l10n.traceRemaining}=$remaining | '
                   '${l10n.traceStack}=$stack$transition',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontFamilyFallback: kMonospaceFontFamilyFallback,
-                      ),
+                    fontFamilyFallback: kMonospaceFontFamilyFallback,
+                  ),
                 ),
               ),
             ],

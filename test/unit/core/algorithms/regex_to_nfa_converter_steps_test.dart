@@ -11,8 +11,8 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/regex_to_nfa_step.dart';
 
@@ -96,12 +96,13 @@ void main() {
     });
 
     test(
-        'has at least 3 steps for a single symbol: start, basicSymbol, complete',
-        () {
-      final result = RegexToNFAConverter.convertWithSteps('a');
-      expect(result.isSuccess, true);
-      expect(result.data!.stepCount, greaterThanOrEqualTo(3));
-    });
+      'has at least 3 steps for a single symbol: start, basicSymbol, complete',
+      () {
+        final result = RegexToNFAConverter.convertWithSteps('a');
+        expect(result.isSuccess, true);
+        expect(result.data!.stepCount, greaterThanOrEqualTo(3));
+      },
+    );
 
     test('contains basicSymbol step for literal regex', () {
       final result = RegexToNFAConverter.convertWithSteps('b');
@@ -145,38 +146,43 @@ void main() {
       expect(stepTypes, contains(RegexToNFAStepType.optional));
     });
 
-    test('emits fragment steps for wildcard, character class, and shortcut',
-        () {
-      final cases = <String, String>{
-        '.': '.',
-        '[ab]': '[a, b]',
-        r'\d': r'\d',
-      };
+    test(
+      'emits fragment steps for wildcard, character class, and shortcut',
+      () {
+        final cases = <String, String>{
+          '.': '.',
+          '[ab]': '[a, b]',
+          r'\d': r'\d',
+        };
 
-      for (final entry in cases.entries) {
-        final result = RegexToNFAConverter.convertWithSteps(
-          entry.key,
-          contextAlphabet: {'a', 'b', '0', '1'},
-        );
+        for (final entry in cases.entries) {
+          final result = RegexToNFAConverter.convertWithSteps(
+            entry.key,
+            contextAlphabet: {'a', 'b', '0', '1'},
+          );
+          expect(result.isSuccess, true);
+          final processedSymbols = result.data!.steps
+              .where((step) => step.stepType == RegexToNFAStepType.basicSymbol)
+              .map((step) => step.processedSymbol)
+              .toList();
+
+          expect(processedSymbols, contains(entry.value));
+        }
+      },
+    );
+
+    test(
+      'records Thompson fragment stack depth instead of emitted step count',
+      () {
+        final result = RegexToNFAConverter.convertWithSteps('ab');
         expect(result.isSuccess, true);
-        final processedSymbols = result.data!.steps
-            .where((step) => step.stepType == RegexToNFAStepType.basicSymbol)
-            .map((step) => step.processedSymbol)
+
+        final stackSizes = result.data!.steps
+            .map((step) => step.stackSize)
             .toList();
-
-        expect(processedSymbols, contains(entry.value));
-      }
-    });
-
-    test('records Thompson fragment stack depth instead of emitted step count',
-        () {
-      final result = RegexToNFAConverter.convertWithSteps('ab');
-      expect(result.isSuccess, true);
-
-      final stackSizes =
-          result.data!.steps.map((step) => step.stackSize).toList();
-      expect(stackSizes, [0, 1, 2, 1, 1]);
-    });
+        expect(stackSizes, [0, 1, 2, 1, 1]);
+      },
+    );
 
     test('steps have sequential step numbers starting at 1', () {
       final result = RegexToNFAConverter.convertWithSteps('ab');
@@ -190,8 +196,9 @@ void main() {
     test('compound steps number from the last recorded step', () {
       final result = RegexToNFAConverter.convertWithSteps('(a|b)*c');
       expect(result.isSuccess, true);
-      final stepNumbers =
-          result.data!.steps.map((step) => step.baseStep.stepNumber).toList();
+      final stepNumbers = result.data!.steps
+          .map((step) => step.baseStep.stepNumber)
+          .toList();
 
       for (var i = 0; i < stepNumbers.length; i++) {
         expect(stepNumbers[i], i + 1);
@@ -222,18 +229,20 @@ void main() {
       expect(unionStep.regexPosition, 3);
     });
 
-    test('concatenation step records every bridge from multi-accept fragments',
-        () {
-      final result = RegexToNFAConverter.convertWithSteps('a?b');
-      expect(result.isSuccess, true);
+    test(
+      'concatenation step records every bridge from multi-accept fragments',
+      () {
+        final result = RegexToNFAConverter.convertWithSteps('a?b');
+        expect(result.isSuccess, true);
 
-      final concatenationStep = result.data!.steps.firstWhere(
-        (step) => step.stepType == RegexToNFAStepType.concatenation,
-      );
+        final concatenationStep = result.data!.steps.firstWhere(
+          (step) => step.stepType == RegexToNFAStepType.concatenation,
+        );
 
-      expect(concatenationStep.firstFragmentAcceptStates, hasLength(2));
-      expect(concatenationStep.createdTransitions, hasLength(2));
-    });
+        expect(concatenationStep.firstFragmentAcceptStates, hasLength(2));
+        expect(concatenationStep.createdTransitions, hasLength(2));
+      },
+    );
 
     test('unary operation steps only record newly-created transitions', () {
       final result = RegexToNFAConverter.convertWithSteps('(a?)*');
@@ -380,24 +389,26 @@ void main() {
       expect(await accepts(nfa, 'ab'), false);
     });
 
-    test('convertWithSteps produces same NFA as convert for same regex',
-        () async {
-      const regex = '(a|b)+c';
-      final convertResult = RegexToNFAConverter.convert(regex);
-      final withStepsResult = RegexToNFAConverter.convertWithSteps(regex);
+    test(
+      'convertWithSteps produces same NFA as convert for same regex',
+      () async {
+        const regex = '(a|b)+c';
+        final convertResult = RegexToNFAConverter.convert(regex);
+        final withStepsResult = RegexToNFAConverter.convertWithSteps(regex);
 
-      expect(convertResult.isSuccess, true);
-      expect(withStepsResult.isSuccess, true);
+        expect(convertResult.isSuccess, true);
+        expect(withStepsResult.isSuccess, true);
 
-      final nfa1 = convertResult.data!;
-      final nfa2 = withStepsResult.data!.resultNFA;
+        final nfa1 = convertResult.data!;
+        final nfa2 = withStepsResult.data!.resultNFA;
 
-      // Both should accept/reject the same strings
-      expect(await accepts(nfa1, 'ac'), await accepts(nfa2, 'ac'));
-      expect(await accepts(nfa1, 'bc'), await accepts(nfa2, 'bc'));
-      expect(await accepts(nfa1, 'abc'), await accepts(nfa2, 'abc'));
-      expect(await accepts(nfa1, ''), await accepts(nfa2, ''));
-    });
+        // Both should accept/reject the same strings
+        expect(await accepts(nfa1, 'ac'), await accepts(nfa2, 'ac'));
+        expect(await accepts(nfa1, 'bc'), await accepts(nfa2, 'bc'));
+        expect(await accepts(nfa1, 'abc'), await accepts(nfa2, 'abc'));
+        expect(await accepts(nfa1, ''), await accepts(nfa2, ''));
+      },
+    );
   });
 
   // =========================================================================

@@ -4,7 +4,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:test/test.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -17,63 +17,63 @@ import 'package:vector_math/vector_math_64.dart';
 import '../../../tool/hard_edge/families/tm_runtime_parity.dart';
 
 void main() {
-  test('web runtime matches canonical native acceptance and typed limits',
-      () async {
-    final serialized = TM.fromJson(_singleSymbolAcceptor().toJson());
-    final outcome = await createWebSimulationRunnerBackend()
-        .runTm(
-          serialized,
-          'a',
-          stepByStep: true,
-          timeout: const Duration(seconds: 5),
-        )
-        .outcome;
+  test(
+    'web runtime matches canonical native acceptance and typed limits',
+    () async {
+      final serialized = TM.fromJson(_singleSymbolAcceptor().toJson());
+      final outcome = await createWebSimulationRunnerBackend()
+          .runTm(
+            serialized,
+            'a',
+            stepByStep: true,
+            timeout: const Duration(seconds: 5),
+          )
+          .outcome;
 
-    expect(outcome.kind, SimulationOutcomeKind.accepted);
-    expect(outcome.result?.outcome, TMExecutionOutcome.accepted);
-    expect(outcome.result?.accepted, isTrue);
-    expect(outcome.result?.inputString, 'a');
-    expect(outcome.result?.limit, isNull);
-    expect(
-      outcome.result?.steps.map((step) => step.currentState),
-      orderedEquals(const ['q0', 'accept', 'accept']),
-    );
+      expect(outcome.kind, SimulationOutcomeKind.accepted);
+      expect(outcome.result?.outcome, TMExecutionOutcome.accepted);
+      expect(outcome.result?.accepted, isTrue);
+      expect(outcome.result?.inputString, 'a');
+      expect(outcome.result?.limit, isNull);
+      expect(
+        outcome.result?.steps.map((step) => step.currentState),
+        orderedEquals(const ['q0', 'accept', 'accept']),
+      );
 
-    final stepLimit = await TMExecutionAnalyzer.analyze(
-      _movingForever(),
-      '',
-      maxSteps: 3,
-    );
-    final configurationLimit = await TMExecutionAnalyzer.analyze(
-      _movingForever(),
-      '',
-      maxSteps: 100,
-      maxConfigurations: 2,
-    );
-    final typedTimeout = await TMExecutionAnalyzer.analyze(
-      _movingForever(),
-      '',
-      maxSteps: 10000,
-      timeout: const Duration(microseconds: 1),
-    );
-    final timeout = await createWebSimulationRunnerBackend()
-        .runTm(
-          _movingForever(),
-          '',
-          stepByStep: false,
-          timeout: const Duration(microseconds: 1),
-        )
-        .outcome;
-    final cancellation = createWebSimulationRunnerBackend().runTm(
-      _movingForever(),
-      '',
-      stepByStep: false,
-      timeout: const Duration(seconds: 5),
-    )..cancel();
-    final cancelled = await cancellation.outcome;
+      final stepLimit = await TMExecutionAnalyzer.analyze(
+        _movingForever(),
+        '',
+        maxSteps: 3,
+      );
+      final configurationLimit = await TMExecutionAnalyzer.analyze(
+        _movingForever(),
+        '',
+        maxSteps: 100,
+        maxConfigurations: 2,
+      );
+      final typedTimeout = await TMExecutionAnalyzer.analyze(
+        _movingForever(),
+        '',
+        maxSteps: 10000,
+        timeout: const Duration(microseconds: 1),
+      );
+      final timeout = await createWebSimulationRunnerBackend()
+          .runTm(
+            _movingForever(),
+            '',
+            stepByStep: false,
+            timeout: const Duration(microseconds: 1),
+          )
+          .outcome;
+      final cancellation = createWebSimulationRunnerBackend().runTm(
+        _movingForever(),
+        '',
+        stepByStep: false,
+        timeout: const Duration(seconds: 5),
+      )..cancel();
+      final cancelled = await cancellation.outcome;
 
-    expect(
-      <String, String>{
+      expect(<String, String>{
         'accepted.kind': outcome.kind.name,
         'accepted.outcome': outcome.result!.outcome.name,
         'step.outcome': stepLimit.outcome.name,
@@ -84,10 +84,9 @@ void main() {
         'timeout.outcome': typedTimeout.outcome.name,
         'timeout.limit': typedTimeout.limit!.name,
         'cancel.kind': cancelled.kind.name,
-      },
-      tmCanonicalRuntimeSnapshot,
-    );
-  });
+      }, tmCanonicalRuntimeSnapshot);
+    },
+  );
 }
 
 TM _movingForever() {

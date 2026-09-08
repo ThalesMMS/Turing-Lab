@@ -46,7 +46,7 @@ const tmAlgorithmInventory = <TmAlgorithmInventoryEntry>[
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-execution-kernel',
-    sourcePath: 'lib/core/algorithms/tm_execution_kernel.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_execution_kernel.dart',
     entryPoints: [
       'initialTapesTokens',
       'snapshotMulti',
@@ -64,7 +64,7 @@ const tmAlgorithmInventory = <TmAlgorithmInventoryEntry>[
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-execution-analyzer',
-    sourcePath: 'lib/core/algorithms/tm_execution_analyzer.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_execution_analyzer.dart',
     entryPoints: ['analyze', 'analyzeTokens'],
     properties: [
       'tm.oracle-parity',
@@ -74,13 +74,13 @@ const tmAlgorithmInventory = <TmAlgorithmInventoryEntry>[
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-multi-tape-analyzer',
-    sourcePath: 'lib/core/algorithms/tm_multi_tape_execution_analyzer.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_multi_tape_execution_analyzer.dart',
     entryPoints: ['analyze', 'analyzeTokens'],
     properties: ['tm.multi-tape-atomicity', 'tm.metrics-trace'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-simulator',
-    sourcePath: 'lib/core/algorithms/tm_simulator.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_simulator.dart',
     entryPoints: [
       'simulateDTM',
       'simulateNTM',
@@ -108,19 +108,19 @@ const tmAlgorithmInventory = <TmAlgorithmInventoryEntry>[
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-reachability',
-    sourcePath: 'lib/core/algorithms/tm_reachability_analyzer.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_reachability_analyzer.dart',
     entryPoints: ['analyze', 'structurallyReachableStateIds'],
     properties: ['tm.reachability-language'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-language-explorer',
-    sourcePath: 'lib/core/algorithms/tm_language_explorer.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_language_explorer.dart',
     entryPoints: ['countCandidates', 'explore'],
     properties: ['tm.reachability-language', 'tm.outcome-lattice'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-space-profiler',
-    sourcePath: 'lib/core/algorithms/tm_space_profiler.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_space_profiler.dart',
     entryPoints: [
       'countCandidatesForLength',
       'countCandidatesThroughLength',
@@ -131,25 +131,25 @@ const tmAlgorithmInventory = <TmAlgorithmInventoryEntry>[
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-time-profiler',
-    sourcePath: 'lib/core/algorithms/tm_time_profiler.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_time_profiler.dart',
     entryPoints: ['plan', 'profile'],
     properties: ['tm.metrics-trace'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-block-dependency',
-    sourcePath: 'lib/core/algorithms/tm_block_dependency_analyzer.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_block_dependency_analyzer.dart',
     entryPoints: ['analyze'],
     properties: ['tm.building-blocks'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-block-execution',
-    sourcePath: 'lib/core/algorithms/tm_block_execution_engine.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_block_execution_engine.dart',
     entryPoints: ['execute'],
     properties: ['tm.building-blocks'],
   ),
   TmAlgorithmInventoryEntry(
     id: 'tm-block-inline',
-    sourcePath: 'lib/core/algorithms/tm_block_inline_expander.dart',
+    sourcePath: 'lib/core/algorithms/tm/tm_block_inline_expander.dart',
     entryPoints: ['expand'],
     properties: ['tm.building-blocks'],
   ),

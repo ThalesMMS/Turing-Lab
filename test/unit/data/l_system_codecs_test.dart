@@ -175,7 +175,7 @@ void main() {
     });
 
     test(
-      'executes stochastic and context rules while preserving parametric rules',
+      'executes stochastic, context and parametric rules from JFLAP XML',
       () {
         const source = '''<structure><type>lsystem</type><axiom>A</axiom>
 <production><left>A</left><right>B</right><right>C</right></production>
@@ -184,10 +184,8 @@ void main() {
         final outcome =
             const LSystemJflapCodec().decode(_payload(source))
                 as CodecSuccess<InteroperableDocument<LSystemDocument>>;
-        expect(outcome.value.document.unsupportedVariants, {
-          LSystemUnsupportedVariant.parametric,
-        });
-        expect(outcome.value.document.productions, hasLength(3));
+        expect(outcome.value.document.unsupportedVariants, isEmpty);
+        expect(outcome.value.document.productions, hasLength(4));
         expect(
           outcome.value.document.productions.where(
             (production) => production.predecessor == 'A',
@@ -199,16 +197,56 @@ void main() {
         );
         expect(contextual.leftContext.symbols, ['A']);
         expect(contextual.rightContext, isEmpty);
-        expect(
-          outcome.value.document.unsupportedMetadata['jflapRules'],
-          isNotEmpty,
+        final parametric = outcome.value.document.productions.singleWhere(
+          (production) => production.predecessor == 'F(x)',
         );
+        expect(parametric.successor.symbols, ['F(x+1)']);
+        final expanded = const LSystemExpander().expand(
+          outcome.value.document.copyWith(axiom: LSystemWord(const ['F(1)'])),
+          generations: 1,
+        );
+        expect(expanded, isA<LSystemExpansionCompleted>());
         expect(
-          const LSystemExpander().expand(outcome.value.document),
-          isA<LSystemExpansionInvalid>(),
+          (expanded as LSystemExpansionCompleted).finalGeneration.word.symbols,
+          ['F(2)'],
         );
       },
     );
+
+    test('parametric argument spaces survive XML expansion and round trip', () {
+      const codec = LSystemJflapCodec();
+      final decoded = codec.decode(
+        _payload('''<structure>
+<type>lsystem</type><axiom>A(1, 2)</axiom>
+<production><left>A(x, y)</left><right>A((x + 1), y) g(x * 2)</right></production>
+</structure>'''),
+      );
+      expect(
+        decoded,
+        isA<CodecSuccess<InteroperableDocument<LSystemDocument>>>(),
+      );
+      final document =
+          (decoded as CodecSuccess<InteroperableDocument<LSystemDocument>>)
+              .value;
+      final encoded = codec.encode(document) as CodecSuccess<EncodedDocument>;
+      final restored =
+          codec.decode(DocumentPayload(bytes: encoded.value.bytes))
+              as CodecSuccess<InteroperableDocument<LSystemDocument>>;
+      for (final system in [document.document, restored.value.document]) {
+        expect(system.axiom.symbols, ['A(1, 2)']);
+        expect(system.productions.single.predecessor, 'A(x, y)');
+        expect(system.productions.single.successor.symbols, [
+          'A((x + 1), y)',
+          'g(x * 2)',
+        ]);
+        final expansion = const LSystemExpander().expand(
+          system,
+          generations: 1,
+        );
+        expect(expansion, isA<LSystemExpansionCompleted>());
+        expect(expansion.finalGeneration.word.symbols, ['A(2,2)', 'g(2)']);
+      }
+    });
 
     test('rejects malformed, unsafe, and invalid numeric XML typingly', () {
       expect(

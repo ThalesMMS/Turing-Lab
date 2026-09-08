@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_cnf_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_cnf_transformer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_cnf_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_cnf_transformer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
 import 'package:turing_lab/core/models/production.dart';

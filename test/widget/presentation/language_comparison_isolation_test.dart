@@ -18,7 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
@@ -32,7 +32,7 @@ import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/providers/automaton_state_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_viewer.dart';
 import 'package:turing_lab/presentation/widgets/read_only_fsa_graphview_canvas.dart';
 
 /// Highlight channel that records every payload it is handed.

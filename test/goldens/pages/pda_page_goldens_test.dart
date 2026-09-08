@@ -32,7 +32,7 @@ import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
-import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_canvas_graphview.dart';
 
 class _TestPdaEditorNotifier extends PDAEditorNotifier {
   _TestPdaEditorNotifier() : super();
@@ -126,8 +126,9 @@ class _PDAPageTestWidgetState extends ConsumerState<_PDAPageTestWidget> {
                   }
                 },
                 onClear: () {},
-                statusMessage:
-                    widget.automaton == null ? 'No automaton loaded' : '',
+                statusMessage: widget.automaton == null
+                    ? 'No automaton loaded'
+                    : '',
               );
             },
           ),
@@ -193,9 +194,7 @@ Future<void> _pumpPDAPageComponents(
         sharedPreferencesProvider.overrideWithValue(_prefs),
         pdaEditorProvider.overrideWith((ref) => notifier),
       ],
-      child: MaterialApp(
-        home: _PDAPageTestWidget(automaton: automaton),
-      ),
+      child: MaterialApp(home: _PDAPageTestWidget(automaton: automaton)),
     ),
     surfaceSize: size,
   );

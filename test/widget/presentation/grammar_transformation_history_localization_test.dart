@@ -5,7 +5,7 @@ import 'package:turing_lab/core/models/grammar_transformation_step.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/empty_string_notation.dart';
-import 'package:turing_lab/presentation/widgets/grammar_transformation_history.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_transformation_history.dart';
 
 void main() {
   testWidgets('localizes the visible and semantic transformation step number', (

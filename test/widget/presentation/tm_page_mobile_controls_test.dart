@@ -20,8 +20,8 @@ import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
 
 import 'canvas_toolbar_test_helpers.dart';

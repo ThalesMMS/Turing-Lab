@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/annotations/annotations.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/pda.dart';

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/fsa.dart';
@@ -25,10 +25,10 @@ enum CompatibilityRecognition {
   unknown;
 
   static CompatibilityRecognition fromResult(bool? value) => switch (value) {
-        true => accepted,
-        false => rejected,
-        null => unknown,
-      };
+    true => accepted,
+    false => rejected,
+    null => unknown,
+  };
 }
 
 final class CompatibilityCaseResult {
@@ -51,34 +51,34 @@ final class CompatibilityCaseResult {
   final List<String> diagnosticCodes;
 
   Map<String, Object?> toJson() => {
-        'id': testCase.id,
-        'family': testCase.family,
-        'codecId': testCase.codecId,
-        'roles': testCase.roles.map((role) => role.name).toList()..sort(),
-        'fixture': testCase.fixture,
-        'sha256': testCase.sha256,
-        'status': status.name,
-        'seconds': double.parse(seconds.toStringAsFixed(3)),
-        'message': message,
-        'expectedOutcome': testCase.expectation.outcome.name,
-        'actualOutcome': actualOutcome,
-        'expectedFidelity': testCase.expectation.fidelity?.name,
-        'actualFidelity': actualFidelity,
-        'diagnosticCodes': diagnosticCodes,
-        'approvedLosses': [
-          for (final entry in testCase.expectation.approvedLosses.entries)
-            {'code': entry.key, 'issue': entry.value},
-        ],
-        'unsupportedCapabilities': testCase.expectation.unsupportedCapabilities,
-        'dimensions': {
-          for (final entry in testCase.expectation.dimensions.entries)
-            entry.key: entry.value.name,
-        },
-        'oracle': testCase.oracle.toJson(),
-        if (testCase.equivalent != null)
-          'equivalent': testCase.equivalent!.toJson(),
-        'provenance': testCase.provenance.toJson(),
-      };
+    'id': testCase.id,
+    'family': testCase.family,
+    'codecId': testCase.codecId,
+    'roles': testCase.roles.map((role) => role.name).toList()..sort(),
+    'fixture': testCase.fixture,
+    'sha256': testCase.sha256,
+    'status': status.name,
+    'seconds': double.parse(seconds.toStringAsFixed(3)),
+    'message': message,
+    'expectedOutcome': testCase.expectation.outcome.name,
+    'actualOutcome': actualOutcome,
+    'expectedFidelity': testCase.expectation.fidelity?.name,
+    'actualFidelity': actualFidelity,
+    'diagnosticCodes': diagnosticCodes,
+    'approvedLosses': [
+      for (final entry in testCase.expectation.approvedLosses.entries)
+        {'code': entry.key, 'issue': entry.value},
+    ],
+    'unsupportedCapabilities': testCase.expectation.unsupportedCapabilities,
+    'dimensions': {
+      for (final entry in testCase.expectation.dimensions.entries)
+        entry.key: entry.value.name,
+    },
+    'oracle': testCase.oracle.toJson(),
+    if (testCase.equivalent != null)
+      'equivalent': testCase.equivalent!.toJson(),
+    'provenance': testCase.provenance.toJson(),
+  };
 }
 
 final class CompatibilityRunResult {
@@ -91,8 +91,9 @@ final class CompatibilityRunResult {
   final List<CompatibilityCaseResult> cases;
 
   CompatibilityRunStatus get status {
-    if (cases
-        .any((result) => result.status == CompatibilityCaseStatus.failed)) {
+    if (cases.any(
+      (result) => result.status == CompatibilityCaseStatus.failed,
+    )) {
       return CompatibilityRunStatus.failed;
     }
     if (cases.any(
@@ -104,18 +105,17 @@ final class CompatibilityRunResult {
   }
 
   Map<String, Object?> toJson() => {
-        'schemaVersion': 1,
-        'corpusVersion': corpusVersion,
-        'result': status.name,
-        'remotelyVerified': false,
-        'cases': cases.map((result) => result.toJson()).toList(),
-      };
+    'schemaVersion': 1,
+    'corpusVersion': corpusVersion,
+    'result': status.name,
+    'remotelyVerified': false,
+    'cases': cases.map((result) => result.toJson()).toList(),
+  };
 }
 
 typedef CompatibilityToolProbe = bool Function(String executable);
-typedef CompatibilityBeforeCase = Future<void> Function(
-  CompatibilityCase testCase,
-);
+typedef CompatibilityBeforeCase =
+    Future<void> Function(CompatibilityCase testCase);
 
 final class CompatibilityCorpusRunner {
   CompatibilityCorpusRunner({
@@ -125,8 +125,8 @@ final class CompatibilityCorpusRunner {
     this.timeout = const Duration(seconds: 10),
     CompatibilityToolProbe? toolProbe,
     CompatibilityBeforeCase? beforeCase,
-  })  : toolProbe = toolProbe ?? _defaultToolProbe,
-        beforeCase = beforeCase ?? _noOpBeforeCase {
+  }) : toolProbe = toolProbe ?? _defaultToolProbe,
+       beforeCase = beforeCase ?? _noOpBeforeCase {
     if (jobs <= 0) throw ArgumentError.value(jobs, 'jobs', 'must be positive');
     if (timeout <= Duration.zero) {
       throw ArgumentError.value(timeout, 'timeout', 'must be positive');
@@ -152,8 +152,7 @@ final class CompatibilityCorpusRunner {
     final selected = manifest.cases.where((testCase) {
       return (family == null || testCase.family == family) &&
           (fixtureId == null || testCase.id == fixtureId);
-    }).toList()
-      ..sort((left, right) => left.id.compareTo(right.id));
+    }).toList()..sort((left, right) => left.id.compareTo(right.id));
     if (selected.isEmpty) {
       throw const FormatException('No compatibility fixtures matched.');
     }
@@ -212,9 +211,7 @@ final class CompatibilityCorpusRunner {
     }
   }
 
-  Future<CompatibilityCaseResult> _runCase(
-    CompatibilityCase testCase,
-  ) async {
+  Future<CompatibilityCaseResult> _runCase(CompatibilityCase testCase) async {
     final stopwatch = Stopwatch()..start();
     if (testCase.requiredTool case final tool?) {
       if (!toolProbe(tool)) {
@@ -262,44 +259,48 @@ final class CompatibilityCorpusRunner {
       ),
     );
     return switch (outcome) {
-      CodecSuccess<InteroperableDocument<Object>>() =>
-        await _success(testCase, stopwatch, codec, outcome),
+      CodecSuccess<InteroperableDocument<Object>>() => await _success(
+        testCase,
+        stopwatch,
+        codec,
+        outcome,
+      ),
       CodecMalformed<InteroperableDocument<Object>>() => _typedFailure(
-          testCase,
-          stopwatch,
-          CompatibilityExpectedOutcome.malformed,
-          'malformed:${outcome.reason.name}',
-          outcome.message,
-          outcome.reason.name,
-        ),
+        testCase,
+        stopwatch,
+        CompatibilityExpectedOutcome.malformed,
+        'malformed:${outcome.reason.name}',
+        outcome.message,
+        outcome.reason.name,
+      ),
       CodecUnsupported<InteroperableDocument<Object>>() => _typedFailure(
-          testCase,
-          stopwatch,
-          CompatibilityExpectedOutcome.unsupported,
-          'unsupported:${outcome.reason.name}',
-          outcome.message,
-          outcome.reason.name,
-        ),
+        testCase,
+        stopwatch,
+        CompatibilityExpectedOutcome.unsupported,
+        'unsupported:${outcome.reason.name}',
+        outcome.message,
+        outcome.reason.name,
+      ),
       CodecResourceLimit<InteroperableDocument<Object>>() => _typedFailure(
-          testCase,
-          stopwatch,
-          CompatibilityExpectedOutcome.resourceLimit,
-          'resourceLimit:${outcome.limit.name}',
-          'Limit ${outcome.limit.name}: ${outcome.actual}/${outcome.maximum}.',
-          outcome.limit.name,
-        ),
+        testCase,
+        stopwatch,
+        CompatibilityExpectedOutcome.resourceLimit,
+        'resourceLimit:${outcome.limit.name}',
+        'Limit ${outcome.limit.name}: ${outcome.actual}/${outcome.maximum}.',
+        outcome.limit.name,
+      ),
       CodecAmbiguous<InteroperableDocument<Object>>() => _failure(
-          testCase,
-          stopwatch,
-          'Codec returned an ambiguous outcome.',
-          actualOutcome: 'ambiguous',
-        ),
+        testCase,
+        stopwatch,
+        'Codec returned an ambiguous outcome.',
+        actualOutcome: 'ambiguous',
+      ),
       CodecInternalFailure<InteroperableDocument<Object>>() => _failure(
-          testCase,
-          stopwatch,
-          outcome.message,
-          actualOutcome: 'internalFailure:${outcome.stage.name}',
-        ),
+        testCase,
+        stopwatch,
+        outcome.message,
+        actualOutcome: 'internalFailure:${outcome.stage.name}',
+      ),
     };
   }
 
@@ -376,8 +377,8 @@ final class CompatibilityCorpusRunner {
       message: typeMatches && detailMatches
           ? message
           : 'Expected ${testCase.expectation.outcome.name}'
-              '${expectedDetail == null ? '' : ':$expectedDetail'}, got '
-              '$actualOutcome.',
+                '${expectedDetail == null ? '' : ':$expectedDetail'}, got '
+                '$actualOutcome.',
       actualOutcome: actualOutcome,
       actualFidelity: null,
       diagnosticCodes: const [],
@@ -465,8 +466,10 @@ final class CompatibilityCorpusRunner {
         diagnosticCodes: actualCodes,
       );
     }
-    final oracleError =
-        await _runOracle(testCase.oracle, decoded.value.document);
+    final oracleError = await _runOracle(
+      testCase.oracle,
+      decoded.value.document,
+    );
     if (oracleError != null) {
       return _failure(
         testCase,
@@ -547,8 +550,9 @@ final class CompatibilityCorpusRunner {
       if (candidate.index > fidelity.index) fidelity = candidate;
     }
 
-    if (!codec.descriptor.directions
-        .contains(DocumentFormatDirection.exportDocument)) {
+    if (!codec.descriptor.directions.contains(
+      DocumentFormatDirection.exportDocument,
+    )) {
       return _CompatibilityRoundTripResult(fidelity: fidelity);
     }
     final first = codec.encode(document);
@@ -567,7 +571,8 @@ final class CompatibilityCorpusRunner {
     if (second is! CodecSuccess<InteroperableDocument<Object>>) {
       return _CompatibilityRoundTripResult(
         fidelity: fidelity,
-        error: 'Reimport failed during round-trip: '
+        error:
+            'Reimport failed during round-trip: '
             '${_outcomeDescription(second)}.',
       );
     }
@@ -577,7 +582,8 @@ final class CompatibilityCorpusRunner {
     if (third is! CodecSuccess<EncodedDocument>) {
       return _CompatibilityRoundTripResult(
         fidelity: fidelity,
-        error: 'Second export failed during round-trip: '
+        error:
+            'Second export failed during round-trip: '
             '${_outcomeDescription(third)}.',
       );
     }
@@ -601,14 +607,24 @@ final class CompatibilityCorpusRunner {
         'Success cases cannot use the outcome oracle.',
       CompatibilityOracleKind.roundTrip => null,
       CompatibilityOracleKind.modelFacts => _modelFacts(oracle.data, document),
-      CompatibilityOracleKind.fsaAcceptance =>
-        await _fsaAcceptance(oracle.data, document),
-      CompatibilityOracleKind.regexAcceptance =>
-        await _regexAcceptance(oracle.data, document),
-      CompatibilityOracleKind.mealyOutput =>
-        _transducerOutput(oracle.data, document, isMoore: false),
-      CompatibilityOracleKind.mooreOutput =>
-        _transducerOutput(oracle.data, document, isMoore: true),
+      CompatibilityOracleKind.fsaAcceptance => await _fsaAcceptance(
+        oracle.data,
+        document,
+      ),
+      CompatibilityOracleKind.regexAcceptance => await _regexAcceptance(
+        oracle.data,
+        document,
+      ),
+      CompatibilityOracleKind.mealyOutput => _transducerOutput(
+        oracle.data,
+        document,
+        isMoore: false,
+      ),
+      CompatibilityOracleKind.mooreOutput => _transducerOutput(
+        oracle.data,
+        document,
+        isMoore: true,
+      ),
     };
   }
 
@@ -724,10 +740,12 @@ final class CompatibilityCorpusRunner {
         return 'Transducer sample $index is malformed.';
       }
       final outcome = isMoore
-          ? DeterministicTransducerSimulator.moore(document as MooreMachine)
-              .runRaw(input)
-          : DeterministicTransducerSimulator.mealy(document as MealyMachine)
-              .runRaw(input);
+          ? DeterministicTransducerSimulator.moore(
+              document as MooreMachine,
+            ).runRaw(input)
+          : DeterministicTransducerSimulator.mealy(
+              document as MealyMachine,
+            ).runRaw(input);
       final actualStatus = switch (outcome) {
         TransducerSuccess() => 'success',
         TransducerIncomplete() => 'incomplete',
@@ -752,16 +770,15 @@ final class CompatibilityCorpusRunner {
     String actualOutcome = 'failure',
     String? actualFidelity,
     Iterable<String> diagnosticCodes = const [],
-  }) =>
-      CompatibilityCaseResult(
-        testCase: testCase,
-        status: CompatibilityCaseStatus.failed,
-        seconds: stopwatch.elapsedMicroseconds / 1000000,
-        message: message,
-        actualOutcome: actualOutcome,
-        actualFidelity: actualFidelity,
-        diagnosticCodes: diagnosticCodes,
-      );
+  }) => CompatibilityCaseResult(
+    testCase: testCase,
+    status: CompatibilityCaseStatus.failed,
+    seconds: stopwatch.elapsedMicroseconds / 1000000,
+    message: message,
+    actualOutcome: actualOutcome,
+    actualFidelity: actualFidelity,
+    diagnosticCodes: diagnosticCodes,
+  );
 }
 
 final class _CompatibilityRoundTripResult {
@@ -774,11 +791,9 @@ final class _CompatibilityRoundTripResult {
 Future<void> _noOpBeforeCase(CompatibilityCase _) async {}
 
 bool _defaultToolProbe(String executable) {
-  final result = Process.runSync(
-    Platform.isWindows ? 'where.exe' : 'which',
-    [executable],
-    runInShell: false,
-  );
+  final result = Process.runSync(Platform.isWindows ? 'where.exe' : 'which', [
+    executable,
+  ], runInShell: false);
   return result.exitCode == 0;
 }
 
@@ -842,17 +857,17 @@ Object? _canonicalJson(Object? value) {
 }
 
 String _outcomeDescription(CodecOutcome<Object?> outcome) => switch (outcome) {
-      CodecMalformed(:final reason, :final message) =>
-        'malformed:${reason.name} ($message)',
-      CodecUnsupported(:final reason, :final message) =>
-        'unsupported:${reason.name} ($message)',
-      CodecResourceLimit(:final limit) => 'resourceLimit:${limit.name}',
-      CodecAmbiguous(:final codecIds) =>
-        'ambiguous:${codecIds.map((id) => id.value).join(',')}',
-      CodecInternalFailure(:final stage, :final message) =>
-        'internalFailure:${stage.name} ($message)',
-      CodecSuccess() => 'success',
-    };
+  CodecMalformed(:final reason, :final message) =>
+    'malformed:${reason.name} ($message)',
+  CodecUnsupported(:final reason, :final message) =>
+    'unsupported:${reason.name} ($message)',
+  CodecResourceLimit(:final limit) => 'resourceLimit:${limit.name}',
+  CodecAmbiguous(:final codecIds) =>
+    'ambiguous:${codecIds.map((id) => id.value).join(',')}',
+  CodecInternalFailure(:final stage, :final message) =>
+    'internalFailure:${stage.name} ($message)',
+  CodecSuccess() => 'success',
+};
 
 extension on File {
   bool get isSyncFile => existsSync() && FileSystemEntity.isFileSync(path);

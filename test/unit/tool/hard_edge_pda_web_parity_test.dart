@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -8,35 +8,37 @@ import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
-  test('PDA synchronous and cooperative paths agree on current platform',
-      () async {
-    final pda = _balancedPda();
-    for (final input in const ['', 'ab', 'aabb', 'aaabbb', 'aab']) {
-      final synchronous = PDASimulator.simulateNPDA(
-        pda,
-        input,
-        mode: PDAAcceptanceMode.both,
-      );
-      final cooperative = await PDASimulator.simulateCooperative(
-        pda,
-        input,
-        mode: PDAAcceptanceMode.both,
-        configurationsPerBatch: 1,
-      );
+  test(
+    'PDA synchronous and cooperative paths agree on current platform',
+    () async {
+      final pda = _balancedPda();
+      for (final input in const ['', 'ab', 'aabb', 'aaabbb', 'aab']) {
+        final synchronous = PDASimulator.simulateNPDA(
+          pda,
+          input,
+          mode: PDAAcceptanceMode.both,
+        );
+        final cooperative = await PDASimulator.simulateCooperative(
+          pda,
+          input,
+          mode: PDAAcceptanceMode.both,
+          configurationsPerBatch: 1,
+        );
 
-      expect(synchronous.isSuccess, isTrue, reason: synchronous.error);
-      expect(cooperative.isSuccess, isTrue, reason: cooperative.error);
-      expect(
-        cooperative.data!.accepted,
-        synchronous.data!.accepted,
-        reason: input,
-      );
-      expect(
-        synchronous.data!.accepted,
-        input == 'ab' || input == 'aabb' || input == 'aaabbb',
-      );
-    }
-  });
+        expect(synchronous.isSuccess, isTrue, reason: synchronous.error);
+        expect(cooperative.isSuccess, isTrue, reason: cooperative.error);
+        expect(
+          cooperative.data!.accepted,
+          synchronous.data!.accepted,
+          reason: input,
+        );
+        expect(
+          synchronous.data!.accepted,
+          input == 'ab' || input == 'aabb' || input == 'aaabbb',
+        );
+      }
+    },
+  );
 }
 
 PDA _balancedPda() {
@@ -93,32 +95,30 @@ PDATransition _transition({
   String pop = '',
   List<String> push = const [],
   Vector2? controlPoint,
-}) =>
-    PDATransition(
-      id: id,
-      fromState: from,
-      toState: to,
-      label: id,
-      controlPoint: controlPoint,
-      inputSymbol: input,
-      popSymbol: pop,
-      pushSymbol: push.join(),
-      pushSymbols: push,
-      isLambdaInput: input.isEmpty,
-      isLambdaPop: pop.isEmpty,
-      isLambdaPush: push.isEmpty,
-    );
+}) => PDATransition(
+  id: id,
+  fromState: from,
+  toState: to,
+  label: id,
+  controlPoint: controlPoint,
+  inputSymbol: input,
+  popSymbol: pop,
+  pushSymbol: push.join(),
+  pushSymbols: push,
+  isLambdaInput: input.isEmpty,
+  isLambdaPop: pop.isEmpty,
+  isLambdaPush: push.isEmpty,
+);
 
 State _state(
   String id, {
   required double x,
   bool initial = false,
   bool accepting = false,
-}) =>
-    State(
-      id: id,
-      label: id,
-      position: Vector2(x, 0),
-      isInitial: initial,
-      isAccepting: accepting,
-    );
+}) => State(
+  id: id,
+  label: id,
+  position: Vector2(x, 0),
+  isInitial: initial,
+  isAccepting: accepting,
+);

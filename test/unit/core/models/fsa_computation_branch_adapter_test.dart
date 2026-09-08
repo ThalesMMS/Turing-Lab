@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
 import 'package:turing_lab/core/models/computation_branch.dart';
 import 'package:turing_lab/core/models/fsa_computation_branch_adapter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
@@ -51,10 +51,10 @@ void main() {
       }
       expect(originalGraph.nodes, hasLength(3));
       expect(originalGraph.branches, hasLength(2));
-      expect(
-        originalGraph.branches.map((branch) => branch.outcome),
-        [ComputationBranchOutcome.accepted, ComputationBranchOutcome.dead],
-      );
+      expect(originalGraph.branches.map((branch) => branch.outcome), [
+        ComputationBranchOutcome.accepted,
+        ComputationBranchOutcome.dead,
+      ]);
     });
 
     test('keeps initial epsilon-closure branches visible', () {
@@ -73,10 +73,10 @@ void main() {
           .where((node) => node.parentId == graph.rootNodeIds.single)
           .toList();
       expect(childNodes, hasLength(2));
-      expect(
-        childNodes.map((node) => node.transitionSummary).toSet(),
-        {'Initial configuration', 'ε-closure from q0 to q1'},
-      );
+      expect(childNodes.map((node) => node.transitionSummary).toSet(), {
+        'Initial configuration',
+        'ε-closure from q0 to q1',
+      });
       expect(
         childNodes.map((node) => node.configurationSummary),
         containsAll(['q0 · "a"', 'q1 · "a"']),
@@ -95,137 +95,132 @@ void main() {
 
       for (final (result, expected) in cases) {
         final graph = _graph(
-          FsaComputationBranchAdapter.adapt(
-            result,
-            isDeterministic: false,
-          ),
+          FsaComputationBranchAdapter.adapt(result, isDeterministic: false),
         );
         expect(graph.branches.single.outcome, expected);
         expect(graph.nodes.last.outcome, expected);
       }
     });
 
-    test('keeps known terminal outcomes when another frontier is truncated',
-        () {
-      const cycle = NFAPathNode(
-        currentState: 'cycle-id',
-        remainingInput: '',
-        transitionIds: ['cycle-edge'],
-        stepNumber: 1,
-        isCycle: true,
-      );
-      const dead = NFAPathNode(
-        currentState: 'dead-id',
-        remainingInput: 'a',
-        transitionIds: ['dead-edge'],
-        stepNumber: 1,
-        isDeadEnd: true,
-      );
-      const accepted = NFAPathNode(
-        currentState: 'accepted-id',
-        remainingInput: '',
-        transitionIds: ['accepted-edge'],
-        stepNumber: 1,
-        isAccepting: true,
-      );
-      const frontier = NFAPathNode(
-        currentState: 'frontier-id',
-        remainingInput: 'a',
-        transitionIds: ['frontier-edge'],
-        stepNumber: 1,
-      );
-      const root = NFAPathNode(
-        currentState: 'root-id',
-        remainingInput: 'a',
-        stepNumber: 0,
-        children: [cycle, dead, accepted, frontier],
-      );
-      const message = 'NFA trace truncated after 5 nodes.';
-      final adapted = FsaComputationBranchAdapter.adapt(
-        SimulationResult.failure(
-          inputString: 'a',
-          steps: const [],
-          errorMessage: message,
-          executionTime: Duration.zero,
-          computationTree: NFAComputationTree.rejected(
-            root: root,
+    test(
+      'keeps known terminal outcomes when another frontier is truncated',
+      () {
+        const cycle = NFAPathNode(
+          currentState: 'cycle-id',
+          remainingInput: '',
+          transitionIds: ['cycle-edge'],
+          stepNumber: 1,
+          isCycle: true,
+        );
+        const dead = NFAPathNode(
+          currentState: 'dead-id',
+          remainingInput: 'a',
+          transitionIds: ['dead-edge'],
+          stepNumber: 1,
+          isDeadEnd: true,
+        );
+        const accepted = NFAPathNode(
+          currentState: 'accepted-id',
+          remainingInput: '',
+          transitionIds: ['accepted-edge'],
+          stepNumber: 1,
+          isAccepting: true,
+        );
+        const frontier = NFAPathNode(
+          currentState: 'frontier-id',
+          remainingInput: 'a',
+          transitionIds: ['frontier-edge'],
+          stepNumber: 1,
+        );
+        const root = NFAPathNode(
+          currentState: 'root-id',
+          remainingInput: 'a',
+          stepNumber: 0,
+          children: [cycle, dead, accepted, frontier],
+        );
+        const message = 'NFA trace truncated after 5 nodes.';
+        final adapted = FsaComputationBranchAdapter.adapt(
+          SimulationResult.failure(
             inputString: 'a',
-            totalSteps: 1,
+            steps: const [],
             errorMessage: message,
+            executionTime: Duration.zero,
+            computationTree: NFAComputationTree.rejected(
+              root: root,
+              inputString: 'a',
+              totalSteps: 1,
+              errorMessage: message,
+            ),
           ),
-        ),
-        isDeterministic: false,
-      );
-      final graph = _graph(adapted);
+          isDeterministic: false,
+        );
+        final graph = _graph(adapted);
 
-      expect(
-        graph.branches.map((branch) => branch.outcome).toSet(),
-        {
+        expect(graph.branches.map((branch) => branch.outcome).toSet(), {
           ComputationBranchOutcome.cycle,
           ComputationBranchOutcome.dead,
           ComputationBranchOutcome.accepted,
           ComputationBranchOutcome.boundedUnknown,
-        },
-      );
-      final cycleBranch = graph.branches.singleWhere(
-        (branch) => branch.outcome == ComputationBranchOutcome.cycle,
-      );
-      final deadBranch = graph.branches.singleWhere(
-        (branch) => branch.outcome == ComputationBranchOutcome.dead,
-      );
-      final frontierBranch = graph.branches.singleWhere(
-        (branch) => branch.outcome == ComputationBranchOutcome.boundedUnknown,
-      );
-      expect(
-        adapted.highlightForBranch(cycleBranch.id).warningStateIds,
-        {'cycle-id'},
-      );
-      expect(
-        adapted.highlightForBranch(deadBranch.id).errorStateIds,
-        {'dead-id'},
-      );
-      expect(
-        adapted.highlightForBranch(frontierBranch.id).warningStateIds,
-        {'frontier-id'},
-      );
-    });
+        });
+        final cycleBranch = graph.branches.singleWhere(
+          (branch) => branch.outcome == ComputationBranchOutcome.cycle,
+        );
+        final deadBranch = graph.branches.singleWhere(
+          (branch) => branch.outcome == ComputationBranchOutcome.dead,
+        );
+        final frontierBranch = graph.branches.singleWhere(
+          (branch) => branch.outcome == ComputationBranchOutcome.boundedUnknown,
+        );
+        expect(adapted.highlightForBranch(cycleBranch.id).warningStateIds, {
+          'cycle-id',
+        });
+        expect(adapted.highlightForBranch(deadBranch.id).errorStateIds, {
+          'dead-id',
+        });
+        expect(adapted.highlightForBranch(frontierBranch.id).warningStateIds, {
+          'frontier-id',
+        });
+      },
+    );
 
-    test('explains absent result, deterministic runs, and unrecorded trees',
-        () {
-      expect(
-        FsaComputationBranchAdapter.adapt(
-          null,
-          isDeterministic: false,
-        ).availability,
-        isA<ComputationBranchesUnavailable>().having(
-          (availability) => availability.reason,
-          'reason',
-          ComputationBranchesUnavailableReason.simulationNotRun,
-        ),
-      );
-      expect(
-        FsaComputationBranchAdapter.adapt(
-          _treeLessResult(),
-          isDeterministic: true,
-        ).availability,
-        isA<ComputationBranchesUnavailable>().having(
-          (availability) => availability.reason,
-          'reason',
-          ComputationBranchesUnavailableReason.deterministicExecution,
-        ),
-      );
-      expect(
-        FsaComputationBranchAdapter.adapt(
-          _treeLessResult(),
-          isDeterministic: false,
-        ).availability,
-        isA<ComputationBranchesUnavailable>().having(
-          (availability) => availability.reason,
-          'reason',
-          ComputationBranchesUnavailableReason.branchesNotRecorded,
-        ),
-      );
-    });
+    test(
+      'explains absent result, deterministic runs, and unrecorded trees',
+      () {
+        expect(
+          FsaComputationBranchAdapter.adapt(
+            null,
+            isDeterministic: false,
+          ).availability,
+          isA<ComputationBranchesUnavailable>().having(
+            (availability) => availability.reason,
+            'reason',
+            ComputationBranchesUnavailableReason.simulationNotRun,
+          ),
+        );
+        expect(
+          FsaComputationBranchAdapter.adapt(
+            _treeLessResult(),
+            isDeterministic: true,
+          ).availability,
+          isA<ComputationBranchesUnavailable>().having(
+            (availability) => availability.reason,
+            'reason',
+            ComputationBranchesUnavailableReason.deterministicExecution,
+          ),
+        );
+        expect(
+          FsaComputationBranchAdapter.adapt(
+            _treeLessResult(),
+            isDeterministic: false,
+          ).availability,
+          isA<ComputationBranchesUnavailable>().having(
+            (availability) => availability.reason,
+            'reason',
+            ComputationBranchesUnavailableReason.branchesNotRecorded,
+          ),
+        );
+      },
+    );
 
     test('builds read-only branch highlights from stable state ids', () {
       final adapted = FsaComputationBranchAdapter.adapt(
@@ -249,115 +244,119 @@ void main() {
       expect(adapted.highlightForBranch(null).isEmpty, isTrue);
     });
 
-    test('preserves post-symbol epsilon provenance and highlights its edges',
-        () async {
-      final simulation = await AutomatonSimulator.simulateNFA(
-        _postSymbolEpsilonNfa(),
-        'a',
-        stepByStep: true,
-      );
-      expect(simulation.isSuccess, isTrue);
-      final adapted = FsaComputationBranchAdapter.adapt(
-        simulation.data!,
-        isDeterministic: false,
-        stateLabels: const {'q0-id': 'q0', 'q1-id': 'q1', 'q2-id': 'q2'},
-      );
-      final graph = _graph(adapted);
-      final q2 = graph.nodes.singleWhere(
-        (node) => node.configurationSummary == 'q2 · "ε"',
-      );
-      final branch = graph.branches.singleWhere(
-        (branch) => branch.nodeIds.last == q2.id,
-      );
+    test(
+      'preserves post-symbol epsilon provenance and highlights its edges',
+      () async {
+        final simulation = await AutomatonSimulator.simulateNFA(
+          _postSymbolEpsilonNfa(),
+          'a',
+          stepByStep: true,
+        );
+        expect(simulation.isSuccess, isTrue);
+        final adapted = FsaComputationBranchAdapter.adapt(
+          simulation.data!,
+          isDeterministic: false,
+          stateLabels: const {'q0-id': 'q0', 'q1-id': 'q1', 'q2-id': 'q2'},
+        );
+        final graph = _graph(adapted);
+        final q2 = graph.nodes.singleWhere(
+          (node) => node.configurationSummary == 'q2 · "ε"',
+        );
+        final branch = graph.branches.singleWhere(
+          (branch) => branch.nodeIds.last == q2.id,
+        );
 
-      expect(q2.transitionSummary, 'δ(q0, a) → q1; ε → q2');
-      expect(
-        adapted.highlightForBranch(branch.id).transitionIds,
-        {'symbol-edge', 'epsilon-edge'},
-      );
-    });
+        expect(q2.transitionSummary, 'δ(q0, a) → q1; ε → q2');
+        expect(adapted.highlightForBranch(branch.id).transitionIds, {
+          'symbol-edge',
+          'epsilon-edge',
+        });
+      },
+    );
 
-    test('keeps parallel edge identities on otherwise identical branches',
-        () async {
-      final simulation = await AutomatonSimulator.simulateNFA(
-        _parallelSymbolNfa(),
-        'a',
-        stepByStep: true,
-      );
-      expect(simulation.isSuccess, isTrue);
-      final adapted = FsaComputationBranchAdapter.adapt(
-        simulation.data!,
-        isDeterministic: false,
-      );
-      final graph = _graph(adapted);
+    test(
+      'keeps parallel edge identities on otherwise identical branches',
+      () async {
+        final simulation = await AutomatonSimulator.simulateNFA(
+          _parallelSymbolNfa(),
+          'a',
+          stepByStep: true,
+        );
+        expect(simulation.isSuccess, isTrue);
+        final adapted = FsaComputationBranchAdapter.adapt(
+          simulation.data!,
+          isDeterministic: false,
+        );
+        final graph = _graph(adapted);
 
-      expect(graph.branches, hasLength(2));
-      expect(
-        graph.branches
-            .map(
-                (branch) => adapted.highlightForBranch(branch.id).transitionIds)
-            .toSet(),
-        {
-          {'parallel-a'},
-          {'parallel-b'},
-        },
-      );
-    });
+        expect(graph.branches, hasLength(2));
+        expect(
+          graph.branches
+              .map(
+                (branch) => adapted.highlightForBranch(branch.id).transitionIds,
+              )
+              .toSet(),
+          {
+            {'parallel-a'},
+            {'parallel-b'},
+          },
+        );
+      },
+    );
 
-    test('keeps alternate convergent epsilon paths as distinct branches',
-        () async {
-      final simulation = await AutomatonSimulator.simulateNFA(
-        _convergentEpsilonNfa(),
-        'a',
-        stepByStep: true,
-      );
-      expect(simulation.isSuccess, isTrue);
-      final adapted = FsaComputationBranchAdapter.adapt(
-        simulation.data!,
-        isDeterministic: false,
-        stateLabels: const {
-          'q0-id': 'q0',
-          'q1-id': 'q1',
-          'q2-id': 'q2',
-          'q3-id': 'q3',
-          'q4-id': 'q4',
-        },
-      );
-      final graph = _graph(adapted);
-      final q4NodeIds = graph.nodes
-          .where((node) => node.configurationSummary == 'q4 · "ε"')
-          .map((node) => node.id)
-          .toSet();
-      final q4Branches = graph.branches
-          .where((branch) => q4NodeIds.contains(branch.nodeIds.last))
-          .toList();
+    test(
+      'keeps alternate convergent epsilon paths as distinct branches',
+      () async {
+        final simulation = await AutomatonSimulator.simulateNFA(
+          _convergentEpsilonNfa(),
+          'a',
+          stepByStep: true,
+        );
+        expect(simulation.isSuccess, isTrue);
+        final adapted = FsaComputationBranchAdapter.adapt(
+          simulation.data!,
+          isDeterministic: false,
+          stateLabels: const {
+            'q0-id': 'q0',
+            'q1-id': 'q1',
+            'q2-id': 'q2',
+            'q3-id': 'q3',
+            'q4-id': 'q4',
+          },
+        );
+        final graph = _graph(adapted);
+        final q4NodeIds = graph.nodes
+            .where((node) => node.configurationSummary == 'q4 · "ε"')
+            .map((node) => node.id)
+            .toSet();
+        final q4Branches = graph.branches
+            .where((branch) => q4NodeIds.contains(branch.nodeIds.last))
+            .toList();
 
-      expect(q4Branches, hasLength(2));
-      expect(
-        q4Branches
-            .map(
-              (branch) => adapted.highlightForBranch(branch.id).transitionIds,
-            )
-            .toSet(),
-        {
-          {'symbol-edge', 'epsilon-left', 'epsilon-left-join'},
-          {'symbol-edge', 'epsilon-right', 'epsilon-right-join'},
-        },
-      );
-      expect(
-        q4NodeIds
-            .map(
-              (nodeId) => graph.nodes
-                  .firstWhere((node) => node.id == nodeId)
-                  .transitionSummary,
-            )
-            .toSet(),
-        {
-          'δ(q0, a) → q1; ε → q2 → ε → q4',
-          'δ(q0, a) → q1; ε → q3 → ε → q4',
-        },
-      );
-    });
+        expect(q4Branches, hasLength(2));
+        expect(
+          q4Branches
+              .map(
+                (branch) => adapted.highlightForBranch(branch.id).transitionIds,
+              )
+              .toSet(),
+          {
+            {'symbol-edge', 'epsilon-left', 'epsilon-left-join'},
+            {'symbol-edge', 'epsilon-right', 'epsilon-right-join'},
+          },
+        );
+        expect(
+          q4NodeIds
+              .map(
+                (nodeId) => graph.nodes
+                    .firstWhere((node) => node.id == nodeId)
+                    .transitionSummary,
+              )
+              .toSet(),
+          {'δ(q0, a) → q1; ε → q2 → ε → q4', 'δ(q0, a) → q1; ε → q3 → ε → q4'},
+        );
+      },
+    );
 
     test('records epsilon cycle closures once with a cycle outcome', () async {
       final simulation = await AutomatonSimulator.simulateNFA(
@@ -375,64 +374,60 @@ void main() {
         (branch) => branch.outcome == ComputationBranchOutcome.cycle,
       );
 
-      expect(
-        graph.branches.map((branch) => branch.outcome).toSet(),
-        {
-          ComputationBranchOutcome.accepted,
-          ComputationBranchOutcome.cycle,
-        },
-      );
-      expect(
-        adapted.highlightForBranch(cycleBranch.id).transitionIds,
-        {'symbol-edge', 'epsilon-loop'},
-      );
+      expect(graph.branches.map((branch) => branch.outcome).toSet(), {
+        ComputationBranchOutcome.accepted,
+        ComputationBranchOutcome.cycle,
+      });
+      expect(adapted.highlightForBranch(cycleBranch.id).transitionIds, {
+        'symbol-edge',
+        'epsilon-loop',
+      });
     });
 
-    test('adapts a trace with 9999 terminal branches without eager summaries',
-        () {
-      final leaves = List<NFAPathNode>.generate(
-        9999,
-        (index) => NFAPathNode(
-          currentState: 'leaf-$index',
-          remainingInput: '',
-          stepNumber: 1,
-          isDeadEnd: true,
-        ),
-        growable: false,
-      );
-      final root = NFAPathNode(
-        currentState: 'root',
-        remainingInput: 'a',
-        stepNumber: 0,
-        children: leaves,
-      );
-      final result = SimulationResult.failure(
-        inputString: 'a',
-        steps: const [],
-        errorMessage: 'Input not accepted',
-        executionTime: Duration.zero,
-        computationTree: NFAComputationTree.rejected(
-          root: root,
+    test(
+      'adapts a trace with 9999 terminal branches without eager summaries',
+      () {
+        final leaves = List<NFAPathNode>.generate(
+          9999,
+          (index) => NFAPathNode(
+            currentState: 'leaf-$index',
+            remainingInput: '',
+            stepNumber: 1,
+            isDeadEnd: true,
+          ),
+          growable: false,
+        );
+        final root = NFAPathNode(
+          currentState: 'root',
+          remainingInput: 'a',
+          stepNumber: 0,
+          children: leaves,
+        );
+        final result = SimulationResult.failure(
           inputString: 'a',
-          totalSteps: 1,
+          steps: const [],
           errorMessage: 'Input not accepted',
-        ),
-      );
+          executionTime: Duration.zero,
+          computationTree: NFAComputationTree.rejected(
+            root: root,
+            inputString: 'a',
+            totalSteps: 1,
+            errorMessage: 'Input not accepted',
+          ),
+        );
 
-      final graph = _graph(
-        FsaComputationBranchAdapter.adapt(
-          result,
-          isDeterministic: false,
-        ),
-      );
+        final graph = _graph(
+          FsaComputationBranchAdapter.adapt(result, isDeterministic: false),
+        );
 
-      expect(graph.nodes, hasLength(10000));
-      expect(graph.branches, hasLength(9999));
-      expect(
-        graph.branches.every((branch) => branch.summary!.length < 80),
-        isTrue,
-      );
-    });
+        expect(graph.nodes, hasLength(10000));
+        expect(graph.branches, hasLength(9999));
+        expect(
+          graph.branches.every((branch) => branch.summary!.length < 80),
+          isTrue,
+        );
+      },
+    );
 
     test('bounds summaries for deep branches', () {
       var node = const NFAPathNode(
@@ -463,10 +458,7 @@ void main() {
       );
 
       final graph = _graph(
-        FsaComputationBranchAdapter.adapt(
-          result,
-          isDeterministic: false,
-        ),
+        FsaComputationBranchAdapter.adapt(result, isDeterministic: false),
       );
 
       expect(graph.branches.single.summary, contains('→ … →'));
@@ -612,10 +604,10 @@ SimulationResult _cycleResult() {
 }
 
 SimulationResult _treeLessResult() => SimulationResult.success(
-      inputString: 'a',
-      steps: const [],
-      executionTime: Duration.zero,
-    );
+  inputString: 'a',
+  steps: const [],
+  executionTime: Duration.zero,
+);
 
 FSA _postSymbolEpsilonNfa() {
   final q0 = automaton_models.State(

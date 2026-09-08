@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_execution_controller.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_inputs.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_time_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_execution_controller.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_inputs.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_time_controls.dart';
 
 // feature-localization-contract: grammar-analysis-parsing-and-teaching
 // feature-localization-surface: responsive-accessibility

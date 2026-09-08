@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/brute_force_parse_models.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/brute_force_search_options.dart';
+import 'package:turing_lab/presentation/widgets/grammar/brute_force_search_options.dart';
 
 void main() {
   testWidgets('formats live brute-force progress by locale', (tester) async {

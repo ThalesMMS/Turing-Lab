@@ -10,7 +10,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 
 void main() {
   group('CYK Validation Tests', () {

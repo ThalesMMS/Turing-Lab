@@ -39,14 +39,8 @@ flutter pub get
 
 ## Local Validation
 
-**Root Flutter QA is local and manual.** GitHub-hosted test CI is intentionally
-disabled for this repository because the GitHub Actions limits are too small for
-its Flutter, GraphView, golden, screenshot, integration and Apple surface. The
-root `.github/workflows/ci.yml` workflow was deleted and must not be
-reintroduced, here or on another hosted provider. No repository-owned GitHub
-Actions workflow is committed. The public web artifact is published separately
-to `ThalesMMS/Turing-Lab`'s `gh-pages` branch, and GitHub's system-managed
-Pages deployment is not test CI. The policy and workflow inventory live in
+**Root Flutter QA is local and manual.** Use `tool/qa.sh` and report the
+commands and results. Review requirements are documented in
 [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
 
 Nothing is verified for you. You run the checks, and you report them.

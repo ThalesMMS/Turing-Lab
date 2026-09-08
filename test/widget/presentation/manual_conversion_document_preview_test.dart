@@ -4,7 +4,7 @@ import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/manual_conversion_document_preview.dart';
+import 'package:turing_lab/presentation/widgets/conversions/manual_conversion_document_preview.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

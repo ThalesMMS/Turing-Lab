@@ -11,9 +11,15 @@
 //
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
-  await loadAppFonts();
+  // Native goldens need explicit font loading. On Web, the engine owns fonts;
+  // golden_toolkit's rootBundle load runs before the suite is registered and
+  // requests an unavailable FontManifest.json, preventing test discovery.
+  if (!kIsWeb) {
+    await loadAppFonts();
+  }
   return testMain();
 }

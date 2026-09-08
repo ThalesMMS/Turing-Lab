@@ -1,9 +1,9 @@
 import '../../models/grammar.dart';
 import '../../models/grammar_parse_report.dart';
 import '../../models/lr1_models.dart';
-import '../grammar_parser.dart';
-import '../lr1_parser.dart';
-import '../pda_simulator.dart';
+import '../grammar/grammar_parser.dart';
+import '../grammar/lr1_parser.dart';
+import '../pda/pda_simulator.dart';
 import 'cfg_to_pda_models.dart';
 
 abstract final class CfgToPdaDifferentialChecker {
@@ -78,8 +78,7 @@ abstract final class CfgToPdaDifferentialChecker {
             detailCode: switch (pda.outcome) {
               PDASimulationOutcome.timeout => 'pda-time-limit',
               PDASimulationOutcome.configurationLimit ||
-              PDASimulationOutcome.provenCycle =>
-                'pda-configuration-limit',
+              PDASimulationOutcome.provenCycle => 'pda-configuration-limit',
               PDASimulationOutcome.depthLimit => 'pda-depth-limit',
               PDASimulationOutcome.memoryLimit => 'pda-memory-limit',
               PDASimulationOutcome.staleRequest => 'pda-stale-request',
@@ -95,8 +94,8 @@ abstract final class CfgToPdaDifferentialChecker {
           input: input,
           outcome: matches
               ? (pda.accepted
-                  ? CfgToPdaSampleOutcome.matchingAcceptance
-                  : CfgToPdaSampleOutcome.matchingRejection)
+                    ? CfgToPdaSampleOutcome.matchingAcceptance
+                    : CfgToPdaSampleOutcome.matchingRejection)
               : CfgToPdaSampleOutcome.mismatch,
           grammarAccepted: grammarOutcome.$1,
           pdaAccepted: pda.accepted,
@@ -113,27 +112,20 @@ abstract final class CfgToPdaDifferentialChecker {
     Duration timeout,
   ) {
     if (orientation == CfgToPdaOrientation.ll) {
-      final result = GrammarParser.parseLL1(
-        grammar,
-        input,
-        timeout: timeout,
-      );
+      final result = GrammarParser.parseLL1(grammar, input, timeout: timeout);
       if (result.isFailure) return (null, 'll-parser-failed');
       return switch (result.data!.outcome) {
         GrammarParseOutcome.accepted => (true, null),
         GrammarParseOutcome.rejected ||
-        GrammarParseOutcome.tokenizationFailure =>
-          (false, null),
+        GrammarParseOutcome.tokenizationFailure => (false, null),
         final outcome => (null, 'll-${outcome.name}'),
       };
     }
     final result = LR1Parser.parse(grammar, input, timeout: timeout);
     return switch (result.outcome) {
       LR1ParseOutcome.accepted => (true, null),
-      LR1ParseOutcome.rejected || LR1ParseOutcome.tokenizationFailure => (
-          false,
-          null
-        ),
+      LR1ParseOutcome.rejected ||
+      LR1ParseOutcome.tokenizationFailure => (false, null),
       final outcome => (null, 'lr-${outcome.name}'),
     };
   }

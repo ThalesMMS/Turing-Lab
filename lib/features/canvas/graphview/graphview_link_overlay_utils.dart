@@ -109,12 +109,14 @@ Offset _normalizeControlPoint(
 }
 
 bool _isGroupedFsaEdge(GraphViewCanvasEdge edge) {
-  final hasPdaMetadata = edge.popSymbol != null ||
+  final hasPdaMetadata =
+      edge.popSymbol != null ||
       edge.pushSymbol != null ||
       edge.isLambdaInput != null ||
       edge.isLambdaPop != null ||
       edge.isLambdaPush != null;
-  final hasTmMetadata = edge.readSymbol != null ||
+  final hasTmMetadata =
+      edge.readSymbol != null ||
       edge.writeSymbol != null ||
       edge.direction != null;
   return !hasPdaMetadata && !hasTmMetadata;

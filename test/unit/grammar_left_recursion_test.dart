@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
-import 'package:turing_lab/core/algorithms/grammar_analysis_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analysis_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_earley.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 
@@ -139,47 +139,52 @@ void main() {
       final result = GrammarAnalyzer.removeLeftRecursion(input);
 
       expect(result.isSuccess, isTrue);
-      expect(
-        formattedProductions(result.data!.value),
-        ["A -> b A'", "A' -> a A'", "A' -> ε"],
-      );
+      expect(formattedProductions(result.data!.value), [
+        "A -> b A'",
+        "A' -> a A'",
+        "A' -> ε",
+      ]);
       expect(result.data!.steps, hasLength(1));
       expect(
-          result.data!.steps.single.operation, startsWith('Direct recursion'));
+        result.data!.steps.single.operation,
+        startsWith('Direct recursion'),
+      );
     });
 
-    test('eliminates a two-nonterminal cycle and preserves bounded language',
-        () {
-      final input = grammar(
-        id: 'two-cycle',
-        start: 'S',
-        nonterminals: ['S', 'A'],
-        terminals: ['a', 'b', 'c', 'd'],
-        productions: [
-          production('p0', 0, 'S', ['A', 'a']),
-          production('p1', 1, 'S', ['b']),
-          production('p2', 2, 'A', ['S', 'c']),
-          production('p3', 3, 'A', ['d']),
-        ],
-      );
+    test(
+      'eliminates a two-nonterminal cycle and preserves bounded language',
+      () {
+        final input = grammar(
+          id: 'two-cycle',
+          start: 'S',
+          nonterminals: ['S', 'A'],
+          terminals: ['a', 'b', 'c', 'd'],
+          productions: [
+            production('p0', 0, 'S', ['A', 'a']),
+            production('p1', 1, 'S', ['b']),
+            production('p2', 2, 'A', ['S', 'c']),
+            production('p3', 3, 'A', ['d']),
+          ],
+        );
 
-      final result = GrammarAnalyzer.removeLeftRecursion(input);
+        final result = GrammarAnalyzer.removeLeftRecursion(input);
 
-      expect(result.isSuccess, isTrue);
-      final report = result.data!;
-      expect(hasLeftCornerCycle(report.value), isFalse);
-      expect(
-        report.steps.any((step) => step.operation.startsWith('Substitution')),
-        isTrue,
-      );
-      expect(
-        report.steps.any(
-          (step) => step.operation.startsWith('Direct recursion'),
-        ),
-        isTrue,
-      );
-      expectSameBoundedLanguage(input, report.value, ['a', 'b', 'c', 'd'], 4);
-    });
+        expect(result.isSuccess, isTrue);
+        final report = result.data!;
+        expect(hasLeftCornerCycle(report.value), isFalse);
+        expect(
+          report.steps.any((step) => step.operation.startsWith('Substitution')),
+          isTrue,
+        );
+        expect(
+          report.steps.any(
+            (step) => step.operation.startsWith('Direct recursion'),
+          ),
+          isTrue,
+        );
+        expectSameBoundedLanguage(input, report.value, ['a', 'b', 'c', 'd'], 4);
+      },
+    );
 
     test('eliminates a three-nonterminal cycle', () {
       final input = grammar(
@@ -202,8 +207,9 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(hasLeftCornerCycle(result.data!.value), isFalse);
       expect(
-        result.data!.steps
-            .where((step) => step.operation.startsWith('Substitution')),
+        result.data!.steps.where(
+          (step) => step.operation.startsWith('Substitution'),
+        ),
         isNotEmpty,
       );
     });
@@ -243,13 +249,7 @@ void main() {
         terminals: ['a', 'c', 'd'],
         productions: [
           production('p0', 0, 'S', ['A', 'a']),
-          production(
-            'p1',
-            1,
-            'S',
-            const [],
-            isLambda: true,
-          ),
+          production('p1', 1, 'S', const [], isLambda: true),
           production('p2', 2, 'A', ['S', 'c']),
           production('p3', 3, 'A', ['d']),
         ],
@@ -260,10 +260,7 @@ void main() {
       expect(result.isSuccess, isTrue);
       final transformed = result.data!.value;
       expect(hasLeftCornerCycle(transformed), isFalse);
-      expect(
-        formattedProductions(transformed),
-        contains("A -> c A'"),
-      );
+      expect(formattedProductions(transformed), contains("A -> c A'"));
       expectSameBoundedLanguage(input, transformed, ['a', 'c', 'd'], 4);
     });
 
@@ -289,14 +286,12 @@ void main() {
         formattedProductions(input),
       );
       expect(result.data!.steps, isEmpty);
-      expect(
-        result.data!.notes,
-        ['No direct or indirect left recursion detected.'],
-      );
-      expect(
-        result.data!.structuredNotes,
-        [GrammarAnalysisMessages.noLeftRecursion()],
-      );
+      expect(result.data!.notes, [
+        'No direct or indirect left recursion detected.',
+      ]);
+      expect(result.data!.structuredNotes, [
+        GrammarAnalysisMessages.noLeftRecursion(),
+      ]);
     });
 
     test('processes unreachable recursive nonterminals', () {
@@ -318,8 +313,10 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(hasLeftCornerCycle(result.data!.value), isFalse);
-      expect(result.data!.value.productions.any((p) => p.leftSide.first == 'S'),
-          isTrue);
+      expect(
+        result.data!.value.productions.any((p) => p.leftSide.first == 'S'),
+        isTrue,
+      );
     });
 
     test('is deterministic, idempotent, and does not mutate the input', () {

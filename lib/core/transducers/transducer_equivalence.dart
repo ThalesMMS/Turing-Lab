@@ -46,15 +46,14 @@ abstract final class TransducerEquivalenceComparator {
     DeterministicTransducerSimulator left,
     DeterministicTransducerSimulator right, {
     required TransducerComparisonSemantics semantics,
-  }) =>
-      switch (semantics) {
-        ExactTransducerComparison() => _compareExact(left, right),
-        BoundedTransducerComparison(:final maxInputLength) => _compareBounded(
-            left,
-            right,
-            maxInputLength,
-          ),
-      };
+  }) => switch (semantics) {
+    ExactTransducerComparison() => _compareExact(left, right),
+    BoundedTransducerComparison(:final maxInputLength) => _compareBounded(
+      left,
+      right,
+      maxInputLength,
+    ),
+  };
 }
 
 TransducerComparisonResult _compareExact(
@@ -90,38 +89,43 @@ TransducerComparisonResult _compareExact(
   }
 
   final alphabet = left.machine.inputAlphabet.toList()..sort();
-  final queue = Queue<
-      ({
-        TransducerState left,
-        TransducerState right,
-        TransducerInputWord prefix
-      })>()
-    ..add((
-      left: leftInitial,
-      right: rightInitial,
-      prefix: TransducerInputWord.empty
-    ));
+  final queue =
+      Queue<
+          ({
+            TransducerState left,
+            TransducerState right,
+            TransducerInputWord prefix,
+          })
+        >()
+        ..add((
+          left: leftInitial,
+          right: rightInitial,
+          prefix: TransducerInputWord.empty,
+        ));
   final visited = <(String, String)>{};
   while (queue.isNotEmpty) {
     final current = queue.removeFirst();
     if (!visited.add((current.left.id.value, current.right.id.value))) continue;
     for (final input in alphabet) {
-      final leftTransition = (left.transitionIndex
-              .lookup(current.left.id, input) as TransducerTransitionFound)
-          .transition;
-      final rightTransition = (right.transitionIndex
-              .lookup(current.right.id, input) as TransducerTransitionFound)
-          .transition;
+      final leftTransition =
+          (left.transitionIndex.lookup(current.left.id, input)
+                  as TransducerTransitionFound)
+              .transition;
+      final rightTransition =
+          (right.transitionIndex.lookup(current.right.id, input)
+                  as TransducerTransitionFound)
+              .transition;
       final leftTarget = left.stateFor(leftTransition.to)!;
       final rightTarget = right.stateFor(rightTransition.to)!;
-      final leftEmission =
-          left.emissionRule.transitionOutput(leftTransition, leftTarget);
-      final rightEmission =
-          right.emissionRule.transitionOutput(rightTransition, rightTarget);
-      final witness = TransducerInputWord([
-        ...current.prefix.symbols,
-        input,
-      ]);
+      final leftEmission = left.emissionRule.transitionOutput(
+        leftTransition,
+        leftTarget,
+      );
+      final rightEmission = right.emissionRule.transitionOutput(
+        rightTransition,
+        rightTarget,
+      );
+      final witness = TransducerInputWord([...current.prefix.symbols, input]);
       if (leftEmission != rightEmission) {
         final leftRun = left.run(witness);
         final rightRun = right.run(witness);

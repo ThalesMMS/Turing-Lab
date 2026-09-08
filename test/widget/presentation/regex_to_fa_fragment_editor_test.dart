@@ -4,7 +4,7 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dar
 import 'package:turing_lab/core/manual_conversions/regex_to_fa_session_factory.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/regex_document.dart';
-import 'package:turing_lab/presentation/widgets/regex_to_fa_fragment_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/regex_to_fa_fragment_editor.dart';
 
 void main() {
   testWidgets('builds a real learner FSA and passes the Thompson oracle', (
@@ -27,8 +27,10 @@ void main() {
     );
 
     expect(find.text('Active syntax node'), findsOneWidget);
-    expect(find.textContaining('ast_root · symbol · source [0, 1)'),
-        findsOneWidget);
+    expect(
+      find.textContaining('ast_root · symbol · source [0, 1)'),
+      findsOneWidget,
+    );
     expect(find.textContaining('2 states, 1 transitions'), findsOneWidget);
     expect(find.textContaining('JSON'), findsNothing);
     expect(find.byType(TextField), findsNothing);
@@ -44,9 +46,7 @@ void main() {
     );
     expect(
       tester
-          .widget<TextField>(
-            find.byKey(const ValueKey('regex-fa-state-id')),
-          )
+          .widget<TextField>(find.byKey(const ValueKey('regex-fa-state-id')))
           .controller!
           .text,
       'ast_root_s0',
@@ -88,8 +88,10 @@ void main() {
     final fsa = FSA.fromJson(
       Map<String, dynamic>.from(submitted!['fragment']! as Map),
     );
-    expect(fsa.states.map((state) => state.id),
-        containsAll(['ast_root_s0', 'ast_root_s1']));
+    expect(
+      fsa.states.map((state) => state.id),
+      containsAll(['ast_root_s0', 'ast_root_s1']),
+    );
     expect(fsa.initialState!.id, 'ast_root_s0');
     expect(fsa.acceptingStates.single.id, 'ast_root_s1');
     expect(fsa.fsaTransitions.single.inputSymbols, {'a'});
@@ -221,7 +223,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('regex-fa-state-id')), findsOneWidget);
     expect(
-        find.byKey(const ValueKey('regex-fa-state-initial')), findsOneWidget);
+      find.byKey(const ValueKey('regex-fa-state-initial')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     semantics.dispose();
   });

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_earley.dart';
 
 import 'hard_edge/catalog.dart';
 import 'hard_edge/families/grammar_certification.dart';
@@ -54,43 +54,52 @@ Future<int> _dispatch(_Arguments parsed) async {
     case 'repeat':
       final first = await GrammarFamilyCertification.run(parsed.options);
       final second = await GrammarFamilyCertification.run(parsed.options);
-      final stable = canonicalJsonEncode(first.toJson()) ==
+      final stable =
+          canonicalJsonEncode(first.toJson()) ==
           canonicalJsonEncode(second.toJson());
-      stdout.writeln(canonicalJsonEncode({
-        'remotelyVerified': false,
-        'stable': stable,
-        'status': stable ? first.status.name : 'failed',
-      }));
+      stdout.writeln(
+        canonicalJsonEncode({
+          'remotelyVerified': false,
+          'stable': stable,
+          'status': stable ? first.status.name : 'failed',
+        }),
+      );
       return stable ? _statusExitCode(first.status) : 1;
     case 'summary':
       final report = await GrammarFamilyCertification.run(parsed.options);
       final json = report.toJson();
-      stdout.writeln(canonicalJsonEncode({
-        'coverage': json['coverage'],
-        'remotelyVerified': false,
-        'status': json['status'],
-      }));
+      stdout.writeln(
+        canonicalJsonEncode({
+          'coverage': json['coverage'],
+          'remotelyVerified': false,
+          'status': json['status'],
+        }),
+      );
       return _statusExitCode(report.status);
     case 'mutate':
       final results = runGrammarMutationProbes(seed: parsed.options.seedStart);
       final survived = results.where((result) => !result.killed).length;
-      stdout.writeln(canonicalJsonEncode({
-        'killed': results.length - survived,
-        'mutants': results.map((result) => result.toJson()).toList(),
-        'remotelyVerified': false,
-        'survived': survived,
-      }));
+      stdout.writeln(
+        canonicalJsonEncode({
+          'killed': results.length - survived,
+          'mutants': results.map((result) => result.toJson()).toList(),
+          'remotelyVerified': false,
+          'survived': survived,
+        }),
+      );
       return survived == 0 ? 0 : 1;
     case 'replay':
       final counterexample = await _readCounterexample(parsed.artifact!);
       final reproduces = replayGrammarCounterexample(counterexample);
-      stdout.writeln(canonicalJsonEncode({
-        'artifact': parsed.artifact!.path,
-        'remotelyVerified': false,
-        'reproduces': reproduces,
-        'reproductionCommand':
-            'dart run tool/hard_edge_grammar_cases.dart replay --artifact ${parsed.artifactArgument}',
-      }));
+      stdout.writeln(
+        canonicalJsonEncode({
+          'artifact': parsed.artifact!.path,
+          'remotelyVerified': false,
+          'reproduces': reproduces,
+          'reproductionCommand':
+              'dart run tool/hard_edge_grammar_cases.dart replay --artifact ${parsed.artifactArgument}',
+        }),
+      );
       return reproduces ? 1 : 0;
     case 'shrink':
       final source = await _readCounterexample(parsed.artifact!);
@@ -106,10 +115,10 @@ Future<int> _dispatch(_Arguments parsed) async {
 }
 
 int _statusExitCode(GrammarCertificationStatus status) => switch (status) {
-      GrammarCertificationStatus.passed => 0,
-      GrammarCertificationStatus.failed => 1,
-      GrammarCertificationStatus.incomplete => 2,
-    };
+  GrammarCertificationStatus.passed => 0,
+  GrammarCertificationStatus.failed => 1,
+  GrammarCertificationStatus.incomplete => 2,
+};
 
 Future<GrammarCounterexample> _readCounterexample(File artifact) async {
   final decoded = jsonDecode(await artifact.readAsString());

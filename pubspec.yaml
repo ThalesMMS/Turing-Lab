@@ -21,11 +21,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+15
+version: 1.0.1+16
 
 environment:
   sdk: ^3.8.0
-  flutter: ">=3.32.0"
+  flutter: ">=3.35.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -80,6 +80,8 @@ dependencies:
   meta: ^1.15.0
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
+  printing: ^5.14.3
+  pdf: ^3.12.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -117,6 +119,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    # Print sheet font (DejaVu Sans, see assets/fonts/DEJAVU_LICENSE.txt)
+    - assets/fonts/DejaVuSans.ttf
     # Finite automata examples
     - assets/examples/afd_binary_divisible_by_3.json
     - assets/examples/afd_contains_ab.json

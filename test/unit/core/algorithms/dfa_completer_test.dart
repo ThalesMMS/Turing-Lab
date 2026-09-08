@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/dfa_completer.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_completer.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -26,8 +26,9 @@ void main() {
 
       final completed = DFACompleter.complete(dfa);
       final stateIds = completed.states.map((state) => state.id).toList();
-      final transitionIds =
-          completed.fsaTransitions.map((transition) => transition.id).toList();
+      final transitionIds = completed.fsaTransitions
+          .map((transition) => transition.id)
+          .toList();
       final generatedTrap = completed.states.singleWhere(
         (state) => state.type == StateType.trap,
       );
@@ -148,12 +149,7 @@ State _state(
   );
 }
 
-FSATransition _transition(
-  String id,
-  State from,
-  State to,
-  String symbol,
-) {
+FSATransition _transition(String id, State from, State to, String symbol) {
   return FSATransition.deterministic(
     id: id,
     fromState: from,

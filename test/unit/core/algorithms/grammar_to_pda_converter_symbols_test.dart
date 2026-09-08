@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -34,9 +34,7 @@ void main() {
     expect(initialPush.pushSymbols, ['S_0', 'Z']);
     expect(
       pda.pdaTransitions
-          .singleWhere(
-            (transition) => transition.popSymbol == 'S_0',
-          )
+          .singleWhere((transition) => transition.popSymbol == 'S_0')
           .pushSymbols,
       ['T_a'],
     );
@@ -68,17 +66,14 @@ void main() {
     final statesById = {for (final state in pda.states) state.id: state};
 
     expect(json['pushSymbols'], ['S_0', 'Z']);
-    expect(
-      PDATransition.fromJson(json, statesById: statesById).pushSymbols,
-      ['S_0', 'Z'],
-    );
+    expect(PDATransition.fromJson(json, statesById: statesById).pushSymbols, [
+      'S_0',
+      'Z',
+    ]);
 
     final legacyJson = Map<String, dynamic>.from(json)..remove('pushSymbols');
     expect(
-      PDATransition.fromJson(
-        legacyJson,
-        statesById: statesById,
-      ).pushSymbols,
+      PDATransition.fromJson(legacyJson, statesById: statesById).pushSymbols,
       transition.pushSymbol.split(''),
     );
   });
@@ -99,15 +94,13 @@ void main() {
     final standard = GrammarToPDAConverter.convertGrammarToPDAStandard(
       grammar,
     ).data!;
-    final greibach = GrammarToPDAConverter.convertGrammarToPDAGreibach(
-      grammar,
-    );
+    final greibach = GrammarToPDAConverter.convertGrammarToPDAGreibach(grammar);
 
     expect(greibach.isSuccess, isTrue);
     expect(
       greibach.data!.validate().where(
-            (error) => error.contains('invalid push symbol'),
-          ),
+        (error) => error.contains('invalid push symbol'),
+      ),
       isEmpty,
     );
     final standardRule = standard.pdaTransitions.singleWhere(

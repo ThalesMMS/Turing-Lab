@@ -11,8 +11,8 @@ import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:turing_lab/core/services/simulation_highlight_service.dart';
 import 'package:turing_lab/core/services/simulation_runner.dart';
 import 'package:turing_lab/core/services/simulation_runner_messages.dart';
@@ -23,9 +23,9 @@ import 'package:turing_lab/presentation/providers/pda_simulation_provider.dart'
     show pdaSimulationProvider;
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
-import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/trace_viewers/tm_trace_viewer.dart';
 
 Future<void> _pumpPanel(

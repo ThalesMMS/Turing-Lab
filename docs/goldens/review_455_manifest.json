@@ -1,0 +1,1807 @@
+{
+  "sourceRevision": "a4e526235f0977c68632cb6c163354f28079aeb6",
+  "platform": "macOS 26.6.2 (25G83) arm64",
+  "flutter": "3.47.2",
+  "dart": "3.13.2",
+  "locale": "en",
+  "pixelRatio": 1,
+  "remotelyVerified": false,
+  "reviewedImages": [
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_all_enabled.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "5efcf73f3d65ced9c09284a3320e44cd3eb86701230b528a64cefbc9567368cc",
+      "reviewedSha256": "35c1e6d98496623271619e3fdcb37c274f5f8aedc0ac5e07436b757d3d60d574",
+      "updatedSha256": "35c1e6d98496623271619e3fdcb37c274f5f8aedc0ac5e07436b757d3d60d574",
+      "previousReviewedSha256": "76c07120e21f7875f87677d4fbe55d612ce018bf46d9a7388396d2cc9b74fea9",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_compact.png",
+      "dimensions": [
+        380,
+        650
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "1c8be2a28d4a0b6e0a5bdd70851ad5a89a9d0e208cbefb95f3b4fa674b3f37b8",
+      "reviewedSha256": "7d824710dade3360614c973e648b7b838d2392cd52b5a4854890aa14df1f410b",
+      "updatedSha256": "7d824710dade3360614c973e648b7b838d2392cd52b5a4854890aa14df1f410b",
+      "previousReviewedSha256": "0b25dee574b7541bc6d6b996158a65b1907208047226798502f8a6fc9b766c22",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_conversions.png",
+      "dimensions": [
+        400,
+        700
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "36e74436d42bfb6e9413f715ddbb0453592815be09a162dd22f7ea99bec1bd41",
+      "reviewedSha256": "8422bc6aac4d6c527f84e8835a29274abbe21c82daa606d03215477f3697106a",
+      "updatedSha256": "8422bc6aac4d6c527f84e8835a29274abbe21c82daa606d03215477f3697106a",
+      "previousReviewedSha256": "a5bffff40e0cec29058d68afed364487db90309148ec4162746325e13dce0897",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_empty_desktop.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "4d33af518715c4a9a7bdb44abd73858024ef32a541096cf3c6178297b94ad231",
+      "reviewedSha256": "022d0dd34db2cdd3abf2662299c4c0b25dd3748770f38fe675a80afd7ec1ac98",
+      "updatedSha256": "022d0dd34db2cdd3abf2662299c4c0b25dd3748770f38fe675a80afd7ec1ac98",
+      "previousReviewedSha256": "135bfecda829aed4b2f160034bfe061a39e2704165c4e8c07c7f2fb79fe15bc1",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_empty_mobile.png",
+      "dimensions": [
+        320,
+        700
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "4d33af518715c4a9a7bdb44abd73858024ef32a541096cf3c6178297b94ad231",
+      "reviewedSha256": "39abc2fd0a452b09e741469f04d73a17ba6767d67eb37f8863b44a6820109c50",
+      "updatedSha256": "39abc2fd0a452b09e741469f04d73a17ba6767d67eb37f8863b44a6820109c50",
+      "previousReviewedSha256": "135bfecda829aed4b2f160034bfe061a39e2704165c4e8c07c7f2fb79fe15bc1",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_empty_tablet.png",
+      "dimensions": [
+        350,
+        800
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "4d33af518715c4a9a7bdb44abd73858024ef32a541096cf3c6178297b94ad231",
+      "reviewedSha256": "90dbc4a26b345709bb10a1653176254e6319c41166b9078464aa2b388a653193",
+      "updatedSha256": "90dbc4a26b345709bb10a1653176254e6319c41166b9078464aa2b388a653193",
+      "previousReviewedSha256": "135bfecda829aed4b2f160034bfe061a39e2704165c4e8c07c7f2fb79fe15bc1",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_equivalence_false.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "7f652bd2b50c960c2bd182a84b31d5f8119c3fbef0b1ca73478eb6d55ceee985",
+      "reviewedSha256": "1d9f0bbd4199b155f4f61be8666dee7186fd719ddab285815ab6bd50ee157277",
+      "updatedSha256": "1d9f0bbd4199b155f4f61be8666dee7186fd719ddab285815ab6bd50ee157277",
+      "previousReviewedSha256": "f3f118de9781e7bef51f55942a3a5dcdcb7cfaf79c8a4008c1814d8f1a60e1aa",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_equivalence_true.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "7f652bd2b50c960c2bd182a84b31d5f8119c3fbef0b1ca73478eb6d55ceee985",
+      "reviewedSha256": "1ececd532587403a81f59d54d86d9e9dd807c4c6d72d12fb05dfa690b168b66a",
+      "updatedSha256": "1ececd532587403a81f59d54d86d9e9dd807c4c6d72d12fb05dfa690b168b66a",
+      "previousReviewedSha256": "f3f118de9781e7bef51f55942a3a5dcdcb7cfaf79c8a4008c1814d8f1a60e1aa",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_partial_mobile.png",
+      "dimensions": [
+        320,
+        700
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "2536f60e92902329140c2bf6170e7421bc8aefefed564f3e8266400cf1e1a07e",
+      "reviewedSha256": "00e47b97a8499da52491c2f0bc1ba9e2deae00996a861a5edc96984ee55469e2",
+      "updatedSha256": "00e47b97a8499da52491c2f0bc1ba9e2deae00996a861a5edc96984ee55469e2",
+      "previousReviewedSha256": "206e08d4158e959c7fa4d2901c6193e45b862e2f62e1d6b1547b663a0eea7a7f",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_regex_equiv_tablet.png",
+      "dimensions": [
+        350,
+        800
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "964371dbd978fa5a6348e854352fcdfa8a07bf79bf7c0e2d3514101f72194eda",
+      "reviewedSha256": "56a95a37fc2ac84a2edaca81e27a0d65e5fdc01fbe242c791ce00396d304e99a",
+      "updatedSha256": "56a95a37fc2ac84a2edaca81e27a0d65e5fdc01fbe242c791ce00396d304e99a",
+      "previousReviewedSha256": "ac07f178b4c146a377951aa2907ef097da5c81eea323e85d0424c70af794e7b2",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_regex_filled.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "20e4f554affb603000a889230a76c3d21fb9dcc53f0e2025707cdc87ddeb6116",
+      "reviewedSha256": "cb9b60c31205a7906240779825613aa55b50b9308322341754d45d6fba0505ba",
+      "updatedSha256": "cb9b60c31205a7906240779825613aa55b50b9308322341754d45d6fba0505ba",
+      "previousReviewedSha256": "1036615d6bb0b56e53562043707b5fef6f5a13815802f19b803c6bb14661c173",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_scrolled_bottom.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "ff322d6ea7e4a51e9cbedae15289d95d3c84756b76824668c402669afa8a2b0c",
+      "reviewedSha256": "3cedbf4e29f5b6724a7bad61dcf178d89dabde52ba39f44ef3d8325ed5d898f4",
+      "updatedSha256": "3cedbf4e29f5b6724a7bad61dcf178d89dabde52ba39f44ef3d8325ed5d898f4",
+      "previousReviewedSha256": "3157c1cdde3202a6a28a1b23276b169503cae97ff5967a144eb24be6209c350a",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/algorithm_panel_step_mode_enabled.png",
+      "dimensions": [
+        400,
+        900
+      ],
+      "classification": "empty-string-notation-and-manual-completion-entry",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "4f1adc0ae11eed5165bcaa315a85db4983b170a26e67f51c291a3a622f6bada1",
+      "reviewedSha256": "2a27851dbd6c1b2fb1fa4756690d38d8de7992d8c16ef2400b897be563e7e5cd",
+      "updatedSha256": "2a27851dbd6c1b2fb1fa4756690d38d8de7992d8c16ef2400b897be563e7e5cd",
+      "previousReviewedSha256": "f93e075fb262f6ae8d5a546fc047babe9fbbdf0f4853bcc158d0bd012872af3f",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "915c3c9560407498428c63315a589d81b27d7b77af310ac9540b9c5cffb2f269",
+      "reviewedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9",
+      "updatedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_complex.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "9187db7e18e4ef43f66f4076e1e433c84e2a43e4f5cf57bba920b8a8c1fac01d",
+      "reviewedSha256": "474823940f9356ec694b425399110fb4fdd05ae17724d46c218b1b7866976b40",
+      "updatedSha256": "474823940f9356ec694b425399110fb4fdd05ae17724d46c218b1b7866976b40"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_initial_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8ba5a94246ac9dd719f138d1b7e71f27e0e1584c7886383b0208f06450ca8f06",
+      "reviewedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b",
+      "updatedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_initial_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "bda45dc201d37319f98602320bf7a21154d073cfaf6e1062e33eb8d34baacc1c",
+      "reviewedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5",
+      "updatedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_multiple_states_with_transitions.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "7f4a7703465b54c676339b74fe052ecab0b5e6c35c2b134f8b53803c54005833",
+      "reviewedSha256": "a3930ce18fede25875017c92b760e26da7bddcba356683352a5637c1ee4ab435",
+      "updatedSha256": "a3930ce18fede25875017c92b760e26da7bddcba356683352a5637c1ee4ab435"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_renderer_migration_highlighted.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "286ccfab9f58c26c5114eea327bf99a55ff14a1f2bfd342af0d156e32ad33cd2",
+      "reviewedSha256": "360ec669187a52b1896b1358139d87f3c0147a8f6f0dfa1feca24bf07a6a83af",
+      "updatedSha256": "360ec669187a52b1896b1358139d87f3c0147a8f6f0dfa1feca24bf07a6a83af"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_self_loop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e3405687cfa39e809da96267ea78614f59db84b84fb4e2ee842607d00e199383",
+      "reviewedSha256": "b0d4f06b254abe6ffb7fff279ab99f124fca115fda50144047ec39750abfbe30",
+      "updatedSha256": "b0d4f06b254abe6ffb7fff279ab99f124fca115fda50144047ec39750abfbe30"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/automaton_canvas_single_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "9d887f4d5edeff0acce9cbf4f1c58c7bee79fd2df9fab56a1fcf881ae07e3cbf",
+      "reviewedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305",
+      "updatedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_complex_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "243514d7d591069f2d22ecc14d8319a2f888aa8858a5e4d5af07cc3abe5b1d89",
+      "reviewedSha256": "d0049c692e956e85e44843fddc452cec6313b3b781c5a36881eb8e24506abea3",
+      "updatedSha256": "d0049c692e956e85e44843fddc452cec6313b3b781c5a36881eb8e24506abea3"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_empty_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "686c09491397a753c0adfe536cea1f840b45d5f438b26e59fd3237aa11cfe675",
+      "reviewedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56",
+      "updatedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_empty_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "08e9c268227f8632d62a1bb72d5c10613242f4f52395f721be174b115583ca37",
+      "reviewedSha256": "ec79439f8283992e38d0740d7afcb1f8b18adaedb2ff6edf4f97613b7706a702",
+      "updatedSha256": "ec79439f8283992e38d0740d7afcb1f8b18adaedb2ff6edf4f97613b7706a702"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_empty_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "3051e1773450a8a635363cafaecae169c6c971327652d96808bb4540a1cd2bbd",
+      "reviewedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b",
+      "updatedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_epsilon_nfa_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "a6f2f744cd481c4a4b89f71f17cba372cb68c3f85a1576ea9d8e0771ab253416",
+      "reviewedSha256": "3822fc2493103eceecb5035fbcb0684113859a60d0185d3decd9f545a68da493",
+      "updatedSha256": "3822fc2493103eceecb5035fbcb0684113859a60d0185d3decd9f545a68da493"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_grouped_labels_dark.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "0c1dcb6ef7420f340619e48dec578d5e2b0bc55490428ea00bca4cb0bc121ef8",
+      "reviewedSha256": "b2282370ec3f27db4d185e42aa6d43b030f79b0b9d8b13efd0ae09fd437784c1",
+      "updatedSha256": "b2282370ec3f27db4d185e42aa6d43b030f79b0b9d8b13efd0ae09fd437784c1"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_grouped_labels_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "f5946f118e04d9dde894b299df2de8131f404eed88e404fc957bc435111182e7",
+      "reviewedSha256": "e4fa7c7c53cc0f1536dbe96711119737250957b2a9b40870043f1570367099e7",
+      "updatedSha256": "e4fa7c7c53cc0f1536dbe96711119737250957b2a9b40870043f1570367099e7"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_mobile_dfa.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "95f19ce44f8303b708c2d854e4eef07ec5c0a025b4544e3a03a98a3207fa9e4e",
+      "reviewedSha256": "56a08dbe6af770c23545cd9a939e613b81a1e0813900c765fefae4b85058a017",
+      "updatedSha256": "56a08dbe6af770c23545cd9a939e613b81a1e0813900c765fefae4b85058a017"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_nfa_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "92c62e90915cbc6bbb082a2598dbef3d6207accf0070dee33fcca982a5d8311a",
+      "reviewedSha256": "a3de234670ccbf2373c494c752a3ccdcad15eed57c93243d20cac93354483ae6",
+      "updatedSha256": "a3de234670ccbf2373c494c752a3ccdcad15eed57c93243d20cac93354483ae6"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_opposing_vertical_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "a8ec6bc5f3dc43072e2effc589d7f7f56b0358388d1c938823955f97ac74bce5",
+      "reviewedSha256": "6a2a2aaa3d7be1e48558ee17b52dff6a72d8f38f48e19341e8e927ac7adbe293",
+      "updatedSha256": "6a2a2aaa3d7be1e48558ee17b52dff6a72d8f38f48e19341e8e927ac7adbe293"
+    },
+    {
+      "path": "test/goldens/pages/goldens/fsa_page_simple_dfa_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "504ead523938b04badc172ca7d4edc7e639d038bf3d505a560357e5ee0b76e86",
+      "reviewedSha256": "bc72de44f773e2323496d3415f384899a1c804f659955e1e7f55f4a25aa72be3",
+      "updatedSha256": "bc72de44f773e2323496d3415f384899a1c804f659955e1e7f55f4a25aa72be3"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_cfg_desktop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "09b95335c1f0eabebe2505b46916df809f22cf04ba92605954d045691f654f90",
+      "reviewedSha256": "f8e1e801bfc484a0ed16b10a35a01a8a4822850e5287be1128b27163b2da69dd",
+      "updatedSha256": "f8e1e801bfc484a0ed16b10a35a01a8a4822850e5287be1128b27163b2da69dd"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_cfg_tablet.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "09b95335c1f0eabebe2505b46916df809f22cf04ba92605954d045691f654f90",
+      "reviewedSha256": "f8e1e801bfc484a0ed16b10a35a01a8a4822850e5287be1128b27163b2da69dd",
+      "updatedSha256": "f8e1e801bfc484a0ed16b10a35a01a8a4822850e5287be1128b27163b2da69dd"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_complex_desktop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "091f54da98d699b561091bd21326ecbbca6080f1adf27b4cedea22f947a02e31",
+      "reviewedSha256": "060fed4d37f58a277387a86d21aa590bffe5d79a9f8c56bc51ad148013631bca",
+      "updatedSha256": "060fed4d37f58a277387a86d21aa590bffe5d79a9f8c56bc51ad148013631bca"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_lambda_desktop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "039f6ff3365a279907b7c151742fd23a5d314c1e6ef19a5e4363c06e233b6aaa",
+      "reviewedSha256": "2053d2c2ff06aa9bffd6312d8d875d27ea9accd09b98de57c505f4fbf0bb3066",
+      "updatedSha256": "2053d2c2ff06aa9bffd6312d8d875d27ea9accd09b98de57c505f4fbf0bb3066"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_regular_desktop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8ef909caa7864d8461a2e133a1adda6207e427579376a0768f7a682758b0c0cc",
+      "reviewedSha256": "937612d9fd92e3fc3bd922036af908c03f84a033e3b9027e27c2ed213f47e55a",
+      "updatedSha256": "937612d9fd92e3fc3bd922036af908c03f84a033e3b9027e27c2ed213f47e55a"
+    },
+    {
+      "path": "test/goldens/pages/goldens/grammar_page_regular_mobile.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "grouped-production-alternatives",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8ef909caa7864d8461a2e133a1adda6207e427579376a0768f7a682758b0c0cc",
+      "reviewedSha256": "937612d9fd92e3fc3bd922036af908c03f84a033e3b9027e27c2ed213f47e55a",
+      "updatedSha256": "937612d9fd92e3fc3bd922036af908c03f84a033e3b9027e27c2ed213f47e55a"
+    },
+    {
+      "path": "test/goldens/pages/goldens/home_page_mobile_fsa.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "compact-workspace-selector",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "aafaba58525a1e1d564f55fac5bd83b1cd3f2d14e22fea67eacf4487911996c1",
+      "reviewedSha256": "7bdda686b8436dd6c30010fcdf0b76611a5bc45a040e10e440891149c5e2c523",
+      "updatedSha256": "7bdda686b8436dd6c30010fcdf0b76611a5bc45a040e10e440891149c5e2c523"
+    },
+    {
+      "path": "test/goldens/pages/goldens/home_page_mobile_grammar.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "compact-workspace-selector",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "42b9feb76ab0024cf520a3ae981e0f64582283765c2363f658e901d5a4195be5",
+      "reviewedSha256": "6772faf78661d5b30559da49f8ca139388da4fac9ecef69f963fd0f9147b9aa5",
+      "updatedSha256": "6772faf78661d5b30559da49f8ca139388da4fac9ecef69f963fd0f9147b9aa5"
+    },
+    {
+      "path": "test/goldens/pages/goldens/home_page_mobile_regex.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "compact-workspace-selector",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "ef7d93e50f421f4c515ee59577f89010784e96136f114849cfde998dc03fed68",
+      "reviewedSha256": "9808c09733f9ef526a3ff510f5c9a7e4c6f41a01d98c01ac1855abf4a0604659",
+      "updatedSha256": "9808c09733f9ef526a3ff510f5c9a7e4c6f41a01d98c01ac1855abf4a0604659"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_complex_technical_details.png",
+      "dimensions": [
+        600,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "55091a2e4e0d7c08a721e46d5b2241c108358ed0c85219df0b7c53c6c0cd6917",
+      "reviewedSha256": "6a1f9911686546d8f6f1cf53a00a4c6d0710e11adaa2f3123298800b337c93d2",
+      "updatedSha256": "6a1f9911686546d8f6f1cf53a00a4c6d0710e11adaa2f3123298800b337c93d2"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_corrupted_data.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "cf4e11ff03595dc4dfdb72cd1e5fd155372d7eb62eecb2df9ab5059bd3db98c0",
+      "reviewedSha256": "40e7c0c091d55bdd34db9c9def1229d2f728e98dc6c1277394b418ca8864bf44",
+      "updatedSha256": "40e7c0c091d55bdd34db9c9def1229d2f728e98dc6c1277394b418ca8864bf44"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_empty_technical_details.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "1799ff54f5c983aa8988f790ff3308dc81a5fa21b346bd3d1d1854b9d696ed32",
+      "reviewedSha256": "1a6cf151d432847b776ed76078f8808eb0f67e3178e51540793def051a9aeaa8",
+      "updatedSha256": "1a6cf151d432847b776ed76078f8808eb0f67e3178e51540793def051a9aeaa8"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_inaccessible_file.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "bad9bc0b5a2abc075169fa951275045d0c6804931d56edef18037035f145cfa5",
+      "reviewedSha256": "85bd12ca17ad214c32660366958266b1a21994e08a36d964643b9c6625d9b3a8",
+      "updatedSha256": "85bd12ca17ad214c32660366958266b1a21994e08a36d964643b9c6625d9b3a8"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_invalid_automaton.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "25a79497de757dc0ab2feb3a549c2a11872ce8f212bdaaea4b9efe560180b1e6",
+      "reviewedSha256": "88a7c11b121544216739632a59e777627f9b68b364ef3fe28e5798f6719d2fa4",
+      "updatedSha256": "88a7c11b121544216739632a59e777627f9b68b364ef3fe28e5798f6719d2fa4"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_invalid_json.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "201f29a07cfa5797b1461bab50aa67ad62456f8431acbfe947f4beba1d1b5710",
+      "reviewedSha256": "878bd72176be5da4dac4061b53c9dd37ff82701d3b210937959373854c45a821",
+      "updatedSha256": "878bd72176be5da4dac4061b53c9dd37ff82701d3b210937959373854c45a821"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_long_filename.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "821fa2f056c9a58ffe29bc9faeb5730098bd394e6e701c9af111bcb77de2fd8d",
+      "reviewedSha256": "192a75cb32549860ba3f8bc272ad90a0c72bd2396801a6c42d8b981106e97454",
+      "updatedSha256": "192a75cb32549860ba3f8bc272ad90a0c72bd2396801a6c42d8b981106e97454"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_long_message.png",
+      "dimensions": [
+        600,
+        500
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "bb2157f4d76e594ec0edbd32d8180ec4bd41019c485b6e16d5bf785d376e9515",
+      "reviewedSha256": "092641140ec81378961d06992dc19e1a8f205f1948bc49edfede92cc0b1d7f3a",
+      "updatedSha256": "092641140ec81378961d06992dc19e1a8f205f1948bc49edfede92cc0b1d7f3a"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_malformed_jff.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "d7d015ed1abe66e9ab62f0185f3c6a0543b559239e2c5504b7e46f20de4ce814",
+      "reviewedSha256": "3f2dba4f4547b2b64df0fa0e32fb270549bea719952be4360c1027e73906219d",
+      "updatedSha256": "3f2dba4f4547b2b64df0fa0e32fb270549bea719952be4360c1027e73906219d"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_minimal_message.png",
+      "dimensions": [
+        600,
+        350
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "1700c914066852456727cb0e751525000751a0633be1c0dc8d09c0a272327702",
+      "reviewedSha256": "2ab5ccd18e8afa39bb2cc05a2f9cf222d07d70734bc88d35be854a0f224263b3",
+      "updatedSha256": "2ab5ccd18e8afa39bb2cc05a2f9cf222d07d70734bc88d35be854a0f224263b3"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_no_technical_details.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "02760294aa1aeeaebe1fe3916d1daa820d72ba64844c20f5367d519ba19ea2e0",
+      "reviewedSha256": "9a7e163e968a37aebed5d05318ffd192b6fe27965e666be8fd3619567c27fd36",
+      "updatedSha256": "9a7e163e968a37aebed5d05318ffd192b6fe27965e666be8fd3619567c27fd36"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_short_filename.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "6aac768f1b5e277fe96842a3b906f6bacee272dab24b33ca8584b8b822d94c76",
+      "reviewedSha256": "79231610fc613259f2c8b2e90c66f22379b15c1714b8f3522775ac7e0a7c3c91",
+      "updatedSha256": "79231610fc613259f2c8b2e90c66f22379b15c1714b8f3522775ac7e0a7c3c91"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_technical_details_collapsed.png",
+      "dimensions": [
+        600,
+        500
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "b2e8bcba29592df60306bd4b35cf6d00bfb800fe5cf01d1d81ee5cc3f60768a8",
+      "reviewedSha256": "39d408699fb842793f71a0f1f59330b55193d0935885d1a8144cd5d4d28423d5",
+      "updatedSha256": "39d408699fb842793f71a0f1f59330b55193d0935885d1a8144cd5d4d28423d5"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_technical_details_expanded.png",
+      "dimensions": [
+        600,
+        600
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "8852430dec98a804aa3c1c9a6709d66194d454a0e0a3992b90964d5406f34eb5",
+      "reviewedSha256": "9584fea45a735e6fa3320f82f124c840bd832a54f88ba029f4091a824e3d749a",
+      "updatedSha256": "9584fea45a735e6fa3320f82f124c840bd832a54f88ba029f4091a824e3d749a"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/import_error_unsupported_version.png",
+      "dimensions": [
+        600,
+        400
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "1d78b15fd80bf295af24ea9c1af47a47d0345e7aecb3a9f3655e9665ee4d6545",
+      "reviewedSha256": "3e5cfff3073f92d0eca00e7cfde45ffd1407e81607d1311f25b3583a3ee55f38",
+      "updatedSha256": "3e5cfff3073f92d0eca00e7cfde45ffd1407e81607d1311f25b3583a3ee55f38"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "915c3c9560407498428c63315a589d81b27d7b77af310ac9540b9c5cffb2f269",
+      "reviewedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9",
+      "updatedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_balanced_parentheses.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "bdaa5a853c669c5f3232c3d551f6410fcbc2f4f2b56e1d801af7bdc2c54c5824",
+      "reviewedSha256": "8a59b2db028931cf354d2b61723bbf2dee24be14f6ffdff85c7a56fc19343068",
+      "updatedSha256": "8a59b2db028931cf354d2b61723bbf2dee24be14f6ffdff85c7a56fc19343068"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_complex.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "b210eecc352f586ab87872baa1c96bc10c1c79cb7f215084675fde1d05beebcc",
+      "reviewedSha256": "85bde0802c4d382aa6e634165b237ae8811b6943b752afb13740ef7ae6987d8b",
+      "updatedSha256": "85bde0802c4d382aa6e634165b237ae8811b6943b752afb13740ef7ae6987d8b"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_initial_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8ba5a94246ac9dd719f138d1b7e71f27e0e1584c7886383b0208f06450ca8f06",
+      "reviewedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b",
+      "updatedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_initial_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "bda45dc201d37319f98602320bf7a21154d073cfaf6e1062e33eb8d34baacc1c",
+      "reviewedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5",
+      "updatedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_multiple_states_with_transitions.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "1a0fc5fb0a899836cf0e2f482576bd297dcb5107403b9d4206194fbf079804d8",
+      "reviewedSha256": "e8438b1f362fc98f861498cf230bb085dd1acfc9346539b2dfafe9947dc829c6",
+      "updatedSha256": "e8438b1f362fc98f861498cf230bb085dd1acfc9346539b2dfafe9947dc829c6"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_renderer_migration_highlighted.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "f5cb17c9982a70622833a4f1a7269d3d7e2ca99e07d3c11e4a7c0ac7493f59fb",
+      "reviewedSha256": "ec16ac14c17269c8731fe020bf9bdbba8444b0c45e99fa8d9400b0e7ec545ff9",
+      "updatedSha256": "ec16ac14c17269c8731fe020bf9bdbba8444b0c45e99fa8d9400b0e7ec545ff9"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_self_loop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e3405687cfa39e809da96267ea78614f59db84b84fb4e2ee842607d00e199383",
+      "reviewedSha256": "bb979e93764e05838742b2dc653a69273587559ffce4dfa17380a877358f8fbd",
+      "updatedSha256": "bb979e93764e05838742b2dc653a69273587559ffce4dfa17380a877358f8fbd"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/pda_canvas_single_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "9d887f4d5edeff0acce9cbf4f1c58c7bee79fd2df9fab56a1fcf881ae07e3cbf",
+      "reviewedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305",
+      "updatedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_all_lambda.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "282a727d11191144ee26635165c3cdc2da6dba85a2b712555a26121bb2841e51",
+      "reviewedSha256": "69b37d352947b93aef9b1c5f55a49f2f8e81bbe0fc75c67469c8fec28f9f54b8",
+      "updatedSha256": "69b37d352947b93aef9b1c5f55a49f2f8e81bbe0fc75c67469c8fec28f9f54b8"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_complex_push.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "c9e69c15e0b9b2f587a8406734e2e514a340e717779043ed834b8ffd14da3031",
+      "reviewedSha256": "15c91a95fd89febc7b7474a74b6dcd02171e0a0ec509cda9ac9de56312b7684d",
+      "updatedSha256": "15c91a95fd89febc7b7474a74b6dcd02171e0a0ec509cda9ac9de56312b7684d"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_empty_values.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "54ce1a966762e9a19c19aa6710f13245df1990a65ba4a8011a3b675b4b2bfc7b",
+      "reviewedSha256": "7ce5f8187290015b8e5d4b9dedd444172c5fc133db92ab7c0732edd55796bc32",
+      "updatedSha256": "7ce5f8187290015b8e5d4b9dedd444172c5fc133db92ab7c0732edd55796bc32"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_initial_values.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "a5e8fe1f66ac869f732e8c5023c263a8b252eccd7a70950db2933721b34334dc",
+      "reviewedSha256": "afe7b15e668597cc6f076541f44787fd0162dfb653c8d2ff808c8d1384a05275",
+      "updatedSha256": "afe7b15e668597cc6f076541f44787fd0162dfb653c8d2ff808c8d1384a05275"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_lambda_input.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "c36ad48c56e493165c43b2a17a1f1020b6f1d8dd3d05f6d74a261abd6f46ba17",
+      "reviewedSha256": "ce48eca7d8200c9871edb837bd320647db5830dfeba0b2a518d1f15749cc7c8d",
+      "updatedSha256": "ce48eca7d8200c9871edb837bd320647db5830dfeba0b2a518d1f15749cc7c8d"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_lambda_pop.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "21facaf701f7bfd945206a1f037b5a697dd265cd2309fe1f248fe31641489197",
+      "reviewedSha256": "113189ef60afb5db6efcd76ab28cf01301d96b6e31d06083aefb423f2ac2ab17",
+      "updatedSha256": "113189ef60afb5db6efcd76ab28cf01301d96b6e31d06083aefb423f2ac2ab17"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/pda_editor_lambda_push.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e0c3345ba0eff6adab5b26f6919e431f680876d3eafd011373a37891deb72bc8",
+      "reviewedSha256": "e0fb030d2dec8e28fd24aab78009a7ab70ed4cb69110559b8b531aa946a11e8e",
+      "updatedSha256": "e0fb030d2dec8e28fd24aab78009a7ab70ed4cb69110559b8b531aa946a11e8e"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_balanced_parens_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "5847665d3c0b11ff02af364cb1ea7fe318c9d3e92ff646fb1bcff3d016a8e304",
+      "reviewedSha256": "ed1aa0c03e4565cc05caf7a6d9cecbdef8cc43f2b799fcb8f1c324e2265bde5b",
+      "updatedSha256": "ed1aa0c03e4565cc05caf7a6d9cecbdef8cc43f2b799fcb8f1c324e2265bde5b"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_complex_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "935febe4de1db5aa44d54fa054fcca4606c7236c1eb21b1465d48563d09bd603",
+      "reviewedSha256": "ac28b75d03694c97d4a4ff31f496ed450b8b71ea8925a7858873bab79af49545",
+      "updatedSha256": "ac28b75d03694c97d4a4ff31f496ed450b8b71ea8925a7858873bab79af49545"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_empty_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "686c09491397a753c0adfe536cea1f840b45d5f438b26e59fd3237aa11cfe675",
+      "reviewedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56",
+      "updatedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_empty_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "774bf7e3d97402addf3a905dc20546cbe5cf8111909d16e19337c6c5eb6c7f1b",
+      "reviewedSha256": "0477073801babe3807233d55a920b11c001bc0691e29639449980ef53dc4a3d3",
+      "updatedSha256": "0477073801babe3807233d55a920b11c001bc0691e29639449980ef53dc4a3d3"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_empty_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "3051e1773450a8a635363cafaecae169c6c971327652d96808bb4540a1cd2bbd",
+      "reviewedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b",
+      "updatedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_epsilon_pda_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e0cd8c463affd225617fe9de10b928fa96242727c50459828d2306d8495cbf64",
+      "reviewedSha256": "7e725e97559b49c025179b69f85d443c717d64e16dcf29279c7038ce6a57b01f",
+      "updatedSha256": "7e725e97559b49c025179b69f85d443c717d64e16dcf29279c7038ce6a57b01f"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_mobile_pda.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "bf59b71d2c3574a313faed45a895dd1992495758dcdec560a9df34bc98cb3c8b",
+      "reviewedSha256": "bb7a3e63325340965558eeecf8ecc42a03a4f97ef4fe0ab31b45331b991a4a65",
+      "updatedSha256": "bb7a3e63325340965558eeecf8ecc42a03a4f97ef4fe0ab31b45331b991a4a65"
+    },
+    {
+      "path": "test/goldens/pages/goldens/pda_page_simple_pda_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e6a56ce45eb85c71886aa831f859380f488b23c4a7250cfcfebb23effbb1c7d4",
+      "reviewedSha256": "3b122c3f2c7fd0de4565948f4d6437011a0a8a466b67cffe4e18a25c94cbf561",
+      "updatedSha256": "3b122c3f2c7fd0de4565948f4d6437011a0a8a466b67cffe4e18a25c94cbf561"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_comparison_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "c8ebe7fb8b071dc2be28975293c776782ffb11c487bbb780dbe400d65a01a35c",
+      "reviewedSha256": "bca55aa074f0d3542d0ba5dda2900bad35475ac00c954cbe166c2c26712da3ca",
+      "updatedSha256": "bca55aa074f0d3542d0ba5dda2900bad35475ac00c954cbe166c2c26712da3ca"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_empty_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "b918bf844eb6bd4e2e5fc23485ed64cbd59acdc778c7ab31018a2e6b57b71604",
+      "reviewedSha256": "8dc309f44752abcdfc7a631505f69caf8346231afcb983ca5370161cb602612d",
+      "updatedSha256": "8dc309f44752abcdfc7a631505f69caf8346231afcb983ca5370161cb602612d"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_empty_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "52b7d587648104684bddb5486b7d8bcaf61d4943512d872404f50ca58370bb41",
+      "reviewedSha256": "c628a89826b227b1a0239cfac6e5957984821fe2a429c7f568e96416483e7908",
+      "updatedSha256": "c628a89826b227b1a0239cfac6e5957984821fe2a429c7f568e96416483e7908"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_empty_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "a90e51373c77e310abcab1f7e4ae11f9337d99bd0ba9daf1e96b595b8561041a",
+      "reviewedSha256": "da9c82c718eeea8c0100ad37fc884e105acd531b8d8eb66eca6f41c33425c845",
+      "updatedSha256": "da9c82c718eeea8c0100ad37fc884e105acd531b8d8eb66eca6f41c33425c845"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_fa_to_regex_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "b918bf844eb6bd4e2e5fc23485ed64cbd59acdc778c7ab31018a2e6b57b71604",
+      "reviewedSha256": "b1c4c29e3cb4acee59ae6830471c3517fe9d26157c06a55314b25aadd6f6d139",
+      "updatedSha256": "b1c4c29e3cb4acee59ae6830471c3517fe9d26157c06a55314b25aadd6f6d139"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_features_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "cc736d632943b3ea5fb8ebc7e45c69b3252a3217b5b9215844b32812b073fe35",
+      "reviewedSha256": "ab311ae48b0c546df35ca929d2d77483fea3d26164bd390dc191847b13d26df9",
+      "updatedSha256": "ab311ae48b0c546df35ca929d2d77483fea3d26164bd390dc191847b13d26df9"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_input_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "941d2c7f2df0179383d43ba91774eb0086bfde649c7918ec43766465f28733ad",
+      "reviewedSha256": "f03e14dc4846a747e5a7ec88f95480b9fa22dcd112a3d336677089c01356fd81",
+      "updatedSha256": "f03e14dc4846a747e5a7ec88f95480b9fa22dcd112a3d336677089c01356fd81"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_invalid_regex_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "838c0b500e547c80279b939ede248b10fd41b046fb46c169d66b890028553111",
+      "reviewedSha256": "9d1d6c6dea6608e7bab87fa84a5ba20a37eca963aeebc41ad95a02b53273126d",
+      "updatedSha256": "9d1d6c6dea6608e7bab87fa84a5ba20a37eca963aeebc41ad95a02b53273126d"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_test_match_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "17d10bc234f1522fd77224f5a056cefa97802694709f5733368e99ec5e69ecd6",
+      "reviewedSha256": "8851aad1e636d96b0f22279f262302ffa51f1026a1ecc450211b279927b80d29",
+      "updatedSha256": "8851aad1e636d96b0f22279f262302ffa51f1026a1ecc450211b279927b80d29"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_test_nomatch_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "33cd2101a29fe0aaaa8e7ba4354eff82db76b3eefff32f972afc1db87610db81",
+      "reviewedSha256": "8f93f2b4efda0bdfb01a2da82d42587d6e97f417ff4f55316cae7c2e0a9a3f2c",
+      "updatedSha256": "8f93f2b4efda0bdfb01a2da82d42587d6e97f417ff4f55316cae7c2e0a9a3f2c"
+    },
+    {
+      "path": "test/goldens/pages/goldens/regex_page_valid_regex_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "current-workspace-dock-and-repaired-input-panel-fixtures",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "9c071e7915d18421add25aa65cc755ec182ec11433ac35dc7eb8067f523b941c",
+      "reviewedSha256": "e2c6f7034cd2036d9c8047a8f71d936e394db4237aa577f1bb3b212fa79ad553",
+      "updatedSha256": "e2c6f7034cd2036d9c8047a8f71d936e394db4237aa577f1bb3b212fa79ad553"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_custom_canvas_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "97c2b94feb467cc6448175c18e021ef6bb5c17ff3ce7e94790c241dd75dd1a61",
+      "reviewedSha256": "e2fe7b4c21074e0e6a569e3a4fc7dc28bf1b46c2eb7864d353669b2edc8375a9",
+      "updatedSha256": "e2fe7b4c21074e0e6a569e3a4fc7dc28bf1b46c2eb7864d353669b2edc8375a9"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_custom_general_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "43fdbac795699193c6a1d907a2dc80306dd1eb71afeea84f81204cff7a9f9382",
+      "reviewedSha256": "522d63f4e20727c403039d0d53ae4999797d60b9118d5248a17818976616fe14",
+      "updatedSha256": "522d63f4e20727c403039d0d53ae4999797d60b9118d5248a17818976616fe14",
+      "previousReviewedSha256": "c2a7b7f3deb2426124efdfe3de09bf3640bfba6f0486075f40126b85e60ae60d",
+      "previousReviewedDimensions": [
+        1400,
+        900
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_custom_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "d9f83c833f0ebfda605527f442ce4b1faa943dd060405ff54fec3dac1fc9c5fb",
+      "reviewedSha256": "10e665b8a2d5f50533f9be8d5261890d7c2df0296610d42889f249190d79bcc8",
+      "updatedSha256": "10e665b8a2d5f50533f9be8d5261890d7c2df0296610d42889f249190d79bcc8"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_custom_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "cd8f245f1e9f09c0751b03c03bb94b6fc46ac97ef6da579abe8c434ae445be07",
+      "reviewedSha256": "5a02617110841ab0a3a2aca6153c8c7bca2006c735725783ff5454ea90b582b7",
+      "updatedSha256": "5a02617110841ab0a3a2aca6153c8c7bca2006c735725783ff5454ea90b582b7"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_dark_theme_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "923835413035d8d4585fae7a6dffb4b3b58333262d31cf727056f373d83bcfe1",
+      "reviewedSha256": "10610359d92e5f8e284c74d7b615b6f7c4307fb293ad9bcde55f4ed47787f8a6",
+      "updatedSha256": "10610359d92e5f8e284c74d7b615b6f7c4307fb293ad9bcde55f4ed47787f8a6"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_defaults_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "43fdbac795699193c6a1d907a2dc80306dd1eb71afeea84f81204cff7a9f9382",
+      "reviewedSha256": "c2a7b7f3deb2426124efdfe3de09bf3640bfba6f0486075f40126b85e60ae60d",
+      "updatedSha256": "c2a7b7f3deb2426124efdfe3de09bf3640bfba6f0486075f40126b85e60ae60d"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_defaults_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "1c52df60fec25f95fcaf78021de03bfe30da7c7949ecb020c6ef9b006fd2ba51",
+      "reviewedSha256": "c19fc37514663e61931d72908547e504be2588372ba0dc477d303830d5f39be9",
+      "updatedSha256": "c19fc37514663e61931d72908547e504be2588372ba0dc477d303830d5f39be9"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_defaults_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "34eee68e76e85c42727e0b1d7aedffb93dd535e845fb71103dbb8bb0940d40ad",
+      "reviewedSha256": "52a9538aff98669be0b8e1d503d834e09e791bc1b979bc5f7deb90876c0ea903",
+      "updatedSha256": "52a9538aff98669be0b8e1d503d834e09e791bc1b979bc5f7deb90876c0ea903"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_fully_custom_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "80490a4dbf9a20bf83259f4d93d28a036810e94ed6e2293c0eb361ff588dcafd",
+      "reviewedSha256": "042afadaeff7b2af13521d7e814664b62e6fe5b0de428f0b7ad353ca4c7c85b3",
+      "updatedSha256": "042afadaeff7b2af13521d7e814664b62e6fe5b0de428f0b7ad353ca4c7c85b3"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_light_theme_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "43fdbac795699193c6a1d907a2dc80306dd1eb71afeea84f81204cff7a9f9382",
+      "reviewedSha256": "c2a7b7f3deb2426124efdfe3de09bf3640bfba6f0486075f40126b85e60ae60d",
+      "updatedSha256": "c2a7b7f3deb2426124efdfe3de09bf3640bfba6f0486075f40126b85e60ae60d"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_max_sliders_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "a7ba75cb08815cf75d8d67b4f4928720dc4f9ed4b9e2823440e871dc7cbd9f8d",
+      "reviewedSha256": "b99b010eefcd0198889b297dda67c22a9b540db28c5803e1083fc54ba3b91acb",
+      "updatedSha256": "b99b010eefcd0198889b297dda67c22a9b540db28c5803e1083fc54ba3b91acb"
+    },
+    {
+      "path": "test/goldens/pages/goldens/settings_page_min_sliders_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "repaired-settings-startup-provider-and-reviewed-rendering",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "c411e51d74a5c70ac7f5fac4da2cbc7d3dc0b251829f7ffd6a5bebef3903d730",
+      "reviewedSha256": "a8b954fe6f2642e9a919a3c10c19de581f7ae81694080162ee0f4a3242c57621",
+      "updatedSha256": "a8b954fe6f2642e9a919a3c10c19de581f7ae81694080162ee0f4a3242c57621"
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_accepted.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "d635667009a94ab6b3ce5b100fd53a8cfc190a94bef25a0d44404a13b1629c62",
+      "reviewedSha256": "88abab1347b8d2f06ad98ee876110b77eb690d49178a1d640987b65cb3c5444d",
+      "updatedSha256": "88abab1347b8d2f06ad98ee876110b77eb690d49178a1d640987b65cb3c5444d"
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_accepted_mobile.png",
+      "dimensions": [
+        400,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "75da818711e0a32ca1f72df868e52933a69a6efd51b7c3ecde015bcbfb6f55a2",
+      "reviewedSha256": "95d9b1e05e18639e54867a1c53d5b5e44bafbcd5bfb65328f15f6cd4166d3e57",
+      "updatedSha256": "95d9b1e05e18639e54867a1c53d5b5e44bafbcd5bfb65328f15f6cd4166d3e57",
+      "previousReviewedSha256": "ad5869601df1947e75f8325aa7775854e967753df05dec000b4aabc0aa200fbb",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_epsilon.png",
+      "dimensions": [
+        800,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "6394f0d81ec84d3fc8ac3e24eb6d26e54e6afe290dbec6d9367961fe23f72f6c",
+      "reviewedSha256": "e6bcccc729d5200a6424ffb818233226ddfa29bb7af62e459cca92aa7b9ca045",
+      "updatedSha256": "e6bcccc729d5200a6424ffb818233226ddfa29bb7af62e459cca92aa7b9ca045",
+      "previousReviewedSha256": "26a22509ced94bf608926b4c39840afa2bb39a525e08a1a8eda23fd38ef44eb2",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_regex_result.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "4c7b2f8d867a8219478adacc40d9c5d5ce9555ff07859f03a1f1cbf84fad9775",
+      "reviewedSha256": "b3920e017612a0e2860f51359923f620561b87235a6380c9d9049ce438fdff22",
+      "updatedSha256": "b3920e017612a0e2860f51359923f620561b87235a6380c9d9049ce438fdff22"
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_rejected.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "da9c17a2c7b8a779bccdd1cf69d507653196d14d9998ff60fb68bdcbc5f2903c",
+      "reviewedSha256": "47864b37b87fb5a88d298a4811e1d56c98c34bc3cd7eed728663cb40bb17d973",
+      "updatedSha256": "47864b37b87fb5a88d298a4811e1d56c98c34bc3cd7eed728663cb40bb17d973"
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_rejected_tablet.png",
+      "dimensions": [
+        600,
+        800
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "6962a2a443402d0db576377243faa29dab77c1263e8f9026cd404420f1390785",
+      "reviewedSha256": "56bb6b794e39f97df43720f02f07f7d2ac60be496045ad02e0c15e177c60fd91",
+      "updatedSha256": "56bb6b794e39f97df43720f02f07f7d2ac60be496045ad02e0c15e177c60fd91",
+      "previousReviewedSha256": "0b5ee92123f09d57944aab205bb711d5520e4308c996342066be3d5a7e13a673",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_step_mode_final.png",
+      "dimensions": [
+        800,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "353802d4eeb8ee73d87a42f3c22c9d05eed7652959bc5c734b712e7836f01fa3",
+      "reviewedSha256": "c6e1c7d9560a492097fd076509c6594b3f510205a86ce89a4c600323a4f9db73",
+      "updatedSha256": "c6e1c7d9560a492097fd076509c6594b3f510205a86ce89a4c600323a4f9db73",
+      "previousReviewedSha256": "c74b2453643b35e141fe7be0d0b0ffa5e49b17766d9d2f874c9ed2bc004440dd",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_step_mode_first.png",
+      "dimensions": [
+        800,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "353802d4eeb8ee73d87a42f3c22c9d05eed7652959bc5c734b712e7836f01fa3",
+      "reviewedSha256": "02a485f04e3222b51eb11942368086e38062825b89d3492d789ed55372775f37",
+      "updatedSha256": "02a485f04e3222b51eb11942368086e38062825b89d3492d789ed55372775f37",
+      "previousReviewedSha256": "c74b2453643b35e141fe7be0d0b0ffa5e49b17766d9d2f874c9ed2bc004440dd",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_step_mode_middle.png",
+      "dimensions": [
+        800,
+        700
+      ],
+      "classification": "toolchain-sensitive-text-and-controls",
+      "alsoFailedOnFlutter3448": false,
+      "previousSha256": "353802d4eeb8ee73d87a42f3c22c9d05eed7652959bc5c734b712e7836f01fa3",
+      "reviewedSha256": "be54f4a62e1989913fc3cc8513bd3b9c8ffdcd6e95a812e65b8ebe40b80cc813",
+      "updatedSha256": "be54f4a62e1989913fc3cc8513bd3b9c8ffdcd6e95a812e65b8ebe40b80cc813",
+      "previousReviewedSha256": "c74b2453643b35e141fe7be0d0b0ffa5e49b17766d9d2f874c9ed2bc004440dd",
+      "previousReviewedDimensions": [
+        800,
+        600
+      ],
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "915c3c9560407498428c63315a589d81b27d7b77af310ac9540b9c5cffb2f269",
+      "reviewedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9",
+      "updatedSha256": "e105d0d04939d14231f7f8d60da6c188b01f81a0c58b68ddd95b21fcbda440b9"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_binary_incrementer.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "1a46077aa551586a076d7e1290a9423de1ae340b0c9cb0205fea0a6b9a0b11ca",
+      "reviewedSha256": "e6cc81edcb9712b45f17a471980fd16bb6767e9858945710a7f24cf87dff2c85",
+      "updatedSha256": "e6cc81edcb9712b45f17a471980fd16bb6767e9858945710a7f24cf87dff2c85"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_complex.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "01eb2ff37c5f9a20cd8e3e942f7d6660f4ab1ddc70b47c426c57182f80f0da02",
+      "reviewedSha256": "80a4a6ec28d662390248c6f957f9525d8c320833b1e667b46b3d869ae861886a",
+      "updatedSha256": "80a4a6ec28d662390248c6f957f9525d8c320833b1e667b46b3d869ae861886a"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_initial_accepting_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8ba5a94246ac9dd719f138d1b7e71f27e0e1584c7886383b0208f06450ca8f06",
+      "reviewedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b",
+      "updatedSha256": "ace89d648a7744d920fab136eb87d47677ca4f022b71141f0c148aaddc37b03b"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_initial_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "bda45dc201d37319f98602320bf7a21154d073cfaf6e1062e33eb8d34baacc1c",
+      "reviewedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5",
+      "updatedSha256": "a91e034f9e9db88da7044de9f8a20d38c917420bfb20e2e87f198923b6a9f9c5"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_multiple_states_with_transitions.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "39d64172fd69f9f1bd25f4a983bbf92241f19db53b3c525bdd73c68eed4c9242",
+      "reviewedSha256": "2adcea0b2a4f131d14905905bc2bf08d6f0481a16c628f3f2fa82785be763d8a",
+      "updatedSha256": "2adcea0b2a4f131d14905905bc2bf08d6f0481a16c628f3f2fa82785be763d8a"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_renderer_migration_highlighted.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "d3ccb992e02695dead3b5c37b1e3f8a623f24c19c9dadd118b2fd886eb8af8e5",
+      "reviewedSha256": "9ea99901ae5ebd6148cccd6ebf3999383e49bbc3e45bf49fb4d02cdf2eaef546",
+      "updatedSha256": "9ea99901ae5ebd6148cccd6ebf3999383e49bbc3e45bf49fb4d02cdf2eaef546"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_self_loop.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "e3405687cfa39e809da96267ea78614f59db84b84fb4e2ee842607d00e199383",
+      "reviewedSha256": "9db8498c4107f52f6e4b4544776db1b1828a1f28450ceab0c4b938d9b8b978bd",
+      "updatedSha256": "9db8498c4107f52f6e4b4544776db1b1828a1f28450ceab0c4b938d9b8b978bd"
+    },
+    {
+      "path": "test/goldens/canvas/goldens/tm_canvas_single_state.png",
+      "dimensions": [
+        800,
+        600
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "9d887f4d5edeff0acce9cbf4f1c58c7bee79fd2df9fab56a1fcf881ae07e3cbf",
+      "reviewedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305",
+      "updatedSha256": "2dd01ddca4de61c13adee5e3906ae162d1ebeca7079f892abf8673ce682f1305"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_blank_symbol.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "fd6fc5f72d2a59587d85e2ada20955b58550dcd6f43944bfcecfe9cc3ccad9f8",
+      "reviewedSha256": "026337ab90afd6d0aaff607319c351e1c3f4d74bfcf49acce32f57df1bc71345",
+      "updatedSha256": "026337ab90afd6d0aaff607319c351e1c3f4d74bfcf49acce32f57df1bc71345"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_empty_values.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "7918e062d55764ca5d35c1c8ff6933586a5e63b11b32109b42ccb50a6e9d6d58",
+      "reviewedSha256": "654ee3a97082726dbf3b91d3936a1ed581c6fcdc22de8d99b2e4dd8f67db28d5",
+      "updatedSha256": "654ee3a97082726dbf3b91d3936a1ed581c6fcdc22de8d99b2e4dd8f67db28d5"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_left_direction.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "86628f431a715cd6c9e6344d61c4c624495ebb07792fa4ac79644cf23d9d3429",
+      "reviewedSha256": "9ce2ed1e7afed61a2a10ad7f9746aef118c38f32db5f6077e35e411653e8175d",
+      "updatedSha256": "9ce2ed1e7afed61a2a10ad7f9746aef118c38f32db5f6077e35e411653e8175d"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_multi_char.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "27b3d34911cd4a5246ab441401a65222e4d10c496f52e7d21ee685a3ebcc9d1f",
+      "reviewedSha256": "ecf6cac61c6c9125fdfeeca72682105071c2dc88db649e419db952f10776f309",
+      "updatedSha256": "ecf6cac61c6c9125fdfeeca72682105071c2dc88db649e419db952f10776f309"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_right_direction.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "46f1917298719a27bddd7d90c1901a1c023f69310c31f6198e00d16e17d115dc",
+      "reviewedSha256": "197fd21a1cf4c38e5b09d1e441cb579fc6244d1cd066cafccc735289d7fd1a51",
+      "updatedSha256": "197fd21a1cf4c38e5b09d1e441cb579fc6244d1cd066cafccc735289d7fd1a51"
+    },
+    {
+      "path": "test/goldens/dialogs/goldens/tm_editor_stay_direction.png",
+      "dimensions": [
+        400,
+        600
+      ],
+      "classification": "empty-string-notation-and-current-editor-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "c9977f1e0cb673d4e4ae6832ed7fdeb729b12b0ff1e2758e5aca5e8a37de8090",
+      "reviewedSha256": "d06814198734ae42ac1242b154808b721fbe0f24303d9a8991dc96bc032a9516",
+      "updatedSha256": "d06814198734ae42ac1242b154808b721fbe0f24303d9a8991dc96bc032a9516"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_complex_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "f1a4fc006c25158e769a9eb266a164e3792cba485ab9a9d43967db398599e332",
+      "reviewedSha256": "ac4a92b9baf8492b2188cf8abd4e315465dcf142b7625efaaabdded380a97695",
+      "updatedSha256": "ac4a92b9baf8492b2188cf8abd4e315465dcf142b7625efaaabdded380a97695"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_copy_machine_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "99e42b155a6aec6d1d2565b769ec6a3fbb414c9a1a5196aaa0b360a09eebbc2e",
+      "reviewedSha256": "efae904a38729f8a2f56fee8a71f01c29ee98d21734c4f74b8395da631a546c8",
+      "updatedSha256": "efae904a38729f8a2f56fee8a71f01c29ee98d21734c4f74b8395da631a546c8"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_direction_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "fd12902b179469cb9c69d6702aae66daca95cc2520704b9a480fd51eb704bf5e",
+      "reviewedSha256": "d84b5b567ec4aed1f53420d6f6ce84bf1059b0eeceed979e802a6e2bbc914d9a",
+      "updatedSha256": "d84b5b567ec4aed1f53420d6f6ce84bf1059b0eeceed979e802a6e2bbc914d9a"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_empty_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "686c09491397a753c0adfe536cea1f840b45d5f438b26e59fd3237aa11cfe675",
+      "reviewedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56",
+      "updatedSha256": "d3a00d27db85a7f007d27cf0bf47da850f779e972f2f83218b546fb0fbba4e56"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_empty_mobile.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "83622a7791d457a090c994a56add0e0146bb123843783de710f1606bddd2d9ad",
+      "reviewedSha256": "9078f8f29458bd0436e545deaed02bcd425f3fd40de62117aa6bfebfa42ea268",
+      "updatedSha256": "9078f8f29458bd0436e545deaed02bcd425f3fd40de62117aa6bfebfa42ea268"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_empty_tablet.png",
+      "dimensions": [
+        1200,
+        800
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "3051e1773450a8a635363cafaecae169c6c971327652d96808bb4540a1cd2bbd",
+      "reviewedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b",
+      "updatedSha256": "c8638dad5375e004092588e543cd721e23e754deb0228a3501a5728d0a0c9f1b"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_mobile_tm.png",
+      "dimensions": [
+        430,
+        932
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "8a4fa277dadee985bb93cb2e2ffd9d5fe8cb8a42dc08fb916dfc42e5a1845951",
+      "reviewedSha256": "f1d7c4eddb871a1a0bdcb9e061c896a5403261faa40910f15f0a7dba06c52b5f",
+      "updatedSha256": "f1d7c4eddb871a1a0bdcb9e061c896a5403261faa40910f15f0a7dba06c52b5f"
+    },
+    {
+      "path": "test/goldens/pages/goldens/tm_page_simple_tm_desktop.png",
+      "dimensions": [
+        1400,
+        900
+      ],
+      "classification": "fit-scale-cap-formal-labels-and-diagnostic-controls",
+      "alsoFailedOnFlutter3448": true,
+      "previousSha256": "5bf29899289a05a4339afff252f51f0598f52dec57697c1e82a5bafb2c5d50c4",
+      "reviewedSha256": "8b1ff85d5db52e4b5cf7b15295907d95d1b12fdbecaa35e4409c25cf1ac49003",
+      "updatedSha256": "8b1ff85d5db52e4b5cf7b15295907d95d1b12fdbecaa35e4409c25cf1ac49003"
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_empty_mobile.png",
+      "classification": "declared-viewport-capture-correction",
+      "previousSha256": "ea937b8019fb707afeb35c5588247997b18ff9065b638cb4228502fe8a522106",
+      "dimensions": [
+        400,
+        700
+      ],
+      "reviewedSha256": "50b98b284ce6e3693a592ff6a93c99bc98c5ebd21a8a591aca4cf0d1c4e3a8ad",
+      "updatedSha256": "50b98b284ce6e3693a592ff6a93c99bc98c5ebd21a8a591aca4cf0d1c4e3a8ad",
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    },
+    {
+      "path": "test/goldens/simulation/goldens/simulation_panel_empty_tablet.png",
+      "classification": "declared-viewport-capture-correction",
+      "previousSha256": "ea937b8019fb707afeb35c5588247997b18ff9065b638cb4228502fe8a522106",
+      "dimensions": [
+        600,
+        800
+      ],
+      "reviewedSha256": "bfb052e479a418e0978a93df09fd2b45505490142de308df678202b0626b337e",
+      "updatedSha256": "bfb052e479a418e0978a93df09fd2b45505490142de308df678202b0626b337e",
+      "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+      "captureCorrection": "Honor declared surface size and reveal the named result or setting before capture."
+    }
+  ],
+  "captureFollowUp": {
+    "sourceRevision": "a814b58abcdfbdc54a94b4a7ed4fc5f2b050e468",
+    "reviewedImages": 22,
+    "command": "bash tool/update_goldens.sh test/goldens/pages/algorithm_panel_goldens_test.dart test/goldens/pages/settings_page_goldens_test.dart test/goldens/simulation/simulation_panel_goldens_test.dart",
+    "environment": "Same native environment, fonts, locale, themes and pixel ratio as the original review; per-image dimensions override the previous capture sizes.",
+    "unchangedEquivalentPair": [
+      "settings_page_defaults_desktop.png",
+      "settings_page_light_theme_desktop.png"
+    ]
+  }
+}

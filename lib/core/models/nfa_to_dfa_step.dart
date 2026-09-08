@@ -18,8 +18,8 @@ import 'step_explanation.dart';
 
 /// Represents a single step in NFA to DFA conversion using subset construction.
 ///
-/// TODO(#143): Keep for algorithm-internal construction. UI consumers should
-/// use [toProperties] through generic [AlgorithmStep.properties].
+/// The model is kept for algorithm-internal construction. Presentation reads
+/// the generic [AlgorithmStep.properties] produced by [toProperties].
 class NFAToDFAStep {
   /// Base algorithm step information
   final AlgorithmStep baseStep;
@@ -471,9 +471,13 @@ class NFAToDFAStep {
     }
 
     _putStateIds(properties, 'currentStateIds', currentStateSet);
+    _putStateLabels(properties, 'currentStateLabels', currentStateSet);
     _putStateIds(properties, 'epsilonClosureIds', epsilonClosure);
+    _putStateLabels(properties, 'epsilonClosureLabels', epsilonClosure);
     _putStateIds(properties, 'reachableStateIds', reachableStates);
+    _putStateLabels(properties, 'reachableStateLabels', reachableStates);
     _putStateIds(properties, 'nextStateIds', nextStateSet);
+    _putStateLabels(properties, 'nextStateLabels', nextStateSet);
     _putIfNotNull(properties, 'processedSymbol', processedSymbol);
     _putIfNotNull(properties, 'dfaStateId', dfaStateId);
     _putIfNotNull(properties, 'dfaStateLabel', dfaStateLabel);
@@ -637,6 +641,20 @@ class NFAToDFAStep {
         .toList(growable: false);
     if (ids != null && ids.isNotEmpty) {
       properties[key] = ids;
+    }
+  }
+
+  static void _putStateLabels(
+    Map<String, dynamic> properties,
+    String key,
+    Set<State>? states,
+  ) {
+    final labels = states
+        ?.where((state) => state.id.trim().isNotEmpty)
+        .map((state) => state.label)
+        .toList(growable: false);
+    if (labels != null && labels.isNotEmpty) {
+      properties[key] = labels;
     }
   }
 

@@ -1,6 +1,6 @@
 # Apple App Privacy
 
-Date: 2026-04-22
+Date: 2026-09-06 (supersedes the 2026-04-22 revision)
 
 This document translates the repository audit into Apple App Privacy answers for
 App Store Connect.
@@ -38,7 +38,7 @@ Turing Lab currently qualifies for that status because:
 - No user data is transmitted to developer-controlled servers.
 - No third-party analytics or crash-reporting SDKs were found.
 - No user-tracking SDKs or tracking identifiers were found.
-- App persistence is local-only: settings and traces stay in on-device storage.
+- App persistence is local-only: settings, simulation traces, the active editor session and teaching-session data stay in on-device `SharedPreferences`.
 - Imports and exports are user-initiated file operations, not backend uploads.
 
 Important nuance:
@@ -95,8 +95,13 @@ Each Apple App Privacy data type category below is currently **Not Collected**.
 
 Note:
 
-- The app can import and export user-selected automata, grammar, SVG, PNG, and
-  JSON files through the system file picker.
+- The app can import and export user-selected documents through the system
+  file picker for every supported formal system: finite automata, context-free
+  and unrestricted grammars, pushdown automata, Turing machines, regular
+  expressions, Pumping Lemma problems, Mealy and Moore machines, and
+  L-systems. The formats are JFLAP XML (`.jff`/`.cfg`), Turing Lab JSON, SVG
+  and PNG; not every system supports every format, and the per-system table
+  is in [DATA_FLOW.md](./DATA_FLOW.md).
 - Those files are not collected by the developer or transmitted to a backend.
 
 ### Browsing History
@@ -148,8 +153,12 @@ Turing Lab is currently an offline-only educational app:
 
 - Settings are stored locally in `SharedPreferences`.
 - Simulation traces are stored locally in `SharedPreferences`.
+- The active editor session (the latest document of each formal system plus
+  annotations) is stored locally in `SharedPreferences` while Auto Save is
+  enabled and restored on cold start; disabling Auto Save clears it.
+- Grammar teaching and manual conversion sessions are stored locally in
+  `SharedPreferences`.
 - Bundled examples are loaded from app assets.
-- Editor state is primarily in memory during normal use.
 - File import/export happens only through user-initiated system picker flows.
 - No repository code sends content, identifiers, or diagnostics to a network service.
 
@@ -159,8 +168,8 @@ Apple review.
 ## Evidence Summary
 
 - `pubspec.yaml` contains local-storage and file-picker packages, but no analytics/crash SDKs.
-- `lib/` contains `SharedPreferences` usage for settings and traces.
-- `lib/` contains file-picker-based import/export flows for `.jff`, `.cfg`, `.json`, `.svg`, and `.png`.
+- `lib/` contains `SharedPreferences` usage for settings, traces, the active editor session and teaching sessions only; there is no other storage backend.
+- `lib/` contains file-picker-based import/export flows for `.jff`, `.cfg`, `.json`, `.svg`, and `.png` across all registered formal systems.
 - `ios/Runner/Info.plist` contains no privacy-sensitive usage-description keys.
 - `ios/Runner/PrivacyInfo.xcprivacy` and `macos/Runner/PrivacyInfo.xcprivacy`
   declare app-level `UserDefaults` and file-metadata usage for local-only
@@ -172,7 +181,7 @@ Apple review.
 
 Suggested App Review note:
 
-> Turing Lab is an offline educational automata tool. It stores settings and simulation traces locally on-device, loads bundled examples from app assets, and supports user-initiated import/export through the system file picker. It does not use analytics, crash reporting, accounts, ads, tracking, or developer-operated network services.
+> Turing Lab is an offline educational automata tool. It stores settings, simulation traces, the current editor session and in-progress teaching exercises (grammar normalization, parse-table and manual-conversion sessions) locally on-device, loads bundled examples from app assets, and supports user-initiated import/export through the system file picker. It does not use analytics, crash reporting, accounts, ads, tracking, or developer-operated network services.
 
 Current Apple submission note update:
 

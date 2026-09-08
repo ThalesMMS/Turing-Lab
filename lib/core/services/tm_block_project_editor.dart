@@ -1,4 +1,4 @@
-import '../algorithms/tm_block_dependency_analyzer.dart';
+import '../algorithms/tm/tm_block_dependency_analyzer.dart';
 import '../messages/structured_message.dart';
 import '../models/tm.dart';
 import '../models/tm_building_blocks.dart';

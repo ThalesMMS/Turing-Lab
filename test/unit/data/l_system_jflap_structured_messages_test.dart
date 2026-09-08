@@ -131,9 +131,10 @@ void main() {
           codec.decode(
                 _payload('''
 <structure><type>lsystem</type><axiom>F</axiom>
-<production><left>F(x)</left><right>F(x+1)</right></production>
+<production><left>F</left><right>F+F</right></production>
 <parameter><name>vendorDrawing</name><value>kept</value></parameter>
 <parameter><name>turingLabRandomSeed</name><value>17</value></parameter>
+<parameter><name>turingLabUnsupported</name><value>{"variants":["stochastic"]}</value></parameter>
 <metadata/>
 </structure>'''),
               )

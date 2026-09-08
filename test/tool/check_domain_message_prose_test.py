@@ -283,10 +283,10 @@ Failure('The document could not be decoded.');
             "lib/core/manual_conversions/regex_to_fa_session_factory.dart": (
                 "Create a symbol fragment"
             ),
-            "lib/core/algorithms/pda_simulator_search.dart": (
+            "lib/core/algorithms/pda/pda_simulator_search.dart": (
                 "Accepted by final state"
             ),
-            "lib/core/algorithms/tm_time_profiler.dart": (
+            "lib/core/algorithms/tm/tm_time_profiler.dart": (
                 "Time profiling was cancelled."
             ),
         }
@@ -847,7 +847,7 @@ String describe() => 'Example(id: $id, title: $title)';
         )
 
         findings = CHECKER.scan_source(
-            "lib/core/algorithms/regex_simplifier_steps.dart",
+            "lib/core/algorithms/regex/regex_simplifier_steps.dart",
             source,
         )
 
@@ -941,7 +941,7 @@ String describe() => 'Example(id: $id, title: $title)';
         self,
     ) -> None:
         cases = {
-            "lib/core/algorithms/state_renamer.dart": (
+            "lib/core/algorithms/fsa/state_renamer.dart": (
                 "state.copyWith(label: 'q$i');\n"
                 "final visible = 'State q$i';\n"
             ),
@@ -950,7 +950,7 @@ String describe() => 'Example(id: $id, title: $title)';
                 "'${source.value}->${target.value}:${id.value}';\n"
                 "final visible = '${source.value}->${target.value}:${id.value}';\n"
             ),
-            "lib/core/algorithms/dfa_completer.dart": (
+            "lib/core/algorithms/fsa/dfa_completer.dart": (
                 "candidate = '${base}_${suffix++}';\n"
                 "final visible = '${base}_${suffix++}';\n"
             ),

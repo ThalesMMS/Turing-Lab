@@ -19,6 +19,8 @@ import 'package:turing_lab/presentation/providers/formal_extension_editor_provid
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/providers/workspace_registry_provider.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
+import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
+import 'package:turing_lab/presentation/widgets/export/print_document_builder.dart';
 
 final class _TestCatalog implements ExampleCatalogCapability<LSystemDocument> {
   const _TestCatalog(this.loader);
@@ -139,6 +141,34 @@ Finder get _examplesAction =>
     find.byKey(const ValueKey('workspace-quick-action-examples'));
 
 void main() {
+  for (final (locale, axiomLabel, iterationsLabel) in [
+    (const Locale('en'), 'axiom', 'iterations'),
+    (const Locale('pt'), 'axioma', 'iterações'),
+  ]) {
+    testWidgets('localizes the printed listing in $locale', (tester) async {
+      final harness = await _pumpPage(
+        tester,
+        catalog: _TestCatalog(() async => _examples()),
+        locale: locale,
+      );
+      await tester.tap(find.byKey(const Key('l-system-file-operations')));
+      await tester.pumpAndSettle();
+      final panel = tester.widget<FileOperationsPanel>(
+        find.byType(FileOperationsPanel),
+      );
+      final listing = panel.printable!() as PrintableText;
+      final document = harness.controller.document;
+      expect(listing.text.split('\n').take(2), [
+        '$axiomLabel: ${document.axiom.symbols.join(' ')}',
+        '$iterationsLabel: ${document.iterations}',
+      ]);
+      expect(listing.text.split('\n').skip(2), [
+        for (final production in document.productions)
+          '${production.predecessor} → ${production.successor.symbols.join(' ')}',
+      ]);
+    });
+  }
+
   testWidgets(
     'keeps Examples visible and disabled while loading at 320 px and 200%',
     (tester) async {
@@ -333,7 +363,13 @@ void main() {
 
       locale.value = const Locale('pt', 'BR');
       await tester.pumpAndSettle();
-      await tester.fling(examplesList, const Offset(0, 5000), 1000);
+      // Scroll back to the header explicitly: a fixed fling distance stops
+      // short once the catalog grows.
+      await tester.scrollUntilVisible(
+        find.text('Algoritmos e Exemplos'),
+        -350,
+        scrollable: examplesScroll,
+      );
       await tester.pumpAndSettle();
 
       expect(result.controller.document, same(originalDocument));
@@ -361,12 +397,18 @@ void main() {
         expect(tester.takeException(), isNull);
       }
 
-      await tester.fling(examplesList, const Offset(0, 5000), 1000);
-      await tester.pumpAndSettle();
       final selected = examples.first;
       final selectedTile = find.byKey(
         ValueKey('l-system-example-${selected.id}'),
       );
+      // The lazy list only builds tiles near the viewport, so scroll the
+      // first tile back into view instead of relying on a fixed fling.
+      await tester.scrollUntilVisible(
+        selectedTile,
+        -350,
+        scrollable: examplesScroll,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(selectedTile);
       await tester.pumpAndSettle();
 

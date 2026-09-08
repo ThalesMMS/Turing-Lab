@@ -20,8 +20,8 @@ import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.d
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
-import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
-import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 
 import '../../support/workspace_dock_helpers.dart';
@@ -309,16 +309,45 @@ void main() {
   });
 
   for (final width in const [1200.0, 1500.0]) {
-    testWidgets('PDA at ${width.toInt()}px docks stack outside the canvas', (
-      tester,
-    ) async {
-      await _pumpPdaPage(tester, size: Size(width, 900));
+    testWidgets(
+      'PDA at ${width.toInt()}px floats stack inside the bottom-left corner',
+      (tester) async {
+        await _pumpPdaPage(tester, size: Size(width, 900));
 
-      final canvasRect = tester.getRect(find.byType(PDACanvasGraphView));
-      final stackRect = tester.getRect(find.byType(PDAStackPanel));
+        final canvasRect = tester.getRect(find.byType(PDACanvasGraphView));
+        final stackRect = tester.getRect(find.byType(PDAStackPanel));
 
-      expect(canvasRect.overlaps(stackRect), isFalse);
-    });
+        expect(canvasRect.contains(stackRect.topLeft), isTrue);
+        expect(canvasRect.contains(stackRect.bottomRight), isTrue);
+        expect(stackRect.left - canvasRect.left, lessThan(24));
+        expect(canvasRect.bottom - stackRect.bottom, lessThan(24));
+        final floating = find.ancestor(
+          of: find.byType(PDAStackPanel, skipOffstage: false).first,
+          matching: find.byType(CollapsibleCanvasPanel),
+        );
+        final initial = tester.getTopLeft(floating);
+        await tester.dragFrom(
+          initial + const Offset(8, 8),
+          const Offset(90, -90),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(tester.getTopLeft(floating).dx, greaterThan(initial.dx));
+        expect(tester.getTopLeft(floating).dy, lessThan(initial.dy));
+        await tester.tap(
+          find.descendant(
+            of: floating,
+            matching: find.byIcon(Icons.expand_less),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(tester.getSize(floating), const Size.square(48));
+        await tester.tap(
+          find.descendant(of: floating, matching: find.byType(IconButton)),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(find.byType(PDAStackPanel), findsOneWidget);
+      },
+    );
   }
 
   testWidgets(

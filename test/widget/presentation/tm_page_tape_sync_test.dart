@@ -5,16 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:turing_lab/core/models/tm_transition.dart';
+import 'package:turing_lab/core/models/simulation_highlight.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/pages/tm_page.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
 import 'package:turing_lab/presentation/widgets/collapsible_canvas_panel.dart';
+import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/tm/tape_drawer.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 
 import '../../support/workspace_dock_helpers.dart';
 
@@ -39,21 +41,9 @@ TMEditorNotifier _readyTmEditor({String blankSymbol = '_'}) {
 
 TMEditorNotifier _traceTmEditor() {
   final notifier = TMEditorNotifier()
-    ..upsertState(
-      id: 'q0',
-      label: 'q0',
-      x: 0,
-      y: 0,
-      isInitial: true,
-    )
+    ..upsertState(id: 'q0', label: 'q0', x: 0, y: 0, isInitial: true)
     ..upsertState(id: 'q1', label: 'q1', x: 120, y: 0)
-    ..upsertState(
-      id: 'q2',
-      label: 'q2',
-      x: 240,
-      y: 0,
-      isAccepting: true,
-    )
+    ..upsertState(id: 'q2', label: 'q2', x: 240, y: 0, isAccepting: true)
     ..addOrUpdateTransition(
       id: 't0',
       fromStateId: 'q0',
@@ -147,11 +137,7 @@ void main() {
     tester,
   ) async {
     final notifier = _readyTmEditor();
-    await _pumpTmPage(
-      tester,
-      size: const Size(800, 900),
-      notifier: notifier,
-    );
+    await _pumpTmPage(tester, size: const Size(800, 900), notifier: notifier);
 
     expect(find.byType(CollapsibleCanvasPanel), findsOneWidget);
     expect(find.byType(TMTapePanel), findsOneWidget);
@@ -171,32 +157,53 @@ void main() {
   });
 
   for (final width in const [1200.0, 1500.0]) {
-    testWidgets('TM at ${width.toInt()}px docks tape outside the canvas', (
-      tester,
-    ) async {
-      final notifier = _readyTmEditor();
-      await _pumpTmPage(
-        tester,
-        size: Size(width, 900),
-        notifier: notifier,
-      );
+    testWidgets(
+      'TM at ${width.toInt()}px floats tape inside the bottom-left corner',
+      (tester) async {
+        final notifier = _readyTmEditor();
+        await _pumpTmPage(tester, size: Size(width, 900), notifier: notifier);
 
-      final canvasRect = tester.getRect(find.byType(TMCanvasGraphView));
-      final tapeRect = tester.getRect(find.byType(TMTapePanel).first);
+        final canvasRect = tester.getRect(find.byType(TMCanvasGraphView));
+        final tapeRect = tester.getRect(find.byType(TMTapePanel).first);
 
-      expect(canvasRect.overlaps(tapeRect), isFalse);
-    });
+        expect(canvasRect.contains(tapeRect.topLeft), isTrue);
+        expect(canvasRect.contains(tapeRect.bottomRight), isTrue);
+        expect(tapeRect.left - canvasRect.left, lessThan(24));
+        expect(canvasRect.bottom - tapeRect.bottom, lessThan(24));
+        final floating = find.ancestor(
+          of: find.byType(TMTapePanel, skipOffstage: false).first,
+          matching: find.byType(CollapsibleCanvasPanel),
+        );
+        final initial = tester.getTopLeft(floating);
+        await tester.dragFrom(
+          initial + const Offset(8, 8),
+          const Offset(90, -90),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(tester.getTopLeft(floating).dx, greaterThan(initial.dx));
+        expect(tester.getTopLeft(floating).dy, lessThan(initial.dy));
+        await tester.tap(
+          find.descendant(
+            of: floating,
+            matching: find.byIcon(Icons.expand_less),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(tester.getSize(floating), const Size.square(48));
+        await tester.tap(
+          find.descendant(of: floating, matching: find.byType(IconButton)),
+        );
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(find.byType(TMTapePanel), findsOneWidget);
+      },
+    );
   }
 
   testWidgets('TMPage initializes its tape from the loaded machine blank', (
     tester,
   ) async {
     final notifier = _readyTmEditor();
-    await _pumpTmPage(
-      tester,
-      size: const Size(800, 900),
-      notifier: notifier,
-    );
+    await _pumpTmPage(tester, size: const Size(800, 900), notifier: notifier);
 
     final workspaceTape = _workspaceTapePanel(tester).tapeState;
     expect(workspaceTape.cells, isEmpty);
@@ -208,11 +215,7 @@ void main() {
     'TMPage resets the mobile tape when the machine changes after sheet close',
     (tester) async {
       final notifier = _readyTmEditor();
-      await _pumpTmPage(
-        tester,
-        size: const Size(800, 900),
-        notifier: notifier,
-      );
+      await _pumpTmPage(tester, size: const Size(800, 900), notifier: notifier);
 
       await tester.tap(find.byTooltip('Simulate'));
       await tester.pumpAndSettle();
@@ -220,11 +223,7 @@ void main() {
         find.byType(TMSimulationPanel),
       );
       simulationPanel.onTapeChanged!(
-        const TapeState(
-          cells: ['X', 'b'],
-          headPosition: 1,
-          blankSymbol: '_',
-        ),
+        const TapeState(cells: ['X', 'b'], headPosition: 1, blankSymbol: '_'),
       );
       await tester.pump();
       expect(_workspaceTapePanel(tester).tapeState.cells, ['X', 'b']);
@@ -254,11 +253,7 @@ void main() {
     tester,
   ) async {
     final notifier = _traceTmEditor();
-    await _pumpTmPage(
-      tester,
-      size: const Size(800, 900),
-      notifier: notifier,
-    );
+    await _pumpTmPage(tester, size: const Size(800, 900), notifier: notifier);
 
     await tester.tap(find.byTooltip('Simulate'));
     await tester.pumpAndSettle();
@@ -288,6 +283,79 @@ void main() {
     expect(tape.headPosition, 0);
   });
 
+  for (final size in const [
+    Size(430, 900),
+    Size(820, 1180),
+    Size(1194, 834),
+    Size(1600, 900),
+  ]) {
+    testWidgets(
+      'TM simulation preserves geometry at ${size.width}px on every frame',
+      (tester) async {
+        await _pumpTmPage(tester, size: size, notifier: _traceTmEditor());
+        if (size.width >= 1024) {
+          await openWorkspaceSimulationPanel(tester);
+        }
+        await tester.pump(const Duration(seconds: 1));
+        final canvas = find.byType(TMCanvasGraphView);
+        final controller = tester.widget<TMCanvasGraphView>(canvas).controller!;
+        final transform = controller.graphController.transformationController!;
+        final originalRect = tester.getRect(canvas);
+        final originalMatrix = transform.value.clone();
+        final nodeFinders = [
+          for (final id in ['q0', 'q1', 'q2'])
+            find.descendant(of: canvas, matching: find.text(id)),
+        ];
+        final centers = [
+          for (final node in nodeFinders) tester.getCenter(node),
+        ];
+        final simulation =
+            tester
+                    .widget<AutomatonWorkspaceScaffold>(
+                      find.byType(AutomatonWorkspaceScaffold),
+                    )
+                    .simulationPanel
+                as TMSimulationPanel;
+        for (var step = 0; step < 3; step++) {
+          simulation.highlightService!.dispatch(
+            SimulationHighlight(
+              stateIds: {'q$step'},
+              transitionIds: step == 0 ? {} : {'t${step - 1}'},
+            ),
+          );
+          simulation.onTapeChanged!(
+            TapeState(
+              cells: const ['X', 'b'],
+              headPosition: step,
+              blankSymbol: '_',
+            ),
+          );
+          for (var frame = 0; frame < 25; frame++) {
+            await tester.pump(const Duration(milliseconds: 16));
+            expect(
+              tester.getRect(canvas),
+              originalRect,
+              reason: 'canvas bounds at step $step frame $frame',
+            );
+            expect(
+              transform.value,
+              originalMatrix,
+              reason: 'viewport at step $step frame $frame',
+            );
+            for (var index = 0; index < nodeFinders.length; index++) {
+              expect(
+                (tester.getCenter(nodeFinders[index]) - centers[index])
+                    .distance,
+                lessThan(0.01),
+                reason: 'node $index at step $step frame $frame',
+              );
+            }
+          }
+        }
+      },
+    );
+  }
+
   for (final layout in <({String name, Size size, bool opensSheet})>[
     (name: 'mobile', size: const Size(800, 900), opensSheet: true),
     (name: 'desktop', size: const Size(1600, 900), opensSheet: false),
@@ -311,11 +379,7 @@ void main() {
         expect(simulationPanel.onTapeChanged, isNotNull);
 
         simulationPanel.onTapeChanged!(
-          const TapeState(
-            cells: ['X', 'b'],
-            headPosition: 1,
-            blankSymbol: '_',
-          ),
+          const TapeState(cells: ['X', 'b'], headPosition: 1, blankSymbol: '_'),
         );
         await tester.pump();
 

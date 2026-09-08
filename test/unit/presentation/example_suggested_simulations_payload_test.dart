@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
-import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/grammar/phrase_structure/phrase_structure.dart';
 import 'package:turing_lab/core/models/tm_building_blocks.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -13,12 +13,122 @@ import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
 import 'package:turing_lab/data/grammar/unrestricted_grammar_example_catalog.dart';
 import 'package:turing_lab/data/transducers/mealy_example_catalog.dart';
 import 'package:turing_lab/data/transducers/moore_example_catalog.dart';
+import 'package:turing_lab/core/models/fsa.dart';
+import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/presentation/content/example_suggested_simulations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final source = ExamplesAssetDataSource();
+
+  test(
+    'finite-automaton commented inputs produce their conclusive outcome',
+    () async {
+      final examples = (await source.loadAllTypedFsaExamples()).data!;
+      final covered = <String>{};
+
+      for (final example in examples) {
+        final entries = ExampleCounterexamples.resolve(example.id);
+        expect(
+          entries,
+          isNotEmpty,
+          reason: '${example.id} needs a counterexample',
+        );
+        expect(
+          entries.any(
+            (entry) =>
+                entry.expectation == ExampleSimulationExpectation.rejected,
+          ),
+          isTrue,
+          reason: '${example.id} needs a rejected input',
+        );
+        covered.add(example.id);
+        for (final entry in entries) {
+          final reason = '${example.id}: "${entry.input}"';
+          final usesAlphabet = _usesAlphabet(entry.input, example.payload);
+          final result = await AutomatonSimulator.simulate(
+            example.payload,
+            entry.input,
+          );
+          switch (entry.expectation) {
+            case ExampleSimulationExpectation.accepted:
+              expect(usesAlphabet, isTrue, reason: reason);
+              expect(result.isSuccess, isTrue, reason: reason);
+              expect(result.data!.accepted, isTrue, reason: reason);
+            case ExampleSimulationExpectation.rejected:
+              expect(usesAlphabet, isTrue, reason: reason);
+              expect(result.isSuccess, isTrue, reason: reason);
+              expect(result.data!.accepted, isFalse, reason: reason);
+              expect(result.data!.isTimeout, isFalse, reason: reason);
+              expect(result.data!.isInfiniteLoop, isFalse, reason: reason);
+            case ExampleSimulationExpectation.invalidSymbol:
+              expect(usesAlphabet, isFalse, reason: reason);
+              final accepted = result.isSuccess && result.data!.accepted;
+              expect(accepted, isFalse, reason: reason);
+          }
+        }
+      }
+      expect(
+        ExampleCounterexamples.byExampleId.keys.where(
+          (id) => id.startsWith('asset/af'),
+        ),
+        unorderedEquals(covered),
+      );
+    },
+  );
+
+  test(
+    'pushdown-automaton commented inputs produce their conclusive outcome',
+    () async {
+      final examples = (await source.loadAllTypedPdaExamples()).data!;
+      final covered = <String>{};
+
+      for (final example in examples) {
+        final entries = ExampleCounterexamples.resolve(example.id);
+        expect(
+          entries,
+          isNotEmpty,
+          reason: '${example.id} needs a counterexample',
+        );
+        expect(
+          entries.any(
+            (entry) =>
+                entry.expectation == ExampleSimulationExpectation.rejected,
+          ),
+          isTrue,
+          reason: '${example.id} needs a rejected input',
+        );
+        covered.add(example.id);
+        for (final entry in entries) {
+          final reason = '${example.id}: "${entry.input}"';
+          final usesAlphabet = _usesAlphabet(entry.input, example.payload);
+          final result = PDASimulator.simulate(example.payload, entry.input);
+          expect(result.isSuccess, isTrue, reason: reason);
+          final outcome = result.data!.outcome;
+          switch (entry.expectation) {
+            case ExampleSimulationExpectation.accepted:
+              expect(usesAlphabet, isTrue, reason: reason);
+              expect(outcome, PDASimulationOutcome.accepted, reason: reason);
+            case ExampleSimulationExpectation.rejected:
+              expect(usesAlphabet, isTrue, reason: reason);
+              // Timeouts and exploration limits are inconclusive, never
+              // evidence of rejection.
+              expect(outcome, PDASimulationOutcome.rejected, reason: reason);
+            case ExampleSimulationExpectation.invalidSymbol:
+              expect(usesAlphabet, isFalse, reason: reason);
+              expect(outcome, PDASimulationOutcome.rejected, reason: reason);
+          }
+        }
+      }
+      expect(
+        ExampleCounterexamples.byExampleId.keys.where(
+          (id) => id.startsWith('asset/apda'),
+        ),
+        unorderedEquals(covered),
+      );
+    },
+  );
 
   test('finite-automaton suggestions are accepted by their payloads', () async {
     final examples = (await source.loadAllTypedFsaExamples()).data!;
@@ -179,6 +289,17 @@ void main() {
         }
       }
     },
+  );
+}
+
+bool _usesAlphabet(String input, Object payload) {
+  final alphabet = switch (payload) {
+    final FSA fsa => fsa.alphabet,
+    final PDA pda => pda.alphabet,
+    _ => throw StateError('Unsupported payload'),
+  };
+  return input.runes.every(
+    (rune) => alphabet.contains(String.fromCharCode(rune)),
   );
 }
 

@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
-import 'package:turing_lab/core/algorithms/tm_block_inline_expander.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_inline_expander.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';

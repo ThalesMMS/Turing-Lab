@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulation_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulation_messages.dart';
 import 'package:turing_lab/core/models/simulation_result.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';

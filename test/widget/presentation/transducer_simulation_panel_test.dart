@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/transducers/transducers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
@@ -189,11 +190,13 @@ final class _App extends StatelessWidget {
   final Locale? locale;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    locale: locale,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(body: child),
+  Widget build(BuildContext context) => ProviderScope(
+    child: MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: child),
+    ),
   );
 }
 

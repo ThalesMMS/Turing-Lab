@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:test/test.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_converter.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -45,13 +45,10 @@ void main() {
             expect(canonical.isSuccess, isTrue, reason: canonical.error);
             expect(canonical.data!.accepted, isTrue);
             expect(oracle.witness, hasLength(1));
-            expect(
-              oracle.witness.single.after.stack,
-              [
-                if (lambdaPop) 'bottom',
-                if (!lambdaPush) 'stack-token',
-              ],
-            );
+            expect(oracle.witness.single.after.stack, [
+              if (lambdaPop) 'bottom',
+              if (!lambdaPush) 'stack-token',
+            ]);
           }
         }
       }
@@ -224,8 +221,10 @@ void main() {
       final left = generatePdaHardEdgeCase(seed: 337).value;
       final right = generatePdaHardEdgeCase(seed: 337).value;
 
-      expect(canonicalJsonEncode(left.toJson()),
-          canonicalJsonEncode(right.toJson()));
+      expect(
+        canonicalJsonEncode(left.toJson()),
+        canonicalJsonEncode(right.toJson()),
+      );
       expect(
         PdaHardEdgeFixture.fromJson(left.toJson()).toJson(),
         left.toJson(),
@@ -414,7 +413,9 @@ void main() {
       expect(first, second);
       expect(first, isNotEmpty);
       expect(
-        pdaFixtureShrinker.candidates(fixture).any(
+        pdaFixtureShrinker
+            .candidates(fixture)
+            .any(
               (candidate) =>
                   candidate.pda.transitions.length <
                   fixture.pda.transitions.length,
@@ -428,11 +429,13 @@ void main() {
         property: 'compound-conversions',
         seed: 337,
       );
-      final sourceProductions = ((conversion.propertyPayload['sourceGrammar']
-              as Map)['productions'] as List)
-          .length;
-      final conversionCandidates =
-          pdaFixtureShrinker.candidates(conversion).toList();
+      final sourceProductions =
+          ((conversion.propertyPayload['sourceGrammar'] as Map)['productions']
+                  as List)
+              .length;
+      final conversionCandidates = pdaFixtureShrinker
+          .candidates(conversion)
+          .toList();
       expect(
         conversionCandidates.any((candidate) {
           final grammar = candidate.propertyPayload['sourceGrammar'];
@@ -453,8 +456,9 @@ void main() {
             sum +
             ((((fixture as Map)['pda'] as Map)['transitions'] as List).length),
       );
-      final mutationCandidates =
-          pdaFixtureShrinker.candidates(mutations).toList();
+      final mutationCandidates = pdaFixtureShrinker
+          .candidates(mutations)
+          .toList();
       expect(
         mutationCandidates.any((candidate) {
           final candidateNested =
@@ -472,69 +476,81 @@ void main() {
       );
     });
 
-    test('central shrink adapter decodes and re-encodes typed fixtures',
-        () async {
-      final fixture = pdaMutationFixture(PdaOracleMutation.ignorePush);
-      final adapter = pdaHardEdgeShrinkAdapter(
-        isApplicable: (candidate) => evaluatePdaProductionMutation(
-          candidate,
-          PdaOracleMutation.ignorePush,
-        ).killed,
-      );
+    test(
+      'central shrink adapter decodes and re-encodes typed fixtures',
+      () async {
+        final fixture = pdaMutationFixture(PdaOracleMutation.ignorePush);
+        final adapter = pdaHardEdgeShrinkAdapter(
+          isApplicable: (candidate) => evaluatePdaProductionMutation(
+            candidate,
+            PdaOracleMutation.ignorePush,
+          ).killed,
+        );
 
-      expect(await adapter.isValid(fixture.toJson()), isTrue);
-      expect(await adapter.isApplicable(fixture.toJson()), isTrue);
-      final candidates = adapter.shrinker.candidates(fixture.toJson()).toList();
-      expect(candidates, isNotEmpty);
-      expect(
-        candidates.every((candidate) {
-          final decoded = PdaHardEdgeFixture.fromJson(candidate);
-          return decoded.property == fixture.property &&
-              canonicalJsonEncode(decoded.propertyPayload) ==
-                  canonicalJsonEncode(fixture.propertyPayload);
-        }),
-        isTrue,
-      );
-      expect(await adapter.isValid(const {'schema': 'wrong'}), isFalse);
-    });
+        expect(await adapter.isValid(fixture.toJson()), isTrue);
+        expect(await adapter.isApplicable(fixture.toJson()), isTrue);
+        final candidates = adapter.shrinker
+            .candidates(fixture.toJson())
+            .toList();
+        expect(candidates, isNotEmpty);
+        expect(
+          candidates.every((candidate) {
+            final decoded = PdaHardEdgeFixture.fromJson(candidate);
+            return decoded.property == fixture.property &&
+                canonicalJsonEncode(decoded.propertyPayload) ==
+                    canonicalJsonEncode(fixture.propertyPayload);
+          }),
+          isTrue,
+        );
+        expect(await adapter.isValid(const {'schema': 'wrong'}), isFalse);
+      },
+    );
 
-    test('preserves Unicode stack tokens that share prefixes in traces',
-        () async {
-      final fixture = pdaUnicodePrefixFixture();
-      final oracle = const PdaExhaustiveExplorer().explore(
-        pda: fixture.pda,
-        input: fixture.input,
-        mode: fixture.mode,
-      );
+    test(
+      'preserves Unicode stack tokens that share prefixes in traces',
+      () async {
+        final fixture = pdaUnicodePrefixFixture();
+        final oracle = const PdaExhaustiveExplorer().explore(
+          pda: fixture.pda,
+          input: fixture.input,
+          mode: fixture.mode,
+        );
 
-      expect(oracle.outcome, VerificationOutcomeCode.accepted);
-      expect(
-        oracle.witness.first.after.stack,
-        const ['bottom', '🧪x', '🧪', 'αβ', 'α'],
-      );
-      final production = PDASimulator.simulateNPDA(
-        fixture.pda,
-        fixture.input,
-        mode: fixture.mode,
-        stepByStep: true,
-      );
-      expect(production.isSuccess, isTrue);
-      expect(
-        production.data!.steps[1].stackTokens,
-        const ['bottom', '🧪x', '🧪', 'αβ', 'α'],
-      );
-      expect(
-        await const PdaCertificationRunner().runProperty(
-          property: 'unicode-prefix-stack-symbols',
-          fixture: fixture,
-        ),
-        isA<PdaCertificationCheck>().having(
-          (check) => check.status,
-          'status',
-          PdaCertificationStatus.passed,
-        ),
-      );
-    });
+        expect(oracle.outcome, VerificationOutcomeCode.accepted);
+        expect(oracle.witness.first.after.stack, const [
+          'bottom',
+          '🧪x',
+          '🧪',
+          'αβ',
+          'α',
+        ]);
+        final production = PDASimulator.simulateNPDA(
+          fixture.pda,
+          fixture.input,
+          mode: fixture.mode,
+          stepByStep: true,
+        );
+        expect(production.isSuccess, isTrue);
+        expect(production.data!.steps[1].stackTokens, const [
+          'bottom',
+          '🧪x',
+          '🧪',
+          'αβ',
+          'α',
+        ]);
+        expect(
+          await const PdaCertificationRunner().runProperty(
+            property: 'unicode-prefix-stack-symbols',
+            fixture: fixture,
+          ),
+          isA<PdaCertificationCheck>().having(
+            (check) => check.status,
+            'status',
+            PdaCertificationStatus.passed,
+          ),
+        );
+      },
+    );
 
     test('keeps invalid, bounded, and compound evidence reportable', () async {
       const runner = PdaCertificationRunner();
@@ -569,7 +585,9 @@ void main() {
       expect(compound.status, PdaCertificationStatus.passed);
       expect(compound.message, contains('limited=boundedUnknown'));
       expect(
-          compound.message, contains('PDA to CFG production limit exceeded'));
+        compound.message,
+        contains('PDA to CFG production limit exceeded'),
+      );
       expect(compound.message, contains(PDAtoCFGConverter.cancellationError));
       expect(bounded.status, PdaCertificationStatus.passed);
       expect(bounded.message, contains('limitedDifferential=boundedUnknown'));
@@ -587,36 +605,35 @@ final class _FixedElapsedClock implements ElapsedClock {
 HardEdgeCatalogCase _catalogCase({
   required String algorithm,
   required String property,
-}) =>
-    HardEdgeCatalogCase(
-      id: 'pda-$algorithm-$property',
-      family: 'pda',
-      algorithm: algorithm,
-      sourceKind: HardEdgeSourceKind.generated,
-      seed: 337,
-      property: property,
-      provenance: const HardEdgeProvenance(
-        origin: 'independent-generator',
-        independentlyAuthored: true,
-        generator: 'pda-fixture-v1',
-        licenseBasis: 'LICENSE.txt',
-      ),
-      license: 'Apache-2.0',
-      regressionIssue: 337,
-      platforms: const ['all'],
-      sha256: '0' * 64,
-      generatorVersion: '1',
-      oracleVersion: 'pda-exhaustive-v1',
-      budget: const GenerationBudget(
-        maxStates: 4,
-        maxTransitions: 8,
-        maxSymbols: 4,
-        maxStackDepth: 8,
-      ),
-      fixture: 'test/fixtures/hard_edge/pda/generated.json',
-      expectedOutcome: HardEdgeExpectedOutcome.pass,
-      requiredTool: null,
-    );
+}) => HardEdgeCatalogCase(
+  id: 'pda-$algorithm-$property',
+  family: 'pda',
+  algorithm: algorithm,
+  sourceKind: HardEdgeSourceKind.generated,
+  seed: 337,
+  property: property,
+  provenance: const HardEdgeProvenance(
+    origin: 'independent-generator',
+    independentlyAuthored: true,
+    generator: 'pda-fixture-v1',
+    licenseBasis: 'LICENSE.txt',
+  ),
+  license: 'Apache-2.0',
+  regressionIssue: 337,
+  platforms: const ['all'],
+  sha256: '0' * 64,
+  generatorVersion: '1',
+  oracleVersion: 'pda-exhaustive-v1',
+  budget: const GenerationBudget(
+    maxStates: 4,
+    maxTransitions: 8,
+    maxSymbols: 4,
+    maxStackDepth: 8,
+  ),
+  fixture: 'test/fixtures/hard_edge/pda/generated.json',
+  expectedOutcome: HardEdgeExpectedOutcome.pass,
+  requiredTool: null,
+);
 
 PDA _singleTransitionPda({
   required bool lambdaInput,

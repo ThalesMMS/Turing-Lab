@@ -103,9 +103,11 @@ void main() {
 
   test('registered codecs detect, decode, and encode both formats', () async {
     final module = createMooreRegisteredModule();
+    // The Moore descriptor declares its conversion to Mealy, so the registry
+    // also carries the Mealy module.
     final registry = DocumentInteroperabilityRegistry.fromFormalSystems(
       FormalSystemRegistry(
-        modules: [module],
+        modules: [module, TransducerFormalSystemModules.mealy],
         formats: FormalSystemRegistry.defaultRegistry.formats.formats,
       ),
     );

@@ -25,6 +25,7 @@ class StackOperationPreview extends StatelessWidget {
   final String inputSymbol;
   final String popSymbol;
   final String pushSymbol;
+  final List<String>? pushSymbols;
   final StackState currentStack;
 
   const StackOperationPreview({
@@ -32,6 +33,7 @@ class StackOperationPreview extends StatelessWidget {
     required this.inputSymbol,
     required this.popSymbol,
     required this.pushSymbol,
+    this.pushSymbols,
     required this.currentStack,
   });
 
@@ -43,8 +45,9 @@ class StackOperationPreview extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border:
-            Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+        ),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -145,8 +148,9 @@ class StackOperationPreview extends StatelessWidget {
     }
 
     if (!isEpsilonSymbol(pushSymbol)) {
-      for (var i = pushSymbol.length - 1; i >= 0; i--) {
-        resultStack = resultStack.push(pushSymbol[i]);
+      final symbols = pushSymbols ?? pushSymbol.split('');
+      for (final symbol in symbols.reversed) {
+        resultStack = resultStack.push(symbol);
       }
     }
 

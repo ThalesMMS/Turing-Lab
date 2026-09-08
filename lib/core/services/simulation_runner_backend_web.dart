@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../algorithms/pda_simulator.dart';
-import '../algorithms/tm_simulator.dart';
+import '../algorithms/pda/pda_simulator.dart';
+import '../algorithms/tm/tm_simulator.dart';
 import '../models/pda.dart';
 import '../models/tm.dart';
 import '../simulation_cancelled_exception.dart';

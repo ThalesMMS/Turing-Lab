@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/derivation_tree.dart';
 import 'package:turing_lab/core/models/derivation_tree_node.dart';
-import 'package:turing_lab/presentation/widgets/derivation_tree_view.dart';
-import 'package:turing_lab/presentation/widgets/derivation_tree_viewer.dart';
+import 'package:turing_lab/presentation/widgets/grammar/derivation_tree_view.dart';
+import 'package:turing_lab/presentation/widgets/grammar/derivation_tree_viewer.dart';
 
 // feature-localization-surface: responsive-accessibility
 const _tree = DerivationTree(
@@ -94,9 +94,7 @@ void main() {
     expect(controller.value.getMaxScaleOnAxis(), closeTo(fitted, 0.0001));
   });
 
-  testWidgets('hides the fullscreen button without a callback', (
-    tester,
-  ) async {
+  testWidgets('hides the fullscreen button without a callback', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(body: DerivationTreeViewer(tree: _tree, height: 300)),

@@ -134,6 +134,7 @@ const graphFlutterEvidenceByProperty = <String, List<String>>{
     'test/widget/presentation/automaton_graphview_canvas_test.dart',
     'test/widget/presentation/automaton_graphview_canvas_coordinators_test.dart',
     'test/widget/presentation/automaton_graphview_canvas_drag_preview_test.dart',
+    'test/widget/presentation/canvas_tool_dispatcher_test.dart',
     'test/widget/presentation/read_only_fsa_graphview_canvas_test.dart',
     'test/widget/presentation/document_annotations_test.dart',
     'test/widget/presentation/scoped_canvas_highlight_pages_test.dart',
@@ -327,6 +328,18 @@ const graphBoundaryInventory = <GraphBoundaryInventoryEntry>[
     properties: ['graph.canvas-contracts'],
   ),
   GraphBoundaryInventoryEntry(
+    id: 'tool-dispatcher',
+    sourcePath:
+        'lib/presentation/widgets/automaton_graphview/canvas_tool_dispatcher.dart',
+    entryPoints: [
+      'setActiveTool',
+      'resolveCanvasTap',
+      'resolveNodeTap',
+      'clearTransitionSource',
+    ],
+    properties: ['graph.canvas-contracts'],
+  ),
+  GraphBoundaryInventoryEntry(
     id: 'transition-routing',
     sourcePath:
         'lib/features/canvas/graphview/automatic_transition_route_planner.dart',
@@ -387,7 +400,7 @@ const graphBoundaryInventory = <GraphBoundaryInventoryEntry>[
     sourcePath: 'lib/features/canvas/graphview/grouped_fsa_geometry.dart',
     entryPoints: [
       'resolveGroupedFsaControlPoint',
-      'resolveGroupedFsaLabelNormal'
+      'resolveGroupedFsaLabelNormal',
     ],
     properties: ['graph.canvas-contracts', 'graph.performance-benchmark'],
   ),
@@ -413,10 +426,7 @@ const graphBoundaryInventory = <GraphBoundaryInventoryEntry>[
   ),
 ];
 
-Object graphHardEdgeFixture({
-  required String property,
-  int seed = 341,
-}) =>
+Object graphHardEdgeFixture({required String property, int seed = 341}) =>
     <String, Object?>{
       'family': graphFamilyId,
       'generatorVersion': graphGeneratorVersion,
@@ -444,17 +454,8 @@ Object graphHardEdgeFixture({
           {'type': 'move', 'nodeId': 'n2', 'x': 180.0, 'y': 140.0},
           {'type': 'undo'},
           {'type': 'redo'},
-          {
-            'type': 'assertLabel',
-            'nodeId': 'n1',
-            'label': 'generated-341',
-          },
-          {
-            'type': 'assertPosition',
-            'nodeId': 'n2',
-            'x': 180.0,
-            'y': 140.0,
-          },
+          {'type': 'assertLabel', 'nodeId': 'n1', 'label': 'generated-341'},
+          {'type': 'assertPosition', 'nodeId': 'n2', 'x': 180.0, 'y': 140.0},
         ],
       'restorePositions': const {
         'n0': {'x': 10.0, 'y': 20.0},
@@ -465,10 +466,8 @@ Object graphHardEdgeFixture({
       },
     };
 
-typedef GraphFlutterEvidenceRunner = Future<int> Function(
-  List<String> paths,
-  Duration timeout,
-);
+typedef GraphFlutterEvidenceRunner =
+    Future<int> Function(List<String> paths, Duration timeout);
 
 const graphEvidenceTimeout = Duration(seconds: 50);
 const _generatedEvidenceNotApplicable = 'generatedEvidenceNotApplicable';
@@ -476,7 +475,7 @@ const _generatedEvidenceNotApplicable = 'generatedEvidenceNotApplicable';
 final class GraphHardEdgePropertyExecutor
     implements HardEdgeGeneratedPropertyExecutor {
   GraphHardEdgePropertyExecutor({GraphFlutterEvidenceRunner? evidenceRunner})
-      : _evidenceRunner = evidenceRunner ?? _runFlutterEvidence;
+    : _evidenceRunner = evidenceRunner ?? _runFlutterEvidence;
 
   final GraphFlutterEvidenceRunner _evidenceRunner;
   Future<void> _evidenceQueue = Future<void>.value();
@@ -561,8 +560,10 @@ final class GraphHardEdgePropertyExecutor
 }
 
 bool _layoutPropertiesHold(
-    Map<String, Object?> source, GraphLayoutAlgorithmId algorithm,
-    [_GraphCertificationAdapter adapter = const _GraphCertificationAdapter()]) {
+  Map<String, Object?> source,
+  GraphLayoutAlgorithmId algorithm, [
+  _GraphCertificationAdapter adapter = const _GraphCertificationAdapter(),
+]) {
   final graph = _graphFromFixture(source);
   final settings = _settingsFromFixture(source);
   final request = GraphLayoutRequest(
@@ -579,9 +580,7 @@ bool _layoutPropertiesHold(
       first.positions.values.any((point) => !point.isFinite) ||
       first.positions.keys
           .toSet()
-          .difference(
-            graph.nodes.map((node) => node.id).toSet(),
-          )
+          .difference(graph.nodes.map((node) => node.id).toSet())
           .isNotEmpty) {
     return false;
   }
@@ -665,22 +664,19 @@ GraphLayoutAlgorithmId _algorithmForProperty(String property) {
   for (final entry in graphLayoutPropertyByAlgorithm.entries) {
     if (entry.value == property) return entry.key;
   }
-  throw HardEdgeConfigurationException(
-    'Unknown graph property "$property".',
-  );
+  throw HardEdgeConfigurationException('Unknown graph property "$property".');
 }
 
 bool _isConstructive(GraphLayoutAlgorithmId algorithm) => switch (algorithm) {
-      GraphLayoutAlgorithmId.circle ||
-      GraphLayoutAlgorithmId.twoCircle ||
-      GraphLayoutAlgorithmId.spiral ||
-      GraphLayoutAlgorithmId.hierarchical ||
-      GraphLayoutAlgorithmId.sugiyama ||
-      GraphLayoutAlgorithmId.componentPacking ||
-      GraphLayoutAlgorithmId.seededRandom =>
-        true,
-      _ => false,
-    };
+  GraphLayoutAlgorithmId.circle ||
+  GraphLayoutAlgorithmId.twoCircle ||
+  GraphLayoutAlgorithmId.spiral ||
+  GraphLayoutAlgorithmId.hierarchical ||
+  GraphLayoutAlgorithmId.sugiyama ||
+  GraphLayoutAlgorithmId.componentPacking ||
+  GraphLayoutAlgorithmId.seededRandom => true,
+  _ => false,
+};
 
 bool _samePositions(
   Map<String, GraphLayoutPoint> left,
@@ -775,8 +771,9 @@ void _validateEventHistory(Map<String, Object?> source) {
   if (rawEvents is! List) {
     throw const FormatException('Graph event fixture requires events.');
   }
-  final nodeIds =
-      _graphFromFixture(source).nodes.map((node) => node.id).toSet();
+  final nodeIds = _graphFromFixture(
+    source,
+  ).nodes.map((node) => node.id).toSet();
   for (final rawEvent in rawEvents) {
     final event = _fixtureMap(rawEvent);
     final type = _string(event, 'type');
@@ -819,11 +816,11 @@ final class GraphEventHistoryReplayResult {
   final int redoDepth;
 
   Map<String, Object?> toJson() => {
-        'failureSignature': failureSignature,
-        'finalSnapshot': finalSnapshot.toJson(),
-        'redoDepth': redoDepth,
-        'undoDepth': undoDepth,
-      };
+    'failureSignature': failureSignature,
+    'finalSnapshot': finalSnapshot.toJson(),
+    'redoDepth': redoDepth,
+    'undoDepth': undoDepth,
+  };
 }
 
 GraphEventHistoryReplayResult graphEventHistoryReplay(Object? fixture) {
@@ -864,10 +861,7 @@ GraphEventHistoryReplayResult graphEventHistoryReplay(Object? fixture) {
             nodes: [
               for (final node in current.nodes)
                 if (node.id == nodeId)
-                  node.copyWith(
-                    x: _number(event, 'x'),
-                    y: _number(event, 'y'),
-                  )
+                  node.copyWith(x: _number(event, 'x'), y: _number(event, 'y'))
                 else
                   node,
             ],
@@ -948,10 +942,7 @@ GraphViewAutomatonSnapshot _snapshotFromFixture(Map<String, Object?> source) {
   );
 }
 
-Future<int> _runFlutterEvidence(
-  List<String> paths,
-  Duration timeout,
-) async {
+Future<int> _runFlutterEvidence(List<String> paths, Duration timeout) async {
   try {
     return await runGraphEvidenceProcessForCertification(
       executable: Platform.isWindows ? 'cmd.exe' : 'flutter',
@@ -971,15 +962,13 @@ Future<int> runGraphEvidenceProcessForCertification({
   required List<String> arguments,
   required Duration timeout,
 }) async {
-  final process = await Process.start(
-    executable,
-    arguments,
-    runInShell: false,
-  );
-  final output =
-      process.stdout.transform(const Utf8Decoder(allowMalformed: true)).join();
-  final errors =
-      process.stderr.transform(const Utf8Decoder(allowMalformed: true)).join();
+  final process = await Process.start(executable, arguments, runInShell: false);
+  final output = process.stdout
+      .transform(const Utf8Decoder(allowMalformed: true))
+      .join();
+  final errors = process.stderr
+      .transform(const Utf8Decoder(allowMalformed: true))
+      .join();
   try {
     final exitCode = await process.exitCode.timeout(timeout);
     await Future.wait([output, errors]);
@@ -1003,11 +992,12 @@ Future<int> runGraphEvidenceProcessForCertification({
 
 Future<void> _terminateProcessTree(Process process) async {
   if (Platform.isWindows) {
-    final result = await Process.run(
-      'taskkill.exe',
-      ['/pid', '${process.pid}', '/t', '/f'],
-      runInShell: false,
-    ).timeout(const Duration(seconds: 3));
+    final result = await Process.run('taskkill.exe', [
+      '/pid',
+      '${process.pid}',
+      '/t',
+      '/f',
+    ], runInShell: false).timeout(const Duration(seconds: 3));
     if (result.exitCode != 0 &&
         await graphEvidenceProcessIsRunningForCertification(process.pid)) {
       process.kill();
@@ -1062,14 +1052,15 @@ Future<void> _terminatePosixProcessTree(int rootPid) async {
 }
 
 Future<List<int>> _posixProcessTree(int rootPid) async {
-  final result = await Process.run(
-    'ps',
-    const ['-eo', 'pid=,ppid='],
-    runInShell: false,
-  );
+  final result = await Process.run('ps', const [
+    '-eo',
+    'pid=,ppid=',
+  ], runInShell: false);
   if (result.exitCode != 0) {
-    throw ProcessException(
-        'ps', const ['-eo', 'pid=,ppid='], '${result.stderr}');
+    throw ProcessException('ps', const [
+      '-eo',
+      'pid=,ppid=',
+    ], '${result.stderr}');
   }
   final children = <int, List<int>>{};
   for (final line in '${result.stdout}'.split('\n')) {
@@ -1113,18 +1104,19 @@ Future<List<int>> _waitForGraphProcessIds(
 @visibleForTesting
 Future<bool> graphEvidenceProcessIsRunningForCertification(int pid) async {
   if (Platform.isWindows) {
-    final result = await Process.run(
-      'tasklist.exe',
-      ['/fi', 'PID eq $pid', '/fo', 'csv', '/nh'],
-      runInShell: false,
-    );
+    final result = await Process.run('tasklist.exe', [
+      '/fi',
+      'PID eq $pid',
+      '/fo',
+      'csv',
+      '/nh',
+    ], runInShell: false);
     return result.exitCode == 0 && '${result.stdout}'.contains('"$pid"');
   }
-  final result = await Process.run(
-    '/bin/kill',
-    ['-0', '$pid'],
-    runInShell: false,
-  );
+  final result = await Process.run('/bin/kill', [
+    '-0',
+    '$pid',
+  ], runInShell: false);
   return result.exitCode == 0;
 }
 
@@ -1152,17 +1144,17 @@ final class _GraphCertificationAdapter {
   GraphLayoutResult compute(GraphLayoutRequest request) {
     final effectiveRequest = switch (mutation) {
       _GraphCertificationMutation.ignoreLayoutSeed => GraphLayoutRequest(
-          algorithmId: request.algorithmId,
-          algorithmVersion: request.algorithmVersion,
-          graph: request.graph,
-          settings: request.settings.copyWith(seed: 0),
-        ),
+        algorithmId: request.algorithmId,
+        algorithmVersion: request.algorithmVersion,
+        graph: request.graph,
+        settings: request.settings.copyWith(seed: 0),
+      ),
       _GraphCertificationMutation.movePinnedNode => GraphLayoutRequest(
-          algorithmId: request.algorithmId,
-          algorithmVersion: request.algorithmVersion,
-          graph: request.graph,
-          settings: request.settings.copyWith(pinnedNodeIds: const []),
-        ),
+        algorithmId: request.algorithmId,
+        algorithmVersion: request.algorithmVersion,
+        graph: request.graph,
+        settings: request.settings.copyWith(pinnedNodeIds: const []),
+      ),
       _ => request,
     };
     final result = GraphLayoutEngine.compute(effectiveRequest);
@@ -1222,9 +1214,7 @@ final class _GraphHistoryCertificationAdapter {
     if (json is! Map) {
       throw const FormatException('Graph history snapshot must be an object.');
     }
-    return GraphViewAutomatonSnapshot.fromJson(
-      json.cast<String, dynamic>(),
-    );
+    return GraphViewAutomatonSnapshot.fromJson(json.cast<String, dynamic>());
   }
 
   GraphViewAutomatonSnapshot roundTrip(GraphViewAutomatonSnapshot snapshot) =>
@@ -1281,12 +1271,12 @@ bool _ignoreSeedMutantKilled(Map<String, Object?> source) {
   bool property(_GraphCertificationAdapter adapter) {
     final graph = _graphFromFixture(source);
     GraphLayoutResult run(int seed) => adapter.compute(
-          GraphLayoutRequest(
-            algorithmId: GraphLayoutAlgorithmId.seededRandom,
-            graph: graph,
-            settings: _settingsFromFixture(source).copyWith(seed: seed),
-          ),
-        );
+      GraphLayoutRequest(
+        algorithmId: GraphLayoutAlgorithmId.seededRandom,
+        graph: graph,
+        settings: _settingsFromFixture(source).copyWith(seed: seed),
+      ),
+    );
     final seed = source['seed'] as int;
     final first = run(seed);
     final second = run(seed == 0xffffffff ? seed - 1 : seed + 1);
@@ -1343,8 +1333,9 @@ bool _mappingRoundTripHolds(
     automaton,
   );
   final stateIds = automaton.states.map((state) => state.id).toSet();
-  final transitionIds =
-      automaton.fsaTransitions.map((transition) => transition.id).toSet();
+  final transitionIds = automaton.fsaTransitions
+      .map((transition) => transition.id)
+      .toSet();
   return snapshot.nodes.map((node) => node.id).toSet().containsAll(stateIds) &&
       snapshot.nodes.length == stateIds.length &&
       snapshot.edges
@@ -1400,8 +1391,9 @@ FSA _fsaFromFixture(Map<String, Object?> source) {
     name: 'Graph mapping mutation fixture',
     states: states.values.toSet(),
     transitions: transitions,
-    alphabet:
-        transitions.expand((transition) => transition.inputSymbols).toSet(),
+    alphabet: transitions
+        .expand((transition) => transition.inputSymbols)
+        .toSet(),
     initialState: states['n0'],
     acceptingStates: {if (states['n3'] case final accepting?) accepting},
     created: timestamp,

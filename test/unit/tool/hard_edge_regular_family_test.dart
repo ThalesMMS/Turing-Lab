@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:test/test.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -44,19 +44,18 @@ void main() {
 
     test('keeps multi-character alphabet tokens atomic', () {
       final automaton = _singleTokenAutomaton('token');
-      final signature = regularLanguageSignature(
-        automaton,
-        const ['token'],
-        const RegularOracleBudget(maximumWordLength: 1),
-      );
+      final signature = regularLanguageSignature(automaton, const [
+        'token',
+      ], const RegularOracleBudget(maximumWordLength: 1));
 
       expect(
         signature,
         isA<OracleDefinitive<Map<String, bool>, RegularOracleEvidence>>(),
       );
-      final values = (signature
-              as OracleDefinitive<Map<String, bool>, RegularOracleEvidence>)
-          .value;
+      final values =
+          (signature
+                  as OracleDefinitive<Map<String, bool>, RegularOracleEvidence>)
+              .value;
       expect(values['[]'], isFalse);
       expect(values['["token"]'], isTrue);
     });
@@ -65,19 +64,14 @@ void main() {
       final automaton = RegexToNFAConverter.convert('a*').data!;
 
       expect(
-        regularOracleAccepts(
-          automaton,
-          const ['a'],
-          maximumConfigurations: 1,
-        ),
+        regularOracleAccepts(automaton, const ['a'], maximumConfigurations: 1),
         isA<OracleBoundedUnknown<bool, RegularOracleEvidence>>(),
       );
       expect(
-        regularLanguageSignature(
-          automaton,
-          const ['a', 'b'],
-          const RegularOracleBudget(maximumWords: 1),
-        ),
+        regularLanguageSignature(automaton, const [
+          'a',
+          'b',
+        ], const RegularOracleBudget(maximumWords: 1)),
         isA<OracleBoundedUnknown<Map<String, bool>, RegularOracleEvidence>>(),
       );
     });
@@ -125,7 +119,7 @@ void main() {
     test('the 25-path matrix links every entry to executable evidence', () {
       final entries = [
         ...regularAlgorithmInventory,
-        ...regularProviderInventory
+        ...regularProviderInventory,
       ];
 
       expect(entries, hasLength(25));
@@ -158,83 +152,85 @@ void main() {
 
     test('POSIX provider process trees kill descendants deepest first', () {
       expect(
-        RegularProviderProcessTree.descendantsDeepestFirst(
-          const {
-            11: 10,
-            12: 10,
-            13: 11,
-            14: 13,
-            99: 98,
-          },
-          10,
-        ),
+        RegularProviderProcessTree.descendantsDeepestFirst(const {
+          11: 10,
+          12: 10,
+          13: 11,
+          14: 13,
+          99: 98,
+        }, 10),
         [14, 13, 11, 12],
       );
     });
 
-    test('catalog fragment is schema-valid with current fixture digests',
-        () async {
-      final catalog = await HardEdgeCatalog.load(
-        repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/regular/catalog.fragment.json',
-        ),
-      );
-
-      expect(
-        catalog.manifest.cases,
-        hasLength(regularHardEdgeDescriptors.length),
-      );
-      expect(catalog.manifest.mutations, hasLength(3));
-      expect(
-        catalog.manifest.cases.map((testCase) => testCase.id).toSet(),
-        regularHardEdgeDescriptors.map((descriptor) => descriptor.id).toSet(),
-      );
-      final descriptorsById = {
-        for (final descriptor in regularHardEdgeDescriptors)
-          descriptor.id: descriptor,
-      };
-      for (final testCase in catalog.manifest.cases) {
-        final descriptor = descriptorsById[testCase.id]!;
-        expect(testCase.algorithm, descriptor.algorithm);
-        expect(testCase.property, descriptor.property);
-        expect(testCase.expectedOutcome, descriptor.expectedOutcome);
-        expect(testCase.requiredTool, descriptor.requiredTool);
-      }
-    });
-
-    test('catalog adapter certifies every algorithm/property descriptor',
-        () async {
-      final catalog = await HardEdgeCatalog.load(
-        repositoryRoot: Directory.current,
-        manifestFile: File(
-          'test/fixtures/hard_edge/regular/catalog.fragment.json',
-        ),
-      );
-      final executedProviderTests = <String>[];
-      final executor = RegularHardEdgeExecutor(
-        providerEvidenceRunner: (testPath) async {
-          executedProviderTests.add(testPath);
-          return 0;
-        },
-      );
-
-      for (final testCase in catalog.manifest.cases) {
-        final fixture = await catalog.fixtureFor(testCase).readAsString();
-        final decodedFixture = jsonDecode(fixture);
-        final outcome = await executor.execute(testCase, decodedFixture);
-        expect(
-          outcome.name,
-          testCase.expectedOutcome.name,
-          reason: '${testCase.algorithm}/${testCase.property}',
+    test(
+      'catalog fragment is schema-valid with current fixture digests',
+      () async {
+        final catalog = await HardEdgeCatalog.load(
+          repositoryRoot: Directory.current,
+          manifestFile: File(
+            'test/fixtures/hard_edge/regular/catalog.fragment.json',
+          ),
         );
-      }
-      expect(executedProviderTests, hasLength(3));
-    });
+
+        expect(
+          catalog.manifest.cases,
+          hasLength(regularHardEdgeDescriptors.length),
+        );
+        expect(catalog.manifest.mutations, hasLength(3));
+        expect(
+          catalog.manifest.cases.map((testCase) => testCase.id).toSet(),
+          regularHardEdgeDescriptors.map((descriptor) => descriptor.id).toSet(),
+        );
+        final descriptorsById = {
+          for (final descriptor in regularHardEdgeDescriptors)
+            descriptor.id: descriptor,
+        };
+        for (final testCase in catalog.manifest.cases) {
+          final descriptor = descriptorsById[testCase.id]!;
+          expect(testCase.algorithm, descriptor.algorithm);
+          expect(testCase.property, descriptor.property);
+          expect(testCase.expectedOutcome, descriptor.expectedOutcome);
+          expect(testCase.requiredTool, descriptor.requiredTool);
+        }
+      },
+    );
+
+    test(
+      'catalog adapter certifies every algorithm/property descriptor',
+      () async {
+        final catalog = await HardEdgeCatalog.load(
+          repositoryRoot: Directory.current,
+          manifestFile: File(
+            'test/fixtures/hard_edge/regular/catalog.fragment.json',
+          ),
+        );
+        final executedProviderTests = <String>[];
+        final executor = RegularHardEdgeExecutor(
+          providerEvidenceRunner: (testPath) async {
+            executedProviderTests.add(testPath);
+            return 0;
+          },
+        );
+
+        for (final testCase in catalog.manifest.cases) {
+          final fixture = await catalog.fixtureFor(testCase).readAsString();
+          final decodedFixture = jsonDecode(fixture);
+          final outcome = await executor.execute(testCase, decodedFixture);
+          expect(
+            outcome.name,
+            testCase.expectedOutcome.name,
+            reason: '${testCase.algorithm}/${testCase.property}',
+          );
+        }
+        expect(executedProviderTests, hasLength(3));
+      },
+    );
 
     test('all core properties pass and reports are deterministic', () async {
-      final runner =
-          RegularCertificationRunner(repositoryRoot: Directory.current);
+      final runner = RegularCertificationRunner(
+        repositoryRoot: Directory.current,
+      );
       const options = RegularCertificationOptions(cases: 2);
 
       final first = await runner.run(options);
@@ -245,22 +241,24 @@ void main() {
       expect(first.toJson(), second.toJson());
     });
 
-    test('shared executor materializes and executes a generated seed',
-        () async {
-      final executor = RegularHardEdgeExecutor(
-        providerEvidenceRunner: (_) async => 0,
-      );
-      final testCase = _catalogCase('regular.generated-oracle');
-      const fixture = {'family': 'regular'};
+    test(
+      'shared executor materializes and executes a generated seed',
+      () async {
+        final executor = RegularHardEdgeExecutor(
+          providerEvidenceRunner: (_) async => 0,
+        );
+        final testCase = _catalogCase('regular.generated-oracle');
+        const fixture = {'family': 'regular'};
 
-      final materialized = await executor.materialize(testCase, fixture, 91);
+        final materialized = await executor.materialize(testCase, fixture, 91);
 
-      expect(materialized, containsPair('seed', 91));
-      expect(
-        await executor.execute(testCase, materialized),
-        HardEdgeExecutionOutcome.pass,
-      );
-    });
+        expect(materialized, containsPair('seed', 91));
+        expect(
+          await executor.execute(testCase, materialized),
+          HardEdgeExecutionOutcome.pass,
+        );
+      },
+    );
 
     test('fixture payload and expectations change replay outcome', () async {
       final executor = RegularHardEdgeExecutor(
@@ -284,156 +282,157 @@ void main() {
         HardEdgeExecutionOutcome.pass,
       );
       expect(
-        await executor.execute(
-          testCase,
-          {
-            ...valid,
-            'accepted': const ['a', '-', 'z', 'b']
+        await executor.execute(testCase, {
+          ...valid,
+          'accepted': const ['a', '-', 'z', 'b'],
+        }),
+        HardEdgeExecutionOutcome.violation,
+      );
+      expect(
+        await executor.execute(testCase, {
+          ...valid,
+          'expectedStatus': 'failed',
+        }),
+        HardEdgeExecutionOutcome.violation,
+      );
+    });
+
+    test(
+      'provider evidence is serialized under parallel catalog jobs',
+      () async {
+        var active = 0;
+        var maximumActive = 0;
+        final executor = RegularHardEdgeExecutor(
+          providerEvidenceRunner: (_) async {
+            active++;
+            maximumActive = math.max(maximumActive, active);
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            active--;
+            return 0;
           },
-        ),
-        HardEdgeExecutionOutcome.violation,
-      );
-      expect(
-        await executor.execute(
-          testCase,
-          {...valid, 'expectedStatus': 'failed'},
-        ),
-        HardEdgeExecutionOutcome.violation,
-      );
-    });
-
-    test('provider evidence is serialized under parallel catalog jobs',
-        () async {
-      var active = 0;
-      var maximumActive = 0;
-      final executor = RegularHardEdgeExecutor(
-        providerEvidenceRunner: (_) async {
-          active++;
-          maximumActive = math.max(maximumActive, active);
-          await Future<void>.delayed(const Duration(milliseconds: 10));
-          active--;
-          return 0;
-        },
-      );
-      final cases = [
-        _catalogCase(
-          'regular.provider-integration',
-          algorithm: 'automaton-algorithm-provider',
-          requiredTool: 'flutter',
-        ),
-        _catalogCase(
-          'regular.provider-stale-result',
-          algorithm: 'automaton-simulation-provider',
-          requiredTool: 'flutter',
-        ),
-        _catalogCase(
-          'regular.provider-stale-result',
-          algorithm: 'regex-editor-provider',
-          requiredTool: 'flutter',
-        ),
-      ];
-
-      final outcomes = await Future.wait(
-        cases.map(
-          (testCase) => executor.execute(
-            testCase,
-            const {'family': 'regular'},
+        );
+        final cases = [
+          _catalogCase(
+            'regular.provider-integration',
+            algorithm: 'automaton-algorithm-provider',
+            requiredTool: 'flutter',
           ),
-        ),
-      );
-
-      expect(outcomes, everyElement(HardEdgeExecutionOutcome.pass));
-      expect(maximumActive, 1);
-    });
-
-    test('failure artifact replays and shrinks through the real executor',
-        () async {
-      final temp = await Directory.systemTemp.createTemp('regular-replay-');
-      addTearDown(() => temp.delete(recursive: true));
-      final executor = RegularHardEdgeExecutor(
-        providerEvidenceRunner: (_) async => 0,
-      );
-      final fixture = <String, Object?>{
-        ...jsonDecode(
-          await File(
-            'test/fixtures/hard_edge/regular/shrink_probe.json',
-          ).readAsString(),
-        ) as Map,
-        'expectedMutantKilled': false,
-      };
-      final testCase = _catalogCase(
-        'regular.completion',
-        algorithm: 'dfa-completion',
-      ).copyWith(
-        sha256: hardEdgeSha256(
-          utf8.encode(canonicalJsonEncode(fixture)),
-        ),
-      );
-      final failure = File('${temp.path}/failure.json');
-      await failure.writeAsString(
-        jsonEncode(
-          HardEdgeFailureArtifact(
-            testCase: testCase,
-            fixture: fixture,
-            minimalFixture: null,
-            minimized: false,
-          ).toJson(),
-        ),
-      );
-
-      final replay = await replayFailureArtifact(
-        failureFile: failure,
-        executor: executor,
-      );
-      expect(replay.status, HardEdgeCaseStatus.failed);
-
-      final minimized = await shrinkFailureArtifact(
-        repositoryRoot: temp,
-        failureFile: failure,
-        outputPath: '${temp.path}/minimized.json',
-        executor: executor,
-        maxAttempts: 64,
-        shrinker: regularFailureFixtureShrinker,
-        isValid: regularFailureFixtureIsValid,
-        isApplicable: regularFailureFixtureIsApplicable,
-      );
-      final minimizedArtifact = await readFailureArtifact(minimized);
-      expect(minimizedArtifact.minimized, isTrue);
-      expect(
-        await replayFailureArtifact(
-          failureFile: minimized,
-          executor: executor,
-        ).then((result) => result.status),
-        HardEdgeCaseStatus.failed,
-      );
-    });
-
-    test('shared executor enforces the matrix algorithm/property pair',
-        () async {
-      final executor = RegularHardEdgeExecutor(
-        providerEvidenceRunner: (_) async => 0,
-      );
-      final mismatched = _catalogCase(
-        'regular.completion',
-        algorithm: 'regex-analyzer',
-      );
-
-      await expectLater(
-        executor.execute(mismatched, const {'family': 'regular'}),
-        throwsA(isA<HardEdgeConfigurationException>()),
-      );
-      expect(
-        await executor.execute(
           _catalogCase(
             'regular.provider-stale-result',
             algorithm: 'automaton-simulation-provider',
             requiredTool: 'flutter',
           ),
-          const {'family': 'regular'},
-        ),
-        HardEdgeExecutionOutcome.pass,
-      );
-    });
+          _catalogCase(
+            'regular.provider-stale-result',
+            algorithm: 'regex-editor-provider',
+            requiredTool: 'flutter',
+          ),
+        ];
+
+        final outcomes = await Future.wait(
+          cases.map(
+            (testCase) =>
+                executor.execute(testCase, const {'family': 'regular'}),
+          ),
+        );
+
+        expect(outcomes, everyElement(HardEdgeExecutionOutcome.pass));
+        expect(maximumActive, 1);
+      },
+    );
+
+    test(
+      'failure artifact replays and shrinks through the real executor',
+      () async {
+        final temp = await Directory.systemTemp.createTemp('regular-replay-');
+        addTearDown(() => temp.delete(recursive: true));
+        final executor = RegularHardEdgeExecutor(
+          providerEvidenceRunner: (_) async => 0,
+        );
+        final fixture = <String, Object?>{
+          ...jsonDecode(
+                await File(
+                  'test/fixtures/hard_edge/regular/shrink_probe.json',
+                ).readAsString(),
+              )
+              as Map,
+          'expectedMutantKilled': false,
+        };
+        final testCase =
+            _catalogCase(
+              'regular.completion',
+              algorithm: 'dfa-completion',
+            ).copyWith(
+              sha256: hardEdgeSha256(utf8.encode(canonicalJsonEncode(fixture))),
+            );
+        final failure = File('${temp.path}/failure.json');
+        await failure.writeAsString(
+          jsonEncode(
+            HardEdgeFailureArtifact(
+              testCase: testCase,
+              fixture: fixture,
+              minimalFixture: null,
+              minimized: false,
+            ).toJson(),
+          ),
+        );
+
+        final replay = await replayFailureArtifact(
+          failureFile: failure,
+          executor: executor,
+        );
+        expect(replay.status, HardEdgeCaseStatus.failed);
+
+        final minimized = await shrinkFailureArtifact(
+          repositoryRoot: temp,
+          failureFile: failure,
+          outputPath: '${temp.path}/minimized.json',
+          executor: executor,
+          maxAttempts: 64,
+          shrinker: regularFailureFixtureShrinker,
+          isValid: regularFailureFixtureIsValid,
+          isApplicable: regularFailureFixtureIsApplicable,
+        );
+        final minimizedArtifact = await readFailureArtifact(minimized);
+        expect(minimizedArtifact.minimized, isTrue);
+        expect(
+          await replayFailureArtifact(
+            failureFile: minimized,
+            executor: executor,
+          ).then((result) => result.status),
+          HardEdgeCaseStatus.failed,
+        );
+      },
+    );
+
+    test(
+      'shared executor enforces the matrix algorithm/property pair',
+      () async {
+        final executor = RegularHardEdgeExecutor(
+          providerEvidenceRunner: (_) async => 0,
+        );
+        final mismatched = _catalogCase(
+          'regular.completion',
+          algorithm: 'regex-analyzer',
+        );
+
+        await expectLater(
+          executor.execute(mismatched, const {'family': 'regular'}),
+          throwsA(isA<HardEdgeConfigurationException>()),
+        );
+        expect(
+          await executor.execute(
+            _catalogCase(
+              'regular.provider-stale-result',
+              algorithm: 'automaton-simulation-provider',
+              requiredTool: 'flutter',
+            ),
+            const {'family': 'regular'},
+          ),
+          HardEdgeExecutionOutcome.pass,
+        );
+      },
+    );
 
     test('registered mutation probes are killed', () async {
       final executor = RegularHardEdgeMutationExecutor();
@@ -501,37 +500,36 @@ HardEdgeCatalogCase _catalogCase(
   String property, {
   String algorithm = 'fsa-simulator',
   String? requiredTool,
-}) =>
-    HardEdgeCatalogCase(
-      id: 'regular-generated',
-      family: 'regular',
-      algorithm: algorithm,
-      sourceKind: HardEdgeSourceKind.generated,
-      seed: 335,
-      property: property,
-      provenance: const HardEdgeProvenance(
-        origin: 'independently-authored',
-        independentlyAuthored: true,
-        generator: regularGeneratorVersion,
-        licenseBasis: 'LICENSE.txt',
-      ),
-      license: 'Apache-2.0',
-      regressionIssue: 335,
-      platforms: const ['all'],
-      sha256: 'a' * 64,
-      generatorVersion: regularGeneratorVersion,
-      oracleVersion: regularOracleVersion,
-      budget: const GenerationBudget(
-        maxSymbols: 3,
-        maxWordLength: 4,
-        maxStates: 4,
-        maxTransitions: 8,
-        maxRegexNodes: 8,
-      ),
-      fixture: 'test/fixtures/hard_edge/regular/generated_oracle.json',
-      expectedOutcome: HardEdgeExpectedOutcome.pass,
-      requiredTool: requiredTool,
-    );
+}) => HardEdgeCatalogCase(
+  id: 'regular-generated',
+  family: 'regular',
+  algorithm: algorithm,
+  sourceKind: HardEdgeSourceKind.generated,
+  seed: 335,
+  property: property,
+  provenance: const HardEdgeProvenance(
+    origin: 'independently-authored',
+    independentlyAuthored: true,
+    generator: regularGeneratorVersion,
+    licenseBasis: 'LICENSE.txt',
+  ),
+  license: 'Apache-2.0',
+  regressionIssue: 335,
+  platforms: const ['all'],
+  sha256: 'a' * 64,
+  generatorVersion: regularGeneratorVersion,
+  oracleVersion: regularOracleVersion,
+  budget: const GenerationBudget(
+    maxSymbols: 3,
+    maxWordLength: 4,
+    maxStates: 4,
+    maxTransitions: 8,
+    maxRegexNodes: 8,
+  ),
+  fixture: 'test/fixtures/hard_edge/regular/generated_oracle.json',
+  expectedOutcome: HardEdgeExpectedOutcome.pass,
+  requiredTool: requiredTool,
+);
 
 FSA _singleTokenAutomaton(String token) {
   final initial = State(

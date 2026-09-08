@@ -2,23 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:turing_lab/core/algorithms/brute_force_cfg_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/brute_force_cfg_parser.dart';
 import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
 import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
-import 'package:turing_lab/core/algorithms/fsa_to_grammar_converter.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
-import 'package:turing_lab/core/algorithms/grammar_cnf_transformer.dart';
-import 'package:turing_lab/core/algorithms/grammar_gnf_transformer.dart';
-import 'package:turing_lab/core/algorithms/grammar_input_tokenizer.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_fsa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_to_grammar_converter.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_cnf_transformer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_gnf_transformer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_input_tokenizer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_earley.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_simple_recursive.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_fsa_converter.dart';
 import 'package:turing_lab/core/algorithms/grammar_to_pda/cfg_to_pda_converter.dart';
 import 'package:turing_lab/core/algorithms/grammar_to_pda/cfg_to_pda_differential_checker.dart';
 import 'package:turing_lab/core/algorithms/grammar_to_pda/cfg_to_pda_models.dart';
-import 'package:turing_lab/core/algorithms/lr1_parser.dart';
-import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/algorithms/grammar/lr1_parser.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_converter.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_unrestricted_grammar.dart';
 import 'package:turing_lab/core/grammar/dependency_graph/variable_dependency_graph.dart';
 import 'package:turing_lab/core/grammar/phrase_structure/bounded_derivation_search.dart';
@@ -58,6 +58,7 @@ enum GrammarCertificationOutcome {
   stale,
   violation,
 }
+
 enum GrammarCertificationStatus { passed, failed, incomplete }
 
 final class GrammarCertificationRecord {
@@ -88,25 +89,25 @@ final class GrammarCertificationRecord {
   bool get failed => actual != expected;
 
   Map<String, Object?> toJson() => {
-        'actual': actual.name,
-        'algorithm': algorithm,
-        'definitive': definitive,
-        'evidence': evidence,
-        'expected': expected.name,
-        'id': id,
-        'passed': passed,
-        'property': property,
-        'provenance': {
-          'generator': grammarCertificationGeneratorVersion,
-          'independentlyAuthored': true,
-          'issue': 336,
-          'origin': 'Turing Lab grammar hard-edge certification',
-          'sourceKind': 'generated',
-        },
-        'reproductionCommand':
-            'dart run tool/hard_edge_grammar_cases.dart run --seed $seed --case $id',
-        'seed': seed,
-      };
+    'actual': actual.name,
+    'algorithm': algorithm,
+    'definitive': definitive,
+    'evidence': evidence,
+    'expected': expected.name,
+    'id': id,
+    'passed': passed,
+    'property': property,
+    'provenance': {
+      'generator': grammarCertificationGeneratorVersion,
+      'independentlyAuthored': true,
+      'issue': 336,
+      'origin': 'Turing Lab grammar hard-edge certification',
+      'sourceKind': 'generated',
+    },
+    'reproductionCommand':
+        'dart run tool/hard_edge_grammar_cases.dart run --seed $seed --case $id',
+    'seed': seed,
+  };
 }
 
 final class GrammarCertificationReport {
@@ -136,17 +137,23 @@ final class GrammarCertificationReport {
     final algorithms = <String, int>{};
     final properties = <String, int>{};
     for (final record in records) {
-      algorithms.update(record.algorithm, (value) => value + 1,
-          ifAbsent: () => 1);
-      properties.update(record.property, (value) => value + 1,
-          ifAbsent: () => 1);
+      algorithms.update(
+        record.algorithm,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+      properties.update(
+        record.property,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
     }
     return {
       'coverage': {
         'algorithms': _sortedCounts(algorithms),
         'properties': _sortedCounts(properties),
         'seeds': [
-          for (var seed = seedStart; seed < seedStart + seedCount; seed++) seed
+          for (var seed = seedStart; seed < seedStart + seedCount; seed++) seed,
         ],
       },
       'generatorVersion': grammarCertificationGeneratorVersion,
@@ -228,32 +235,37 @@ abstract final class GrammarFamilyCertification {
       bool definitive = true,
       Map<String, Object?> evidence = const {},
     }) {
-      records.add(GrammarCertificationRecord(
-        id: id,
-        algorithm: algorithm,
-        property: property,
-        seed: seed,
-        expected: expected,
-        actual: actual,
-        definitive: definitive,
-        evidence: evidence,
-      ));
+      records.add(
+        GrammarCertificationRecord(
+          id: id,
+          algorithm: algorithm,
+          property: property,
+          seed: seed,
+          expected: expected,
+          actual: actual,
+          definitive: definitive,
+          evidence: evidence,
+        ),
+      );
     }
 
     final malformed = _malformedGrammar();
-    final malformedReport =
-        GrammarAnalyzer.validateMalformedProductions(malformed);
+    final malformedReport = GrammarAnalyzer.validateMalformedProductions(
+      malformed,
+    );
     add(
       id: 'analysis-malformed',
       algorithm: 'grammar-validation',
       property: 'diagnostics.non-crashing',
       expected: GrammarCertificationOutcome.invalid,
-      actual: malformedReport.isSuccess &&
+      actual:
+          malformedReport.isSuccess &&
               malformedReport.data!.diagnostics.isNotEmpty
           ? GrammarCertificationOutcome.invalid
           : GrammarCertificationOutcome.violation,
       evidence: {
-        'diagnostics': malformedReport.data?.diagnostics
+        'diagnostics':
+            malformedReport.data?.diagnostics
                 .map((diagnostic) => diagnostic.code)
                 .toList() ??
             const [],
@@ -273,19 +285,24 @@ abstract final class GrammarFamilyCertification {
     );
 
     final structural = _structuralGrammar(seed);
-    final unreachable =
-        GrammarAnalyzer.detectUnreachableNonTerminals(structural).data!;
-    final unproductive =
-        GrammarAnalyzer.detectUnproductiveNonTerminals(structural).data!;
+    final unreachable = GrammarAnalyzer.detectUnreachableNonTerminals(
+      structural,
+    ).data!;
+    final unproductive = GrammarAnalyzer.detectUnproductiveNonTerminals(
+      structural,
+    ).data!;
     final dependency = VariableDependencyGraphAnalyzer.analyzeContextFree(
       structural,
       sourceRevision: seed,
       mode: VariableDependencyMode.directOccurrence,
     );
-    final structuralVerified = unreachable.diagnostics
-            .any((diagnostic) => diagnostic.symbols.contains('U')) &&
-        unproductive.diagnostics
-            .any((diagnostic) => diagnostic.symbols.contains('U')) &&
+    final structuralVerified =
+        unreachable.diagnostics.any(
+          (diagnostic) => diagnostic.symbols.contains('U'),
+        ) &&
+        unproductive.diagnostics.any(
+          (diagnostic) => diagnostic.symbols.contains('U'),
+        ) &&
         dependency.unreachableVariables.contains('U') &&
         dependency.nonproductiveVariables.contains('U') &&
         dependency.cycleWitnesses.isNotEmpty;
@@ -309,7 +326,8 @@ abstract final class GrammarFamilyCertification {
     final first = GrammarAnalyzer.computeFirstSets(grammar);
     final follow = GrammarAnalyzer.computeFollowSets(grammar);
     final llTable = GrammarAnalyzer.buildLL1ParseTable(grammar);
-    final predictiveVerified = first.isSuccess &&
+    final predictiveVerified =
+        first.isSuccess &&
         follow.isSuccess &&
         llTable.isSuccess &&
         llTable.data!.value.typedConflicts.isEmpty &&
@@ -330,20 +348,17 @@ abstract final class GrammarFamilyCertification {
     );
 
     final reordered = _expressionGrammar(seed ^ 0x9e3779b9);
-    final renamed = _renameNonterminals(
-      grammar,
-      const {'S': 'Start', 'Tail': 'Suffix'},
-    );
+    final renamed = _renameNonterminals(grammar, const {
+      'S': 'Start',
+      'Tail': 'Suffix',
+    });
     add(
       id: 'metamorphic-order-renaming',
       algorithm: 'grammar-model-and-parsers',
       property: 'metamorphic.insertion-order-and-symbol-renaming',
       expected: GrammarCertificationOutcome.verified,
-      actual: _sameBoundedLanguage(
-                grammar,
-                reordered,
-                maximumWordLength,
-              ) &&
+      actual:
+          _sameBoundedLanguage(grammar, reordered, maximumWordLength) &&
               _sameBoundedLanguage(grammar, renamed, maximumWordLength)
           ? GrammarCertificationOutcome.verified
           : GrammarCertificationOutcome.violation,
@@ -362,7 +377,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'll1-lr1-conflict-analysis',
       property: 'conflicts.typed',
       expected: GrammarCertificationOutcome.conflict,
-      actual: llConflict.isSuccess &&
+      actual:
+          llConflict.isSuccess &&
               llConflict.data!.value.typedConflicts.isNotEmpty &&
               lrConflict.outcome == LR1ParseOutcome.conflict
           ? GrammarCertificationOutcome.conflict
@@ -380,7 +396,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'ambiguity-heuristic',
       property: 'ambiguity.incompleteness-exposed',
       expected: GrammarCertificationOutcome.verified,
-      actual: ambiguity.isSuccess &&
+      actual:
+          ambiguity.isSuccess &&
               ambiguity.data!.value == false &&
               ambiguityNotes.any(
                 (note) =>
@@ -391,18 +408,18 @@ abstract final class GrammarFamilyCertification {
           : GrammarCertificationOutcome.violation,
       evidence: {
         'appearsLl1': ambiguity.data?.value,
-        'structuredNotes': [
-          for (final note in ambiguityNotes) note.toJson(),
-        ],
+        'structuredNotes': [for (final note in ambiguityNotes) note.toJson()],
       },
     );
 
     final recursive = _leftRecursiveGrammar(seed);
-    final recursiveSourceJson =
-        canonicalJsonEncode(_semanticGrammarJson(recursive));
+    final recursiveSourceJson = canonicalJsonEncode(
+      _semanticGrammarJson(recursive),
+    );
     final recursionResult = GrammarAnalyzer.removeLeftRecursion(recursive);
     final factoringResult = GrammarAnalyzer.leftFactor(_factorGrammar(seed));
-    final transformationsOkay = recursionResult.isSuccess &&
+    final transformationsOkay =
+        recursionResult.isSuccess &&
         factoringResult.isSuccess &&
         _sameBoundedLanguage(
           recursive,
@@ -434,10 +451,12 @@ abstract final class GrammarFamilyCertification {
     final gnf = GrammarGnfTransformer.toGnf(grammar);
     final collisionSource = _generatedSymbolCollisionGrammar(seed);
     final collisionCnf = CFGToolkit.toCNF(collisionSource);
-    final collisionReordered =
-        _generatedSymbolCollisionGrammar(seed ^ 0x9e3779b9);
+    final collisionReordered = _generatedSymbolCollisionGrammar(
+      seed ^ 0x9e3779b9,
+    );
     final collisionCnfReordered = CFGToolkit.toCNF(collisionReordered);
-    final normalFormsOkay = cnf.isSuccess &&
+    final normalFormsOkay =
+        cnf.isSuccess &&
         CFGToolkit.isCNF(cnf.data!.grammar) &&
         CFGToolkit.isGNF(gnf.grammar) &&
         _sameBoundedLanguage(
@@ -479,7 +498,8 @@ abstract final class GrammarFamilyCertification {
           : GrammarCertificationOutcome.violation,
       evidence: {
         'cnfIsNormal': cnf.isSuccess && CFGToolkit.isCNF(cnf.data!.grammar),
-        'cnfPreservesLanguage': cnf.isSuccess &&
+        'cnfPreservesLanguage':
+            cnf.isSuccess &&
             _sameBoundedLanguage(
               _nullableGrammar(seed),
               cnf.data!.grammar,
@@ -488,16 +508,21 @@ abstract final class GrammarFamilyCertification {
         'cnfDiagnostics':
             cnf.data?.diagnostics.map((item) => item.code).toList() ?? const [],
         'gnfIsNormal': CFGToolkit.isGNF(gnf.grammar),
-        'gnfPreservesLanguage':
-            _sameBoundedLanguage(grammar, gnf.grammar, maximumWordLength),
+        'gnfPreservesLanguage': _sameBoundedLanguage(
+          grammar,
+          gnf.grammar,
+          maximumWordLength,
+        ),
         'gnfDiagnostics': gnf.diagnostics.map((item) => item.code).toList(),
-        'collisionIdsUnique': collisionCnf.isSuccess &&
+        'collisionIdsUnique':
+            collisionCnf.isSuccess &&
             collisionCnf.data!.productions
                     .map((item) => item.id)
                     .toSet()
                     .length ==
                 collisionCnf.data!.productions.length,
-        'reorderedTransformPreservesLanguage': collisionCnf.isSuccess &&
+        'reorderedTransformPreservesLanguage':
+            collisionCnf.isSuccess &&
             collisionCnfReordered.isSuccess &&
             _sameBoundedLanguage(
               collisionCnf.data!,
@@ -510,61 +535,56 @@ abstract final class GrammarFamilyCertification {
     );
 
     final reduced = CFGToolkit.reduce(structural);
-    final reducedAgain =
-        reduced.isSuccess ? CFGToolkit.reduce(reduced.data!) : null;
+    final reducedAgain = reduced.isSuccess
+        ? CFGToolkit.reduce(reduced.data!)
+        : null;
     add(
       id: 'transform-reduce-useless-idempotent',
       algorithm: 'cfg-reduction',
       property: 'reduction.useless-language-and-idempotence',
       expected: GrammarCertificationOutcome.verified,
-      actual: reduced.isSuccess &&
+      actual:
+          reduced.isSuccess &&
               reducedAgain!.isSuccess &&
               !reduced.data!.nonterminals.contains('U') &&
               canonicalJsonEncode(_semanticGrammarJson(reduced.data!)) ==
                   canonicalJsonEncode(
                     _semanticGrammarJson(reducedAgain.data!),
                   ) &&
-              _sameBoundedLanguage(
-                structural,
-                reduced.data!,
-                maximumWordLength,
-              )
+              _sameBoundedLanguage(structural, reduced.data!, maximumWordLength)
           ? GrammarCertificationOutcome.verified
           : GrammarCertificationOutcome.violation,
       evidence: {
-        'idempotent': reduced.isSuccess &&
+        'idempotent':
+            reduced.isSuccess &&
             reducedAgain!.isSuccess &&
             canonicalJsonEncode(_semanticGrammarJson(reduced.data!)) ==
                 canonicalJsonEncode(_semanticGrammarJson(reducedAgain.data!)),
-        'languagePreserved': reduced.isSuccess &&
-            _sameBoundedLanguage(
-              structural,
-              reduced.data!,
-              maximumWordLength,
-            ),
+        'languagePreserved':
+            reduced.isSuccess &&
+            _sameBoundedLanguage(structural, reduced.data!, maximumWordLength),
         'remainingNonterminals': _sortedNullable(reduced.data?.nonterminals),
       },
     );
 
     final tokenizerGrammar = _tokenizerHardGrammar(seed);
-    final tokenized = GrammarInputTokenizer.tokenize(
-      tokenizerGrammar,
-      'id 🙂',
-    );
+    final tokenized = GrammarInputTokenizer.tokenize(tokenizerGrammar, 'id 🙂');
     add(
       id: 'parser-tokenizer-unicode-overlap',
       algorithm: 'grammar-input-tokenizer',
       property: 'tokenization.maximal-munch-unicode-whitespace',
       expected: GrammarCertificationOutcome.verified,
-      actual: tokenized.isSuccess &&
+      actual:
+          tokenized.isSuccess &&
               tokenized.data!.map((token) => token.lexeme).toList().join('|') ==
                   'id |🙂'
           ? GrammarCertificationOutcome.verified
           : GrammarCertificationOutcome.violation,
       evidence: {
         'tokens': tokenized.data?.map((token) => token.lexeme).toList(),
-        'offsets':
-            tokenized.data?.map((token) => [token.start, token.end]).toList(),
+        'offsets': tokenized.data
+            ?.map((token) => [token.start, token.end])
+            .toList(),
       },
     );
 
@@ -600,7 +620,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'cyk-parse-with-steps',
       property: 'parser.steps-and-failures-typed',
       expected: GrammarCertificationOutcome.verified,
-      actual: cykSteps.isSuccess &&
+      actual:
+          cykSteps.isSuccess &&
               cykSteps.data!.accepted &&
               cykSteps.data!.steps.isNotEmpty &&
               cykInvalid.isSuccess &&
@@ -628,7 +649,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'grammar-parser-dispatch',
       property: 'dispatch.auto-and-explicit-fallback',
       expected: GrammarCertificationOutcome.verified,
-      actual: autoParse.isSuccess &&
+      actual:
+          autoParse.isSuccess &&
               autoParse.data!.accepted &&
               bruteDispatch.isSuccess &&
               bruteDispatch.data!.accepted &&
@@ -644,18 +666,19 @@ abstract final class GrammarFamilyCertification {
       },
     );
 
-    final malformedEarley =
-        EarleyRecognizer(_emptyLeftSideGrammar()).recognizeWithReport('a');
-    final timedOutEarley = EarleyRecognizer(grammar).recognizeWithReport(
-      'id',
-      timeout: Duration.zero,
-    );
+    final malformedEarley = EarleyRecognizer(
+      _emptyLeftSideGrammar(),
+    ).recognizeWithReport('a');
+    final timedOutEarley = EarleyRecognizer(
+      grammar,
+    ).recognizeWithReport('id', timeout: Duration.zero);
     add(
       id: 'parser-earley-malformed-timeout',
       algorithm: 'earley-recognizer',
       property: 'parser.malformed-and-timeout-typed',
       expected: GrammarCertificationOutcome.verified,
-      actual: malformedEarley.outcome == GrammarParseOutcome.invalidInput &&
+      actual:
+          malformedEarley.outcome == GrammarParseOutcome.invalidInput &&
               timedOutEarley.outcome == GrammarParseOutcome.timedOut
           ? GrammarCertificationOutcome.verified
           : GrammarCertificationOutcome.violation,
@@ -673,7 +696,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'll1-canonical-lr1-capability-boundary',
       property: 'classification.lr1-not-ll1',
       expected: GrammarCertificationOutcome.verified,
-      actual: lrOnlyLl.isSuccess &&
+      actual:
+          lrOnlyLl.isSuccess &&
               lrOnlyLl.data!.value.typedConflicts.isNotEmpty &&
               lrOnlyParse.outcome == LR1ParseOutcome.accepted
           ? GrammarCertificationOutcome.verified
@@ -707,14 +731,16 @@ abstract final class GrammarFamilyCertification {
     );
 
     // ignore: deprecated_member_use_from_same_package
-    final directRecursion =
-        GrammarAnalyzer.removeDirectLeftRecursion(recursive);
+    final directRecursion = GrammarAnalyzer.removeDirectLeftRecursion(
+      recursive,
+    );
     add(
       id: 'transform-direct-left-recursion-entrypoint',
       algorithm: 'legacy-direct-left-recursion-entrypoint',
       property: 'transformation.deprecated-dispatch-equivalence',
       expected: GrammarCertificationOutcome.verified,
-      actual: directRecursion.isSuccess &&
+      actual:
+          directRecursion.isSuccess &&
               recursionResult.isSuccess &&
               _sameBoundedLanguage(
                 directRecursion.data!.value,
@@ -749,8 +775,9 @@ abstract final class GrammarFamilyCertification {
         strategyHint: ParsingStrategyHint.ll,
       );
       final lr = LR1Parser.parse(grammar, input);
-      final recursiveDescent =
-          SimpleRecursiveDescentParser(grammar).parse(input);
+      final recursiveDescent = SimpleRecursiveDescentParser(
+        grammar,
+      ).parse(input);
       final brute = BruteForceCFGParser.search(
         grammar,
         input,
@@ -812,15 +839,18 @@ abstract final class GrammarFamilyCertification {
 
     final lrBuilt = LR1Parser.build(grammar).construction!;
     final stale = LR1Parser.parse(
-      grammar.copyWith(name: '${grammar.name}-edited', productions: {
-        ...grammar.productions,
-        Production(
-          id: 'seed-$seed-stale',
-          leftSide: const ['Tail'],
-          rightSide: const ['+', 'id'],
-          order: 99,
-        ),
-      }),
+      grammar.copyWith(
+        name: '${grammar.name}-edited',
+        productions: {
+          ...grammar.productions,
+          Production(
+            id: 'seed-$seed-stale',
+            leftSide: const ['Tail'],
+            rightSide: const ['+', 'id'],
+            order: 99,
+          ),
+        },
+      ),
       'id',
       construction: lrBuilt,
     );
@@ -839,8 +869,10 @@ abstract final class GrammarFamilyCertification {
       grammar,
       revision: LegacyContextFreeGrammarAdapter.sourceRevision(grammar),
     );
-    final target =
-        LegacyContextFreeGrammarAdapter.tokenizeTarget(grammar, 'id').data!;
+    final target = LegacyContextFreeGrammarAdapter.tokenizeTarget(
+      grammar,
+      'id',
+    ).data!;
     final initialUserSession = UserDerivationSession.start(
       grammar: phrase,
       target: target,
@@ -868,11 +900,7 @@ abstract final class GrammarFamilyCertification {
       'id',
       timeout: Duration.zero,
     );
-    final llStepBounded = GrammarParser.parseLL1(
-      grammar,
-      'id',
-      maxSteps: 0,
-    );
+    final llStepBounded = GrammarParser.parseLL1(grammar, 'id', maxSteps: 0);
     final lrCancelled = LR1Parser.parse(grammar, 'id', isCancelled: () => true);
     final lrConstructionTimedOut = LR1Parser.build(
       grammar,
@@ -892,8 +920,9 @@ abstract final class GrammarFamilyCertification {
       construction: lrBuilt,
       maxSteps: 0,
     );
-    final recursiveTimedOut = SimpleRecursiveDescentParser(grammar)
-        .parseWithReport('id+id', timeout: Duration.zero);
+    final recursiveTimedOut = SimpleRecursiveDescentParser(
+      grammar,
+    ).parseWithReport('id+id', timeout: Duration.zero);
     final bruteCancellation = BruteForceCancellationToken()..cancel();
     final bruteCancelled = BruteForceCFGParser.search(
       grammar,
@@ -902,22 +931,23 @@ abstract final class GrammarFamilyCertification {
     );
     final bruteLimitGrammar = _bruteLimitGrammar(seed);
     BruteForceParseResult bruteLimit(BruteForceSearchLimits limits) =>
-        BruteForceCFGParser.search(
-          bruteLimitGrammar,
-          'a',
-          limits: limits,
-        );
+        BruteForceCFGParser.search(bruteLimitGrammar, 'a', limits: limits);
     final bruteLimits = <BruteForceSearchLimit, BruteForceParseResult>{
-      BruteForceSearchLimit.depth:
-          bruteLimit(const BruteForceSearchLimits(maxDepth: 1)),
-      BruteForceSearchLimit.exploredNodes:
-          bruteLimit(const BruteForceSearchLimits(maxExploredNodes: 1)),
-      BruteForceSearchLimit.retainedStates:
-          bruteLimit(const BruteForceSearchLimits(maxRetainedStates: 1)),
-      BruteForceSearchLimit.symbolCount:
-          bruteLimit(const BruteForceSearchLimits(maxSymbolCount: 0)),
-      BruteForceSearchLimit.time:
-          bruteLimit(const BruteForceSearchLimits(timeLimit: Duration.zero)),
+      BruteForceSearchLimit.depth: bruteLimit(
+        const BruteForceSearchLimits(maxDepth: 1),
+      ),
+      BruteForceSearchLimit.exploredNodes: bruteLimit(
+        const BruteForceSearchLimits(maxExploredNodes: 1),
+      ),
+      BruteForceSearchLimit.retainedStates: bruteLimit(
+        const BruteForceSearchLimits(maxRetainedStates: 1),
+      ),
+      BruteForceSearchLimit.symbolCount: bruteLimit(
+        const BruteForceSearchLimits(maxSymbolCount: 0),
+      ),
+      BruteForceSearchLimit.time: bruteLimit(
+        const BruteForceSearchLimits(timeLimit: Duration.zero),
+      ),
       BruteForceSearchLimit.frontier: BruteForceCFGParser.search(
         _bruteBranchingLimitGrammar(seed),
         'b',
@@ -946,7 +976,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'lr1-brute-cancellation',
       property: 'limits.cancellation-typed',
       expected: GrammarCertificationOutcome.cancelled,
-      actual: lrCancelled.outcome == LR1ParseOutcome.cancelled &&
+      actual:
+          lrCancelled.outcome == LR1ParseOutcome.cancelled &&
               bruteCancelled.outcome == BruteForceParseOutcome.cancelled &&
               llCancelled.isSuccess &&
               llCancelled.data!.outcome == GrammarParseOutcome.cancelled &&
@@ -965,7 +996,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'lr1-brute-resource-limits',
       property: 'limits.bounded-unknown-typed',
       expected: GrammarCertificationOutcome.boundedUnknown,
-      actual: llTimedOut.isSuccess &&
+      actual:
+          llTimedOut.isSuccess &&
               llTimedOut.data!.outcome == GrammarParseOutcome.timedOut &&
               llStepBounded.isSuccess &&
               llStepBounded.data!.outcome == GrammarParseOutcome.stepLimit &&
@@ -1013,13 +1045,12 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'recursive-descent',
       property: 'limits.timeout-typed',
       expected: GrammarCertificationOutcome.boundedUnknown,
-      actual: recursiveTimedOut.isSuccess &&
+      actual:
+          recursiveTimedOut.isSuccess &&
               recursiveTimedOut.data!.outcome == GrammarParseOutcome.timedOut
           ? GrammarCertificationOutcome.boundedUnknown
           : GrammarCertificationOutcome.violation,
-      evidence: {
-        'outcome': recursiveTimedOut.data?.outcome.name,
-      },
+      evidence: {'outcome': recursiveTimedOut.data?.outcome.name},
     );
 
     final derivationHint = await UserDerivationHintSearch.run(
@@ -1051,7 +1082,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'user-controlled-derivation',
       property: 'derivation.trace-and-stale-revision',
       expected: GrammarCertificationOutcome.stale,
-      actual: userSession.status == UserDerivationStatus.success &&
+      actual:
+          userSession.status == UserDerivationStatus.success &&
               derivationHint.outcome == UserDerivationHintOutcome.suggested &&
               derivationHint.suggestion?.production.id == 's-id-tail' &&
               restored.session?.status == UserDerivationStatus.invalidated
@@ -1089,7 +1121,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'unrestricted-bounded-derivation',
       property: 'unrestricted.typed-limits',
       expected: GrammarCertificationOutcome.verified,
-      actual: bounded is DerivationBoundedUnknown &&
+      actual:
+          bounded is DerivationBoundedUnknown &&
               cancelled is DerivationCancelled &&
               unrestrictedAccepted is DerivationAccepted &&
               unrestrictedAccepted.witness.any(
@@ -1103,8 +1136,8 @@ abstract final class GrammarFamilyCertification {
         'multiLhs': unrestrictedAccepted.runtimeType.toString(),
         'multiLhsWitness': unrestrictedAccepted is DerivationAccepted
             ? unrestrictedAccepted.witness
-                .map((application) => application.production.id)
-                .toList()
+                  .map((application) => application.production.id)
+                  .toList()
             : const [],
       },
     );
@@ -1114,7 +1147,8 @@ abstract final class GrammarFamilyCertification {
     final roundTrip = fsaResult.isSuccess
         ? FSAToGrammarConverter.convert(fsaResult.data!)
         : null;
-    final conversionOkay = fsaResult.isSuccess &&
+    final conversionOkay =
+        fsaResult.isSuccess &&
         roundTrip != null &&
         _sameBoundedLanguage(regular, roundTrip, maximumWordLength);
     add(
@@ -1145,7 +1179,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'cfg-to-pda-ll-lr',
       property: 'conversion.pda-valid-and-source-immutable',
       expected: GrammarCertificationOutcome.verified,
-      actual: llPda.outcome == CfgToPdaConstructionOutcome.completed &&
+      actual:
+          llPda.outcome == CfgToPdaConstructionOutcome.completed &&
               lrPda.outcome == CfgToPdaConstructionOutcome.completed &&
               llPda.pda!.validate().isEmpty &&
               lrPda.pda!.validate().isEmpty &&
@@ -1185,7 +1220,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'pda-to-cfg',
       property: 'conversion.structure-and-cancellation',
       expected: GrammarCertificationOutcome.verified,
-      actual: pdaCfg.isSuccess &&
+      actual:
+          pdaCfg.isSuccess &&
               pdaCfg.data!.grammar.productions.isNotEmpty &&
               pdaCancelled.isFailure &&
               pdaCancelled.error == PDAtoCFGConverter.cancellationError
@@ -1228,7 +1264,8 @@ abstract final class GrammarFamilyCertification {
       algorithm: 'tm-to-unrestricted-grammar',
       property: 'conversion.construction-limit-typed',
       expected: GrammarCertificationOutcome.boundedUnknown,
-      actual: tmGrammar.outcome == TMToGrammarOutcome.constructionLimit &&
+      actual:
+          tmGrammar.outcome == TMToGrammarOutcome.constructionLimit &&
               tmGrammarCompleted.isCompleted &&
               tmDifferential != null &&
               !tmDifferential.hasMismatch
@@ -1335,7 +1372,7 @@ IndependentDerivationResult independentBoundedDerives(
       return order != 0 ? order : left.id.compareTo(right.id);
     });
   final queue = <(List<String>, int)>[
-    ([grammar.startSymbol], 0)
+    ([grammar.startSymbol], 0),
   ];
   final visited = <String>{jsonEncode(queue.first.$1)};
   var cursor = 0;
@@ -1367,8 +1404,9 @@ IndependentDerivationResult independentBoundedDerives(
           production.leftSide.length == 1 &&
           production.leftSide.single == form[nonterminalIndex],
     )) {
-      final replacement =
-          production.isLambda ? const <String>[] : production.rightSide;
+      final replacement = production.isLambda
+          ? const <String>[]
+          : production.rightSide;
       final next = <String>[
         ...form.take(nonterminalIndex),
         ...replacement,
@@ -1401,12 +1439,12 @@ final class GrammarCounterexample {
   final String property;
 
   Map<String, Object?> toJson() => {
-        'grammar': grammar.toJson(),
-        'input': input,
-        'property': property,
-        'schemaVersion': 1,
-        'seed': seed,
-      };
+    'grammar': grammar.toJson(),
+    'input': input,
+    'property': property,
+    'schemaVersion': 1,
+    'seed': seed,
+  };
 
   factory GrammarCounterexample.fromJson(Map<String, Object?> json) {
     const keys = {'grammar', 'input', 'property', 'schemaVersion', 'seed'};
@@ -1420,8 +1458,9 @@ final class GrammarCounterexample {
       throw const FormatException('Invalid grammar counterexample schema.');
     }
     return GrammarCounterexample(
-      grammar:
-          Grammar.fromJson(Map<String, dynamic>.from(json['grammar']! as Map)),
+      grammar: Grammar.fromJson(
+        Map<String, dynamic>.from(json['grammar']! as Map),
+      ),
       input: json['input']! as String,
       seed: json['seed']! as int,
       property: json['property']! as String,
@@ -1446,13 +1485,11 @@ bool replayGrammarCounterexample(
     counterexample.input,
   );
   if (!oracle.definitive) return false;
-  final observed = candidate?.call(
+  final observed =
+      candidate?.call(counterexample.grammar, counterexample.input) ??
+      EarleyRecognizer(
         counterexample.grammar,
-        counterexample.input,
-      ) ??
-      EarleyRecognizer(counterexample.grammar)
-          .recognizeWithReport(counterexample.input)
-          .accepted;
+      ).recognizeWithReport(counterexample.input).accepted;
   return observed != oracle.accepted;
 }
 
@@ -1520,10 +1557,10 @@ final class GrammarMutationResult {
   final String witness;
 
   Map<String, Object?> toJson() => {
-        'id': id,
-        'status': killed ? 'killed' : 'survived',
-        'witness': witness,
-      };
+    'id': id,
+    'status': killed ? 'killed' : 'survived',
+    'witness': witness,
+  };
 }
 
 List<GrammarMutationResult> runGrammarMutationProbes({int seed = 336}) {
@@ -1546,18 +1583,20 @@ List<GrammarMutationResult> runGrammarMutationProbes({int seed = 336}) {
       id: 'drop-epsilon-production',
       killed:
           EarleyRecognizer(withoutEpsilon).recognizeWithReport('id').accepted !=
-              independentBoundedDerives(expression, 'id').accepted,
+          independentBoundedDerives(expression, 'id').accepted,
       witness: 'id',
     ),
     GrammarMutationResult(
       id: 'substitute-start-symbol',
-      killed: EarleyRecognizer(wrongStart).recognizeWithReport('id').accepted !=
+      killed:
+          EarleyRecognizer(wrongStart).recognizeWithReport('id').accepted !=
           independentBoundedDerives(expression, 'id').accepted,
       witness: 'id',
     ),
     GrammarMutationResult(
       id: 'shortest-match-tokenizer',
-      killed: normalTokens.map((token) => token.lexeme).join('|') !=
+      killed:
+          normalTokens.map((token) => token.lexeme).join('|') !=
           shortestTokens.join('|'),
       witness: 'id',
     ),
@@ -1575,9 +1614,9 @@ List<String> _shortestMatchTokens(Grammar grammar, String input) {
   var offset = 0;
   while (offset < input.length) {
     final match = terminals.cast<String?>().firstWhere(
-          (terminal) => input.startsWith(terminal!, offset),
-          orElse: () => null,
-        );
+      (terminal) => input.startsWith(terminal!, offset),
+      orElse: () => null,
+    );
     if (match == null) return const [];
     result.add(match);
     offset += match.length;
@@ -1586,270 +1625,251 @@ List<String> _shortestMatchTokens(Grammar grammar, String input) {
 }
 
 Grammar _expressionGrammar(int seed) => _grammar(
-      id: 'grammar-expression-$seed',
-      terminals: const {'id', '+'},
-      nonterminals: const {'S', 'Tail'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(
-          id: 's-id-tail',
-          leftSide: ['S'],
-          rightSide: ['id', 'Tail'],
-          order: 0,
-        ),
-        Production(
-          id: 'tail-more',
-          leftSide: ['Tail'],
-          rightSide: ['+', 'id', 'Tail'],
-          order: 1,
-        ),
-        Production(
-          id: 'tail-empty',
-          leftSide: ['Tail'],
-          rightSide: [],
-          isLambda: true,
-          order: 2,
-        ),
-      ]),
-    );
+  id: 'grammar-expression-$seed',
+  terminals: const {'id', '+'},
+  nonterminals: const {'S', 'Tail'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(
+      id: 's-id-tail',
+      leftSide: ['S'],
+      rightSide: ['id', 'Tail'],
+      order: 0,
+    ),
+    Production(
+      id: 'tail-more',
+      leftSide: ['Tail'],
+      rightSide: ['+', 'id', 'Tail'],
+      order: 1,
+    ),
+    Production(
+      id: 'tail-empty',
+      leftSide: ['Tail'],
+      rightSide: [],
+      isLambda: true,
+      order: 2,
+    ),
+  ]),
+);
 
 Grammar _nullableGrammar(int seed) => _grammar(
-      id: 'grammar-nullable-$seed',
-      terminals: const {'a', 'b'},
-      nonterminals: const {'S', 'A', 'B'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-ab', leftSide: ['S'], rightSide: ['A', 'B']),
-        Production(id: 'a-a', leftSide: ['A'], rightSide: ['a']),
-        Production(
-          id: 'a-empty',
-          leftSide: ['A'],
-          rightSide: [],
-          isLambda: true,
-        ),
-        Production(id: 'b-b', leftSide: ['B'], rightSide: ['b']),
-      ]),
-    );
+  id: 'grammar-nullable-$seed',
+  terminals: const {'a', 'b'},
+  nonterminals: const {'S', 'A', 'B'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-ab', leftSide: ['S'], rightSide: ['A', 'B']),
+    Production(id: 'a-a', leftSide: ['A'], rightSide: ['a']),
+    Production(id: 'a-empty', leftSide: ['A'], rightSide: [], isLambda: true),
+    Production(id: 'b-b', leftSide: ['B'], rightSide: ['b']),
+  ]),
+);
 
 Grammar _leftRecursiveGrammar(int seed) => _grammar(
-      id: 'grammar-left-recursive-$seed',
-      terminals: const {'id', 'plus'},
-      nonterminals: const {'E'},
-      start: 'E',
-      productions: _shuffledProductions(seed, const [
-        Production(
-            id: 'e-plus', leftSide: ['E'], rightSide: ['E', 'plus', 'id']),
-        Production(id: 'e-id', leftSide: ['E'], rightSide: ['id']),
-      ]),
-    );
+  id: 'grammar-left-recursive-$seed',
+  terminals: const {'id', 'plus'},
+  nonterminals: const {'E'},
+  start: 'E',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 'e-plus', leftSide: ['E'], rightSide: ['E', 'plus', 'id']),
+    Production(id: 'e-id', leftSide: ['E'], rightSide: ['id']),
+  ]),
+);
 
 Grammar _factorGrammar(int seed) => _grammar(
-      id: 'grammar-factor-$seed',
-      terminals: const {'a', 'b', 'c'},
-      nonterminals: const {'S'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-ab', leftSide: ['S'], rightSide: ['a', 'b']),
-        Production(id: 's-ac', leftSide: ['S'], rightSide: ['a', 'c']),
-      ]),
-    );
+  id: 'grammar-factor-$seed',
+  terminals: const {'a', 'b', 'c'},
+  nonterminals: const {'S'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-ab', leftSide: ['S'], rightSide: ['a', 'b']),
+    Production(id: 's-ac', leftSide: ['S'], rightSide: ['a', 'c']),
+  ]),
+);
 
 Grammar _tokenizerHardGrammar(int seed) => _grammar(
-      id: 'grammar-tokenizer-hard-$seed',
-      terminals: const {'i', 'id', 'id ', '🙂'},
-      nonterminals: const {'S'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(
-          id: 'unicode-sequence',
-          leftSide: ['S'],
-          rightSide: ['id ', '🙂'],
-        ),
-        Production(id: 'short-overlap', leftSide: ['S'], rightSide: ['i']),
-      ]),
-    );
+  id: 'grammar-tokenizer-hard-$seed',
+  terminals: const {'i', 'id', 'id ', '🙂'},
+  nonterminals: const {'S'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(
+      id: 'unicode-sequence',
+      leftSide: ['S'],
+      rightSide: ['id ', '🙂'],
+    ),
+    Production(id: 'short-overlap', leftSide: ['S'], rightSide: ['i']),
+  ]),
+);
 
 Grammar _emptyLeftSideGrammar() => _grammar(
-      id: 'grammar-empty-left-side',
-      terminals: const {'a'},
-      nonterminals: const {'S'},
-      start: 'S',
-      productions: {
-        const Production(id: 'empty-left', leftSide: [], rightSide: ['a']),
-      },
-    );
+  id: 'grammar-empty-left-side',
+  terminals: const {'a'},
+  nonterminals: const {'S'},
+  start: 'S',
+  productions: {
+    const Production(id: 'empty-left', leftSide: [], rightSide: ['a']),
+  },
+);
 
 Grammar _lr1NotLl1Grammar(int seed) => _grammar(
-      id: 'grammar-lr1-not-ll1-$seed',
-      terminals: const {'a', 'b', 'c', 'd'},
-      nonterminals: const {'S', 'A', 'B'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-aa', leftSide: ['S'], rightSide: ['A', 'a']),
-        Production(id: 's-bac', leftSide: ['S'], rightSide: ['b', 'A', 'c']),
-        Production(id: 's-bc', leftSide: ['S'], rightSide: ['B', 'c']),
-        Production(id: 's-bba', leftSide: ['S'], rightSide: ['b', 'B', 'a']),
-        Production(id: 'a-d', leftSide: ['A'], rightSide: ['d']),
-        Production(id: 'b-d', leftSide: ['B'], rightSide: ['d']),
-      ]),
-    );
+  id: 'grammar-lr1-not-ll1-$seed',
+  terminals: const {'a', 'b', 'c', 'd'},
+  nonterminals: const {'S', 'A', 'B'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-aa', leftSide: ['S'], rightSide: ['A', 'a']),
+    Production(id: 's-bac', leftSide: ['S'], rightSide: ['b', 'A', 'c']),
+    Production(id: 's-bc', leftSide: ['S'], rightSide: ['B', 'c']),
+    Production(id: 's-bba', leftSide: ['S'], rightSide: ['b', 'B', 'a']),
+    Production(id: 'a-d', leftSide: ['A'], rightSide: ['d']),
+    Production(id: 'b-d', leftSide: ['B'], rightSide: ['d']),
+  ]),
+);
 
 Grammar _ambiguousGrammar(int seed) => _grammar(
-      id: 'grammar-ambiguous-$seed',
-      terminals: {'a'},
-      nonterminals: {'S'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-pair', leftSide: ['S'], rightSide: ['S', 'S']),
-        Production(id: 's-a', leftSide: ['S'], rightSide: ['a']),
-      ]),
-    );
+  id: 'grammar-ambiguous-$seed',
+  terminals: {'a'},
+  nonterminals: {'S'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-pair', leftSide: ['S'], rightSide: ['S', 'S']),
+    Production(id: 's-a', leftSide: ['S'], rightSide: ['a']),
+  ]),
+);
 
 Grammar _structuralGrammar(int seed) => _grammar(
-      id: 'grammar-structural-$seed',
-      terminals: const {'a'},
-      nonterminals: const {'S', 'A', 'U', 'V'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
-        Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
-        Production(id: 'u-v', leftSide: ['U'], rightSide: ['V']),
-        Production(id: 'v-u', leftSide: ['V'], rightSide: ['U']),
-      ]),
-    );
+  id: 'grammar-structural-$seed',
+  terminals: const {'a'},
+  nonterminals: const {'S', 'A', 'U', 'V'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
+    Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
+    Production(id: 'u-v', leftSide: ['U'], rightSide: ['V']),
+    Production(id: 'v-u', leftSide: ['V'], rightSide: ['U']),
+  ]),
+);
 
 Grammar _generatedSymbolCollisionGrammar(int seed) => _grammar(
-      id: 'grammar-generated-symbol-collision-$seed',
-      terminals: const {'a', 'b'},
-      nonterminals: const {'S', 'N0', 'T0'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(
-          id: 's-mixed',
-          leftSide: ['S'],
-          rightSide: ['a', 'N0', 'T0'],
-        ),
-        Production(id: 'm_a', leftSide: ['N0'], rightSide: ['a']),
-        Production(
-          id: 's-mixed_b_end',
-          leftSide: ['T0'],
-          rightSide: ['b'],
-        ),
-      ]),
-    );
+  id: 'grammar-generated-symbol-collision-$seed',
+  terminals: const {'a', 'b'},
+  nonterminals: const {'S', 'N0', 'T0'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-mixed', leftSide: ['S'], rightSide: ['a', 'N0', 'T0']),
+    Production(id: 'm_a', leftSide: ['N0'], rightSide: ['a']),
+    Production(id: 's-mixed_b_end', leftSide: ['T0'], rightSide: ['b']),
+  ]),
+);
 
 Grammar _growthGrammar(int seed) => _grammar(
-      id: 'grammar-growth-$seed',
-      terminals: const {'id'},
-      nonterminals: const {'S'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-grow', leftSide: ['S'], rightSide: ['S', 'S']),
-        Production(id: 's-id', leftSide: ['S'], rightSide: ['id']),
-      ]),
-    );
+  id: 'grammar-growth-$seed',
+  terminals: const {'id'},
+  nonterminals: const {'S'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-grow', leftSide: ['S'], rightSide: ['S', 'S']),
+    Production(id: 's-id', leftSide: ['S'], rightSide: ['id']),
+  ]),
+);
 
 Grammar _bruteLimitGrammar(int seed) => _grammar(
-      id: 'grammar-brute-limits-$seed',
-      terminals: const {'a'},
-      nonterminals: const {'S', 'A'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 'to-a', leftSide: ['S'], rightSide: ['A']),
-        Production(id: 'leaf', leftSide: ['A'], rightSide: ['a']),
-      ]),
-    );
+  id: 'grammar-brute-limits-$seed',
+  terminals: const {'a'},
+  nonterminals: const {'S', 'A'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 'to-a', leftSide: ['S'], rightSide: ['A']),
+    Production(id: 'leaf', leftSide: ['A'], rightSide: ['a']),
+  ]),
+);
 
 Grammar _bruteBranchingLimitGrammar(int seed) => _grammar(
-      id: 'grammar-brute-frontier-$seed',
-      terminals: const {'a', 'b'},
-      nonterminals: const {'S', 'A', 'B'},
-      start: 'S',
-      productions: _shuffledProductions(seed, const [
-        Production(id: 'one', leftSide: ['S'], rightSide: ['A']),
-        Production(id: 'two', leftSide: ['S'], rightSide: ['B']),
-        Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
-        Production(id: 'b-leaf', leftSide: ['B'], rightSide: ['a']),
-      ]),
-    );
+  id: 'grammar-brute-frontier-$seed',
+  terminals: const {'a', 'b'},
+  nonterminals: const {'S', 'A', 'B'},
+  start: 'S',
+  productions: _shuffledProductions(seed, const [
+    Production(id: 'one', leftSide: ['S'], rightSide: ['A']),
+    Production(id: 'two', leftSide: ['S'], rightSide: ['B']),
+    Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
+    Production(id: 'b-leaf', leftSide: ['B'], rightSide: ['a']),
+  ]),
+);
 
 Grammar _regularGrammar(int seed) => _grammar(
-      id: 'grammar-regular-$seed',
-      terminals: const {'a'},
-      nonterminals: const {'S'},
-      start: 'S',
-      type: GrammarType.regular,
-      productions: _shuffledProductions(seed, const [
-        Production(id: 's-loop', leftSide: ['S'], rightSide: ['a', 'S']),
-        Production(
-          id: 's-empty',
-          leftSide: ['S'],
-          rightSide: [],
-          isLambda: true,
-        ),
-      ]),
-    );
+  id: 'grammar-regular-$seed',
+  terminals: const {'a'},
+  nonterminals: const {'S'},
+  start: 'S',
+  type: GrammarType.regular,
+  productions: _shuffledProductions(seed, const [
+    Production(id: 's-loop', leftSide: ['S'], rightSide: ['a', 'S']),
+    Production(id: 's-empty', leftSide: ['S'], rightSide: [], isLambda: true),
+  ]),
+);
 
 Grammar _malformedGrammar() => _grammar(
-      id: 'grammar-malformed',
-      terminals: const {'a'},
-      nonterminals: const {'A'},
-      start: 'S',
-      productions: {
-        const Production(id: 'bad', leftSide: ['A'], rightSide: ['missing']),
-      },
-    );
+  id: 'grammar-malformed',
+  terminals: const {'a'},
+  nonterminals: const {'A'},
+  start: 'S',
+  productions: {
+    const Production(id: 'bad', leftSide: ['A'], rightSide: ['missing']),
+  },
+);
 
 UnrestrictedGrammar _unrestrictedGrammar(int seed) => UnrestrictedGrammar(
-      id: 'grammar-unrestricted-$seed',
-      name: 'Unrestricted hard edge',
-      revision: seed,
-      terminals: {
-        const TerminalGrammarSymbol('a'),
-        const TerminalGrammarSymbol('b'),
-      },
-      nonterminals: {
-        const NonterminalGrammarSymbol('S'),
-        const NonterminalGrammarSymbol('A'),
-        const NonterminalGrammarSymbol('B'),
-      },
-      startSymbol: const NonterminalGrammarSymbol('S'),
-      productions: {
-        PhraseStructureProduction(
-          id: 'start-ab',
-          left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('S')]),
-          right: GrammarSymbolSequence(const [
-            NonterminalGrammarSymbol('A'),
-            NonterminalGrammarSymbol('B'),
-          ]),
-          order: 0,
-        ),
-        PhraseStructureProduction(
-          id: 'swap-ab',
-          left: GrammarSymbolSequence(const [
-            NonterminalGrammarSymbol('A'),
-            NonterminalGrammarSymbol('B'),
-          ]),
-          right: GrammarSymbolSequence(const [
-            NonterminalGrammarSymbol('B'),
-            NonterminalGrammarSymbol('A'),
-          ]),
-          order: 1,
-        ),
-        PhraseStructureProduction(
-          id: 'a-leaf',
-          left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('A')]),
-          right: GrammarSymbolSequence(const [TerminalGrammarSymbol('a')]),
-          order: 2,
-        ),
-        PhraseStructureProduction(
-          id: 'b-leaf',
-          left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('B')]),
-          right: GrammarSymbolSequence(const [TerminalGrammarSymbol('b')]),
-          order: 3,
-        ),
-      },
-    );
+  id: 'grammar-unrestricted-$seed',
+  name: 'Unrestricted hard edge',
+  revision: seed,
+  terminals: {
+    const TerminalGrammarSymbol('a'),
+    const TerminalGrammarSymbol('b'),
+  },
+  nonterminals: {
+    const NonterminalGrammarSymbol('S'),
+    const NonterminalGrammarSymbol('A'),
+    const NonterminalGrammarSymbol('B'),
+  },
+  startSymbol: const NonterminalGrammarSymbol('S'),
+  productions: {
+    PhraseStructureProduction(
+      id: 'start-ab',
+      left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('S')]),
+      right: GrammarSymbolSequence(const [
+        NonterminalGrammarSymbol('A'),
+        NonterminalGrammarSymbol('B'),
+      ]),
+      order: 0,
+    ),
+    PhraseStructureProduction(
+      id: 'swap-ab',
+      left: GrammarSymbolSequence(const [
+        NonterminalGrammarSymbol('A'),
+        NonterminalGrammarSymbol('B'),
+      ]),
+      right: GrammarSymbolSequence(const [
+        NonterminalGrammarSymbol('B'),
+        NonterminalGrammarSymbol('A'),
+      ]),
+      order: 1,
+    ),
+    PhraseStructureProduction(
+      id: 'a-leaf',
+      left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('A')]),
+      right: GrammarSymbolSequence(const [TerminalGrammarSymbol('a')]),
+      order: 2,
+    ),
+    PhraseStructureProduction(
+      id: 'b-leaf',
+      left: GrammarSymbolSequence(const [NonterminalGrammarSymbol('B')]),
+      right: GrammarSymbolSequence(const [TerminalGrammarSymbol('b')]),
+      order: 3,
+    ),
+  },
+);
 
 Grammar _grammar({
   required String id,
@@ -1858,23 +1878,19 @@ Grammar _grammar({
   required String start,
   required Iterable<Production> productions,
   GrammarType type = GrammarType.contextFree,
-}) =>
-    Grammar(
-      id: id,
-      name: id,
-      terminals: terminals,
-      nonterminals: nonterminals,
-      startSymbol: start,
-      productions: productions.toSet(),
-      type: type,
-      created: DateTime.utc(2026, 8, 26),
-      modified: DateTime.utc(2026, 8, 26),
-    );
+}) => Grammar(
+  id: id,
+  name: id,
+  terminals: terminals,
+  nonterminals: nonterminals,
+  startSymbol: start,
+  productions: productions.toSet(),
+  type: type,
+  created: DateTime.utc(2026, 8, 26),
+  modified: DateTime.utc(2026, 8, 26),
+);
 
-Grammar _renameNonterminals(
-  Grammar source,
-  Map<String, String> replacements,
-) {
+Grammar _renameNonterminals(Grammar source, Map<String, String> replacements) {
   String rename(String symbol) => replacements[symbol] ?? symbol;
   return source.copyWith(
     id: '${source.id}-renamed',
@@ -1892,8 +1908,11 @@ Grammar _renameNonterminals(
 }
 
 List<Production> _shuffledProductions(int seed, List<Production> productions) =>
-    StableRandom.forCase(seed, 0, streamId: 'grammar/production-order')
-        .shuffled(productions);
+    StableRandom.forCase(
+      seed,
+      0,
+      streamId: 'grammar/production-order',
+    ).shuffled(productions);
 
 bool _sameBoundedLanguage(Grammar left, Grammar right, int maximumLength) {
   final terminals = left.terminals.union(right.terminals).toList()..sort();
@@ -1958,22 +1977,27 @@ String _terminalTreeYield(DerivationTreeNode node, Set<String> terminals) {
 }
 
 Map<String, Object?> _semanticGrammarJson(Grammar grammar) => {
-      'nonterminals': grammar.nonterminals.toList()..sort(),
-      'productions': grammar.productions
-          .map((production) => {
-                'id': production.id,
-                'isLambda': production.isLambda,
-                'left': production.leftSide,
-                'order': production.order,
-                'right': production.rightSide,
-              })
+  'nonterminals': grammar.nonterminals.toList()..sort(),
+  'productions':
+      grammar.productions
+          .map(
+            (production) => {
+              'id': production.id,
+              'isLambda': production.isLambda,
+              'left': production.leftSide,
+              'order': production.order,
+              'right': production.rightSide,
+            },
+          )
           .toList()
-        ..sort((left, right) =>
-            (left['id']! as String).compareTo(right['id']! as String)),
-      'start': grammar.startSymbol,
-      'terminals': grammar.terminals.toList()..sort(),
-      'type': grammar.type.name,
-    };
+        ..sort(
+          (left, right) =>
+              (left['id']! as String).compareTo(right['id']! as String),
+        ),
+  'start': grammar.startSymbol,
+  'terminals': grammar.terminals.toList()..sort(),
+  'type': grammar.type.name,
+};
 
 bool _listEquals(List<String> left, List<String> right) {
   if (left.length != right.length) return false;
@@ -1986,23 +2010,24 @@ bool _listEquals(List<String> left, List<String> right) {
 String _safeWord(String input) => input.isEmpty
     ? 'empty'
     : input
-        .replaceAll('id', 'identifier')
-        .replaceAll(RegExp('[^a-zA-Z0-9]+'), '-');
+          .replaceAll('id', 'identifier')
+          .replaceAll(RegExp('[^a-zA-Z0-9]+'), '-');
 
 List<String>? _sortedNullable(Set<String>? values) =>
     values == null ? null : (values.toList()..sort());
 
 Map<String, int> _sortedCounts(Map<String, int> counts) => {
-      for (final key in counts.keys.toList()..sort()) key: counts[key]!,
-    };
+  for (final key in counts.keys.toList()..sort()) key: counts[key]!,
+};
 
 Future<void> writeGrammarCertificationReport(
   GrammarCertificationReport report,
   Directory output,
 ) async {
   await output.create(recursive: true);
-  final jsonFile =
-      File('${output.path}${Platform.pathSeparator}grammar-report.json');
+  final jsonFile = File(
+    '${output.path}${Platform.pathSeparator}grammar-report.json',
+  );
   await jsonFile.writeAsString(
     '${const JsonEncoder.withIndent('  ').convert(jsonDecode(canonicalJsonEncode(report.toJson())))}\n',
     flush: true,
@@ -2014,19 +2039,22 @@ Future<void> writeGrammarCertificationReport(
     ..writeln('- Local result: `${report.status.name}`')
     ..writeln('- Remotely verified: `false`')
     ..writeln(
-        '- Seed range: `${report.seedStart}..${report.seedStart + report.seedCount - 1}`')
+      '- Seed range: `${report.seedStart}..${report.seedStart + report.seedCount - 1}`',
+    )
     ..writeln()
     ..writeln('| Case | Algorithm | Property | Seed | Expected | Actual |')
     ..writeln('| --- | --- | --- | ---: | --- | --- |');
   for (final record in report.records) {
     buffer.writeln(
-        '| `${record.id}` | `${record.algorithm}` | `${record.property}` '
-        '| ${record.seed} | `${record.expected.name}` | '
-        '`${record.actual.name}${record.definitive ? '' : ' (incomplete)'}` |');
+      '| `${record.id}` | `${record.algorithm}` | `${record.property}` '
+      '| ${record.seed} | `${record.expected.name}` | '
+      '`${record.actual.name}${record.definitive ? '' : ' (incomplete)'}` |',
+    );
   }
   buffer
     ..writeln()
     ..writeln('Results are local only and were not remotely verified.');
-  await File('${output.path}${Platform.pathSeparator}grammar-report.md')
-      .writeAsString(buffer.toString(), flush: true);
+  await File(
+    '${output.path}${Platform.pathSeparator}grammar-report.md',
+  ).writeAsString(buffer.toString(), flush: true);
 }

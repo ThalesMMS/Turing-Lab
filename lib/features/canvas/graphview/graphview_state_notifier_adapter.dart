@@ -32,15 +32,13 @@ class GraphViewStateNotifierAdapter<TSnapshot> {
     required String id,
     required String label,
     required Offset position,
-  }) addState;
+  })
+  addState;
   final void Function({required String id, required Offset position}) moveState;
   final void Function({required String id, required String label})
-      updateStateLabel;
-  final void Function({
-    required String id,
-    bool? isInitial,
-    bool? isAccepting,
-  }) updateStateFlags;
+  updateStateLabel;
+  final void Function({required String id, bool? isInitial, bool? isAccepting})
+  updateStateFlags;
   final void Function(String id) removeState;
   final void Function(String message) logMutation;
 }

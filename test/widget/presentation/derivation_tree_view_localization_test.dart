@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/derivation_tree.dart';
 import 'package:turing_lab/core/models/derivation_tree_node.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/derivation_tree_view.dart';
+import 'package:turing_lab/presentation/widgets/grammar/derivation_tree_view.dart';
 
 // feature-localization-surface: responsive-accessibility
 void main() {

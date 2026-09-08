@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_analysis_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analysis_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';

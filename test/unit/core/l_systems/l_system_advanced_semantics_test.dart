@@ -29,16 +29,18 @@ void main() {
     });
 
     test('seeded stochastic selection approximates production weights', () {
-      final result = const LSystemExpander().expand(
-        _system(
-          seed: 352,
-          axiom: List.filled(10000, 'A'),
-          productions: [
-            _production('rare', 'A', const ['X'], weight: 1),
-            _production('common', 'A', const ['Y'], weight: 3),
-          ],
-        ),
-      ) as LSystemExpansionCompleted;
+      final result =
+          const LSystemExpander().expand(
+                _system(
+                  seed: 352,
+                  axiom: List.filled(10000, 'A'),
+                  productions: [
+                    _production('rare', 'A', const ['X'], weight: 1),
+                    _production('common', 'A', const ['Y'], weight: 3),
+                  ],
+                ),
+              )
+              as LSystemExpansionCompleted;
       final common = result.finalGeneration.word.symbols
           .where((symbol) => symbol == 'Y')
           .length;
@@ -47,57 +49,236 @@ void main() {
     });
 
     test('contexts match boundaries and ignore configured drawing symbols', () {
-      final result = const LSystemExpander().expand(
-        _system(
-          axiom: const ['L', '+', 'A', '-', 'R', 'A'],
-          ignoredContextSymbols: const {'+', '-'},
-          productions: [
-            _production(
-              'context',
-              'A',
-              const ['C'],
-              leftContext: const ['L'],
-              rightContext: const ['R'],
-            ),
-          ],
-        ),
-      ) as LSystemExpansionCompleted;
+      final result =
+          const LSystemExpander().expand(
+                _system(
+                  axiom: const ['L', '+', 'A', '-', 'R', 'A'],
+                  ignoredContextSymbols: const {'+', '-'},
+                  productions: [
+                    _production(
+                      'context',
+                      'A',
+                      const ['C'],
+                      leftContext: const ['L'],
+                      rightContext: const ['R'],
+                    ),
+                  ],
+                ),
+              )
+              as LSystemExpansionCompleted;
 
-      expect(
-          result.finalGeneration.word.symbols, ['L', '+', 'C', '-', 'R', 'A']);
+      expect(result.finalGeneration.word.symbols, [
+        'L',
+        '+',
+        'C',
+        '-',
+        'R',
+        'A',
+      ]);
       expect(result.finalGeneration.provenance[2].productionId, 'context');
       expect(result.finalGeneration.provenance.last.productionId, isNull);
     });
 
     test('overlapping contexts read the source generation simultaneously', () {
-      final result = const LSystemExpander().expand(
-        _system(
-          axiom: const ['A', 'A', 'A'],
-          productions: [
-            _production(
-              'middle',
-              'A',
-              const ['X'],
-              leftContext: const ['A'],
-              rightContext: const ['A'],
-            ),
-          ],
-        ),
-      ) as LSystemExpansionCompleted;
+      final result =
+          const LSystemExpander().expand(
+                _system(
+                  axiom: const ['A', 'A', 'A'],
+                  productions: [
+                    _production(
+                      'middle',
+                      'A',
+                      const ['X'],
+                      leftContext: const ['A'],
+                      rightContext: const ['A'],
+                    ),
+                  ],
+                ),
+              )
+              as LSystemExpansionCompleted;
 
       expect(result.finalGeneration.word.symbols, ['A', 'X', 'A']);
     });
 
-    test('parametric rewriting remains an explicit preserved boundary', () {
+    test('parametric predecessor text requires numeric arguments', () async {
+      final system = _system(
+        axiom: const ['A(x)', 'A(2)', 'plain'],
+        productions: [
+          _production('param', 'A(x)', const ['B(x+1)']),
+          _production('plain', 'plain', const ['done']),
+        ],
+      );
+      final sync = const LSystemExpander().expand(system);
+      final async = await const LSystemExpander().expandAsync(system);
+      for (final result in [sync, async]) {
+        expect(result, isA<LSystemExpansionCompleted>());
+        expect(result.finalGeneration.word.symbols, ['A(x)', 'B(3)', 'done']);
+        expect(result.finalGeneration.provenance.first.productionId, isNull);
+      }
+    });
+
+    test(
+      'literal numeric predecessors match only the exact argument',
+      () async {
+        final system = _system(
+          axiom: const ['A(1)', 'A(2)', 'B(1)', 'B(2)'],
+          productions: [
+            _production('literal', 'A(1)', const ['matched']),
+            _production('variable', 'B(x)', const ['C(x+1)']),
+          ],
+        );
+        final sync = const LSystemExpander().expand(system);
+        final async = await const LSystemExpander().expandAsync(system);
+        for (final result in [sync, async]) {
+          expect(result, isA<LSystemExpansionCompleted>());
+          expect(result.finalGeneration.word.symbols, [
+            'matched',
+            'A(2)',
+            'C(2)',
+            'C(3)',
+          ]);
+          expect(result.finalGeneration.provenance[1].productionId, isNull);
+        }
+      },
+    );
+
+    test('parametric rules bind arguments and evaluate expressions', () {
+      final system = _system(
+        axiom: const ['A(1)'],
+        productions: [
+          _production('grow', 'A(x)', const ['A(x+1)', 'g(x*2)']),
+        ],
+      );
+      final first =
+          const LSystemExpander().expand(system) as LSystemExpansionCompleted;
+      expect(first.finalGeneration.word.symbols, ['A(2)', 'g(2)']);
+
+      final second =
+          const LSystemExpander().expand(system, generations: 2)
+              as LSystemExpansionCompleted;
+      expect(second.finalGeneration.word.symbols, ['A(3)', 'g(4)', 'g(2)']);
+      expect(second.finalGeneration.provenance.map((run) => run.productionId), [
+        'grow',
+        null,
+      ]);
+    });
+
+    test(
+      'parametric and plain rules coexist and arity mismatches pass through',
+      () {
+        final system = _system(
+          axiom: const ['A(4)', 'A', 'A(1,2)', 'color(orange)'],
+          productions: [
+            _production('param', 'A(x)', const ['B(x/2)']),
+            _production('plain', 'A', const ['C']),
+          ],
+        );
+        final outcome =
+            const LSystemExpander().expand(system) as LSystemExpansionCompleted;
+        expect(outcome.finalGeneration.word.symbols, [
+          'B(2)',
+          'C',
+          'A(1,2)',
+          'color(orange)',
+        ]);
+      },
+    );
+
+    test('parametric rules honour context and seeded weights', () {
+      final system = _system(
+        seed: 7,
+        axiom: const ['L', 'A(3)', 'R'],
+        productions: [
+          _production(
+            'context',
+            'A(x)',
+            const ['A(x-1)'],
+            leftContext: const ['L'],
+            rightContext: const ['R'],
+          ),
+          _production(
+            'fallback',
+            'A(x)',
+            const ['X'],
+            leftContext: const ['Q'],
+          ),
+        ],
+      );
+      final outcome =
+          const LSystemExpander().expand(system) as LSystemExpansionCompleted;
+      expect(outcome.finalGeneration.word.symbols, ['L', 'A(2)', 'R']);
+    });
+
+    test(
+      'preserved legacy parametric rules block both expansion paths',
+      () async {
+        final system =
+            _system(
+              axiom: const ['A(1)'],
+              unsupportedVariants: const [LSystemUnsupportedVariant.parametric],
+            ).copyWith(
+              unsupportedMetadata: {
+                'jflapRules': [
+                  {
+                    'left': 'A(x)',
+                    'rights': ['A(x+1)'],
+                  },
+                ],
+              },
+            );
+        for (final outcome in [
+          const LSystemExpander().expand(system),
+          await const LSystemExpander().expandAsync(system),
+        ]) {
+          expect(outcome, isA<LSystemExpansionInvalid>());
+          final invalid = outcome as LSystemExpansionInvalid;
+          expect(
+            invalid.diagnostics.single.code,
+            LSystemExpansionDiagnosticCode.unsupportedVariant,
+          );
+          expect(invalid.diagnostics.single.subject, 'parametric');
+        }
+      },
+    );
+
+    test('a legacy parametric flag no longer blocks expansion', () {
       final outcome = const LSystemExpander().expand(
         _system(
           unsupportedVariants: const [LSystemUnsupportedVariant.parametric],
         ),
-      ) as LSystemExpansionInvalid;
+      );
+      expect(outcome, isA<LSystemExpansionCompleted>());
+    });
 
+    test('the parametric tree example expands and draws dynamic arguments', () {
+      final example = LSystemExamples.values.singleWhere(
+        (example) => example.id == 'l-system.parametric-tree',
+      );
+      final expansion =
+          const LSystemExpander().expand(example.document, generations: 3)
+              as LSystemExpansionCompleted;
+      final word = expansion.finalGeneration.word;
+      expect(word.symbols, contains('g(48)'));
       expect(
-        outcome.diagnostics.map((diagnostic) => diagnostic.subject),
-        contains('parametric'),
+        word.symbols
+            .where((symbol) => symbol.startsWith('g('))
+            .every(
+              (symbol) =>
+                  double.tryParse(symbol.substring(2, symbol.length - 1)) !=
+                  null,
+            ),
+        isTrue,
+        reason: 'every drawing command carries an evaluated numeric length',
+      );
+      final turtle = const LSystemTurtleInterpreter().interpret(
+        word,
+        settings: example.document.turtle,
+        mapping: example.document.commandMapping,
+      );
+      expect(turtle, isA<LSystemTurtleCompleted>());
+      expect(
+        (turtle as LSystemTurtleCompleted).geometry.segmentCount,
+        greaterThan(10),
       );
     });
 
@@ -135,11 +316,13 @@ void main() {
           .document;
       final expansion =
           const LSystemExpander().expand(document) as LSystemExpansionCompleted;
-      final rendering = const LSystemTurtleInterpreter().interpret(
-        expansion.finalGeneration.word,
-        settings: document.turtle,
-        mapping: document.commandMapping,
-      ) as LSystemTurtleCompleted;
+      final rendering =
+          const LSystemTurtleInterpreter().interpret(
+                expansion.finalGeneration.word,
+                settings: document.turtle,
+                mapping: document.commandMapping,
+              )
+              as LSystemTurtleCompleted;
 
       expect(expansion.finalGeneration.word.symbols.first, 'L');
       expect(rendering.geometry.segmentCount, greaterThan(0));
@@ -150,63 +333,85 @@ void main() {
     });
 
     test('pitch and roll produce deterministic projected 3D geometry', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const ['g', '&', 'g', '/', 'g']),
-        settings: LSystemTurtleSettings(angleDegrees: 90, stepLength: 2),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const ['g', '&', 'g', '/', 'g']),
+                settings: LSystemTurtleSettings(
+                  angleDegrees: 90,
+                  stepLength: 2,
+                ),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
 
       expect(result.geometry.segmentCount, 3);
       expect(
-          result.geometry.segmentCoordinates.every((value) => value.isFinite),
-          isTrue);
+        result.geometry.segmentCoordinates.every((value) => value.isFinite),
+        isTrue,
+      );
       expect(
-          result.geometry.segmentCoordinates, isNot(everyElement(equals(0))));
+        result.geometry.segmentCoordinates,
+        isNot(everyElement(equals(0))),
+      );
     });
 
     test('width, color, hue, and polygon commands retain render styles', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const [
-          'g',
-          '!',
-          'color(#ff0000)',
-          'g',
-          '{',
-          'g',
-          '+',
-          'g',
-          '}',
-          '#',
-          'g',
-        ]),
-        settings: LSystemTurtleSettings(
-          angleDegrees: 90,
-          stepLength: 2,
-          lineWidth: 1,
-          lineWidthIncrement: 2,
-          hueIncrementDegrees: 120,
-        ),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const [
+                  'g',
+                  '!',
+                  'color(#ff0000)',
+                  'g',
+                  '{',
+                  'g',
+                  '+',
+                  'g',
+                  '}',
+                  '#',
+                  'g',
+                ]),
+                settings: LSystemTurtleSettings(
+                  angleDegrees: 90,
+                  stepLength: 2,
+                  lineWidth: 1,
+                  lineWidthIncrement: 2,
+                  hueIncrementDegrees: 120,
+                ),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
 
       expect(result.geometry.segmentWidths.take(2), [1, 3]);
       expect(result.geometry.segmentColorsArgb[1], 0xffff0000);
       expect(result.geometry.segmentColorsArgb.last, isNot(0xffff0000));
       expect(result.geometry.polygons, hasLength(1));
-      expect(result.geometry.polygons.single.coordinates.length,
-          greaterThanOrEqualTo(6));
+      expect(
+        result.geometry.polygons.single.coordinates.length,
+        greaterThanOrEqualTo(6),
+      );
     });
 
     test('SVG emits per-segment styles and polygon geometry', () {
-      final interpreted = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(
-            const ['color(#336699)', '!', 'g', '{', 'g', '+', 'g', '}']),
-        settings: LSystemTurtleSettings(
-          angleDegrees: 90,
-          lineWidthIncrement: 1.5,
-        ),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final interpreted =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const [
+                  'color(#336699)',
+                  '!',
+                  'g',
+                  '{',
+                  'g',
+                  '+',
+                  'g',
+                  '}',
+                ]),
+                settings: LSystemTurtleSettings(
+                  angleDegrees: 90,
+                  lineWidthIncrement: 1.5,
+                ),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
       final exported = const LSystemSvgExporter().encode(
         interpreted.geometry,
         metadata: LSystemRenderMetadata(
@@ -224,63 +429,71 @@ void main() {
     });
 
     test('invalid numeric arguments fail with a typed diagnostic', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const ['g(not-a-number)']),
-        settings: LSystemTurtleSettings(),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleInvalid;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const ['g(not-a-number)']),
+                settings: LSystemTurtleSettings(),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleInvalid;
 
-      expect(result.diagnostics.single.code,
-          LSystemTurtleDiagnosticCode.invalidCommandArgument);
+      expect(
+        result.diagnostics.single.code,
+        LSystemTurtleDiagnosticCode.invalidCommandArgument,
+      );
       expect(result.diagnostics.single.symbolIndex, 0);
     });
 
-    test('assignments require values and preserve positive length contracts',
-        () {
-      final outcomes = [
-        const ['angle'],
-        const ['distance=0'],
-        const ['lineIncrement(-1)'],
-      ].map(
-        (symbols) => const LSystemTurtleInterpreter().interpret(
-          LSystemWord(symbols),
-          settings: LSystemTurtleSettings(),
-          mapping: LSystemCommandMapping.jflap,
-        ) as LSystemTurtleInvalid,
-      );
+    test(
+      'assignments require values and preserve positive length contracts',
+      () {
+        final outcomes =
+            [
+              const ['angle'],
+              const ['distance=0'],
+              const ['lineIncrement(-1)'],
+            ].map(
+              (symbols) =>
+                  const LSystemTurtleInterpreter().interpret(
+                        LSystemWord(symbols),
+                        settings: LSystemTurtleSettings(),
+                        mapping: LSystemCommandMapping.jflap,
+                      )
+                      as LSystemTurtleInvalid,
+            );
 
-      expect(
-        outcomes.map((outcome) => outcome.diagnostics.single.code),
-        [
+        expect(outcomes.map((outcome) => outcome.diagnostics.single.code), [
           LSystemTurtleDiagnosticCode.invalidCommandArgument,
           LSystemTurtleDiagnosticCode.invalidCommandArgument,
           LSystemTurtleDiagnosticCode.invalidLineWidth,
-        ],
-      );
-    });
+        ]);
+      },
+    );
 
     test('assignments update branch-local turtle state', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const [
-          'distance=2',
-          'g',
-          '[',
-          'distance(5)',
-          'lineIncrement=3',
-          '!',
-          'g',
-          ']',
-          'g',
-          'angle=90',
-          '+',
-          'hueChange=120',
-          'color=red',
-          '#',
-          'g',
-        ]),
-        settings: LSystemTurtleSettings(),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const [
+                  'distance=2',
+                  'g',
+                  '[',
+                  'distance(5)',
+                  'lineIncrement=3',
+                  '!',
+                  'g',
+                  ']',
+                  'g',
+                  'angle=90',
+                  '+',
+                  'hueChange=120',
+                  'color=red',
+                  '#',
+                  'g',
+                ]),
+                settings: LSystemTurtleSettings(),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
 
       expect(result.geometry.segmentWidths, [1, 4, 1, 1]);
       expect(result.geometry.segmentCoordinates, [
@@ -331,11 +544,13 @@ void main() {
     });
 
     test('large finite angles are reduced before rotation', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const ['angle=1e308', '+', 'g']),
-        settings: LSystemTurtleSettings(),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const ['angle=1e308', '+', 'g']),
+                settings: LSystemTurtleSettings(),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
 
       expect(
         result.geometry.segmentCoordinates.every((value) => value.isFinite),
@@ -344,20 +559,22 @@ void main() {
     });
 
     test('supports Java AWT, JFLAP special, RGB, and HSB colors', () {
-      final result = const LSystemTurtleInterpreter().interpret(
-        LSystemWord(const [
-          'color(darkGray)',
-          'g',
-          'color(dukeBlue)',
-          'g',
-          'color(255,200,0)',
-          'g',
-          'color(0.5,1,1)',
-          'g',
-        ]),
-        settings: LSystemTurtleSettings(),
-        mapping: LSystemCommandMapping.jflap,
-      ) as LSystemTurtleCompleted;
+      final result =
+          const LSystemTurtleInterpreter().interpret(
+                LSystemWord(const [
+                  'color(darkGray)',
+                  'g',
+                  'color(dukeBlue)',
+                  'g',
+                  'color(255,200,0)',
+                  'g',
+                  'color(0.5,1,1)',
+                  'g',
+                ]),
+                settings: LSystemTurtleSettings(),
+                mapping: LSystemCommandMapping.jflap,
+              )
+              as LSystemTurtleCompleted;
 
       expect(result.geometry.segmentColorsArgb, [
         0xff404040,
@@ -407,20 +624,19 @@ LSystemDocument _system({
   int seed = 0,
   Set<String> ignoredContextSymbols = const {},
   List<LSystemUnsupportedVariant> unsupportedVariants = const [],
-}) =>
-    LSystemDocument(
-      id: 'advanced-system',
-      name: 'Advanced system',
-      revision: 0,
-      axiom: LSystemWord(axiom),
-      productions: productions,
-      iterations: 1,
-      randomSeed: seed,
-      ignoredContextSymbols: ignoredContextSymbols,
-      turtle: LSystemTurtleSettings(),
-      commandMapping: LSystemCommandMapping.jflap,
-      unsupportedVariants: unsupportedVariants,
-    );
+}) => LSystemDocument(
+  id: 'advanced-system',
+  name: 'Advanced system',
+  revision: 0,
+  axiom: LSystemWord(axiom),
+  productions: productions,
+  iterations: 1,
+  randomSeed: seed,
+  ignoredContextSymbols: ignoredContextSymbols,
+  turtle: LSystemTurtleSettings(),
+  commandMapping: LSystemCommandMapping.jflap,
+  unsupportedVariants: unsupportedVariants,
+);
 
 LSystemProduction _production(
   String id,
@@ -429,12 +645,11 @@ LSystemProduction _production(
   List<String> leftContext = const [],
   List<String> rightContext = const [],
   double weight = 1,
-}) =>
-    LSystemProduction(
-      id: id,
-      predecessor: predecessor,
-      successor: LSystemWord(successor),
-      leftContext: LSystemWord(leftContext),
-      rightContext: LSystemWord(rightContext),
-      weight: weight,
-    );
+}) => LSystemProduction(
+  id: id,
+  predecessor: predecessor,
+  successor: LSystemWord(successor),
+  leftContext: LSystemWord(leftContext),
+  rightContext: LSystemWord(rightContext),
+  weight: weight,
+);

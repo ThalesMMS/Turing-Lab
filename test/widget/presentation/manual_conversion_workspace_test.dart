@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +10,7 @@ import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dar
 import 'package:turing_lab/data/services/manual_conversion_session_store.dart';
 import 'package:turing_lab/injection/data_providers.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/manual_conversion_workspace.dart';
+import 'package:turing_lab/presentation/widgets/conversions/manual_conversion_workspace.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,57 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
+
+  for (final branch in [false, true]) {
+    testWidgets(
+      'late ${branch ? 'branch' : 'restart'} completion ignores a disposed workspace',
+      (tester) async {
+        final preferences = await SharedPreferences.getInstance();
+        final completion = Completer<ManualConversionSession>();
+        final original = _sessionForSource('old-source', 1);
+        Future<void> show(String documentId, int revision) => tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(preferences),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: ManualConversionWorkspace(
+                  title: 'Manual conversion',
+                  workspaceKey: 'late-result',
+                  initialSession: original,
+                  currentSourceDocumentId: documentId,
+                  currentSourceRevision: revision,
+                  sourcePreview: const Text('Source'),
+                  resultPreviewBuilder: (_) => const Text('Result'),
+                  onRestartFromSource: (_) => completion.future,
+                  onBranchFromSource: (_, _) => completion.future,
+                  onOpenResult: (_) {},
+                  onClose: () {},
+                ),
+              ),
+            ),
+          ),
+        );
+        await show('old-source', 1);
+        await tester.pumpAndSettle();
+        await show('new-source', 2);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.text(
+            branch ? 'Branch from edited source' : 'Restart from edited source',
+          ),
+        );
+        await tester.pump();
+        await tester.pumpWidget(const SizedBox());
+        completion.complete(_sessionForSource('new-source', 2));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('hint does not mutate and reveal explicitly completes the step', (
     tester,

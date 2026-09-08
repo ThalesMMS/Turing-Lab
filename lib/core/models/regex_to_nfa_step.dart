@@ -21,8 +21,8 @@ const regexToNfaExplanationMessageProperty = 'regexToNfaExplanationMessage';
 
 /// Represents a single step in Regex to NFA conversion using Thompson's construction.
 ///
-/// TODO(#143): Keep for algorithm-internal construction. UI consumers should
-/// use [toProperties] through generic [AlgorithmStep.properties].
+/// The model is kept for algorithm-internal construction. Presentation reads
+/// the generic [AlgorithmStep.properties] produced by [toProperties].
 class RegexToNFAStep {
   /// Base algorithm step information
   final AlgorithmStep baseStep;
@@ -407,7 +407,7 @@ class RegexToNFAStep {
     required String id,
     required int stepNumber,
     required State finalStartState,
-    required State finalAcceptState,
+    required State? finalAcceptState,
     required int totalStates,
     required int totalTransitions,
   }) {
@@ -585,9 +585,25 @@ class RegexToNFAStep {
     };
 
     _putStateIds(properties, 'createdStateIds', createdStates);
+    _putStateLabels(properties, 'createdStateLabels', createdStates);
     _putTransitionIds(properties, 'createdTransitionIds', createdTransitions);
+    _putTransitionSummaries(
+      properties,
+      'createdTransitionSummaries',
+      createdTransitions,
+    );
     _putIfNotNull(properties, 'fragmentStartStateId', fragmentStartState?.id);
+    _putIfNotNull(
+      properties,
+      'fragmentStartStateLabel',
+      fragmentStartState?.label,
+    );
     _putIfNotNull(properties, 'fragmentAcceptStateId', fragmentAcceptState?.id);
+    _putIfNotNull(
+      properties,
+      'fragmentAcceptStateLabel',
+      fragmentAcceptState?.label,
+    );
     _putIfNotNull(properties, 'regexFragment', regexFragment);
     _putIfNotNull(properties, 'regexPosition', regexPosition);
     _putIfNotNull(properties, 'processedSymbol', processedSymbol);
@@ -644,6 +660,40 @@ class RegexToNFAStep {
         .toList(growable: false);
     if (ids != null && ids.isNotEmpty) {
       properties[key] = ids;
+    }
+  }
+
+  static void _putStateLabels(
+    Map<String, dynamic> properties,
+    String key,
+    Set<State>? states,
+  ) {
+    final labels = states
+        ?.where((state) => state.id.trim().isNotEmpty)
+        .map((state) => state.label)
+        .toList(growable: false);
+    if (labels != null && labels.isNotEmpty) {
+      properties[key] = labels;
+    }
+  }
+
+  /// Human-readable `from → to (label)` summaries, aligned with
+  /// `createdTransitionIds`.
+  static void _putTransitionSummaries(
+    Map<String, dynamic> properties,
+    String key,
+    Set<Transition>? transitions,
+  ) {
+    final summaries = transitions
+        ?.where((transition) => transition.id.trim().isNotEmpty)
+        .map(
+          (transition) =>
+              '${transition.fromState.label} → ${transition.toState.label} '
+              '(${_displayRegexSymbol(transition.label)})',
+        )
+        .toList(growable: false);
+    if (summaries != null && summaries.isNotEmpty) {
+      properties[key] = summaries;
     }
   }
 

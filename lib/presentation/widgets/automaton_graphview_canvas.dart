@@ -51,6 +51,7 @@ import '../providers/document_annotations_provider.dart';
 import 'automaton_canvas_tool.dart';
 import 'automaton_canvas_document_actions.dart';
 import 'automaton_graphview/canvas_controller_lifecycle.dart';
+import 'automaton_graphview/canvas_tool_dispatcher.dart';
 import 'automaton_graphview/canvas_domain_sync_coordinator.dart';
 import 'automaton_graphview/canvas_edge_presentation.dart';
 import 'automaton_graphview/canvas_interaction_coordinator.dart';
@@ -125,12 +126,13 @@ class _AutomatonGraphViewCanvasState
       _lifecycle.controller;
   AutomatonCanvasToolController get _toolController =>
       _lifecycle.toolController;
-  AutomatonCanvasTool _activeTool = AutomatonCanvasTool.selection;
+  late final CanvasToolDispatcher _dispatcher;
+  AutomatonCanvasTool get _activeTool => _dispatcher.activeTool;
+  String? get _transitionSourceId => _dispatcher.transitionSourceId;
   late _AutomatonGraphSugiyamaAlgorithm _algorithm;
   final Set<String> _selectedTransitions = <String>{};
   String? _selectedNodeId;
   Map<String, GraphLayoutPoint>? _savedLayoutPositions;
-  String? _transitionSourceId;
   Offset? _transitionPointerLocalPosition;
   OverlayEntry? _transitionOverlayEntry;
   final ValueNotifier<_GraphViewTransitionOverlayState?>
@@ -148,9 +150,6 @@ class _AutomatonGraphViewCanvasState
   late final NodeDraggingConfiguration _nodePointerConfiguration;
   bool _suppressCanvasPan = false;
   bool _isDisposing = false;
-  String? _lastTapNodeId;
-  Duration? _lastTapTimestamp;
-  String? _doubleTapCandidateNodeId;
   final Stopwatch _monotonicStopwatch = Stopwatch()..start();
   bool _isDraggingNode = false;
   bool _didMoveDraggedNode = false;
@@ -184,20 +183,28 @@ class _AutomatonGraphViewCanvasState
     });
   }
 
-  void _setTransitionSourceId(String? nodeId) {
+  /// Mirrors the dispatcher's pending transition source into the rendered
+  /// preview state.
+  void _syncTransitionSource() {
     if (!mounted) {
       return;
     }
+    final nodeId = _dispatcher.transitionSourceId;
     final sourceNode = nodeId == null ? null : _controller.nodeById(nodeId);
     final fallbackPointer = sourceNode == null
         ? null
         : _worldToCanvasLocal(resolveNodeCenter(sourceNode));
     setState(() {
-      _transitionSourceId = nodeId;
       _transitionPointerLocalPosition = nodeId == null
           ? null
           : _transitionPointerLocalPosition ?? fallbackPointer;
     });
+  }
+
+  void _clearTransitionSource() {
+    if (_dispatcher.clearTransitionSource()) {
+      _syncTransitionSource();
+    }
   }
 
   void _updateTransitionPointerLocal(Offset localPosition) {
@@ -247,7 +254,11 @@ class _AutomatonGraphViewCanvasState
       onHighlight: _handleHighlightChanged,
       onToolChanged: _handleActiveToolChanged,
     );
-    _activeTool = _toolController.activeTool;
+    _dispatcher = CanvasToolDispatcher(
+      initialTool: _toolController.activeTool,
+      doubleTapMinTime: kDoubleTapMinTime,
+      doubleTapTimeout: kDoubleTapTimeout,
+    );
     _canvasFocusNode = FocusNode(debugLabel: 'Automaton graph canvas');
     _viewportAdapter = AutomatonGraphViewViewportAdapter(
       controller: _controller,
@@ -271,7 +282,7 @@ class _AutomatonGraphViewCanvasState
       editingEnabled: () => _customization.enableToolSelection,
       selectedNodeId: () => _selectedNodeId,
       selectedTransitionIds: () => _selectedTransitions,
-      clearTransitionSource: () => _setTransitionSourceId(null),
+      clearTransitionSource: _clearTransitionSource,
       clearSelectedNode: () => _setSelectedNodeId(null),
       notifySelectionChanged: () => _updateCanvasState(() {}),
       beforeRemoveState: _confirmStateAnnotationDeletion,
@@ -333,7 +344,10 @@ class _AutomatonGraphViewCanvasState
     var shouldReapplyCustomization = false;
     if (oldWidget.toolController != widget.toolController) {
       _lifecycle.replaceToolController(widget.toolController);
-      _activeTool = _toolController.activeTool;
+      _applyToolChange(
+        _dispatcher.setActiveTool(_toolController.activeTool),
+        notify: false,
+      );
       shouldReapplyCustomization = true;
     }
 
@@ -447,28 +461,40 @@ class _AutomatonGraphViewCanvasState
       _toolController.setActiveTool(AutomatonCanvasTool.selection);
       return;
     }
-    if (nextTool == _activeTool) {
+    final change = _dispatcher.setActiveTool(nextTool);
+    if (change == null) {
       return;
     }
-    setState(() {
-      _activeTool = nextTool;
-      if (_activeTool != AutomatonCanvasTool.transition) {
-        _transitionSourceId = null;
-        _transitionPointerLocalPosition = null;
-      }
-      if (_activeTool != AutomatonCanvasTool.selection) {
-        _selectedNodeId = null;
-        _lastTapNodeId = null;
-        _lastTapTimestamp = null;
-        _doubleTapCandidateNodeId = null;
-      }
-    });
+    _applyToolChange(change, notify: true);
     debugPrint(
       '[AutomatonGraphViewCanvas] Active tool set to '
       '${nextTool.name}',
     );
     if (nextTool != AutomatonCanvasTool.transition) {
       _hideTransitionOverlay();
+    }
+  }
+
+  /// Applies what a tool change invalidated to the rendered state. With
+  /// [notify] false the caller is already inside a build-triggering lifecycle
+  /// callback and must not call setState.
+  void _applyToolChange(CanvasToolChange? change, {required bool notify}) {
+    if (change == null) {
+      return;
+    }
+    void apply() {
+      if (change.tool != AutomatonCanvasTool.transition) {
+        _transitionPointerLocalPosition = null;
+      }
+      if (change.clearedSelection) {
+        _selectedNodeId = null;
+      }
+    }
+
+    if (notify) {
+      _updateCanvasState(apply);
+    } else {
+      apply();
     }
   }
 
@@ -489,12 +515,19 @@ class _AutomatonGraphViewCanvasState
     _transitionConfig = resolved.transitionConfigBuilder(_controller);
     if (_hasEdgePresentation) {
       _edgeRenderer.renderMode = resolved.edgeRenderMode;
+      // Repulsion offsets only feed the standard router; keep the flag in
+      // step with the mode when the customization changes at runtime.
+      _edgeRenderer.config.enableRepulsion =
+          resolved.edgeRenderMode != TuringLabEdgeRenderMode.groupedFsa;
     }
     if (!_customization.enableToolSelection &&
         _toolController.activeTool != AutomatonCanvasTool.selection) {
       _toolController.setActiveTool(AutomatonCanvasTool.selection);
     }
-    _activeTool = _toolController.activeTool;
+    _applyToolChange(
+      _dispatcher.setActiveTool(_toolController.activeTool),
+      notify: false,
+    );
   }
 
   void _synchronizeController(Object? data) {

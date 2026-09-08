@@ -6,7 +6,7 @@ import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/cfg_to_pda_construction_workspace.dart';
+import 'package:turing_lab/presentation/widgets/conversions/cfg_to_pda_construction_workspace.dart';
 
 // feature-localization-contract: automata-conversions-and-fragments
 // feature-localization-surface: localized-editor-fields

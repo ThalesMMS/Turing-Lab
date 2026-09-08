@@ -1,8 +1,8 @@
 # App Store screenshot capture
 
-Local-only pipeline that renders the Apple App Store screenshot set. It is not
-wired into GitHub Actions and consumes no hosted CI minutes, and `flutter test`
-never runs it: the capture entry point is `test/app_store/app_store_capture_runner.dart`,
+Local-only pipeline that renders the Apple App Store screenshot set.
+`flutter test` never runs it: the capture entry point is
+`test/app_store/app_store_capture_runner.dart`,
 whose name deliberately omits the `_test` suffix so default test discovery
 skips it.
 

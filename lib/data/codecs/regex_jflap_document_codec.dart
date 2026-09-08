@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:xml/xml.dart';
 
-import '../../core/algorithms/regex_to_nfa_converter.dart';
+import '../../core/algorithms/regex/regex_to_nfa_converter.dart';
 import '../../core/formal_systems/formal_systems.dart';
 import '../../core/interoperability/interoperability.dart';
 import '../../core/messages/structured_message.dart';

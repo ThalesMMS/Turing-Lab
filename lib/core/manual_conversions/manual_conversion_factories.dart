@@ -1,5 +1,5 @@
-import '../algorithms/equivalence_checker.dart';
-import '../algorithms/regex_to_nfa_converter.dart';
+import '../algorithms/fsa/equivalence_checker.dart';
+import '../algorithms/regex/regex_to_nfa_converter.dart';
 import '../models/fsa.dart';
 import 'fa_to_regex_manual.dart';
 import 'manual_conversion_content.dart';

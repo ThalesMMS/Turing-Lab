@@ -12,7 +12,7 @@
 
 import 'dart:collection';
 
-import '../algorithms/automaton_simulation_messages.dart';
+import '../algorithms/fsa/automaton_simulation_messages.dart';
 import '../messages/structured_message.dart';
 import 'nfa_path_node.dart';
 

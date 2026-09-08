@@ -9,6 +9,7 @@ const ptHelpUiCopy = {
   'lSystemExampleDragonCurve': 'Curva do dragão',
   'lSystemExampleFractalPlant': 'Planta fractal',
   'lSystemExampleBranchingTree': 'Árvore ramificada',
+  'lSystemExampleParametricTree': 'Árvore paramétrica',
   'lSystemExampleSeededContextTurtle': 'Tartaruga contextual com semente',
   'relatedConcepts': 'Conceitos relacionados',
   'hideExamples': 'Ocultar exemplos',

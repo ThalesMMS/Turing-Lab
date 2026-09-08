@@ -34,7 +34,6 @@ class AdaptiveEdgeRenderer extends EdgeRenderer implements RenderCycleAware {
 
   /// Flag to track if repulsion has been calculated for the current render cycle.
   bool _repulsionCalculated = false;
-  Graph? _repulsionCacheGraph;
   int _repulsionCacheEdgeSignature = 0;
   int _repulsionCacheConfigSignature = 0;
   Map<Node, Offset> _repulsionCacheNodeCenters = <Node, Offset>{};
@@ -79,8 +78,11 @@ class AdaptiveEdgeRenderer extends EdgeRenderer implements RenderCycleAware {
       config.minEdgeDistance,
       config.maxRepulsionIterations,
     );
-    if (identical(_repulsionCacheGraph, _graph) &&
-        _repulsionCacheEdgeSignature == edgeSignature &&
+    // The cache is keyed by content (edge identities, node centers and the
+    // repulsion config), never by the Graph container: GraphView re-derives
+    // an equivalent container on every rebuild, and requiring the identical
+    // instance recomputed repulsion for every edge on each viewport frame.
+    if (_repulsionCacheEdgeSignature == edgeSignature &&
         _repulsionCacheConfigSignature == configSignature &&
         mapEquals(_repulsionCacheNodeCenters, nodeCenters)) {
       _repulsionCalculated = true;
@@ -88,7 +90,6 @@ class AdaptiveEdgeRenderer extends EdgeRenderer implements RenderCycleAware {
     }
 
     _calculateRepulsionForAllEdges();
-    _repulsionCacheGraph = _graph;
     _repulsionCacheEdgeSignature = edgeSignature;
     _repulsionCacheConfigSignature = configSignature;
     _repulsionCacheNodeCenters = nodeCenters;

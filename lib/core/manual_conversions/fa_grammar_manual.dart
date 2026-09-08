@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import '../algorithms/fsa_to_grammar_converter.dart';
-import '../algorithms/grammar_to_fsa_converter.dart';
-import '../algorithms/language_comparator.dart';
+import '../algorithms/fsa/fsa_to_grammar_converter.dart';
+import '../algorithms/grammar/grammar_to_fsa_converter.dart';
+import '../algorithms/fsa/language_comparator.dart';
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
 import '../models/grammar.dart';
@@ -31,11 +31,7 @@ enum FaGrammarManualDiagnosticCode {
   incorrectMapping,
 }
 
-enum FaGrammarManualEquivalenceStatus {
-  equivalent,
-  notEquivalent,
-  error,
-}
+enum FaGrammarManualEquivalenceStatus { equivalent, notEquivalent, error }
 
 /// A deep, serialized copy of the document used to start an exercise.
 class FaGrammarManualSourceSnapshot {
@@ -56,10 +52,10 @@ class FaGrammarManualProvenance {
     required this.sourceDocumentId,
     required Iterable<String> sourceIds,
     required Iterable<String> canonicalTargetIds,
-  })  : sourceIds = List<String>.unmodifiable(sourceIds.toList()..sort()),
-        canonicalTargetIds = List<String>.unmodifiable(
-          canonicalTargetIds.toList()..sort(),
-        );
+  }) : sourceIds = List<String>.unmodifiable(sourceIds.toList()..sort()),
+       canonicalTargetIds = List<String>.unmodifiable(
+         canonicalTargetIds.toList()..sort(),
+       );
 
   final String sourceDocumentId;
   final List<String> sourceIds;
@@ -71,8 +67,8 @@ class FaGrammarProductionShape {
     required Iterable<String> leftSide,
     required Iterable<String> rightSide,
     required this.isEpsilon,
-  })  : leftSide = List<String>.unmodifiable(leftSide),
-        rightSide = List<String>.unmodifiable(rightSide);
+  }) : leftSide = List<String>.unmodifiable(leftSide),
+       rightSide = List<String>.unmodifiable(rightSide);
 
   factory FaGrammarProductionShape.fromProduction(Production production) =>
       FaGrammarProductionShape(
@@ -168,67 +164,61 @@ class FaGrammarManualAction {
     required String id,
     required String stateId,
     required String nonterminal,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapStateToNonterminal,
-        stateId: stateId,
-        nonterminal: nonterminal,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapStateToNonterminal,
+    stateId: stateId,
+    nonterminal: nonterminal,
+  );
 
   factory FaGrammarManualAction.mapNonterminalToState({
     required String id,
     required String nonterminal,
     required String stateId,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapNonterminalToState,
-        stateId: stateId,
-        nonterminal: nonterminal,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapNonterminalToState,
+    stateId: stateId,
+    nonterminal: nonterminal,
+  );
 
   factory FaGrammarManualAction.mapTransitionToProduction({
     required String id,
     required FaGrammarProductionShape production,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapTransitionToProduction,
-        production: production,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapTransitionToProduction,
+    production: production,
+  );
 
   factory FaGrammarManualAction.mapProductionToTransition({
     required String id,
     required FaGrammarTransitionShape transition,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapProductionToTransition,
-        transition: transition,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapProductionToTransition,
+    transition: transition,
+  );
 
   factory FaGrammarManualAction.mapAcceptingStateToEpsilon({
     required String id,
     required String stateId,
     required FaGrammarProductionShape production,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapAcceptingStateToEpsilon,
-        stateId: stateId,
-        production: production,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapAcceptingStateToEpsilon,
+    stateId: stateId,
+    production: production,
+  );
 
   factory FaGrammarManualAction.mapEpsilonProductionToAcceptingState({
     required String id,
     required String stateId,
-  }) =>
-      FaGrammarManualAction._(
-        id: id,
-        kind: FaGrammarManualActionKind.mapEpsilonProductionToAcceptingState,
-        stateId: stateId,
-      );
+  }) => FaGrammarManualAction._(
+    id: id,
+    kind: FaGrammarManualActionKind.mapEpsilonProductionToAcceptingState,
+    stateId: stateId,
+  );
 
   final String id;
   final FaGrammarManualActionKind kind;
@@ -294,15 +284,15 @@ class FaGrammarManualLearnerArtifact {
     required Iterable<FaGrammarTransitionShape> transitions,
     required Iterable<String> acceptingStateIds,
     required this.document,
-  })  : stateToNonterminal = Map<String, String>.unmodifiable(
-          stateToNonterminal,
-        ),
-        nonterminalToState = Map<String, String>.unmodifiable(
-          nonterminalToState,
-        ),
-        productions = List<FaGrammarProductionShape>.unmodifiable(productions),
-        transitions = List<FaGrammarTransitionShape>.unmodifiable(transitions),
-        acceptingStateIds = Set<String>.unmodifiable(acceptingStateIds);
+  }) : stateToNonterminal = Map<String, String>.unmodifiable(
+         stateToNonterminal,
+       ),
+       nonterminalToState = Map<String, String>.unmodifiable(
+         nonterminalToState,
+       ),
+       productions = List<FaGrammarProductionShape>.unmodifiable(productions),
+       transitions = List<FaGrammarTransitionShape>.unmodifiable(transitions),
+       acceptingStateIds = Set<String>.unmodifiable(acceptingStateIds);
 
   final FaGrammarManualDirection direction;
   final Map<String, String> stateToNonterminal;
@@ -318,18 +308,18 @@ class FaGrammarManualLearnerArtifact {
   final Map<String, Object?>? document;
 
   Map<String, Object?> toJson() => {
-        'kind': switch (direction) {
-          FaGrammarManualDirection.faToRightLinearGrammar => 'grammar',
-          FaGrammarManualDirection.rightLinearGrammarToFa => 'fsa',
-        },
-        'orientation': FaGrammarManualOrientation.rightLinear.name,
-        'stateToNonterminal': stateToNonterminal,
-        'nonterminalToState': nonterminalToState,
-        'productions': productions.map(_productionShapeJson).toList(),
-        'transitions': transitions.map(_transitionShapeJson).toList(),
-        'acceptingStateIds': acceptingStateIds.toList()..sort(),
-        'document': document,
-      };
+    'kind': switch (direction) {
+      FaGrammarManualDirection.faToRightLinearGrammar => 'grammar',
+      FaGrammarManualDirection.rightLinearGrammarToFa => 'fsa',
+    },
+    'orientation': FaGrammarManualOrientation.rightLinear.name,
+    'stateToNonterminal': stateToNonterminal,
+    'nonterminalToState': nonterminalToState,
+    'productions': productions.map(_productionShapeJson).toList(),
+    'transitions': transitions.map(_transitionShapeJson).toList(),
+    'acceptingStateIds': acceptingStateIds.toList()..sort(),
+    'document': document,
+  };
 }
 
 /// Immutable progress through one canonical FA/right-linear-grammar exercise.
@@ -344,15 +334,17 @@ class FaGrammarManualPlan {
     required Grammar? sourceGrammar,
     required Grammar? canonicalGrammar,
     required FSA? canonicalFsa,
-  })  : obligations = List<FaGrammarManualObligation>.unmodifiable(obligations),
-        acceptedActions =
-            List<FaGrammarManualAction>.unmodifiable(acceptedActions),
-        completedObligationIds =
-            Set<String>.unmodifiable(completedObligationIds),
-        _sourceFsa = sourceFsa,
-        _sourceGrammar = sourceGrammar,
-        _canonicalGrammar = canonicalGrammar,
-        _canonicalFsa = canonicalFsa;
+  }) : obligations = List<FaGrammarManualObligation>.unmodifiable(obligations),
+       acceptedActions = List<FaGrammarManualAction>.unmodifiable(
+         acceptedActions,
+       ),
+       completedObligationIds = Set<String>.unmodifiable(
+         completedObligationIds,
+       ),
+       _sourceFsa = sourceFsa,
+       _sourceGrammar = sourceGrammar,
+       _canonicalGrammar = canonicalGrammar,
+       _canonicalFsa = canonicalFsa;
 
   final FaGrammarManualDirection direction;
   final FaGrammarManualOrientation orientation =
@@ -402,13 +394,15 @@ class FaGrammarManualPlan {
     }
 
     final document = switch (direction) {
-      FaGrammarManualDirection.faToRightLinearGrammar =>
-        _learnerGrammarJson(stateToNonterminal, productions),
+      FaGrammarManualDirection.faToRightLinearGrammar => _learnerGrammarJson(
+        stateToNonterminal,
+        productions,
+      ),
       FaGrammarManualDirection.rightLinearGrammarToFa => _learnerFsaJson(
-          nonterminalToState,
-          transitions,
-          acceptingStateIds,
-        ),
+        nonterminalToState,
+        transitions,
+        acceptingStateIds,
+      ),
     };
     return FaGrammarManualLearnerArtifact._(
       direction: direction,
@@ -431,13 +425,11 @@ class FaGrammarManualPlan {
     }
     return switch (direction) {
       FaGrammarManualDirection.faToRightLinearGrammar => compare(
-          learnerGrammar: Grammar.fromJson(
-            Map<String, dynamic>.from(document),
-          ),
-        ),
+        learnerGrammar: Grammar.fromJson(Map<String, dynamic>.from(document)),
+      ),
       FaGrammarManualDirection.rightLinearGrammarToFa => compare(
-          learnerFsa: FSA.fromJson(Map<String, dynamic>.from(document)),
-        ),
+        learnerFsa: FSA.fromJson(Map<String, dynamic>.from(document)),
+      ),
     };
   }
 
@@ -675,8 +667,9 @@ abstract final class FaGrammarManualOracle {
     };
     final obligations = <FaGrammarManualObligation>[];
 
-    for (final state in [...source.states]
-      ..sort((a, b) => a.id.compareTo(b.id))) {
+    for (final state in [
+      ...source.states,
+    ]..sort((a, b) => a.id.compareTo(b.id))) {
       final nonterminal = stateToNonterminal[state.id]!;
       obligations.add(
         FaGrammarManualObligation(
@@ -821,20 +814,22 @@ abstract final class FaGrammarManualOracle {
       }
 
       final firstSymbol = production.rightSide.first;
-      final isUnitProduction = production.rightSide.length == 1 &&
+      final isUnitProduction =
+          production.rightSide.length == 1 &&
           source.nonterminals.contains(firstSymbol);
       final targetId = isUnitProduction
           ? firstSymbol
           : production.rightSide.length == 1
-              ? '${source.id}_ACCEPT'
-              : production.rightSide.last;
+          ? '${source.id}_ACCEPT'
+          : production.rightSide.last;
       final shape = FaGrammarTransitionShape(
         fromStateId: from,
         toStateId: targetId,
         inputSymbol: isUnitProduction ? '' : firstSymbol,
         isEpsilon: isUnitProduction,
-        toStateIsAccepting:
-            canonical.acceptingStates.any((state) => state.id == targetId),
+        toStateIsAccepting: canonical.acceptingStates.any(
+          (state) => state.id == targetId,
+        ),
       );
       obligations.add(
         FaGrammarManualObligation(
@@ -899,19 +894,15 @@ void _addTransitionProductionObligation({
 List<String> _matchingProductionIds(
   Grammar grammar,
   FaGrammarProductionShape shape,
-) =>
-    grammar.productions
-        .where(
-          (production) =>
-              shape.sameAs(FaGrammarProductionShape.fromProduction(production)),
-        )
-        .map((production) => production.id)
-        .toList();
+) => grammar.productions
+    .where(
+      (production) =>
+          shape.sameAs(FaGrammarProductionShape.fromProduction(production)),
+    )
+    .map((production) => production.id)
+    .toList();
 
-List<String> _matchingTransitionIds(
-  FSA fsa,
-  FaGrammarTransitionShape shape,
-) =>
+List<String> _matchingTransitionIds(FSA fsa, FaGrammarTransitionShape shape) =>
     fsa.fsaTransitions
         .where(
           (transition) =>
@@ -1014,12 +1005,12 @@ String _revision(String canonical) {
 }
 
 FSA _cloneFsa(FSA fsa) => FSA.fromJson(
-      (jsonDecode(jsonEncode(fsa.toJson())) as Map).cast<String, dynamic>(),
-    );
+  (jsonDecode(jsonEncode(fsa.toJson())) as Map).cast<String, dynamic>(),
+);
 
 Grammar _cloneGrammar(Grammar grammar) => Grammar.fromJson(
-      (jsonDecode(jsonEncode(grammar.toJson())) as Map).cast<String, dynamic>(),
-    );
+  (jsonDecode(jsonEncode(grammar.toJson())) as Map).cast<String, dynamic>(),
+);
 
 bool _sameStrings(List<String> left, List<String> right) {
   if (left.length != right.length) return false;
@@ -1031,20 +1022,18 @@ bool _sameStrings(List<String> left, List<String> right) {
 
 Map<String, Object?> _productionShapeJson(
   FaGrammarProductionShape production,
-) =>
-    {
-      'leftSide': production.leftSide,
-      'rightSide': production.rightSide,
-      'isEpsilon': production.isEpsilon,
-    };
+) => {
+  'leftSide': production.leftSide,
+  'rightSide': production.rightSide,
+  'isEpsilon': production.isEpsilon,
+};
 
 Map<String, Object?> _transitionShapeJson(
   FaGrammarTransitionShape transition,
-) =>
-    {
-      'fromStateId': transition.fromStateId,
-      'toStateId': transition.toStateId,
-      'inputSymbol': transition.inputSymbol,
-      'isEpsilon': transition.isEpsilon,
-      'toStateIsAccepting': transition.toStateIsAccepting,
-    };
+) => {
+  'fromStateId': transition.fromStateId,
+  'toStateId': transition.toStateId,
+  'inputSymbol': transition.inputSymbol,
+  'isEpsilon': transition.isEpsilon,
+  'toStateIsAccepting': transition.toStateIsAccepting,
+};

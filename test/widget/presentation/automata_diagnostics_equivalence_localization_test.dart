@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/language_comparator.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparator.dart';
 import 'package:turing_lab/core/models/computation_branch.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
@@ -26,8 +26,8 @@ import 'package:turing_lab/l10n/automata_diagnostics_localizations.dart';
 import 'package:turing_lab/presentation/widgets/automaton_diagnostic_highlight_bar.dart';
 import 'package:turing_lab/presentation/widgets/base_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/computation_branch_inspector.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_semantics.dart';
-import 'package:turing_lab/presentation/widgets/language_comparison_viewer.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_semantics.dart';
+import 'package:turing_lab/presentation/widgets/language_comparison/language_comparison_viewer.dart';
 import 'package:turing_lab/presentation/widgets/read_only_fsa_graphview_canvas.dart';
 
 // feature-localization-contract: automata-diagnostics-and-equivalence

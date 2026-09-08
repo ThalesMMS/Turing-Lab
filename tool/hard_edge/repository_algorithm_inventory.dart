@@ -29,15 +29,15 @@ final class AlgorithmOwnershipScope {
   final String mutationRationale;
 
   Map<String, Object?> toJson() => {
-        'evidenceCommand': evidenceCommand,
-        'family': family,
-        'id': id,
-        'issue': issue,
-        'mutationCommand': mutationCommand,
-        'mutationRationale': mutationRationale,
-        'propertyEvidence': propertyEvidence,
-        'regressionFixtureRoot': regressionFixtureRoot,
-      };
+    'evidenceCommand': evidenceCommand,
+    'family': family,
+    'id': id,
+    'issue': issue,
+    'mutationCommand': mutationCommand,
+    'mutationRationale': mutationRationale,
+    'propertyEvidence': propertyEvidence,
+    'regressionFixtureRoot': regressionFixtureRoot,
+  };
 }
 
 const repositoryAlgorithmOwnershipScopes = <AlgorithmOwnershipScope>[
@@ -217,8 +217,8 @@ final class RepositoryAlgorithmInventory {
   RepositoryAlgorithmInventory({
     required Iterable<Map<String, Object?>> entries,
     required Iterable<Map<String, Object?>> exclusions,
-  })  : entries = List.unmodifiable(entries),
-        exclusions = List.unmodifiable(exclusions);
+  }) : entries = List.unmodifiable(entries),
+       exclusions = List.unmodifiable(exclusions);
 
   final List<Map<String, Object?>> entries;
   final List<Map<String, Object?>> exclusions;
@@ -227,13 +227,14 @@ final class RepositoryAlgorithmInventory {
     final entries = <Map<String, Object?>>[];
     final exclusions = <Map<String, Object?>>[];
     final lib = Directory(_path(repositoryRoot, 'lib'));
-    final sources = lib
-        .listSync(recursive: true, followLinks: false)
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart'))
-        .map((file) => _relative(repositoryRoot, file))
-        .toList()
-      ..sort();
+    final sources =
+        lib
+            .listSync(recursive: true, followLinks: false)
+            .whereType<File>()
+            .where((file) => file.path.endsWith('.dart'))
+            .map((file) => _relative(repositoryRoot, file))
+            .toList()
+          ..sort();
     for (final sourcePath in sources) {
       final scope = _scopeForPath(sourcePath);
       if (scope == null) continue;
@@ -252,14 +253,14 @@ final class RepositoryAlgorithmInventory {
       final role = _roleFor(sourcePath);
       final bounded = _hasBoundedContract(sourcePath, source);
       final cancellable = _hasCancellationContract(sourcePath, source);
-      final regressionCount = Directory(
-        _path(repositoryRoot, scope.regressionFixtureRoot),
-      )
-          .listSync(recursive: true, followLinks: false)
-          .whereType<File>()
-          .where((file) => file.path.endsWith('.json'))
-          .length;
-      final mutationInScope = scope.mutationCommand.isNotEmpty &&
+      final regressionCount =
+          Directory(_path(repositoryRoot, scope.regressionFixtureRoot))
+              .listSync(recursive: true, followLinks: false)
+              .whereType<File>()
+              .where((file) => file.path.endsWith('.json'))
+              .length;
+      final mutationInScope =
+          scope.mutationCommand.isNotEmpty &&
           role != 'model' &&
           role != 'registry' &&
           scope.id != 'cross-family' &&
@@ -288,10 +289,10 @@ final class RepositoryAlgorithmInventory {
           'rationale': mutationInScope
               ? scope.mutationRationale
               : scope.id == 'cross-family'
-                  ? scope.mutationRationale
-                  : _requiresConsumerMutationEvidence(sourcePath)
-                      ? 'No dedicated mutation seam targets this adapter or orchestration boundary; direct production invariant tests are the honest evidence.'
-                      : 'Data-model or registration glue is covered through consumer mutations and invariant tests.',
+              ? scope.mutationRationale
+              : _requiresConsumerMutationEvidence(sourcePath)
+              ? 'No dedicated mutation seam targets this adapter or orchestration boundary; direct production invariant tests are the honest evidence.'
+              : 'Data-model or registration glue is covered through consumer mutations and invariant tests.',
         },
         'propertyEvidence': scope.propertyEvidence,
         'regressions': {
@@ -304,10 +305,15 @@ final class RepositoryAlgorithmInventory {
         'sourcePath': sourcePath,
       });
     }
-    entries.sort((left, right) =>
-        (left['id']! as String).compareTo(right['id']! as String));
-    exclusions.sort((left, right) => (left['sourcePath']! as String)
-        .compareTo(right['sourcePath']! as String));
+    entries.sort(
+      (left, right) =>
+          (left['id']! as String).compareTo(right['id']! as String),
+    );
+    exclusions.sort(
+      (left, right) => (left['sourcePath']! as String).compareTo(
+        right['sourcePath']! as String,
+      ),
+    );
     return RepositoryAlgorithmInventory(
       entries: entries,
       exclusions: exclusions,
@@ -315,29 +321,28 @@ final class RepositoryAlgorithmInventory {
   }
 
   Map<String, Object?> toJson() => {
-        'entries': entries,
-        'exclusions': exclusions,
-        'generatedBy': 'tool/build_repository_algorithm_inventory.dart',
-        'ownershipScopes': repositoryAlgorithmOwnershipScopes
-            .map((scope) => scope.toJson())
-            .toList(),
-        'remotelyVerified': false,
-        'schema': repositoryAlgorithmInventorySchema,
-        'summary': {
-          'entries': entries.length,
-          'excludedSupportFiles': exclusions.length,
-          'issues': {
-            for (final issue
-                in repositoryAlgorithmOwnershipScopes
-                    .map((scope) => scope.issue)
-                    .toSet()
-                    .toList()
-                  ..sort())
-              '$issue':
-                  entries.where((entry) => entry['issue'] == issue).length,
-          },
-        },
-      };
+    'entries': entries,
+    'exclusions': exclusions,
+    'generatedBy': 'tool/build_repository_algorithm_inventory.dart',
+    'ownershipScopes': repositoryAlgorithmOwnershipScopes
+        .map((scope) => scope.toJson())
+        .toList(),
+    'remotelyVerified': false,
+    'schema': repositoryAlgorithmInventorySchema,
+    'summary': {
+      'entries': entries.length,
+      'excludedSupportFiles': exclusions.length,
+      'issues': {
+        for (final issue
+            in repositoryAlgorithmOwnershipScopes
+                .map((scope) => scope.issue)
+                .toSet()
+                .toList()
+              ..sort())
+          '$issue': entries.where((entry) => entry['issue'] == issue).length,
+      },
+    },
+  };
 
   List<String> validate(Directory repositoryRoot) {
     final issues = <String>[];
@@ -345,8 +350,9 @@ final class RepositoryAlgorithmInventory {
     final sources = <String>{};
     final reachableByScope = <String, Set<String>>{};
     for (final scope in repositoryAlgorithmOwnershipScopes) {
-      if (!Directory(_path(repositoryRoot, scope.regressionFixtureRoot))
-          .existsSync()) {
+      if (!Directory(
+        _path(repositoryRoot, scope.regressionFixtureRoot),
+      ).existsSync()) {
         issues.add('${scope.id}: regression fixture root is missing.');
       }
       final roots = _expandEvidenceRoots(repositoryRoot, scope.evidenceRoots);
@@ -402,17 +408,20 @@ final class RepositoryAlgorithmInventory {
           '$id: ${scope.evidenceCommand} does not import the production source.',
         );
       }
-      final referencePaths = (reachableByScope[scope.id] ?? const <String>{})
-          .where((path) => path != sourcePath)
-          .where((path) {
-        final candidate = File(_path(repositoryRoot, path));
-        if (!candidate.existsSync()) return false;
-        final text = candidate.readAsStringSync();
-        return entryPoints.any(
-          (symbol) => RegExp('\\b${RegExp.escape(symbol)}\\b').hasMatch(text),
-        );
-      }).toList()
-        ..sort();
+      final referencePaths =
+          (reachableByScope[scope.id] ?? const <String>{})
+              .where((path) => path != sourcePath)
+              .where((path) {
+                final candidate = File(_path(repositoryRoot, path));
+                if (!candidate.existsSync()) return false;
+                final text = candidate.readAsStringSync();
+                return entryPoints.any(
+                  (symbol) =>
+                      RegExp('\\b${RegExp.escape(symbol)}\\b').hasMatch(text),
+                );
+              })
+              .toList()
+            ..sort();
       if (referencePaths.isEmpty) {
         issues.add(
           '$id: the executable evidence graph imports the source but references '
@@ -498,11 +507,11 @@ AlgorithmOwnershipScope? _scopeForPath(String path) {
           'lib/presentation/unrestricted_grammar/unrestricted_grammar_editor_controller.dart') {
     scopeId = 'grammar';
   } else if (path ==
-      'lib/presentation/widgets/language_comparison_controller.dart') {
+      'lib/presentation/widgets/language_comparison/language_comparison_controller.dart') {
     scopeId = 'regular';
-  } else if (path == 'lib/presentation/widgets/tm_algorithm_runner.dart' ||
+  } else if (path == 'lib/presentation/widgets/tm/tm_algorithm_runner.dart' ||
       path ==
-          'lib/presentation/widgets/tm_algorithm_execution_controller.dart') {
+          'lib/presentation/widgets/tm/tm_algorithm_execution_controller.dart') {
     scopeId = 'tm';
   } else if (path.startsWith('lib/core/manual_conversions/')) {
     scopeId = 'regular';
@@ -560,7 +569,9 @@ AlgorithmOwnershipScope? _scopeForPath(String path) {
 List<String> _publicSymbols(String source) {
   final symbols = <String>{};
   final declarations = RegExp(
-    r'^(?:(?:abstract|base|final|interface|sealed)\s+)*(?:class|enum|mixin|extension)\s+([A-Za-z]\w*)',
+    // `mixin` is also a modifier (`abstract mixin class Foo`); the lookahead
+    // stops the kind keyword from being recorded as the declaration name.
+    r'^(?:(?:abstract|base|final|interface|sealed|mixin)\s+)*(?:class|enum|mixin|extension)\s+(?!(?:class|enum|mixin|extension)\b)([A-Za-z]\w*)',
     multiLine: true,
   );
   for (final match in declarations.allMatches(source)) {
@@ -605,33 +616,35 @@ String _roleFor(String path) {
   return 'algorithm';
 }
 
-bool _hasBoundedContract(String path, String source) =>
-    RegExp(r'limit|maximum|timeout|bounded|budget', caseSensitive: false)
-        .hasMatch('${path.split('/').last}\n$source');
+bool _hasBoundedContract(String path, String source) => RegExp(
+  r'limit|maximum|timeout|bounded|budget',
+  caseSensitive: false,
+).hasMatch('${path.split('/').last}\n$source');
 
-bool _hasCancellationContract(String path, String source) =>
-    RegExp(r'cancel|stale', caseSensitive: false)
-        .hasMatch('${path.split('/').last}\n$source');
+bool _hasCancellationContract(String path, String source) => RegExp(
+  r'cancel|stale',
+  caseSensitive: false,
+).hasMatch('${path.split('/').last}\n$source');
 
 bool _requiresConsumerMutationEvidence(String path) => const {
-      'lib/core/models/fsa_computation_branch_adapter.dart',
-      'lib/core/models/serialized_state_resolver.dart',
-      'lib/core/services/algorithm_step_highlight_extractor.dart',
-      'lib/core/services/algorithm_step_highlight_service.dart',
-      'lib/core/services/automaton_diagnostic_highlight_service.dart',
-      'lib/core/services/canvas_highlight_coordinator.dart',
-      'lib/core/services/highlight_channel.dart',
-      'lib/core/services/simulation_highlight_service.dart',
-      'lib/presentation/l_systems/l_system_editor_controller.dart',
-      'lib/presentation/transducers/graphview_transducer_canvas_controller.dart',
-      'lib/presentation/transducers/mealy_document_adapter.dart',
-      'lib/presentation/transducers/moore_document_adapter.dart',
-      'lib/presentation/unrestricted_grammar/unrestricted_grammar_editor_controller.dart',
-      'lib/presentation/widgets/algorithm_step_renderer_registry.dart',
-      'lib/presentation/widgets/language_comparison_controller.dart',
-      'lib/presentation/widgets/tm_algorithm_execution_controller.dart',
-      'lib/presentation/widgets/tm_algorithm_runner.dart',
-    }.contains(path);
+  'lib/core/models/fsa_computation_branch_adapter.dart',
+  'lib/core/models/serialized_state_resolver.dart',
+  'lib/core/services/algorithm_step_highlight_extractor.dart',
+  'lib/core/services/algorithm_step_highlight_service.dart',
+  'lib/core/services/automaton_diagnostic_highlight_service.dart',
+  'lib/core/services/canvas_highlight_coordinator.dart',
+  'lib/core/services/highlight_channel.dart',
+  'lib/core/services/simulation_highlight_service.dart',
+  'lib/presentation/l_systems/l_system_editor_controller.dart',
+  'lib/presentation/transducers/graphview_transducer_canvas_controller.dart',
+  'lib/presentation/transducers/mealy_document_adapter.dart',
+  'lib/presentation/transducers/moore_document_adapter.dart',
+  'lib/presentation/unrestricted_grammar/unrestricted_grammar_editor_controller.dart',
+  'lib/presentation/widgets/algorithm_step_renderer_registry.dart',
+  'lib/presentation/widgets/language_comparison/language_comparison_controller.dart',
+  'lib/presentation/widgets/tm/tm_algorithm_execution_controller.dart',
+  'lib/presentation/widgets/tm/tm_algorithm_runner.dart',
+}.contains(path);
 
 List<String> _expandEvidenceRoots(
   Directory repositoryRoot,

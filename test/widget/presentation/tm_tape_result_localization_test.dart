@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/tm_tape_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_tape_result_view.dart';
 
 void main() {
   for (final scenario in const [

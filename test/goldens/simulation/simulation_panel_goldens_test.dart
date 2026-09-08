@@ -62,9 +62,13 @@ Future<void> _pumpSimulationPanel(
         ),
       ),
     ),
+    surfaceSize: size,
   );
 
   await tester.pumpAndSettle();
+  expect(tester.getSize(find.byType(Scaffold)), size);
+  expect(tester.takeException(), isNull);
+  expect(find.byType(ErrorWidget), findsNothing);
 }
 
 void _invokeEnabledNextStep(WidgetTester tester) {
@@ -247,6 +251,11 @@ void main() {
       await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
+      final stepDetails = find.text('Step 1');
+      await tester.ensureVisible(stepDetails);
+      await tester.pumpAndSettle();
+      expect(stepDetails.hitTestable(), findsOneWidget);
+
       await screenMatchesGolden(tester, 'simulation_panel_step_mode_first');
     });
 
@@ -293,6 +302,11 @@ void main() {
       // Go to next step
       _invokeEnabledNextStep(tester);
       await tester.pumpAndSettle();
+
+      final stepDetails = find.text('Step 2');
+      await tester.ensureVisible(stepDetails);
+      await tester.pumpAndSettle();
+      expect(stepDetails.hitTestable(), findsOneWidget);
 
       await screenMatchesGolden(tester, 'simulation_panel_step_mode_middle');
     });
@@ -342,6 +356,11 @@ void main() {
       await tester.pumpAndSettle();
       _invokeEnabledNextStep(tester);
       await tester.pumpAndSettle();
+
+      final stepDetails = find.text('Step 3');
+      await tester.ensureVisible(stepDetails);
+      await tester.pumpAndSettle();
+      expect(stepDetails.hitTestable(), findsOneWidget);
 
       await screenMatchesGolden(tester, 'simulation_panel_step_mode_final');
     });

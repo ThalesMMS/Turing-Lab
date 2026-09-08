@@ -19,7 +19,7 @@ import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_re
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
-import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_drawer.dart';
 import 'package:turing_lab/presentation/widgets/pda/stack_operation_preview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/pda_transition_editor.dart';
@@ -415,13 +415,17 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.widgetWithText(TextField, 'a'), 'b');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'S_0 Z'),
+        'S_0 S_0 Z',
+      );
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
       final transition = notifier.state.pda!.pdaTransitions.single;
       expect(transition.inputSymbol, 'b');
-      expect(transition.pushSymbol, 'S_0Z');
-      expect(transition.pushSymbols, ['S_0', 'Z']);
+      expect(transition.pushSymbol, 'S_0S_0Z');
+      expect(transition.pushSymbols, ['S_0', 'S_0', 'Z']);
       expect(notifier.state.pda!.validate(), isEmpty);
     });
 

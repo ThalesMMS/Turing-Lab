@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 

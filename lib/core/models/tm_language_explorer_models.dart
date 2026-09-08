@@ -25,11 +25,13 @@ class TMLanguageExplorerLimits {
 class TMLanguageWordResult {
   const TMLanguageWordResult({
     required this.input,
+    this.inputTokens,
     required this.outcome,
     required this.analysis,
   });
 
   final String input;
+  final List<String>? inputTokens;
   final TMLanguageOutcome outcome;
   final TMExecutionAnalysis analysis;
 }
@@ -63,8 +65,8 @@ class TMLanguageExplorerReport {
     required this.cancelled,
     required this.truncatedByCandidateCap,
     required this.executionTime,
-  })  : alphabet = List.unmodifiable(alphabet),
-        results = List.unmodifiable(results);
+  }) : alphabet = List.unmodifiable(alphabet),
+       results = List.unmodifiable(results);
 
   final TMLanguageExplorerLimits limits;
   final List<String> alphabet;
@@ -86,9 +88,7 @@ class TMLanguageExplorerReport {
   bool get isPartial =>
       cancelled ||
       truncatedByCandidateCap ||
-      results.any(
-        (result) => result.outcome == TMLanguageOutcome.inconclusive,
-      );
+      results.any((result) => result.outcome == TMLanguageOutcome.inconclusive);
 }
 
 class TMLanguageExplorerCancellationToken {

@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/dfa_minimizer.dart';
-import 'package:turing_lab/core/algorithms/dfa_minimizer_messages.dart';
-import 'package:turing_lab/core/algorithms/dfa_operations.dart';
-import 'package:turing_lab/core/algorithms/dfa_operations_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_minimizer.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_minimizer_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_operations.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_operations_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';

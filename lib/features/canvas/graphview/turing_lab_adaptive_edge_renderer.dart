@@ -115,6 +115,27 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   final Map<Edge, TuringLabEdgeRenderGeometry> _automaticRouteGeometry =
       <Edge, TuringLabEdgeRenderGeometry>{};
 
+  /// Render cycles whose automatic route geometry was served from the cache
+  /// because neither structure nor node geometry changed (#434).
+  int debugRouteCacheHits = 0;
+
+  /// Render cycles that replanned at least one route group.
+  int debugRouteLayoutRuns = 0;
+
+  /// Cumulative number of route groups replanned across all cycles.
+  int debugRouteGroupsPlanned = 0;
+
+  /// Render cycles that replanned every group because the edge structure or
+  /// the render mode changed.
+  int debugRouteFullReplans = 0;
+
+  void debugResetRouteCounters() {
+    debugRouteCacheHits = 0;
+    debugRouteLayoutRuns = 0;
+    debugRouteGroupsPlanned = 0;
+    debugRouteFullReplans = 0;
+  }
+
   /// Last outward direction chosen per self-loop route group, kept across
   /// cache clears so a replan slides the loop from where it already is
   /// instead of re-deriving it and jumping.
@@ -154,7 +175,12 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       // GraphView re-derives its visible graph on every rebuild, handing us a
       // new container that holds the exact same node and edge instances.
       // Keeping the cached routes prevents a full (order-sensitive) replan
-      // that makes edges flicker on unrelated rebuilds.
+      // that makes edges flicker on unrelated rebuilds. The grouped-edge and
+      // opposing-traffic caches are also content-derived, so they follow the
+      // new container instead of being rebuilt on every viewport frame.
+      if (_edgeCacheGraph != null && !_edgeCachesDirty) {
+        _edgeCacheGraph = graph;
+      }
       return;
     }
     _invalidateEdgeCaches();
@@ -209,16 +235,14 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
   }) {
     final labelStyleChanged =
         this.baseColor != baseColor || this.highlightColor != highlightColor;
-    final labelLayoutChanged = !setEquals(
-      _selectedEdgeIds,
-      selectedEdgeIds,
-    );
+    final labelLayoutChanged = !setEquals(_selectedEdgeIds, selectedEdgeIds);
     _highlightedEdgeIds = Set<String>.from(highlightedEdgeIds);
     _selectedEdgeIds = Set<String>.from(selectedEdgeIds);
     this.baseColor = baseColor;
     this.highlightColor = highlightColor;
     this.labelSurfaceColor = labelSurfaceColor;
-    final fontChanged = this.labelFontFamily != labelFontFamily ||
+    final fontChanged =
+        this.labelFontFamily != labelFontFamily ||
         !listEquals(this.labelFontFamilyFallback, labelFontFamilyFallback);
     this.labelFontFamily = labelFontFamily;
     this.labelFontFamilyFallback = labelFontFamilyFallback;
@@ -239,14 +263,32 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
 
   @override
   void prepareForRenderCycle() {
+    final base = Stopwatch()..start();
     super.prepareForRenderCycle();
+    debugLastCyclePhaseMicros['base'] = base.elapsedMicroseconds;
+    final phase = Stopwatch()..start();
     _ensureEdgeCaches();
+    debugLastCyclePhaseMicros['edgeCaches'] = phase.elapsedMicroseconds;
+    phase.reset();
     _ensureAutomaticRouteGeometry();
+    debugLastCyclePhaseMicros['routes'] = phase.elapsedMicroseconds;
+    phase.reset();
     _ensureStandardLabelRects();
     _ensureGroupedLabelRects();
+    debugLastCyclePhaseMicros['labels'] = phase.elapsedMicroseconds;
+    phase.reset();
     _pruneCachedLabelPainters();
     _usedLabelPaintersInRenderCycle.clear();
+    debugLastCyclePhaseMicros['prune'] = phase.elapsedMicroseconds;
   }
+
+  /// Microseconds spent by each phase of the last [prepareForRenderCycle]
+  /// (`edgeCaches`, `routes`, `labels`, `prune`), for benchmarks (#434).
+  final Map<String, int> debugLastCyclePhaseMicros = <String, int>{};
+
+  /// Microseconds spent by each sub-phase of the last route layout run
+  /// (`groups`, `affected`, `requests`, `plan`, `geometry`), for #434.
+  final Map<String, int> debugLastRoutePhaseMicros = <String, int>{};
 
   /// Tells the renderer which states show the initial-state marker.
   void updateInitialStateIds(Set<String> initialStateIds) {
@@ -290,8 +332,8 @@ class TuringLabAdaptiveEdgeRenderer extends AnimatedAdaptiveEdgeRenderer {
       return;
     }
     for (final edge in _automaticRouteGeometry.keys.toList(growable: false)) {
-      _automaticRouteGeometry[edge] =
-          _automaticRouteGeometry[edge]!.withLabelRect(null);
+      _automaticRouteGeometry[edge] = _automaticRouteGeometry[edge]!
+          .withLabelRect(null);
     }
   }
 

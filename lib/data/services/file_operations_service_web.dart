@@ -21,6 +21,7 @@ import '../../core/interoperability/interoperability.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';
+import '../../core/models/tm.dart';
 import '../../core/result.dart';
 import '../../core/services/file_operations_gateway.dart';
 import '../../presentation/widgets/export/svg_exporter.dart';
@@ -51,6 +52,32 @@ class FileOperationsService
   @override
   Future<Result<Uint8List>> exportAutomatonToPngBytes(
     FSA automaton, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    return fileOperationFailure<Uint8List>(
+      'web-unsupported',
+      operation: 'exportPng',
+    );
+  }
+
+  @override
+  Future<Result<Uint8List>> exportPdaToPngBytes(
+    PDA pda, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    return fileOperationFailure<Uint8List>(
+      'web-unsupported',
+      operation: 'exportPng',
+    );
+  }
+
+  @override
+  Future<Result<Uint8List>> exportTuringMachineToPngBytes(
+    TM machine, {
     String emptyStringSymbol = 'ε',
     bool includeAnnotations = false,
     DocumentAnnotationCollection? annotations,

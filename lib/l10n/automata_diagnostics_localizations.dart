@@ -1,7 +1,7 @@
 import '../core/models/computation_branch.dart';
 import '../core/models/language_comparison_outcome.dart';
 import '../presentation/widgets/computation_branch_inspector.dart';
-import '../presentation/widgets/language_comparison_step_view_model.dart';
+import '../presentation/widgets/language_comparison/language_comparison_step_view_model.dart';
 import 'app_localizations.dart';
 
 /// Typed localized copy for automata diagnostics and language comparison.

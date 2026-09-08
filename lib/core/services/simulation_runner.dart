@@ -1,17 +1,18 @@
-import '../algorithms/pda_simulator.dart';
-import '../algorithms/tm_simulator.dart';
+import '../algorithms/pda/pda_simulator.dart';
+import '../algorithms/tm/tm_simulator.dart';
 import '../models/pda.dart';
 import '../models/tm.dart';
 import 'simulation_runner_backend_stub.dart'
     if (dart.library.io) 'simulation_runner_backend_native.dart'
-    if (dart.library.html) 'simulation_runner_backend_web.dart' as backend;
+    if (dart.library.html) 'simulation_runner_backend_web.dart'
+    as backend;
 import 'simulation_runner_models.dart';
 
 export 'simulation_runner_models.dart';
 
 class SimulationRunner {
   SimulationRunner({SimulationRunnerBackend? backendOverride})
-      : _backend = backendOverride ?? backend.createSimulationRunnerBackend();
+    : _backend = backendOverride ?? backend.createSimulationRunnerBackend();
 
   final SimulationRunnerBackend _backend;
 

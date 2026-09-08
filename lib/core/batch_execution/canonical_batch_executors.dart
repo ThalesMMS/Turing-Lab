@@ -2,14 +2,14 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
-import '../algorithms/automaton_simulator.dart';
-import '../algorithms/brute_force_cfg_parser.dart';
-import '../algorithms/grammar_parser.dart';
-import '../algorithms/grammar_input_tokenizer.dart';
-import '../algorithms/pda_simulator.dart';
-import '../algorithms/regex_to_nfa_converter.dart';
-import '../algorithms/tm_block_execution_engine.dart';
-import '../algorithms/tm_execution_analyzer.dart';
+import '../algorithms/fsa/automaton_simulator.dart';
+import '../algorithms/grammar/brute_force_cfg_parser.dart';
+import '../algorithms/grammar/grammar_parser.dart';
+import '../algorithms/grammar/grammar_input_tokenizer.dart';
+import '../algorithms/pda/pda_simulator.dart';
+import '../algorithms/regex/regex_to_nfa_converter.dart';
+import '../algorithms/tm/tm_block_execution_engine.dart';
+import '../algorithms/tm/tm_execution_analyzer.dart';
 import '../models/brute_force_parse_models.dart';
 import '../models/fsa.dart';
 import '../models/grammar.dart';

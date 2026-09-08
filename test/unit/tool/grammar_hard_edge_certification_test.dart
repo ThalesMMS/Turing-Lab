@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:turing_lab/core/algorithms/cfg/cfg_toolkit.dart';
 import 'package:turing_lab/core/algorithms/cfg/cyk_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_cnf_transformer.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_earley.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_cnf_transformer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_earley.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_simple_recursive.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -101,136 +101,149 @@ void main() {
       expect(report.toJson()['status'], 'incomplete');
     });
 
-    test('central adapter materializes seed and preserves typed outcomes',
-        () async {
-      const executor = GrammarHardEdgePropertyExecutor();
-      final conflict = grammarHardEdgeDescriptors.singleWhere(
-        (item) => item.caseId == 'analysis-conflicts',
-      );
-      final bounded = grammarHardEdgeDescriptors.singleWhere(
-        (item) => item.caseId == 'parser-bounds',
-      );
-      final parser = grammarHardEdgeDescriptors.singleWhere(
-        (item) => item.caseId == 'parser-recursive-descent-identifier',
-      );
-      final replayShrink = grammarHardEdgeDescriptors.singleWhere(
-        (item) => item.caseId == 'parser-replay-shrink-fixture',
-      );
+    test(
+      'central adapter materializes seed and preserves typed outcomes',
+      () async {
+        const executor = GrammarHardEdgePropertyExecutor();
+        final conflict = grammarHardEdgeDescriptors.singleWhere(
+          (item) => item.caseId == 'analysis-conflicts',
+        );
+        final bounded = grammarHardEdgeDescriptors.singleWhere(
+          (item) => item.caseId == 'parser-bounds',
+        );
+        final parser = grammarHardEdgeDescriptors.singleWhere(
+          (item) => item.caseId == 'parser-recursive-descent-identifier',
+        );
+        final replayShrink = grammarHardEdgeDescriptors.singleWhere(
+          (item) => item.caseId == 'parser-replay-shrink-fixture',
+        );
 
-      expect(
-        await executor.execute(
-            _catalogCase(conflict), conflict.fixture(seed: 336)),
-        HardEdgeExecutionOutcome.conflict,
-      );
-      expect(
-        await executor.execute(
-            _catalogCase(bounded), bounded.fixture(seed: 336)),
-        HardEdgeExecutionOutcome.pass,
-      );
-      expect(
-        await executor.execute(_catalogCase(parser), parser.fixture(seed: 336)),
-        HardEdgeExecutionOutcome.pass,
-      );
-      final materialized = await executor.materialize(
-        _catalogCase(parser),
-        parser.fixture(seed: 336),
-        991,
-      ) as Map;
-      expect(materialized['seed'], 991);
-      expect(materialized['expectedInternalOutcome'], 'accepted');
-
-      final inconsistent = Map<String, Object?>.from(parser.fixture(seed: 336))
-        ..['expectedInternalOutcome'] = 'rejected';
-      expect(
-        await executor.execute(_catalogCase(parser), inconsistent),
-        HardEdgeExecutionOutcome.violation,
-      );
-
-      final replayFixture = replayShrink.fixture(seed: 336);
-      final counterexample = replayFixture['counterexample']! as Map;
-      expect(counterexample['input'], 'id+id');
-      expect(counterexample['grammar'], isA<Map>());
-      expect(grammarFailureFixtureIsValid(replayFixture), isTrue);
-      expect(grammarFailureFixtureIsApplicable(replayFixture), isTrue);
-      expect(
-        await executor.execute(
-          _catalogCase(replayShrink),
-          replayFixture,
-        ),
-        HardEdgeExecutionOutcome.pass,
-      );
-      final candidates = const GrammarFailureFixtureShrinker()
-          .candidates(replayFixture)
-          .toList();
-      expect(candidates, isNotEmpty);
-      expect(candidates.every(grammarFailureFixtureIsValid), isTrue);
-      expect(candidates.any(grammarFailureFixtureIsApplicable), isTrue);
-      expect(candidates.any((item) => !grammarFailureFixtureIsApplicable(item)),
-          isTrue);
-
-      for (final descriptor in grammarHardEdgeDescriptors) {
-        final fixture = descriptor.fixture(seed: 336);
         expect(
-          grammarFailureFixtureIsValid(fixture),
-          isTrue,
-          reason: '${descriptor.caseId} must be a valid shrink artifact',
+          await executor.execute(
+            _catalogCase(conflict),
+            conflict.fixture(seed: 336),
+          ),
+          HardEdgeExecutionOutcome.conflict,
         );
         expect(
-          grammarFailureFixtureIsApplicable(fixture),
-          isTrue,
-          reason: '${descriptor.caseId} must be applicable to its domain',
+          await executor.execute(
+            _catalogCase(bounded),
+            bounded.fixture(seed: 336),
+          ),
+          HardEdgeExecutionOutcome.pass,
         );
-        if (!fixture.containsKey('counterexample')) {
+        expect(
+          await executor.execute(
+            _catalogCase(parser),
+            parser.fixture(seed: 336),
+          ),
+          HardEdgeExecutionOutcome.pass,
+        );
+        final materialized =
+            await executor.materialize(
+                  _catalogCase(parser),
+                  parser.fixture(seed: 336),
+                  991,
+                )
+                as Map;
+        expect(materialized['seed'], 991);
+        expect(materialized['expectedInternalOutcome'], 'accepted');
+
+        final inconsistent = Map<String, Object?>.from(
+          parser.fixture(seed: 336),
+        )..['expectedInternalOutcome'] = 'rejected';
+        expect(
+          await executor.execute(_catalogCase(parser), inconsistent),
+          HardEdgeExecutionOutcome.violation,
+        );
+
+        final replayFixture = replayShrink.fixture(seed: 336);
+        final counterexample = replayFixture['counterexample']! as Map;
+        expect(counterexample['input'], 'id+id');
+        expect(counterexample['grammar'], isA<Map>());
+        expect(grammarFailureFixtureIsValid(replayFixture), isTrue);
+        expect(grammarFailureFixtureIsApplicable(replayFixture), isTrue);
+        expect(
+          await executor.execute(_catalogCase(replayShrink), replayFixture),
+          HardEdgeExecutionOutcome.pass,
+        );
+        final candidates = const GrammarFailureFixtureShrinker()
+            .candidates(replayFixture)
+            .toList();
+        expect(candidates, isNotEmpty);
+        expect(candidates.every(grammarFailureFixtureIsValid), isTrue);
+        expect(candidates.any(grammarFailureFixtureIsApplicable), isTrue);
+        expect(
+          candidates.any((item) => !grammarFailureFixtureIsApplicable(item)),
+          isTrue,
+        );
+
+        for (final descriptor in grammarHardEdgeDescriptors) {
+          final fixture = descriptor.fixture(seed: 336);
           expect(
-            const GrammarFailureFixtureShrinker().candidates(fixture),
-            isEmpty,
-            reason: '${descriptor.caseId} is already a minimal fixed fixture',
+            grammarFailureFixtureIsValid(fixture),
+            isTrue,
+            reason: '${descriptor.caseId} must be a valid shrink artifact',
           );
+          expect(
+            grammarFailureFixtureIsApplicable(fixture),
+            isTrue,
+            reason: '${descriptor.caseId} must be applicable to its domain',
+          );
+          if (!fixture.containsKey('counterexample')) {
+            expect(
+              const GrammarFailureFixtureShrinker().candidates(fixture),
+              isEmpty,
+              reason: '${descriptor.caseId} is already a minimal fixed fixture',
+            );
+          }
         }
-      }
-    });
+      },
+    );
 
-    test('central shrink preserves valid fixed grammar failure artifacts',
-        () async {
-      final root = await Directory.systemTemp.createTemp('grammar-shrink-');
-      addTearDown(() => root.delete(recursive: true));
-      final descriptor = grammarHardEdgeDescriptors.singleWhere(
-        (item) => item.caseId == 'parser-cyk-steps-typed',
-      );
-      final fixture = descriptor.fixture(seed: 336);
-      final failureFile = File(
-        '${root.path}${Platform.pathSeparator}failure.json',
-      );
-      await failureFile.writeAsString(
-        canonicalJsonEncode(
-          HardEdgeFailureArtifact(
-            testCase: _catalogCase(
-              descriptor,
-              sha256: hardEdgeSha256(
-                utf8.encode(canonicalJsonEncode(fixture)),
+    test(
+      'central shrink preserves valid fixed grammar failure artifacts',
+      () async {
+        final root = await Directory.systemTemp.createTemp('grammar-shrink-');
+        addTearDown(() => root.delete(recursive: true));
+        final descriptor = grammarHardEdgeDescriptors.singleWhere(
+          (item) => item.caseId == 'parser-cyk-steps-typed',
+        );
+        final fixture = descriptor.fixture(seed: 336);
+        final failureFile = File(
+          '${root.path}${Platform.pathSeparator}failure.json',
+        );
+        await failureFile.writeAsString(
+          canonicalJsonEncode(
+            HardEdgeFailureArtifact(
+              testCase: _catalogCase(
+                descriptor,
+                sha256: hardEdgeSha256(
+                  utf8.encode(canonicalJsonEncode(fixture)),
+                ),
               ),
-            ),
-            fixture: fixture,
-            minimalFixture: null,
-            minimized: false,
-          ).toJson(),
-        ),
-      );
+              fixture: fixture,
+              minimalFixture: null,
+              minimized: false,
+            ).toJson(),
+          ),
+        );
 
-      final output = await shrinkFailureArtifact(
-        repositoryRoot: root,
-        failureFile: failureFile,
-        outputPath: 'minimized.json',
-        executor: const _AlwaysViolatingExecutor(),
-        shrinker: const GrammarFailureFixtureShrinker(),
-        isValid: grammarFailureFixtureIsValid,
-        isApplicable: grammarFailureFixtureIsApplicable,
-      );
-      final minimized = await readFailureArtifact(output);
+        final output = await shrinkFailureArtifact(
+          repositoryRoot: root,
+          failureFile: failureFile,
+          outputPath: 'minimized.json',
+          executor: const _AlwaysViolatingExecutor(),
+          shrinker: const GrammarFailureFixtureShrinker(),
+          isValid: grammarFailureFixtureIsValid,
+          isApplicable: grammarFailureFixtureIsApplicable,
+        );
+        final minimized = await readFailureArtifact(output);
 
-      expect(minimized.minimized, isTrue);
-      expect(minimized.fixture, fixture);
-    });
+        expect(minimized.minimized, isTrue);
+        expect(minimized.fixture, fixture);
+      },
+    );
 
     test('matrix exercises every public parser and hint limit class', () async {
       final report = await GrammarFamilyCertification.run(
@@ -265,24 +278,22 @@ void main() {
       expect(boundsEvidence['lr1ParseSteps'], 'resourceLimit');
       expect(boundsEvidence['hint'], 'boundedUnknown');
       expect(boundsEvidence['hintLimit'], 'depth');
-      expect(
-        boundsEvidence['bruteLimits'],
-        {
-          'depth': 'boundedUnknown',
-          'exploredNodes': 'boundedUnknown',
-          'frontier': 'boundedUnknown',
-          'retainedStates': 'boundedUnknown',
-          'symbolCount': 'boundedUnknown',
-          'time': 'boundedUnknown',
-        },
-      );
+      expect(boundsEvidence['bruteLimits'], {
+        'depth': 'boundedUnknown',
+        'exploredNodes': 'boundedUnknown',
+        'frontier': 'boundedUnknown',
+        'retainedStates': 'boundedUnknown',
+        'symbolCount': 'boundedUnknown',
+        'time': 'boundedUnknown',
+      });
     });
 
     test('shared runner treats typed limit meta-tests as passed', () async {
       final root = await Directory.systemTemp.createTemp('grammar-runner-');
       addTearDown(() => root.delete(recursive: true));
-      await File('${root.path}${Platform.pathSeparator}LICENSE.txt')
-          .writeAsString('Apache License 2.0 test basis.\n');
+      await File(
+        '${root.path}${Platform.pathSeparator}LICENSE.txt',
+      ).writeAsString('Apache License 2.0 test basis.\n');
       final descriptors = [
         for (final id in const [
           'parser-cancellation',
@@ -296,15 +307,19 @@ void main() {
       final cases = <HardEdgeCatalogCase>[];
       for (var index = 0; index < descriptors.length; index++) {
         final relative = 'fixture-$index.json';
-        final fixtureSource =
-            canonicalJsonEncode(descriptors[index].fixture(seed: 336));
-        await File('${root.path}${Platform.pathSeparator}$relative')
-            .writeAsString(fixtureSource);
-        cases.add(_catalogCase(
-          descriptors[index],
-          fixture: relative,
-          sha256: hardEdgeSha256(utf8.encode(fixtureSource)),
-        ));
+        final fixtureSource = canonicalJsonEncode(
+          descriptors[index].fixture(seed: 336),
+        );
+        await File(
+          '${root.path}${Platform.pathSeparator}$relative',
+        ).writeAsString(fixtureSource);
+        cases.add(
+          _catalogCase(
+            descriptors[index],
+            fixture: relative,
+            sha256: hardEdgeSha256(utf8.encode(fixtureSource)),
+          ),
+        );
       }
       final manifest = HardEdgeManifest(
         schemaVersion: 1,
@@ -312,31 +327,32 @@ void main() {
         cases: cases,
         mutations: const [],
       );
-      final manifestFile =
-          File('${root.path}${Platform.pathSeparator}manifest.json');
+      final manifestFile = File(
+        '${root.path}${Platform.pathSeparator}manifest.json',
+      );
       await manifestFile.writeAsString(
-        '${const JsonEncoder.withIndent('  ').convert(
-          jsonDecode(canonicalJsonEncode(manifest.toJson())),
-        )}\n',
+        '${const JsonEncoder.withIndent('  ').convert(jsonDecode(canonicalJsonEncode(manifest.toJson())))}\n',
       );
       final catalog = await HardEdgeCatalog.load(
         repositoryRoot: root,
         manifestFile: manifestFile,
       );
       expect(catalog.manifest.cases, hasLength(descriptors.length));
-      expect(
-        catalog.manifest.cases.map((item) => item.license).toSet(),
-        {'Apache-2.0'},
-      );
+      expect(catalog.manifest.cases.map((item) => item.license).toSet(), {
+        'Apache-2.0',
+      });
 
-      final result = await HardEdgeRunner(
-        catalog: catalog,
-        executor: const GrammarHardEdgePropertyExecutor(),
-      ).run(const HardEdgeRunOptions(
-        family: 'grammar',
-        jobs: 2,
-        caseTimeout: Duration(seconds: 5),
-      ));
+      final result =
+          await HardEdgeRunner(
+            catalog: catalog,
+            executor: const GrammarHardEdgePropertyExecutor(),
+          ).run(
+            const HardEdgeRunOptions(
+              family: 'grammar',
+              jobs: 2,
+              caseTimeout: Duration(seconds: 5),
+            ),
+          );
 
       expect(result.status, HardEdgeRunStatus.passed);
       expect(
@@ -464,8 +480,10 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(CFGToolkit.isCNF(result.data!), isTrue);
-      expect(result.data!.terminals.intersection(result.data!.nonterminals),
-          isEmpty);
+      expect(
+        result.data!.terminals.intersection(result.data!.nonterminals),
+        isEmpty,
+      );
       expect(
         EarleyRecognizer(result.data!).recognizeWithReport('aab').accepted,
         isTrue,
@@ -480,45 +498,50 @@ void main() {
       );
     });
 
-    test('Earley and CYK preserve malformed, tokenization, and timeout types',
-        () {
-      final malformed = _grammar(
-        id: 'empty-left-side',
-        terminals: {'a'},
-        nonterminals: {'S'},
-        start: 'S',
-        productions: {
-          const Production(id: 'bad', leftSide: [], rightSide: ['a']),
-        },
-      );
-      expect(
-        EarleyRecognizer(malformed).recognizeWithReport('a').outcome,
-        GrammarParseOutcome.invalidInput,
-      );
-      expect(
-        EarleyRecognizer(_expressionGrammar())
-            .recognizeWithReport('id', timeout: Duration.zero)
-            .outcome,
-        GrammarParseOutcome.timedOut,
-      );
-      expect(
-        CYKParser.parseWithSteps(_expressionGrammar(), '#').data!.outcome,
-        GrammarParseOutcome.tokenizationFailure,
-      );
-      expect(
-        CYKParser.parseWithSteps(
-          _expressionGrammar(),
-          'id',
-          timeout: Duration.zero,
-        ).data!.outcome,
-        GrammarParseOutcome.timedOut,
-      );
-    });
+    test(
+      'Earley and CYK preserve malformed, tokenization, and timeout types',
+      () {
+        final malformed = _grammar(
+          id: 'empty-left-side',
+          terminals: {'a'},
+          nonterminals: {'S'},
+          start: 'S',
+          productions: {
+            const Production(id: 'bad', leftSide: [], rightSide: ['a']),
+          },
+        );
+        expect(
+          EarleyRecognizer(malformed).recognizeWithReport('a').outcome,
+          GrammarParseOutcome.invalidInput,
+        );
+        expect(
+          EarleyRecognizer(
+            _expressionGrammar(),
+          ).recognizeWithReport('id', timeout: Duration.zero).outcome,
+          GrammarParseOutcome.timedOut,
+        );
+        expect(
+          CYKParser.parseWithSteps(_expressionGrammar(), '#').data!.outcome,
+          GrammarParseOutcome.tokenizationFailure,
+        );
+        expect(
+          CYKParser.parseWithSteps(
+            _expressionGrammar(),
+            'id',
+            timeout: Duration.zero,
+          ).data!.outcome,
+          GrammarParseOutcome.timedOut,
+        );
+      },
+    );
   });
 }
 
-Matcher get _isKilled => isA<GrammarMutationResult>()
-    .having((result) => result.killed, 'killed', isTrue);
+Matcher get _isKilled => isA<GrammarMutationResult>().having(
+  (result) => result.killed,
+  'killed',
+  isTrue,
+);
 
 final class _AlwaysViolatingExecutor implements HardEdgePropertyExecutor {
   const _AlwaysViolatingExecutor();
@@ -527,147 +550,133 @@ final class _AlwaysViolatingExecutor implements HardEdgePropertyExecutor {
   Future<HardEdgeExecutionOutcome> execute(
     HardEdgeCatalogCase testCase,
     Object? fixture,
-  ) async =>
-      HardEdgeExecutionOutcome.violation;
+  ) async => HardEdgeExecutionOutcome.violation;
 }
 
 HardEdgeCatalogCase _catalogCase(
   GrammarHardEdgeDescriptor descriptor, {
   String fixture = 'generated-by-family-catalog.json',
   String? sha256,
-}) =>
-    HardEdgeCatalogCase(
-      id: 'grammar-${descriptor.caseId}',
-      family: 'grammar',
-      algorithm: descriptor.algorithm,
-      sourceKind: HardEdgeSourceKind.generated,
-      seed: 336,
-      property: descriptor.property,
-      provenance: const HardEdgeProvenance(
-        origin: 'Turing Lab issue #336',
-        independentlyAuthored: true,
-        generator: grammarCertificationGeneratorVersion,
-        licenseBasis: 'LICENSE.txt',
-      ),
-      license: 'Apache-2.0',
-      regressionIssue: 336,
-      platforms: const ['all'],
-      sha256: sha256 ?? '0' * 64,
-      generatorVersion: grammarCertificationGeneratorVersion,
-      oracleVersion: grammarCertificationOracleVersion,
-      budget: const GenerationBudget(maxWordLength: 3),
-      fixture: fixture,
-      expectedOutcome: descriptor.expectedOutcome,
-      requiredTool: null,
-    );
+}) => HardEdgeCatalogCase(
+  id: 'grammar-${descriptor.caseId}',
+  family: 'grammar',
+  algorithm: descriptor.algorithm,
+  sourceKind: HardEdgeSourceKind.generated,
+  seed: 336,
+  property: descriptor.property,
+  provenance: const HardEdgeProvenance(
+    origin: 'Turing Lab issue #336',
+    independentlyAuthored: true,
+    generator: grammarCertificationGeneratorVersion,
+    licenseBasis: 'LICENSE.txt',
+  ),
+  license: 'Apache-2.0',
+  regressionIssue: 336,
+  platforms: const ['all'],
+  sha256: sha256 ?? '0' * 64,
+  generatorVersion: grammarCertificationGeneratorVersion,
+  oracleVersion: grammarCertificationOracleVersion,
+  budget: const GenerationBudget(maxWordLength: 3),
+  fixture: fixture,
+  expectedOutcome: descriptor.expectedOutcome,
+  requiredTool: null,
+);
 
 Grammar _expressionGrammar() => _grammar(
-      id: 'recursive-token-regression',
-      terminals: {'id', '+'},
-      nonterminals: {'S', 'Tail'},
-      start: 'S',
-      productions: {
-        const Production(
-          id: 's-id-tail',
-          leftSide: ['S'],
-          rightSide: ['id', 'Tail'],
-        ),
-        const Production(
-          id: 'tail-more',
-          leftSide: ['Tail'],
-          rightSide: ['+', 'id', 'Tail'],
-        ),
-        const Production(
-          id: 'tail-empty',
-          leftSide: ['Tail'],
-          rightSide: [],
-          isLambda: true,
-        ),
-      },
-    );
+  id: 'recursive-token-regression',
+  terminals: {'id', '+'},
+  nonterminals: {'S', 'Tail'},
+  start: 'S',
+  productions: {
+    const Production(
+      id: 's-id-tail',
+      leftSide: ['S'],
+      rightSide: ['id', 'Tail'],
+    ),
+    const Production(
+      id: 'tail-more',
+      leftSide: ['Tail'],
+      rightSide: ['+', 'id', 'Tail'],
+    ),
+    const Production(
+      id: 'tail-empty',
+      leftSide: ['Tail'],
+      rightSide: [],
+      isLambda: true,
+    ),
+  },
+);
 
 Grammar _nullableGrammar() => _grammar(
-      id: 'cnf-duplicate-regression',
-      terminals: {'a', 'b'},
-      nonterminals: {'S', 'A', 'B'},
-      start: 'S',
-      productions: {
-        const Production(
-          id: 's-ab',
-          leftSide: ['S'],
-          rightSide: ['A', 'B'],
-        ),
-        const Production(id: 'a-a', leftSide: ['A'], rightSide: ['a']),
-        const Production(
-          id: 'a-empty',
-          leftSide: ['A'],
-          rightSide: [],
-          isLambda: true,
-        ),
-        const Production(id: 'b-b', leftSide: ['B'], rightSide: ['b']),
-      },
-    );
+  id: 'cnf-duplicate-regression',
+  terminals: {'a', 'b'},
+  nonterminals: {'S', 'A', 'B'},
+  start: 'S',
+  productions: {
+    const Production(id: 's-ab', leftSide: ['S'], rightSide: ['A', 'B']),
+    const Production(id: 'a-a', leftSide: ['A'], rightSide: ['a']),
+    const Production(
+      id: 'a-empty',
+      leftSide: ['A'],
+      rightSide: [],
+      isLambda: true,
+    ),
+    const Production(id: 'b-b', leftSide: ['B'], rightSide: ['b']),
+  },
+);
 
 Grammar _singleWordGrammar() => _grammar(
-      id: 'single-word',
-      terminals: {'a'},
-      nonterminals: {'S', 'U'},
-      start: 'S',
-      productions: {
-        const Production(id: 's-a', leftSide: ['S'], rightSide: ['a']),
-        const Production(id: 'u-a', leftSide: ['U'], rightSide: ['a']),
-      },
-    );
+  id: 'single-word',
+  terminals: {'a'},
+  nonterminals: {'S', 'U'},
+  start: 'S',
+  productions: {
+    const Production(id: 's-a', leftSide: ['S'], rightSide: ['a']),
+    const Production(id: 'u-a', leftSide: ['U'], rightSide: ['a']),
+  },
+);
 
 Grammar _unitCycleGrammar() => _grammar(
-      id: 'unit-cycle-regression',
-      terminals: {'a'},
-      nonterminals: {'S', 'A', 'U', 'V'},
-      start: 'S',
-      productions: {
-        const Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
-        const Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
-        const Production(id: 'u-v', leftSide: ['U'], rightSide: ['V']),
-        const Production(id: 'v-u', leftSide: ['V'], rightSide: ['U']),
-      },
-    );
+  id: 'unit-cycle-regression',
+  terminals: {'a'},
+  nonterminals: {'S', 'A', 'U', 'V'},
+  start: 'S',
+  productions: {
+    const Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
+    const Production(id: 'a-leaf', leftSide: ['A'], rightSide: ['a']),
+    const Production(id: 'u-v', leftSide: ['U'], rightSide: ['V']),
+    const Production(id: 'v-u', leftSide: ['V'], rightSide: ['U']),
+  },
+);
 
 Grammar _unitIdCollisionGrammar() => _grammar(
-      id: 'unit-id-collision-regression',
-      terminals: {'a', 'b'},
-      nonterminals: {'S', 'A', 'B'},
-      start: 'S',
-      productions: {
-        const Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
-        const Production(id: 'a-b', leftSide: ['A'], rightSide: ['B']),
-        const Production(id: 'b-leaf', leftSide: ['B'], rightSide: ['b']),
-        const Production(
-          id: 'b-leaf_unit_A',
-          leftSide: ['A'],
-          rightSide: ['a'],
-        ),
-      },
-    );
+  id: 'unit-id-collision-regression',
+  terminals: {'a', 'b'},
+  nonterminals: {'S', 'A', 'B'},
+  start: 'S',
+  productions: {
+    const Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
+    const Production(id: 'a-b', leftSide: ['A'], rightSide: ['B']),
+    const Production(id: 'b-leaf', leftSide: ['B'], rightSide: ['b']),
+    const Production(id: 'b-leaf_unit_A', leftSide: ['A'], rightSide: ['a']),
+  },
+);
 
 Grammar _generatedSymbolCollisionGrammar() => _grammar(
-      id: 'generated-symbol-collision-regression',
-      terminals: {'a', 'b'},
-      nonterminals: {'S', 'N0', 'T0'},
-      start: 'S',
-      productions: {
-        const Production(
-          id: 's-mixed',
-          leftSide: ['S'],
-          rightSide: ['a', 'N0', 'T0'],
-        ),
-        const Production(
-          id: 's-mixed_b_end',
-          leftSide: ['T0'],
-          rightSide: ['b'],
-        ),
-        const Production(id: 'm_a', leftSide: ['N0'], rightSide: ['a']),
-      },
-    );
+  id: 'generated-symbol-collision-regression',
+  terminals: {'a', 'b'},
+  nonterminals: {'S', 'N0', 'T0'},
+  start: 'S',
+  productions: {
+    const Production(
+      id: 's-mixed',
+      leftSide: ['S'],
+      rightSide: ['a', 'N0', 'T0'],
+    ),
+    const Production(id: 's-mixed_b_end', leftSide: ['T0'], rightSide: ['b']),
+    const Production(id: 'm_a', leftSide: ['N0'], rightSide: ['a']),
+  },
+);
 
 Grammar _grammar({
   required String id,
@@ -675,15 +684,14 @@ Grammar _grammar({
   required Set<String> nonterminals,
   required String start,
   required Set<Production> productions,
-}) =>
-    Grammar(
-      id: id,
-      name: id,
-      terminals: terminals,
-      nonterminals: nonterminals,
-      startSymbol: start,
-      productions: productions,
-      type: GrammarType.contextFree,
-      created: DateTime.utc(2026, 8, 26),
-      modified: DateTime.utc(2026, 8, 26),
-    );
+}) => Grammar(
+  id: id,
+  name: id,
+  terminals: terminals,
+  nonterminals: nonterminals,
+  startSymbol: start,
+  productions: productions,
+  type: GrammarType.contextFree,
+  created: DateTime.utc(2026, 8, 26),
+  modified: DateTime.utc(2026, 8, 26),
+);

@@ -17,7 +17,11 @@ class AutomatonGraphViewEdgePresentation {
       config: EdgeRoutingConfig(
         anchorMode: AnchorMode.dynamic,
         routingMode: RoutingMode.bezier,
-        enableRepulsion: true,
+        // The grouped FSA mode routes through the automatic planner and never
+        // reads the base renderer's repulsion offsets, so computing them for
+        // every edge on each node move (O(edges × nodes)) was pure waste; the
+        // standard PDA/TM mode still relies on them (#434).
+        enableRepulsion: renderMode != TuringLabEdgeRenderMode.groupedFsa,
       ),
       animationConfig: const AnimatedEdgeConfiguration(
         animationSpeed: 1.0,

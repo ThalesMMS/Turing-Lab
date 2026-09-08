@@ -9,7 +9,7 @@
 # drives one isolated `flutter test` process per slot, writes the run manifest
 # and validates the resulting directory.
 #
-# This pipeline never runs in CI and is never discovered by `flutter test`.
+# This pipeline is never discovered by `flutter test`.
 #
 #   tool/capture_app_store_screenshots.sh --help
 #   tool/capture_app_store_screenshots.sh --all --output build/screenshots/candidate

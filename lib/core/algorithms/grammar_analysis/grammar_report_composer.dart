@@ -1,4 +1,4 @@
-part of '../grammar_analyzer.dart';
+part of '../grammar/grammar_analyzer.dart';
 
 /// Centralizes aggregate report creation without adding presentation behavior.
 class GrammarReportComposer {

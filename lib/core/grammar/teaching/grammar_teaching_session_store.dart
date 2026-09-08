@@ -1,4 +1,4 @@
-import '../../algorithms/grammar_analyzer.dart';
+import '../../algorithms/grammar/grammar_analyzer.dart';
 import '../../models/grammar.dart';
 import '../../models/lr1_models.dart';
 import 'grammar_teaching_sessions.dart';

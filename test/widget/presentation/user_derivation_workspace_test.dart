@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/grammar/phrase_structure/phrase_structure.dart';
-import 'package:turing_lab/presentation/widgets/user_derivation_workspace.dart';
+import 'package:turing_lab/presentation/widgets/grammar/user_derivation_workspace.dart';
 
 void main() {
   testWidgets('requires an exact allowed occurrence before committing a move', (

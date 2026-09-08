@@ -3,13 +3,13 @@
   "ownerIssue": 210,
   "status": "migration-in-progress",
   "zeroUserVisibleProseClaim": false,
-  "sourceDigestSha256": "b59d5a56254df3489cab1de9c01aea5203324e298b58b8951855507ad9690146",
+  "sourceDigestSha256": "4be6b8b728fe4188c132dda06d88f741c0af355a9902a6bd2d8e3e986d8957d2",
   "summary": {
     "familyCount": 13,
-    "producerCount": 211,
-    "occurrenceCount": 3216,
-    "migrationRequiredCount": 797,
-    "compatibilityDescriptionCount": 808
+    "producerCount": 219,
+    "occurrenceCount": 3245,
+    "migrationRequiredCount": 806,
+    "compatibilityDescriptionCount": 815
   },
   "families": [
     {
@@ -18,26 +18,6 @@
       "targetNamespace": "algorithm",
       "status": "migration-required",
       "producers": [
-        {
-          "path": "lib/core/algorithms/automaton_simulator.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 13,
-          "firstLine": 229,
-          "lastLine": 1045,
-          "sourceDigestSha256": "6090600dd6060d97ca0cf9e26dc84c822d799d1cd2b7ee2e0e8e95e925a76043",
-          "classificationCounts": {
-            "legacyUserVisible": 4,
-            "protocolDescription": 4,
-            "supportedCompatibilityDescription": 5
-          },
-          "surfaces": {
-            "errorMessage": 1,
-            "label": 1,
-            "returnedMessage": 11
-          }
-        },
         {
           "path": "lib/core/algorithms/cfg/cfg_toolkit.dart",
           "owner": "core-algorithms",
@@ -78,14 +58,34 @@
           }
         },
         {
-          "path": "lib/core/algorithms/dfa_completer.dart",
+          "path": "lib/core/algorithms/fsa/automaton_simulator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 13,
+          "firstLine": 231,
+          "lastLine": 1049,
+          "sourceDigestSha256": "f0a5f68876b74653f1fc22d0b99b16e228283fe33e216ae97d319733dd352e37",
+          "classificationCounts": {
+            "legacyUserVisible": 4,
+            "protocolDescription": 4,
+            "supportedCompatibilityDescription": 5
+          },
+          "surfaces": {
+            "errorMessage": 1,
+            "label": 1,
+            "returnedMessage": 11
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa/dfa_completer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 2,
-          "firstLine": 56,
-          "lastLine": 165,
-          "sourceDigestSha256": "032e2cf5831be2908837abedb0a3d62332b66f64e8de32cf5971f39163b80189",
+          "firstLine": 57,
+          "lastLine": 166,
+          "sourceDigestSha256": "cb7678a1d783725561473a7a7997a155a56bafa745fd5f702363eb3cd6da73a4",
           "classificationCounts": {
             "legacyUserVisible": 1,
             "protocolDescription": 1
@@ -96,7 +96,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/dfa_minimizer.dart",
+          "path": "lib/core/algorithms/fsa/dfa_minimizer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -115,14 +115,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/dfa_operations.dart",
+          "path": "lib/core/algorithms/fsa/dfa_operations.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 34,
           "firstLine": 45,
           "lastLine": 594,
-          "sourceDigestSha256": "0def7d3b76a56e959e573007a5c3f558e0cd15957b02c66895dbe123c55e6006",
+          "sourceDigestSha256": "d13b0580638db4294ca9e51d0ecf1a90cf3a45a0ab7c23be6a9c30b6768c56dd",
           "classificationCounts": {
             "developerDiagnostic": 1,
             "legacyUserVisible": 4,
@@ -136,7 +136,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/dfa_operations_messages.dart",
+          "path": "lib/core/algorithms/fsa/dfa_operations_messages.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -152,7 +152,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/fa_to_regex_converter.dart",
+          "path": "lib/core/algorithms/fsa/fa_to_regex_converter.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -169,7 +169,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/fsa_concatenator.dart",
+          "path": "lib/core/algorithms/fsa/fsa_concatenator.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -186,7 +186,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/fsa_kleene_star.dart",
+          "path": "lib/core/algorithms/fsa/fsa_kleene_star.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -202,7 +202,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/fsa_reverser.dart",
+          "path": "lib/core/algorithms/fsa/fsa_reverser.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -219,7 +219,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/fsa_to_grammar_converter.dart",
+          "path": "lib/core/algorithms/fsa/fsa_to_grammar_converter.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -234,6 +234,248 @@
           },
           "surfaces": {
             "returnedMessage": 8
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa/language_comparator.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 43,
+          "firstLine": 47,
+          "lastLine": 544,
+          "sourceDigestSha256": "6dabe3eb5025d08221dbe8349ca7115a669a3bb323b8807e80576a0b6d5872c4",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "legacyUserVisible": 1,
+            "protocolDescription": 23,
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "label": 1,
+            "returnedMessage": 41
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa/language_comparison_step_messages.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 6,
+          "firstLine": 103,
+          "lastLine": 117,
+          "sourceDigestSha256": "c8cb82eb8baee63194d2793d379782e7d3b84292b04f38814f6dde58119257c6",
+          "classificationCounts": {
+            "protocolDescription": 6
+          },
+          "surfaces": {
+            "returnedMessage": 6
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa/nfa_to_dfa_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 22,
+          "firstLine": 42,
+          "lastLine": 422,
+          "sourceDigestSha256": "2281d79f9952de7df99edacaffd72e33e2d4fbd8cd922fd0152d09e9dcd763c4",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "legacyUserVisible": 3,
+            "protocolDescription": 10,
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "positionalProducer": 4,
+            "returnedMessage": 17
+          }
+        },
+        {
+          "path": "lib/core/algorithms/fsa/state_renamer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 53,
+          "lastLine": 53,
+          "sourceDigestSha256": "b70efe4b1898078dc53be4e21fb5f701b3a01b7fd28229b183a5aadf480df9aa",
+          "classificationCounts": {
+            "protocolDescription": 1
+          },
+          "surfaces": {
+            "label": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_analyzer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 1,
+          "firstLine": 82,
+          "lastLine": 82,
+          "sourceDigestSha256": "04a4e5fba29b877ceffa4fc45c0594327823e07382c74b94ca58bd26d5c24f3d",
+          "classificationCounts": {
+            "developerDiagnostic": 1
+          },
+          "surfaces": {
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_cnf_transformer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 33,
+          "firstLine": 81,
+          "lastLine": 851,
+          "sourceDigestSha256": "cff7e8aeafec5d93ddd9d1b61b181465400c167c67771be400cf522b6625dbb7",
+          "classificationCounts": {
+            "legacyUserVisible": 6,
+            "protocolDescription": 17,
+            "supportedCompatibilityDescription": 10
+          },
+          "surfaces": {
+            "returnedMessage": 33
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_gnf_transformer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 4,
+          "firstLine": 23,
+          "lastLine": 60,
+          "sourceDigestSha256": "f74920f97e49e9c71f69f517a71fbbaaa04df977821eb4df2d4006b83a7704c2",
+          "classificationCounts": {
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 4
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 36,
+          "firstLine": 58,
+          "lastLine": 1295,
+          "sourceDigestSha256": "57e98e7dae29fca3e177ba5c1c264bba2cd378d4feb1ab430a0797bb2956e78d",
+          "classificationCounts": {
+            "developerDiagnostic": 1,
+            "legacyUserVisible": 16,
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 17
+          },
+          "surfaces": {
+            "errorMessage": 3,
+            "label": 5,
+            "message": 12,
+            "positionalProducer": 4,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_parser_earley.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 6,
+          "firstLine": 62,
+          "lastLine": 275,
+          "sourceDigestSha256": "24350528214ddc190c2edc561d4716603250fb33b4cb39705006c4a93fc23d33",
+          "classificationCounts": {
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "message": 4,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_parser_simple_recursive.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 7,
+          "firstLine": 65,
+          "lastLine": 221,
+          "sourceDigestSha256": "7b15f16b2a95296ed83e860eb517e71a2c198f72229443f94c9466217c8d8e9d",
+          "classificationCounts": {
+            "protocolDescription": 1,
+            "supportedCompatibilityDescription": 6
+          },
+          "surfaces": {
+            "errorMessage": 1,
+            "message": 2,
+            "positionalProducer": 3,
+            "returnedMessage": 1
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_to_fsa_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 11,
+          "firstLine": 77,
+          "lastLine": 271,
+          "sourceDigestSha256": "43cdd1a08ec09e999bac3f1cc7eeba5b58dbaf8b13d30330a37b2e65b9e863db",
+          "classificationCounts": {
+            "legacyUserVisible": 1,
+            "protocolDescription": 2,
+            "supportedCompatibilityDescription": 8
+          },
+          "surfaces": {
+            "positionalProducer": 1,
+            "returnedMessage": 10
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/grammar_to_pda_converter.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 48,
+          "firstLine": 74,
+          "lastLine": 604,
+          "sourceDigestSha256": "242d499602d37d18ccb9ea809f90e4d34bf6266eb24d877f894c02e6f074b907",
+          "classificationCounts": {
+            "developerDiagnostic": 6,
+            "legacyUserVisible": 5,
+            "protocolDescription": 5,
+            "supportedCompatibilityDescription": 32
+          },
+          "surfaces": {
+            "label": 7,
+            "returnedMessage": 41
+          }
+        },
+        {
+          "path": "lib/core/algorithms/grammar/lr1_parser.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "structured-compatibility",
+          "occurrenceCount": 29,
+          "firstLine": 73,
+          "lastLine": 859,
+          "sourceDigestSha256": "ccd608194a4628b9e20091114daef0a32d45f838c5cee9bb02e2ff4c36ccd05d",
+          "classificationCounts": {
+            "protocolDescription": 3,
+            "supportedCompatibilityDescription": 26
+          },
+          "surfaces": {
+            "message": 23,
+            "returnedMessage": 6
           }
         },
         {
@@ -340,136 +582,6 @@
           }
         },
         {
-          "path": "lib/core/algorithms/grammar_analyzer.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "allowlisted-non-ui",
-          "occurrenceCount": 1,
-          "firstLine": 82,
-          "lastLine": 82,
-          "sourceDigestSha256": "04a4e5fba29b877ceffa4fc45c0594327823e07382c74b94ca58bd26d5c24f3d",
-          "classificationCounts": {
-            "developerDiagnostic": 1
-          },
-          "surfaces": {
-            "returnedMessage": 1
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_cnf_transformer.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 33,
-          "firstLine": 81,
-          "lastLine": 847,
-          "sourceDigestSha256": "e46423e323b8c9a477a3ae000c35eb8886c4091dda022f02141702c3e5f89a78",
-          "classificationCounts": {
-            "legacyUserVisible": 6,
-            "protocolDescription": 17,
-            "supportedCompatibilityDescription": 10
-          },
-          "surfaces": {
-            "returnedMessage": 33
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_gnf_transformer.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "structured-compatibility",
-          "occurrenceCount": 4,
-          "firstLine": 23,
-          "lastLine": 60,
-          "sourceDigestSha256": "f74920f97e49e9c71f69f517a71fbbaaa04df977821eb4df2d4006b83a7704c2",
-          "classificationCounts": {
-            "protocolDescription": 2,
-            "supportedCompatibilityDescription": 2
-          },
-          "surfaces": {
-            "returnedMessage": 4
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_parser.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 36,
-          "firstLine": 58,
-          "lastLine": 1295,
-          "sourceDigestSha256": "57e98e7dae29fca3e177ba5c1c264bba2cd378d4feb1ab430a0797bb2956e78d",
-          "classificationCounts": {
-            "developerDiagnostic": 1,
-            "legacyUserVisible": 16,
-            "protocolDescription": 2,
-            "supportedCompatibilityDescription": 17
-          },
-          "surfaces": {
-            "errorMessage": 3,
-            "label": 5,
-            "message": 12,
-            "positionalProducer": 4,
-            "returnedMessage": 12
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_parser_earley.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "structured-compatibility",
-          "occurrenceCount": 6,
-          "firstLine": 62,
-          "lastLine": 275,
-          "sourceDigestSha256": "24350528214ddc190c2edc561d4716603250fb33b4cb39705006c4a93fc23d33",
-          "classificationCounts": {
-            "supportedCompatibilityDescription": 6
-          },
-          "surfaces": {
-            "message": 4,
-            "returnedMessage": 2
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_parser_simple_recursive.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "structured-compatibility",
-          "occurrenceCount": 7,
-          "firstLine": 65,
-          "lastLine": 221,
-          "sourceDigestSha256": "7b15f16b2a95296ed83e860eb517e71a2c198f72229443f94c9466217c8d8e9d",
-          "classificationCounts": {
-            "protocolDescription": 1,
-            "supportedCompatibilityDescription": 6
-          },
-          "surfaces": {
-            "errorMessage": 1,
-            "message": 2,
-            "positionalProducer": 3,
-            "returnedMessage": 1
-          }
-        },
-        {
-          "path": "lib/core/algorithms/grammar_to_fsa_converter.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 11,
-          "firstLine": 77,
-          "lastLine": 271,
-          "sourceDigestSha256": "43cdd1a08ec09e999bac3f1cc7eeba5b58dbaf8b13d30330a37b2e65b9e863db",
-          "classificationCounts": {
-            "legacyUserVisible": 1,
-            "protocolDescription": 2,
-            "supportedCompatibilityDescription": 8
-          },
-          "surfaces": {
-            "positionalProducer": 1,
-            "returnedMessage": 10
-          }
-        },
-        {
           "path": "lib/core/algorithms/grammar_to_pda/cfg_to_pda_converter.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
@@ -496,8 +608,8 @@
           "status": "allowlisted-non-ui",
           "occurrenceCount": 4,
           "firstLine": 22,
-          "lastLine": 137,
-          "sourceDigestSha256": "16a6b8b1d0edb2b65c01a49527e1ab591d0d40e926c6e95a35b7e21d427a225e",
+          "lastLine": 129,
+          "sourceDigestSha256": "6ce1173f6c10d6d8f3528288749b1885db66dea1918366e013b9cc16ae3200a8",
           "classificationCounts": {
             "developerDiagnostic": 2,
             "protocolDescription": 2
@@ -507,103 +619,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/grammar_to_pda_converter.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 47,
-          "firstLine": 74,
-          "lastLine": 599,
-          "sourceDigestSha256": "0eb8f9f67cdb6393f135d7b0a67f47a37508ab5d892630de13a58c24be4561d6",
-          "classificationCounts": {
-            "developerDiagnostic": 6,
-            "legacyUserVisible": 5,
-            "protocolDescription": 4,
-            "supportedCompatibilityDescription": 32
-          },
-          "surfaces": {
-            "label": 6,
-            "returnedMessage": 41
-          }
-        },
-        {
-          "path": "lib/core/algorithms/language_comparator.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 43,
-          "firstLine": 47,
-          "lastLine": 544,
-          "sourceDigestSha256": "6dabe3eb5025d08221dbe8349ca7115a669a3bb323b8807e80576a0b6d5872c4",
-          "classificationCounts": {
-            "developerDiagnostic": 1,
-            "legacyUserVisible": 1,
-            "protocolDescription": 23,
-            "supportedCompatibilityDescription": 18
-          },
-          "surfaces": {
-            "developerDiagnostic": 1,
-            "label": 1,
-            "returnedMessage": 41
-          }
-        },
-        {
-          "path": "lib/core/algorithms/language_comparison_step_messages.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "allowlisted-non-ui",
-          "occurrenceCount": 6,
-          "firstLine": 103,
-          "lastLine": 117,
-          "sourceDigestSha256": "c8cb82eb8baee63194d2793d379782e7d3b84292b04f38814f6dde58119257c6",
-          "classificationCounts": {
-            "protocolDescription": 6
-          },
-          "surfaces": {
-            "returnedMessage": 6
-          }
-        },
-        {
-          "path": "lib/core/algorithms/lr1_parser.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "structured-compatibility",
-          "occurrenceCount": 29,
-          "firstLine": 72,
-          "lastLine": 846,
-          "sourceDigestSha256": "84d898ce81cd3d351b77c99b220790b4d02fe1227f837da209c9ee8e6b02790f",
-          "classificationCounts": {
-            "protocolDescription": 3,
-            "supportedCompatibilityDescription": 26
-          },
-          "surfaces": {
-            "message": 23,
-            "returnedMessage": 6
-          }
-        },
-        {
-          "path": "lib/core/algorithms/nfa_to_dfa_converter.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "migration-required",
-          "occurrenceCount": 22,
-          "firstLine": 42,
-          "lastLine": 422,
-          "sourceDigestSha256": "2281d79f9952de7df99edacaffd72e33e2d4fbd8cd922fd0152d09e9dcd763c4",
-          "classificationCounts": {
-            "developerDiagnostic": 1,
-            "legacyUserVisible": 3,
-            "protocolDescription": 10,
-            "supportedCompatibilityDescription": 8
-          },
-          "surfaces": {
-            "developerDiagnostic": 1,
-            "positionalProducer": 4,
-            "returnedMessage": 17
-          }
-        },
-        {
-          "path": "lib/core/algorithms/pda_language_emptiness_analyzer.dart",
+          "path": "lib/core/algorithms/pda/pda_language_emptiness_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -620,7 +636,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_normalizer.dart",
+          "path": "lib/core/algorithms/pda/pda_normalizer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -637,7 +653,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simplifier.dart",
+          "path": "lib/core/algorithms/pda/pda_simplifier.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -653,7 +669,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simulation_result.dart",
+          "path": "lib/core/algorithms/pda/pda_simulation_result.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -669,14 +685,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simulator.dart",
+          "path": "lib/core/algorithms/pda/pda_simulator.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 18,
-          "firstLine": 63,
-          "lastLine": 444,
-          "sourceDigestSha256": "a392d7192ec549f790e42d8139181c2201e60be898428af1f9d23469b943fcb9",
+          "firstLine": 64,
+          "lastLine": 445,
+          "sourceDigestSha256": "42ebce1939e876347b13b441f6fcdb088a15269721f808c96e65f3dd1927fd25",
           "classificationCounts": {
             "legacyUserVisible": 2,
             "protocolDescription": 1,
@@ -688,7 +704,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simulator_analysis.dart",
+          "path": "lib/core/algorithms/pda/pda_simulator_analysis.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -706,7 +722,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simulator_generation.dart",
+          "path": "lib/core/algorithms/pda/pda_simulator_generation.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -722,14 +738,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_simulator_search.dart",
+          "path": "lib/core/algorithms/pda/pda_simulator_search.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 11,
           "firstLine": 103,
-          "lastLine": 463,
-          "sourceDigestSha256": "13010e36cf0b5ca39e76813e61497fe4e649ec2a0c96c2dc9e2e730bc8924107",
+          "lastLine": 476,
+          "sourceDigestSha256": "7a7566fe00047fb006098691406577f841b23c757931fdddb28f91a3f477a8d9",
           "classificationCounts": {
             "legacyUserVisible": 9,
             "protocolDescription": 1,
@@ -741,7 +757,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/pda_to_cfg_converter.dart",
+          "path": "lib/core/algorithms/pda/pda_to_cfg_converter.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -760,7 +776,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_analyzer.dart",
+          "path": "lib/core/algorithms/regex/regex_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -776,23 +792,23 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_analyzer_helpers.dart",
+          "path": "lib/core/algorithms/regex/regex_analyzer_helpers.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
-          "occurrenceCount": 10,
+          "occurrenceCount": 11,
           "firstLine": 42,
-          "lastLine": 151,
-          "sourceDigestSha256": "142c92e1ea1409758f32844cfe4b36cd230fe8abc489e823174773c9d6fa77d3",
+          "lastLine": 155,
+          "sourceDigestSha256": "b2409d0f3280016a150b459f51b6daf459f483259d5e766181fafddc0d76ec45",
           "classificationCounts": {
-            "legacyUserVisible": 10
+            "legacyUserVisible": 11
           },
           "surfaces": {
-            "returnedMessage": 10
+            "returnedMessage": 11
           }
         },
         {
-          "path": "lib/core/algorithms/regex_simplifier.dart",
+          "path": "lib/core/algorithms/regex/regex_simplifier.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -809,7 +825,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_simplifier_models.dart",
+          "path": "lib/core/algorithms/regex/regex_simplifier_models.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -825,14 +841,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_simplifier_steps.dart",
+          "path": "lib/core/algorithms/regex/regex_simplifier_steps.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 13,
           "firstLine": 32,
-          "lastLine": 326,
-          "sourceDigestSha256": "97abfc9721daa2b16c37b316455888e2fd33f9d272be5ae9bd03ba1810f62f46",
+          "lastLine": 333,
+          "sourceDigestSha256": "8a61c2e7791906582a77384e98ac25a63d11bcb0012c62dea884d564dfcbbd38",
           "classificationCounts": {
             "protocolDescription": 13
           },
@@ -841,7 +857,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_to_nfa_converter.dart",
+          "path": "lib/core/algorithms/regex/regex_to_nfa_converter.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -858,14 +874,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_to_nfa_converter_builders.dart",
+          "path": "lib/core/algorithms/regex/regex_to_nfa_converter_builders.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 18,
           "firstLine": 49,
-          "lastLine": 556,
-          "sourceDigestSha256": "8f7170907aa493bc8854ae34b423b43c9ba0dc029d35de7b2a914ba507ee3b04",
+          "lastLine": 557,
+          "sourceDigestSha256": "200ba13af7866ed9f45a97c5eef39c7522ed31d0fcbd3af7112d7648f1546059",
           "classificationCounts": {
             "developerDiagnostic": 7,
             "legacyUserVisible": 3,
@@ -878,14 +894,14 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_to_nfa_converter_construction.dart",
+          "path": "lib/core/algorithms/regex/regex_to_nfa_converter_construction.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
           "occurrenceCount": 28,
-          "firstLine": 65,
-          "lastLine": 556,
-          "sourceDigestSha256": "49145aa0264a3f6f5f48c9fbbefb43f40c2b0be52eff7c804d2ed2611c568eba",
+          "firstLine": 59,
+          "lastLine": 548,
+          "sourceDigestSha256": "3eda4f79ce8a09065cacaf52ec6f62c3ad564e6003c4ce09d2b0682ad718018c",
           "classificationCounts": {
             "developerDiagnostic": 5,
             "legacyUserVisible": 17,
@@ -899,7 +915,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_to_nfa_converter_models.dart",
+          "path": "lib/core/algorithms/regex/regex_to_nfa_converter_models.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -915,7 +931,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/regex_to_nfa_converter_parser.dart",
+          "path": "lib/core/algorithms/regex/regex_to_nfa_converter_parser.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -932,23 +948,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/state_renamer.dart",
-          "owner": "core-algorithms",
-          "targetNamespace": "algorithm",
-          "status": "allowlisted-non-ui",
-          "occurrenceCount": 1,
-          "firstLine": 53,
-          "lastLine": 53,
-          "sourceDigestSha256": "b70efe4b1898078dc53be4e21fb5f701b3a01b7fd28229b183a5aadf480df9aa",
-          "classificationCounts": {
-            "protocolDescription": 1
-          },
-          "surfaces": {
-            "label": 1
-          }
-        },
-        {
-          "path": "lib/core/algorithms/tm_block_dependency_analyzer.dart",
+          "path": "lib/core/algorithms/tm/tm_block_dependency_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -965,7 +965,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_block_execution_engine.dart",
+          "path": "lib/core/algorithms/tm/tm_block_execution_engine.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -984,7 +984,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_block_inline_expander.dart",
+          "path": "lib/core/algorithms/tm/tm_block_inline_expander.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1002,7 +1002,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_execution_analyzer.dart",
+          "path": "lib/core/algorithms/tm/tm_execution_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1020,7 +1020,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_execution_kernel.dart",
+          "path": "lib/core/algorithms/tm/tm_execution_kernel.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -1038,25 +1038,24 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_language_explorer.dart",
+          "path": "lib/core/algorithms/tm/tm_language_explorer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
-          "occurrenceCount": 8,
+          "occurrenceCount": 7,
           "firstLine": 18,
-          "lastLine": 200,
-          "sourceDigestSha256": "ed9a88f67e92f8420ea3e36e1f6038ea57faeceba1929a26b833a80278240de8",
+          "lastLine": 156,
+          "sourceDigestSha256": "02f4887a6e3598f8b5edc67fb6442c56ca2fcc72201a02af14ac004cb85fd8a4",
           "classificationCounts": {
             "developerDiagnostic": 1,
-            "protocolDescription": 1,
             "supportedCompatibilityDescription": 6
           },
           "surfaces": {
-            "returnedMessage": 8
+            "returnedMessage": 7
           }
         },
         {
-          "path": "lib/core/algorithms/tm_multi_tape_execution_analyzer.dart",
+          "path": "lib/core/algorithms/tm/tm_multi_tape_execution_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1072,7 +1071,26 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_reachability_analyzer.dart",
+          "path": "lib/core/algorithms/tm/tm_multi_tape_reducer.dart",
+          "owner": "core-algorithms",
+          "targetNamespace": "algorithm",
+          "status": "migration-required",
+          "occurrenceCount": 13,
+          "firstLine": 92,
+          "lastLine": 1173,
+          "sourceDigestSha256": "7a2d8d39972f3578af34b6ac8877b31c1678befc9acab35d95e83d414e36c69e",
+          "classificationCounts": {
+            "developerDiagnostic": 3,
+            "legacyUserVisible": 7,
+            "protocolDescription": 3
+          },
+          "surfaces": {
+            "developerDiagnostic": 1,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/core/algorithms/tm/tm_reachability_analyzer.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1089,7 +1107,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_simulation_messages.dart",
+          "path": "lib/core/algorithms/tm/tm_simulation_messages.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
@@ -1105,7 +1123,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_simulator.dart",
+          "path": "lib/core/algorithms/tm/tm_simulator.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1125,7 +1143,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_space_profiler.dart",
+          "path": "lib/core/algorithms/tm/tm_space_profiler.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "structured-compatibility",
@@ -1144,7 +1162,7 @@
           }
         },
         {
-          "path": "lib/core/algorithms/tm_time_profiler.dart",
+          "path": "lib/core/algorithms/tm/tm_time_profiler.dart",
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
@@ -1165,16 +1183,16 @@
           "owner": "core-algorithms",
           "targetNamespace": "algorithm",
           "status": "migration-required",
-          "occurrenceCount": 12,
-          "firstLine": 72,
-          "lastLine": 565,
-          "sourceDigestSha256": "f957aed07954191b3977906456928eeca53aec0850daffdd35b3ce1225a5d0ad",
+          "occurrenceCount": 13,
+          "firstLine": 108,
+          "lastLine": 687,
+          "sourceDigestSha256": "92d8b3e9579d5a0915006a7ec5c378cf712a78104400170cdd91a0653781aae3",
           "classificationCounts": {
             "legacyUserVisible": 1,
-            "protocolDescription": 11
+            "protocolDescription": 12
           },
           "surfaces": {
-            "returnedMessage": 12
+            "returnedMessage": 13
           }
         },
         {
@@ -1183,9 +1201,9 @@
           "targetNamespace": "algorithm",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 5,
-          "firstLine": 24,
-          "lastLine": 129,
-          "sourceDigestSha256": "c1b87a0956553fac982c20e0e4bd82494141c9177a2128c118bacbdda1502307",
+          "firstLine": 25,
+          "lastLine": 140,
+          "sourceDigestSha256": "bc7c900bf09893cb53325aebfe9c3dd413b8083ef0ee3c50b88afa4fcbafa171",
           "classificationCounts": {
             "developerDiagnostic": 2,
             "protocolDescription": 3
@@ -1224,9 +1242,9 @@
           "targetNamespace": "batch",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 2,
-          "firstLine": 58,
-          "lastLine": 63,
-          "sourceDigestSha256": "814ebae56f42264f1e5059c266ac223441831993851faec1b6537d10089d2179",
+          "firstLine": 59,
+          "lastLine": 64,
+          "sourceDigestSha256": "5c451f2dc2193a779eb0b7f42cb7b82d0308f5c7ad522fe20750dc9655759251",
           "classificationCounts": {
             "developerDiagnostic": 2
           },
@@ -1428,8 +1446,8 @@
           "status": "migration-required",
           "occurrenceCount": 45,
           "firstLine": 34,
-          "lastLine": 880,
-          "sourceDigestSha256": "bd387d1286b21156cc6e1cdb574f35a274a70e164d2b4fda2a4a6e5704fe8a74",
+          "lastLine": 856,
+          "sourceDigestSha256": "55c09274ccd2df637ea83a6d59b60110d5e158fe0a1d2b5c72c9c92f3b2b96b9",
           "classificationCounts": {
             "developerDiagnostic": 8,
             "legacyUserVisible": 3,
@@ -1666,25 +1684,117 @@
           }
         },
         {
-          "path": "lib/data/codecs/tm_jflap_document_codec.dart",
+          "path": "lib/data/codecs/tm/tm_building_block_xml_codec.dart",
           "owner": "interoperability",
           "targetNamespace": "codec",
           "status": "migration-required",
-          "occurrenceCount": 199,
-          "firstLine": 40,
-          "lastLine": 2434,
-          "sourceDigestSha256": "d43b8cd8a458d196c8760a4bf866c28d2f0faa94158c633f080ea9ff62102f67",
+          "occurrenceCount": 78,
+          "firstLine": 60,
+          "lastLine": 987,
+          "sourceDigestSha256": "723836f868629c6f8c6b59ba85e65958d32a107bfc10104d7c6953eac9959ff9",
+          "classificationCounts": {
+            "legacyUserVisible": 2,
+            "protocolDescription": 47,
+            "supportedCompatibilityDescription": 29
+          },
+          "surfaces": {
+            "message": 6,
+            "positionalProducer": 3,
+            "returnedMessage": 69
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm/tm_jflap_metadata.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "allowlisted-non-ui",
+          "occurrenceCount": 17,
+          "firstLine": 26,
+          "lastLine": 247,
+          "sourceDigestSha256": "9d9ef46df04635ec4c03b3ca8ae5a1373fc5fddc0f655a7f227af183bb63bc52",
           "classificationCounts": {
             "developerDiagnostic": 16,
-            "legacyUserVisible": 16,
-            "protocolDescription": 109,
-            "supportedCompatibilityDescription": 58
+            "protocolDescription": 1
           },
           "surfaces": {
             "developerDiagnostic": 14,
-            "message": 42,
-            "positionalProducer": 33,
-            "returnedMessage": 110
+            "positionalProducer": 1,
+            "returnedMessage": 2
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm/tm_jflap_xml_decoder.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "migration-required",
+          "occurrenceCount": 56,
+          "firstLine": 44,
+          "lastLine": 616,
+          "sourceDigestSha256": "a21306c00e4aabefad45ef8fd28c2b69c36b5795b76e84c9a499eca1e9c33c94",
+          "classificationCounts": {
+            "legacyUserVisible": 2,
+            "protocolDescription": 36,
+            "supportedCompatibilityDescription": 18
+          },
+          "surfaces": {
+            "message": 19,
+            "positionalProducer": 23,
+            "returnedMessage": 14
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm/tm_jflap_xml_encoder.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 11,
+          "firstLine": 34,
+          "lastLine": 173,
+          "sourceDigestSha256": "163c6068bfa84f5bc5424092e47858b34ad56198c7b8904f8912a19bb59a832d",
+          "classificationCounts": {
+            "protocolDescription": 8,
+            "supportedCompatibilityDescription": 3
+          },
+          "surfaces": {
+            "message": 3,
+            "positionalProducer": 1,
+            "returnedMessage": 7
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm/tm_tape_vector_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 21,
+          "firstLine": 116,
+          "lastLine": 271,
+          "sourceDigestSha256": "74a3146610c67cf122aecc808108b3df6e75e8a69df125a89d212dcf65af1caa",
+          "classificationCounts": {
+            "protocolDescription": 10,
+            "supportedCompatibilityDescription": 11
+          },
+          "surfaces": {
+            "message": 9,
+            "returnedMessage": 12
+          }
+        },
+        {
+          "path": "lib/data/codecs/tm_jflap_document_codec.dart",
+          "owner": "interoperability",
+          "targetNamespace": "codec",
+          "status": "structured-compatibility",
+          "occurrenceCount": 12,
+          "firstLine": 36,
+          "lastLine": 143,
+          "sourceDigestSha256": "a6eda0b72844240a299c2f3c31a93ce5dc2f7ea539f7bb5ebb5bdde0aa0a118c",
+          "classificationCounts": {
+            "protocolDescription": 8,
+            "supportedCompatibilityDescription": 4
+          },
+          "surfaces": {
+            "message": 4,
+            "returnedMessage": 8
           }
         },
         {
@@ -1920,8 +2030,8 @@
           "status": "allowlisted-non-ui",
           "occurrenceCount": 3,
           "firstLine": 69,
-          "lastLine": 249,
-          "sourceDigestSha256": "af255e4d34d69a6894f4b2f9da418024a043eb6bfffe4925d8247c5944b95cbc",
+          "lastLine": 257,
+          "sourceDigestSha256": "0465b743c8e854d4f4c69e469ff207c588ac0375b0b4d98208f478fb94440865",
           "classificationCounts": {
             "protocolDescription": 3
           },
@@ -2032,9 +2142,9 @@
           "targetNamespace": "domain",
           "status": "migration-required",
           "occurrenceCount": 15,
-          "firstLine": 429,
-          "lastLine": 1013,
-          "sourceDigestSha256": "05c493bfd8db51edf2eac2caf0de576843a117f6888eba1f2dbd1c2d8f7730d0",
+          "firstLine": 423,
+          "lastLine": 1004,
+          "sourceDigestSha256": "b777fed0a72db86b3b510239a5cf40977605c70edff1a407d8046ad92792db87",
           "classificationCounts": {
             "legacyUserVisible": 7,
             "protocolDescription": 8
@@ -2070,8 +2180,8 @@
           "status": "migration-required",
           "occurrenceCount": 30,
           "firstLine": 29,
-          "lastLine": 665,
-          "sourceDigestSha256": "536fb9388ca5c6949d2afdcf909f20bd5fc556fa25dbc447f9b9326991d78fd9",
+          "lastLine": 661,
+          "sourceDigestSha256": "8eb6b12af225e24bdefb9bbe579ac45c5d0cf428f2717256e45a79a3f429e56c",
           "classificationCounts": {
             "legacyUserVisible": 23,
             "protocolDescription": 7
@@ -2131,9 +2241,9 @@
           "targetNamespace": "domain",
           "status": "migration-required",
           "occurrenceCount": 40,
-          "firstLine": 231,
-          "lastLine": 1011,
-          "sourceDigestSha256": "722586c7ba7d5fc4913eb79d2911e149a154ce68720914edfd0a548823eabb1a",
+          "firstLine": 230,
+          "lastLine": 1013,
+          "sourceDigestSha256": "89e51f0c72d17b371f3c932b78887b69e83e5a543918bb54de6c9b75170cd2c0",
           "classificationCounts": {
             "developerDiagnostic": 4,
             "legacyUserVisible": 25,
@@ -2604,7 +2714,7 @@
       "id": "l-systems",
       "owner": "formal-systems",
       "targetNamespace": "l-system",
-      "status": "allowlisted-non-ui",
+      "status": "migration-required",
       "producers": [
         {
           "path": "lib/core/l_systems/l_system_expander.dart",
@@ -2612,9 +2722,9 @@
           "targetNamespace": "l-system",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 2,
-          "firstLine": 44,
-          "lastLine": 244,
-          "sourceDigestSha256": "49b9a61a085512abcc7113b4256fcdd45c57f5abb8215717b8e1442c830ab48b",
+          "firstLine": 45,
+          "lastLine": 248,
+          "sourceDigestSha256": "7af583458283d91baa17856e48faf18b5e93ea91ec4df53c92c822b5ea833c04",
           "classificationCounts": {
             "developerDiagnostic": 2
           },
@@ -2630,8 +2740,8 @@
           "status": "allowlisted-non-ui",
           "occurrenceCount": 9,
           "firstLine": 43,
-          "lastLine": 132,
-          "sourceDigestSha256": "19051a5add3f463e2840afce6b88baffaa614de82ba06059a5913d4c6829c370",
+          "lastLine": 134,
+          "sourceDigestSha256": "4a77a97547d3d0a7d0ac0345694a02699c9406a9939c9b61364d909f2487da93",
           "classificationCounts": {
             "developerDiagnostic": 1,
             "protocolDescription": 8
@@ -2664,8 +2774,8 @@
           "status": "allowlisted-non-ui",
           "occurrenceCount": 18,
           "firstLine": 7,
-          "lastLine": 576,
-          "sourceDigestSha256": "9ebef940a7cd227b9fba499d34853421875fa795adfc0bac8a32d944879117d5",
+          "lastLine": 572,
+          "sourceDigestSha256": "38f4149836b71e86998e55db83f23164797a845df2ad1d54b94a0122118f504b",
           "classificationCounts": {
             "developerDiagnostic": 17,
             "protocolDescription": 1
@@ -2692,16 +2802,34 @@
           }
         },
         {
+          "path": "lib/core/l_systems/parametric_evaluator.dart",
+          "owner": "formal-systems",
+          "targetNamespace": "l-system",
+          "status": "migration-required",
+          "occurrenceCount": 8,
+          "firstLine": 33,
+          "lastLine": 393,
+          "sourceDigestSha256": "1ed5fa8496c3c83127b28b87cfbf44b396a1e939085bed82a9727ba303e92a99",
+          "classificationCounts": {
+            "legacyUserVisible": 6,
+            "protocolDescription": 2
+          },
+          "surfaces": {
+            "returnedMessage": 8
+          }
+        },
+        {
           "path": "lib/data/l_systems/l_system_examples.dart",
           "owner": "formal-systems",
           "targetNamespace": "l-system",
-          "status": "allowlisted-non-ui",
+          "status": "migration-required",
           "occurrenceCount": 14,
           "firstLine": 24,
-          "lastLine": 174,
-          "sourceDigestSha256": "85c0fde82932103b2325be003a1cecfea38b0bf5b92915710689be9c4e4e1534",
+          "lastLine": 212,
+          "sourceDigestSha256": "374fc4dfba6356a6b7668274aef324906f4ee73f912f37a9f3ae1e8ed0901504",
           "classificationCounts": {
-            "protocolDescription": 14
+            "legacyUserVisible": 3,
+            "protocolDescription": 11
           },
           "surfaces": {
             "description": 6,
@@ -2811,8 +2939,8 @@
           "status": "migration-required",
           "occurrenceCount": 61,
           "firstLine": 159,
-          "lastLine": 881,
-          "sourceDigestSha256": "18423a0495b93823f56d96535dd77cfea4c1fbec1d90790efe6de97e82cfe29f",
+          "lastLine": 903,
+          "sourceDigestSha256": "4d3029231fe595be400b4f0d21149adafbf9bb6421bc852bac3c05e01fc74c55",
           "classificationCounts": {
             "developerDiagnostic": 4,
             "legacyUserVisible": 19,
@@ -3033,8 +3161,8 @@
           "status": "migration-required",
           "occurrenceCount": 34,
           "firstLine": 125,
-          "lastLine": 737,
-          "sourceDigestSha256": "472fa5b84c915b85ea6beb1a0da2a17831ebbc05bb27ae2c5936457aabbaf052",
+          "lastLine": 755,
+          "sourceDigestSha256": "be1b65df271faebbb20181ad3b5a2fbb944c2615621cbe162d786d22487eef61",
           "classificationCounts": {
             "developerDiagnostic": 3,
             "legacyUserVisible": 9,
@@ -3172,16 +3300,16 @@
           "owner": "domain-models",
           "targetNamespace": "model",
           "status": "allowlisted-non-ui",
-          "occurrenceCount": 6,
+          "occurrenceCount": 7,
           "firstLine": 514,
-          "lastLine": 751,
-          "sourceDigestSha256": "1cd2c533e290aab6e98993d9e2e3cd82c816a3d91b783779715f76701939a7b5",
+          "lastLine": 801,
+          "sourceDigestSha256": "16d0b23b8c8bec7693a09823e0ed036878e2ed8a58440809312fc3407135fdb3",
           "classificationCounts": {
             "developerDiagnostic": 1,
-            "protocolDescription": 5
+            "protocolDescription": 6
           },
           "surfaces": {
-            "returnedMessage": 6
+            "returnedMessage": 7
           }
         },
         {
@@ -3661,9 +3789,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 9,
-          "firstLine": 228,
-          "lastLine": 597,
-          "sourceDigestSha256": "6079d300f68f57217fb75e712aabf3a29bff305e640be06f19f8461cbbf4a006",
+          "firstLine": 333,
+          "lastLine": 702,
+          "sourceDigestSha256": "722b5f2955bef745dcd0e84097a191bcdfe969e5a0db198fb7f289be3349636d",
           "classificationCounts": {
             "protocolDescription": 9
           },
@@ -3677,9 +3805,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 5,
-          "firstLine": 167,
-          "lastLine": 266,
-          "sourceDigestSha256": "6bf18c5cc171fe47e1b9a9fa9d88dfa65a0636028caba42f9729918a4008d1c5",
+          "firstLine": 194,
+          "lastLine": 293,
+          "sourceDigestSha256": "0b1115adc8cfde8cf19900dae3d97da105ff2f6401d201765a6406ca90b4bf85",
           "classificationCounts": {
             "protocolDescription": 5
           },
@@ -3693,9 +3821,9 @@
           "targetNamespace": "service",
           "status": "allowlisted-non-ui",
           "occurrenceCount": 3,
-          "firstLine": 16,
-          "lastLine": 95,
-          "sourceDigestSha256": "53a84d3fa8a7fcb99f721dbcccea1563f2c72f4a3304f8aefe16917c89e6dfdc",
+          "firstLine": 17,
+          "lastLine": 147,
+          "sourceDigestSha256": "68b0dcf083d7134b5246e0c4fd4ee7f93c946234cba3d3456ba87799495de2c3",
           "classificationCounts": {
             "protocolDescription": 3
           },
@@ -3743,8 +3871,26 @@
       "id": "transducers",
       "owner": "transducers",
       "targetNamespace": "transducer",
-      "status": "allowlisted-non-ui",
+      "status": "migration-required",
       "producers": [
+        {
+          "path": "lib/core/transducers/transducer_conversion.dart",
+          "owner": "transducers",
+          "targetNamespace": "transducer",
+          "status": "migration-required",
+          "occurrenceCount": 9,
+          "firstLine": 138,
+          "lastLine": 306,
+          "sourceDigestSha256": "616cecc6a748b3761ddcc3187f835c3949b8a772d3e2990d60557b27e3bfb0d7",
+          "classificationCounts": {
+            "legacyUserVisible": 4,
+            "protocolDescription": 5
+          },
+          "surfaces": {
+            "label": 1,
+            "returnedMessage": 8
+          }
+        },
         {
           "path": "lib/data/transducers/mealy_example_catalog.dart",
           "owner": "transducers",

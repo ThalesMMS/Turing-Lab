@@ -31,12 +31,12 @@ final class CodecCertificationCheck {
   String get failureSignature => '$codecId::$property::$message';
 
   Map<String, Object?> toJson() => {
-        'codecId': codecId,
-        'fidelityCoverage': fidelityCoverage.toList()..sort(),
-        'message': message,
-        'property': property,
-        'status': status.name,
-      };
+    'codecId': codecId,
+    'fidelityCoverage': fidelityCoverage.toList()..sort(),
+    'message': message,
+    'property': property,
+    'status': status.name,
+  };
 }
 
 final class CodecCertificationReport {
@@ -44,8 +44,8 @@ final class CodecCertificationReport {
     required Iterable<CodecCertificationCheck> checks,
     required Iterable<CodecBoundaryEvidence> boundaryEvidence,
     required this.seed,
-  })  : checks = List.unmodifiable(checks),
-        boundaryEvidence = List.unmodifiable(boundaryEvidence);
+  }) : checks = List.unmodifiable(checks),
+       boundaryEvidence = List.unmodifiable(boundaryEvidence);
 
   final List<CodecCertificationCheck> checks;
   final List<CodecBoundaryEvidence> boundaryEvidence;
@@ -58,15 +58,16 @@ final class CodecCertificationReport {
       boundaryEvidence.every((evidence) => evidence.passed);
 
   Map<String, Object?> toJson() => {
-        'checks': checks.map((check) => check.toJson()).toList(),
-        'boundaryEvidence':
-            boundaryEvidence.map((evidence) => evidence.toJson()).toList(),
-        'codecCount': codecIds.length,
-        'mutationThreshold': codecMutationKillThreshold,
-        'passed': passed,
-        'remotelyVerified': false,
-        'seed': seed,
-      };
+    'checks': checks.map((check) => check.toJson()).toList(),
+    'boundaryEvidence': boundaryEvidence
+        .map((evidence) => evidence.toJson())
+        .toList(),
+    'codecCount': codecIds.length,
+    'mutationThreshold': codecMutationKillThreshold,
+    'passed': passed,
+    'remotelyVerified': false,
+    'seed': seed,
+  };
 }
 
 final class CodecBoundaryEvidence {
@@ -89,13 +90,13 @@ final class CodecBoundaryEvidence {
   bool get passed => outcome == CodecBoundaryProcessOutcome.passed;
 
   Map<String, Object?> toJson() => {
-        'command': command,
-        'entryPoints': entryPoints,
-        'exitCode': exitCode,
-        'id': id,
-        'output': output,
-        'status': outcome.name,
-      };
+    'command': command,
+    'entryPoints': entryPoints,
+    'exitCode': exitCode,
+    'id': id,
+    'output': output,
+    'status': outcome.name,
+  };
 }
 
 enum CodecBoundaryProcessOutcome { passed, failed, timedOut, cancelled }
@@ -113,16 +114,19 @@ final class CodecBoundaryProcessResult {
 }
 
 final class CodecCertificationRunner {
+  static const boundaryTimeout = Duration(seconds: 75);
+
   CodecCertificationRunner({Directory? repositoryRoot})
-      : repositoryRoot = repositoryRoot ?? Directory.current,
-        catalog = CompatibilityCodecCatalog.create();
+    : repositoryRoot = repositoryRoot ?? Directory.current,
+      catalog = CompatibilityCodecCatalog.create();
 
   final Directory repositoryRoot;
   final CompatibilityCodecCatalog catalog;
 
   late final CompatibilityManifest manifest = CompatibilityManifest.parse(
-    File(_path('test/fixtures/compatibility/manifest.v1.json'))
-        .readAsStringSync(),
+    File(
+      _path('test/fixtures/compatibility/manifest.v1.json'),
+    ).readAsStringSync(),
   );
 
   Future<CodecCertificationReport> run({
@@ -144,20 +148,19 @@ final class CodecCertificationRunner {
     }
     return CodecCertificationReport(
       checks: checks,
-      boundaryEvidence:
-          includeBoundaryEvidence ? await runBoundaryEvidence() : const [],
+      boundaryEvidence: includeBoundaryEvidence
+          ? await runBoundaryEvidence()
+          : const [],
       seed: seed,
     );
   }
 
   Future<List<CodecBoundaryEvidence>> runBoundaryEvidence({
-    Duration timeoutPerBoundary = const Duration(seconds: 75),
+    Duration timeoutPerBoundary = boundaryTimeout,
     bool Function()? isCancelled,
   }) async {
     final boundaries = codecBoundaryInventory
-        .where(
-          (entry) => entry.id != 'typed-codec-registry',
-        )
+        .where((entry) => entry.id != 'typed-codec-registry')
         .toList();
     final evidence = <CodecBoundaryEvidence>[];
     for (final boundary in boundaries) {
@@ -214,10 +217,16 @@ final class CodecCertificationRunner {
       return switch (fixture.property) {
         'corpus-fidelity' => await _corpusFidelity(fixture, mutationOperatorId),
         'adversarial-security' => _adversarialSecurity(fixture, codec),
-        'transport-parity' =>
-          _transportParity(fixture, codec, mutationOperatorId),
-        'migration-extensions' =>
-          _migrationExtensions(fixture, codec, mutationOperatorId),
+        'transport-parity' => _transportParity(
+          fixture,
+          codec,
+          mutationOperatorId,
+        ),
+        'migration-extensions' => _migrationExtensions(
+          fixture,
+          codec,
+          mutationOperatorId,
+        ),
         _ => _failed(fixture, 'Unknown certification property.'),
       };
     } on Object catch (error) {
@@ -229,18 +238,16 @@ final class CodecCertificationRunner {
     CodecHardEdgeFixture fixture,
     String? mutationOperatorId,
   ) async {
-    final selected = manifest.cases
-        .where((testCase) => testCase.codecId == fixture.codecId)
-        .toList()
-      ..sort((left, right) => left.id.compareTo(right.id));
+    final selected =
+        manifest.cases
+            .where((testCase) => testCase.codecId == fixture.codecId)
+            .toList()
+          ..sort((left, right) => left.id.compareTo(right.id));
     if (selected.isEmpty) {
       return _failed(fixture, 'No compatibility corpus vectors exist.');
     }
     final offset = _fixtureInt(fixture, 'caseOffset') % selected.length;
-    final ordered = [
-      ...selected.skip(offset),
-      ...selected.take(offset),
-    ];
+    final ordered = [...selected.skip(offset), ...selected.take(offset)];
     final runner = CompatibilityCorpusRunner(
       repositoryRoot: repositoryRoot,
       catalog: catalog,
@@ -295,10 +302,16 @@ final class CodecCertificationRunner {
     CodecHardEdgeFixture fixture,
     DocumentCodecCapability<Object> codec,
   ) {
-    final wrongFilename =
-        _fixtureString(fixture, 'wrongFilename', fallback: 'wrong.extension');
-    final marker =
-        _fixtureString(fixture, 'malformedMarker', fallback: 'hard-edge');
+    final wrongFilename = _fixtureString(
+      fixture,
+      'wrongFilename',
+      fallback: 'wrong.extension',
+    );
+    final marker = _fixtureString(
+      fixture,
+      'malformedMarker',
+      fallback: 'hard-edge',
+    );
     final canonical = _canonicalPayload(
       codec,
       fixture: fixture,
@@ -333,7 +346,8 @@ final class CodecCertificationRunner {
     }
 
     if (_isJson(codec)) {
-      final depth = codec.descriptor.securityLimits.maximumDepth +
+      final depth =
+          codec.descriptor.securityLimits.maximumDepth +
           _fixtureInt(fixture, 'depthExcess', fallback: 1);
       final source = '${'[' * depth}0${']' * depth}';
       final outcome = codec.decode(
@@ -361,18 +375,13 @@ final class CodecCertificationRunner {
       );
       if (wideOutcome is! CodecResourceLimit<InteroperableDocument<Object>> ||
           wideOutcome.limit != CodecResourceLimitKind.collectionEntries) {
-        return _failed(
-          fixture,
-          'Wide JSON did not report collectionEntries.',
-        );
+        return _failed(fixture, 'Wide JSON did not report collectionEntries.');
       }
     } else {
       final outcome = codec.decode(
         DocumentPayload(
           bytes: Uint8List.fromList(
-            utf8.encode(
-              '<!DOCTYPE x [<!ENTITY e "$marker">]><x>&e;</x>',
-            ),
+            utf8.encode('<!DOCTYPE x [<!ENTITY e "$marker">]><x>&e;</x>'),
           ),
           filename: 'xxe.jff',
         ),
@@ -430,7 +439,9 @@ final class CodecCertificationRunner {
       return _failed(fixture, 'Repeated encoding was not byte deterministic.');
     }
     return _passed(
-        fixture, 'Decode and encode matched across transport copies.');
+      fixture,
+      'Decode and encode matched across transport copies.',
+    );
   }
 
   CodecCertificationCheck _migrationExtensions(
@@ -465,8 +476,9 @@ final class CodecCertificationRunner {
     final futureRoot =
         jsonDecode(jsonEncode(encodedRoot)) as Map<String, dynamic>;
     final futureDocument = futureRoot['document'];
-    final futureSchema =
-        futureDocument is Map ? futureDocument['schema'] : futureRoot['schema'];
+    final futureSchema = futureDocument is Map
+        ? futureDocument['schema']
+        : futureRoot['schema'];
     if (futureSchema is Map) futureSchema['version'] = 999;
     final futurePayload = DocumentPayload(
       bytes: Uint8List.fromList(utf8.encode(jsonEncode(futureRoot))),
@@ -527,12 +539,16 @@ final class CodecCertificationRunner {
     }
     final replay = codec.decode(
       DocumentPayload(
-          bytes: encoded.value.bytes, filename: encoded.value.filename),
+        bytes: encoded.value.bytes,
+        filename: encoded.value.filename,
+      ),
     );
     if (replay is! CodecSuccess<InteroperableDocument<Object>> ||
         !_sameDocument(outcome.value, replay.value)) {
       return _failed(
-          fixture, 'Migration was not idempotent after re-encoding.');
+        fixture,
+        'Migration was not idempotent after re-encoding.',
+      );
     }
     final extensionValues = outcome.value.extensions.values;
     final preserved = extensionValues.values.any(
@@ -683,10 +699,7 @@ Future<CodecBoundaryProcessResult> runCodecBoundaryProcessForCertification({
   }
   if (outcome == CodecBoundaryProcessOutcome.timedOut ||
       outcome == CodecBoundaryProcessOutcome.cancelled) {
-    await exitCode.timeout(
-      const Duration(seconds: 5),
-      onTimeout: () => code,
-    );
+    await exitCode.timeout(const Duration(seconds: 5), onTimeout: () => code);
   }
   final output = await Future.wait([stdoutText, stderrText]).timeout(
     const Duration(seconds: 5),
@@ -705,11 +718,12 @@ Future<CodecBoundaryProcessResult> runCodecBoundaryProcessForCertification({
 Future<void> _killCodecBoundaryProcessTree(Process process) async {
   if (Platform.isWindows) {
     try {
-      final result = await Process.run(
-        'taskkill',
-        ['/PID', '${process.pid}', '/T', '/F'],
-        runInShell: false,
-      );
+      final result = await Process.run('taskkill', [
+        '/PID',
+        '${process.pid}',
+        '/T',
+        '/F',
+      ], runInShell: false);
       if (result.exitCode != 0) process.kill();
     } on ProcessException {
       process.kill();
@@ -838,11 +852,7 @@ Object? _documentJson(Object document) {
 
 String _canonicalValue(Object? value) => jsonEncode(_canonicalize(value));
 
-int _fixtureInt(
-  CodecHardEdgeFixture fixture,
-  String key, {
-  int fallback = 0,
-}) =>
+int _fixtureInt(CodecHardEdgeFixture fixture, String key, {int fallback = 0}) =>
     fixture.payload[key] is int ? fixture.payload[key]! as int : fallback;
 
 String _fixtureString(
@@ -867,7 +877,8 @@ Object? _canonicalize(Object? value) {
   if (value is Map) {
     final entries = value.entries.toList()
       ..sort(
-          (left, right) => left.key.toString().compareTo(right.key.toString()));
+        (left, right) => left.key.toString().compareTo(right.key.toString()),
+      );
     return <String, Object?>{
       for (final entry in entries)
         entry.key.toString(): _canonicalize(entry.value),
@@ -886,24 +897,22 @@ CodecCertificationCheck _passed(
   CodecHardEdgeFixture fixture,
   String message, {
   Set<String> fidelityCoverage = const {},
-}) =>
-    CodecCertificationCheck(
-      codecId: fixture.codecId,
-      property: fixture.property,
-      status: CodecCertificationStatus.passed,
-      message: message,
-      fidelityCoverage: fidelityCoverage,
-    );
+}) => CodecCertificationCheck(
+  codecId: fixture.codecId,
+  property: fixture.property,
+  status: CodecCertificationStatus.passed,
+  message: message,
+  fidelityCoverage: fidelityCoverage,
+);
 
 CodecCertificationCheck _failed(
   CodecHardEdgeFixture fixture,
   String message, {
   Set<String> fidelityCoverage = const {},
-}) =>
-    CodecCertificationCheck(
-      codecId: fixture.codecId,
-      property: fixture.property,
-      status: CodecCertificationStatus.failed,
-      message: message,
-      fidelityCoverage: fidelityCoverage,
-    );
+}) => CodecCertificationCheck(
+  codecId: fixture.codecId,
+  property: fixture.property,
+  status: CodecCertificationStatus.failed,
+  message: message,
+  fidelityCoverage: fidelityCoverage,
+);

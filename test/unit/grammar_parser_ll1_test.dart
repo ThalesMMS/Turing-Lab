@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_parse_report.dart';
 import 'package:turing_lab/core/models/ll1_parse_step.dart';
@@ -39,88 +39,84 @@ void main() {
       expect(capability.unavailableReason, isNull);
     });
 
-    test('accepts an LL(1) expression grammar with multi-character terminals',
-        () {
-      final expressionGrammar = grammar(
-        terminals: {'id', '+'},
-        nonterminals: {'E', "E'", 'T'},
-        startSymbol: 'E',
-        productions: {
-          const Production(
-            id: 'p1',
-            leftSide: ['E'],
-            rightSide: ['T', "E'"],
-          ),
-          const Production(
-            id: 'p2',
-            leftSide: ["E'"],
-            rightSide: ['+', 'T', "E'"],
-          ),
-          const Production(
-            id: 'p3',
-            leftSide: ["E'"],
-            rightSide: [],
-            isLambda: true,
-          ),
-          const Production(
-            id: 'p4',
-            leftSide: ['T'],
-            rightSide: ['id'],
-          ),
-        },
-      );
+    test(
+      'accepts an LL(1) expression grammar with multi-character terminals',
+      () {
+        final expressionGrammar = grammar(
+          terminals: {'id', '+'},
+          nonterminals: {'E', "E'", 'T'},
+          startSymbol: 'E',
+          productions: {
+            const Production(id: 'p1', leftSide: ['E'], rightSide: ['T', "E'"]),
+            const Production(
+              id: 'p2',
+              leftSide: ["E'"],
+              rightSide: ['+', 'T', "E'"],
+            ),
+            const Production(
+              id: 'p3',
+              leftSide: ["E'"],
+              rightSide: [],
+              isLambda: true,
+            ),
+            const Production(id: 'p4', leftSide: ['T'], rightSide: ['id']),
+          },
+        );
 
-      final result = GrammarParser.parse(
-        expressionGrammar,
-        'id+id',
-        strategyHint: ParsingStrategyHint.ll,
-      );
+        final result = GrammarParser.parse(
+          expressionGrammar,
+          'id+id',
+          strategyHint: ParsingStrategyHint.ll,
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.data!.accepted, isTrue);
-      expect(result.data!.ll1Steps, isNotEmpty);
-      expect(result.data!.ll1Steps.last.action, LL1ParseAction.accept);
-      expect(
-        result.data!.ll1Steps
-            .where((step) => step.action == LL1ParseAction.match)
-            .map((step) => step.lookahead),
-        ['id', '+', 'id'],
-      );
-      for (final step in result.data!.ll1Steps) {
-        expect(step.stack, isNotEmpty);
-        expect(step.remainingInput, isNotEmpty);
-        expect(step.lookahead, isNotEmpty);
-      }
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.data!.accepted, isTrue);
+        expect(result.data!.ll1Steps, isNotEmpty);
+        expect(result.data!.ll1Steps.last.action, LL1ParseAction.accept);
+        expect(
+          result.data!.ll1Steps
+              .where((step) => step.action == LL1ParseAction.match)
+              .map((step) => step.lookahead),
+          ['id', '+', 'id'],
+        );
+        for (final step in result.data!.ll1Steps) {
+          expect(step.stack, isNotEmpty);
+          expect(step.remainingInput, isNotEmpty);
+          expect(step.lookahead, isNotEmpty);
+        }
+      },
+    );
 
-    test('tokenizes overlapping terminals with deterministic longest match',
-        () {
-      final overlappingTerminalsGrammar = grammar(
-        terminals: {'i', 'id'},
-        nonterminals: {'S', 'U'},
-        startSymbol: 'S',
-        productions: {
-          const Production(id: 'p1', leftSide: ['S'], rightSide: ['id']),
-          const Production(id: 'p2', leftSide: ['U'], rightSide: ['i']),
-        },
-      );
+    test(
+      'tokenizes overlapping terminals with deterministic longest match',
+      () {
+        final overlappingTerminalsGrammar = grammar(
+          terminals: {'i', 'id'},
+          nonterminals: {'S', 'U'},
+          startSymbol: 'S',
+          productions: {
+            const Production(id: 'p1', leftSide: ['S'], rightSide: ['id']),
+            const Production(id: 'p2', leftSide: ['U'], rightSide: ['i']),
+          },
+        );
 
-      final result = GrammarParser.parse(
-        overlappingTerminalsGrammar,
-        'id',
-        strategyHint: ParsingStrategyHint.ll,
-      );
+        final result = GrammarParser.parse(
+          overlappingTerminalsGrammar,
+          'id',
+          strategyHint: ParsingStrategyHint.ll,
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.data!.accepted, isTrue);
-      expect(
-        result.data!.ll1Steps
-            .where((step) => step.action == LL1ParseAction.match)
-            .single
-            .lookahead,
-        'id',
-      );
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.data!.accepted, isTrue);
+        expect(
+          result.data!.ll1Steps
+              .where((step) => step.action == LL1ParseAction.match)
+              .single
+              .lookahead,
+          'id',
+        );
+      },
+    );
 
     test('uses FOLLOW entries for a nullable start symbol', () {
       final nullableGrammar = grammar(
@@ -158,11 +154,7 @@ void main() {
         nonterminals: {'S'},
         startSymbol: 'S',
         productions: {
-          const Production(
-            id: 'p1',
-            leftSide: ['S'],
-            rightSide: ['ε'],
-          ),
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['ε']),
         },
       );
 
@@ -189,11 +181,7 @@ void main() {
         nonterminals: {'S', 'A', 'B'},
         startSymbol: 'S',
         productions: {
-          const Production(
-            id: 'p1',
-            leftSide: ['S'],
-            rightSide: ['A', 'B'],
-          ),
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['A', 'B']),
           const Production(
             id: 'p2',
             leftSide: ['A'],
@@ -256,11 +244,7 @@ void main() {
         nonterminals: {'S'},
         startSymbol: 'S',
         productions: {
-          const Production(
-            id: 'p1',
-            leftSide: ['S'],
-            rightSide: ['a', 'b'],
-          ),
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a', 'b']),
         },
       );
       final singleTerminalGrammar = grammar(
@@ -297,16 +281,8 @@ void main() {
         nonterminals: {'S', 'A', 'B'},
         startSymbol: 'S',
         productions: {
-          const Production(
-            id: 'p1',
-            leftSide: ['S'],
-            rightSide: ['a', 'A'],
-          ),
-          const Production(
-            id: 'p2',
-            leftSide: ['S'],
-            rightSide: ['a', 'B'],
-          ),
+          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a', 'A']),
+          const Production(id: 'p2', leftSide: ['S'], rightSide: ['a', 'B']),
           const Production(
             id: 'p3',
             leftSide: ['A'],
@@ -362,11 +338,11 @@ void main() {
       );
 
       Grammar orderedGrammar(List<Production> productions) => grammar(
-            terminals: {'a'},
-            nonterminals: {'S', 'A', 'B'},
-            startSymbol: 'S',
-            productions: Set<Production>.from(productions),
-          );
+        terminals: {'a'},
+        nonterminals: {'S', 'A', 'B'},
+        startSymbol: 'S',
+        productions: Set<Production>.from(productions),
+      );
 
       final forward = GrammarParser.parse(
         orderedGrammar([first, second, nullableA, nullableB]),
@@ -456,10 +432,7 @@ void main() {
       ).data!;
 
       expect(conflict.outcome, GrammarParseOutcome.conflict);
-      expect(
-        conflict.ll1Steps.single.diagnostic,
-        LL1ParseDiagnostic.conflict,
-      );
+      expect(conflict.ll1Steps.single.diagnostic, LL1ParseDiagnostic.conflict);
       expect(cancelled.outcome, GrammarParseOutcome.cancelled);
       expect(
         cancelled.ll1Steps.single.diagnostic,
@@ -487,16 +460,17 @@ void main() {
         },
       );
 
-      final table =
-          GrammarAnalyzer.buildLL1ParseTable(dualProvenanceGrammar).data!.value;
+      final table = GrammarAnalyzer.buildLL1ParseTable(
+        dualProvenanceGrammar,
+      ).data!.value;
       final aEntry = table.entriesAt('A', 'a').single;
       final conflict = table.typedConflicts.single;
 
       expect(aEntry.productionId, 'p2');
-      expect(
-        aEntry.placements,
-        {LL1TablePlacement.first, LL1TablePlacement.follow},
-      );
+      expect(aEntry.placements, {
+        LL1TablePlacement.first,
+        LL1TablePlacement.follow,
+      });
       expect(conflict.kind, LL1ConflictKind.firstFollow);
       expect(conflict.nonTerminal, 'B');
       expect(conflict.entries.map((entry) => entry.productionId), ['p3', 'p4']);

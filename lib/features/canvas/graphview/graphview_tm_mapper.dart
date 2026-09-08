@@ -32,28 +32,33 @@ class GraphViewTmMapper {
       for (final invocation in machine.blockInvocations)
         invocation.stateId: invocation,
     };
-    final nodes = GraphViewMapperHelpers.nodesToGraphViewNodes(
-      states: machine.states,
-      initialState: machine.initialState,
-      acceptingStates: machine.acceptingStates,
-    ).map((node) {
-      final invocation = invocationByState[node.id];
-      if (invocation == null) return node;
-      final definition = machine.blockDefinitions[invocation.reference.blockId];
-      if (definition == null) {
-        return node.copyWith(
-          label: 'Block: ${invocation.reference.blockId}',
-          secondaryLabel: 'Missing reference',
-        );
-      }
-      final validRevision =
-          definition.revision == invocation.reference.revision;
-      return node.copyWith(
-        label: 'Block: ${definition.name}',
-        secondaryLabel:
-            validRevision ? 'Building block · valid' : 'Revision mismatch',
-      );
-    }).toList(growable: false);
+    final nodes =
+        GraphViewMapperHelpers.nodesToGraphViewNodes(
+              states: machine.states,
+              initialState: machine.initialState,
+              acceptingStates: machine.acceptingStates,
+            )
+            .map((node) {
+              final invocation = invocationByState[node.id];
+              if (invocation == null) return node;
+              final definition =
+                  machine.blockDefinitions[invocation.reference.blockId];
+              if (definition == null) {
+                return node.copyWith(
+                  label: 'Block: ${invocation.reference.blockId}',
+                  secondaryLabel: 'Missing reference',
+                );
+              }
+              final validRevision =
+                  definition.revision == invocation.reference.revision;
+              return node.copyWith(
+                label: 'Block: ${definition.name}',
+                secondaryLabel: validRevision
+                    ? 'Building block · valid'
+                    : 'Revision mismatch',
+              );
+            })
+            .toList(growable: false);
 
     final edges = machine.tmTransitions.map((transition) {
       final operations = transition.operationsForTapeCount(
@@ -110,11 +115,14 @@ class GraphViewTmMapper {
       );
       final controlPoint = GraphViewMapperHelpers.resolveControlPoint(edge);
 
-      final readSymbols = edge.tmReadSymbols ??
+      final readSymbols =
+          edge.tmReadSymbols ??
           <String>[edge.readSymbol ?? template.blankSymbol];
-      final writeSymbols = edge.tmWriteSymbols ??
+      final writeSymbols =
+          edge.tmWriteSymbols ??
           <String>[edge.writeSymbol ?? template.blankSymbol];
-      final directions = edge.tmDirections ??
+      final directions =
+          edge.tmDirections ??
           <TapeDirection>[edge.direction ?? TapeDirection.right];
 
       return TMTransition(
@@ -204,8 +212,9 @@ class GraphViewTmMapper {
       tapeAlphabet: tapeAlphabet,
       blankSymbol: blankSymbol,
       tapeCount: tapeCount,
-      blockInvocations: template.blockInvocations
-          .where((invocation) => stateMap.containsKey(invocation.stateId)),
+      blockInvocations: template.blockInvocations.where(
+        (invocation) => stateMap.containsKey(invocation.stateId),
+      ),
     );
   }
 }

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/pda_language_emptiness_analyzer.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_language_emptiness_analyzer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
@@ -102,14 +102,18 @@ void main() {
         },
       );
 
-      final first = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.finalState,
-      ) as PDALanguageEmptinessProof;
-      final second = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.finalState,
-      ) as PDALanguageEmptinessProof;
+      final first =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.finalState,
+              )
+              as PDALanguageEmptinessProof;
+      final second =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.finalState,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(first.witnessSymbols, ['a']);
       expect(second.witnessSymbols, first.witnessSymbols);
@@ -137,10 +141,12 @@ void main() {
         },
       );
 
-      final analysis = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.emptyStack,
-      ) as PDALanguageEmptinessProof;
+      final analysis =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.emptyStack,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(analysis.isEmpty, isFalse);
       expect(analysis.witnessWord, '');
@@ -167,10 +173,12 @@ void main() {
         },
       );
 
-      final analysis = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.both,
-      ) as PDALanguageEmptinessProof;
+      final analysis =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.both,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(analysis.witnessWord, 'a');
       expect(analysis.witnessTrace?.accepted, isTrue);
@@ -196,18 +204,21 @@ void main() {
         },
       );
 
-      final analysis = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.finalState,
-      ) as PDALanguageEmptinessProof;
+      final analysis =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.finalState,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(analysis.witnessWord, 'a');
       expect(analysis.normalization.replacedTransitionIds, {
         'read-without-pop',
       });
       expect(
-        analysis.normalizedPda.pdaTransitions
-            .every((transition) => !transition.isLambdaPop),
+        analysis.normalizedPda.pdaTransitions.every(
+          (transition) => !transition.isLambdaPop,
+        ),
         isTrue,
       );
       expect(analysis.witnessTrace?.accepted, isTrue);
@@ -233,10 +244,12 @@ void main() {
         },
       );
 
-      final analysis = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.finalState,
-      ) as PDALanguageEmptinessProof;
+      final analysis =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.finalState,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(analysis.witnessSymbols, ['token']);
       expect(analysis.terminalSymbolLength, 1);
@@ -263,10 +276,12 @@ void main() {
         },
       );
 
-      final analysis = PDALanguageEmptinessAnalyzer.analyze(
-        pda,
-        acceptanceMode: PDAAcceptanceMode.finalState,
-      ) as PDALanguageEmptinessProof;
+      final analysis =
+          PDALanguageEmptinessAnalyzer.analyze(
+                pda,
+                acceptanceMode: PDAAcceptanceMode.finalState,
+              )
+              as PDALanguageEmptinessProof;
 
       expect(analysis.isEmpty, isFalse);
       expect(analysis.grammar.startSymbol, isNot('S'));
@@ -291,9 +306,7 @@ void main() {
       final limited = PDALanguageEmptinessAnalyzer.analyze(
         pda,
         acceptanceMode: PDAAcceptanceMode.finalState,
-        limits: const PDALanguageEmptinessLimits(
-          maxGeneratedProductions: 1,
-        ),
+        limits: const PDALanguageEmptinessLimits(maxGeneratedProductions: 1),
       );
 
       expect(cancelled, isA<PDALanguageEmptinessFailure>());
@@ -319,36 +332,12 @@ void main() {
         nonterminals: const {'S', 'A', 'B', 'U'},
         startSymbol: 'S',
         productions: {
-          const Production(
-            id: 's-a',
-            leftSide: ['S'],
-            rightSide: ['A'],
-          ),
-          const Production(
-            id: 'a-b',
-            leftSide: ['A'],
-            rightSide: ['B'],
-          ),
-          const Production(
-            id: 'b-a',
-            leftSide: ['B'],
-            rightSide: ['A'],
-          ),
-          const Production(
-            id: 'b-terminal',
-            leftSide: ['B'],
-            rightSide: ['a'],
-          ),
-          const Production(
-            id: 's-u',
-            leftSide: ['S'],
-            rightSide: ['U'],
-          ),
-          const Production(
-            id: 'u-u',
-            leftSide: ['U'],
-            rightSide: ['U'],
-          ),
+          const Production(id: 's-a', leftSide: ['S'], rightSide: ['A']),
+          const Production(id: 'a-b', leftSide: ['A'], rightSide: ['B']),
+          const Production(id: 'b-a', leftSide: ['B'], rightSide: ['A']),
+          const Production(id: 'b-terminal', leftSide: ['B'], rightSide: ['a']),
+          const Production(id: 's-u', leftSide: ['S'], rightSide: ['U']),
+          const Production(id: 'u-u', leftSide: ['U'], rightSide: ['U']),
         },
         type: GrammarType.contextFree,
         created: instant,
@@ -395,20 +384,8 @@ PDA _nonEmptyAnBnPda() {
         pop: 'A',
         push: const ['A', 'A'],
       ),
-      _transition(
-        id: 'first-b',
-        from: push,
-        to: pop,
-        input: 'b',
-        pop: 'A',
-      ),
-      _transition(
-        id: 'more-b',
-        from: pop,
-        to: pop,
-        input: 'b',
-        pop: 'A',
-      ),
+      _transition(id: 'first-b', from: push, to: pop, input: 'b', pop: 'A'),
+      _transition(id: 'more-b', from: pop, to: pop, input: 'b', pop: 'A'),
       _transition(
         id: 'finish',
         from: pop,
@@ -420,11 +397,7 @@ PDA _nonEmptyAnBnPda() {
   );
 }
 
-State _state(
-  String id, {
-  bool initial = false,
-  bool accepting = false,
-}) {
+State _state(String id, {bool initial = false, bool accepting = false}) {
   return State(
     id: id,
     label: id,

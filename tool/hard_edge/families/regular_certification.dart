@@ -2,23 +2,23 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/dfa_completer.dart';
-import 'package:turing_lab/core/algorithms/dfa_minimizer.dart';
-import 'package:turing_lab/core/algorithms/dfa_operations.dart';
-import 'package:turing_lab/core/algorithms/equivalence_checker.dart';
-import 'package:turing_lab/core/algorithms/fa_to_regex_converter.dart';
-import 'package:turing_lab/core/algorithms/fsa_concatenator.dart';
-import 'package:turing_lab/core/algorithms/fsa_determinizer.dart';
-import 'package:turing_lab/core/algorithms/fsa_kleene_star.dart';
-import 'package:turing_lab/core/algorithms/fsa_reverser.dart';
-import 'package:turing_lab/core/algorithms/fsa_to_grammar_converter.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_fsa_converter.dart';
-import 'package:turing_lab/core/algorithms/language_comparator.dart';
-import 'package:turing_lab/core/algorithms/nfa_to_dfa_converter.dart';
-import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
-import 'package:turing_lab/core/algorithms/regex_simplifier.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_completer.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_minimizer.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_operations.dart';
+import 'package:turing_lab/core/algorithms/fsa/equivalence_checker.dart';
+import 'package:turing_lab/core/algorithms/fsa/fa_to_regex_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_concatenator.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_determinizer.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_kleene_star.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_reverser.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_to_grammar_converter.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_fsa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparator.dart';
+import 'package:turing_lab/core/algorithms/fsa/nfa_to_dfa_converter.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_analyzer.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_simplifier.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/manual_conversions/fa_to_regex_manual.dart';
 import 'package:turing_lab/core/manual_conversions/regex_to_fa_manual.dart';
 import 'package:turing_lab/core/models/fsa.dart';
@@ -52,11 +52,11 @@ final class RegularCertificationCheck {
   final Map<String, Object?> evidence;
 
   Map<String, Object?> toJson() => {
-        'evidence': evidence,
-        'id': id,
-        'message': message,
-        'status': status.name,
-      };
+    'evidence': evidence,
+    'id': id,
+    'message': message,
+    'status': status.name,
+  };
 }
 
 final class RegularCertificationOptions {
@@ -105,25 +105,27 @@ final class RegularCertificationReport {
   }
 
   Map<String, Object?> toJson() => {
-        'checks': checks.map((check) => check.toJson()).toList(),
-        'family': 'regular',
-        'inventory': {
-          'algorithms':
-              regularAlgorithmInventory.map((entry) => entry.toJson()).toList(),
-          'providers':
-              regularProviderInventory.map((entry) => entry.toJson()).toList(),
-        },
-        'options': {
-          'cases': options.cases,
-          'maximumConfigurations': options.oracleBudget.maximumConfigurations,
-          'maximumWordLength': options.oracleBudget.maximumWordLength,
-          'maximumWords': options.oracleBudget.maximumWords,
-          'seed': options.seed,
-        },
-        'remotelyVerified': false,
-        'schemaVersion': 1,
-        'status': status.name,
-      };
+    'checks': checks.map((check) => check.toJson()).toList(),
+    'family': 'regular',
+    'inventory': {
+      'algorithms': regularAlgorithmInventory
+          .map((entry) => entry.toJson())
+          .toList(),
+      'providers': regularProviderInventory
+          .map((entry) => entry.toJson())
+          .toList(),
+    },
+    'options': {
+      'cases': options.cases,
+      'maximumConfigurations': options.oracleBudget.maximumConfigurations,
+      'maximumWordLength': options.oracleBudget.maximumWordLength,
+      'maximumWords': options.oracleBudget.maximumWords,
+      'seed': options.seed,
+    },
+    'remotelyVerified': false,
+    'schemaVersion': 1,
+    'status': status.name,
+  };
 
   String toMarkdown() {
     final buffer = StringBuffer()
@@ -160,7 +162,7 @@ final class RegularCertificationReport {
 
 final class RegularCertificationRunner {
   RegularCertificationRunner({required Directory repositoryRoot})
-      : repositoryRoot = repositoryRoot.absolute;
+    : repositoryRoot = repositoryRoot.absolute;
 
   final Directory repositoryRoot;
 
@@ -170,11 +172,7 @@ final class RegularCertificationRunner {
     options.validate();
     final checks = <RegularCertificationCheck>[];
     await _runCheck(checks, 'regular.inventory', () => _checkInventory());
-    await _runCheck(
-      checks,
-      'regular.model-integrity',
-      _checkModelIntegrity,
-    );
+    await _runCheck(checks, 'regular.model-integrity', _checkModelIntegrity);
     await _runCheck(
       checks,
       'regular.generated-oracle',
@@ -257,10 +255,10 @@ final class RegularCertificationRunner {
       'regular.generated-shrink' => () => _checkGeneratedShrink(options),
       'regular.mutations' => _checkMutations,
       _ => throw ArgumentError.value(
-          property,
-          'property',
-          'is not a registered regular-language property',
-        ),
+        property,
+        'property',
+        'is not a registered regular-language property',
+      ),
     };
     await _runCheck(checks, property, check);
     return checks.single;
@@ -308,13 +306,16 @@ final class RegularCertificationRunner {
     ]) {
       _require(ids.add(entry.id), 'Inventory repeats ${entry.id}.');
       _require(
-        File('${repositoryRoot.path}${Platform.pathSeparator}'
-                '${entry.sourcePath.replaceAll('/', Platform.pathSeparator)}')
-            .existsSync(),
+        File(
+          '${repositoryRoot.path}${Platform.pathSeparator}'
+          '${entry.sourcePath.replaceAll('/', Platform.pathSeparator)}',
+        ).existsSync(),
         'Inventory source does not exist: ${entry.sourcePath}.',
       );
       _require(
-          entry.entryPoints.isNotEmpty, '${entry.id} has no entry points.');
+        entry.entryPoints.isNotEmpty,
+        '${entry.id} has no entry points.',
+      );
       _require(entry.properties.isNotEmpty, '${entry.id} has no properties.');
     }
     return _CheckEvidence(
@@ -327,7 +328,9 @@ final class RegularCertificationRunner {
   Future<_CheckEvidence> _checkModelIntegrity() async {
     final epsilonCycle = _epsilonSymbolCycle();
     _require(
-        !epsilonCycle.isFiniteLanguage, 'Mixed cycle was reported finite.');
+      !epsilonCycle.isFiniteLanguage,
+      'Mixed cycle was reported finite.',
+    );
     final epsilonOnly = _epsilonOnlyCycle();
     _require(epsilonOnly.isFiniteLanguage, 'Epsilon-only cycle was infinite.');
     _require(
@@ -501,7 +504,9 @@ final class RegularCertificationRunner {
     final renamed = _renamedAndReordered(source);
     final renamedMinimum = DFAMinimizer.minimize(renamed);
     _require(
-        renamedMinimum.isSuccess, renamedMinimum.error ?? 'Rename failed.');
+      renamedMinimum.isSuccess,
+      renamedMinimum.error ?? 'Rename failed.',
+    );
     _require(
       renamedMinimum.data!.states.length == minimized.states.length,
       'Renaming or insertion order changed the minimal quotient size.',
@@ -640,16 +645,7 @@ final class RegularCertificationRunner {
 
   Future<_CheckEvidence> _checkRegexOracle() async {
     const alphabet = {'a', 'b', '😀', '😁'};
-    const expressions = [
-      '∅',
-      'ε',
-      'a|b',
-      'a*',
-      '(ab)+',
-      'a?',
-      '[😀-😁]',
-      '.',
-    ];
+    const expressions = ['∅', 'ε', 'a|b', 'a*', '(ab)+', 'a?', '[😀-😁]', '.'];
     var words = 0;
     for (final expression in expressions) {
       final validation = RegexToNFAConverter.validate(expression);
@@ -722,12 +718,10 @@ final class RegularCertificationRunner {
       );
       _require(before.isSuccess && after.isSuccess, 'Conversion failed.');
       try {
-        words += _compareBounded(
-          before.data!,
-          after.data!,
-          const {'a', 'b'},
-          const RegularOracleBudget(maximumWordLength: 4),
-        );
+        words += _compareBounded(before.data!, after.data!, const {
+          'a',
+          'b',
+        }, const RegularOracleBudget(maximumWordLength: 4));
       } on StateError catch (error) {
         throw StateError(
           '$expression -> ${simplified.data!.simplifiedRegex}: '
@@ -766,7 +760,9 @@ final class RegularCertificationRunner {
     _require(starHeight.data == 1, 'Star height was ${starHeight.data}.');
     _require(nesting.data == 1, 'Nesting depth was ${nesting.data}.');
     _require(
-        alphabet.data!.containsAll({'a', 'b'}), 'Alphabet was incomplete.');
+      alphabet.data!.containsAll({'a', 'b'}),
+      'Alphabet was incomplete.',
+    );
     return _CheckEvidence(
       'Analysis, complexity, alphabet, and sample paths completed.',
       {'sampleCount': analysis.data!.sampleStrings.samples.length},
@@ -847,7 +843,7 @@ final class RegularCertificationRunner {
       'Right-linear grammar conversion preserved the language.',
       {
         'evaluatedWords': words,
-        'productions': grammar.data!.productions.length
+        'productions': grammar.data!.productions.length,
       },
     );
   }
@@ -909,11 +905,9 @@ final class RegularCertificationRunner {
   }
 
   Future<_CheckEvidence> _checkResourceOutcomes() async {
-    final bounded = regularOracleAccepts(
-      _epsilonSymbolCycle(),
-      const ['a'],
-      maximumConfigurations: 1,
-    );
+    final bounded = regularOracleAccepts(_epsilonSymbolCycle(), const [
+      'a',
+    ], maximumConfigurations: 1);
     _require(
       bounded is OracleBoundedUnknown<bool, RegularOracleEvidence>,
       'Oracle bound was coerced into a verdict.',
@@ -924,7 +918,9 @@ final class RegularCertificationRunner {
       timeout: Duration.zero,
     );
     _require(
-        timed.isSuccess && timed.data!.isTimeout, 'Timeout was not typed.');
+      timed.isSuccess && timed.data!.isTimeout,
+      'Timeout was not typed.',
+    );
     final cancelled = MutableCancellationToken()..cancel();
     final cancellation = ResourceAssertions(
       budget: ResourceBudget(),
@@ -1006,8 +1002,9 @@ final class RegularCertificationRunner {
           candidate.states.any((state) => state.initial) &&
           candidate.transitions.every(
             (transition) =>
-                candidate.states
-                    .any((state) => state.id == transition.fromId) &&
+                candidate.states.any(
+                  (state) => state.id == transition.fromId,
+                ) &&
                 candidate.states.any((state) => state.id == transition.toId),
           ),
       maxAttempts: 128,
@@ -1061,15 +1058,15 @@ const regularMutationMinimumScore = 1.0;
 /// Applies one registered mutant and returns whether its targeted property
 /// distinguishes the mutant from the canonical implementation.
 bool regularMutationProbeKilled(String operatorId) => switch (operatorId) {
-      'flip-initial-acceptance' => _flipInitialAcceptanceIsKilled(),
-      'ignore-epsilon-reachability' => _ignoredEpsilonIsKilled(),
-      'skip-dfa-completion' => _skippedCompletionIsKilled(),
-      _ => throw ArgumentError.value(
-          operatorId,
-          'operatorId',
-          'is not a registered regular mutation operator',
-        ),
-    };
+  'flip-initial-acceptance' => _flipInitialAcceptanceIsKilled(),
+  'ignore-epsilon-reachability' => _ignoredEpsilonIsKilled(),
+  'skip-dfa-completion' => _skippedCompletionIsKilled(),
+  _ => throw ArgumentError.value(
+    operatorId,
+    'operatorId',
+    'is not a registered regular mutation operator',
+  ),
+};
 
 /// Validates property-specific fixture data before a catalog case is run.
 ///
@@ -1124,8 +1121,9 @@ bool regularFixturePayloadMatches(
 FSA _automatonFromFixture(Map<String, Object?> fixture) {
   final stateIds = (fixture['states']! as List).cast<String>();
   final initialId = fixture['initialState'] as String?;
-  final acceptingIds =
-      (fixture['acceptingStates'] as List? ?? const []).cast<String>().toSet();
+  final acceptingIds = (fixture['acceptingStates'] as List? ?? const [])
+      .cast<String>()
+      .toSet();
   final states = <String, State>{
     for (var index = 0; index < stateIds.length; index++)
       stateIds[index]: State(
@@ -1145,7 +1143,8 @@ FSA _automatonFromFixture(Map<String, Object?> fixture) {
     final encoded = encodedTransitions[index];
     if (encoded is! Map) {
       throw const FormatException(
-          'Regular fixture transition must be an object.');
+        'Regular fixture transition must be an object.',
+      );
     }
     final from = states[encoded['from']];
     final to = states[encoded['to']];
@@ -1224,8 +1223,9 @@ bool _isFiniteIgnoringEpsilon(FSA automaton) {
     return reached;
   }
 
-  final useful = reach({initial}, adjacency)
-      .intersection(reach(automaton.acceptingStates, reverse));
+  final useful = reach({
+    initial,
+  }, adjacency).intersection(reach(automaton.acceptingStates, reverse));
   final visiting = <State>{};
   final visited = <State>{};
   bool hasCycle(State state) {
@@ -1394,8 +1394,9 @@ FSA _renamedAndReordered(FSA source) {
     states: renamed.values.toSet(),
     transitions: transitions,
     alphabet: {...source.alphabet},
-    initialState:
-        source.initialState == null ? null : renamed[source.initialState],
+    initialState: source.initialState == null
+        ? null
+        : renamed[source.initialState],
     acceptingStates: {
       for (final state in source.acceptingStates) renamed[state]!,
     },
@@ -1447,11 +1448,7 @@ FSA _epsilonOnlyCycle() {
 FSA _exactWord(List<String> word, {required Set<String> alphabet}) {
   final states = <State>[
     for (var index = 0; index <= word.length; index++)
-      _state(
-        'q$index',
-        initial: index == 0,
-        accepting: index == word.length,
-      ),
+      _state('q$index', initial: index == 0, accepting: index == word.length),
   ];
   return _fsa(
     id: 'exact-${word.join('-')}',
@@ -1531,22 +1528,22 @@ FSA _redundantEndsWithA() {
 }
 
 bool _isComplete(FSA automaton) => automaton.states.every(
-      (state) => automaton.alphabet.every(
-        (symbol) =>
-            automaton.getTransitionsFromStateOnSymbol(state, symbol).length ==
-            1,
-      ),
-    );
+  (state) => automaton.alphabet.every(
+    (symbol) =>
+        automaton.getTransitionsFromStateOnSymbol(state, symbol).length == 1,
+  ),
+);
 
 String _automatonShape(FSA automaton) {
-  final transitions = automaton.fsaTransitions
-      .map(
-        (transition) =>
-            '${transition.fromState.id}:${transition.inputSymbols.toList()..sort()}:'
-            '${transition.toState.id}',
-      )
-      .toList()
-    ..sort();
+  final transitions =
+      automaton.fsaTransitions
+          .map(
+            (transition) =>
+                '${transition.fromState.id}:${transition.inputSymbols.toList()..sort()}:'
+                '${transition.toState.id}',
+          )
+          .toList()
+        ..sort();
   return jsonEncode({
     'accepting': automaton.acceptingStates.map((state) => state.id).toList()
       ..sort(),
@@ -1556,11 +1553,7 @@ String _automatonShape(FSA automaton) {
   });
 }
 
-State _state(
-  String id, {
-  bool initial = false,
-  bool accepting = false,
-}) =>
+State _state(String id, {bool initial = false, bool accepting = false}) =>
     State(
       id: id,
       label: id,
@@ -1569,12 +1562,7 @@ State _state(
       isAccepting: accepting,
     );
 
-FSATransition _transition(
-  String id,
-  State from,
-  State to,
-  String symbol,
-) =>
+FSATransition _transition(String id, State from, State to, String symbol) =>
     FSATransition.deterministic(
       id: id,
       fromState: from,
@@ -1589,19 +1577,18 @@ FSA _fsa({
   required Set<String> alphabet,
   required State initial,
   required Set<State> accepting,
-}) =>
-    FSA(
-      id: id,
-      name: id,
-      states: states,
-      transitions: transitions,
-      alphabet: alphabet,
-      initialState: initial,
-      acceptingStates: accepting,
-      created: DateTime.utc(2026),
-      modified: DateTime.utc(2026),
-      bounds: const math.Rectangle(0, 0, 400, 300),
-    );
+}) => FSA(
+  id: id,
+  name: id,
+  states: states,
+  transitions: transitions,
+  alphabet: alphabet,
+  initialState: initial,
+  acceptingStates: accepting,
+  created: DateTime.utc(2026),
+  modified: DateTime.utc(2026),
+  bounds: const math.Rectangle(0, 0, 400, 300),
+);
 
 extension<T> on Iterable<T> {
   T? get firstOrNull {

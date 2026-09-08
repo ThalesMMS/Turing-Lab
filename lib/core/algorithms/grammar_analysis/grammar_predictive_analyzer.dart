@@ -1,4 +1,4 @@
-part of '../grammar_analyzer.dart';
+part of '../grammar/grammar_analyzer.dart';
 
 class GrammarPredictiveAnalyzer {
   const GrammarPredictiveAnalyzer(this.context);

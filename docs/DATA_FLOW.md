@@ -1,6 +1,6 @@
 # Data Flow
 
-Date: 2026-04-22
+Date: 2026-09-06 (supersedes the 2026-04-22 revision)
 
 This document records the data Turing Lab stores, processes, imports, and exports.
 It is intended to support Apple submission work and future privacy maintenance.
@@ -15,9 +15,10 @@ For Apple submission wording and category-by-category App Privacy answers, see
 
 - Turing Lab does not send user data to developer-controlled servers.
 - Turing Lab does not include analytics, crash reporting, ads, user accounts, or device identifier collection.
-- Turing Lab stores only local settings and local simulation-trace data in app storage.
+- Turing Lab stores only local settings, local simulation traces, the active editor session (when Auto Save is enabled) and local teaching-session data in app storage.
 - File import and export are user-initiated through the system file picker.
 - Bundled examples are shipped as app assets and loaded locally.
+- Printing hands a locally generated PDF to the operating system print sheet (or the browser print dialog on the web). Turing Lab does not upload print data to developer-controlled infrastructure; the printer, print destination, OS spooler or browser the user selects may receive or retain the PDF beyond the dialog, under the user's control.
 
 ## Data categories
 
@@ -25,10 +26,13 @@ For Apple submission wording and category-by-category App Privacy answers, see
 | --- | --- | --- | --- | --- |
 | Settings | Theme mode, empty-string symbol, epsilon symbol, grid visibility, coordinate visibility, auto-save toggle, tooltip toggle, grid size, node size, font size, animation speed | `SharedPreferences` | Persists until changed, cleared, or app uninstall | No |
 | Unified trace history | Input strings, acceptance result, per-step simulation data, optional automaton type/id, trace metadata, current step index | `SharedPreferences` (`trace_history`, `current_trace`, `trace_metadata`; reads legacy `simulation_trace_history` and `current_simulation_trace` when unified keys are absent) | Persists across launches; history capped to 50 entries | No |
-| Active editor automata/session | Current automaton/grammar/PDA/TM being edited, current canvas state, algorithm state | In memory only during normal editor use | Until replaced, app restart, or process exit | No |
+| Active editor session | The latest document of each formal system (FSA, CFG, unrestricted grammar, PDA, TM, regex, both Pumping Lemma variants, Mealy, Moore, L-system), their annotations, and the active workspace key | `SharedPreferences` (`active_editor_session`, envelope v3; unsupported payloads parked under `active_editor_session_unsupported_*`) while Auto Save is enabled | Persists across launches until replaced, Auto Save is disabled, or app uninstall | No |
+| Teaching sessions | Grammar normalization, LL(1) and LR(1) teaching progress; manual FA/regex/grammar conversion drafts | `SharedPreferences` (`grammar_teaching_session.v1.*`, `manual_conversion_session.*`) | Persists across launches; invalidated when the source document revision changes | No |
+| Transient editor state | Canvas viewport, selection, algorithm results, undo history | In memory only | Until replaced, app restart, or process exit | No |
 | Bundled examples | Predefined example automata and grammars with metadata | App bundle assets under `assets/examples/`, plus in-memory cache after load | Assets persist with the app install; cache lasts for the process lifetime | No |
-| Imported files | User-selected `.jff`, `.cfg`, and `.json` contents parsed into app models | Read from system file picker into memory; raw file contents are not copied into app storage by Turing Lab | Only during import, unless user then keeps the parsed model open or saves/export traces separately | Not by the app; source files may reside in user-selected providers such as On My iPhone or iCloud Drive |
-| Exported files | User-created `.jff`, `.cfg`, `.json`, `.svg`, and `.png` outputs | Written only to the user-selected destination from the system save dialog | User-controlled outside the app | Potentially, if the user chooses a cloud-backed provider; Turing Lab does not upload to developer infrastructure |
+| Imported files | User-selected `.jff`, `.cfg`, and `.json` contents for any of the formal systems below, parsed into app models | Read from system file picker into memory; raw file contents are not copied into app storage by Turing Lab | Only during import, unless user then keeps the parsed model open or saves/export traces separately | Not by the app; source files may reside in user-selected providers such as On My iPhone or iCloud Drive |
+| Exported files | User-created `.jff`, `.cfg`, `.json`, `.svg`, and `.png` outputs for the formal systems below | Written only to the user-selected destination from the system save dialog | User-controlled outside the app | Potentially, if the user chooses a cloud-backed provider; Turing Lab does not upload to developer infrastructure |
+| Printed pages | A PDF page with the document title and its diagram or text listing, generated in memory when the user taps Print | Handed to the operating system print sheet (or the browser print dialog on the web); not written to app storage by Turing Lab | Only during the print dialog inside the app; the selected printer, spooler, file or cloud print destination may retain it | Only to the destination the user chooses in the print dialog; Turing Lab does not upload it to developer infrastructure |
 | In-app diagnostics | Validation messages, severity, suggestions, simulation-failure explanations | In memory only | Until the view refreshes or the process exits | No |
 | Local debug/console logs | Error messages, stack traces, and some development diagnostics that may include model or input details | Local console / system log only | Platform-controlled; not managed by app storage | No upload path in app code |
 
@@ -67,11 +71,20 @@ flowchart LR
 - Stored trace fields include input string, acceptance state, execution time, step list, optional computation tree, current step index, and trace metadata such as timestamp and automaton type.
 - For storage keys, caps, and restore behavior, see [PERSISTENCE.md](./PERSISTENCE.md).
 
-### Automata and grammars
+### Active editor session
 
-- The main editor state is primarily in-memory and is not restored on cold start today.
-- There is no active `SharedPreferences` persistence path for editor automata after the unused local data source cleanup.
-- Imported automata and grammars are parsed directly from user-selected files; the raw source file is not copied into app-managed storage.
+- The current document of every formal system is mirrored into the
+  `active_editor_session` snapshot while Auto Save is enabled and restored on
+  cold start by `activeSessionPersistenceProvider`.
+- Each document is stored in a typed envelope: stable formal-system key,
+  document schema id and version, JSON payload, plus annotations.
+- Disabling Auto Save clears the snapshot; unsupported future payloads are
+  parked under a recovery key instead of being deleted.
+- Imported automata and grammars are parsed directly from user-selected
+  files; the raw source file is not copied into app-managed storage, only the
+  parsed model can end up in the session snapshot.
+- For keys, versions and restore behavior, see [PERSISTENCE.md](./PERSISTENCE.md)
+  and [persistence-audit.md](./persistence-audit.md).
 
 ### Diagnostics
 
@@ -81,34 +94,44 @@ flowchart LR
 
 ## File import/export flows
 
-### Accepted imports
+### Formal systems and formats
 
-- Automata JFLAP XML: `.jff`
-- Grammar JFLAP XML: `.cfg`
-- Automaton JSON: `.json`
-- Some algorithm flows also read a second `.jff` automaton through the system picker for comparisons and binary operations.
+Every registered formal system, the stable key used by persistence and the
+document formats it supports through the system file picker:
 
-### Exported formats
+| Formal system | Key | Import | Export |
+| --- | --- | --- | --- |
+| Finite automaton (DFA/NFA) | `fsa:standard` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
+| Context-free grammar | `grammar:standard` | `.cfg`, `.json` | `.cfg`, `.json`, `.svg` |
+| Unrestricted grammar | `grammar:unrestricted` | `.jff`, `.json` | `.jff`, `.json` |
+| Pushdown automaton | `pda:single-stack` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
+| Turing machine | `tm:single-tape` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
+| Regular expression | `regex:standard` | `.jff`, `.json` | `.jff`, `.json` |
+| Pumping Lemma (regular) | `pumping-lemma:regular` | `.jff`, `.json` | `.jff`, `.json` |
+| Pumping Lemma (context-free) | `pumping-lemma:context-free` | `.jff`, `.json` | `.jff`, `.json` |
+| Mealy machine | `transducer:mealy` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
+| Moore machine | `transducer:moore` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
+| L-system | `l-system:deterministic-context-free` | `.jff`, `.json` | `.jff`, `.json`, `.svg`, `.png` |
 
-- Automata JFLAP XML: `.jff`
-- Grammar JFLAP XML: `.cfg`
-- Automaton JSON: `.json`
-- Automaton/grammar/PDA/TM SVG: `.svg`
-- Automaton PNG: `.png`
+- `.jff` and `.cfg` are JFLAP XML; `.json` is the versioned Turing Lab JSON
+  document format. Codecs live under `lib/data/codecs/`.
+- Some algorithm flows also read a second `.jff` automaton through the system
+  picker for comparisons and binary operations.
+- The variable dependency graph of a grammar can also be exported as SVG or PNG.
 
 ### What is extracted on import
 
 - JFLAP automata: state IDs, state names, state positions, initial/final markers, and transitions.
-- JFLAP grammars: start symbol and productions.
-- Automaton JSON: full serialized automaton model including IDs, timestamps, states, transitions, alphabet, bounds, zoom, and pan offset.
+- JFLAP grammars (context-free and unrestricted): start symbol and productions.
+- Turing Lab JSON: the full serialized document for that formal system, for example states, transitions, alphabet, bounds, zoom and pan offset for automata and transducers; axiom, rules and turtle parameters for L-systems; problem, session and progress for Pumping Lemma documents. Optional Turing Lab annotation blocks are read when present.
 - No hidden metadata extraction code was found beyond the modeled file contents being parsed into app structures.
 
 ### What is embedded on export
 
 - JFLAP/XML exports contain only the modeled automaton or grammar content needed for that format.
 - JSON exports contain the serialized automaton model, including model IDs, timestamps, layout bounds, zoom, and pan offset.
-- SVG exports contain the rendered diagram content and a visible title based on the model name by default; no author, analytics, tracking, or device metadata is added.
-- PNG exports are rendered from an in-app canvas to raw image bytes; no explicit EXIF or custom metadata-writing path was found.
+- SVG exports (automata, grammars, PDA, TM, transducers, L-systems, dependency graphs) contain the rendered diagram content and a visible title based on the model name by default; no author, analytics, tracking, or device metadata is added.
+- PNG exports (automata, transducers, L-systems, dependency graphs) are rendered from an in-app canvas to raw image bytes; no explicit EXIF or custom metadata-writing path was found.
 
 ### Important Apple/privacy distinction
 

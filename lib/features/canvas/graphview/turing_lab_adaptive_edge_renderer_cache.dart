@@ -117,7 +117,7 @@ extension _TuringLabAdaptiveEdgeRendererCache on TuringLabAdaptiveEdgeRenderer {
   }
 
   _DirectedEdgePair _pairForEdge(Edge edge) => _DirectedEdgePair(
-        sourceId: _nodeId(edge.source),
-        destinationId: _nodeId(edge.destination),
-      );
+    sourceId: _nodeId(edge.source),
+    destinationId: _nodeId(edge.destination),
+  );
 }

@@ -27,10 +27,34 @@ void main() {
       expect(properties['stepType'], 'Epsilon Closure');
       expect(properties['currentStateIds'], ['q0']);
       expect(properties['epsilonClosureIds'], unorderedEquals(['q0', 'q1']));
+      expect(properties['currentStateLabels'], ['q0']);
+      expect(properties['epsilonClosureLabels'], unorderedEquals(['q0', 'q1']));
       expect(properties['isAcceptingState'], true);
       expect(properties['isNewState'], true);
       expect(properties['dfaStateId'], 'q0');
       expect(() => jsonEncode(properties), returnsNormally);
+    });
+
+    test('state labels are serialized separately from their IDs', () {
+      final start = State(id: 's0', label: 'Start', position: Vector2.zero());
+      final loop = State(id: 's1', label: 'Loop', position: Vector2.zero());
+      final step = NFAToDFAStep.initialEpsilonClosure(
+        id: 'nfa-labels',
+        stepNumber: 0,
+        initialState: start,
+        epsilonClosure: {start, loop},
+        containsAcceptingState: false,
+      );
+
+      final properties = step.toProperties();
+
+      expect(properties['currentStateIds'], ['s0']);
+      expect(properties['currentStateLabels'], ['Start']);
+      expect(properties['epsilonClosureIds'], unorderedEquals(['s0', 's1']));
+      expect(
+        properties['epsilonClosureLabels'],
+        unorderedEquals(['Start', 'Loop']),
+      );
     });
 
     test('DFAMinimizationStep serializes partition and split IDs', () {
@@ -60,6 +84,7 @@ void main() {
         ['q0', 'q1', 'q2'],
       ]);
       expect(properties['splitSetIds'], ['q0', 'q1', 'q2']);
+      expect(properties['splitSetLabels'], ['q0', 'q1', 'q2']);
       expect(properties['splitIntersectionIds'], ['q0']);
       expect(properties['splitDifferenceIds'], ['q1', 'q2']);
       expect(properties['distinguishingSymbol'], 'a');
@@ -92,6 +117,10 @@ void main() {
       expect(properties['stepType'], 'Basic Symbol');
       expect(properties['createdStateIds'], unorderedEquals(['q0', 'q1']));
       expect(properties['createdTransitionIds'], ['t0']);
+      expect(properties['createdStateLabels'], unorderedEquals(['q0', 'q1']));
+      expect(properties['createdTransitionSummaries'], ['q0 → q1 (a)']);
+      expect(properties['fragmentStartStateLabel'], 'q0');
+      expect(properties['fragmentAcceptStateLabel'], 'q1');
       expect(properties['fragmentStartStateId'], 'q0');
       expect(properties['fragmentAcceptStateId'], 'q1');
       expect(properties['regexFragment'], 'a');

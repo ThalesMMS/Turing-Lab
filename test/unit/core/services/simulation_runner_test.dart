@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -105,11 +105,7 @@ void main() {
   group('native simulation runner', () {
     test('uses the acceptance mode stored by the PDA document', () async {
       final outcome = await SimulationRunner()
-          .runPda(
-            _emptyStackAcceptingPda(),
-            '',
-            stepByStep: false,
-          )
+          .runPda(_emptyStackAcceptingPda(), '', stepByStep: false)
           .outcome;
 
       expect(outcome.kind, SimulationOutcomeKind.accepted);
@@ -117,11 +113,7 @@ void main() {
 
     test('returns a successful worker result before the exit signal', () async {
       final outcome = await SimulationRunner()
-          .runTm(
-            _acceptingTm(),
-            '',
-            stepByStep: false,
-          )
+          .runTm(_acceptingTm(), '', stepByStep: false)
           .outcome;
 
       expect(outcome.kind, SimulationOutcomeKind.accepted);

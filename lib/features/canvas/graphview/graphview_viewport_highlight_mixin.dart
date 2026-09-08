@@ -140,19 +140,9 @@ mixin GraphViewViewportHighlightMixin on GraphViewHighlightController {
     } else {
       final viewportCenter = safeViewport.center;
       target = Matrix4.identity()
-        ..translateByDouble(
-          viewportCenter.dx,
-          viewportCenter.dy,
-          0.0,
-          1.0,
-        )
+        ..translateByDouble(viewportCenter.dx, viewportCenter.dy, 0.0, 1.0)
         ..scaleByDouble(relativeScale, relativeScale, relativeScale, 1.0)
-        ..translateByDouble(
-          -viewportCenter.dx,
-          -viewportCenter.dy,
-          0.0,
-          1.0,
-        )
+        ..translateByDouble(-viewportCenter.dx, -viewportCenter.dy, 0.0, 1.0)
         ..multiply(matrix);
     }
     graphController.animateToMatrix(target);

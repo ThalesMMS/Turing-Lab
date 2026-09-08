@@ -12,6 +12,7 @@ import '../../features/canvas/graphview/graphview_highlight_channel.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
+import '../widgets/common/suggested_input_dispatcher.dart';
 import '../../l10n/app_localizations_structured_messages.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/automaton_canvas_tool.dart';
@@ -26,6 +27,7 @@ import '../widgets/workspace_dock.dart';
 import 'graphview_transducer_canvas_controller.dart';
 import 'transducer_editor_state.dart';
 import 'transducer_batch_comparison_panel.dart';
+import 'transducer_conversion_panel.dart';
 import 'transducer_batch_comparison_strings.dart';
 import 'transducer_examples_panel.dart';
 import 'transducer_machine_panel.dart';
@@ -224,6 +226,35 @@ final class _TransducerWorkspaceState<
     setState(() => _canvasToolbarInsets = insets);
   }
 
+  /// Loads the example machine (the existing load flow) and hands [input]
+  /// to the simulation field, then opens the simulation surface.
+  Future<void> _useSuggestedInput(
+    BuildContext surfaceContext,
+    Object document,
+    String input,
+  ) async {
+    if (document is! TMachine) return;
+    final key = widget.definition.systemKey;
+    final published = await dispatchSuggestedInput(
+      surfaceContext,
+      ref,
+      workspace: key,
+      exampleId: document.id.value,
+      input: input,
+      ensureLoaded: () async {
+        if (!mounted) return false;
+        final current = ref.read(widget.provider).document;
+        if (current.id != document.id) {
+          ref.read(widget.provider.notifier).replaceDocument(document);
+        }
+        return true;
+      },
+    );
+    if (published && mounted && !_isCompact) {
+      _openSimulationSurface();
+    }
+  }
+
   void _openSimulationSurface() {
     if (!mounted) return;
     if (!_isCompact) {
@@ -310,6 +341,8 @@ final class _TransducerWorkspaceState<
                 ref.read(widget.provider.notifier).replaceDocument(document);
                 Navigator.of(sheetContext).pop();
               },
+              onUseInput: (document, input) =>
+                  _useSuggestedInput(sheetContext, document, input),
             );
             return _TransducerCompactTools(
               tools: tools,
@@ -720,6 +753,8 @@ final class _TransducerWorkspaceState<
           _dockController.closePanel();
         }
       },
+      onUseInput: (document, input) =>
+          _useSuggestedInput(context, document, input),
     );
     final machinePanel = TransducerMachinePanel<TMachine>(
       machine: machine,
@@ -893,13 +928,14 @@ final class _TransducerBatchTools extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = appLocalizationsOf(context);
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Column(
         children: [
           TabBar(
             tabs: [
               Tab(text: l10n.transducerBatch),
               Tab(text: l10n.transducerComparison),
+              Tab(text: l10n.transducerConversion),
             ],
           ),
           Expanded(
@@ -919,6 +955,7 @@ final class _TransducerBatchTools extends StatelessWidget {
                   ),
                 ),
                 exactComparison,
+                TransducerConversionPanel(machine: machine),
               ],
             ),
           ),

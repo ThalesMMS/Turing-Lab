@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../core/algorithms/regex_to_nfa_converter.dart';
+import '../../core/algorithms/regex/regex_to_nfa_converter.dart';
 import '../../core/formal_systems/formal_systems.dart';
 import '../../core/interoperability/interoperability.dart';
 import '../../core/models/regex_document.dart';

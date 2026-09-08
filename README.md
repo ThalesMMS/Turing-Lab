@@ -24,8 +24,7 @@ release gates and must not be inferred from feature availability.
 - Release notes: `CHANGELOG.md`
 - Current engineering roadmap: `ROADMAP.md`
 - Current Apple 1.0 scope and explicit boundaries: `V1_SCOPE.md`
-- Quality gate: local and manual, via `tool/qa.sh`. GitHub-hosted test CI is
-  intentionally disabled; see [Testing](#testing) and
+- Quality gate: local and manual, via `tool/qa.sh`; see [Testing](#testing) and
   [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
 
 ## Public Links
@@ -200,15 +199,9 @@ depends on documented signing, QA, and distribution evidence.
 
 ### QA policy: local and manual
 
-**Root Flutter QA is local and manual.** GitHub-hosted test CI is intentionally
-disabled for this repository: the Actions limits are too small for the combined
-Flutter, GraphView, golden, screenshot, integration and Apple surface. The root
-`.github/workflows/ci.yml` workflow was deleted and must not be reintroduced
-here or on another hosted provider. No repository-owned GitHub Actions workflow
-is committed. The public web artifact is published separately to the public
-repository's `gh-pages` branch; GitHub's system-managed Pages deployment is not
-test CI. See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for the full
-policy.
+**Root Flutter QA is local and manual.** Use `tool/qa.sh` and report the
+commands and results. See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md)
+for review requirements.
 
 Consequences for contributors:
 

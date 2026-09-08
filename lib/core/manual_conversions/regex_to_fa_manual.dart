@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:vector_math/vector_math_64.dart';
 
-import '../algorithms/language_comparator.dart';
-import '../algorithms/regex_to_nfa_converter.dart';
+import '../algorithms/fsa/language_comparator.dart';
+import '../algorithms/regex/regex_to_nfa_converter.dart';
 import '../models/equivalence_comparison_result.dart';
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
@@ -51,15 +51,14 @@ final class RegexToFaAstNodeSnapshot {
   final List<String> childIds;
 
   bool get isBase => switch (kind) {
-        RegexToFaAstNodeKind.symbol ||
-        RegexToFaAstNodeKind.dot ||
-        RegexToFaAstNodeKind.epsilon ||
-        RegexToFaAstNodeKind.emptyLanguage ||
-        RegexToFaAstNodeKind.characterSet ||
-        RegexToFaAstNodeKind.shortcut =>
-          true,
-        _ => false,
-      };
+    RegexToFaAstNodeKind.symbol ||
+    RegexToFaAstNodeKind.dot ||
+    RegexToFaAstNodeKind.epsilon ||
+    RegexToFaAstNodeKind.emptyLanguage ||
+    RegexToFaAstNodeKind.characterSet ||
+    RegexToFaAstNodeKind.shortcut => true,
+    _ => false,
+  };
 }
 
 final class RegexToFaAstSnapshot {
@@ -400,7 +399,8 @@ final class RegexToFaManualSession {
     required RegexDocument currentDocument,
     required int currentRevision,
   }) {
-    final unchanged = currentRevision == sourceRevision &&
+    final unchanged =
+        currentRevision == sourceRevision &&
         currentDocument.id == sourceDocument.id &&
         currentDocument.source == sourceDocument.source &&
         _sameStrings(
@@ -567,7 +567,8 @@ final class RegexToFaManualSession {
       fragments[action.nodeId] = action.fragment;
       if (action.nodeId == ast.rootId) completion = action.exactComparison;
     }
-    final complete = fragments.length == 1 &&
+    final complete =
+        fragments.length == 1 &&
         fragments.containsKey(ast.rootId) &&
         completion?.isEquivalent == true;
     return RegexToFaManualSession._(
@@ -601,11 +602,7 @@ final class RegexToFaManualSession {
     return RegexToFaManualCommandResult(
       session: this,
       diagnostics: [
-        RegexToFaManualDiagnostic(
-          code: code,
-          message: message,
-          nodeId: nodeId,
-        ),
+        RegexToFaManualDiagnostic(code: code, message: message, nodeId: nodeId),
       ],
     );
   }
@@ -738,8 +735,7 @@ final class _RegexAstSnapshotBuilder {
       EpsilonNode() ||
       EmptyLanguageNode() ||
       SetNode() ||
-      ShortcutNode() =>
-        source.substring(span.start, span.end),
+      ShortcutNode() => source.substring(span.start, span.end),
       UnionNode() =>
         '(${childNodes[0].canonicalExpression}|${childNodes[1].canonicalExpression})',
       ConcatenationNode() =>
@@ -781,8 +777,9 @@ final class _RegexAstSnapshotBuilder {
       );
     }
     if (children.length == 1) {
-      final operatorEnd =
-          node.position == null ? children.single.span.end : node.position! + 1;
+      final operatorEnd = node.position == null
+          ? children.single.span.end
+          : node.position! + 1;
       return RegexToFaSourceSpan(
         start: children.single.span.start,
         end: math.max(children.single.span.end, operatorEnd),
@@ -878,10 +875,12 @@ FSA _deterministicCopy(FSA source, String namespace) {
     states: copiedStates,
     transitions: copiedTransitions,
     alphabet: source.alphabet,
-    initialState:
-        source.initialState == null ? null : stateMap[source.initialState!.id],
-    acceptingStates:
-        source.acceptingStates.map((state) => stateMap[state.id]!).toSet(),
+    initialState: source.initialState == null
+        ? null
+        : stateMap[source.initialState!.id],
+    acceptingStates: source.acceptingStates
+        .map((state) => stateMap[state.id]!)
+        .toSet(),
     created: epoch,
     modified: epoch,
     bounds: math.Rectangle<double>(
@@ -908,23 +907,28 @@ String _orderedTransitionKey(
 }
 
 String _vertexSignature(FSA automaton, State state) {
-  final outgoing = automaton.fsaTransitions
-      .where((transition) => transition.fromState.id == state.id)
-      .map(_edgeLabel)
-      .toList()
-    ..sort();
-  final incoming = automaton.fsaTransitions
-      .where((transition) => transition.toState.id == state.id)
-      .map(_edgeLabel)
-      .toList()
-    ..sort();
-  final loops = automaton.fsaTransitions
-      .where((transition) =>
-          transition.fromState.id == state.id &&
-          transition.toState.id == state.id)
-      .map(_edgeLabel)
-      .toList()
-    ..sort();
+  final outgoing =
+      automaton.fsaTransitions
+          .where((transition) => transition.fromState.id == state.id)
+          .map(_edgeLabel)
+          .toList()
+        ..sort();
+  final incoming =
+      automaton.fsaTransitions
+          .where((transition) => transition.toState.id == state.id)
+          .map(_edgeLabel)
+          .toList()
+        ..sort();
+  final loops =
+      automaton.fsaTransitions
+          .where(
+            (transition) =>
+                transition.fromState.id == state.id &&
+                transition.toState.id == state.id,
+          )
+          .map(_edgeLabel)
+          .toList()
+        ..sort();
   return '${automaton.initialState?.id == state.id}|'
       '${automaton.acceptingStates.contains(state)}|'
       '${_encodeStrings(outgoing)}|${_encodeStrings(incoming)}|'
@@ -990,21 +994,19 @@ String _actionId(
   int cursor,
 ) {
   final stateIds = candidate.states.map((state) => state.id).toList()..sort();
-  final transitions = candidate.fsaTransitions
-      .map((transition) => _encodeStrings([
-            transition.id,
-            transition.fromState.id,
-            transition.toState.id,
-            _edgeLabel(transition),
-          ]))
-      .toList()
-    ..sort();
-  return 'action_${cursor}_${_stableHash(_encodeStrings([
-        type.name,
-        nodeId,
-        _encodeStrings(stateIds),
-        _encodeStrings(transitions),
-      ]))}';
+  final transitions =
+      candidate.fsaTransitions
+          .map(
+            (transition) => _encodeStrings([
+              transition.id,
+              transition.fromState.id,
+              transition.toState.id,
+              _edgeLabel(transition),
+            ]),
+          )
+          .toList()
+        ..sort();
+  return 'action_${cursor}_${_stableHash(_encodeStrings([type.name, nodeId, _encodeStrings(stateIds), _encodeStrings(transitions)]))}';
 }
 
 String _encodeStrings(Iterable<String> values) =>

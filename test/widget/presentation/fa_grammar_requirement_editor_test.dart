@@ -3,9 +3,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_content.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_grammar_requirement_editor.dart';
 
 void main() {
+  testWidgets(
+    'changed requirement resets local input; equivalent rebuild retains it',
+    (tester) async {
+      Future<void> show(String state) => _pumpEditor(
+        tester,
+        requirement: _requirement(
+          type: ManualConversionActionType.mapState,
+          payload: {'stateId': state, 'nonterminal': 'A0'},
+          provenanceIds: [state],
+        ),
+        onSubmit: (_) {},
+      );
+      await show('q0');
+      final field = find.byKey(const ValueKey('fa-grammar-nonterminal'));
+      await tester.enterText(field, 'draft');
+      await show('q0');
+      expect(find.text('draft'), findsOneWidget);
+      await show('q1');
+      expect(find.text('draft'), findsNothing);
+      expect(tester.widget<TextFormField>(field).controller!.text, isEmpty);
+    },
+  );
+
   testWidgets('maps a source state with labelled keyboard input', (
     tester,
   ) async {

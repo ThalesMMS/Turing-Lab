@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/fsa_kleene_star.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_kleene_star.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
-import 'package:turing_lab/core/algorithms/fsa_kleene_star_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_kleene_star_messages.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {

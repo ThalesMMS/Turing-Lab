@@ -23,10 +23,10 @@ import 'package:turing_lab/presentation/providers/algorithm_step_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/unified_trace_provider.dart';
-import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
-import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 
 import '../../support/workspace_dock_helpers.dart';
 
@@ -67,8 +67,9 @@ class _KeptAliveHighlightSurfaceState
   @override
   void initState() {
     super.initState();
-    _highlights =
-        ref.read(canvasHighlightCoordinatorProvider)!.source(widget.source);
+    _highlights = ref
+        .read(canvasHighlightCoordinatorProvider)!
+        .source(widget.source);
   }
 
   @override
@@ -125,10 +126,7 @@ Future<void> _pumpPdaPage(
   await tester.pump(const Duration(milliseconds: 500));
 }
 
-Future<void> _pumpTmPage(
-  WidgetTester tester,
-  TMEditorNotifier notifier,
-) async {
+Future<void> _pumpTmPage(WidgetTester tester, TMEditorNotifier notifier) async {
   _configureDesktopSurface(tester);
   final preferences = await _preferences();
   await tester.pumpWidget(
@@ -290,10 +288,7 @@ void main() {
         find.byType(PDACanvasGraphView),
       );
       final controller = canvas.controller!;
-      const warningIds = {
-        'opaque/pda-edge-a',
-        ' opaque/pda-edge-b ',
-      };
+      const warningIds = {'opaque/pda-edge-a', ' opaque/pda-edge-b '};
       expect(controller.highlightNotifier.value, SimulationHighlight.empty);
 
       await tester.tap(
@@ -306,9 +301,7 @@ void main() {
       final simulationService = tester
           .widget<PDASimulationPanel>(find.byType(PDASimulationPanel).first)
           .highlightService!;
-      final runtime = SimulationHighlight(
-        stateIds: const {'shared-state-id'},
-      );
+      final runtime = SimulationHighlight(stateIds: const {'shared-state-id'});
       simulationService.dispatch(runtime);
       expect(controller.highlightNotifier.value, runtime);
 
@@ -337,19 +330,14 @@ void main() {
       await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Find Reachable States'));
       await tester.tap(find.text('Find Reachable States'));
-      await _pumpUntilStateHighlights(
-        tester,
-        controller.highlightNotifier,
-      );
+      await _pumpUntilStateHighlights(tester, controller.highlightNotifier);
       expect(controller.highlightNotifier.value.stateIds, {
         'shared-state-id',
         'pda-target-a',
         'pda-target-b',
       });
 
-      notifier.setPda(
-        _pda(id: 'replacement-pda', nondeterministic: false),
-      );
+      notifier.setPda(_pda(id: 'replacement-pda', nondeterministic: false));
       await tester.pump();
       expect(controller.highlightNotifier.value, SimulationHighlight.empty);
     },
@@ -366,10 +354,7 @@ void main() {
         find.byType(TMCanvasGraphView),
       );
       final controller = canvas.controller!;
-      const warningIds = {
-        'opaque/tm-edge-a',
-        ' opaque/tm-edge-b ',
-      };
+      const warningIds = {'opaque/tm-edge-a', ' opaque/tm-edge-b '};
       expect(controller.highlightNotifier.value, SimulationHighlight.empty);
 
       await tester.tap(
@@ -382,9 +367,7 @@ void main() {
       final simulationService = tester
           .widget<TMSimulationPanel>(find.byType(TMSimulationPanel).first)
           .highlightService!;
-      final runtime = SimulationHighlight(
-        stateIds: const {'shared-state-id'},
-      );
+      final runtime = SimulationHighlight(stateIds: const {'shared-state-id'});
       simulationService.dispatch(runtime);
       expect(controller.highlightNotifier.value, runtime);
 
@@ -394,13 +377,8 @@ void main() {
       await openWorkspaceAlgorithmsPanel(tester);
       await tester.ensureVisible(find.text('Reachability'));
       await tester.tap(find.text('Reachability'));
-      await _pumpUntilStateHighlights(
-        tester,
-        controller.highlightNotifier,
-      );
-      expect(controller.highlightNotifier.value.stateIds, {
-        'shared-state-id',
-      });
+      await _pumpUntilStateHighlights(tester, controller.highlightNotifier);
+      expect(controller.highlightNotifier.value.stateIds, {'shared-state-id'});
       expect(controller.highlightNotifier.value.warningStateIds, {
         'tm-target-a',
         'tm-target-b',
@@ -427,15 +405,15 @@ void main() {
       final controller = tester
           .widget<PDACanvasGraphView>(find.byType(PDACanvasGraphView))
           .controller!;
-      final epsilonAction =
-          find.byKey(const ValueKey('highlight-epsilon-transitions'));
+      final epsilonAction = find.byKey(
+        const ValueKey('highlight-epsilon-transitions'),
+      );
 
       await tester.tap(epsilonAction);
       await tester.pump();
-      expect(
-        controller.highlightNotifier.value.transitionIds,
-        {'opaque/pda-edge-a'},
-      );
+      expect(controller.highlightNotifier.value.transitionIds, {
+        'opaque/pda-edge-a',
+      });
       expect(notifier.currentPda, same(pda));
 
       await tester.tap(epsilonAction);

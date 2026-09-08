@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/grammar.dart';
@@ -22,13 +22,7 @@ import 'families/regular_oracles.dart';
 import 'families/tm_certification.dart';
 import 'oracles.dart';
 
-enum CrossFamilyEquivalence {
-  exact,
-  normalized,
-  isomorphic,
-  visual,
-  bounded,
-}
+enum CrossFamilyEquivalence { exact, normalized, isomorphic, visual, bounded }
 
 enum CrossFamilyOutcome { verified, different, boundedUnknown }
 
@@ -52,19 +46,19 @@ final class CrossFamilyObservation {
   bool get certified => outcome == CrossFamilyOutcome.verified;
 
   Map<String, Object?> toJson() => {
-        'certified': certified,
-        'equivalence': equivalence.name,
-        'evidence': evidence,
-        'families': families,
-        'id': id,
-        'outcome': outcome.name,
-        'properties': properties,
-      };
+    'certified': certified,
+    'equivalence': equivalence.name,
+    'evidence': evidence,
+    'families': families,
+    'id': id,
+    'outcome': outcome.name,
+    'properties': properties,
+  };
 }
 
 final class CrossFamilyCertificationReport {
   CrossFamilyCertificationReport(Iterable<CrossFamilyObservation> observations)
-      : observations = List.unmodifiable(observations);
+    : observations = List.unmodifiable(observations);
 
   final List<CrossFamilyObservation> observations;
 
@@ -80,11 +74,11 @@ final class CrossFamilyCertificationReport {
       .length;
 
   Map<String, Object?> toJson() => {
-        'certificationCount': certificationCount,
-        'inconclusiveCount': inconclusiveCount,
-        'observations': observations.map((item) => item.toJson()).toList(),
-        'status': inconclusiveCount == 0 ? 'certified' : 'incomplete',
-      };
+    'certificationCount': certificationCount,
+    'inconclusiveCount': inconclusiveCount,
+    'observations': observations.map((item) => item.toJson()).toList(),
+    'status': inconclusiveCount == 0 ? 'certified' : 'incomplete',
+  };
 }
 
 abstract final class CrossFamilyCertification {
@@ -108,8 +102,9 @@ abstract final class CrossFamilyCertification {
   }
 
   static Future<CrossFamilyObservation> _regular(int seed) async {
-    final runner =
-        RegularCertificationRunner(repositoryRoot: Directory.current);
+    final runner = RegularCertificationRunner(
+      repositoryRoot: Directory.current,
+    );
     final options = RegularCertificationOptions(seed: seed, cases: 2);
     const properties = [
       'regular.determinization',
@@ -146,13 +141,15 @@ abstract final class CrossFamilyCertification {
       withUnreachable.alphabet,
       const RegularOracleBudget(maximumWordLength: 4),
     );
-    final unreachablePreserved = baseSignature
+    final unreachablePreserved =
+        baseSignature
             is OracleDefinitive<Map<String, bool>, RegularOracleEvidence> &&
         unreachableSignature
             is OracleDefinitive<Map<String, bool>, RegularOracleEvidence> &&
         _canonical(baseSignature.value) ==
             _canonical(unreachableSignature.value);
-    final passed = checks.every(
+    final passed =
+        checks.every(
           (check) => check.status == RegularCertificationStatus.passed,
         ) &&
         unreachablePreserved;
@@ -160,8 +157,9 @@ abstract final class CrossFamilyCertification {
       id: 'regular-conversion-metamorphism',
       families: const ['regular', 'grammar', 'regex'],
       equivalence: CrossFamilyEquivalence.bounded,
-      outcome:
-          passed ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: passed
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const [
         'renaming',
         'order',
@@ -198,7 +196,8 @@ abstract final class CrossFamilyCertification {
         );
         final report = parsed.data;
         parserOutcomes['${strategy.name}:$input'] = report?.outcome.name;
-        agrees = agrees &&
+        agrees =
+            agrees &&
             report != null &&
             (report.outcome == GrammarParseOutcome.accepted ||
                 report.outcome == GrammarParseOutcome.rejected) &&
@@ -209,8 +208,9 @@ abstract final class CrossFamilyCertification {
       id: 'cfg-parser-differential',
       families: const ['cfg', 'earley', 'cyk', 'll1', 'lr1', 'brute-force'],
       equivalence: CrossFamilyEquivalence.exact,
-      outcome:
-          agrees ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: agrees
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['order', 'trace'],
       evidence: {'parserOutcomes': parserOutcomes},
     );
@@ -229,7 +229,8 @@ abstract final class CrossFamilyCertification {
       oracle,
       parserAccepted: parser.accepted,
     );
-    final preserved = !assessment.definitive &&
+    final preserved =
+        !assessment.definitive &&
         assessment.outcome == GrammarCertificationOutcome.boundedUnknown;
     return CrossFamilyObservation(
       id: 'cfg-parser-bounded-oracle',
@@ -271,9 +272,9 @@ abstract final class CrossFamilyCertification {
   static Future<CrossFamilyObservation> _tmGrammar(int seed) async {
     final check = await TmCertificationRunner(repositoryRoot: Directory.current)
         .runProperty(
-      'tm.grammar-conversion',
-      TmCertificationOptions(seed: seed, cases: 1),
-    );
+          'tm.grammar-conversion',
+          TmCertificationOptions(seed: seed, cases: 1),
+        );
     return CrossFamilyObservation(
       id: 'tm-unrestricted-grammar-chain',
       families: const ['tm', 'unrestricted-grammar'],
@@ -289,9 +290,9 @@ abstract final class CrossFamilyCertification {
   static Future<CrossFamilyObservation> _tmRuntime(int seed) async {
     final check = await TmCertificationRunner(repositoryRoot: Directory.current)
         .runProperty(
-      'tm.runner-parity',
-      TmCertificationOptions(seed: seed, cases: 1),
-    );
+          'tm.runner-parity',
+          TmCertificationOptions(seed: seed, cases: 1),
+        );
     return CrossFamilyObservation(
       id: 'tm-native-sync-web-parity',
       families: const ['tm-sync', 'tm-native', 'tm-web'],
@@ -319,16 +320,20 @@ abstract final class CrossFamilyCertification {
     final records = report.records
         .where((record) => selected.contains(record.id))
         .toList(growable: false);
-    final passed = records.length == selected.length &&
-        records.every((record) =>
-            record.passed &&
-            record.actual == FormalSystemsCertificationOutcome.verified);
+    final passed =
+        records.length == selected.length &&
+        records.every(
+          (record) =>
+              record.passed &&
+              record.actual == FormalSystemsCertificationOutcome.verified,
+        );
     return CrossFamilyObservation(
       id: 'transducer-differential-metamorphism',
       families: const ['mealy', 'moore', 'transducer-sync', 'transducer-async'],
       equivalence: CrossFamilyEquivalence.exact,
-      outcome:
-          passed ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: passed
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['renaming', 'order', 'trace', 'batch', 'cancel'],
       evidence: {'records': records.map((record) => record.toJson()).toList()},
     );
@@ -345,7 +350,8 @@ abstract final class CrossFamilyCertification {
       ),
     );
     final record = report.records.single;
-    final preserved = record.passed &&
+    final preserved =
+        record.passed &&
         record.actual == FormalSystemsCertificationOutcome.inconclusive;
     return CrossFamilyObservation(
       id: 'transducer-finite-evidence',
@@ -373,16 +379,17 @@ abstract final class CrossFamilyCertification {
       alphabet,
       const RegularOracleBudget(maximumWordLength: 4),
     );
-    final equal = left
-            is OracleDefinitive<Map<String, bool>, RegularOracleEvidence> &&
+    final equal =
+        left is OracleDefinitive<Map<String, bool>, RegularOracleEvidence> &&
         right is OracleDefinitive<Map<String, bool>, RegularOracleEvidence> &&
         _canonical(left.value) == _canonical(right.value);
     return CrossFamilyObservation(
       id: 'codec-jflap-json-normalized',
       families: const ['codec', 'jflap', 'turing-lab-json', 'regular'],
       equivalence: CrossFamilyEquivalence.normalized,
-      outcome:
-          equal ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: equal
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['roundtrip'],
       evidence: {'boundedWordLength': 4, 'semanticSignaturesEqual': equal},
     );
@@ -396,8 +403,9 @@ abstract final class CrossFamilyCertification {
       id: 'codec-jflap-json-isomorphic',
       families: const ['codec', 'jflap', 'turing-lab-json', 'regular'],
       equivalence: CrossFamilyEquivalence.isomorphic,
-      outcome:
-          equal ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: equal
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['renaming', 'order'],
       evidence: {'topologyEqualIgnoringIdsAndOrder': equal},
     );
@@ -411,8 +419,9 @@ abstract final class CrossFamilyCertification {
       id: 'codec-jflap-json-visual',
       families: const ['codec', 'jflap', 'turing-lab-json', 'graph'],
       equivalence: CrossFamilyEquivalence.visual,
-      outcome:
-          equal ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: equal
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['roundtrip'],
       evidence: {'labeledCoordinatesEqual': equal},
     );
@@ -436,15 +445,17 @@ abstract final class CrossFamilyCertification {
         replay = decoded.value;
       }
     }
-    final equal = replay != null &&
+    final equal =
+        replay != null &&
         _canonical(_jsonValue(source.document)) ==
             _canonical(_jsonValue(replay.document));
     return CrossFamilyObservation(
       id: 'codec-pumping-session-roundtrip',
       families: const ['codec', 'session', 'jflap', 'turing-lab-json'],
       equivalence: CrossFamilyEquivalence.normalized,
-      outcome:
-          equal ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: equal
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['roundtrip', 'idempotence'],
       evidence: {
         'conversion': '$jsonCodecId->$jflapCodecId',
@@ -460,14 +471,16 @@ abstract final class CrossFamilyCertification {
     );
     final first = graphEventHistoryReplay(fixture);
     final second = graphEventHistoryReplay(fixture);
-    final equal = first.failureSignature == null &&
+    final equal =
+        first.failureSignature == null &&
         _canonical(first.toJson()) == _canonical(second.toJson());
     return CrossFamilyObservation(
       id: 'snapshot-history-replay',
       families: const ['snapshot', 'session-history', 'graph'],
       equivalence: CrossFamilyEquivalence.exact,
-      outcome:
-          equal ? CrossFamilyOutcome.verified : CrossFamilyOutcome.different,
+      outcome: equal
+          ? CrossFamilyOutcome.verified
+          : CrossFamilyOutcome.different,
       properties: const ['roundtrip', 'trace', 'idempotence'],
       evidence: first.toJson(),
     );
@@ -485,8 +498,10 @@ InteroperableDocument<Object> _decodeInteroperable(String codecId) {
     (candidate) => candidate.codecId == codecId,
   );
   final codec = CompatibilityCodecCatalog.create().codecs[codecId]!;
-  final payload =
-      DocumentPayload(bytes: vector.payload, filename: vector.filename);
+  final payload = DocumentPayload(
+    bytes: vector.payload,
+    filename: vector.filename,
+  );
   if (codecCanonicalOutcomeSha256(codec, payload) !=
       vector.nativeOutcomeSha256) {
     throw StateError('$codecId diverged from its native canonical outcome.');
@@ -499,49 +514,51 @@ InteroperableDocument<Object> _decodeInteroperable(String codecId) {
 }
 
 Grammar _parserGrammar() => Grammar(
-      id: 'cross-family-parser',
-      name: 'Cross-family parser grammar',
-      terminals: const {'a', 'b'},
-      nonterminals: const {'S', 'U'},
-      startSymbol: 'S',
-      productions: {
-        const Production(
-          id: 's-recursive',
-          leftSide: ['S'],
-          rightSide: ['a', 'S'],
-        ),
-        const Production(id: 's-end', leftSide: ['S'], rightSide: ['b']),
-        const Production(
-          id: 'u-unreachable',
-          leftSide: ['U'],
-          rightSide: ['a'],
-        ),
-      },
-      type: GrammarType.contextFree,
-      created: DateTime.utc(2026, 8, 26),
-      modified: DateTime.utc(2026, 8, 26),
-    );
+  id: 'cross-family-parser',
+  name: 'Cross-family parser grammar',
+  terminals: const {'a', 'b'},
+  nonterminals: const {'S', 'U'},
+  startSymbol: 'S',
+  productions: {
+    const Production(id: 's-recursive', leftSide: ['S'], rightSide: ['a', 'S']),
+    const Production(id: 's-end', leftSide: ['S'], rightSide: ['b']),
+    const Production(id: 'u-unreachable', leftSide: ['U'], rightSide: ['a']),
+  },
+  type: GrammarType.contextFree,
+  created: DateTime.utc(2026, 8, 26),
+  modified: DateTime.utc(2026, 8, 26),
+);
 
 String _fsaTopology(FSA fsa) {
-  final states = fsa.states
-      .map((state) => '${state.label}:${state.isInitial}:${state.isAccepting}')
-      .toList()
-    ..sort();
-  final transitions = fsa.fsaTransitions
-      .map((transition) =>
-          '${transition.fromState.label}->${transition.toState.label}:'
-          '${(transition.inputSymbols.toList()..sort()).join(',')}')
-      .toList()
-    ..sort();
+  final states =
+      fsa.states
+          .map(
+            (state) => '${state.label}:${state.isInitial}:${state.isAccepting}',
+          )
+          .toList()
+        ..sort();
+  final transitions =
+      fsa.fsaTransitions
+          .map(
+            (transition) =>
+                '${transition.fromState.label}->${transition.toState.label}:'
+                '${(transition.inputSymbols.toList()..sort()).join(',')}',
+          )
+          .toList()
+        ..sort();
   return jsonEncode({'states': states, 'transitions': transitions});
 }
 
 String _fsaVisual(FSA fsa) {
-  final states = fsa.states
-      .map((state) => '${state.label}:${state.position.x}:${state.position.y}:'
-          '${state.isInitial}:${state.isAccepting}')
-      .toList()
-    ..sort();
+  final states =
+      fsa.states
+          .map(
+            (state) =>
+                '${state.label}:${state.position.x}:${state.position.y}:'
+                '${state.isInitial}:${state.isAccepting}',
+          )
+          .toList()
+        ..sort();
   return jsonEncode(states);
 }
 
@@ -559,7 +576,8 @@ Object? _canonicalize(Object? value) {
   if (value is Map) {
     final entries = value.entries.toList()
       ..sort(
-          (left, right) => left.key.toString().compareTo(right.key.toString()));
+        (left, right) => left.key.toString().compareTo(right.key.toString()),
+      );
     return {
       for (final entry in entries)
         entry.key.toString(): _canonicalize(entry.value),

@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/language_comparator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/manual_conversions/manual_conversion_session.dart';
 import 'package:turing_lab/core/manual_conversions/regex_to_fa_session_factory.dart';
 import 'package:turing_lab/core/models/fsa.dart';
@@ -20,15 +20,12 @@ void main() {
       );
 
       expect(session.direction, ManualConversionDirection.regexToFa);
-      expect(
-        session.requirements.map((requirement) => requirement.type),
-        [
-          ManualConversionActionType.createBaseFragment,
-          ManualConversionActionType.createBaseFragment,
-          ManualConversionActionType.combineUnion,
-          ManualConversionActionType.applyKleeneStar,
-        ],
-      );
+      expect(session.requirements.map((requirement) => requirement.type), [
+        ManualConversionActionType.createBaseFragment,
+        ManualConversionActionType.createBaseFragment,
+        ManualConversionActionType.combineUnion,
+        ManualConversionActionType.applyKleeneStar,
+      ]);
       expect(
         session.requirements.map(
           (requirement) => requirement.expectedPayload['nodeId'],
@@ -38,17 +35,11 @@ void main() {
 
       final union = session.requirements[2];
       expect(union.expectedPayload['sourceSpan'], {'start': 0, 'end': 5});
-      expect(
-        union.expectedPayload['preconditions'],
-        {
-          'postorderChildNodeIds': ['ast_root_0_0', 'ast_root_0_1'],
-          'childrenComplete': true,
-        },
-      );
-      expect(
-        union.provenanceIds,
-        containsAll(['ast_root_0', 'source:0-5']),
-      );
+      expect(union.expectedPayload['preconditions'], {
+        'postorderChildNodeIds': ['ast_root_0_0', 'ast_root_0_1'],
+        'childrenComplete': true,
+      });
+      expect(union.provenanceIds, containsAll(['ast_root_0', 'source:0-5']));
       expect(union.hint, contains('does not change the learner artifact'));
       expect(union.evidence.certainty, ManualConversionCertainty.structural);
     });
@@ -118,10 +109,12 @@ void main() {
 
       expect(artifact['schema'], 'turing-lab.regex-to-fa-canonical');
       expect(artifact['version'], 1);
-      expect(
-        artifact['postorderNodeIds'],
-        ['ast_root_0_0', 'ast_root_0_1', 'ast_root_0', 'ast_root'],
-      );
+      expect(artifact['postorderNodeIds'], [
+        'ast_root_0_0',
+        'ast_root_0_1',
+        'ast_root_0',
+        'ast_root',
+      ]);
       expect(
         (artifact['structuralEvidence'] as List).length,
         session.requirements.length,
@@ -129,10 +122,7 @@ void main() {
       final exactCompletion = artifact['exactCompletion'] as Map;
       expect(exactCompletion['isEquivalent'], isTrue);
       expect(exactCompletion['counterexample'], isNull);
-      expect(
-        exactCompletion['oracle'],
-        'LanguageComparator.compareLanguages',
-      );
+      expect(exactCompletion['oracle'], 'LanguageComparator.compareLanguages');
 
       final canonical = FSA.fromJson(
         Map<String, dynamic>.from(artifact['fsa']! as Map),
@@ -156,66 +146,67 @@ void main() {
       expect(session.completionEvidence.counterexample, isNull);
     });
 
-    test('accepts and persists isomorphic learner fragments with real evidence',
-        () {
-      final document = _document('(a|b)*');
-      var session = RegexToFaSessionFactory.create(
-        source: document,
-        sourceRevision: 4,
-      );
-
-      for (var index = 0; index < session.requirements.length; index++) {
-        final requirement = session.currentRequirement!;
-        final canonical = FSA.fromJson(
-          Map<String, dynamic>.from(
-            requirement.expectedPayload['fragment']! as Map,
-          ),
-        );
-        final learner = _rename(canonical, 'learner_$index');
-        final result = RegexToFaSessionFactory.applyLearnerFragment(
-          session: session,
-          fragment: learner,
+    test(
+      'accepts and persists isomorphic learner fragments with real evidence',
+      () {
+        final document = _document('(a|b)*');
+        var session = RegexToFaSessionFactory.create(
+          source: document,
+          sourceRevision: 4,
         );
 
-        expect(result.isSuccess, isTrue, reason: requirement.id);
-        session = result.session;
-        final action = session.appliedActions.last;
-        expect(action.validatedExternally, isTrue);
-        expect(action.payload['fragment'], learner.toJson());
-        expect(action.validationEvidence, isNotNull);
-        expect(action.learnerArtifact!['fsa'], learner.toJson());
-      }
+        for (var index = 0; index < session.requirements.length; index++) {
+          final requirement = session.currentRequirement!;
+          final canonical = FSA.fromJson(
+            Map<String, dynamic>.from(
+              requirement.expectedPayload['fragment']! as Map,
+            ),
+          );
+          final learner = _rename(canonical, 'learner_$index');
+          final result = RegexToFaSessionFactory.applyLearnerFragment(
+            session: session,
+            fragment: learner,
+          );
 
-      expect(session.isComplete, isTrue);
-      expect(
-          session.latestEvidence!.certainty, ManualConversionCertainty.exact);
-      expect(session.latestEvidence!.counterexample, isNull);
-      final finalLearner = session.learnerArtifact!;
-      expect(
-        (finalLearner['exactCompletion'] as Map)['isEquivalent'],
-        isTrue,
-      );
-      expect(
-        finalLearner['fsa'],
-        session.appliedActions.last.payload['fragment'],
-      );
-      expect(
-        finalLearner['fsa'],
-        isNot(session.canonicalArtifact['fsa']),
-      );
+          expect(result.isSuccess, isTrue, reason: requirement.id);
+          session = result.session;
+          final action = session.appliedActions.last;
+          expect(action.validatedExternally, isTrue);
+          expect(action.payload['fragment'], learner.toJson());
+          expect(action.validationEvidence, isNotNull);
+          expect(action.learnerArtifact!['fsa'], learner.toJson());
+        }
 
-      final restored = ManualConversionSession.restore(
-        session.toJson(),
-        documentId: document.id,
-        revision: 4,
-      );
-      expect(restored.isSuccess, isTrue);
-      expect(restored.session!.learnerArtifact, finalLearner);
-      expect(
-        restored.session!.latestEvidence!.certainty,
-        ManualConversionCertainty.exact,
-      );
-    });
+        expect(session.isComplete, isTrue);
+        expect(
+          session.latestEvidence!.certainty,
+          ManualConversionCertainty.exact,
+        );
+        expect(session.latestEvidence!.counterexample, isNull);
+        final finalLearner = session.learnerArtifact!;
+        expect(
+          (finalLearner['exactCompletion'] as Map)['isEquivalent'],
+          isTrue,
+        );
+        expect(
+          finalLearner['fsa'],
+          session.appliedActions.last.payload['fragment'],
+        );
+        expect(finalLearner['fsa'], isNot(session.canonicalArtifact['fsa']));
+
+        final restored = ManualConversionSession.restore(
+          session.toJson(),
+          documentId: document.id,
+          revision: 4,
+        );
+        expect(restored.isSuccess, isTrue);
+        expect(restored.session!.learnerArtifact, finalLearner);
+        expect(
+          restored.session!.latestEvidence!.certainty,
+          ManualConversionCertainty.exact,
+        );
+      },
+    );
 
     test('rejects a non-isomorphic learner fragment without recording it', () {
       final session = RegexToFaSessionFactory.create(
@@ -243,27 +234,29 @@ void main() {
       expect(result.session.learnerArtifact, isNull);
     });
 
-    test('is deterministic and round-trips through the shared session JSON',
-        () {
-      final document = _document(r'([a-c]|\d).+ε?');
-      final first = RegexToFaSessionFactory.create(
-        source: document,
-        sourceRevision: 3,
-      );
-      final second = RegexToFaSessionFactory.create(
-        source: document,
-        sourceRevision: 3,
-      );
+    test(
+      'is deterministic and round-trips through the shared session JSON',
+      () {
+        final document = _document(r'([a-c]|\d).+ε?');
+        final first = RegexToFaSessionFactory.create(
+          source: document,
+          sourceRevision: 3,
+        );
+        final second = RegexToFaSessionFactory.create(
+          source: document,
+          sourceRevision: 3,
+        );
 
-      expect(second.toJson(), first.toJson());
-      final restored = ManualConversionSession.restore(
-        first.toJson(),
-        documentId: document.id,
-        revision: 3,
-      );
-      expect(restored.isSuccess, isTrue);
-      expect(restored.session!.toJson(), first.toJson());
-    });
+        expect(second.toJson(), first.toJson());
+        final restored = ManualConversionSession.restore(
+          first.toJson(),
+          documentId: document.id,
+          revision: 3,
+        );
+        expect(restored.isSuccess, isTrue);
+        expect(restored.session!.toJson(), first.toJson());
+      },
+    );
 
     test('maps the supported regex dialect to shared action types', () {
       final cases = <String, ManualConversionActionType>{
@@ -281,11 +274,7 @@ void main() {
           source: _document(entry.key),
           sourceRevision: 1,
         );
-        expect(
-          session.requirements.last.type,
-          entry.value,
-          reason: entry.key,
-        );
+        expect(session.requirements.last.type, entry.value, reason: entry.key);
       }
     });
 
@@ -309,11 +298,11 @@ void main() {
 }
 
 RegexDocument _document(String source) => RegexDocument(
-      id: 'regex-doc',
-      name: 'Regex',
-      source: source,
-      alphabet: const ['a', 'b', 'c', '0', '1'],
-    );
+  id: 'regex-doc',
+  name: 'Regex',
+  source: source,
+  alphabet: const ['a', 'b', 'c', '0', '1'],
+);
 
 FSA _rename(FSA source, String prefix) {
   final oldStates = source.states.toList()
@@ -345,10 +334,12 @@ FSA _rename(FSA source, String prefix) {
     states: states.values.toSet(),
     transitions: transitions,
     alphabet: source.alphabet,
-    initialState:
-        source.initialState == null ? null : states[source.initialState!.id],
-    acceptingStates:
-        source.acceptingStates.map((state) => states[state.id]!).toSet(),
+    initialState: source.initialState == null
+        ? null
+        : states[source.initialState!.id],
+    acceptingStates: source.acceptingStates
+        .map((state) => states[state.id]!)
+        .toSet(),
     created: source.created,
     modified: source.modified,
     bounds: const math.Rectangle<double>(0, 0, 800, 600),

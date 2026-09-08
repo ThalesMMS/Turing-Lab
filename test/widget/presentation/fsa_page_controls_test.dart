@@ -32,8 +32,8 @@ import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart'
 import 'package:turing_lab/presentation/widgets/automaton_workspace_scaffold.dart';
 import 'package:turing_lab/presentation/widgets/canvas_simulation_playback_bar.dart';
 import 'package:turing_lab/presentation/widgets/fsa/determinism_badge.dart';
-import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
-import 'package:turing_lab/presentation/widgets/fa_to_regex_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_grammar_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_to_regex_requirement_editor.dart';
 import 'package:turing_lab/presentation/widgets/graphview_canvas_toolbar.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
 import 'package:turing_lab/presentation/providers/workspace_quick_actions_provider.dart';
@@ -873,24 +873,28 @@ void main() {
         find.byKey(const ValueKey('automaton-diagnostic-highlight-bar')),
       );
       expect(badgeRect.top, greaterThanOrEqualTo(toolbarRect.bottom + 8));
-      expect(badgeRect.top, diagnosticRect.top);
+      expect(badgeRect.overlaps(diagnosticRect), isFalse);
     },
   );
 
-  testWidgets('FSAPage desktop keeps diagnostics below the expanded toolbar', (
-    tester,
-  ) async {
-    await _pumpFsaPage(tester, viewSize: const Size(1600, 900));
-    await expectCanvasToolbarMore(tester);
+  testWidgets(
+    'FSAPage desktop keeps diagnostics in the opposite corner from the toolbar',
+    (tester) async {
+      await _pumpFsaPage(tester, viewSize: const Size(1600, 900));
+      await expectCanvasToolbarMore(tester);
 
-    final diagnosticRect = tester.getRect(
-      find.byKey(const ValueKey('automaton-diagnostic-highlight-bar')),
-    );
-    final toolbarRect = tester.getRect(
-      find.byKey(const ValueKey('canvas-toolbar-surface')),
-    );
-    expect(diagnosticRect.top, greaterThanOrEqualTo(toolbarRect.bottom + 8));
-  });
+      final diagnosticRect = tester.getRect(
+        find.byKey(const ValueKey('automaton-diagnostic-highlight-bar')),
+      );
+      final toolbarRect = tester.getRect(
+        find.byKey(const ValueKey('canvas-toolbar-surface')),
+      );
+      final canvasRect = tester.getRect(find.byType(AutomatonGraphViewCanvas));
+      expect(diagnosticRect.left - canvasRect.left, 16);
+      expect(diagnosticRect.right, lessThan(toolbarRect.left));
+      expect(diagnosticRect.overlaps(toolbarRect), isFalse);
+    },
+  );
 
   testWidgets('FSA Help maps empty, DFA, epsilon, and NFA contexts', (
     tester,

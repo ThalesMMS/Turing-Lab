@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/pda.dart';
@@ -16,58 +16,65 @@ import 'package:vector_math/vector_math_64.dart';
 
 void main() {
   group('Explanation generation (structure, not prose)', () {
-    test('NFA epsilon-move/closure step includes explanation + highlights',
-        () async {
-      final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
-      final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
+    test(
+      'NFA epsilon-move/closure step includes explanation + highlights',
+      () async {
+        final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
+        final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
 
-      final nfa = FSA(
-        id: 'nfa',
-        name: 'nfa',
-        states: {q0, q1},
-        alphabet: {'a'},
-        transitions: {
-          FSATransition(
-            id: 't0',
-            fromState: q0,
-            toState: q1,
-            lambdaSymbol: 'ε',
+        final nfa = FSA(
+          id: 'nfa',
+          name: 'nfa',
+          states: {q0, q1},
+          alphabet: {'a'},
+          transitions: {
+            FSATransition(
+              id: 't0',
+              fromState: q0,
+              toState: q1,
+              lambdaSymbol: 'ε',
+            ),
+          },
+          initialState: q0,
+          acceptingStates: {q1},
+          created: DateTime(2025, 1, 1),
+          modified: DateTime(2025, 1, 1),
+          bounds: const math.Rectangle<double>(0, 0, 200, 200),
+        );
+
+        final wrapped = await AutomatonSimulator.simulateNFA(
+          nfa,
+          'a',
+          stepByStep: true,
+        );
+        expect(wrapped.isSuccess, isTrue);
+        final result = wrapped.data!;
+
+        expect(result.steps, isNotEmpty);
+
+        final epsilonSteps = result.steps
+            .where(
+              (s) =>
+                  s.explanation?.categories.contains(
+                    ExplanationCategory.epsilonMove,
+                  ) ??
+                  false,
+            )
+            .toList();
+        expect(epsilonSteps, isNotEmpty);
+
+        final explanation = epsilonSteps.first.explanation!;
+        expect(explanation.title, isNotEmpty);
+        expect(explanation.bullets, isNotEmpty);
+        expect(explanation.highlights, isNotEmpty);
+        expect(
+          explanation.highlights.any(
+            (h) => h.type == HighlightTargetType.state,
           ),
-        },
-        initialState: q0,
-        acceptingStates: {q1},
-        created: DateTime(2025, 1, 1),
-        modified: DateTime(2025, 1, 1),
-        bounds: const math.Rectangle<double>(0, 0, 200, 200),
-      );
-
-      final wrapped = await AutomatonSimulator.simulateNFA(
-        nfa,
-        'a',
-        stepByStep: true,
-      );
-      expect(wrapped.isSuccess, isTrue);
-      final result = wrapped.data!;
-
-      expect(result.steps, isNotEmpty);
-
-      final epsilonSteps = result.steps
-          .where((s) =>
-              s.explanation?.categories
-                  .contains(ExplanationCategory.epsilonMove) ??
-              false)
-          .toList();
-      expect(epsilonSteps, isNotEmpty);
-
-      final explanation = epsilonSteps.first.explanation!;
-      expect(explanation.title, isNotEmpty);
-      expect(explanation.bullets, isNotEmpty);
-      expect(explanation.highlights, isNotEmpty);
-      expect(
-        explanation.highlights.any((h) => h.type == HighlightTargetType.state),
-        isTrue,
-      );
-    });
+          isTrue,
+        );
+      },
+    );
 
     test('PDA push/pop step includes stack highlight + suggested fix', () {
       final q0 = State(id: 'q0', label: 'q0', position: Vector2.zero());
@@ -97,11 +104,7 @@ void main() {
         bounds: const math.Rectangle<double>(0, 0, 200, 200),
       );
 
-      final wrapped = PDASimulator.simulate(
-        pda,
-        'a',
-        stepByStep: true,
-      );
+      final wrapped = PDASimulator.simulate(pda, 'a', stepByStep: true);
       expect(wrapped.isSuccess, isTrue);
 
       final sim = wrapped.data!;
@@ -109,18 +112,21 @@ void main() {
 
       final stepWithExplanation = sim.steps.firstWhere(
         (s) =>
-            s.explanation?.categories
-                .contains(ExplanationCategory.stackOperation) ??
+            s.explanation?.categories.contains(
+              ExplanationCategory.stackOperation,
+            ) ??
             false,
         orElse: () => throw TestFailure(
-            'No step had a stackOperation explanation category'),
+          'No step had a stackOperation explanation category',
+        ),
       );
 
       final explanation = stepWithExplanation.explanation!;
       expect(explanation.bullets, isNotEmpty);
       expect(
-        explanation.highlights
-            .any((h) => h.type == HighlightTargetType.pdaStack),
+        explanation.highlights.any(
+          (h) => h.type == HighlightTargetType.pdaStack,
+        ),
         isTrue,
       );
     });
@@ -154,11 +160,7 @@ void main() {
         bounds: const math.Rectangle<double>(0, 0, 200, 200),
       );
 
-      final wrapped = TMSimulator.simulate(
-        tm,
-        '1',
-        stepByStep: true,
-      );
+      final wrapped = TMSimulator.simulate(tm, '1', stepByStep: true);
       expect(wrapped.isSuccess, isTrue);
       final result = wrapped.data!;
 
@@ -166,8 +168,9 @@ void main() {
 
       final stepWithTapeHighlight = result.steps.firstWhere(
         (s) =>
-            s.explanation?.highlights
-                .any((h) => h.type == HighlightTargetType.tapeCell) ??
+            s.explanation?.highlights.any(
+              (h) => h.type == HighlightTargetType.tapeCell,
+            ) ??
             false,
         orElse: () =>
             throw TestFailure('No step had a tapeCell highlight target'),

@@ -11,7 +11,7 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_analyzer.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_analyzer.dart';
 import 'package:turing_lab/core/models/regex_analysis.dart';
 
 void main() {
@@ -332,8 +332,10 @@ void main() {
       final result = RegexAnalyzer.determineComplexity('((a|b)c)*d+');
       expect(result.isSuccess, true);
       // Depending on the score calculation, this could be moderate or complex
-      expect(result.data,
-          isIn([ComplexityLevel.moderate, ComplexityLevel.complex]));
+      expect(
+        result.data,
+        isIn([ComplexityLevel.moderate, ComplexityLevel.complex]),
+      );
     });
 
     test('determines complex level for nested stars', () {
@@ -346,8 +348,10 @@ void main() {
       final result = RegexAnalyzer.determineComplexity('((((a))))');
       expect(result.isSuccess, true);
       // Deep nesting with 4 levels should be complex
-      expect(result.data,
-          isIn([ComplexityLevel.moderate, ComplexityLevel.complex]));
+      expect(
+        result.data,
+        isIn([ComplexityLevel.moderate, ComplexityLevel.complex]),
+      );
     });
 
     test('returns error for empty regex', () {
@@ -505,10 +509,7 @@ void main() {
       expect(result.isSuccess, true);
       expect(result.data!.samples, isNotEmpty);
       // Should contain at least one of 'a' or 'b'
-      expect(
-        result.data!.samples.any((s) => s == 'a' || s == 'b'),
-        true,
-      );
+      expect(result.data!.samples.any((s) => s == 'a' || s == 'b'), true);
     });
 
     test('finds shorter option in union', () {
@@ -543,8 +544,10 @@ void main() {
     });
 
     test('samples are sorted by length', () {
-      final result =
-          RegexAnalyzer.generateSampleStrings('(ab)*', maxSamples: 10);
+      final result = RegexAnalyzer.generateSampleStrings(
+        '(ab)*',
+        maxSamples: 10,
+      );
       expect(result.isSuccess, true);
       if (result.data!.samples.length > 1) {
         for (int i = 0; i < result.data!.samples.length - 1; i++) {
@@ -566,8 +569,10 @@ void main() {
     });
 
     test('includes all metrics with samples', () {
-      final result =
-          RegexAnalyzer.analyzeWithSamples('(a|b)*c+', maxSamples: 5);
+      final result = RegexAnalyzer.analyzeWithSamples(
+        '(a|b)*c+',
+        maxSamples: 5,
+      );
       expect(result.isSuccess, true);
       expect(result.data!.starHeight, 1);
       expect(result.data!.nestingDepth, 1);

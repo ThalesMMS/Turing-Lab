@@ -2,42 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/tm_simulator.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_simulator.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_acceptance.dart';
 import 'package:turing_lab/core/services/simulation_runner.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 
 void main() {
-  testWidgets('TM acceptance selector is labeled and persists in the document',
-      (tester) async {
-    final notifier = _notifier();
-    await _pump(tester, notifier, width: 320);
+  testWidgets(
+    'TM acceptance selector is labeled and persists in the document',
+    (tester) async {
+      final notifier = _notifier();
+      await _pump(tester, notifier, width: 320);
 
-    final control = find.byKey(const Key('tm-acceptance-policy-control'));
-    expect(control, findsOneWidget);
-    final semantics = tester.getSemantics(control);
-    expect(semantics.label, contains('Turing machine acceptance policy'));
-    expect(semantics.value, contains('Final state'));
+      final control = find.byKey(const Key('tm-acceptance-policy-control'));
+      expect(control, findsOneWidget);
+      final semantics = tester.getSemantics(control);
+      expect(semantics.label, contains('Turing machine acceptance policy'));
+      expect(semantics.value, contains('Final state'));
 
-    await tester.tap(control);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Halting').last);
-    await tester.pumpAndSettle();
+      await tester.tap(control);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Halting').last);
+      await tester.pumpAndSettle();
 
-    expect(
-      notifier.currentTm?.acceptancePolicy,
-      TMAcceptancePolicy.halting,
-    );
-    expect(
-      notifier.currentTm?.toJson()['acceptancePolicy'],
-      'halting',
-    );
-    expect(tester.takeException(), isNull);
-  });
+      expect(notifier.currentTm?.acceptancePolicy, TMAcceptancePolicy.halting);
+      expect(notifier.currentTm?.toJson()['acceptancePolicy'], 'halting');
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('TM acceptance selector fits a wide panel', (tester) async {
     await _pump(tester, _notifier(), width: 900);
@@ -61,8 +57,9 @@ void main() {
     expect(find.text('Final state or halting'), findsWidgets);
   });
 
-  testWidgets('TM acceptance selector follows external document changes',
-      (tester) async {
+  testWidgets('TM acceptance selector follows external document changes', (
+    tester,
+  ) async {
     final notifier = _notifier();
     await _pump(tester, notifier, width: 480);
 
@@ -75,8 +72,9 @@ void main() {
     expect(find.text('Final state'), findsNothing);
   });
 
-  testWidgets('bounded TM result is inconclusive rather than rejected',
-      (tester) async {
+  testWidgets('bounded TM result is inconclusive rather than rejected', (
+    tester,
+  ) async {
     final result = TMSimulationResult.stepLimit(
       inputString: '',
       steps: const [],
@@ -97,13 +95,7 @@ void main() {
 
 TMEditorNotifier _notifier() {
   final notifier = TMEditorNotifier();
-  notifier.upsertState(
-    id: 'q0',
-    label: 'q0',
-    x: 0,
-    y: 0,
-    isInitial: true,
-  );
+  notifier.upsertState(id: 'q0', label: 'q0', x: 0, y: 0, isInitial: true);
   return notifier;
 }
 
@@ -153,8 +145,7 @@ class _CompletedSimulationBackend implements SimulationRunnerBackend {
     String inputString, {
     required bool stepByStep,
     required Duration timeout,
-  }) =>
-      _CompletedTask(classifyTmResult(result));
+  }) => _CompletedTask(classifyTmResult(result));
 }
 
 class _CompletedTask<T> implements SimulationTask<T> {

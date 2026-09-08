@@ -29,9 +29,9 @@ import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/canvas_simulation_playback_bar.dart';
 import '../widgets/canvas_simulation_step_projection.dart';
 import '../widgets/collapsible_canvas_panel.dart';
-import '../widgets/pda_canvas_graphview.dart';
-import '../widgets/pda_algorithm_panel.dart';
-import '../widgets/pda_simulation_panel.dart';
+import '../widgets/pda/pda_canvas_graphview.dart';
+import '../widgets/pda/pda_algorithm_panel.dart';
+import '../widgets/pda/pda_simulation_panel.dart';
 import '../widgets/pda/stack_drawer.dart';
 import '../widgets/common/workspace_helpers.dart';
 import '../widgets/common/workspace_help.dart';
@@ -267,6 +267,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
         mobileFloatingPanelBuilder:
             (context, {required onDragDelta, required onPanelSizeChanged}) =>
                 CollapsibleCanvasPanel(
+                  showCollapseButton: true,
                   label: appLocalizationsOf(context).pdaStackPanelLabel,
                   icon: Icons.layers,
                   onDragDelta: onDragDelta,
@@ -344,35 +345,26 @@ class _PDAPageState extends ConsumerState<PDAPage>
     PDAEditorState editorState, {
     required bool isMobile,
   }) {
+    final bar = AutomatonDiagnosticHighlightBar(
+      floating: !isMobile,
+      activeKind: _activeDiagnosticHighlight,
+      conflictCount: editorState.nondeterministicTransitionIds.length,
+      epsilonCount: editorState.standaloneLambdaTransitionIds.length,
+      onConflictSelected: (selected) => _setDiagnosticHighlight(
+        AutomatonDiagnosticHighlightKind.conflicts,
+        selected,
+        editorState,
+      ),
+      onEpsilonSelected: (selected) => _setDiagnosticHighlight(
+        AutomatonDiagnosticHighlightKind.epsilon,
+        selected,
+        editorState,
+      ),
+    );
+    if (!isMobile) return bar;
     return Align(
       alignment: Alignment.topCenter,
-      child: SafeArea(
-        minimum: EdgeInsets.fromLTRB(
-          12,
-          isMobile
-              ? 12
-              : (_canvasToolbarInsets.top > 0
-                    ? _canvasToolbarInsets.top + 8
-                    : 88),
-          12,
-          12,
-        ),
-        child: AutomatonDiagnosticHighlightBar(
-          activeKind: _activeDiagnosticHighlight,
-          conflictCount: editorState.nondeterministicTransitionIds.length,
-          epsilonCount: editorState.standaloneLambdaTransitionIds.length,
-          onConflictSelected: (selected) => _setDiagnosticHighlight(
-            AutomatonDiagnosticHighlightKind.conflicts,
-            selected,
-            editorState,
-          ),
-          onEpsilonSelected: (selected) => _setDiagnosticHighlight(
-            AutomatonDiagnosticHighlightKind.epsilon,
-            selected,
-            editorState,
-          ),
-        ),
-      ),
+      child: SafeArea(minimum: const EdgeInsets.all(12), child: bar),
     );
   }
 
@@ -574,28 +566,7 @@ class _PDAPageState extends ConsumerState<PDAPage>
         ),
       ],
     );
-    final inspector = PDAStackPanel(
-      stackState: _currentStack,
-      initialStackSymbol: editorState.pda?.initialStackSymbol ?? 'Z',
-      stackAlphabet: editorState.pda?.stackAlphabet ?? const {},
-      isSimulating: _isSimulating,
-      highlightedIndex: _inferHighlightedStackIndex(),
-      onClear: () {
-        setState(() {
-          _currentStack = const StackState.empty();
-        });
-      },
-    );
-
-    return Column(
-      children: [
-        Expanded(child: canvasWithChrome),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
-          child: inspector,
-        ),
-      ],
-    );
+    return canvasWithChrome;
   }
 
   void _openSimulationSheet() {

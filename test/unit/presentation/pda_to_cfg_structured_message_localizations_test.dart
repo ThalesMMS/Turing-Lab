@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/pda_to_cfg_messages.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';

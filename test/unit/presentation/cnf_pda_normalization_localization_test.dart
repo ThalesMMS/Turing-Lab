@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_cnf_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_gnf_messages.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_pda_messages.dart';
-import 'package:turing_lab/core/algorithms/pda_normalization_messages.dart';
-import 'package:turing_lab/core/algorithms/pda_simplification_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_cnf_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_gnf_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_pda_messages.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_normalization_messages.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simplification_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';

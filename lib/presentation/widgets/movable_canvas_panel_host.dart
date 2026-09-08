@@ -2,17 +2,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-typedef MovableCanvasPanelBuilder = Widget Function(
-  BuildContext context, {
-  required ValueChanged<Offset> onDragDelta,
-  required VoidCallback onPanelSizeChanged,
-});
+typedef MovableCanvasPanelBuilder =
+    Widget Function(
+      BuildContext context, {
+      required ValueChanged<Offset> onDragDelta,
+      required VoidCallback onPanelSizeChanged,
+    });
 
 class MovableCanvasPanelHost extends StatefulWidget {
   const MovableCanvasPanelHost({
     super.key,
     required this.builder,
     this.initialTop = 16,
+    this.anchor = Alignment.topRight,
     this.initialRight = 16,
     this.edgePadding = 8,
     this.initialPosition,
@@ -20,13 +22,14 @@ class MovableCanvasPanelHost extends StatefulWidget {
   });
 
   final MovableCanvasPanelBuilder builder;
+
+  /// The corner kept stationary when the panel changes size.
+  final Alignment anchor;
   final double initialTop;
   final double initialRight;
   final double edgePadding;
 
-  /// Panel anchor as (distance from the host's right edge, top). The panel is
-  /// anchored by its top-right corner — where the collapse toggle sits — so
-  /// expanding or collapsing the panel never moves the toggle.
+  /// Distances from the horizontal and vertical edges selected by [anchor].
   final Offset? initialPosition;
   final ValueChanged<Offset>? onPositionChanged;
 
@@ -47,6 +50,9 @@ class _MovableCanvasPanelHostState extends State<MovableCanvasPanelHost> {
     _position = widget.initialPosition;
   }
 
+  bool get _leftAnchored => widget.anchor.x < 0;
+  bool get _bottomAnchored => widget.anchor.y > 0;
+
   RenderBox? get _hostBox =>
       _hostKey.currentContext?.findRenderObject() as RenderBox?;
 
@@ -59,17 +65,18 @@ class _MovableCanvasPanelHostState extends State<MovableCanvasPanelHost> {
     if (hostBox == null || panelBox == null) return null;
     final topLeft = panelBox.localToGlobal(Offset.zero, ancestor: hostBox);
     return Offset(
-      hostBox.size.width - topLeft.dx - panelBox.size.width,
-      topLeft.dy,
+      _leftAnchored
+          ? topLeft.dx
+          : hostBox.size.width - topLeft.dx - panelBox.size.width,
+      _bottomAnchored
+          ? hostBox.size.height - topLeft.dy - panelBox.size.height
+          : topLeft.dy,
     );
   }
 
   Offset _clamp(Offset candidate, Size panelSize) {
     final padding = widget.edgePadding;
-    final maxX = math.max(
-      padding,
-      _hostSize.width - panelSize.width - padding,
-    );
+    final maxX = math.max(padding, _hostSize.width - panelSize.width - padding);
     final maxY = math.max(
       padding,
       _hostSize.height - panelSize.height - padding,
@@ -86,7 +93,14 @@ class _MovableCanvasPanelHostState extends State<MovableCanvasPanelHost> {
     final current = _position ?? _renderedAnchor();
     if (current == null) return;
     setState(() {
-      _position = _clamp(current + Offset(-delta.dx, delta.dy), panelBox.size);
+      _position = _clamp(
+        current +
+            Offset(
+              _leftAnchored ? delta.dx : -delta.dx,
+              _bottomAnchored ? -delta.dy : delta.dy,
+            ),
+        panelBox.size,
+      );
     });
     widget.onPositionChanged?.call(_position!);
   }
@@ -113,18 +127,23 @@ class _MovableCanvasPanelHostState extends State<MovableCanvasPanelHost> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final nextHostSize = constraints.biggest;
-        if (_hostSize != nextHostSize) {
-          _hostSize = nextHostSize;
-          _scheduleClamp();
-        }
-
+        _hostSize = constraints.biggest;
+        _scheduleClamp();
         final panel = KeyedSubtree(
           key: _panelKey,
-          child: widget.builder(
-            context,
-            onDragDelta: _moveBy,
-            onPanelSizeChanged: _scheduleClamp,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: math.max(0, _hostSize.width - widget.edgePadding * 2),
+              maxHeight: math.max(0, _hostSize.height - widget.edgePadding * 2),
+            ),
+            child: SingleChildScrollView(
+              primary: false,
+              child: widget.builder(
+                context,
+                onDragDelta: _moveBy,
+                onPanelSizeChanged: _scheduleClamp,
+              ),
+            ),
           ),
         );
 
@@ -133,8 +152,18 @@ class _MovableCanvasPanelHostState extends State<MovableCanvasPanelHost> {
           clipBehavior: Clip.none,
           children: [
             Positioned(
-              top: _position?.dy ?? widget.initialTop,
-              right: _position?.dx ?? widget.initialRight,
+              top: _bottomAnchored
+                  ? null
+                  : (_position?.dy ?? widget.initialTop),
+              bottom: _bottomAnchored
+                  ? (_position?.dy ?? widget.initialTop)
+                  : null,
+              left: _leftAnchored
+                  ? (_position?.dx ?? widget.initialRight)
+                  : null,
+              right: _leftAnchored
+                  ? null
+                  : (_position?.dx ?? widget.initialRight),
               child: panel,
             ),
           ],

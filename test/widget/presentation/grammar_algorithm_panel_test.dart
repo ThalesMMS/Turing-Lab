@@ -23,9 +23,9 @@ import 'package:turing_lab/presentation/providers/grammar_provider.dart';
 import 'package:turing_lab/presentation/providers/home_navigation_provider.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
-import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
-import 'package:turing_lab/presentation/widgets/fa_grammar_requirement_editor.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fa_grammar_requirement_editor.dart';
 
 import 'examples_test_helpers.dart';
 

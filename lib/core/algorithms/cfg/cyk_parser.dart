@@ -17,8 +17,8 @@ import '../../models/derivation_tree_node.dart';
 import '../../result.dart';
 import '../../models/grammar_parse_report.dart';
 import '../../messages/structured_message.dart';
-import '../grammar_cnf_transformer.dart';
-import '../grammar_input_tokenizer.dart';
+import '../grammar/grammar_cnf_transformer.dart';
+import '../grammar/grammar_input_tokenizer.dart';
 import 'cyk_parser_messages.dart';
 
 /// CYK parser for CFGs in CNF. Builds parse table and derivation tree.

@@ -12,7 +12,7 @@ final class TransducerBatchItem {
 
 final class TransducerBatchReport {
   TransducerBatchReport(Iterable<TransducerBatchItem> items)
-      : items = List<TransducerBatchItem>.unmodifiable(items);
+    : items = List<TransducerBatchItem>.unmodifiable(items);
 
   final List<TransducerBatchItem> items;
 }

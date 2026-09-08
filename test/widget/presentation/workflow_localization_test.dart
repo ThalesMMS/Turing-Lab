@@ -6,11 +6,11 @@ import 'package:turing_lab/core/models/simulation_result.dart';
 import 'package:turing_lab/core/models/simulation_step.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/common/algorithm_button.dart';
-import 'package:turing_lab/presentation/widgets/grammar_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/pda_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/simulation_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_simulation_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_simulation_panel.dart';
 import 'package:turing_lab/presentation/widgets/trace_viewers/base_trace_viewer.dart';
 
 void main() {

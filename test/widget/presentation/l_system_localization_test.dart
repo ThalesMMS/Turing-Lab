@@ -211,7 +211,6 @@ void main() {
       for (final message in const [
         'Os IDs das produções devem ser únicos.',
         'Sistemas L estocásticos são preservados, mas não expandidos.',
-        'Sistemas L paramétricos são preservados, mas não expandidos.',
         'Sistemas L sensíveis ao contexto são preservados, mas não expandidos.',
       ]) {
         expect(find.textContaining(message), findsOneWidget);

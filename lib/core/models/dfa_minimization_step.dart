@@ -17,8 +17,8 @@ import 'state.dart';
 
 /// Represents a single step in DFA minimization using Hopcroft's algorithm.
 ///
-/// TODO(#143): Keep for algorithm-internal construction. UI consumers should
-/// use [toProperties] through generic [AlgorithmStep.properties].
+/// The model is kept for algorithm-internal construction. Presentation reads
+/// the generic [AlgorithmStep.properties] produced by [toProperties].
 class DFAMinimizationStep {
   /// Base algorithm step information
   final AlgorithmStep baseStep;
@@ -556,13 +556,21 @@ class DFAMinimizationStep {
     }
 
     _putStateIds(properties, 'processingSetIds', processingSet);
+    _putStateLabels(properties, 'processingSetLabels', processingSet);
     _putStateIds(properties, 'predecessorStateIds', predecessors);
+    _putStateLabels(properties, 'predecessorStateLabels', predecessors);
     _putStateIds(properties, 'splitSetIds', splitSet);
+    _putStateLabels(properties, 'splitSetLabels', splitSet);
     _putStateIds(properties, 'splitIntersectionIds', splitIntersection);
     _putStateIds(properties, 'splitDifferenceIds', splitDifference);
     _putStateIds(
       properties,
       'equivalenceClassStateIds',
+      equivalenceClassStates,
+    );
+    _putStateLabels(
+      properties,
+      'equivalenceClassStateLabels',
       equivalenceClassStates,
     );
     _putIfNotNull(properties, 'distinguishingSymbol', distinguishingSymbol);
@@ -742,6 +750,20 @@ class DFAMinimizationStep {
     final ids = states == null ? null : _stateIds(states);
     if (ids != null && ids.isNotEmpty) {
       properties[key] = ids;
+    }
+  }
+
+  static void _putStateLabels(
+    Map<String, dynamic> properties,
+    String key,
+    Set<State>? states,
+  ) {
+    final labels = states
+        ?.where((state) => state.id.trim().isNotEmpty)
+        .map((state) => state.label)
+        .toList(growable: false);
+    if (labels != null && labels.isNotEmpty) {
+      properties[key] = labels;
     }
   }
 

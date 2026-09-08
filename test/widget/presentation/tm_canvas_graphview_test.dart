@@ -22,7 +22,7 @@ import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_re
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
 import 'package:turing_lab/presentation/widgets/transition_editors/tm_transition_operations_editor.dart';
 
 class _FitCountingTmCanvasController extends GraphViewTmCanvasController {

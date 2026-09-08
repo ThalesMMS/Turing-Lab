@@ -257,6 +257,8 @@ extension _RegexPageLayoutSections on _RegexPageState {
                     example: example,
                     isLoading: isLoading,
                     onPressed: onPressed,
+                    onUseInput: (input) =>
+                        _useSuggestedInput(context, example, input),
                   ),
             );
           },
@@ -301,6 +303,10 @@ extension _RegexPageLayoutSections on _RegexPageState {
             regexState.documentId,
           ),
           interoperability: _regexInteroperabilityBinding(regexState),
+          printable: () => PrintableText(
+            title: regexState.documentName,
+            text: regexState.currentRegex,
+          ),
         ),
       ],
     );

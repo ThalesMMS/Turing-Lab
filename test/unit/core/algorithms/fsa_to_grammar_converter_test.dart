@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/fsa_to_grammar_converter.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_to_grammar_converter.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -17,11 +17,7 @@ void main() {
       position: Vector2.zero(),
       isInitial: true,
     );
-    final q1 = State(
-      id: 'q1',
-      label: 'q1',
-      position: Vector2(100, 0),
-    );
+    final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
     final q2 = State(
       id: 'q2',
       label: 'q2',
@@ -55,10 +51,9 @@ void main() {
     expect(
       grammar.productions,
       contains(
-        isA<Production>().having(
-            (production) => production.leftSide, 'leftSide', [
-          'A0'
-        ]).having((production) => production.rightSide, 'rightSide', ['A1']),
+        isA<Production>()
+            .having((production) => production.leftSide, 'leftSide', ['A0'])
+            .having((production) => production.rightSide, 'rightSide', ['A1']),
       ),
     );
     final parseResult = GrammarParser.parse(grammar, 'a');
@@ -121,11 +116,7 @@ void main() {
   });
 
   test('reports a missing initial state without a null-check crash', () {
-    final state = State(
-      id: 'q0',
-      label: 'q0',
-      position: Vector2.zero(),
-    );
+    final state = State(id: 'q0', label: 'q0', position: Vector2.zero());
     final timestamp = DateTime.utc(2026);
     final fsa = FSA(
       id: 'missing-initial',
@@ -168,28 +159,30 @@ void main() {
     final timestamp = DateTime.utc(2026);
 
     FSA automaton(Set<State> states) => FSA(
-          id: 'stable',
-          name: 'Stable',
-          states: states,
-          transitions: {transition},
-          alphabet: const {'a'},
-          initialState: q0,
-          acceptingStates: {q1},
-          created: timestamp,
-          modified: timestamp,
-          bounds: const math.Rectangle(0, 0, 200, 100),
-        );
+      id: 'stable',
+      name: 'Stable',
+      states: states,
+      transitions: {transition},
+      alphabet: const {'a'},
+      initialState: q0,
+      acceptingStates: {q1},
+      created: timestamp,
+      modified: timestamp,
+      bounds: const math.Rectangle(0, 0, 200, 100),
+    );
 
     final first = FSAToGrammarConverter.convert(automaton({q0, q1}));
     final second = FSAToGrammarConverter.convert(automaton({q1, q0}));
-    final firstRules = first.productions
-        .map((value) => '${value.id}:${value.leftSide}->${value.rightSide}')
-        .toList()
-      ..sort();
-    final secondRules = second.productions
-        .map((value) => '${value.id}:${value.leftSide}->${value.rightSide}')
-        .toList()
-      ..sort();
+    final firstRules =
+        first.productions
+            .map((value) => '${value.id}:${value.leftSide}->${value.rightSide}')
+            .toList()
+          ..sort();
+    final secondRules =
+        second.productions
+            .map((value) => '${value.id}:${value.leftSide}->${value.rightSide}')
+            .toList()
+          ..sort();
 
     expect(first.startSymbol, 'A0');
     expect(second.startSymbol, 'A0');

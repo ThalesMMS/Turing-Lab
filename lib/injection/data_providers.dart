@@ -15,6 +15,7 @@ import '../data/repositories/settings_repository_impl.dart';
 import '../data/services/active_session_module_registry.dart';
 import '../data/services/active_session_persistence_service.dart';
 import '../data/services/file_operations_service.dart';
+import '../data/services/print_service.dart';
 import '../data/services/grammar_teaching_session_store.dart';
 import '../data/services/manual_conversion_session_store.dart';
 import '../data/services/trace_persistence_service.dart';
@@ -50,31 +51,36 @@ final activeSessionRepositoryProvider = Provider<ActiveSessionRepository>((
 
 final manualConversionSessionStoreProvider =
     Provider<ManualConversionSessionStore>((ref) {
-  return ManualConversionSessionStore(ref.watch(sharedPreferencesProvider));
-});
+      return ManualConversionSessionStore(ref.watch(sharedPreferencesProvider));
+    });
 
 final grammarTeachingSessionStoreProvider =
     Provider<GrammarTeachingSessionStore>((ref) {
-  return SharedPreferencesGrammarTeachingSessionStore(
-    ref.watch(sharedPreferencesProvider),
-  );
-});
+      return SharedPreferencesGrammarTeachingSessionStore(
+        ref.watch(sharedPreferencesProvider),
+      );
+    });
 
 final examplesRepositoryProvider = Provider<ExamplesRepository>((ref) {
   return createExamplesRepository(
-      registry: ref.watch(formalSystemRegistryProvider));
+    registry: ref.watch(formalSystemRegistryProvider),
+  );
 });
 
 final fileOperationsProvider = Provider<FileOperationsGateway>((ref) {
   return createFileOperationsGateway();
 });
 
+final printServiceProvider = Provider<PrintService>((ref) {
+  return createPrintService();
+});
+
 final documentInteroperabilityRegistryProvider =
     Provider<DocumentInteroperabilityRegistry>((ref) {
-  return createDocumentInteroperabilityRegistry(
-    formalSystems: ref.watch(formalSystemRegistryProvider),
-  );
-});
+      return createDocumentInteroperabilityRegistry(
+        formalSystems: ref.watch(formalSystemRegistryProvider),
+      );
+    });
 
 ExamplesRepository createExamplesRepository({FormalSystemRegistry? registry}) =>
     ExamplesAssetDataSource(
@@ -83,9 +89,10 @@ ExamplesRepository createExamplesRepository({FormalSystemRegistry? registry}) =>
 
 FileOperationsGateway createFileOperationsGateway() => FileOperationsService();
 
+PrintService createPrintService() => const PrintingPrintService();
+
 DocumentInteroperabilityRegistry createDocumentInteroperabilityRegistry({
   FormalSystemRegistry? formalSystems,
-}) =>
-    DefaultDocumentInteroperabilityRegistry.create(
-      formalSystems: formalSystems ?? DefaultFormalSystemRegistry.registry,
-    );
+}) => DefaultDocumentInteroperabilityRegistry.create(
+  formalSystems: formalSystems ?? DefaultFormalSystemRegistry.registry,
+);

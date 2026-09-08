@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_block_dependency_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
-import 'package:turing_lab/core/algorithms/tm_block_inline_expander.dart';
-import 'package:turing_lab/core/algorithms/tm_multi_tape_execution_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_to_grammar_messages.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_dependency_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_inline_expander.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_multi_tape_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_to_grammar_messages.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_converter.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_grammar_models.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
@@ -356,7 +356,11 @@ void main() {
         states: [testState('q0', initial: true, accepting: true)],
         accepting: true,
       );
-      final multiReport = TMToGrammarConverter.build(multi, sourceRevision: 1);
+      final multiReport = TMToGrammarConverter.build(
+        multi,
+        sourceRevision: 1,
+        reduceMultiTape: false,
+      );
       final multiDiagnostic = multiReport.diagnostics.firstWhere(
         (diagnostic) =>
             diagnostic.code == TMToGrammarDiagnosticCode.multiTapeUnsupported,

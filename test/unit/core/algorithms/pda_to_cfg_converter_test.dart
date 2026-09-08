@@ -15,8 +15,8 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/pda_to_cfg_converter.dart';
-import 'package:turing_lab/core/algorithms/pda_to_cfg_messages.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_to_cfg_messages.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
 import 'package:turing_lab/core/models/state.dart';

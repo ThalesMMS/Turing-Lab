@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/presentation/widgets/example_suggested_simulations_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/data/data_sources/examples_asset_data_source.dart';
@@ -16,9 +17,9 @@ import 'package:turing_lab/presentation/providers/regex_editor_provider.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/asset_example_content_button.dart';
-import 'package:turing_lab/presentation/widgets/grammar_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/pda_algorithm_panel.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/grammar/grammar_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_panel.dart';
 import 'package:turing_lab/presentation/widgets/workspace_quick_actions_bar.dart';
 
 const _fsaIds = <String>[
@@ -140,7 +141,8 @@ void main() {
 
       await pump(const Locale('en'));
       _expectLocalizedExamples(tester, _fsaIds, 'en');
-      expect(find.text('Suggested simulation: 110'), findsOneWidget);
+      expect(find.text('Suggested simulation:'), findsWidgets);
+      expect(find.byTooltip('Use input'), findsWidgets);
       final en = AssetExampleContentCopies.resolve(
         id: _fsaIds.first,
         languageCode: 'en',
@@ -150,14 +152,19 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      final semantics = tester.getSemantics(
-        find.ancestor(
-          of: find.text(en.title),
-          matching: find.byType(AssetExampleContentButton),
-        ),
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(en.accessibleDescription))),
+        findsOneWidget,
       );
-      expect(semantics.label, contains(en.accessibleDescription));
-      expect(semantics.label, contains('Suggested simulation: 110.'));
+      expect(
+        find.byKey(
+          ExampleSuggestedSimulationsText.useInputKey(
+            '110',
+            'asset/afd_binary_divisible_by_3',
+          ),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.text(en.title));
       for (
         var attempt = 0;
@@ -185,7 +192,8 @@ void main() {
 
       await pump(const Locale('pt', 'BR'));
       _expectLocalizedExamples(tester, _fsaIds, 'pt-BR');
-      expect(find.text('Simulação sugerida: 110'), findsOneWidget);
+      expect(find.text('Simulação sugerida:'), findsWidgets);
+      expect(find.byTooltip('Usar entrada'), findsWidgets);
       expect(find.text(en.title), findsNothing);
       expect(notifier.state.currentAutomaton?.toJson(), formalSnapshot);
       expect(tester.takeException(), isNull);
@@ -254,13 +262,10 @@ void main() {
       );
       await tester.dragFrom(const Offset(160, 650), const Offset(0, -500));
       await tester.pumpAndSettle();
-      final semantics = tester.getSemantics(
-        find.ancestor(
-          of: find.text(en.title),
-          matching: find.byType(AssetExampleContentButton),
-        ),
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(en.accessibleDescription))),
+        findsOneWidget,
       );
-      expect(semantics.label, contains(en.accessibleDescription));
       await tester.tap(find.text(en.title));
       await tester.pumpAndSettle();
 
@@ -341,13 +346,10 @@ void main() {
       );
       await tester.ensureVisible(find.text(en.title));
       await tester.pumpAndSettle();
-      final semantics = tester.getSemantics(
-        find.ancestor(
-          of: find.text(en.title),
-          matching: find.byType(AssetExampleContentButton),
-        ),
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(en.accessibleDescription))),
+        findsOneWidget,
       );
-      expect(semantics.label, contains(en.accessibleDescription));
       await tester.tap(find.text(en.title));
       for (
         var attempt = 0;
@@ -426,13 +428,10 @@ void main() {
       );
       await tester.ensureVisible(find.text(en.title));
       await tester.pumpAndSettle();
-      final semantics = tester.getSemantics(
-        find.ancestor(
-          of: find.text(en.title),
-          matching: find.byType(AssetExampleContentButton),
-        ),
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(en.accessibleDescription))),
+        findsOneWidget,
       );
-      expect(semantics.label, contains(en.accessibleDescription));
       await tester.tap(find.text(en.title));
 
       final expected = expectedExamples
@@ -540,10 +539,12 @@ void main() {
         await tester.ensureVisible(button);
         await tester.pumpAndSettle();
         expect(
-          tester.getSemantics(button).label,
-          contains(copy.accessibleDescription),
+          find.bySemanticsLabel(
+            RegExp(RegExp.escape(copy.accessibleDescription)),
+          ),
+          findsOneWidget,
         );
-        await tester.tap(button);
+        await tester.tap(find.text(copy.title));
 
         final expected = expectedExamples
             .singleWhere((example) => example.id == id)
@@ -583,13 +584,9 @@ void main() {
         languageCode: 'pt-BR',
       );
       expect(find.text(en.title), findsNothing);
-      final portugueseButton = find.ancestor(
-        of: find.text(pt.title),
-        matching: find.byType(AssetExampleContentButton),
-      );
       expect(
-        tester.getSemantics(portugueseButton).label,
-        contains(pt.accessibleDescription),
+        find.bySemanticsLabel(RegExp(RegExp.escape(pt.accessibleDescription))),
+        findsOneWidget,
       );
       expect(notifier.state.tm?.toJson(), formalSnapshot);
       expect(tester.takeException(), isNull);

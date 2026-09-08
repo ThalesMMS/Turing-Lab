@@ -121,7 +121,8 @@ extension _TuringLabAdaptiveEdgeRendererGroupedRendering
     if (normal.distanceSquared < 0.0001) {
       normal = const Offset(0, -1);
     }
-    final anchor = bounds.center +
+    final anchor =
+        bounds.center +
         normal * (_projectedHalfExtent(normal, bounds.size) + _loopLabelOffset);
 
     var reach = 0.0;

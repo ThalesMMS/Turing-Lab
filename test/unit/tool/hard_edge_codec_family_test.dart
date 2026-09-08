@@ -40,10 +40,12 @@ void main() {
 
   test('boundary process-tree ordering is deterministic and child-first', () {
     expect(
-      CodecBoundaryProcessTree.descendantsDeepestFirst(
-        {11: 10, 12: 10, 13: 11, 10: 13},
-        10,
-      ),
+      CodecBoundaryProcessTree.descendantsDeepestFirst({
+        11: 10,
+        12: 10,
+        13: 11,
+        10: 13,
+      }, 10),
       [13, 11, 12],
     );
   });
@@ -68,90 +70,100 @@ void main() {
     expect(cancelled.outcome, CodecBoundaryProcessOutcome.cancelled);
   });
 
-  test('generated fixtures are deterministic and shrink their real payload',
-      () {
-    final left = materializeCodecPropertyFixture(
-      codecId: 'pda.turing-lab-json.v1',
-      property: 'migration-extensions',
-      seed: 340,
-    );
-    final right = materializeCodecPropertyFixture(
-      codecId: 'pda.turing-lab-json.v1',
-      property: 'migration-extensions',
-      seed: 340,
-    );
-    expect(left.toJson(), right.toJson());
-    expect(base64Decode(left.payload['sourcePayloadBase64']! as String),
-        isNotEmpty);
+  test(
+    'generated fixtures are deterministic and shrink their real payload',
+    () {
+      final left = materializeCodecPropertyFixture(
+        codecId: 'pda.turing-lab-json.v1',
+        property: 'migration-extensions',
+        seed: 340,
+      );
+      final right = materializeCodecPropertyFixture(
+        codecId: 'pda.turing-lab-json.v1',
+        property: 'migration-extensions',
+        seed: 340,
+      );
+      expect(left.toJson(), right.toJson());
+      expect(
+        base64Decode(left.payload['sourcePayloadBase64']! as String),
+        isNotEmpty,
+      );
 
-    final candidates = const CodecFixtureShrinker().candidates(left);
-    expect(candidates, isNotEmpty);
-    expect(
-      candidates.any(
-        (candidate) =>
-            jsonEncode(candidate.payload).length <
-            jsonEncode(left.payload).length,
-      ),
-      isTrue,
-    );
-  });
+      final candidates = const CodecFixtureShrinker().candidates(left);
+      expect(candidates, isNotEmpty);
+      expect(
+        candidates.any(
+          (candidate) =>
+              jsonEncode(candidate.payload).length <
+              jsonEncode(left.payload).length,
+        ),
+        isTrue,
+      );
+    },
+  );
 
-  test('codec shrink preserves the exact divergence and reaches minimum bytes',
-      () async {
-    final source = materializeCodecPropertyFixture(
-      codecId: 'fsa.turing-lab-json.v1',
-      property: 'transport-parity',
-      seed: 340,
-    ).copyWith(
-      payload: {
-        ...materializeCodecPropertyFixture(
-          codecId: 'fsa.turing-lab-json.v1',
-          property: 'transport-parity',
-          seed: 340,
-        ).payload,
-        'sourcePayloadBase64': base64Encode(utf8.encode('{')),
-      },
-    );
-    final runner = CodecCertificationRunner();
-    final initial = await runner.runProperty(source);
-    expect(initial.status, CodecCertificationStatus.failed);
-    final signed = source.copyWith(
-      payload: {
-        ...source.payload,
-        'failureSignature': initial.failureSignature,
-      },
-    );
-    final candidates = const CodecFixtureShrinker().candidates(signed).toList();
-    final preserving = <CodecHardEdgeFixture>[];
-    for (final candidate in candidates) {
-      final check = await runner.runProperty(candidate);
-      if (check.failureSignature == initial.failureSignature) {
-        preserving.add(candidate);
+  test(
+    'codec shrink preserves the exact divergence and reaches minimum bytes',
+    () async {
+      final source =
+          materializeCodecPropertyFixture(
+            codecId: 'fsa.turing-lab-json.v1',
+            property: 'transport-parity',
+            seed: 340,
+          ).copyWith(
+            payload: {
+              ...materializeCodecPropertyFixture(
+                codecId: 'fsa.turing-lab-json.v1',
+                property: 'transport-parity',
+                seed: 340,
+              ).payload,
+              'sourcePayloadBase64': base64Encode(utf8.encode('{')),
+            },
+          );
+      final runner = CodecCertificationRunner();
+      final initial = await runner.runProperty(source);
+      expect(initial.status, CodecCertificationStatus.failed);
+      final signed = source.copyWith(
+        payload: {
+          ...source.payload,
+          'failureSignature': initial.failureSignature,
+        },
+      );
+      final candidates = const CodecFixtureShrinker()
+          .candidates(signed)
+          .toList();
+      final preserving = <CodecHardEdgeFixture>[];
+      for (final candidate in candidates) {
+        final check = await runner.runProperty(candidate);
+        if (check.failureSignature == initial.failureSignature) {
+          preserving.add(candidate);
+        }
       }
-    }
-    expect(preserving, isNotEmpty);
-    final minimal = preserving.reduce(
-      (left, right) =>
-          (left.payload['sourcePayloadBase64']! as String).length <=
-                  (right.payload['sourcePayloadBase64']! as String).length
-              ? left
-              : right,
-    );
-    expect(minimal.payload['sourcePayloadBase64'], isEmpty);
-    expect(const CodecFixtureShrinker().candidates(minimal), isEmpty);
+      expect(preserving, isNotEmpty);
+      final minimal = preserving.reduce(
+        (left, right) =>
+            (left.payload['sourcePayloadBase64']! as String).length <=
+                (right.payload['sourcePayloadBase64']! as String).length
+            ? left
+            : right,
+      );
+      expect(minimal.payload['sourcePayloadBase64'], isEmpty);
+      expect(const CodecFixtureShrinker().candidates(minimal), isEmpty);
 
-    final adapter = codecHardEdgeShrinkAdapter(isApplicable: (_) => true);
-    expect(await adapter.isApplicable(minimal.toJson()), isTrue);
+      final adapter = codecHardEdgeShrinkAdapter(isApplicable: (_) => true);
+      expect(await adapter.isApplicable(minimal.toJson()), isTrue);
 
-    final committed = CodecHardEdgeFixture.fromJson(
-      jsonDecode(
-        File('test/fixtures/hard_edge/codec/minimized_transport_failure.json')
-            .readAsStringSync(),
-      ),
-    );
-    expect(await adapter.isApplicable(committed.toJson()), isTrue);
-    expect(const CodecFixtureShrinker().candidates(committed), isEmpty);
-  });
+      final committed = CodecHardEdgeFixture.fromJson(
+        jsonDecode(
+          File(
+            'test/fixtures/hard_edge/codec/minimized_transport_failure.json',
+          ).readAsStringSync(),
+        ),
+      );
+      expect(await adapter.isApplicable(committed.toJson()), isTrue);
+      expect(const CodecFixtureShrinker().candidates(committed), isEmpty);
+    },
+  );
 
   test('native codec outcomes match the committed parity snapshots', () {
     final catalog = CompatibilityCodecCatalog.create();
@@ -177,25 +189,27 @@ void main() {
     expect(deterministicContentId('probe', 'hello'), 'probe_4f9f2cab');
   });
 
-  test('canonical identity preserves legacy safe values and large integers',
-      () {
-    const historical = {'n': 1};
-    expect(
-      canonicalIdentityJson(historical),
-      canonicalIdentityJsonV1(historical),
-    );
-    expect(canonicalIdentityVersionFor(historical), 1);
+  test(
+    'canonical identity preserves legacy safe values and large integers',
+    () {
+      const historical = {'n': 1};
+      expect(
+        canonicalIdentityJson(historical),
+        canonicalIdentityJsonV1(historical),
+      );
+      expect(canonicalIdentityVersionFor(historical), 1);
 
-    final left = canonicalIdentityJson({'n': 9007199254740992});
-    final right = canonicalIdentityJson({'n': 9007199254740993});
-    expect(left, isNot(right));
-    expect(canonicalIdentityVersionFor({'n': 9007199254740993}), 2);
-    expect(left, contains(r'"$identityVersion":2'));
-    expect(
-      canonicalIdentityJson({'n': 9007199254740992}),
-      isNot(canonicalIdentityJson({'n': '9007199254740992'})),
-    );
-  });
+      final left = canonicalIdentityJson({'n': 9007199254740992});
+      final right = canonicalIdentityJson({'n': 9007199254740993});
+      expect(left, isNot(right));
+      expect(canonicalIdentityVersionFor({'n': 9007199254740993}), 2);
+      expect(left, contains(r'"$identityVersion":2'));
+      expect(
+        canonicalIdentityJson({'n': 9007199254740992}),
+        isNot(canonicalIdentityJson({'n': '9007199254740992'})),
+      );
+    },
+  );
 
   test(
     'all codec properties pass the approved and generated corpus',
@@ -212,9 +226,18 @@ void main() {
         report.boundaryEvidence,
         hasLength(codecBoundaryInventory.length - 1),
       );
+      final failedBoundaries = report.boundaryEvidence
+          .where((evidence) => !evidence.passed)
+          .toList();
       expect(
-        report.boundaryEvidence.where((evidence) => !evidence.passed),
+        failedBoundaries,
         isEmpty,
+        reason: failedBoundaries
+            .map(
+              (evidence) =>
+                  '${evidence.id}: ${evidence.outcome.name}\n${evidence.output}',
+            )
+            .join('\n'),
       );
       for (final evidence in report.boundaryEvidence) {
         final boundary = codecBoundaryInventory.singleWhere(
@@ -223,12 +246,22 @@ void main() {
         expect(
           evidence.entryPoints,
           orderedEquals(boundary.entryPoints),
-          reason: 'Every claimed ${boundary.id} entrypoint needs its own '
+          reason:
+              'Every claimed ${boundary.id} entrypoint needs its own '
               'passing boundary evidence.',
         );
       }
     },
-    timeout: const Timeout(Duration(minutes: 2)),
+    // The parent must allow each sequential child to report its own bound.
+    // Allow both five-second cleanup waits per child, plus corpus checks.
+    timeout: Timeout(
+      Duration(
+        seconds:
+            (CodecCertificationRunner.boundaryTimeout.inSeconds + 5 + 5) *
+                (codecBoundaryInventory.length - 1) +
+            30,
+      ),
+    ),
   );
 
   test('custom JSON codecs enforce their declared depth budget', () {
@@ -288,8 +321,8 @@ void main() {
   test('JSON sniffers reject over-depth content before decoding', () {
     final codecs = <DocumentCodecCapability<Object>>[
       ...CompatibilityCodecCatalog.create().codecs.values.where(
-            (codec) => codec.descriptor.formatId.value == 'turing-lab-json',
-          ),
+        (codec) => codec.descriptor.formatId.value == 'turing-lab-json',
+      ),
     ];
     for (final codec in codecs) {
       final depth = codec.descriptor.securityLimits.maximumDepth + 1;

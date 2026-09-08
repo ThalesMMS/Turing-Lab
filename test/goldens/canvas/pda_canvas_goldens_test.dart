@@ -25,7 +25,7 @@ import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_pda_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/pda_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:turing_lab/presentation/widgets/pda_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/pda/pda_canvas_graphview.dart';
 
 class _TestPDAEditorProvider extends PDAEditorNotifier {
   _TestPDAEditorProvider();
@@ -683,8 +683,9 @@ void main() {
       'renders renderer migration scenario with highlighted adaptive edges',
       (tester) async {
         final provider = _TestPDAEditorProvider();
-        final controller =
-            GraphViewPdaCanvasController(editorNotifier: provider);
+        final controller = GraphViewPdaCanvasController(
+          editorNotifier: provider,
+        );
         final toolController = AutomatonCanvasToolController(
           AutomatonCanvasTool.selection,
         );
@@ -768,9 +769,7 @@ void main() {
         provider.setPda(pda);
         controller.synchronize(pda);
         controller.applyHighlight(
-          SimulationHighlight(
-            transitionIds: <String>{'p_manual'},
-          ),
+          SimulationHighlight(transitionIds: <String>{'p_manual'}),
         );
 
         await tester.pumpWidgetBuilder(

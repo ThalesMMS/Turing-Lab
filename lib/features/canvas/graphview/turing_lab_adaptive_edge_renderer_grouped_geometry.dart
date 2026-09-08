@@ -37,10 +37,7 @@ extension _TuringLabAdaptiveEdgeRendererGroupedGeometry
     if (geometry == null) {
       return null;
     }
-    return _GroupedFsaRenderGeometry(
-      geometry: geometry,
-      laneOffset: 0.0,
-    );
+    return _GroupedFsaRenderGeometry(geometry: geometry, laneOffset: 0.0);
   }
 
   _GroupedFsaRenderGeometry? _representativeGroupedGeometry(Edge edge) {

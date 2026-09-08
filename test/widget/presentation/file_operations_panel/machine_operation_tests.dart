@@ -237,7 +237,9 @@ void _runFileOperationsPanelMachineOperationTests(
   });
 
   group('FileOperationsPanel PDA Operations Tests', () {
-    testWidgets('pda section exposes only svg export', (tester) async {
+    testWidgets('pda section exposes svg and native png export', (
+      tester,
+    ) async {
       final pda = _buildSamplePda();
 
       await tester.pumpWidget(
@@ -250,7 +252,45 @@ void _runFileOperationsPanelMachineOperationTests(
       expect(find.text('Load JFLAP'), findsNothing);
       expect(find.text('Load JSON'), findsNothing);
       expect(find.text(kIsWeb ? 'Download SVG' : 'Export SVG'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('pda_png_export_button')),
+        kIsWeb ? findsNothing : findsOneWidget,
+      );
     });
+
+    testWidgets(
+      'desktop pda png export rasterizes the current PDA and writes bytes',
+      (tester) async {
+        final pda = _buildSamplePda();
+        final service = _StubFileOperationsService(
+          exportResponses: Queue.of([const Success<String>('/tmp/pda.png')]),
+        );
+        fakeFilePicker().enqueueSaveResult('/tmp/pda.png');
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FileOperationsPanel(pda: pda, fileService: service),
+            ),
+          ),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('pda_png_export_button')));
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        expect(service.exportPdaPngCallCount, 1);
+        expect(service.lastPdaPngExport, same(pda));
+        expect(service.writePngBytesCallCount, 1);
+        expect(find.text('PDA exported successfully'), findsOneWidget);
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+        TargetPlatform.windows,
+        TargetPlatform.linux,
+      }),
+      skip: kIsWeb,
+    );
 
     testWidgets('pda svg export triggers callback on web', (tester) async {
       final pda = _buildSamplePda();
@@ -308,7 +348,7 @@ void _runFileOperationsPanelMachineOperationTests(
   });
 
   group('FileOperationsPanel TM Operations Tests', () {
-    testWidgets('tm section exposes only svg export', (tester) async {
+    testWidgets('tm section exposes svg and native png export', (tester) async {
       final tm = _buildSampleTm();
 
       await tester.pumpWidget(
@@ -321,7 +361,51 @@ void _runFileOperationsPanelMachineOperationTests(
       expect(find.text('Load JFLAP'), findsNothing);
       expect(find.text('Load JSON'), findsNothing);
       expect(find.text(kIsWeb ? 'Download SVG' : 'Export SVG'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('tm_png_export_button')),
+        kIsWeb ? findsNothing : findsOneWidget,
+      );
     });
+
+    testWidgets(
+      'desktop tm png export rasterizes the current machine and writes bytes',
+      (tester) async {
+        final tm = _buildSampleTm();
+        final service = _StubFileOperationsService(
+          exportResponses: Queue.of([const Success<String>('/tmp/tm.png')]),
+        );
+        fakeFilePicker().enqueueSaveResult('/tmp/tm.png');
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: FileOperationsPanel(
+                turingMachine: tm,
+                fileService: service,
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.byKey(const ValueKey('tm_png_export_button')));
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        expect(service.exportTmPngCallCount, 1);
+        expect(service.lastTmPngExport, same(tm));
+        expect(service.writePngBytesCallCount, 1);
+        expect(
+          find.text('Turing machine exported successfully'),
+          findsOneWidget,
+        );
+      },
+      variant: const TargetPlatformVariant(<TargetPlatform>{
+        TargetPlatform.macOS,
+        TargetPlatform.windows,
+        TargetPlatform.linux,
+      }),
+      skip: kIsWeb,
+    );
 
     testWidgets('tm svg export triggers callback on web', (tester) async {
       final tm = _buildSampleTm();

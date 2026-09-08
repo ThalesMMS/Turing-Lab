@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/fa_to_regex_converter.dart';
-import 'package:turing_lab/core/algorithms/fa_to_regex_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/fa_to_regex_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/fa_to_regex_messages.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';

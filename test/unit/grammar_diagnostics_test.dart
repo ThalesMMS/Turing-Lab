@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_diagnostic_severity.dart';
 import 'package:turing_lab/core/models/production.dart';
@@ -143,57 +143,60 @@ void main() {
       expect(unknownDiagnostics.single.symbols, ['X']);
     });
 
-    test('validateMalformedProductions reports missing/invalid start symbol',
-        () {
-      final grammar = buildGrammar(
-        startSymbol: 'S',
-        nonterminals: {'A'},
-        terminals: {'a'},
-        productions: {
-          const Production(id: 'p1', leftSide: ['A'], rightSide: ['a']),
-        },
-      );
+    test(
+      'validateMalformedProductions reports missing/invalid start symbol',
+      () {
+        final grammar = buildGrammar(
+          startSymbol: 'S',
+          nonterminals: {'A'},
+          terminals: {'a'},
+          productions: {
+            const Production(id: 'p1', leftSide: ['A'], rightSide: ['a']),
+          },
+        );
 
-      final report = GrammarAnalyzer.validateMalformedProductions(grammar);
-      expect(report.isSuccess, isTrue);
+        final report = GrammarAnalyzer.validateMalformedProductions(grammar);
+        expect(report.isSuccess, isTrue);
 
-      final diagnostics = report.data!.diagnostics;
-      expect(
-        diagnostics.any(
-          (d) =>
-              d.severity == GrammarDiagnosticSeverity.error &&
-              d.code == 'grammar.start_symbol_not_nonterminal' &&
-              d.symbols.contains('S'),
-        ),
-        isTrue,
-      );
-    });
+        final diagnostics = report.data!.diagnostics;
+        expect(
+          diagnostics.any(
+            (d) =>
+                d.severity == GrammarDiagnosticSeverity.error &&
+                d.code == 'grammar.start_symbol_not_nonterminal' &&
+                d.symbols.contains('S'),
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test(
-        'validateMalformedProductions tolerates unknown RHS symbols by warning',
-        () {
-      final grammar = buildGrammar(
-        startSymbol: 'S',
-        nonterminals: {'S'},
-        terminals: {'a'},
-        productions: {
-          const Production(id: 'p1', leftSide: ['S'], rightSide: ['a', 'X']),
-        },
-      );
+      'validateMalformedProductions tolerates unknown RHS symbols by warning',
+      () {
+        final grammar = buildGrammar(
+          startSymbol: 'S',
+          nonterminals: {'S'},
+          terminals: {'a'},
+          productions: {
+            const Production(id: 'p1', leftSide: ['S'], rightSide: ['a', 'X']),
+          },
+        );
 
-      final report = GrammarAnalyzer.validateMalformedProductions(grammar);
-      expect(report.isSuccess, isTrue);
+        final report = GrammarAnalyzer.validateMalformedProductions(grammar);
+        expect(report.isSuccess, isTrue);
 
-      final diagnostics = report.data!.diagnostics;
-      expect(
-        diagnostics.any(
-          (d) =>
-              d.severity == GrammarDiagnosticSeverity.warning &&
-              d.code == 'grammar.unknown_symbol',
-        ),
-        isTrue,
-      );
-    });
+        final diagnostics = report.data!.diagnostics;
+        expect(
+          diagnostics.any(
+            (d) =>
+                d.severity == GrammarDiagnosticSeverity.warning &&
+                d.code == 'grammar.unknown_symbol',
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('combined diagnostics do not crash for empty grammar-like input', () {
       final grammar = buildGrammar(
@@ -203,12 +206,15 @@ void main() {
         productions: const {},
       );
 
-      final malformedResult =
-          GrammarAnalyzer.validateMalformedProductions(grammar);
-      final unreachableResult =
-          GrammarAnalyzer.detectUnreachableNonTerminals(grammar);
-      final unproductiveResult =
-          GrammarAnalyzer.detectUnproductiveNonTerminals(grammar);
+      final malformedResult = GrammarAnalyzer.validateMalformedProductions(
+        grammar,
+      );
+      final unreachableResult = GrammarAnalyzer.detectUnreachableNonTerminals(
+        grammar,
+      );
+      final unproductiveResult = GrammarAnalyzer.detectUnproductiveNonTerminals(
+        grammar,
+      );
 
       expect(malformedResult.isSuccess, isTrue);
       expect(malformedResult.data, isNotNull);

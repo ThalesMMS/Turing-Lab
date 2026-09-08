@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/lr1_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/lr1_parser.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/lr1_teaching_workspace.dart';
+import 'package:turing_lab/presentation/widgets/grammar/lr1_teaching_workspace.dart';
 
 // feature-localization-contract: grammar-analysis-parsing-and-teaching
 // feature-localization-surface: responsive-accessibility

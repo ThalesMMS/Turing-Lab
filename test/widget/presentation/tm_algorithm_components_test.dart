@@ -12,21 +12,21 @@ import 'package:turing_lab/core/models/tm_reachability_report.dart';
 import 'package:turing_lab/core/models/tm_space_profile.dart';
 import 'package:turing_lab/core/models/tm_time_profile.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_execution_controller.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_execution_controls.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_inputs.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_language_controls.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_presentation_primitives.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_reachability_controls.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_space_controls.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_state_selector.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_time_controls.dart';
-import 'package:turing_lab/presentation/widgets/tm_language_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_reachability_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_space_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_tape_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_termination_result_view.dart';
-import 'package:turing_lab/presentation/widgets/tm_time_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_execution_controller.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_execution_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_inputs.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_language_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_presentation_primitives.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_reachability_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_space_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_state_selector.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_time_controls.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_language_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_reachability_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_space_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_tape_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_termination_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_time_result_view.dart';
 
 void main() {
   testWidgets('all focused control families instantiate independently', (
@@ -147,19 +147,13 @@ void main() {
     addTearDown(controller.dispose);
     final termination = TMAlgorithmStateSelector<Object>(
       controller: controller,
-      select: (state) => (
-        state.isAnalyzing,
-        state.currentFocus,
-        state.termination.progress,
-      ),
+      select: (state) =>
+          (state.isAnalyzing, state.currentFocus, state.termination.progress),
     );
     final reachability = TMAlgorithmStateSelector<Object>(
       controller: controller,
-      select: (state) => (
-        state.isAnalyzing,
-        state.currentFocus,
-        state.reachability.progress,
-      ),
+      select: (state) =>
+          (state.isAnalyzing, state.currentFocus, state.reachability.progress),
     );
     final buttons = TMAlgorithmStateSelector<Object>(
       controller: controller,
@@ -192,10 +186,12 @@ void main() {
       tester,
       Column(
         children: [
-          Builder(builder: (_) {
-            stableBuilds++;
-            return const SizedBox();
-          }),
+          Builder(
+            builder: (_) {
+              stableBuilds++;
+              return const SizedBox();
+            },
+          ),
           _counted(termination, () => terminationBuilds++),
           _counted(reachability, () => reachabilityBuilds++),
           _counted(buttons, () => buttonBuilds++),
@@ -224,97 +220,97 @@ void main() {
   });
 
   testWidgets(
-      'cosmetic source refresh rebuilds results without rebuilding controls',
-      (tester) async {
-    final originalState = automaton_state.State(
-      id: 'q0',
-      label: 'Old label',
-      position: Vector2.zero(),
-      isInitial: true,
-      isAccepting: true,
-    );
-    final original = _singleStateTm(originalState, name: 'Original');
-    final controller = TMAlgorithmExecutionController(
-      initialTm: original,
-      highlights: null,
-    );
-    addTearDown(controller.dispose);
+    'cosmetic source refresh rebuilds results without rebuilding controls',
+    (tester) async {
+      final originalState = automaton_state.State(
+        id: 'q0',
+        label: 'Old label',
+        position: Vector2.zero(),
+        isInitial: true,
+        isAccepting: true,
+      );
+      final original = _singleStateTm(originalState, name: 'Original');
+      final controller = TMAlgorithmExecutionController(
+        initialTm: original,
+        highlights: null,
+      );
+      addTearDown(controller.dispose);
 
-    final reachabilityRequest = controller.begin(TMAnalysisFocus.reachability);
-    controller.completeReachability(
-      reachabilityRequest,
-      _reachabilityReport(),
-    );
-    final tapeRequest = controller.begin(TMAnalysisFocus.tape);
-    controller.completeTape(tapeRequest, _tapeAnalysis());
+      final reachabilityRequest = controller.begin(
+        TMAnalysisFocus.reachability,
+      );
+      controller.completeReachability(
+        reachabilityRequest,
+        _reachabilityReport(),
+      );
+      final tapeRequest = controller.begin(TMAnalysisFocus.tape);
+      controller.completeTape(tapeRequest, _tapeAnalysis());
 
-    final reachabilityControls = TMAlgorithmStateSelector<Object>(
-      controller: controller,
-      select: (state) => (
-        state.isAnalyzing,
-        state.currentFocus,
-        state.reachability.progress,
-      ),
-    );
-    final tapeControls = TMAlgorithmStateSelector<Object>(
-      controller: controller,
-      select: (state) => (
-        state.isAnalyzing,
-        state.currentFocus,
-        state.tape.progress,
-      ),
-    );
-    final results = TMAlgorithmStateSelector<Object>(
-      controller: controller,
-      select: (state) => (
-        state.currentFocus,
-        state.currentError,
-        state.reachability.report,
-        state.reachability.sourceTm,
-        state.tape.report,
-        state.tape.sourceTm,
-      ),
-    );
-    addTearDown(reachabilityControls.dispose);
-    addTearDown(tapeControls.dispose);
-    addTearDown(results.dispose);
-    var reachabilityControlBuilds = 0;
-    var tapeControlBuilds = 0;
-    var resultBuilds = 0;
+      final reachabilityControls = TMAlgorithmStateSelector<Object>(
+        controller: controller,
+        select: (state) => (
+          state.isAnalyzing,
+          state.currentFocus,
+          state.reachability.progress,
+        ),
+      );
+      final tapeControls = TMAlgorithmStateSelector<Object>(
+        controller: controller,
+        select: (state) =>
+            (state.isAnalyzing, state.currentFocus, state.tape.progress),
+      );
+      final results = TMAlgorithmStateSelector<Object>(
+        controller: controller,
+        select: (state) => (
+          state.currentFocus,
+          state.currentError,
+          state.reachability.report,
+          state.reachability.sourceTm,
+          state.tape.report,
+          state.tape.sourceTm,
+        ),
+      );
+      addTearDown(reachabilityControls.dispose);
+      addTearDown(tapeControls.dispose);
+      addTearDown(results.dispose);
+      var reachabilityControlBuilds = 0;
+      var tapeControlBuilds = 0;
+      var resultBuilds = 0;
 
-    await _pump(
-      tester,
-      Column(
-        children: [
-          _counted(reachabilityControls, () => reachabilityControlBuilds++),
-          _counted(tapeControls, () => tapeControlBuilds++),
-          _counted(results, () => resultBuilds++),
-        ],
-      ),
-    );
-    final beforeRefresh = (
-      reachabilityControlBuilds,
-      tapeControlBuilds,
-      resultBuilds,
-    );
-    final renamedState = automaton_state.State(
-      id: originalState.id,
-      label: 'New label',
-      position: Vector2(280, 160),
-      isInitial: true,
-      isAccepting: true,
-    );
-    final renamed = _singleStateTm(renamedState, name: 'Renamed');
+      await _pump(
+        tester,
+        Column(
+          children: [
+            _counted(reachabilityControls, () => reachabilityControlBuilds++),
+            _counted(tapeControls, () => tapeControlBuilds++),
+            _counted(results, () => resultBuilds++),
+          ],
+        ),
+      );
+      final beforeRefresh = (
+        reachabilityControlBuilds,
+        tapeControlBuilds,
+        resultBuilds,
+      );
+      final renamedState = automaton_state.State(
+        id: originalState.id,
+        label: 'New label',
+        position: Vector2(280, 160),
+        isInitial: true,
+        isAccepting: true,
+      );
+      final renamed = _singleStateTm(renamedState, name: 'Renamed');
 
-    controller.observeMachine(renamed);
-    await tester.pump();
+      controller.observeMachine(renamed);
+      await tester.pump();
 
-    expect(controller.state.reachability.sourceTm, same(renamed));
-    expect(controller.state.tape.sourceTm, same(renamed));
-    expect(reachabilityControlBuilds, beforeRefresh.$1);
-    expect(tapeControlBuilds, beforeRefresh.$2);
-    expect(resultBuilds, beforeRefresh.$3 + 1);
-  });
+      expect(controller.state.reachability.sourceTm, same(renamed));
+      expect(controller.state.tape.sourceTm, same(renamed));
+      expect(reachabilityControlBuilds, beforeRefresh.$1);
+      expect(tapeControlBuilds, beforeRefresh.$2);
+      expect(resultBuilds, beforeRefresh.$3 + 1);
+    },
+  );
 
   testWidgets('cancel control exposes Portuguese analysis action', (
     tester,
@@ -335,10 +331,7 @@ void main() {
     final cancel = find.byKey(const Key('tm-analysis-cancel'));
     final semantics = tester.getSemantics(cancel);
     expect(semantics.label, contains('Cancelar análise'));
-    expect(
-      semantics.getSemanticsData().hasAction(SemanticsAction.tap),
-      isTrue,
-    );
+    expect(semantics.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
     await tester.tap(cancel);
     expect(cancellations, 1);
   });
@@ -360,10 +353,7 @@ void main() {
     );
 
     final cancel = find.byKey(const Key('tm-analysis-cancel'));
-    expect(
-      tester.getSemantics(cancel).label,
-      contains('Cancelar exploração'),
-    );
+    expect(tester.getSemantics(cancel).label, contains('Cancelar exploração'));
     await tester.tap(cancel);
     expect(cancellations, 1);
   });
@@ -475,7 +465,8 @@ void main() {
     expect(
       tester.getSemantics(find.byType(TMAnalysisFocusBanner)).label,
       contains(
-          'Foco da análise: Alcançabilidade estrutural e semântica limitada'),
+        'Foco da análise: Alcançabilidade estrutural e semântica limitada',
+      ),
     );
   });
 
@@ -483,9 +474,7 @@ void main() {
     await _pump(
       tester,
       ListView(
-        children: [
-          TMTapeResultView(analysis: _tapeAnalysis(), sourceTm: null),
-        ],
+        children: [TMTapeResultView(analysis: _tapeAnalysis(), sourceTm: null)],
       ),
       locale: const Locale('pt'),
     );
@@ -574,46 +563,46 @@ Future<void> _pump(
 }
 
 TMExecutionAnalysis _analysis(String message) => TMExecutionAnalysis(
-      input: 'a',
-      outcome: TMExecutionOutcome.accepted,
-      message: message,
-      stepsExecuted: 1,
-      configurationsExplored: 2,
-      maxSteps: 10,
-      maxConfigurations: 20,
-      timeout: const Duration(seconds: 1),
-      executionTime: Duration.zero,
-    );
+  input: 'a',
+  outcome: TMExecutionOutcome.accepted,
+  message: message,
+  stepsExecuted: 1,
+  configurationsExplored: 2,
+  maxSteps: 10,
+  maxConfigurations: 20,
+  timeout: const Duration(seconds: 1),
+  executionTime: Duration.zero,
+);
 
 TMExecutionAnalysis _tapeAnalysis() => TMExecutionAnalysis(
-      input: 'a',
-      outcome: TMExecutionOutcome.accepted,
-      message: 'Accepted.',
-      stepsExecuted: 1,
-      configurationsExplored: 2,
-      maxSteps: 10,
-      maxConfigurations: 20,
-      timeout: const Duration(seconds: 1),
-      executionTime: Duration.zero,
-      traceMetrics: TMTraceMetrics(
-        branchSelection: TMExecutionBranchSelection.deterministic,
-        readCounts: const {},
-        writeCountsByOldSymbol: const {},
-        writeCountsByNewSymbol: const {},
-        changedWrites: 0,
-        movementCounts: const {},
-        headReversals: 0,
-        minimumHeadPosition: 0,
-        maximumHeadPosition: 0,
-        visitedCells: const {0},
-        maximumSimultaneousNonBlankCells: 1,
-        transitionExecutionCounts: const {},
-        cellTouchRanges: const {},
-        tapeDiff: const {},
-        definedButNotExecutedTransitionIds: const {},
-        retainedTraceSnapshots: 0,
-      ),
-    );
+  input: 'a',
+  outcome: TMExecutionOutcome.accepted,
+  message: 'Accepted.',
+  stepsExecuted: 1,
+  configurationsExplored: 2,
+  maxSteps: 10,
+  maxConfigurations: 20,
+  timeout: const Duration(seconds: 1),
+  executionTime: Duration.zero,
+  traceMetrics: TMTraceMetrics(
+    branchSelection: TMExecutionBranchSelection.deterministic,
+    readCounts: const {},
+    writeCountsByOldSymbol: const {},
+    writeCountsByNewSymbol: const {},
+    changedWrites: 0,
+    movementCounts: const {},
+    headReversals: 0,
+    minimumHeadPosition: 0,
+    maximumHeadPosition: 0,
+    visitedCells: const {0},
+    maximumSimultaneousNonBlankCells: 1,
+    transitionExecutionCounts: const {},
+    cellTouchRanges: const {},
+    tapeDiff: const {},
+    definedButNotExecutedTransitionIds: const {},
+    retainedTraceSnapshots: 0,
+  ),
+);
 
 TMAlgorithmExecutionController _controllerWithActive(TMAnalysisFocus focus) {
   final controller = TMAlgorithmExecutionController(
@@ -625,19 +614,19 @@ TMAlgorithmExecutionController _controllerWithActive(TMAnalysisFocus focus) {
 }
 
 TMReachabilityReport _reachabilityReport() => TMReachabilityReport(
-      inputs: const [''],
-      status: TMReachabilityStatus.complete,
-      message: 'Complete.',
-      structurallyReachableStateIds: const {'q0'},
-      structurallyUnreachableStateIds: const {},
-      witnessesByStateId: const {},
-      configurationsExplored: 1,
-      transitionsExplored: 0,
-      maxSteps: 10,
-      maxConfigurations: 20,
-      timeout: const Duration(seconds: 1),
-      executionTime: Duration.zero,
-    );
+  inputs: const [''],
+  status: TMReachabilityStatus.complete,
+  message: 'Complete.',
+  structurallyReachableStateIds: const {'q0'},
+  structurallyUnreachableStateIds: const {},
+  witnessesByStateId: const {},
+  configurationsExplored: 1,
+  transitionsExplored: 0,
+  maxSteps: 10,
+  maxConfigurations: 20,
+  timeout: const Duration(seconds: 1),
+  executionTime: Duration.zero,
+);
 
 TM _singleStateTm(automaton_state.State state, {required String name}) {
   final now = DateTime(2026);

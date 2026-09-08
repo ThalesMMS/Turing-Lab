@@ -1,0 +1,330 @@
+{
+  "issue": 453,
+  "sourceRevision": "3590626146bfbc77684c22c10a733bd35b39a9d6",
+  "staleEntries": [
+    {
+      "path": "lib/features/canvas/graphview/graphview_canvas_controller.dart",
+      "baselineRevision": "fc590ab2ab945cd6fd204548e5939af2e6eb8d4c",
+      "baselinePath": "lib/features/canvas/graphview/graphview_canvas_controller.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_canvas_models.dart",
+      "baselineRevision": "817eeccbd09b7e60384a6051cc3a05306f5126ee",
+      "baselinePath": "lib/features/canvas/graphview/graphview_canvas_models.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_pda_canvas_controller.dart",
+      "baselineRevision": "8bd7d95165e1a8f8464f757600375d92607a8191",
+      "baselinePath": "lib/features/canvas/graphview/graphview_pda_canvas_controller.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_tm_canvas_controller.dart",
+      "baselineRevision": "8bd7d95165e1a8f8464f757600375d92607a8191",
+      "baselinePath": "lib/features/canvas/graphview/graphview_tm_canvas_controller.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/features/canvas/graphview/graphview_tm_mapper.dart",
+      "baselineRevision": "f97e2c1065a7d6c94263be90f15ed94c0349ea32",
+      "baselinePath": "lib/features/canvas/graphview/graphview_tm_mapper.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/content/example_suggested_simulations.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/content/example_suggested_simulations.dart",
+      "resolution": "Classify the 36 added bilingual counterexample rationales through the existing locale resolver."
+    },
+    {
+      "path": "lib/presentation/content/l_system_example_content_copy.dart",
+      "baselineRevision": "131cf17bfd8e943480fee70b12074a1708d624ba",
+      "baselinePath": "lib/presentation/content/l_system_example_content_copy.dart",
+      "resolution": "Classify eight added paired parametric-tree messages through the existing locale resolver."
+    },
+    {
+      "path": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
+      "baselineRevision": "850cfa49be873affe8529a1fb83cff7745f7222a",
+      "baselinePath": "lib/presentation/pages/fsa_page/fsa_page_behavior.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/pages/regex_page.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/pages/regex_page.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/pages/regex_page_layout.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/pages/regex_page_layout.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/pages/unrestricted_grammar_page.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/pages/unrestricted_grammar_page.dart",
+      "resolution": "Classify the added production rendering as formal user data."
+    },
+    {
+      "path": "lib/presentation/providers/grammar_provider.dart",
+      "baselineRevision": "c1f9241a49b707e96f8e9c7df9cb7c5ba74049ab",
+      "baselinePath": "lib/presentation/providers/grammar_provider.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/transducers/transducer_simulation_panel.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/transducers/transducer_simulation_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_panel.dart",
+      "baselineRevision": "307b45e2af484e0bb7c7033ee7315e739d0cc94e",
+      "baselinePath": "lib/presentation/widgets/algorithm_panel.dart",
+      "resolution": "Classify the extra completion action identity; remove obsolete example messages."
+    },
+    {
+      "path": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
+      "baselineRevision": "30dc9482510f32e0119d76191c21f7b8f47ac615",
+      "baselinePath": "lib/presentation/widgets/algorithm_step_renderer_registry.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
+      "baselineRevision": "5b6853884cf174dc58bfa851094a737c544c6767",
+      "baselinePath": "lib/presentation/widgets/automaton_graphview_canvas_interactions.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/cfg_to_pda_construction_workspace.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/cfg_to_pda_construction_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/fa_grammar_requirement_editor.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/fa_grammar_requirement_editor.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/fa_to_regex_requirement_editor.dart",
+      "baselineRevision": "ab268a73878a38260ba984857949384e07bb2596",
+      "baselinePath": "lib/presentation/widgets/fa_to_regex_requirement_editor.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/manual_conversion_document_preview.dart",
+      "baselineRevision": "59c66cc84672f2b1c76db693704c3c7649edbca3",
+      "baselinePath": "lib/presentation/widgets/manual_conversion_document_preview.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/manual_conversion_workspace.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/manual_conversion_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/regex_to_fa_fragment_editor.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/regex_to_fa_fragment_editor.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/conversions/tm_to_grammar_construction_workspace.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/tm_to_grammar_construction_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/export/svg_exporter.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/export/svg_exporter.dart",
+      "resolution": "Classify extracted SVG serialization templates; preserve the grammar name without an English suffix."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+      "baselineRevision": "97e72f4f5885848412e27a87dee1a54363b2d1bd",
+      "baselinePath": "lib/presentation/widgets/brute_force_teaching_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/derivation_tree_view.dart",
+      "baselineRevision": "3ad05991843d79e1018902b40ab0fef749a42fb0",
+      "baselinePath": "lib/presentation/widgets/derivation_tree_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_algorithm_panel.dart",
+      "baselineRevision": "930e6a5668dc139715cc8145f4ae880a4401ad76",
+      "baselinePath": "lib/presentation/widgets/grammar_algorithm_panel.dart",
+      "resolution": "Move inherited formatter entries to their new file; localized diagnostic formatter delegation preserves the existing output contract."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_editor.dart",
+      "baselineRevision": "df6a0992d42108494e1bfb0b33d2f5678bf7e3ad",
+      "baselinePath": "lib/presentation/widgets/grammar_editor.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_simulation_panel.dart",
+      "baselineRevision": "3ad05991843d79e1018902b40ab0fef749a42fb0",
+      "baselinePath": "lib/presentation/widgets/grammar_simulation_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/grammar_transformation_history.dart",
+      "baselineRevision": "ab268a73878a38260ba984857949384e07bb2596",
+      "baselinePath": "lib/presentation/widgets/grammar_transformation_history.dart",
+      "resolution": "The same localized step label now receives stepNumber; no new prose."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+      "baselineRevision": "97e72f4f5885848412e27a87dee1a54363b2d1bd",
+      "baselinePath": "lib/presentation/widgets/lr1_teaching_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/parse_table_teaching_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/user_derivation_workspace.dart",
+      "baselineRevision": "97e72f4f5885848412e27a87dee1a54363b2d1bd",
+      "baselinePath": "lib/presentation/widgets/user_derivation_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/grammar/variable_dependency_graph_workspace.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/variable_dependency_graph_workspace.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison/language_comparison_controller.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/language_comparison_controller.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/language_comparison/language_comparison_viewer.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/language_comparison_viewer.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/pda/pda_algorithm_panel.dart",
+      "baselineRevision": "b6c59c78f1c4e6313c038a9efc22f1c14ae14084",
+      "baselinePath": "lib/presentation/widgets/pda_algorithm_panel.dart",
+      "resolution": "Remove three retired example status/error literals."
+    },
+    {
+      "path": "lib/presentation/widgets/pda/pda_simulation_panel.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/pda_simulation_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart",
+      "baselineRevision": "82f8215e28d76d6f975c441dd1561ac5079cab9f",
+      "baselinePath": "lib/presentation/widgets/pumping_lemma_workspace.dart",
+      "resolution": "Classify the printed formal language representation as document data."
+    },
+    {
+      "path": "lib/presentation/widgets/simulation_panel.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/simulation_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_panel.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/tm_algorithm_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_presentation_primitives.dart",
+      "baselineRevision": "30dc9482510f32e0119d76191c21f7b8f47ac615",
+      "baselinePath": "lib/presentation/widgets/tm_algorithm_presentation_primitives.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_reachability_controls.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_algorithm_reachability_controls.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_runner.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/tm_algorithm_runner.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_algorithm_time_controls.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_algorithm_time_controls.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_language_result_view.dart",
+      "baselineRevision": "bf0ad664a44d5dbf70b0c0d5f16c911684f8f635",
+      "baselinePath": "lib/presentation/widgets/tm_language_result_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_reachability_result_view.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_reachability_result_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_simulation_panel.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_simulation_panel.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_space_result_view.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_space_result_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_termination_result_view.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_termination_result_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/tm/tm_time_result_view.dart",
+      "baselineRevision": "272a58817556decc53272d87eb34a8f9be031c2e",
+      "baselinePath": "lib/presentation/widgets/tm_time_result_view.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    },
+    {
+      "path": "lib/presentation/widgets/trace_viewers/base_trace_viewer.dart",
+      "baselineRevision": "83012f11b22b00cb4bf426bf6f336bf73e9d83a5",
+      "baselinePath": "lib/presentation/widgets/trace_viewers/base_trace_viewer.dart",
+      "resolution": "Identical literal multiset; only source or line locations changed."
+    }
+  ],
+  "inheritedMovedFile": {
+    "from": "lib/presentation/widgets/grammar_algorithm_panel.dart",
+    "to": "lib/presentation/widgets/grammar_algorithm/grammar_analysis_result_formatter.dart",
+    "ownerIssue": 453,
+    "rationale": "The five formatter templates retain the previously inventoried formal-set, production and report-section output. No new prose is approved."
+  }
+}

@@ -10,8 +10,8 @@ import '../../models/pda_transition.dart';
 import '../../models/production.dart';
 import '../../models/state.dart';
 import '../../utils/epsilon_utils.dart';
-import '../grammar_analyzer.dart';
-import '../lr1_parser.dart';
+import '../grammar/grammar_analyzer.dart';
+import '../grammar/lr1_parser.dart';
 import 'cfg_to_pda_models.dart';
 import 'cfg_to_pda_messages.dart';
 

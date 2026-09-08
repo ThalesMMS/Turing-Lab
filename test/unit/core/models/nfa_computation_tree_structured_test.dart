@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulation_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulation_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/nfa_computation_tree.dart';
 import 'package:turing_lab/core/models/nfa_path_node.dart';

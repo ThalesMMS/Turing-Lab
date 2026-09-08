@@ -17,8 +17,8 @@ import '../../l10n/app_localizations.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/common/help_navigation.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
-import '../widgets/pumping_lemma_progress.dart';
-import '../widgets/pumping_lemma_workspace.dart';
+import '../widgets/pumping_lemma/pumping_lemma_progress.dart';
+import '../widgets/pumping_lemma/pumping_lemma_workspace.dart';
 import '../widgets/workspace_dock.dart';
 
 /// Page for the Pumping Lemma Game

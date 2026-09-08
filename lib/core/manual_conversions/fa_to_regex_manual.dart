@@ -1,5 +1,5 @@
-import '../algorithms/equivalence_checker.dart';
-import '../algorithms/regex_to_nfa_converter.dart';
+import '../algorithms/fsa/equivalence_checker.dart';
+import '../algorithms/regex/regex_to_nfa_converter.dart';
 import '../models/fsa.dart';
 import '../models/fsa_transition.dart';
 
@@ -82,9 +82,9 @@ final class FaToRegexGnfa {
     required Iterable<FaToRegexGnfaState> states,
     required Map<FaToRegexStatePair, String> labels,
     required Iterable<String> alphabet,
-  })  : states = List<FaToRegexGnfaState>.unmodifiable(states),
-        labels = Map<FaToRegexStatePair, String>.unmodifiable(labels),
-        alphabet = Set<String>.unmodifiable(alphabet);
+  }) : states = List<FaToRegexGnfaState>.unmodifiable(states),
+       labels = Map<FaToRegexStatePair, String>.unmodifiable(labels),
+       alphabet = Set<String>.unmodifiable(alphabet);
 
   final String id;
   final String sourceDocumentId;
@@ -97,8 +97,8 @@ final class FaToRegexGnfa {
   final Set<String> alphabet;
 
   List<String> get removableStateIds => List<String>.unmodifiable(
-        states.where((state) => !state.isProtected).map((state) => state.id),
-      );
+    states.where((state) => !state.isProtected).map((state) => state.id),
+  );
 
   String expressionBetween(String fromStateId, String toStateId) =>
       labels[FaToRegexStatePair(fromStateId, toStateId)] ?? _emptySet;
@@ -139,9 +139,9 @@ final class FaToRegexEliminationInspection {
     required Iterable<String> outgoingStateIds,
     required this.loopExpression,
     required Iterable<FaToRegexPairFormula> formulas,
-  })  : incomingStateIds = List<String>.unmodifiable(incomingStateIds),
-        outgoingStateIds = List<String>.unmodifiable(outgoingStateIds),
-        formulas = List<FaToRegexPairFormula>.unmodifiable(formulas);
+  }) : incomingStateIds = List<String>.unmodifiable(incomingStateIds),
+       outgoingStateIds = List<String>.unmodifiable(outgoingStateIds),
+       formulas = List<FaToRegexPairFormula>.unmodifiable(formulas);
 
   final String gnfaId;
   final int gnfaRevision;
@@ -223,9 +223,9 @@ final class FaToRegexManualOracle {
         transition.fromState.id,
         transition.toState.id,
       );
-      grouped.putIfAbsent(pair, () => <String>[]).addAll(
-            _sourceTransitionExpressions(transition),
-          );
+      grouped
+          .putIfAbsent(pair, () => <String>[])
+          .addAll(_sourceTransitionExpressions(transition));
     }
 
     final initialStateId = source.initialState!.id;
@@ -279,11 +279,12 @@ final class FaToRegexManualOracle {
       );
     }
 
-    final remainingIds = gnfa.states
-        .where((candidate) => candidate.id != stateId)
-        .map((candidate) => candidate.id)
-        .toList()
-      ..sort();
+    final remainingIds =
+        gnfa.states
+            .where((candidate) => candidate.id != stateId)
+            .map((candidate) => candidate.id)
+            .toList()
+          ..sort();
     final incoming = remainingIds
         .where(
           (candidate) =>
@@ -303,14 +304,8 @@ final class FaToRegexManualOracle {
       for (final toStateId in outgoing) {
         final pair = FaToRegexStatePair(fromStateId, toStateId);
         final direct = gnfa.expressionBetween(fromStateId, toStateId);
-        final incomingExpression = gnfa.expressionBetween(
-          fromStateId,
-          stateId,
-        );
-        final outgoingExpression = gnfa.expressionBetween(
-          stateId,
-          toStateId,
-        );
+        final incomingExpression = gnfa.expressionBetween(fromStateId, stateId);
+        final outgoingExpression = gnfa.expressionBetween(stateId, toStateId);
         final bypass = _concatenate([
           incomingExpression,
           _star(loop),
@@ -414,8 +409,8 @@ final class FaToRegexManualOracle {
       message: equivalence.isFailure
           ? equivalence.error
           : equivalence.data == true
-              ? null
-              : 'The submitted expression is not equivalent to the formula.',
+          ? null
+          : 'The submitted expression is not equivalent to the formula.',
     );
   }
 
@@ -426,8 +421,9 @@ final class FaToRegexManualOracle {
     required Map<FaToRegexStatePair, String> pairLabels,
   }) {
     _verifyInspection(gnfa, inspection);
-    final expectedPairs =
-        inspection.formulas.map((formula) => formula.pair).toSet();
+    final expectedPairs = inspection.formulas
+        .map((formula) => formula.pair)
+        .toSet();
     final missingPairs = expectedPairs.difference(pairLabels.keys.toSet());
     if (missingPairs.isNotEmpty) {
       final sorted = missingPairs.toList()..sort();
@@ -461,14 +457,15 @@ final class FaToRegexManualOracle {
     }
 
     final labels = <FaToRegexStatePair, String>{};
-    final retained = gnfa.labels.entries
-        .where(
-          (entry) =>
-              entry.key.fromStateId != inspection.stateId &&
-              entry.key.toStateId != inspection.stateId,
-        )
-        .toList()
-      ..sort((left, right) => left.key.compareTo(right.key));
+    final retained =
+        gnfa.labels.entries
+            .where(
+              (entry) =>
+                  entry.key.fromStateId != inspection.stateId &&
+                  entry.key.toStateId != inspection.stateId,
+            )
+            .toList()
+          ..sort((left, right) => left.key.compareTo(right.key));
     for (final entry in retained) {
       labels[entry.key] = entry.value;
     }
@@ -490,9 +487,7 @@ final class FaToRegexManualOracle {
       startStateId: gnfa.startStateId,
       finalStateId: gnfa.finalStateId,
       states: gnfa.states.where((state) => state.id != inspection.stateId),
-      labels: {
-        for (final entry in sortedEntries) entry.key: entry.value,
-      },
+      labels: {for (final entry in sortedEntries) entry.key: entry.value},
       alphabet: gnfa.alphabet,
     );
   }
@@ -642,13 +637,14 @@ String _formulaId(
 }
 
 String _sourceRevision(FSA source) {
-  final states = source.states
-      .map(
-        (state) =>
-            '${state.id}\u0001${state.label}\u0001${state.isInitial}\u0001${state.isAccepting}',
-      )
-      .toList()
-    ..sort();
+  final states =
+      source.states
+          .map(
+            (state) =>
+                '${state.id}\u0001${state.label}\u0001${state.isInitial}\u0001${state.isAccepting}',
+          )
+          .toList()
+        ..sort();
   final transitions = source.fsaTransitions.map(_transitionSortKey).toList()
     ..sort();
   final accepting = source.acceptingStates.map((state) => state.id).toList()

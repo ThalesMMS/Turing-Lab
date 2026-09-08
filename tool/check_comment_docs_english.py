@@ -63,7 +63,7 @@ SCAN_SUFFIXES = {".dart", ".md", ".yml", ".yaml", ".sh"}
 # Paths where Portuguese source/test content is intentional. Comments in these
 # files are still scanned; matching lines are ignored when the path matches.
 ALLOW_PATH_SUBSTRINGS = (
-    "lib/core/algorithms/dfa_operations.dart",
+    "lib/core/algorithms/fsa/dfa_operations.dart",
     "lib/core/utils/epsilon_utils.dart",
     "lib/data/data_sources/examples_asset_data_source.dart",
     "assets/examples/",

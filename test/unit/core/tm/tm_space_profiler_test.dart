@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_space_profiler.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_space_profiler.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
 import 'package:turing_lab/core/models/tm_execution_analysis.dart';
@@ -263,8 +263,8 @@ TM _constantSpaceChain(int steps) {
           index == 0
               ? 'B'
               : index.isOdd
-                  ? 'X'
-                  : 'Y',
+              ? 'X'
+              : 'Y',
           index.isEven ? 'X' : 'Y',
           TapeDirection.stay,
         ),

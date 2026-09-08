@@ -5,6 +5,7 @@ import '../annotations/document_annotation_collection.dart';
 import '../models/fsa.dart';
 import '../models/grammar.dart';
 import '../models/pda.dart';
+import '../models/tm.dart';
 import '../result.dart';
 
 abstract interface class FileOperationsGateway {
@@ -21,6 +22,18 @@ abstract interface class FileOperationsGateway {
     DocumentAnnotationCollection? annotations,
   });
   Future<StringResult> writePngBytesToPath(Uint8List bytes, String filePath);
+  Future<Result<Uint8List>> exportPdaToPngBytes(
+    PDA pda, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  });
+  Future<Result<Uint8List>> exportTuringMachineToPngBytes(
+    TM machine, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  });
   Future<StringResult> saveAutomatonToJFLAP(FSA automaton, String filePath);
   Future<Result<FSA>> loadAutomatonFromJFLAP(String filePath);
   Future<StringResult> saveAutomatonToJson(FSA automaton, String filePath);

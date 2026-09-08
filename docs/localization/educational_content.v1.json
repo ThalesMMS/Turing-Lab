@@ -72,7 +72,7 @@
           "lib/core/manual_conversions/manual_conversion_factories.dart",
           "lib/core/manual_conversions/fa_grammar_session_factory.dart",
           "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-          "lib/presentation/widgets/manual_conversion_workspace.dart"
+          "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
         ],
         "excludedReferences": [
           "legacy"
@@ -84,11 +84,11 @@
         "copyReferenceOwner": "GrammarTeachingContent",
         "implementationPaths": [
           "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-          "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-          "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-          "lib/presentation/widgets/lr1_teaching_workspace.dart",
-          "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-          "lib/presentation/widgets/user_derivation_workspace.dart"
+          "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+          "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+          "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+          "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+          "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
         ]
       }
     ],
@@ -1018,6 +1018,25 @@
         "test/widget/presentation/l_system_page_test.dart"
       ],
       "formalPayloadSha256": "7469197b964ce4eb9fd28a61d50167d918aeba2bbb20f3665988cd2c00b9adc2"
+    },
+    {
+      "manifestId": "example/l-system.parametric-tree",
+      "contentId": "l-system.parametric-tree",
+      "kind": "example",
+      "profile": "bilingualExamplePending",
+      "sourcePaths": [
+        "lib/data/l_systems/l_system_examples.dart",
+        "lib/presentation/content/l_system_example_content_copy.dart"
+      ],
+      "evidenceTests": [
+        "test/tool/educational_content_manifest_contract_test.py",
+        "test/unit/data/examples_offline_test.dart",
+        "test/unit/data/default_formal_system_registry_test.dart",
+        "test/unit/data/educational_content_code_backed_hash_test.dart",
+        "test/unit/presentation/l_system_example_content_copy_test.dart",
+        "test/widget/presentation/l_system_page_test.dart"
+      ],
+      "formalPayloadSha256": "71bb6732cc363f2f53b2aabcd823ce7a2b9c6edad73a79d1009939e2ca200d79"
     },
     {
       "manifestId": "example/l-system.seeded-context-turtle",
@@ -5718,11 +5737,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5741,11 +5760,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5764,11 +5783,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5787,11 +5806,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5810,11 +5829,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5833,11 +5852,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5856,11 +5875,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5879,11 +5898,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5902,11 +5921,11 @@
         "lib/core/grammar/teaching/grammar_teaching_content.dart",
         "lib/presentation/content/grammar_teaching_content_copy.dart",
         "lib/core/grammar/teaching/grammar_teaching_sessions.dart",
-        "lib/presentation/widgets/brute_force_teaching_workspace.dart",
-        "lib/presentation/widgets/grammar_normalization_teaching_workspace.dart",
-        "lib/presentation/widgets/lr1_teaching_workspace.dart",
-        "lib/presentation/widgets/parse_table_teaching_workspace.dart",
-        "lib/presentation/widgets/user_derivation_workspace.dart"
+        "lib/presentation/widgets/grammar/brute_force_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/grammar_normalization_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/lr1_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/parse_table_teaching_workspace.dart",
+        "lib/presentation/widgets/grammar/user_derivation_workspace.dart"
       ],
       "evidenceTests": [
         "test/tool/educational_content_manifest_contract_test.py",
@@ -5927,7 +5946,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -5948,7 +5967,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -5969,7 +5988,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -5990,7 +6009,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6011,7 +6030,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6032,7 +6051,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6053,7 +6072,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6074,7 +6093,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6095,7 +6114,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6116,7 +6135,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6137,7 +6156,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6158,7 +6177,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6179,7 +6198,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6200,7 +6219,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6221,7 +6240,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6242,7 +6261,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6263,7 +6282,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6284,7 +6303,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6305,7 +6324,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6326,7 +6345,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6347,7 +6366,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",
@@ -6368,7 +6387,7 @@
       "lib/core/manual_conversions/manual_conversion_factories.dart",
         "lib/core/manual_conversions/fa_grammar_session_factory.dart",
         "lib/core/manual_conversions/regex_to_fa_session_factory.dart",
-        "lib/presentation/widgets/manual_conversion_workspace.dart"
+        "lib/presentation/widgets/conversions/manual_conversion_workspace.dart"
       ],
     "evidenceTests": [
       "test/tool/educational_content_manifest_contract_test.py",

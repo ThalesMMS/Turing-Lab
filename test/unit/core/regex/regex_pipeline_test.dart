@@ -11,8 +11,8 @@
 //
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/result.dart';
 
@@ -23,8 +23,9 @@ Future<bool> _accepts(FSA nfa, String input) async {
 }
 
 void _expectStateFlagsMatchRoles(FSA nfa) {
-  final initialIds =
-      nfa.initialState == null ? <String>{} : <String>{nfa.initialState!.id};
+  final initialIds = nfa.initialState == null
+      ? <String>{}
+      : <String>{nfa.initialState!.id};
   final acceptingIds = nfa.acceptingStates.map((state) => state.id).toSet();
 
   expect(
@@ -122,20 +123,22 @@ void main() {
       expect(await _accepts(nfa, 'd'), false);
     });
 
-    test('Character class ranges and escapes are validated by tokenizer',
-        () async {
-      final range = RegexToNFAConverter.convert('[a-c]');
-      expect(range.isSuccess, true);
-      expect(await _accepts(range.data!, 'a'), true);
-      expect(await _accepts(range.data!, 'b'), true);
-      expect(await _accepts(range.data!, 'c'), true);
-      expect(await _accepts(range.data!, 'd'), false);
+    test(
+      'Character class ranges and escapes are validated by tokenizer',
+      () async {
+        final range = RegexToNFAConverter.convert('[a-c]');
+        expect(range.isSuccess, true);
+        expect(await _accepts(range.data!, 'a'), true);
+        expect(await _accepts(range.data!, 'b'), true);
+        expect(await _accepts(range.data!, 'c'), true);
+        expect(await _accepts(range.data!, 'd'), false);
 
-      final escapedParen = RegexToNFAConverter.convert(r'\(');
-      expect(escapedParen.isSuccess, true);
-      expect(await _accepts(escapedParen.data!, '('), true);
-      expect(await _accepts(escapedParen.data!, ')'), false);
-    });
+        final escapedParen = RegexToNFAConverter.convert(r'\(');
+        expect(escapedParen.isSuccess, true);
+        expect(await _accepts(escapedParen.data!, '('), true);
+        expect(await _accepts(escapedParen.data!, ')'), false);
+      },
+    );
 
     test('Shortcut complements use the provided context alphabet', () async {
       final digit = RegexToNFAConverter.convert(r'\d');

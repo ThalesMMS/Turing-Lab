@@ -2,7 +2,7 @@
 //  collapsible_canvas_panel.dart
 //  Turing Lab
 //
-//  Keeps an interactive mobile canvas inspector available while allowing its
+//  Keeps an interactive canvas inspector available while allowing its
 //  overlay hit-test area to collapse to one explicit control.
 //
 //  Thales Matheus Mendonça Santos - August 2026
@@ -44,8 +44,11 @@ class CollapsibleCanvasPanel extends StatefulWidget {
     this.controller,
     this.onDragDelta,
     this.onPanelSizeChanged,
+    this.showCollapseButton = false,
   });
 
+  /// Adds an explicit collapse control alongside the existing body-tap gesture.
+  final bool showCollapseButton;
   final Widget child;
   final String label;
   final IconData icon;
@@ -139,9 +142,9 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
             ),
           ),
         ),
-        // Expanded: the panel itself, with no toggle button. Tapping any
-        // non-interactive spot collapses it (interactive children such as
-        // Clear win the gesture arena); dragging moves the panel.
+        // Body taps collapse the panel; interactive children such as Clear
+        // keep their own actions. The optional button makes collapse explicit.
+        // Dragging the body or the button moves the panel.
         Offstage(
           offstage: !_controller.expanded,
           child: GestureDetector(
@@ -151,7 +154,20 @@ class _CollapsibleCanvasPanelState extends State<CollapsibleCanvasPanel> {
             child: Semantics(
               label: collapseTooltip,
               button: true,
-              child: widget.child,
+              child: widget.showCollapseButton
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        IconButton.filledTonal(
+                          tooltip: collapseTooltip,
+                          onPressed: _toggleExpanded,
+                          icon: const Icon(Icons.expand_less),
+                        ),
+                        widget.child,
+                      ],
+                    )
+                  : widget.child,
             ),
           ),
         ),

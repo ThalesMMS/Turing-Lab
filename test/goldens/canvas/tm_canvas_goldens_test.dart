@@ -25,7 +25,7 @@ import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/features/canvas/graphview/graphview_tm_canvas_controller.dart';
 import 'package:turing_lab/presentation/providers/tm_editor_provider.dart';
 import 'package:turing_lab/presentation/widgets/automaton_canvas_tool.dart';
-import 'package:turing_lab/presentation/widgets/tm_canvas_graphview.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_canvas_graphview.dart';
 
 class _TestTMEditorProvider extends TMEditorNotifier {
   _TestTMEditorProvider();
@@ -684,8 +684,9 @@ void main() {
       'renders renderer migration scenario with highlighted adaptive edges',
       (tester) async {
         final provider = _TestTMEditorProvider();
-        final controller =
-            GraphViewTmCanvasController(editorNotifier: provider);
+        final controller = GraphViewTmCanvasController(
+          editorNotifier: provider,
+        );
         final toolController = AutomatonCanvasToolController(
           AutomatonCanvasTool.selection,
         );
@@ -766,9 +767,7 @@ void main() {
         provider.setTm(tm);
         controller.synchronize(tm);
         controller.applyHighlight(
-          SimulationHighlight(
-            transitionIds: <String>{'tm_manual'},
-          ),
+          SimulationHighlight(transitionIds: <String>{'tm_manual'}),
         );
 
         await tester.pumpWidgetBuilder(

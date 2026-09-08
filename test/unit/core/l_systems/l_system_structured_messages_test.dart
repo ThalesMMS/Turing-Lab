@@ -27,7 +27,7 @@ void main() {
                 turtle: LSystemTurtleSettings(),
                 commandMapping: LSystemCommandMapping.standard,
                 unsupportedVariants: const [
-                  LSystemUnsupportedVariant.parametric,
+                  LSystemUnsupportedVariant.stochastic,
                 ],
               ),
             )
@@ -48,7 +48,7 @@ void main() {
     final unsupported = outcome.diagnostics.last.structuredMessage;
     expect(
       unsupported.arguments['variant'],
-      StructuredMessageArgument.outcome('parametric', role: 'l-system-variant'),
+      StructuredMessageArgument.outcome('stochastic', role: 'l-system-variant'),
     );
     expect(StructuredMessage.fromJson(unsupported.toJson()), unsupported);
   });

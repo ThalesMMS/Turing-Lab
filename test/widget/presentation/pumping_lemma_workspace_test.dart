@@ -5,7 +5,7 @@ import 'package:turing_lab/core/pumping_lemma/pumping_lemma.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/content/pumping_lemma_problem_content_copy.dart';
 import 'package:turing_lab/presentation/providers/pumping_lemma_progress_provider.dart';
-import 'package:turing_lab/presentation/widgets/pumping_lemma_workspace.dart';
+import 'package:turing_lab/presentation/widgets/pumping_lemma/pumping_lemma_workspace.dart';
 
 Future<ProviderContainer> _pumpWorkspace(
   WidgetTester tester, {

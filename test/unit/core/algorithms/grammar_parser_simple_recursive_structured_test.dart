@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser_simple_recursive_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_simple_recursive.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser_simple_recursive_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/grammar_parse_report.dart';

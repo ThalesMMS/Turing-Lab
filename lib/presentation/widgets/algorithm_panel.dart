@@ -18,6 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/asset_example.dart';
 import '../../core/formal_systems/formal_systems.dart';
+import 'common/suggested_input_dispatcher.dart';
+import 'common/example_load_flow.dart';
+import 'dfa_completion_practice_section.dart';
 import '../../core/annotations/annotations.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/language_comparison_outcome.dart';
@@ -40,13 +43,13 @@ import 'algorithm_step_navigator.dart';
 import 'algorithm_step_renderer_registry.dart';
 import 'algorithm_step_viewer.dart';
 import 'common/algorithm_button.dart';
-import 'conversion_replacement_dialog.dart';
+import 'conversions/conversion_replacement_dialog.dart';
 import 'file_operations_panel.dart';
 import 'document_interoperability_binding.dart';
 import 'interoperability_presentation_labels.dart';
 import 'utils/platform_file_loader.dart';
-import 'language_comparison_controller.dart';
-import 'language_comparison_viewer.dart';
+import 'language_comparison/language_comparison_controller.dart';
+import 'language_comparison/language_comparison_viewer.dart';
 
 /// Panel for algorithm operations and controls
 class AlgorithmPanel extends ConsumerStatefulWidget {
@@ -122,6 +125,7 @@ class AlgorithmPanel extends ConsumerStatefulWidget {
 }
 
 class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
+  bool _showDfaCompletionPractice = false;
   final TextEditingController _regexController = TextEditingController();
   late final FileOperationsGateway _fileService;
   bool _isExecuting = false;
@@ -135,13 +139,12 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
   late LanguageComparisonController _languageComparisonController;
   int _comparisonFlowGeneration = 0;
 
-  void _showSnack(String message, {bool isError = false}) {
-    showAppSnackBar(
-      context,
-      message: appLocalizationsOf(context).localizeWorkflowText(message),
-      tone: isError ? AppSnackBarTone.error : AppSnackBarTone.success,
-    );
-  }
+  void _showSnack(String message, {bool isError = false}) =>
+      showWorkflowSnackBar(
+        context,
+        message,
+        tone: isError ? AppSnackBarTone.error : AppSnackBarTone.success,
+      );
 
   @override
   void dispose() {
@@ -231,6 +234,7 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
                   example: example,
                   isLoading: isLoading,
                   onPressed: onPressed,
+                  onUseInput: (input) => _useSuggestedInput(example, input),
                 ),
           ),
           const SizedBox(height: 16),
@@ -338,6 +342,29 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
               ? _executionStatus
               : null,
         ),
+
+        const SizedBox(height: 12),
+
+        AlgorithmButton(
+          title: appLocalizationsOf(context).practiceDfaCompletionTitle,
+          description: appLocalizationsOf(
+            context,
+          ).practiceDfaCompletionDescription,
+          icon: Icons.school_outlined,
+          isSelected: _showDfaCompletionPractice,
+          onPressed: () => setState(
+            () => _showDfaCompletionPractice = !_showDfaCompletionPractice,
+          ),
+        ),
+        if (_showDfaCompletionPractice) ...[
+          const SizedBox(height: 12),
+          DfaCompletionPracticeSection(
+            onReveal: widget.onCompleteDfa == null
+                ? null
+                : () => _executeAlgorithm('Complete DFA', widget.onCompleteDfa),
+            onClose: () => setState(() => _showDfaCompletionPractice = false),
+          ),
+        ],
 
         const SizedBox(height: 12),
 
@@ -783,35 +810,38 @@ class _AlgorithmPanelState extends ConsumerState<AlgorithmPanel> {
     );
   }
 
-  Future<void> _loadSelectedExample(String exampleName) async {
-    setState(() {
-      _loadingExampleName = exampleName;
-    });
+  /// Loads [example] when it is not the active automaton, then hands
+  /// [input] to the simulation field.
+  Future<void> _useSuggestedInput(AssetExample<FSA> example, String input) {
+    bool isActive() =>
+        ref.read(automatonStateProvider).currentAutomaton?.id ==
+        example.payload.id;
+    return dispatchSuggestedInput(
+      context,
+      ref,
+      workspace: DefaultFormalSystemIds.fsa,
+      exampleId: example.id,
+      input: input,
+      ensureLoaded: () async {
+        if (isActive()) return true;
+        await _loadSelectedExample(example.name);
+        return mounted && isActive();
+      },
+    );
+  }
 
-    try {
-      final result = await _examplesDataSource!.loadTypedFsaExample(
-        exampleName,
-      );
-      if (!mounted) return;
-
-      if (result.isFailure) {
-        _showSnack('Failed to load example: ${result.error}', isError: true);
-        return;
-      }
-
-      final automaton = result.data!.payload;
-      ref.read(automatonStateProvider.notifier).replaceAutomaton(automaton);
-      _showSnack('Example loaded: ${automaton.name}');
-    } catch (error) {
-      if (!mounted) return;
-      _showSnack('Failed to load example: $error', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loadingExampleName = null;
-        });
-      }
-    }
+  Future<void> _loadSelectedExample(String exampleName) {
+    return loadExampleWithFeedback<FSA>(
+      context,
+      load: () => _examplesDataSource!.loadTypedFsaExample(exampleName),
+      apply: (example) => ref
+          .read(automatonStateProvider.notifier)
+          .replaceAutomaton(example.payload),
+      setLoading: (loading) =>
+          setState(() => _loadingExampleName = loading ? exampleName : null),
+      successMessage: (example) =>
+          appLocalizationsOf(context).exampleLoaded(example.payload.name),
+    );
   }
 
   Widget _buildRegexInput(BuildContext context) {

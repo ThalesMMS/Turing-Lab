@@ -480,7 +480,7 @@ final _lSystemDefinitionBlocks = <HelpContentBlock>[
     'Map tokens to turtle commands, set the iteration and drawing values, then select Apply and expand.',
   ]),
   const HelpCalloutBlock(
-    'Every production step reads the same source generation. A random seed makes weighted choices repeatable, while parametric expressions remain unsupported.',
+    'Every production step reads the same source generation. A random seed makes weighted choices repeatable. A predecessor such as A(x) binds x to the numeric argument of the matched symbol, and successor arguments such as g(x*0.7) are evaluated with + - * / ^ and parentheses; no functions or conditions.',
   ),
 ];
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/brute_force_cfg_parser.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/brute_force_cfg_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/brute_force_parse_models.dart';
 import 'package:turing_lab/core/models/derivation_tree.dart';
 import 'package:turing_lab/core/models/derivation_tree_node.dart';

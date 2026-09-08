@@ -1,11 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_to_grammar_messages.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_to_grammar_messages.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_unrestricted_grammar.dart';
 import 'package:turing_lab/core/grammar/phrase_structure/phrase_structure.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_acceptance.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -316,7 +317,11 @@ void main() {
 
     test('reports unsupported multi-tape and building-block machines', () {
       final multi = _immediateAcceptor(alphabet: {'a'}).copyWith(tapeCount: 2);
-      final result = TMToGrammarConverter.build(multi, sourceRevision: 1);
+      final result = TMToGrammarConverter.build(
+        multi,
+        sourceRevision: 1,
+        reduceMultiTape: false,
+      );
 
       expect(result.outcome, TMToGrammarOutcome.unsupportedMachine);
       expect(
@@ -324,6 +329,123 @@ void main() {
         contains(TMToGrammarDiagnosticCode.multiTapeUnsupported),
       );
       expect(result.grammar, isNull);
+    });
+
+    test('preserves reduction-like text inside the original machine name', () {
+      const name = 'Source (single-tape reduction) copy';
+      final multiTape = _twoTapeCopier().copyWith(name: name);
+      final singleTape = _tm(
+        states: {_state('q0', initial: true)},
+        initial: _state('q0', initial: true),
+      ).copyWith(name: name);
+
+      for (final tm in [singleTape, multiTape]) {
+        final report = TMToGrammarConverter.build(tm, sourceRevision: 5);
+        expect(report.outcome, TMToGrammarOutcome.completed);
+        expect(report.grammar!.name, '$name — unrestricted grammar');
+      }
+    });
+
+    test('reduces a multi-tape machine before building the grammar', () async {
+      final tm = _twoTapeCopier();
+      final report = TMToGrammarConverter.build(tm, sourceRevision: 5);
+
+      expect(report.outcome, TMToGrammarOutcome.completed);
+      expect(report.sourceTmId, tm.id);
+      expect(report.sourceRevision, 5);
+      expect(report.reduction, isNotNull);
+      expect(report.reduction!.tapeCount, 2);
+      expect(
+        report.assumptions,
+        contains(TMToGrammarAssumption.multiTapeReducedToSingleTape),
+      );
+      expect(report.grammar!.name, '${tm.name} — unrestricted grammar');
+      expect(PhraseGrammarClassifier.classify(report.grammar!).isValid, isTrue);
+      expect(
+        report.toStructuredJson()['reduction'],
+        isA<Map<String, Object?>>(),
+      );
+
+      // Provenance maps back to the original states and transitions.
+      final originalIds = {
+        for (final provenance in report.productionProvenance)
+          for (final source in report.sourceReferencesForOriginal(provenance))
+            source.transitionId ?? source.stateId,
+      }..remove(null);
+      expect(originalIds, containsAll({'first', 'more', 'done', 'q0', 'qa'}));
+      expect(
+        originalIds.every(
+          (id) =>
+              tm.states.any((state) => state.id == id) ||
+              tm.tmTransitions.any((transition) => transition.id == id),
+        ),
+        isTrue,
+      );
+
+      // Explicit, small limits: the multi-tape source is decided by the
+      // multi-tape analyzer, and a derivation search that stops at its
+      // bounds is reported as unknown, never as a rejection or a proof.
+      final evidence = await TMToGrammarDifferentialChecker.check(
+        tm,
+        report,
+        [
+          for (final word in ['', 'a'])
+            word.split('').where((c) => c.isNotEmpty).toList(),
+        ],
+        tmMaxSteps: 50,
+        grammarMaxExpandedForms: 20000,
+        grammarMaxVisitedForms: 40000,
+        grammarMaxFrontierSize: 10000,
+        grammarMaxSymbolCount: 48,
+        perSampleTimeout: const Duration(seconds: 2),
+      );
+      expect(evidence.isProof, isFalse);
+      expect(evidence.hasMismatch, isFalse);
+      expect(evidence.samples, hasLength(2));
+      for (final sample in evidence.samples) {
+        expect(sample.tmAccepted, sample.inputTokens.isNotEmpty);
+        expect(
+          sample.outcome,
+          isIn({
+            TMToGrammarSampleOutcome.matchingAcceptance,
+            TMToGrammarSampleOutcome.matchingRejection,
+            TMToGrammarSampleOutcome.boundedUnknown,
+          }),
+        );
+      }
+    }, timeout: const Timeout(Duration(minutes: 2)));
+
+    test('multi-tape reduction budgets surface as construction limits', () {
+      final report = TMToGrammarConverter.build(
+        _twoTapeCopier(),
+        sourceRevision: 1,
+        reductionLimits: const TMMultiTapeReductionLimits(maxStates: 3),
+      );
+      expect(report.outcome, TMToGrammarOutcome.constructionLimit);
+      expect(report.grammar, isNull);
+      expect(report.reduction, isNotNull);
+      final limit = report.diagnostics.singleWhere(
+        (d) => d.code == TMToGrammarDiagnosticCode.constructionLimit,
+      );
+      expect(limit.detailCode, 'multi-tape-reduction-state-budget');
+      expect(
+        limit.structuredMessage?.stableCode,
+        'tm.multi-tape-reduction.state-budget',
+      );
+    });
+
+    test('multi-tape machines with halting acceptance stay unsupported', () {
+      final report = TMToGrammarConverter.build(
+        _twoTapeCopier().copyWith(acceptancePolicy: TMAcceptancePolicy.halting),
+        sourceRevision: 1,
+      );
+      expect(report.outcome, TMToGrammarOutcome.unsupportedMachine);
+      expect(
+        report.diagnostics
+            .map((d) => d.structuredMessage?.stableCode)
+            .whereType<String>(),
+        contains('tm.multi-tape-reduction.acceptance-policy-unsupported'),
+      );
     });
 
     test('reports malformed symbols and a missing initial state', () {
@@ -510,3 +632,43 @@ TM _tm({
   bounds: const math.Rectangle(0, 0, 800, 600),
   tapeAlphabet: tapeAlphabet,
 );
+
+/// Deterministic 2-tape acceptor for a⁺ that copies the input to tape 2.
+/// Small on purpose: the reduction squares the tape alphabet, and the
+/// grammar grows with every reduced transition and tape symbol.
+TM _twoTapeCopier() {
+  final q0 = _state('q0', initial: true);
+  final q1 = _state('q1');
+  final qa = _state('qa', accepting: true);
+  TMTransition vector(
+    String id,
+    State from,
+    State to,
+    List<String> reads,
+    List<String> writes,
+    List<TapeDirection> moves,
+  ) => TMTransition(
+    id: id,
+    fromState: from,
+    toState: to,
+    label: id,
+    controlPoint: identical(from, to) ? Vector2(30, -30) : Vector2.zero(),
+    readSymbols: reads,
+    writeSymbols: writes,
+    directions: moves,
+  );
+  const r = TapeDirection.right;
+  const s = TapeDirection.stay;
+  return _tm(
+    states: {q0, q1, qa},
+    initial: q0,
+    accepting: {qa},
+    alphabet: {'a'},
+    tapeAlphabet: {'a', 'B'},
+    transitions: {
+      vector('first', q0, q1, ['a', 'B'], ['a', 'a'], [r, r]),
+      vector('more', q1, q1, ['a', 'B'], ['a', 'a'], [r, r]),
+      vector('done', q1, qa, ['B', 'B'], ['B', 'B'], [s, s]),
+    },
+  ).copyWith(tapeCount: 2);
+}

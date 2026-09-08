@@ -200,7 +200,7 @@
         "status": "complete",
         "production": [
           "lib/core/models/tm.dart:32",
-          "lib/data/codecs/tm_jflap_document_codec.dart:22",
+          "lib/data/codecs/tm_jflap_document_codec.dart:21",
           "lib/presentation/workspaces/default_workspace_presentation_modules.dart:76"
         ],
         "tests": [
@@ -245,7 +245,7 @@
         "production": [
           "lib/core/models/tm.dart:32",
           "lib/presentation/pages/tm_page.dart:656",
-          "lib/data/codecs/tm_jflap_document_codec.dart:22"
+          "lib/data/codecs/tm_jflap_document_codec.dart:21"
         ],
         "tests": [
           "test/unit/data/tm_multi_tape_codecs_test.dart:13",
@@ -289,7 +289,7 @@
         "production": [
           "lib/core/models/tm.dart:42",
           "lib/presentation/widgets/tm/tm_block_library_panel.dart:8",
-          "lib/data/codecs/tm_jflap_document_codec.dart:936"
+          "lib/data/codecs/tm/tm_building_block_xml_codec.dart:886"
         ],
         "tests": [
           "test/unit/core/tm/tm_building_blocks_test.dart:180",
@@ -390,7 +390,7 @@
           "test/widget/presentation/l_system_workspace_test.dart:12",
           "test/widget/presentation/l_system_workspace_test.dart:117"
         ],
-        "issues": [320],
+        "issues": [320, 436],
         "decision": "Preserve deterministic token vectors and JFLAP drawing semantics, expose bounded generation and turtle settings, and provide SVG and PNG output from the rendered geometry."
       },
       "dimensions": {
@@ -405,7 +405,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "Unsupported stochastic, context-sensitive, and parametric JFLAP rules remain preserved but disabled instead of being executed with guessed semantics."
+      "notes": "Stochastic, context-sensitive, and parametric JFLAP rules execute with explicit semantics: seeded weighted choice, source-generation context, and a bounded arithmetic evaluator for parametric arguments."
     },
     {
       "id": "document-regular-expression",
@@ -660,7 +660,7 @@
           "lib/presentation/widgets/document_annotations.dart:448",
           "lib/data/codecs/fsa_jflap_codec.dart:273",
           "lib/data/codecs/pda_jflap_document_codec.dart:431",
-          "lib/data/codecs/tm_jflap_document_codec.dart:674",
+          "lib/data/codecs/tm/tm_jflap_xml_decoder.dart:597",
           "lib/data/codecs/mealy_jflap_codec.dart:335",
           "lib/data/codecs/moore_jflap_document_codec.dart:397"
         ],
@@ -760,21 +760,25 @@
         "production": [
           "lib/core/formal_systems/default_formal_system_modules.dart:71",
           "lib/presentation/widgets/file_operations_panel.dart:285",
+          "lib/data/services/file_operations_service_io.dart:80",
+          "lib/presentation/widgets/file_operations/file_operations_panel_machine_actions.dart:225",
           "lib/presentation/l_systems/l_system_png_rasterizer.dart:7",
           "lib/presentation/widgets/export/transducer_visual_exporter.dart:77"
         ],
         "tests": [
           "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:273",
+          "test/widget/presentation/file_operations_panel/machine_operation_tests.dart:258",
+          "test/unit/data/services/file_operations_png_export_test.dart:108",
           "test/widget/presentation/l_system_workspace_test.dart:117",
           "test/widget/presentation/variable_dependency_graph_workspace_test.dart:58",
           "test/unit/presentation/transducer_visual_exporter_test.dart:72"
         ],
-        "issues": [349],
-        "decision": "Prefer PNG as the single portable raster format for FSA, Mealy, Moore, L-system, and dependency-graph workspaces. Keep grammar, PDA, and TM exports vector-only because their existing semantic SVG is lossless and no raster-only workflow justifies duplicate encoders. Do not add legacy JPG, GIF, or BMP encoders without a concrete product need."
+        "issues": [349, 435],
+        "decision": "Prefer PNG as the single portable raster format. FSA, PDA, TM, Mealy, Moore, L-system, and dependency-graph workspaces rasterize through the shared off-screen painter on native platforms; grammar output stays vector-only because its derivation SVG is lossless. Do not add legacy JPG, GIF, or BMP encoders without a concrete product need."
       },
       "dimensions": {
         "domain": "partial",
-        "userReachable": "partial",
+        "userReachable": "covered",
         "teaching": "notApplicable",
         "interoperability": "partial",
         "examplesHelp": "partial",
@@ -784,7 +788,7 @@
         "localization": "covered",
         "platform": "covered"
       },
-      "notes": "Registry-gated PNG is user-reachable for FSA, Mealy, Moore, L-system, and dependency-graph output. Grammar, PDA, and TM intentionally remain SVG-only; legacy JPG, GIF, and BMP are also excluded by the recorded product decision."
+      "notes": "Registry-gated PNG is user-reachable for FSA, PDA, TM, Mealy, Moore, L-system, and dependency-graph output on native platforms; the web build keeps SVG for those workspaces. Grammar intentionally remains SVG-only; legacy JPG, GIF, and BMP are also excluded by the recorded product decision."
     },
     {
       "id": "export-vector-svg",
@@ -806,11 +810,11 @@
       "turingLab": {
         "status": "complete",
         "production": [
-          "lib/presentation/widgets/export/svg_exporter.dart:31",
-          "lib/presentation/widgets/export/svg_exporter.dart:87",
-          "lib/presentation/widgets/export/svg_exporter.dart:102",
-          "lib/presentation/widgets/export/svg_exporter.dart:152",
-          "lib/presentation/widgets/export/svg_exporter.dart:170",
+          "lib/presentation/widgets/export/svg_exporter.dart:27",
+          "lib/presentation/widgets/export/svg_exporter.dart:32",
+          "lib/presentation/widgets/export/svg_exporter.dart:46",
+          "lib/presentation/widgets/export/svg_exporter.dart:60",
+          "lib/presentation/widgets/export/svg_exporter.dart:75",
           "lib/core/l_systems/l_system_export.dart:65",
           "lib/presentation/widgets/export/transducer_visual_exporter.dart:34",
           "lib/presentation/widgets/visual_export_binding.dart:35"
@@ -858,36 +862,32 @@
         ]
       },
       "turingLab": {
-        "status": "intentionalDeviation",
+        "status": "complete",
         "production": [
-          "lib/presentation/widgets/file_operations_panel.dart:274",
-          "lib/presentation/widgets/file_operations_panel.dart:285",
-          "lib/presentation/widgets/file_operations_panel.dart:333",
-          "lib/presentation/widgets/file_operations_panel.dart:355",
-          "lib/presentation/widgets/file_operations_panel.dart:377"
+          "lib/presentation/widgets/file_operations/file_operations_panel_print.dart:1",
+          "lib/presentation/widgets/export/print_document_builder.dart:1",
+          "lib/data/services/print_service.dart:1"
         ],
         "tests": [
-          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:222",
-          "test/widget/presentation/file_operations_panel/automaton_operation_tests.dart:273",
-          "test/widget/presentation/file_operations_panel/machine_operation_tests.dart:81",
-          "test/widget/presentation/file_operations_panel/machine_operation_tests.dart:227"
+          "test/widget/presentation/file_operations_panel/print_operation_tests.dart:1",
+          "test/unit/presentation/print_document_builder_test.dart:1"
         ],
-        "issues": [333],
-        "decision": "Current user flow exports SVG or PNG for printing through the host application. Turing Lab has no direct PrinterJob or platform print-sheet integration."
+        "issues": [333, 440],
+        "decision": "Every workspace's file operations panel offers Print: the diagram workspaces hand the same vector the SVG export produces to a clean PDF page (title plus drawing, no application chrome) and package:printing opens the system print sheet (AppKit/UIKit, platform dialogs, or the browser print dialog on the web); text workspaces print a listing of the document."
       },
       "dimensions": {
-        "domain": "missing",
-        "userReachable": "partial",
+        "domain": "covered",
+        "userReachable": "covered",
         "teaching": "notApplicable",
-        "interoperability": "partial",
-        "examplesHelp": "missing",
+        "interoperability": "covered",
+        "examplesHelp": "partial",
         "persistenceUndo": "notApplicable",
-        "responsiveAccessibility": "missing",
-        "testsEdgeCases": "partial",
+        "responsiveAccessibility": "partial",
+        "testsEdgeCases": "covered",
         "localization": "covered",
-        "platform": "partial"
+        "platform": "covered"
       },
-      "notes": "Direct printing is a non-material platform deviation. SVG and PNG let users print through the host application without adding a desktop-only print contract to mobile and web builds."
+      "notes": "The print page embeds the vector diagram with a bundled Unicode font (DejaVu Sans) so ε, λ, arrows and subscripts survive; the print sheet itself is the platform's, so its result is not asserted in tests beyond the PDF handed to it."
     }
   ]
 }

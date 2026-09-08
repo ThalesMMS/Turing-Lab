@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/brute_force_parse_models.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/brute_force_teaching_workspace.dart';
+import 'package:turing_lab/presentation/widgets/grammar/brute_force_teaching_workspace.dart';
 
 void main() {
   testWidgets('formats brute-force statistics and limits by locale', (

@@ -5,7 +5,7 @@ import 'package:turing_lab/core/grammar/phrase_structure/phrase_structure.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/variable_dependency_graph_workspace.dart';
+import 'package:turing_lab/presentation/widgets/grammar/variable_dependency_graph_workspace.dart';
 import 'package:turing_lab/presentation/widgets/export/variable_dependency_export_service.dart';
 
 // feature-localization-surface: localized-export-picker-titles
@@ -37,7 +37,12 @@ void main() {
     await _pumpContextFree(tester);
 
     final viewport = find.byKey(const ValueKey('vdg-viewport'));
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('vdg-variable-details')), findsNothing);
+
     await tester.tap(viewport);
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pump();
     expect(find.byKey(const ValueKey('vdg-variable-details')), findsOneWidget);
@@ -57,6 +62,39 @@ void main() {
     final semantics = tester.getSemantics(viewport);
     expect(semantics.label, contains('variables'));
     expect(semantics.label, contains('dependency edges'));
+  });
+
+  testWidgets('Tab traversal skips the viewport until an explicit click', (
+    tester,
+  ) async {
+    await _useSurface(tester);
+    await _pumpContextFree(tester);
+
+    final viewport = find.byKey(const ValueKey('vdg-viewport'));
+    final viewer = find.descendant(
+      of: viewport,
+      matching: find.byType(InteractiveViewer),
+    );
+    final viewportFocus = Focus.of(tester.element(viewer));
+    final visited = <FocusNode>{};
+    final traversalCount =
+        FocusManager.instance.rootScope.descendants.length + 1;
+    for (var index = 0; index < traversalCount; index++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(viewportFocus.hasFocus, isFalse);
+      final focused = FocusManager.instance.primaryFocus;
+      if (focused != null) visited.add(focused);
+    }
+    expect(visited.length, greaterThan(1));
+    expect(find.byKey(const ValueKey('vdg-variable-details')), findsNothing);
+
+    await tester.tap(viewport);
+    await tester.pump();
+    expect(viewportFocus.hasPrimaryFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('vdg-variable-details')), findsOneWidget);
   });
 
   testWidgets('exports labeled SVG and rendered PNG through the save service', (

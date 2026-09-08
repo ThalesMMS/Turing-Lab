@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_analyzer.dart';
-import 'package:turing_lab/core/algorithms/grammar_analysis_messages.dart';
-import 'package:turing_lab/core/algorithms/tm_building_block_messages.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analyzer.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_analysis_messages.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_building_block_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/data/codecs/fsa_jflap_messages.dart';
 import 'package:turing_lab/data/codecs/grammar_jflap_messages.dart';

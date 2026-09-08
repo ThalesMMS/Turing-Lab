@@ -11,6 +11,7 @@
 //
 // feature-localization-contract: interoperability-notes-and-export
 // feature-localization-surface: localized-import-export
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -19,6 +20,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:turing_lab/presentation/widgets/export/print_document_builder.dart';
+import 'package:turing_lab/core/services/print_service.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/annotations/annotations.dart';
 import 'package:turing_lab/core/interoperability/interoperability.dart';
@@ -54,6 +57,7 @@ part 'file_operations_panel/message_cancellation_tests.dart';
 part 'file_operations_panel/fixtures.dart';
 part 'file_operations_panel/registered_module_tests.dart';
 part 'file_operations_panel/interoperability_tests.dart';
+part 'file_operations_panel/print_operation_tests.dart';
 
 StructuredMessage _parserFailureMessage(String namespace, String code) =>
     StructuredMessage(
@@ -78,4 +82,5 @@ void main() {
   _runFileOperationsPanelMessageCancellationTests(() => fakeFilePicker);
   _runRegisteredModuleFileOperationTests(() => fakeFilePicker);
   _runInteroperabilityFileOperationTests(() => fakeFilePicker);
+  _runFileOperationsPanelPrintTests();
 }

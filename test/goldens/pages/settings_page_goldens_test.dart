@@ -59,6 +59,7 @@ Future<void> _pumpSettingsPage(
     fontSize: fontSize,
   );
   final repository = _GoldenSettingsRepository(settings);
+  final preferences = await SharedPreferences.getInstance();
   final resolvedThemeMode = switch (themeMode) {
     'light' => ThemeMode.light,
     'dark' => ThemeMode.dark,
@@ -68,9 +69,13 @@ Future<void> _pumpSettingsPage(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(repository),
+        sharedPreferencesProvider.overrideWithValue(preferences),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        locale: const Locale('en'),
         theme: ThemeData(),
         darkTheme: ThemeData.dark(),
         themeMode: resolvedThemeMode,
@@ -85,6 +90,8 @@ Future<void> _pumpSettingsPage(
   );
 
   await tester.pumpAndSettle();
+  expect(tester.takeException(), isNull);
+  expect(find.byType(ErrorWidget), findsNothing);
 }
 
 void main() {
@@ -203,6 +210,17 @@ void main() {
         showTooltips: false,
         size: const Size(1400, 900),
       );
+
+      final autoSave = find.byKey(const ValueKey('settings_auto_save_switch'));
+      final tooltips = find.byKey(
+        const ValueKey('settings_show_tooltips_switch'),
+      );
+      await tester.ensureVisible(tooltips);
+      await tester.pumpAndSettle();
+      expect(autoSave.hitTestable(), findsOneWidget);
+      expect(tooltips.hitTestable(), findsOneWidget);
+      expect(tester.widget<Switch>(autoSave).value, isFalse);
+      expect(tester.widget<Switch>(tooltips).value, isFalse);
 
       await screenMatchesGolden(tester, 'settings_page_custom_general_desktop');
     });

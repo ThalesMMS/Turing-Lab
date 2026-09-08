@@ -167,7 +167,10 @@ abstract final class DefaultFormalSystemModules {
     localizationNamespace: const CapabilityNamespaceId('formal.pda'),
     semanticsNamespace: const CapabilityNamespaceId('semantics.pda'),
     capabilities: _fullCapabilities,
-    formats: [_export(DefaultFormalSystemIds.svgFormat, 'svg')],
+    formats: [
+      _export(DefaultFormalSystemIds.svgFormat, 'svg'),
+      _export(DefaultFormalSystemIds.pngFormat, 'png'),
+    ],
     conversions: const [
       ConversionEdge(
         id: ConversionEdgeId('pda-to-grammar'),
@@ -188,7 +191,10 @@ abstract final class DefaultFormalSystemModules {
     localizationNamespace: const CapabilityNamespaceId('formal.tm'),
     semanticsNamespace: const CapabilityNamespaceId('semantics.tm'),
     capabilities: _fullCapabilities,
-    formats: [_export(DefaultFormalSystemIds.svgFormat, 'svg')],
+    formats: [
+      _export(DefaultFormalSystemIds.svgFormat, 'svg'),
+      _export(DefaultFormalSystemIds.pngFormat, 'png'),
+    ],
   );
 
   static final _regex = FormalSystemDescriptor(
@@ -223,10 +229,12 @@ abstract final class DefaultFormalSystemModules {
     ),
     route: const WorkspaceRouteId('/pumping-lemma/regular'),
     category: FormalSystemCategory.learning,
-    localizationNamespace:
-        const CapabilityNamespaceId('formal.pumping.regular'),
-    semanticsNamespace:
-        const CapabilityNamespaceId('semantics.pumping.regular'),
+    localizationNamespace: const CapabilityNamespaceId(
+      'formal.pumping.regular',
+    ),
+    semanticsNamespace: const CapabilityNamespaceId(
+      'semantics.pumping.regular',
+    ),
     capabilities: const FormalSystemCapabilities(
       editing: SupportedCapability(),
       analysis: SupportedCapability(),
@@ -248,10 +256,12 @@ abstract final class DefaultFormalSystemModules {
     ),
     route: const WorkspaceRouteId('/pumping-lemma/context-free'),
     category: FormalSystemCategory.learning,
-    localizationNamespace:
-        const CapabilityNamespaceId('formal.pumping.context-free'),
-    semanticsNamespace:
-        const CapabilityNamespaceId('semantics.pumping.context-free'),
+    localizationNamespace: const CapabilityNamespaceId(
+      'formal.pumping.context-free',
+    ),
+    semanticsNamespace: const CapabilityNamespaceId(
+      'semantics.pumping.context-free',
+    ),
     capabilities: const FormalSystemCapabilities(
       editing: SupportedCapability(),
       analysis: SupportedCapability(),
@@ -278,21 +288,19 @@ abstract final class DefaultFormalSystemModules {
   static DocumentFormatSupport _readWrite(
     DocumentFormatId format,
     String extension,
-  ) =>
-      DocumentFormatSupport(
-        formatId: format,
-        importAvailability: const SupportedCapability(),
-        exportAvailability: const SupportedCapability(),
-        preferredExtension: extension,
-      );
+  ) => DocumentFormatSupport(
+    formatId: format,
+    importAvailability: const SupportedCapability(),
+    exportAvailability: const SupportedCapability(),
+    preferredExtension: extension,
+  );
 
   static DocumentFormatSupport _export(
     DocumentFormatId format,
     String extension,
-  ) =>
-      DocumentFormatSupport(
-        formatId: format,
-        exportAvailability: const SupportedCapability(),
-        preferredExtension: extension,
-      );
+  ) => DocumentFormatSupport(
+    formatId: format,
+    exportAvailability: const SupportedCapability(),
+    preferredExtension: extension,
+  );
 }

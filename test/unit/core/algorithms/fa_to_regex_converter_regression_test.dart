@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/fa_to_regex_converter.dart';
-import 'package:turing_lab/core/algorithms/regex_to_nfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/fa_to_regex_converter.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_to_nfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -25,10 +25,14 @@ void main() {
 
       final regex = FAToRegexConverter.convert(fsa);
       final converted = RegexToNFAConverter.convert(regex.data!);
-      final acceptsA =
-          await AutomatonSimulator.simulateNFA(converted.data!, 'a');
-      final acceptsStale =
-          await AutomatonSimulator.simulateNFA(converted.data!, 'stale-label');
+      final acceptsA = await AutomatonSimulator.simulateNFA(
+        converted.data!,
+        'a',
+      );
+      final acceptsStale = await AutomatonSimulator.simulateNFA(
+        converted.data!,
+        'stale-label',
+      );
 
       expect(regex.isSuccess, isTrue);
       expect(acceptsA.data!.accepted, isTrue);
@@ -70,8 +74,10 @@ void main() {
       final converted = RegexToNFAConverter.convert(regex.data!);
       final empty = await AutomatonSimulator.simulateNFA(converted.data!, '');
       final symbol = await AutomatonSimulator.simulateNFA(converted.data!, 'a');
-      final alias =
-          await AutomatonSimulator.simulateNFA(converted.data!, 'lambda');
+      final alias = await AutomatonSimulator.simulateNFA(
+        converted.data!,
+        'lambda',
+      );
 
       expect(empty.data!.accepted, isTrue);
       expect(symbol.data!.accepted, isTrue);
@@ -96,34 +102,36 @@ void main() {
       expect(plus.data!.accepted, isTrue);
     });
 
-    test('is deterministic across state and transition Set insertion order',
-        () {
-      final firstTransition = FSATransition.deterministic(
-        id: 'a',
-        fromState: _q0,
-        toState: _q1,
-        symbol: 'b',
-      );
-      final secondTransition = FSATransition.deterministic(
-        id: 'b',
-        fromState: _q0,
-        toState: _q1,
-        symbol: 'a',
-      );
-      final first = _automaton(
-        states: {_q0, _q1},
-        transitions: {firstTransition, secondTransition},
-      );
-      final second = _automaton(
-        states: {_q1, _q0},
-        transitions: {secondTransition, firstTransition},
-      );
+    test(
+      'is deterministic across state and transition Set insertion order',
+      () {
+        final firstTransition = FSATransition.deterministic(
+          id: 'a',
+          fromState: _q0,
+          toState: _q1,
+          symbol: 'b',
+        );
+        final secondTransition = FSATransition.deterministic(
+          id: 'b',
+          fromState: _q0,
+          toState: _q1,
+          symbol: 'a',
+        );
+        final first = _automaton(
+          states: {_q0, _q1},
+          transitions: {firstTransition, secondTransition},
+        );
+        final second = _automaton(
+          states: {_q1, _q0},
+          transitions: {secondTransition, firstTransition},
+        );
 
-      expect(
-        FAToRegexConverter.convert(first).data,
-        FAToRegexConverter.convert(second).data,
-      );
-    });
+        expect(
+          FAToRegexConverter.convert(first).data,
+          FAToRegexConverter.convert(second).data,
+        );
+      },
+    );
   });
 }
 
@@ -140,10 +148,8 @@ final _q1 = State(
   isAccepting: true,
 );
 
-FSA _twoStateFsa(FSATransition transition) => _automaton(
-      states: {_q0, _q1},
-      transitions: {transition},
-    );
+FSA _twoStateFsa(FSATransition transition) =>
+    _automaton(states: {_q0, _q1}, transitions: {transition});
 
 FSA _automaton({
   required Set<State> states,

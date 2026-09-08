@@ -1,8 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/fsa_determinizer.dart';
-import 'package:turing_lab/core/algorithms/fsa_determinizer_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_determinizer.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_determinizer_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/nfa_to_dfa_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
@@ -67,7 +68,7 @@ void main() {
     );
 
     expect(result.isFailure, isTrue);
-    expect(result.error, 'algorithm.fsa-determinizer.failed');
-    expect(result.structuredError, FsaDeterminizerMessages.failed('A'));
+    expect(result.error, 'Accepting state must be in the states set');
+    expect(result.structuredError, NfaToDfaMessages.acceptingStateOutsideSet());
   });
 }

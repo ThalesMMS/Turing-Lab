@@ -13,51 +13,51 @@ final class LSystemFormalSystemModule
   LSystemFormalSystemModule({
     Iterable<DocumentCodecCapability<LSystemDocument>> codecs = const [],
     this.examples,
-  })  : codecs = List.unmodifiable(codecs),
-        descriptor = FormalSystemDescriptor(
-          key: LSystemFormalSystemIds.key,
-          schema: const DocumentSchemaDescriptor(
-            id: DocumentSchemaId('turing-lab.l-system'),
-            version: DocumentSchemaVersion(1),
-          ),
-          route: const WorkspaceRouteId('/l-system'),
-          category: FormalSystemCategory.grammar,
-          localizationNamespace: const CapabilityNamespaceId('formal.l-system'),
-          semanticsNamespace: const CapabilityNamespaceId('semantics.l-system'),
-          capabilities: const FormalSystemCapabilities(
-            editing: SupportedCapability(),
-            simulation: SupportedCapability(),
-            analysis: SupportedCapability(),
-            trace: SupportedCapability(),
-            examples: SupportedCapability(),
-            help: SupportedCapability(),
-            session: SupportedCapability(),
-          ),
-          formats: const [
-            DocumentFormatSupport(
-              formatId: DefaultFormalSystemIds.jflapXmlFormat,
-              importAvailability: SupportedCapability(),
-              exportAvailability: SupportedCapability(),
-              preferredExtension: 'jff',
-            ),
-            DocumentFormatSupport(
-              formatId: DefaultFormalSystemIds.turingLabJsonFormat,
-              importAvailability: SupportedCapability(),
-              exportAvailability: SupportedCapability(),
-              preferredExtension: 'json',
-            ),
-            DocumentFormatSupport(
-              formatId: DefaultFormalSystemIds.svgFormat,
-              exportAvailability: SupportedCapability(),
-              preferredExtension: 'svg',
-            ),
-            DocumentFormatSupport(
-              formatId: DefaultFormalSystemIds.pngFormat,
-              exportAvailability: SupportedCapability(),
-              preferredExtension: 'png',
-            ),
-          ],
-        );
+  }) : codecs = List.unmodifiable(codecs),
+       descriptor = FormalSystemDescriptor(
+         key: LSystemFormalSystemIds.key,
+         schema: const DocumentSchemaDescriptor(
+           id: DocumentSchemaId('turing-lab.l-system'),
+           version: DocumentSchemaVersion(1),
+         ),
+         route: const WorkspaceRouteId('/l-system'),
+         category: FormalSystemCategory.grammar,
+         localizationNamespace: const CapabilityNamespaceId('formal.l-system'),
+         semanticsNamespace: const CapabilityNamespaceId('semantics.l-system'),
+         capabilities: const FormalSystemCapabilities(
+           editing: SupportedCapability(),
+           simulation: SupportedCapability(),
+           analysis: SupportedCapability(),
+           trace: SupportedCapability(),
+           examples: SupportedCapability(),
+           help: SupportedCapability(),
+           session: SupportedCapability(),
+         ),
+         formats: const [
+           DocumentFormatSupport(
+             formatId: DefaultFormalSystemIds.jflapXmlFormat,
+             importAvailability: SupportedCapability(),
+             exportAvailability: SupportedCapability(),
+             preferredExtension: 'jff',
+           ),
+           DocumentFormatSupport(
+             formatId: DefaultFormalSystemIds.turingLabJsonFormat,
+             importAvailability: SupportedCapability(),
+             exportAvailability: SupportedCapability(),
+             preferredExtension: 'json',
+           ),
+           DocumentFormatSupport(
+             formatId: DefaultFormalSystemIds.svgFormat,
+             exportAvailability: SupportedCapability(),
+             preferredExtension: 'svg',
+           ),
+           DocumentFormatSupport(
+             formatId: DefaultFormalSystemIds.pngFormat,
+             exportAvailability: SupportedCapability(),
+             preferredExtension: 'png',
+           ),
+         ],
+       );
 
   @override
   final FormalSystemDescriptor descriptor;

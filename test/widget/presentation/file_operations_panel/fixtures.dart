@@ -169,6 +169,10 @@ class _StubFileOperationsService extends FileOperationsService {
   DocumentAnnotationCollection? lastPngAnnotations;
   FSA? lastFsaSvgExport;
   PDA? lastPdaSvgExport;
+  PDA? lastPdaPngExport;
+  TM? lastTmPngExport;
+  int exportPdaPngCallCount = 0;
+  int exportTmPngCallCount = 0;
   Grammar? lastGrammarSvgExport;
 
   @override
@@ -350,6 +354,36 @@ class _StubFileOperationsService extends FileOperationsService {
   }) async {
     if (exportPngException case final exception?) throw exception;
     exportPngBytesCallCount++;
+    lastPngIncludeAnnotations = includeAnnotations;
+    lastPngAnnotations = annotations;
+    return Success(Uint8List.fromList(<int>[137, 80, 78, 71]));
+  }
+
+  @override
+  Future<Result<Uint8List>> exportPdaToPngBytes(
+    PDA pda, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    if (exportPngException case final exception?) throw exception;
+    exportPdaPngCallCount++;
+    lastPdaPngExport = pda;
+    lastPngIncludeAnnotations = includeAnnotations;
+    lastPngAnnotations = annotations;
+    return Success(Uint8List.fromList(<int>[137, 80, 78, 71]));
+  }
+
+  @override
+  Future<Result<Uint8List>> exportTuringMachineToPngBytes(
+    TM machine, {
+    String emptyStringSymbol = 'ε',
+    bool includeAnnotations = false,
+    DocumentAnnotationCollection? annotations,
+  }) async {
+    if (exportPngException case final exception?) throw exception;
+    exportTmPngCallCount++;
+    lastTmPngExport = machine;
     lastPngIncludeAnnotations = includeAnnotations;
     lastPngAnnotations = annotations;
     return Success(Uint8List.fromList(<int>[137, 80, 78, 71]));

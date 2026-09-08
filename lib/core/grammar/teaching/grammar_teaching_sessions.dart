@@ -1,5 +1,5 @@
-import '../../algorithms/grammar_analyzer.dart';
-import '../../algorithms/grammar_cnf_transformer.dart';
+import '../../algorithms/grammar/grammar_analyzer.dart';
+import '../../algorithms/grammar/grammar_cnf_transformer.dart';
 import '../../educational_content/educational_content_reference.dart';
 import '../../models/grammar.dart';
 import '../../models/lr1_models.dart';

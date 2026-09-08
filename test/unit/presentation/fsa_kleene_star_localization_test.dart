@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/fsa_kleene_star_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/fsa_kleene_star_messages.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_pt.dart';
 import 'package:turing_lab/l10n/app_localizations_structured_messages.dart';

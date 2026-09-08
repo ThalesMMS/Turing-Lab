@@ -13,8 +13,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/algorithms/grammar_to_fsa_converter.dart';
-import '../../core/algorithms/grammar_to_pda_converter.dart';
+import '../../core/algorithms/grammar/grammar_to_fsa_converter.dart';
+import '../../core/algorithms/grammar/grammar_to_pda_converter.dart';
 import '../../core/models/fsa.dart';
 import '../../core/models/grammar.dart';
 import '../../core/models/pda.dart';

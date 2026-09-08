@@ -10,9 +10,9 @@
 import 'dart:collection';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/tm_block_dependency_analyzer.dart';
-import 'package:turing_lab/core/algorithms/tm_block_execution_engine.dart';
-import 'package:turing_lab/core/algorithms/tm_execution_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_dependency_analyzer.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_block_execution_engine.dart';
+import 'package:turing_lab/core/algorithms/tm/tm_execution_analyzer.dart';
 import 'package:turing_lab/core/formal_systems/formal_systems.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/grammar.dart';

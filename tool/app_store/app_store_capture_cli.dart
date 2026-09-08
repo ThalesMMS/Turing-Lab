@@ -4,8 +4,7 @@
 //
 //  Command line front end for the local App Store screenshot pipeline. It
 //  resolves the requested matrix, drives the capture runner, and validates the
-//  resulting directory and manifest. This tool is local-only by design and is
-//  never wired into CI.
+//  resulting directory and manifest. This tool runs locally.
 //
 //  Thales Matheus Mendonça Santos - August 2026
 //

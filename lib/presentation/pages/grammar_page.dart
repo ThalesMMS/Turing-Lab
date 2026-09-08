@@ -19,10 +19,10 @@ import '../providers/grammar_provider.dart';
 import '../providers/workspace_quick_actions_provider.dart';
 import '../widgets/automaton_workspace_scaffold.dart';
 import '../widgets/common/help_navigation.dart';
-import '../widgets/grammar_algorithm_panel.dart';
-import '../widgets/grammar_editor.dart';
-import '../widgets/grammar_editor_section.dart';
-import '../widgets/grammar_simulation_panel.dart';
+import '../widgets/grammar/grammar_algorithm_panel.dart';
+import '../widgets/grammar/grammar_editor.dart';
+import '../widgets/grammar/grammar_editor_section.dart';
+import '../widgets/grammar/grammar_simulation_panel.dart';
 
 /// Page for working with Context-Free Grammars.
 class GrammarPage extends ConsumerStatefulWidget {

@@ -10,20 +10,30 @@ final class AssetExampleContentButton extends StatelessWidget {
     super.key,
     required this.copy,
     required this.suggestions,
+    this.counterexamples = const [],
+    this.exampleId,
     required this.isLoading,
     required this.onPressed,
+    this.onUseInput,
   });
 
   final AssetExampleContentCopy copy;
   final List<String> suggestions;
+  final List<ExampleSuggestedSimulation> counterexamples;
+  final String? exampleId;
   final bool isLoading;
   final VoidCallback? onPressed;
+
+  /// Fills the workspace simulation field with a suggested input. When set,
+  /// suggestions render as actions below the button instead of plain text.
+  final ValueChanged<String>? onUseInput;
 
   static Widget? maybeBuild<T>({
     required BuildContext context,
     required AssetExample<T> example,
     required bool isLoading,
     required VoidCallback? onPressed,
+    ValueChanged<String>? onUseInput,
   }) {
     final copy = AssetExampleContentCopies.maybeResolve(
       id: example.id,
@@ -33,8 +43,11 @@ final class AssetExampleContentButton extends StatelessWidget {
     return AssetExampleContentButton(
       copy: copy,
       suggestions: ExampleSuggestedSimulations.resolve(example.id),
+      counterexamples: ExampleCounterexamples.resolve(example.id),
+      exampleId: example.id,
       isLoading: isLoading,
       onPressed: onPressed,
+      onUseInput: onUseInput,
     );
   }
 
@@ -42,14 +55,20 @@ final class AssetExampleContentButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final onUseInput = this.onUseInput;
+    final inlineSuggestions = onUseInput == null;
 
-    return Semantics(
+    final button = Semantics(
       button: true,
       enabled: onPressed != null,
       label: [
         copy.semanticLabel,
-        if (suggestions.isNotEmpty)
-          ExampleSuggestedSimulationsText.semanticLabel(context, suggestions),
+        if (inlineSuggestions && suggestions.isNotEmpty)
+          ExampleSuggestedSimulationsText.semanticLabel(
+            context,
+            suggestions,
+            counterexamples: counterexamples,
+          ),
       ].join(' '),
       onTap: onPressed,
       child: ExcludeSemantics(
@@ -96,10 +115,11 @@ final class AssetExampleContentButton extends StatelessWidget {
                         ].join('\n'),
                         style: textTheme.bodySmall,
                       ),
-                      if (suggestions.isNotEmpty) ...[
+                      if (inlineSuggestions && suggestions.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         ExampleSuggestedSimulationsText(
                           suggestions: suggestions,
+                          counterexamples: counterexamples,
                         ),
                       ],
                     ],
@@ -110,6 +130,22 @@ final class AssetExampleContentButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+    if (inlineSuggestions || suggestions.isEmpty) return button;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        button,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: ExampleSuggestedSimulationsText(
+            suggestions: suggestions,
+            counterexamples: counterexamples,
+            exampleId: exampleId,
+            onUseInput: onPressed == null ? null : onUseInput,
+          ),
+        ),
+      ],
     );
   }
 }

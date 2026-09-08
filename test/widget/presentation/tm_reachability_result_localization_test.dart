@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/tm_reachability_report.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
-import 'package:turing_lab/presentation/widgets/tm_reachability_result_view.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_reachability_result_view.dart';
 
 // feature-localization-contract: advanced-tm-workspaces
 // feature-localization-surface: responsive-accessibility

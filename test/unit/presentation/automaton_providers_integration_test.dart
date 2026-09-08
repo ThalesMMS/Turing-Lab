@@ -16,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
@@ -198,8 +198,9 @@ void main() {
 
         final algorithmState = container.read(automatonAlgorithmProvider);
         expect(algorithmState.error, isNull);
-        final updatedAutomaton =
-            container.read(automatonStateProvider).currentAutomaton;
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
 
         expect(updatedAutomaton, isNotNull);
         expect(updatedAutomaton!.hasEpsilonTransitions, isFalse);
@@ -229,8 +230,9 @@ void main() {
       final algorithmState = container.read(automatonAlgorithmProvider);
       expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
+      final updatedAutomaton = container
+          .read(automatonStateProvider)
+          .currentAutomaton;
       expect(updatedAutomaton, isNotNull);
       expect(_acceptingStateIds(updatedAutomaton!), contains('q0'));
       expect(_acceptingStateIds(updatedAutomaton), isNot(contains('q1')));
@@ -241,185 +243,212 @@ void main() {
       );
     });
 
-    test('Algorithm provider applies prefix closure to the current DFA',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createUnaryOperationDfa());
+    test(
+      'Algorithm provider applies prefix closure to the current DFA',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createUnaryOperationDfa());
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.prefixClosureDfa();
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.prefixClosureDfa();
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      expect(algorithmState.error, isNull);
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      expect(_acceptingStateIds(updatedAutomaton!), containsAll({'q0', 'q1'}));
-      expect(updatedAutomaton.hasEpsilonTransitions, isFalse);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        expect(
+          _acceptingStateIds(updatedAutomaton!),
+          containsAll({'q0', 'q1'}),
+        );
+        expect(updatedAutomaton.hasEpsilonTransitions, isFalse);
+      },
+    );
 
-    test('Algorithm provider applies suffix closure to the current DFA',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createUnaryOperationDfa());
+    test(
+      'Algorithm provider applies suffix closure to the current DFA',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createUnaryOperationDfa());
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.suffixClosureDfa();
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.suffixClosureDfa();
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      expect(algorithmState.error, isNull);
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      expect(updatedAutomaton!.id, 'unary-dfa_suffix_closure');
-      expect(updatedAutomaton.initialState, isNotNull);
-      expect(updatedAutomaton.initialState!.isAccepting, isTrue);
-      expect(updatedAutomaton.hasEpsilonTransitions, isFalse);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        expect(updatedAutomaton!.id, 'unary-dfa_suffix_closure');
+        expect(updatedAutomaton.initialState, isNotNull);
+        expect(updatedAutomaton.initialState!.isAccepting, isTrue);
+        expect(updatedAutomaton.hasEpsilonTransitions, isFalse);
+      },
+    );
 
-    test('Algorithm provider unions the current DFA with another FSA',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+    test(
+      'Algorithm provider unions the current DFA with another FSA',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.unionDfa(_createAStarDfa(id: 'other-a-star'));
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.unionDfa(_createAStarDfa(id: 'other-a-star'));
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      expect(algorithmState.error, isNull);
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, '', isTrue);
-      await _expectAccepts(updatedAutomaton, 'aa', isTrue);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, '', isTrue);
+        await _expectAccepts(updatedAutomaton, 'aa', isTrue);
+      },
+    );
 
-    test('Algorithm provider concatenates FSAs and publishes its step report',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+    test(
+      'Algorithm provider concatenates FSAs and publishes its step report',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.concatenateFsa(
-        _createAStarDfa(id: 'other-a-star'),
-        withSteps: true,
-      );
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.concatenateFsa(
+          _createAStarDfa(id: 'other-a-star'),
+          withSteps: true,
+        );
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      final stepState = container.read(algorithmStepProvider);
-      expect(algorithmState.error, isNull);
-      expect(algorithmState.fsaConcatenationResult, isNotNull);
-      expect(stepState.steps, hasLength(3));
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        final stepState = container.read(algorithmStepProvider);
+        expect(algorithmState.error, isNull);
+        expect(algorithmState.fsaConcatenationResult, isNotNull);
+        expect(stepState.steps, hasLength(3));
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, '', isFalse);
-      await _expectAccepts(updatedAutomaton, 'a', isTrue);
-      await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, '', isFalse);
+        await _expectAccepts(updatedAutomaton, 'a', isTrue);
+        await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
+      },
+    );
 
-    test('Algorithm provider applies Kleene star and publishes its step report',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+    test(
+      'Algorithm provider applies Kleene star and publishes its step report',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.kleeneStarFsa(withSteps: true);
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.kleeneStarFsa(withSteps: true);
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      final stepState = container.read(algorithmStepProvider);
-      expect(algorithmState.error, isNull);
-      expect(algorithmState.fsaKleeneStarResult, isNotNull);
-      expect(stepState.steps, hasLength(4));
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        final stepState = container.read(algorithmStepProvider);
+        expect(algorithmState.error, isNull);
+        expect(algorithmState.fsaKleeneStarResult, isNotNull);
+        expect(stepState.steps, hasLength(4));
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, '', isTrue);
-      await _expectAccepts(updatedAutomaton, 'a', isTrue);
-      await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, '', isTrue);
+        await _expectAccepts(updatedAutomaton, 'a', isTrue);
+        await _expectAccepts(updatedAutomaton, 'aaa', isTrue);
+      },
+    );
 
-    test('Algorithm provider reverses an FSA and publishes its step report',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAbDfa(id: 'current-ab'));
+    test(
+      'Algorithm provider reverses an FSA and publishes its step report',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAbDfa(id: 'current-ab'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.reverseFsa(withSteps: true);
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.reverseFsa(withSteps: true);
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      final stepState = container.read(algorithmStepProvider);
-      expect(algorithmState.error, isNull);
-      expect(algorithmState.fsaReversalResult, isNotNull);
-      expect(stepState.steps, hasLength(4));
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        final stepState = container.read(algorithmStepProvider);
+        expect(algorithmState.error, isNull);
+        expect(algorithmState.fsaReversalResult, isNotNull);
+        expect(stepState.steps, hasLength(4));
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, 'ba', isTrue);
-      await _expectAccepts(updatedAutomaton, 'ab', isFalse);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, 'ba', isTrue);
+        await _expectAccepts(updatedAutomaton, 'ab', isFalse);
+      },
+    );
 
-    test('Algorithm provider intersects the current DFA with another FSA',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
+    test(
+      'Algorithm provider intersects the current DFA with another FSA',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAPlusDfa(id: 'current-a-plus'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.intersectionDfa(
-        _createAStarDfa(id: 'other-a-star'),
-      );
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.intersectionDfa(
+          _createAStarDfa(id: 'other-a-star'),
+        );
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      expect(algorithmState.error, isNull);
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, '', isFalse);
-      await _expectAccepts(updatedAutomaton, 'aa', isTrue);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, '', isFalse);
+        await _expectAccepts(updatedAutomaton, 'aa', isTrue);
+      },
+    );
 
-    test('Algorithm provider subtracts another FSA from the current DFA',
-        () async {
-      final stateNotifier = container.read(automatonStateProvider.notifier);
-      stateNotifier.updateAutomaton(_createAStarDfa(id: 'current-a-star'));
+    test(
+      'Algorithm provider subtracts another FSA from the current DFA',
+      () async {
+        final stateNotifier = container.read(automatonStateProvider.notifier);
+        stateNotifier.updateAutomaton(_createAStarDfa(id: 'current-a-star'));
 
-      final algorithmNotifier = container.read(
-        automatonAlgorithmProvider.notifier,
-      );
-      await algorithmNotifier.differenceDfa(
-        _createAPlusDfa(id: 'other-a-plus'),
-      );
+        final algorithmNotifier = container.read(
+          automatonAlgorithmProvider.notifier,
+        );
+        await algorithmNotifier.differenceDfa(
+          _createAPlusDfa(id: 'other-a-plus'),
+        );
 
-      final algorithmState = container.read(automatonAlgorithmProvider);
-      expect(algorithmState.error, isNull);
+        final algorithmState = container.read(automatonAlgorithmProvider);
+        expect(algorithmState.error, isNull);
 
-      final updatedAutomaton =
-          container.read(automatonStateProvider).currentAutomaton;
-      expect(updatedAutomaton, isNotNull);
-      await _expectAccepts(updatedAutomaton!, '', isTrue);
-      await _expectAccepts(updatedAutomaton, 'a', isFalse);
-    });
+        final updatedAutomaton = container
+            .read(automatonStateProvider)
+            .currentAutomaton;
+        expect(updatedAutomaton, isNotNull);
+        await _expectAccepts(updatedAutomaton!, '', isTrue);
+        await _expectAccepts(updatedAutomaton, 'a', isFalse);
+      },
+    );
 
     test(
       'Simulation provider can access automaton from state provider',
@@ -531,8 +560,9 @@ void main() {
         // Store original positions
         final originalState = container.read(automatonStateProvider);
         final originalAutomaton = originalState.currentAutomaton!;
-        final originalPositions =
-            originalAutomaton.states.map((s) => s.position).toList();
+        final originalPositions = originalAutomaton.states
+            .map((s) => s.position)
+            .toList();
 
         // Apply auto layout using layout provider
         final layoutNotifier = container.read(automatonLayoutProvider.notifier);
@@ -546,8 +576,9 @@ void main() {
         expect(updatedState.error, isNull);
 
         // Layout should have changed positions (they were all at zero)
-        final updatedPositions =
-            updatedAutomaton!.states.map((s) => s.position).toList();
+        final updatedPositions = updatedAutomaton!.states
+            .map((s) => s.position)
+            .toList();
 
         // At least some positions should be different after layout
         final positionsChanged = updatedPositions.any(

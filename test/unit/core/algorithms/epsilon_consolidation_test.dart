@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/automaton_simulator.dart';
-import 'package:turing_lab/core/algorithms/dfa_operations.dart';
-import 'package:turing_lab/core/algorithms/nfa_to_dfa_converter.dart';
+import 'package:turing_lab/core/algorithms/fsa/automaton_simulator.dart';
+import 'package:turing_lab/core/algorithms/fsa/dfa_operations.dart';
+import 'package:turing_lab/core/algorithms/fsa/nfa_to_dfa_converter.dart';
 import 'package:turing_lab/core/models/fsa.dart';
 import 'package:turing_lab/core/models/fsa_transition.dart';
 import 'package:turing_lab/core/models/state.dart';
@@ -70,11 +70,7 @@ FSA _epsilonPath(String alias) {
     position: Vector2.zero(),
     isInitial: true,
   );
-  final q1 = State(
-    id: 'q1',
-    label: 'q1',
-    position: Vector2(100, 0),
-  );
+  final q1 = State(id: 'q1', label: 'q1', position: Vector2(100, 0));
   final q2 = State(
     id: 'q2',
     label: 'q2',

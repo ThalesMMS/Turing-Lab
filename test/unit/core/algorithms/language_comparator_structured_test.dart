@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/language_comparator.dart';
-import 'package:turing_lab/core/algorithms/language_comparison_step_messages.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparator.dart';
+import 'package:turing_lab/core/algorithms/fsa/language_comparison_step_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/equivalence_comparison_result.dart';
 import 'package:turing_lab/core/models/fsa.dart';

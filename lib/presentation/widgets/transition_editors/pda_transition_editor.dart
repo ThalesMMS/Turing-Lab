@@ -26,6 +26,7 @@ class PdaTransitionEditor extends StatefulWidget {
     required this.initialRead,
     required this.initialPop,
     required this.initialPush,
+    this.initialPushSymbols,
     required this.isLambdaInput,
     required this.isLambdaPop,
     required this.isLambdaPush,
@@ -38,6 +39,7 @@ class PdaTransitionEditor extends StatefulWidget {
   final String initialRead;
   final String initialPop;
   final String initialPush;
+  final List<String>? initialPushSymbols;
   final bool isLambdaInput;
   final bool isLambdaPop;
   final bool isLambdaPush;
@@ -66,7 +68,7 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
     text: widget.initialPop,
   );
   late final TextEditingController _pushController = TextEditingController(
-    text: widget.initialPush,
+    text: widget.initialPushSymbols?.join(' ') ?? widget.initialPush,
   );
   late bool _lambdaInput = widget.isLambdaInput;
   late bool _lambdaPop = widget.isLambdaPop;
@@ -241,6 +243,9 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                     enabled: !_lambdaPush,
                     decoration: InputDecoration(
                       labelText: display(l10n.pdaPushSymbol),
+                      helperText: widget.initialPushSymbols != null
+                          ? l10n.pdaPushSymbolsHint
+                          : null,
                       border: const OutlineInputBorder(),
                       errorText:
                           _showValidationErrors &&
@@ -277,6 +282,14 @@ class _PdaTransitionEditorState extends State<PdaTransitionEditor> {
                     popSymbol: _lambdaPop
                         ? kEpsilonSymbol
                         : _popController.text,
+                    pushSymbols: _lambdaPush
+                        ? const []
+                        : widget.initialPushSymbols != null ||
+                              RegExp(
+                                r'\s',
+                              ).hasMatch(_pushController.text.trim())
+                        ? _pushController.text.trim().split(RegExp(r'\s+'))
+                        : null,
                     pushSymbol: _lambdaPush
                         ? kEpsilonSymbol
                         : _pushController.text,

@@ -15,7 +15,7 @@ import '../../models/grammar.dart';
 import '../../grammar/phrase_structure/phrase_structure.dart';
 import '../../models/production.dart';
 import '../../result.dart';
-import '../cfg_toolkit_messages.dart';
+import '../grammar/cfg_toolkit_messages.dart';
 
 /// Toolkit for context-free grammars: CNF and GNF normalization and checks
 class CFGToolkit {

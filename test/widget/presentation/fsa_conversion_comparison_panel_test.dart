@@ -10,90 +10,86 @@ import 'package:turing_lab/features/canvas/graphview/turing_lab_adaptive_edge_re
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/widgets/automaton_graphview_canvas.dart';
 import 'package:turing_lab/presentation/widgets/before_after_comparison.dart';
-import 'package:turing_lab/presentation/widgets/fsa_conversion_comparison_panel.dart';
+import 'package:turing_lab/presentation/widgets/conversions/fsa_conversion_comparison_panel.dart';
 import 'package:turing_lab/presentation/widgets/read_only_fsa_graphview_canvas.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 void main() {
-  testWidgets(
-    'renders shrink when comparison inputs are incomplete',
-    (tester) async {
-      await tester.pumpWidget(
-        const Directionality(
-          textDirection: TextDirection.ltr,
-          child: FSAConversionComparisonPanel(
-            history: null,
-            currentAutomaton: null,
-          ),
+  testWidgets('renders shrink when comparison inputs are incomplete', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: FSAConversionComparisonPanel(
+          history: null,
+          currentAutomaton: null,
         ),
-      );
+      ),
+    );
 
-      final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox));
-      expect(sizedBox.width, equals(0.0));
-      expect(sizedBox.height, equals(0.0));
-      expect(find.byType(BeforeAfterComparison), findsNothing);
-    },
-  );
+    final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox));
+    expect(sizedBox.width, equals(0.0));
+    expect(sizedBox.height, equals(0.0));
+    expect(find.byType(BeforeAfterComparison), findsNothing);
+  });
 
-  testWidgets(
-    'renders BeforeAfterComparison for valid conversion snapshots',
-    (tester) async {
-      final automaton = _fsa();
+  testWidgets('renders BeforeAfterComparison for valid conversion snapshots', (
+    tester,
+  ) async {
+    final automaton = _fsa();
 
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: FSAConversionComparisonPanel(
-              history: ConversionHistory(
-                id: 'history',
-                algorithmType: AlgorithmType.nfaToDfa,
-                initialSnapshot: automaton.toJson(),
-                finalSnapshot: automaton.toJson(),
-              ),
-              currentAutomaton: automaton,
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: FSAConversionComparisonPanel(
+            history: ConversionHistory(
+              id: 'history',
+              algorithmType: AlgorithmType.nfaToDfa,
+              initialSnapshot: automaton.toJson(),
+              finalSnapshot: automaton.toJson(),
             ),
+            currentAutomaton: automaton,
           ),
         ),
-      );
+      ),
+    );
 
-      expect(find.byType(BeforeAfterComparison), findsOneWidget);
-      expect(find.byType(ReadOnlyFsaGraphViewCanvas), findsNWidgets(2));
-      final canvases = tester
-          .widgetList<ReadOnlyFsaGraphViewCanvas>(
-            find.byType(ReadOnlyFsaGraphViewCanvas),
-          )
-          .toList();
-      expect(
-        canvases.map((canvas) => canvas.edgeRenderMode),
-        everyElement(TuringLabEdgeRenderMode.standard),
-      );
-      final innerCanvases = tester
-          .widgetList<AutomatonGraphViewCanvas>(
-            find.byType(AutomatonGraphViewCanvas),
-          )
-          .toList();
-      expect(innerCanvases, hasLength(2));
-      expect(
-        innerCanvases.map(
-          (canvas) => canvas.customization!.edgeRenderMode,
-        ),
-        everyElement(TuringLabEdgeRenderMode.standard),
-      );
-      final canvasKeys = canvases.map((canvas) => canvas.canvasKey).toSet();
-      expect(canvasKeys, hasLength(2));
-      expect(
-        innerCanvases.map((canvas) => canvas.canvasKey).toSet(),
-        equals(canvasKeys),
-      );
-      for (final canvasKey in canvasKeys) {
-        expect(find.byKey(canvasKey), findsOneWidget);
-      }
-      expect(find.text('Conversion result'), findsOneWidget);
-    },
-  );
+    expect(find.byType(BeforeAfterComparison), findsOneWidget);
+    expect(find.byType(ReadOnlyFsaGraphViewCanvas), findsNWidgets(2));
+    final canvases = tester
+        .widgetList<ReadOnlyFsaGraphViewCanvas>(
+          find.byType(ReadOnlyFsaGraphViewCanvas),
+        )
+        .toList();
+    expect(
+      canvases.map((canvas) => canvas.edgeRenderMode),
+      everyElement(TuringLabEdgeRenderMode.standard),
+    );
+    final innerCanvases = tester
+        .widgetList<AutomatonGraphViewCanvas>(
+          find.byType(AutomatonGraphViewCanvas),
+        )
+        .toList();
+    expect(innerCanvases, hasLength(2));
+    expect(
+      innerCanvases.map((canvas) => canvas.customization!.edgeRenderMode),
+      everyElement(TuringLabEdgeRenderMode.standard),
+    );
+    final canvasKeys = canvases.map((canvas) => canvas.canvasKey).toSet();
+    expect(canvasKeys, hasLength(2));
+    expect(
+      innerCanvases.map((canvas) => canvas.canvasKey).toSet(),
+      equals(canvasKeys),
+    );
+    for (final canvasKey in canvasKeys) {
+      expect(find.byKey(canvasKey), findsOneWidget);
+    }
+    expect(find.text('Conversion result'), findsOneWidget);
+  });
 
   testWidgets(
     'logs and shows fallback when conversion snapshots cannot deserialize',
@@ -131,7 +127,8 @@ void main() {
         expect(
           logs.join('\n'),
           contains(
-              'Failed to deserialize conversion comparison history history'),
+            'Failed to deserialize conversion comparison history history',
+          ),
         );
       } finally {
         debugPrint = originalDebugPrint;

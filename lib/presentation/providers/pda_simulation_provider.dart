@@ -10,7 +10,7 @@
 //  Thales Matheus Mendonça Santos - October 2025
 //
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/algorithms/pda_simulator.dart' as pda_core;
+import '../../core/algorithms/pda/pda_simulator.dart' as pda_core;
 import '../../core/models/pda.dart';
 import '../../core/models/simulation_step.dart';
 import 'pda_editor_provider.dart';
@@ -147,10 +147,7 @@ class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
   }
 
   void setResult(PDASimulationResult result, {int currentStepIndex = 0}) {
-    state = state.copyWith(
-      result: result,
-      currentStepIndex: currentStepIndex,
-    );
+    state = state.copyWith(result: result, currentStepIndex: currentStepIndex);
   }
 
   /// Opens a previously verified trace in the regular simulation controls.
@@ -242,5 +239,5 @@ class PDASimulationNotifier extends StateNotifier<PDASimulationState> {
 
 final pdaSimulationProvider =
     StateNotifierProvider<PDASimulationNotifier, PDASimulationState>((ref) {
-  return PDASimulationNotifier(ref);
-});
+      return PDASimulationNotifier(ref);
+    });

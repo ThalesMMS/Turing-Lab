@@ -11,8 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/state.dart';
 import 'package:turing_lab/core/models/pda_transition.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_pda_converter.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 import 'package:vector_math/vector_math_64.dart';
@@ -80,8 +80,7 @@ void main() {
         }
       });
 
-      test('Balanced Parentheses PDA - should reject invalid strings',
-          () async {
+      test('Balanced Parentheses PDA - should reject invalid strings', () async {
         final testCases = [
           '(', // Unmatched opening
           ')', // Unmatched closing

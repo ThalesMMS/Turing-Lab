@@ -55,6 +55,13 @@ abstract final class TransducerFormalSystemModules {
       ),
       capabilities: _operationalCapabilities,
       formats: _documentFormats,
+      conversions: const [
+        ConversionEdge(
+          id: ConversionEdgeId('mealy-to-moore'),
+          source: TransducerFormalSystemIds.mealy,
+          target: TransducerFormalSystemIds.moore,
+        ),
+      ],
     ),
     session: _TransducerSessionCapability<MealyMachine>(
       namespace: const CapabilityNamespaceId('session.transducer.mealy.v1'),
@@ -81,6 +88,13 @@ abstract final class TransducerFormalSystemModules {
       ),
       capabilities: _operationalCapabilities,
       formats: _documentFormats,
+      conversions: const [
+        ConversionEdge(
+          id: ConversionEdgeId('moore-to-mealy'),
+          source: TransducerFormalSystemIds.moore,
+          target: TransducerFormalSystemIds.mealy,
+        ),
+      ],
     ),
     session: _TransducerSessionCapability<MooreMachine>(
       namespace: const CapabilityNamespaceId('session.transducer.moore.v1'),

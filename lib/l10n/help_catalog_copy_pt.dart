@@ -482,7 +482,7 @@ final _lSystemDefinitionBlocks = <HelpContentBlock>[
     'Associe tokens a comandos de tartaruga, defina os valores de iteração e desenho e selecione Aplicar e expandir.',
   ]),
   const HelpCalloutBlock(
-    'Cada passo de produção lê a mesma geração de origem. Uma semente aleatória torna repetíveis as escolhas ponderadas, mas expressões paramétricas continuam não suportadas.',
+    'Cada passo de produção lê a mesma geração de origem. Uma semente aleatória torna repetíveis as escolhas ponderadas. Um predecessor como A(x) liga x ao argumento numérico do símbolo correspondente, e argumentos do sucessor como g(x*0.7) são avaliados com + - * / ^ e parênteses; sem funções nem condições.',
   ),
 ];
 

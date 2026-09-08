@@ -12,9 +12,9 @@ import 'dart:isolate';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
-import 'package:turing_lab/core/algorithms/grammar_to_pda_converter.dart';
-import 'package:turing_lab/core/algorithms/pda_simplifier.dart';
-import 'package:turing_lab/core/algorithms/pda_simulator.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_to_pda_converter.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simplifier.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simulator.dart';
 
 void main() {
   group('Grammar to PDA Conversion Tests', () {

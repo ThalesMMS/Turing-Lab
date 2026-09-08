@@ -16,7 +16,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:file_picker/file_picker.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/entities/turing_machine_entity.dart';
 import '../../core/annotations/document_annotation_collection.dart';
@@ -29,6 +31,7 @@ import '../../core/models/tm.dart';
 import '../../core/models/tm_transition.dart';
 import '../../core/result.dart';
 import '../../core/services/file_operations_gateway.dart';
+import '../../core/services/print_service.dart';
 import '../../injection/data_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/app_localizations_resolver.dart';
@@ -37,6 +40,7 @@ import '../../l10n/app_localizations_workflows.dart';
 import '../empty_string_notation.dart';
 import 'utils/platform_file_loader.dart';
 import 'error_banner.dart';
+import 'export/print_document_builder.dart';
 import 'document_interoperability_binding.dart';
 import 'document_interoperability_failure_dialog.dart';
 import 'document_interoperability_preview.dart';
@@ -53,6 +57,7 @@ part 'file_operations/file_operations_panel_converters.dart';
 part 'file_operations/file_operations_panel_feedback.dart';
 part 'file_operations/file_operations_panel_interoperability.dart';
 part 'file_operations/file_operations_panel_visual_export.dart';
+part 'file_operations/file_operations_panel_print.dart';
 
 const _kFsaJflapExportButtonKey = ValueKey<String>('fsa_jflap_export_button');
 const _kFsaJflapImportButtonKey = ValueKey<String>('fsa_jflap_import_button');
@@ -88,6 +93,12 @@ class FileOperationsPanel extends StatefulWidget {
   final VisualExportBinding? visualExport;
   final DocumentAnnotationCollection? annotations;
 
+  /// Print sheet integration; tests substitute it.
+  final PrintService? printService;
+
+  /// Text listing printed by workspaces without a diagram.
+  final PrintableDocument Function()? printable;
+
   const FileOperationsPanel({
     super.key,
     this.automaton,
@@ -105,6 +116,8 @@ class FileOperationsPanel extends StatefulWidget {
     this.interoperability,
     this.visualExport,
     this.annotations,
+    this.printService,
+    this.printable,
   });
 
   @override
@@ -126,6 +139,7 @@ class _PanelFeedback {
 class _FileOperationsPanelState extends State<FileOperationsPanel> {
   bool _includeAnnotationsInVisualExports = false;
   late final FileOperationsGateway _fileService;
+  late final PrintService _printService;
   bool _isLoading = false;
   _PanelFeedback? _feedback;
   Future<void> Function()? _pendingRetry;
@@ -172,6 +186,7 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
   void initState() {
     super.initState();
     _fileService = widget.fileService ?? createFileOperationsGateway();
+    _printService = widget.printService ?? createPrintService();
   }
 
   void _updatePanelState(VoidCallback callback) {
@@ -382,6 +397,18 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                       Icons.image,
                       () => _exportPdaAsSVG(),
                     ),
+                  if (_supports(
+                        DefaultFormalSystemIds.pda,
+                        DefaultFormalSystemIds.pngFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ) &&
+                      !kIsWeb)
+                    _buildButton(
+                      l10n.exportPng,
+                      Icons.photo,
+                      () => _exportPdaAsPNG(),
+                      key: const ValueKey('pda_png_export_button'),
+                    ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -403,6 +430,18 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                       kIsWeb ? l10n.downloadSvg : l10n.exportSvg,
                       Icons.image,
                       () => _exportTuringMachineAsSVG(),
+                    ),
+                  if (_supports(
+                        DefaultFormalSystemIds.tm,
+                        DefaultFormalSystemIds.pngFormat,
+                        DocumentFormatDirection.exportDocument,
+                      ) &&
+                      !kIsWeb)
+                    _buildButton(
+                      l10n.exportPng,
+                      Icons.photo,
+                      () => _exportTuringMachineAsPNG(),
+                      key: const ValueKey('tm_png_export_button'),
                     ),
                 ],
               ),
@@ -426,6 +465,11 @@ class _FileOperationsPanelState extends State<FileOperationsPanel> {
                     ),
                 ],
               ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_canPrint) ...[
+              _buildPrintSection(),
               const SizedBox(height: 16),
             ],
 

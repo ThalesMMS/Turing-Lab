@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/regex_simplification_messages.dart';
+import 'package:turing_lab/core/algorithms/regex/regex_simplification_messages.dart';
 import 'package:turing_lab/core/messages/structured_message.dart';
 import 'package:turing_lab/core/models/regex_simplification_step.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';

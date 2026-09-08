@@ -24,7 +24,7 @@ import 'package:turing_lab/presentation/widgets/file_operations_panel.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/l10n/app_localizations_en.dart';
 import 'package:turing_lab/l10n/app_localizations_workflows.dart';
-import 'package:turing_lab/presentation/widgets/tm_algorithm_panel.dart';
+import 'package:turing_lab/presentation/widgets/tm/tm_algorithm_panel.dart';
 
 class _FakeTmExamplesDataSource extends ExamplesAssetDataSource {
   _FakeTmExamplesDataSource() : example = _buildTmExample();
@@ -106,9 +106,9 @@ Future<_TmPanelHarness> _pumpTmAlgorithmPanel(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         ),
         home: Scaffold(
@@ -231,17 +231,17 @@ void main() {
     final facts = panel
         .interoperability!
         .previewFacts!(
-      tester.element(find.byType(FileOperationsPanel)),
-      panel.interoperability!.currentDocument!,
-    )
+          tester.element(find.byType(FileOperationsPanel)),
+          panel.interoperability!.currentDocument!,
+        )
         .toList();
-    expect(facts.map((fact) => fact.label),
-        containsAll(['Variant', 'Tape count']));
+    expect(
+      facts.map((fact) => fact.label),
+      containsAll(['Variant', 'Tape count']),
+    );
     expect(facts.map((fact) => fact.value), containsAll(['Single tape', '1']));
     expect(
-      find.byKey(
-        const ValueKey<String>('interoperability_import_document'),
-      ),
+      find.byKey(const ValueKey<String>('interoperability_import_document')),
       findsOneWidget,
     );
     expect(find.text('Load JFLAP'), findsNothing);
@@ -256,16 +256,12 @@ void main() {
     expect(panel.turingMachine, isNull);
     expect(panel.interoperability?.currentDocument, isNull);
     expect(
-      find.byKey(
-        const ValueKey<String>('interoperability_import_document'),
-      ),
+      find.byKey(const ValueKey<String>('interoperability_import_document')),
       findsOneWidget,
     );
     expect(
       find.byKey(
-        const ValueKey<String>(
-          'interoperability_export_turing-lab.json',
-        ),
+        const ValueKey<String>('interoperability_export_turing-lab.json'),
       ),
       findsNothing,
     );
@@ -276,10 +272,7 @@ void main() {
   ) async {
     final tm = _buildTmExample().payload;
     final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
-    await tester.enterText(
-      find.byKey(const Key('tm-termination-input')),
-      'a',
-    );
+    await tester.enterText(find.byKey(const Key('tm-termination-input')), 'a');
 
     await tester.ensureVisible(find.text('Tape Trace'));
     await tester.tap(find.text('Tape Trace'));
@@ -304,10 +297,7 @@ void main() {
   testWidgets('cosmetic TM edits preserve the focused report', (tester) async {
     final tm = _buildTmExample().payload;
     final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
-    await tester.enterText(
-      find.byKey(const Key('tm-termination-input')),
-      'a',
-    );
+    await tester.enterText(find.byKey(const Key('tm-termination-input')), 'a');
     await tester.ensureVisible(find.text('Tape Trace'));
     await tester.tap(find.text('Tape Trace'));
     await _pumpUntilFound(tester, find.text('Deterministic execution'));
@@ -342,9 +332,9 @@ void main() {
       expect(find.byKey(const Key('tm-analysis-cancel')), findsOneWidget);
 
       final replacement = _buildTmExample().payload.copyWith(
-            id: 'replacement-tm',
-            name: 'Replacement TM',
-          );
+        id: 'replacement-tm',
+        name: 'Replacement TM',
+      );
       harness.coordinator.retarget(
         CanvasHighlightTarget(
           kind: AutomatonSurfaceKind.tm,
@@ -397,8 +387,9 @@ void main() {
     'tablet': Size(820, 1180),
     'desktop': Size(1440, 900),
   }.entries) {
-    testWidgets('keeps every TM analysis family available on ${viewport.key}',
-        (tester) async {
+    testWidgets('keeps every TM analysis family available on ${viewport.key}', (
+      tester,
+    ) async {
       await _pumpTmAlgorithmPanel(
         tester,
         initialTm: _buildTmExample().payload,
@@ -410,8 +401,9 @@ void main() {
     });
   }
 
-  testWidgets('phone controls tolerate 200 percent text scaling',
-      (tester) async {
+  testWidgets('phone controls tolerate 200 percent text scaling', (
+    tester,
+  ) async {
     await _pumpTmAlgorithmPanel(
       tester,
       initialTm: _buildTmExample().payload,
@@ -423,8 +415,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Portuguese keeps all typed analysis actions available',
-      (tester) async {
+  testWidgets('Portuguese keeps all typed analysis actions available', (
+    tester,
+  ) async {
     await _pumpTmAlgorithmPanel(
       tester,
       initialTm: _buildTmExample().payload,
@@ -449,9 +442,7 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.byType(TMAlgorithmPanel)),
     );
-    final grammarController = container.read(
-      unrestrictedGrammarEditorProvider,
-    );
+    final grammarController = container.read(unrestrictedGrammarEditorProvider);
     final previousNavigation = container.read(homeNavigationProvider);
 
     final action = find.text('TM to unrestricted grammar construction');
@@ -553,10 +544,7 @@ void main() {
         find.textContaining('Candidate cap reached'),
       );
 
-      expect(
-        find.text('Analysis focus: Language Explorer'),
-        findsOneWidget,
-      );
+      expect(find.text('Analysis focus: Language Explorer'), findsOneWidget);
       for (final outcome in const [
         'accepted',
         'rejected',
@@ -603,10 +591,7 @@ void main() {
       await tester.tap(find.text('Time Profile'));
       await _pumpUntilFound(tester, find.text('Sampled • incomplete'));
 
-      expect(
-        find.text('Analysis focus: Time Profile'),
-        findsOneWidget,
-      );
+      expect(find.text('Analysis focus: Time Profile'), findsOneWidget);
       expect(find.text('DTM transition-step profile'), findsOneWidget);
       expect(find.text('Transition-step budget per candidate'), findsOneWidget);
       expect(find.text('Configuration budget per candidate'), findsOneWidget);
@@ -620,15 +605,9 @@ void main() {
       );
       await tester.ensureVisible(find.text('Space Profile'));
       await tester.tap(find.text('Space Profile'));
-      await _pumpUntilFound(
-        tester,
-        find.text('Analysis focus: Space Profile'),
-      );
+      await _pumpUntilFound(tester, find.text('Analysis focus: Space Profile'));
 
-      expect(
-        find.text('Analysis focus: Space Profile'),
-        findsOneWidget,
-      );
+      expect(find.text('Analysis focus: Space Profile'), findsOneWidget);
       expect(find.text('Sampled'), findsOneWidget);
       expect(find.text('Incomplete'), findsOneWidget);
       expect(find.text('Visited span maximum'), findsNWidgets(2));
@@ -669,10 +648,13 @@ void main() {
     expect(find.text('Exhaustive • complete'), findsNWidgets(2));
     expect(find.text('Maximum transition-step witness'), findsNWidgets(2));
     expect(
-        find.text('Profiler device wall-clock (diagnostic)'), findsOneWidget);
+      find.text('Profiler device wall-clock (diagnostic)'),
+      findsOneWidget,
+    );
     expect(
       find.text(
-          'Observed bounded measurements only; no Big-O class is inferred.'),
+        'Observed bounded measurements only; no Big-O class is inferred.',
+      ),
       findsOneWidget,
     );
 
@@ -754,10 +736,7 @@ void main() {
       find.text('Observed configurations explored range'),
       findsNWidgets(2),
     );
-    expect(
-      find.byKey(const Key('tm-time-witness-1-depth')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('tm-time-witness-1-depth')), findsOneWidget);
     expect(
       find.byKey(const Key('tm-time-witness-1-configurations')),
       findsOneWidget,
@@ -840,10 +819,7 @@ void main() {
     final tm = _buildTmExample().payload;
     await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    await tester.enterText(
-      find.byKey(const Key('tm-termination-input')),
-      'a',
-    );
+    await tester.enterText(find.byKey(const Key('tm-termination-input')), 'a');
     await tester.ensureVisible(find.text('Termination and Cycles'));
     await tester.tap(find.text('Termination and Cycles'));
     await _pumpUntilFound(tester, find.textContaining('Accepted.'));
@@ -862,10 +838,7 @@ void main() {
       initialTm: _buildStationaryCycleMachine(),
     );
 
-    await tester.enterText(
-      find.byKey(const Key('tm-termination-input')),
-      'a',
-    );
+    await tester.enterText(find.byKey(const Key('tm-termination-input')), 'a');
     await tester.ensureVisible(find.text('Termination and Cycles'));
     await tester.tap(find.text('Termination and Cycles'));
     await _pumpUntilFound(tester, find.textContaining('Proven cycle.'));
@@ -882,10 +855,7 @@ void main() {
     final tm = _buildTmExample().payload;
     final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    await tester.enterText(
-      find.byKey(const Key('tm-termination-input')),
-      'a',
-    );
+    await tester.enterText(find.byKey(const Key('tm-termination-input')), 'a');
     await tester.ensureVisible(find.text('Tape Trace'));
     await tester.tap(find.text('Tape Trace'));
     await _pumpUntilFound(tester, find.text('Deterministic execution'));
@@ -909,51 +879,57 @@ void main() {
     expect(find.text('Step 1 • tm/state:accept'), findsOneWidget);
   });
 
-  testWidgets('language explorer exposes limits, counts, and selectable traces',
-      (
-    tester,
-  ) async {
-    final tm = _buildTmExample().payload;
-    await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+  testWidgets(
+    'language explorer exposes limits, counts, and selectable traces',
+    (tester) async {
+      final tm = _buildTmExample().payload;
+      await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    expect(find.byKey(const Key('tm-language-max-length')), findsOneWidget);
-    expect(find.byKey(const Key('tm-language-candidate-cap')), findsOneWidget);
-    expect(find.byKey(const Key('tm-language-max-steps')), findsOneWidget);
-    expect(
-      find.byKey(const Key('tm-language-max-configurations')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const Key('tm-language-timeout-ms')), findsOneWidget);
-    expect(
-      tester
-          .widget<Text>(find.byKey(const Key('tm-language-candidate-estimate')))
-          .data,
-      contains('Estimated candidates: 3'),
-    );
+      expect(find.byKey(const Key('tm-language-max-length')), findsOneWidget);
+      expect(
+        find.byKey(const Key('tm-language-candidate-cap')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('tm-language-max-steps')), findsOneWidget);
+      expect(
+        find.byKey(const Key('tm-language-max-configurations')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('tm-language-timeout-ms')), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(const Key('tm-language-candidate-estimate')),
+            )
+            .data,
+        contains('Estimated candidates: 3'),
+      );
 
-    await tester.ensureVisible(find.text('Language Explorer'));
-    await tester.tap(find.text('Language Explorer'));
-    await _pumpUntilFound(tester, find.text('Accepted: 2'));
+      await tester.ensureVisible(find.text('Language Explorer'));
+      await tester.tap(find.text('Language Explorer'));
+      await _pumpUntilFound(tester, find.text('Accepted: 2'));
 
-    expect(find.text('Halted rejected: 1'), findsOneWidget);
-    expect(find.text('Proven cycle: 0'), findsOneWidget);
-    expect(find.text('Inconclusive: 0'), findsOneWidget);
-    expect(find.text('ε'), findsOneWidget);
-    expect(find.text('Completeness'), findsOneWidget);
-    expect(find.text('Complete'), findsOneWidget);
-    expect(find.text('Input alphabet'), findsOneWidget);
-    expect(find.text('Candidate cap'), findsWidgets);
+      expect(find.text('Halted rejected: 1'), findsOneWidget);
+      expect(find.text('Proven cycle: 0'), findsOneWidget);
+      expect(find.text('Inconclusive: 0'), findsOneWidget);
+      expect(find.text('ε'), findsOneWidget);
+      expect(find.text('Completeness'), findsOneWidget);
+      expect(find.text('Complete'), findsOneWidget);
+      expect(find.text('Input alphabet'), findsOneWidget);
+      expect(find.text('Candidate cap'), findsWidgets);
 
-    await tester
-        .ensureVisible(find.byKey(const ValueKey('tm-language-word-a')));
-    await tester.tap(find.byKey(const ValueKey('tm-language-word-a')));
-    await _pumpUntilFound(tester, find.text('Selected word: a'));
-    await _pumpUntilFound(tester, find.byKey(const Key('tm-language-trace')));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('tm-language-word-a')),
+      );
+      await tester.tap(find.byKey(const ValueKey('tm-language-word-a')));
+      await _pumpUntilFound(tester, find.text('Selected word: a'));
+      await _pumpUntilFound(tester, find.byKey(const Key('tm-language-trace')));
 
-    expect(find.text('Transitions executed'), findsOneWidget);
-    expect(find.text('Configurations explored'), findsOneWidget);
-    expect(find.textContaining('Step 0'), findsOneWidget);
-  });
+      expect(find.text('Transitions executed'), findsOneWidget);
+      expect(find.text('Configurations explored'), findsOneWidget);
+      expect(find.textContaining('Step 0'), findsOneWidget);
+    },
+  );
 
   testWidgets('language exploration cancellation keeps a partial report', (
     tester,
@@ -985,37 +961,38 @@ void main() {
   });
 
   testWidgets(
-      'space profile exposes bounds, precomputed counts, and both witnesses',
-      (tester) async {
-    final tm = _buildTmExample().payload;
-    await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+    'space profile exposes bounds, precomputed counts, and both witnesses',
+    (tester) async {
+      final tm = _buildTmExample().payload;
+      await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    expect(find.byKey(const Key('tm-space-max-length')), findsOneWidget);
-    expect(find.byKey(const Key('tm-space-candidate-cap')), findsOneWidget);
-    expect(find.byKey(const Key('tm-space-max-steps')), findsOneWidget);
-    expect(
-      find.byKey(const Key('tm-space-max-configurations')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const Key('tm-space-timeout-ms')), findsOneWidget);
-    expect(
-      tester
-          .widget<Text>(find.byKey(const Key('tm-space-candidate-estimate')))
-          .data,
-      'Estimated candidates: 3; scheduled: 3',
-    );
+      expect(find.byKey(const Key('tm-space-max-length')), findsOneWidget);
+      expect(find.byKey(const Key('tm-space-candidate-cap')), findsOneWidget);
+      expect(find.byKey(const Key('tm-space-max-steps')), findsOneWidget);
+      expect(
+        find.byKey(const Key('tm-space-max-configurations')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('tm-space-timeout-ms')), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const Key('tm-space-candidate-estimate')))
+            .data,
+        'Estimated candidates: 3; scheduled: 3',
+      );
 
-    await tester.ensureVisible(find.text('Space Profile'));
-    await tester.tap(find.text('Space Profile'));
-    await _pumpUntilFound(tester, find.text('Input length 1'));
+      await tester.ensureVisible(find.text('Space Profile'));
+      await tester.tap(find.text('Space Profile'));
+      await _pumpUntilFound(tester, find.text('Input length 1'));
 
-    expect(find.text('Visited span maximum'), findsNWidgets(3));
-    expect(find.text('Maximum nonblank cells'), findsNWidgets(3));
-    expect(find.text('2 cell(s) • witness a'), findsOneWidget);
-    expect(find.text('1 cell(s) • witness a'), findsOneWidget);
-    expect(find.text('Configuration bound per input'), findsOneWidget);
-    expect(find.text('Tape alphabet'), findsNothing);
-  });
+      expect(find.text('Visited span maximum'), findsNWidgets(3));
+      expect(find.text('Maximum nonblank cells'), findsNWidgets(3));
+      expect(find.text('2 cell(s) • witness a'), findsOneWidget);
+      expect(find.text('1 cell(s) • witness a'), findsOneWidget);
+      expect(find.text('Configuration bound per input'), findsOneWidget);
+      expect(find.text('Tape alphabet'), findsNothing);
+    },
+  );
 
   testWidgets('space profile distinguishes sampled and incomplete rows', (
     tester,
@@ -1027,19 +1004,13 @@ void main() {
     );
     await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    await tester.enterText(
-      find.byKey(const Key('tm-space-max-length')),
-      '1',
-    );
+    await tester.enterText(find.byKey(const Key('tm-space-max-length')), '1');
     await tester.enterText(
       find.byKey(const Key('tm-space-candidate-cap')),
       '1',
     );
     await tester.pump();
-    expect(
-      find.text('Estimated candidates: 3; scheduled: 2'),
-      findsOneWidget,
-    );
+    expect(find.text('Estimated candidates: 3; scheduled: 2'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Space Profile'));
     await tester.tap(find.text('Space Profile'));
@@ -1055,14 +1026,8 @@ void main() {
   testWidgets('space profile labels NTM aggregation and configuration bound', (
     tester,
   ) async {
-    await _pumpTmAlgorithmPanel(
-      tester,
-      initialTm: _buildNondeterministicTm(),
-    );
-    await tester.enterText(
-      find.byKey(const Key('tm-space-max-length')),
-      '0',
-    );
+    await _pumpTmAlgorithmPanel(tester, initialTm: _buildNondeterministicTm());
+    await tester.enterText(find.byKey(const Key('tm-space-max-length')), '0');
 
     await tester.ensureVisible(find.text('Space Profile'));
     await tester.tap(find.text('Space Profile'));
@@ -1083,8 +1048,9 @@ void main() {
   ) async {
     final harness = await _pumpTmAlgorithmPanel(tester);
 
-    final exampleLabel =
-        AppLocalizationsEn().localizedExampleName('MT - a^n b^n');
+    final exampleLabel = AppLocalizationsEn().localizedExampleName(
+      'MT - a^n b^n',
+    );
     expect(find.text(exampleLabel), findsOneWidget);
 
     await tester.tap(find.text(exampleLabel));
@@ -1101,10 +1067,7 @@ void main() {
     tester,
   ) async {
     final tm = _buildTmExample().payload;
-    final harness = await _pumpTmAlgorithmPanel(
-      tester,
-      initialTm: tm,
-    );
+    final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
     await tester.enterText(
       find.byKey(const Key('tm-reachability-inputs')),
@@ -1123,8 +1086,9 @@ void main() {
     expect(harness.output.events.last!.errorStateIds, isEmpty);
     expect(harness.output.events.last!.stateIds, isNot(contains('q0')));
 
-    final witnessTile =
-        find.byKey(const Key('tm-reachability-witness-tm/state:accept'));
+    final witnessTile = find.byKey(
+      const Key('tm-reachability-witness-tm/state:accept'),
+    );
     await tester.ensureVisible(witnessTile);
     await tester.tap(witnessTile);
     await tester.pumpAndSettle();
@@ -1132,64 +1096,62 @@ void main() {
   });
 
   testWidgets(
-      'reachability distinguishes bounded absence from structural disconnection',
-      (tester) async {
-    final start = automaton_state.State(
-      id: 'start-id',
-      label: 'start',
-      position: Vector2.zero(),
-      isInitial: true,
-    );
-    final guarded = automaton_state.State(
-      id: 'guarded-id',
-      label: 'guarded',
-      position: Vector2(100, 0),
-    );
-    final disconnected = automaton_state.State(
-      id: 'disconnected-id',
-      label: 'disconnected',
-      position: Vector2(200, 0),
-    );
-    final tm = TM(
-      id: 'reachability-colors',
-      name: 'Reachability colors',
-      states: {start, guarded, disconnected},
-      transitions: {
-        TMTransition(
-          id: 'guarded-edge',
-          fromState: start,
-          toState: guarded,
-          label: 'a/a,S',
-          readSymbol: 'a',
-          writeSymbol: 'a',
-          direction: TapeDirection.stay,
-        ),
-      },
-      alphabet: const {'a'},
-      initialState: start,
-      acceptingStates: const {},
-      created: DateTime(2026),
-      modified: DateTime(2026),
-      bounds: const math.Rectangle(0, 0, 400, 300),
-      tapeAlphabet: const {'a', 'B'},
-      blankSymbol: 'B',
-    );
-    final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
+    'reachability distinguishes bounded absence from structural disconnection',
+    (tester) async {
+      final start = automaton_state.State(
+        id: 'start-id',
+        label: 'start',
+        position: Vector2.zero(),
+        isInitial: true,
+      );
+      final guarded = automaton_state.State(
+        id: 'guarded-id',
+        label: 'guarded',
+        position: Vector2(100, 0),
+      );
+      final disconnected = automaton_state.State(
+        id: 'disconnected-id',
+        label: 'disconnected',
+        position: Vector2(200, 0),
+      );
+      final tm = TM(
+        id: 'reachability-colors',
+        name: 'Reachability colors',
+        states: {start, guarded, disconnected},
+        transitions: {
+          TMTransition(
+            id: 'guarded-edge',
+            fromState: start,
+            toState: guarded,
+            label: 'a/a,S',
+            readSymbol: 'a',
+            writeSymbol: 'a',
+            direction: TapeDirection.stay,
+          ),
+        },
+        alphabet: const {'a'},
+        initialState: start,
+        acceptingStates: const {},
+        created: DateTime(2026),
+        modified: DateTime(2026),
+        bounds: const math.Rectangle(0, 0, 400, 300),
+        tapeAlphabet: const {'a', 'B'},
+        blankSymbol: 'B',
+      );
+      final harness = await _pumpTmAlgorithmPanel(tester, initialTm: tm);
 
-    await tester.ensureVisible(find.text('Reachability'));
-    await tester.tap(find.text('Reachability'));
-    await _pumpUntilFound(tester, find.text('Complete for this input scope'));
+      await tester.ensureVisible(find.text('Reachability'));
+      await tester.tap(find.text('Reachability'));
+      await _pumpUntilFound(tester, find.text('Complete for this input scope'));
 
-    final highlight = harness.output.events.last!;
-    expect(highlight.stateIds, {'start-id'});
-    expect(highlight.warningStateIds, {'guarded-id'});
-    expect(highlight.errorStateIds, {'disconnected-id'});
-    expect(
-      find.text('Not observed for this input scope'),
-      findsOneWidget,
-    );
-    expect(find.text('Structurally unreachable (exact)'), findsOneWidget);
-  });
+      final highlight = harness.output.events.last!;
+      expect(highlight.stateIds, {'start-id'});
+      expect(highlight.warningStateIds, {'guarded-id'});
+      expect(highlight.errorStateIds, {'disconnected-id'});
+      expect(find.text('Not observed for this input scope'), findsOneWidget);
+      expect(find.text('Structurally unreachable (exact)'), findsOneWidget);
+    },
+  );
 }
 
 TM _buildMovingMachine() {

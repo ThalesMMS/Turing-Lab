@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:turing_lab/core/algorithms/grammar_parser.dart';
+import 'package:turing_lab/core/algorithms/grammar/grammar_parser.dart';
 import 'package:turing_lab/core/models/grammar.dart';
 import 'package:turing_lab/core/models/production.dart';
 
@@ -61,16 +61,13 @@ void main() {
           .map((capability) => capability.strategy)
           .toSet();
 
-      expect(
-        available,
-        {
-          ParsingStrategyHint.auto,
-          ParsingStrategyHint.bruteForce,
-          ParsingStrategyHint.cyk,
-          ParsingStrategyHint.ll,
-          ParsingStrategyHint.lr,
-        },
-      );
+      expect(available, {
+        ParsingStrategyHint.auto,
+        ParsingStrategyHint.bruteForce,
+        ParsingStrategyHint.cyk,
+        ParsingStrategyHint.ll,
+        ParsingStrategyHint.lr,
+      });
       expect(
         GrammarParser.capabilityFor(ParsingStrategyHint.ll).unavailableReason,
         isNull,

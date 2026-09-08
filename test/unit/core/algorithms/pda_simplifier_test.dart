@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-import 'package:turing_lab/core/algorithms/pda_simplifier.dart';
-import 'package:turing_lab/core/algorithms/pda_simplification_messages.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simplifier.dart';
+import 'package:turing_lab/core/algorithms/pda/pda_simplification_messages.dart';
 import 'package:turing_lab/core/models/pda.dart';
 import 'package:turing_lab/core/models/pda_acceptance_mode.dart';
 import 'package:turing_lab/core/models/pda_simplification.dart';

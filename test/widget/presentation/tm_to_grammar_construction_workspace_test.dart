@@ -5,10 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turing_lab/core/algorithms/tm_to_unrestricted_grammar/tm_to_unrestricted_grammar.dart';
 import 'package:turing_lab/core/models/state.dart' as automaton_state;
 import 'package:turing_lab/core/models/tm.dart';
+import 'package:turing_lab/core/models/tm_acceptance.dart';
 import 'package:turing_lab/core/models/tm_transition.dart';
 import 'package:turing_lab/l10n/app_localizations.dart';
 import 'package:turing_lab/presentation/localization/locale_value_formatter.dart';
-import 'package:turing_lab/presentation/widgets/tm_to_grammar_construction_workspace.dart';
+import 'package:turing_lab/presentation/widgets/conversions/tm_to_grammar_construction_workspace.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 // feature-localization-contract: advanced-tm-workspaces
@@ -45,12 +46,43 @@ void main() {
     expect(opened!.sourceRevision, 4);
   });
 
+  testWidgets('reduces a multi-tape machine and notes it before conversion', (
+    tester,
+  ) async {
+    TMToGrammarConstructionReport? opened;
+    await _pumpWorkspace(
+      tester,
+      tm: _twoTapeAcceptor(),
+      onOpen: (report) async => opened = report,
+    );
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('tm-grammar-production-list')),
+    );
+
+    expect(
+      find.byKey(const ValueKey('tm-grammar-reduction-note')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('2-tape machine was reduced'), findsOneWidget);
+    expect(find.text('Source TM'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('tm-grammar-open')));
+    await tester.tap(find.byKey(const ValueKey('tm-grammar-open')));
+    await tester.pump();
+    expect(opened?.reduction, isNotNull);
+    expect(opened?.sourceTmId, 'tm-workspace');
+  });
+
   testWidgets('blocks an unsupported multi-tape machine with diagnostics', (
     tester,
   ) async {
     await _pumpWorkspace(
       tester,
-      tm: _immediateAcceptor().copyWith(tapeCount: 2),
+      tm: _twoTapeAcceptor().copyWith(
+        acceptancePolicy: TMAcceptancePolicy.halting,
+      ),
     );
     await _pumpUntilFound(
       tester,
@@ -63,7 +95,10 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.textContaining('Multi-tape conversion'), findsOneWidget);
+    expect(
+      find.textContaining('requires final-state acceptance'),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('tm-grammar-open')), findsNothing);
   });
 
@@ -251,6 +286,32 @@ TM _immediateAcceptor() {
     modified: DateTime.utc(2026),
     bounds: const math.Rectangle(0, 0, 800, 600),
     tapeAlphabet: const {'token', 'Ω', 'B'},
+  );
+}
+
+/// Two tapes over a one-letter alphabet keep the reduced machine, and the
+/// grammar built from it, well inside the construction budgets.
+TM _twoTapeAcceptor() {
+  final initial = automaton_state.State(
+    id: 'q0',
+    label: 'q0',
+    position: Vector2.zero(),
+    isInitial: true,
+    isAccepting: true,
+  );
+  return TM(
+    id: 'tm-workspace',
+    name: 'Two-tape TM',
+    states: {initial},
+    transitions: const {},
+    alphabet: const {'a'},
+    initialState: initial,
+    acceptingStates: {initial},
+    created: DateTime.utc(2026),
+    modified: DateTime.utc(2026),
+    bounds: const math.Rectangle(0, 0, 800, 600),
+    tapeAlphabet: const {'a', 'B'},
+    tapeCount: 2,
   );
 }
 

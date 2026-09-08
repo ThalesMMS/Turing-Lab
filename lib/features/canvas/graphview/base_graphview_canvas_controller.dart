@@ -80,10 +80,7 @@ mixin SharedGraphViewStateController<TNotifier, TSnapshot>
   }
 
   @protected
-  void updateDomainStateLabel({
-    required String id,
-    required String label,
-  }) {
+  void updateDomainStateLabel({required String id, required String label}) {
     stateNotifierAdapter.updateStateLabel(id: id, label: label);
   }
 
@@ -287,8 +284,8 @@ final class CallbackGraphViewHistoryCompanion
   const CallbackGraphViewHistoryCompanion({
     required VoidCallback onUndo,
     required VoidCallback onRedo,
-  })  : _onUndo = onUndo,
-        _onRedo = onRedo;
+  }) : _onUndo = onUndo,
+       _onRedo = onRedo;
 
   final VoidCallback _onUndo;
   final VoidCallback _onRedo;
@@ -302,7 +299,8 @@ final class CallbackGraphViewHistoryCompanion
 
 /// Base controller that coordinates GraphView interactions with domain notifiers.
 abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
-    extends GraphViewHighlightController with GraphViewViewportHighlightMixin {
+    extends GraphViewHighlightController
+    with GraphViewViewportHighlightMixin {
   static const int kDefaultHistoryLimit = 20;
   static const int kDefaultCacheEvictionThreshold = 250;
   static final EdgeRenderer _invisibleNodeAnchorRenderer =
@@ -317,23 +315,24 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     TransformationController? transformationController,
     int historyLimit = kDefaultHistoryLimit,
     int cacheEvictionThreshold = kDefaultCacheEvictionThreshold,
-  })  : assert(historyLimit > 0),
-        assert(cacheEvictionThreshold > 0),
-        assert(
-          viewController == null || transformationController == null,
-          'viewController and transformationController cannot both be provided.',
-        ),
-        historyLimit = historyLimit,
-        cacheEvictionThreshold = cacheEvictionThreshold,
-        graph = graph ?? Graph(),
-        graphController = viewController ??
-            GraphViewController(
-              transformationController:
-                  transformationController ?? TransformationController(),
-              ownsTransformationController: transformationController == null,
-            ),
-        _ownsTransformationController =
-            viewController == null && transformationController == null;
+  }) : assert(historyLimit > 0),
+       assert(cacheEvictionThreshold > 0),
+       assert(
+         viewController == null || transformationController == null,
+         'viewController and transformationController cannot both be provided.',
+       ),
+       historyLimit = historyLimit,
+       cacheEvictionThreshold = cacheEvictionThreshold,
+       graph = graph ?? Graph(),
+       graphController =
+           viewController ??
+           GraphViewController(
+             transformationController:
+                 transformationController ?? TransformationController(),
+             ownsTransformationController: transformationController == null,
+           ),
+       _ownsTransformationController =
+           viewController == null && transformationController == null;
 
   @protected
   final TNotifier notifier;
@@ -389,8 +388,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     }
     final left = _viewportInsets.left.clamp(0.0, size.width).toDouble();
     final top = _viewportInsets.top.clamp(0.0, size.height).toDouble();
-    final right =
-        (size.width - _viewportInsets.right).clamp(left, size.width).toDouble();
+    final right = (size.width - _viewportInsets.right)
+        .clamp(left, size.width)
+        .toDouble();
     final bottom = (size.height - _viewportInsets.bottom)
         .clamp(top, size.height)
         .toDouble();
@@ -847,7 +847,8 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
   void synchronizeGraph(TSnapshot? data, {bool fromMutation = false}) {
     final snapshot = toSnapshot(data);
     final incomingSignature = _snapshotContentSignature(snapshot);
-    final isDomainEcho = !fromMutation &&
+    final isDomainEcho =
+        !fromMutation &&
         !_isApplyingInternalSnapshot &&
         incomingSignature == _pendingDomainEchoSignature;
 
@@ -878,7 +879,8 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       'Synchronizing graph (incomingNodes=${incomingNodes.length}, incomingEdges=${incomingEdges.length})',
     );
 
-    final shouldEvictCaches = incomingNodes.length > cacheEvictionThreshold ||
+    final shouldEvictCaches =
+        incomingNodes.length > cacheEvictionThreshold ||
         incomingEdges.length > cacheEvictionThreshold;
     if (shouldEvictCaches) {
       _logGraphViewBase(
@@ -890,8 +892,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     final previousHighlight = SimulationHighlight(
       stateIds: Set<String>.from(highlightNotifier.value.stateIds),
       transitionIds: Set<String>.from(highlightNotifier.value.transitionIds),
-      warningStateIds:
-          Set<String>.from(highlightNotifier.value.warningStateIds),
+      warningStateIds: Set<String>.from(
+        highlightNotifier.value.warningStateIds,
+      ),
       errorStateIds: Set<String>.from(highlightNotifier.value.errorStateIds),
     );
 
@@ -901,8 +904,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     var edgesDirty = false;
 
     try {
-      final removedNodeIds =
-          _nodes.keys.where((id) => !incomingNodes.containsKey(id)).toList();
+      final removedNodeIds = _nodes.keys
+          .where((id) => !incomingNodes.containsKey(id))
+          .toList();
       for (final nodeId in removedNodeIds) {
         _nodes.remove(nodeId);
         final anchorEdge = _graphNodeAnchors.remove(nodeId);
@@ -932,8 +936,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
         }
       }
 
-      final removedEdgeIds =
-          _edges.keys.where((id) => !incomingEdges.containsKey(id)).toList();
+      final removedEdgeIds = _edges.keys
+          .where((id) => !incomingEdges.containsKey(id))
+          .toList();
       for (final edgeId in removedEdgeIds) {
         _edges.remove(edgeId);
         final edgeInstance = _graphEdges.remove(edgeId);
@@ -959,9 +964,11 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
           continue;
         }
 
-        final hasPositionChanged = existingNode.x != incomingNode.x ||
+        final hasPositionChanged =
+            existingNode.x != incomingNode.x ||
             existingNode.y != incomingNode.y;
-        final hasMetadataChanged = existingNode.label != incomingNode.label ||
+        final hasMetadataChanged =
+            existingNode.label != incomingNode.label ||
             existingNode.isInitial != incomingNode.isInitial ||
             existingNode.isAccepting != incomingNode.isAccepting;
 
@@ -997,7 +1004,7 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
         if (existingEdge != incomingEdge) {
           final endpointsChanged =
               existingEdge.fromStateId != incomingEdge.fromStateId ||
-                  existingEdge.toStateId != incomingEdge.toStateId;
+              existingEdge.toStateId != incomingEdge.toStateId;
 
           if (endpointsChanged) {
             graph.removeEdge(edgeInstance);
@@ -1010,8 +1017,11 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
               continue;
             }
 
-            final recreatedEdge =
-                buildGraphEdge(incomingEdge, fromNode, toNode);
+            final recreatedEdge = buildGraphEdge(
+              incomingEdge,
+              fromNode,
+              toNode,
+            );
             _graphEdges[edgeId] = recreatedEdge;
             graph.addEdgeS(recreatedEdge);
           } else {
@@ -1109,8 +1119,9 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
       final highlight = SimulationHighlight(
         stateIds: Set<String>.from(highlightNotifier.value.stateIds),
         transitionIds: Set<String>.from(highlightNotifier.value.transitionIds),
-        warningStateIds:
-            Set<String>.from(highlightNotifier.value.warningStateIds),
+        warningStateIds: Set<String>.from(
+          highlightNotifier.value.warningStateIds,
+        ),
         errorStateIds: Set<String>.from(highlightNotifier.value.errorStateIds),
       );
       return _GraphHistoryEntry(
@@ -1271,14 +1282,11 @@ abstract class BaseGraphViewCanvasController<TNotifier, TSnapshot>
     return anchorsDirty;
   }
 
-  void _syncGraphEdgeControlPoint(
-    Edge target,
-    GraphViewCanvasEdge edge,
-  ) {
+  void _syncGraphEdgeControlPoint(Edge target, GraphViewCanvasEdge edge) {
     final controlPoint =
         edge.controlPointX != null && edge.controlPointY != null
-            ? Offset(edge.controlPointX!, edge.controlPointY!)
-            : null;
+        ? Offset(edge.controlPointX!, edge.controlPointY!)
+        : null;
     setTuringLabEdgeControlPoint(target, controlPoint);
   }
 

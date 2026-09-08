@@ -3,8 +3,8 @@
 //  Turing Lab
 //
 //  Shared workspace shell. Compact viewports keep the canvas plus a movable
-//  floating panel; wide viewports hand the canvas the whole pane and park
-//  every side panel behind the collapsible dock rail.
+//  floating inspector. Wide viewports keep that inspector in a separate
+//  canvas corner and park the tool panels behind the collapsible dock rail.
 //
 //  Thales Matheus Mendonça Santos - October 2025
 //
@@ -59,6 +59,8 @@ class AutomatonWorkspaceScaffold extends StatefulWidget {
   /// Workspace-specific dock panels appended after the shared ones.
   final List<WorkspaceDockPanel> extraPanels;
   final WorkspaceDockController? dockController;
+
+  /// Floating inspector: top-right on compact screens, bottom-left on wide ones.
   final MovableCanvasPanelBuilder? mobileFloatingPanelBuilder;
 
   /// Optional localized display overrides for the semantic panel slots.
@@ -171,7 +173,18 @@ class _AutomatonWorkspaceScaffoldState
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
-      child: widget.canvasWithToolbar(isMobile: false),
+      child: Stack(
+        children: [
+          Positioned.fill(child: widget.canvasWithToolbar(isMobile: false)),
+          if (widget.mobileFloatingPanelBuilder != null)
+            Positioned.fill(
+              child: MovableCanvasPanelHost(
+                anchor: Alignment.bottomLeft,
+                builder: widget.mobileFloatingPanelBuilder!,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
