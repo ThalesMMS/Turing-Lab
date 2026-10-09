@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and generate the source-backed JFLAP parity matrix."""
+"""Validate and generate the JFLAP parity matrix inventory."""
 
 from __future__ import annotations
 
@@ -141,14 +141,22 @@ def validate_evidence(
     errors: list[str],
     *,
     required: bool,
+    check_files: bool = True,
 ) -> list[str]:
     evidence = string_list(values, label, errors)
     if required and not evidence:
         errors.append(f"{label} must not be empty")
     for item in evidence:
         path_text, separator, line_text = item.rpartition(":")
-        if not separator or not line_text.isdigit() or int(line_text) <= 0:
+        if (
+            not path_text.strip()
+            or not separator
+            or not line_text.isdigit()
+            or int(line_text) <= 0
+        ):
             errors.append(f"{label}: evidence must end in a positive line number: {item}")
+            continue
+        if not check_files:
             continue
         target = (REPO_ROOT / path_text).resolve()
         if not target.is_file():
@@ -158,14 +166,8 @@ def validate_evidence(
         try:
             line_count = EVIDENCE_LINE_COUNTS.get(target)
             if line_count is None:
-                line_count = sum(
-                    1
-                    for _ in target.open(
-                        "r",
-                        encoding="utf-8",
-                        errors="replace",
-                    )
-                )
+                with target.open("r", encoding="utf-8", errors="replace") as source:
+                    line_count = sum(1 for _ in source)
                 EVIDENCE_LINE_COUNTS[target] = line_count
         except OSError as error:
             errors.append(f"{label}: could not read evidence path {path_text}: {error}")
@@ -182,6 +184,8 @@ def validate_rows(
     metadata: dict[str, Any],
     rows: list[dict[str, Any]],
     roadmap: dict[str, Any],
+    *,
+    verify_jflap_sources: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     seen_ids: set[str] = set()
@@ -219,6 +223,7 @@ def validate_rows(
                 f"{label}.jflap.evidence",
                 errors,
                 required=True,
+                check_files=verify_jflap_sources,
             )
 
         turing = row.get("turingLab")
@@ -410,7 +415,7 @@ def generated_markdown(
         "# JFLAP 7.1 parity matrix",
         "",
         f"- Baseline date: `{baseline['date']}`",
-        f"- JFLAP source: `{baseline['jflapVersion']}` with `{baseline['jflapSourceFiles']}` files and SHA-256 `{baseline['jflapSourceSha256']}`",
+        f"- Recorded JFLAP reference: `{baseline['jflapVersion']}` with `{baseline['jflapSourceFiles']}` files and SHA-256 `{baseline['jflapSourceSha256']}`",
         f"- Turing Lab baseline commit: `{baseline['turingLabCommit']}`",
         f"- Capability rows: `{len(rows)}`",
         "",
@@ -503,11 +508,13 @@ def generated_markdown(
             "## Validation",
             "",
             "```bash",
-            "python3 tool/check_jflap_parity_matrix.py --verify-jflap --github",
+            "python3 tool/check_jflap_parity_matrix.py",
             "flutter test test/unit/data/jflap_parity_registry_coverage_test.dart",
             "```",
             "",
-            "The first command validates row schemas, evidence paths, required JFLAP document/action coverage, source fingerprint, generated Markdown drift, and open ownership for planned gaps. The Flutter test compares the matrix with the live formal-system registry.",
+            "The first command validates row schemas, JFLAP citation syntax, local Turing Lab evidence paths and lines, required document/action coverage, planned issue ownership in the roadmap, and generated Markdown drift. The Flutter test compares the matrix with the live formal-system registry. Normal validation requires only this repository and does not read external JFLAP sources.",
+            "",
+            "For an optional source audit, provide the recorded external JFLAP snapshot at `metadata.baseline.jflapSourceRoot` and add `--verify-jflap` to check its cited files, lines, and fingerprint. Add `--github` only to check open ownership for planned gaps against GitHub.",
             "",
         ]
     )
@@ -517,7 +524,7 @@ def generated_markdown(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true", help="regenerate the Markdown matrix")
-    parser.add_argument("--verify-jflap", action="store_true", help="verify the adjacent JFLAP source fingerprint")
+    parser.add_argument("--verify-jflap", action="store_true", help="also verify external JFLAP source files, lines, and fingerprint")
     parser.add_argument("--github", action="store_true", help="verify that planned owning issues are open")
     args = parser.parse_args()
 
@@ -527,7 +534,9 @@ def main() -> int:
     if not isinstance(roadmap, dict):
         roadmap = {}
     if metadata:
-        errors.extend(validate_rows(metadata, rows, roadmap))
+        errors.extend(
+            validate_rows(metadata, rows, roadmap, verify_jflap_sources=args.verify_jflap)
+        )
         if args.verify_jflap:
             errors.extend(verify_baseline(metadata))
         if args.github:

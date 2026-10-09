@@ -1143,6 +1143,12 @@ class AppLocalizationsPt extends AppLocalizations {
       'Deixe em branco para ε; os espaços são preservados';
 
   @override
+  String get grammarSimulationInputHint => 'Deixe em branco para ε';
+
+  @override
+  String get grammarIncludeSpacesInInput => 'Incluir espaços na entrada';
+
+  @override
   String get simulationInputString => 'Cadeia de entrada da simulação';
 
   @override

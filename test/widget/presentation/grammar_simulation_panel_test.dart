@@ -289,6 +289,7 @@ void main() {
     await tester.tap(find.text('Canonical LR(1)').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'a');
+    await tester.ensureVisible(find.text('Parse String'));
     await tester.tap(find.text('Parse String'));
     for (var attempt = 0; attempt < 100; attempt++) {
       await tester.runAsync(
@@ -529,6 +530,10 @@ void main() {
         find.byKey(const ValueKey('grammar-parser-input')),
         'id + id',
       );
+      await tester.tap(
+        find.byKey(const ValueKey('grammar-include-spaces-in-input')),
+      );
+      await tester.pump();
       await tester.tap(find.text('Parse String'));
       for (var attempt = 0; attempt < 100; attempt++) {
         await tester.runAsync(
@@ -639,6 +644,7 @@ void main() {
     await tester.tap(find.text('LL(1)').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'a');
+    await tester.ensureVisible(find.text('Parse String'));
     await tester.tap(find.text('Parse String'));
     for (var attempt = 0; attempt < 100; attempt++) {
       await tester.runAsync(
@@ -665,10 +671,7 @@ void main() {
       ),
     );
 
-    expect(
-      find.text('Leave blank for ε; whitespace is preserved'),
-      findsOneWidget,
-    );
+    expect(find.text('Leave blank for ε'), findsOneWidget);
     await tester.tap(find.text('Parse String'));
     for (var attempt = 0; attempt < 100; attempt++) {
       await tester.runAsync(

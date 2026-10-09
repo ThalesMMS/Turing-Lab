@@ -352,6 +352,12 @@ During the ongoing migration, algorithm parity is validated against the stable
 upstream source links listed below. These upstream projects are used as
 validation checkpoints while the Flutter core is rebuilt.
 
+Normal parity-matrix QA validates the inventory and local Turing Lab evidence
+without downloading or importing JFLAP sources. The original JFLAP citations
+remain reference anchors. `python3 tool/check_jflap_parity_matrix.py --verify-jflap`
+is an optional audit requiring the recorded external source snapshot; see
+[`docs/JFLAP_PARITY_MATRIX.md`](docs/JFLAP_PARITY_MATRIX.md).
+
 ### Validation Approach
 Each algorithm modification is cross-validated against the recorded upstream reference anchors and the local automated suites to ensure correctness and maintainability.
 

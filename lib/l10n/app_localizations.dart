@@ -2101,6 +2101,18 @@ abstract class AppLocalizations {
   /// **'Leave blank for ε; whitespace is preserved'**
   String get simulationInputHint;
 
+  /// Grammar input hint; the separate checkbox controls whether spaces are included.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for ε'**
+  String get grammarSimulationInputHint;
+
+  /// Grammar input checkbox, unchecked by default. When checked, ordinary U+0020 spaces are preserved in parsing and user-controlled derivation; otherwise they are removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Include spaces in input'**
+  String get grammarIncludeSpacesInInput;
+
   /// No description provided for @simulationInputString.
   ///
   /// In en, this message translates to:

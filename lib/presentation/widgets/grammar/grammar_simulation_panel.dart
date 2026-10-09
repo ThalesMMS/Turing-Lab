@@ -83,6 +83,7 @@ class _GrammarSimulationPanelState
       AlgorithmStepRendererRegistry.withDefaults();
 
   bool _isParsing = false;
+  bool _includeSpacesInInput = false;
   GrammarParseReport? _parseReport;
   ParsingStrategyHint _selectedAlgorithm = ParsingStrategyHint.cyk;
 
@@ -333,13 +334,32 @@ class _GrammarSimulationPanelState
             controller: _inputController,
             decoration: InputDecoration(
               labelText: l10n.inputString,
-              hintText: l10n.simulationInputHint,
+              hintText: l10n.grammarSimulationInputHint,
               border: const OutlineInputBorder(),
             ),
             onChanged: (_) => _invalidateStaleResult(
               manualInvalidation: UserDerivationDiagnosticCode.targetChanged,
             ),
             onSubmitted: (_) => _parseString(),
+          ),
+          Material(
+            type: MaterialType.transparency,
+            child: CheckboxListTile(
+              key: const ValueKey('grammar-include-spaces-in-input'),
+              value: _includeSpacesInInput,
+              title: Text(l10n.grammarIncludeSpacesInInput),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              dense: true,
+              onChanged: (value) {
+                if (value == null) return;
+                _invalidateStaleResult(
+                  manualInvalidation:
+                      UserDerivationDiagnosticCode.targetChanged,
+                );
+                setState(() => _includeSpacesInInput = value);
+              },
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -637,7 +657,7 @@ class _GrammarSimulationPanelState
   }
 
   Future<void> _parseString() async {
-    final inputString = _inputController.text;
+    final inputString = _simulationInput;
     final grammarState = ref.read(grammarProvider);
     final grammar = _buildCurrentGrammar();
     final requestSerial = ++_parseRequestSerial;
@@ -859,10 +879,14 @@ class _GrammarSimulationPanelState
     return ref.read(grammarProvider.notifier).buildGrammar();
   }
 
+  String get _simulationInput => _includeSpacesInInput
+      ? _inputController.text
+      : _inputController.text.replaceAll(' ', '');
+
   bool _isCurrentRequest(int serial, GrammarState state, String inputString) =>
       serial == _parseRequestSerial &&
       identical(ref.read(grammarProvider), state) &&
-      _inputController.text == inputString;
+      _simulationInput == inputString;
 
   void _invalidateStaleResult({
     UserDerivationDiagnosticCode? manualInvalidation,
@@ -896,7 +920,7 @@ class _GrammarSimulationPanelState
     final grammar = _buildCurrentGrammar();
     final target = LegacyContextFreeGrammarAdapter.tokenizeTarget(
       grammar,
-      _inputController.text,
+      _simulationInput,
     );
     if (target.isFailure) {
       _showError(

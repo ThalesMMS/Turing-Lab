@@ -29,7 +29,6 @@ import '../../core/annotations/annotations.dart';
 import '../../core/automaton_fragments/automaton_fragments.dart';
 import '../../core/formal_systems/formal_system_ids.dart';
 import '../../core/graph_layout/graph_layout.dart';
-import '../../core/models/automaton.dart';
 import '../../core/models/simulation_highlight.dart';
 import '../../core/services/simulation_highlight_service.dart';
 import '../../core/models/tm_transition.dart' show TapeDirection;
@@ -372,9 +371,6 @@ class _AutomatonGraphViewCanvasState
       final documentIdChanged =
           GraphLayoutDocumentAdapter.documentId(oldWidget.automaton) !=
           GraphLayoutDocumentAdapter.documentId(widget.automaton);
-      final shouldRefitViewport =
-          documentIdChanged ||
-          _hasStructuralGraphChange(oldWidget.automaton, widget.automaton);
       if (documentIdChanged) {
         _savedLayoutPositions = null;
       }
@@ -383,7 +379,9 @@ class _AutomatonGraphViewCanvasState
         if (!mounted) {
           return;
         }
-        if (shouldRefitViewport && _controller.graph.nodes.isNotEmpty) {
+        // Editing the current document must preserve the user's pan and zoom.
+        // Only switching documents requests an automatic fit.
+        if (documentIdChanged && _controller.graph.nodes.isNotEmpty) {
           _controller.fitToContent();
         }
         _refreshTransitionOverlayFromGraph();
@@ -395,28 +393,6 @@ class _AutomatonGraphViewCanvasState
       _applyCustomization(widget.customization);
       _synchronizeContextMenuOwnership();
     }
-  }
-
-  bool _hasStructuralGraphChange(Object? previous, Object? next) {
-    if (previous is! Automaton || next is! Automaton) {
-      return false;
-    }
-
-    final previousStateIds = previous.states.map((state) => state.id).toSet();
-    final nextStateIds = next.states.map((state) => state.id).toSet();
-    if (previousStateIds.length != nextStateIds.length ||
-        !previousStateIds.containsAll(nextStateIds)) {
-      return true;
-    }
-
-    final previousTransitionIds = previous.transitions
-        .map((transition) => transition.id)
-        .toSet();
-    final nextTransitionIds = next.transitions
-        .map((transition) => transition.id)
-        .toSet();
-    return previousTransitionIds.length != nextTransitionIds.length ||
-        !previousTransitionIds.containsAll(nextTransitionIds);
   }
 
   void _handleContextMenuPointerEnter(PointerEnterEvent event) {

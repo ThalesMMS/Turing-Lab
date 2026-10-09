@@ -1129,6 +1129,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Leave blank for ε; whitespace is preserved';
 
   @override
+  String get grammarSimulationInputHint => 'Leave blank for ε';
+
+  @override
+  String get grammarIncludeSpacesInInput => 'Include spaces in input';
+
+  @override
   String get simulationInputString => 'Simulation input string';
 
   @override

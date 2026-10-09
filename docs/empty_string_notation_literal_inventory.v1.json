@@ -6,7 +6,7 @@
     "lib/l10n/app_*.arb (generated localization files excluded)"
   ],
   "glyphTotals": {
-    "ε": 215,
+    "ε": 217,
     "ϵ": 2,
     "λ": 17
   },
@@ -214,6 +214,14 @@
     {
       "path": "lib/l10n/app_en.arb",
       "text": "\"faToRegexAddInitialStateExplanation\": \"Adding the new initial state {newState}, with an ε-transition to the original initial state {oldState}. This leaves one initial state with no incoming transitions.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_en.arb",
+      "text": "\"grammarSimulationInputHint\": \"Leave blank for ε\",",
       "glyphs": {
         "ε": 1
       },
@@ -871,6 +879,14 @@
     {
       "path": "lib/l10n/app_pt.arb",
       "text": "\"faToRegexAddInitialStateExplanation\": \"Adicionando o novo estado inicial {newState}, com uma transição ε para o estado inicial original {oldState}. Assim, resta um único estado inicial sem transições de entrada.\",",
+      "glyphs": {
+        "ε": 1
+      },
+      "reason": "reviewed canonical presentation source; the owning widget formats display output"
+    },
+    {
+      "path": "lib/l10n/app_pt.arb",
+      "text": "\"grammarSimulationInputHint\": \"Deixe em branco para ε\",",
       "glyphs": {
         "ε": 1
       },

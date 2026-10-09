@@ -10,6 +10,49 @@ import 'package:turing_lab/presentation/widgets/grammar/grammar_simulation_panel
 // feature-localization-surface: localized-editor-fields
 // feature-localization-surface: responsive-accessibility
 void main() {
+  for (final locale in [const Locale('en'), const Locale('pt', 'BR')]) {
+    testWidgets('localizes the space checkbox at narrow width in $locale', (
+      tester,
+    ) async {
+      tester.view
+        ..physicalSize = const Size(320, 700)
+        ..devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view
+          ..resetPhysicalSize()
+          ..resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(2)),
+              child: Scaffold(body: GrammarSimulationPanel(useExpanded: false)),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final label = locale.languageCode == 'pt'
+          ? 'Incluir espaços na entrada'
+          : 'Include spaces in input';
+      expect(find.text(label), findsOneWidget);
+      final checkbox = find.byKey(
+        const ValueKey('grammar-include-spaces-in-input'),
+      );
+      expect(tester.widget<CheckboxListTile>(checkbox).value, isFalse);
+      await tester.ensureVisible(checkbox);
+      await tester.tap(find.text(label));
+      await tester.pump();
+      expect(tester.widget<CheckboxListTile>(checkbox).value, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('grammar batch parsing controls follow the active locale', (
     tester,
   ) async {
