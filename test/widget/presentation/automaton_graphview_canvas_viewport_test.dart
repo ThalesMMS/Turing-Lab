@@ -66,9 +66,7 @@ _mountCanvas(
   final container = ProviderContainer();
   final notifier = container.read(automatonStateProvider.notifier);
   notifier.updateAutomaton(document);
-  final controller = _FitTrackingController(
-    automatonStateNotifier: notifier,
-  );
+  final controller = _FitTrackingController(automatonStateNotifier: notifier);
   final toolController = AutomatonCanvasToolController(
     AutomatonCanvasTool.addState,
   );
@@ -88,9 +86,9 @@ _mountCanvas(
         home: Scaffold(
           body: Consumer(
             builder: (context, ref, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                disableAnimations: reducedMotion,
-              ),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(disableAnimations: reducedMotion),
               child: AutomatonGraphViewCanvas(
                 // Watch the real provider so each mutation reaches
                 // didUpdateWidget, rather than only refreshing GraphView.
@@ -106,15 +104,11 @@ _mountCanvas(
     ),
   );
   await tester.pumpAndSettle();
-  return (
-    notifier: notifier,
-    controller: controller,
-    canvasKey: canvasKey,
-  );
+  return (notifier: notifier, controller: controller, canvasKey: canvasKey);
 }
 
-Matrix4 _editingViewport() => Matrix4.diagonal3Values(1.4, 1.4, 1)
-  ..setTranslationRaw(35, -20, 0);
+Matrix4 _editingViewport() =>
+    Matrix4.diagonal3Values(1.4, 1.4, 1)..setTranslationRaw(35, -20, 0);
 
 void _expectViewportUnchanged(
   _FitTrackingController controller,
@@ -131,71 +125,70 @@ void _expectViewportUnchanged(
 void main() {
   for (final empty in [true, false]) {
     for (final reducedMotion in [false, true]) {
-      testWidgets(
-        'state insertion preserves viewport '
-        '(empty=$empty, reducedMotion=$reducedMotion)',
-        (tester) async {
-          final harness = await _mountCanvas(
-            tester,
-            document: _document('editing', empty: empty),
-            reducedMotion: reducedMotion,
-          );
-          final controller = harness.controller;
-          final expected = _editingViewport();
-          controller.graphController.transformationController!.value =
-              expected.clone();
+      testWidgets('state insertion preserves viewport '
+          '(empty=$empty, reducedMotion=$reducedMotion)', (tester) async {
+        final harness = await _mountCanvas(
+          tester,
+          document: _document('editing', empty: empty),
+          reducedMotion: reducedMotion,
+        );
+        final controller = harness.controller;
+        final expected = _editingViewport();
+        controller.graphController.transformationController!.value = expected
+            .clone();
+        await tester.pumpAndSettle();
+        final fitCalls = controller.fitCalls;
+        final initialCount = controller.nodes.length;
+        final canvasOrigin = tester.getTopLeft(find.byKey(harness.canvasKey));
+        const positions = [
+          Offset(150, 200),
+          Offset(350, 300),
+          Offset(650, 400),
+        ];
+        for (var index = 0; index < positions.length; index++) {
+          final previousIds = controller.nodes.map((node) => node.id).toSet();
+          final worldCenter = controller.toWorldOffset(positions[index]);
+          await tester.tapAt(canvasOrigin + positions[index]);
           await tester.pumpAndSettle();
-          final fitCalls = controller.fitCalls;
-          final initialCount = controller.nodes.length;
-          final canvasOrigin = tester.getTopLeft(find.byKey(harness.canvasKey));
-          const positions = [
-            Offset(150, 200),
-            Offset(350, 300),
-            Offset(650, 400),
-          ];
-          for (var index = 0; index < positions.length; index++) {
-            final previousIds = controller.nodes.map((node) => node.id).toSet();
-            final worldCenter = controller.toWorldOffset(positions[index]);
-            await tester.tapAt(canvasOrigin + positions[index]);
-            await tester.pumpAndSettle();
 
-            expect(controller.nodes.length, initialCount + index + 1);
-            _expectViewportUnchanged(controller, expected, fitCalls);
-            final added = controller.nodes.singleWhere(
-              (node) => !previousIds.contains(node.id),
-            );
-            expect(
-              added.x,
-              closeTo(worldCenter.dx - kAutomatonStateDiameter / 2, 1e-6),
-            );
-            expect(
-              added.y,
-              closeTo(worldCenter.dy - kAutomatonStateDiameter / 2, 1e-6),
-            );
-          }
-
-          // The keyboard uses addStateAtCenter instead of pointer coordinates.
-          await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
-          await tester.pumpAndSettle();
-          expect(controller.nodes.length, initialCount + positions.length + 1);
+          expect(controller.nodes.length, initialCount + index + 1);
           _expectViewportUnchanged(controller, expected, fitCalls);
-          expect(tester.takeException(), isNull);
-        },
-      );
+          final added = controller.nodes.singleWhere(
+            (node) => !previousIds.contains(node.id),
+          );
+          expect(
+            added.x,
+            closeTo(worldCenter.dx - kAutomatonStateDiameter / 2, 1e-6),
+          );
+          expect(
+            added.y,
+            closeTo(worldCenter.dy - kAutomatonStateDiameter / 2, 1e-6),
+          );
+        }
+
+        // The keyboard uses addStateAtCenter instead of pointer coordinates.
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+        await tester.pumpAndSettle();
+        expect(controller.nodes.length, initialCount + positions.length + 1);
+        _expectViewportUnchanged(controller, expected, fitCalls);
+        expect(tester.takeException(), isNull);
+      });
     }
   }
 
-  testWidgets('structural edits and undo/redo preserve viewport', (tester) async {
-    final harness = await _mountCanvas(
-      tester,
-      document: _document('editing'),
-    );
+  testWidgets('structural edits and undo/redo preserve viewport', (
+    tester,
+  ) async {
+    final harness = await _mountCanvas(tester, document: _document('editing'));
     final controller = harness.controller;
     controller.addStateAt(const Offset(500, 240));
     await tester.pumpAndSettle();
-    final addedId = controller.nodes.singleWhere((node) => node.id != 'seed').id;
+    final addedId = controller.nodes
+        .singleWhere((node) => node.id != 'seed')
+        .id;
     final expected = _editingViewport();
-    controller.graphController.transformationController!.value = expected.clone();
+    controller.graphController.transformationController!.value = expected
+        .clone();
     await tester.pumpAndSettle();
     final fitCalls = controller.fitCalls;
 
@@ -232,10 +225,7 @@ void main() {
   testWidgets('initial load, explicit fit and document switching still fit', (
     tester,
   ) async {
-    final harness = await _mountCanvas(
-      tester,
-      document: _document('first'),
-    );
+    final harness = await _mountCanvas(tester, document: _document('first'));
     final controller = harness.controller;
     expect(controller.fitCalls, greaterThan(0));
     final transformation = controller.graphController.transformationController!;
@@ -247,7 +237,10 @@ void main() {
     controller.fitToContent();
     await tester.pumpAndSettle();
     expect(controller.fitCalls, initialFits + 1);
-    expect(transformation.value.storage, isNot(orderedEquals(expected.storage)));
+    expect(
+      transformation.value.storage,
+      isNot(orderedEquals(expected.storage)),
+    );
 
     transformation.value = expected.clone();
     await tester.pumpAndSettle();
@@ -255,7 +248,10 @@ void main() {
     harness.notifier.replaceAutomaton(_document('second'));
     await tester.pumpAndSettle();
     expect(controller.fitCalls, initialFits + 2);
-    expect(transformation.value.storage, isNot(orderedEquals(expected.storage)));
+    expect(
+      transformation.value.storage,
+      isNot(orderedEquals(expected.storage)),
+    );
     expect(harness.notifier.currentAutomaton!.id, 'second');
     expect(tester.takeException(), isNull);
   });

@@ -4,6 +4,20 @@ This file summarizes release-facing changes. It records implemented behavior,
 not App Store approval or tester availability; live distribution state belongs
 in the release evidence.
 
+## 1.0.3 (2026-10-09)
+
+- Preserve the canvas pan and zoom while editing the current automaton. Switching
+  documents still fits the new graph to the viewport.
+- Add a grammar simulation option to include spaces in the input. By default,
+  spaces are ignored in parsing and guided derivations.
+- Clarify grammar input hints in English and Portuguese.
+- Add regression coverage for viewport preservation, grammar spaces, and
+  localized input controls.
+- Disable parallel iOS test execution and strengthen local JFLAP citation
+  validation.
+- Use version 1.0.3 for the new distribution because Apple version 1.0.2 is
+  already released. These changes are compared with GitHub release 1.0.1.
+
 ## 1.0.0 (2026-09-04)
 
 - Completed the Turing Lab identity migration across code, packages, platform

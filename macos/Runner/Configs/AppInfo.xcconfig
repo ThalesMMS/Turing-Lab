@@ -13,7 +13,7 @@ PRODUCT_BUNDLE_IDENTIFIER = thalesmms.turinglab
 // Keep these manually synced with pubspec.yaml's version/build value before every macOS archive.
 // Unlike iOS, the macOS runner does not derive MARKETING_VERSION/CURRENT_PROJECT_VERSION from
 // FLUTTER_BUILD_NAME/FLUTTER_BUILD_NUMBER at build time.
-MARKETING_VERSION = 1.0.2
+MARKETING_VERSION = 1.0.3
 CURRENT_PROJECT_VERSION = 19
 
 // The copyright displayed in application information
